@@ -1,0 +1,15 @@
+{
+  "name": "bot",
+  "version": "1.5.3",
+  "description": "",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.0.2",
+    "ffmpeg": "0.0.4"
+  }
+}
