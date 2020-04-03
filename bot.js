@@ -13,7 +13,13 @@ let
   fs   = require("fs"),
   data = require("./main/data.json");
 
-
+const express = require('express');
+const keepalive = require('express-glitch-keepalive');
+const app = express();
+app.use(keepalive);
+app.get('/', (req, res) => {
+  res.json('Бот запущен!');
+});
 
 
 BOT.on("ready", async (bot) => {
