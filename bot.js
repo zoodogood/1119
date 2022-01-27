@@ -7698,6 +7698,9 @@ const timeEvents = {
     });
 
     client.guilds.cache.forEach(guild => {
+      let misstake = data.misstake;
+      delete data.misstake;
+
       guild.data.coins += 2 * guild.memberCount;
       let data = guild.data;
       let msgs = data.day_msg || 0;
@@ -7718,18 +7721,18 @@ const timeEvents = {
         // guild.members.cache.map(e => e.user).filter(e => !e.bot).forEach(e => e.quest("guildNewRecord"));
       }
 
-      if (!msgs) {
-        description = ["Сегодня не было отправленно ни одно сообщение", "Сегодня на сервере пусто", "За целый день ни один смертный не проявил активность", "Похоже, тишина — второе имя этого сервера"].random();
-      }
-
-      if ("misstake" in data){
-        description += `\n\nДерево засыхает! Ему необходимо на ${ ending(data.misstake - msgs, "сообщени", "й", "е", "я") } больше.`;
-        delete data.misstake;
-      }
-
-      guild.chatSend("Статистика сервера", {description: description});
 
       data.day_msg = 0;
+
+      if (!msgs){
+        return;
+        // description = ["Сегодня не было отправленно ни одно сообщение", "Сегодня на сервере пусто", "За целый день ни один смертный не проявил активность", "Похоже, тишина — второе имя этого сервера"].random();
+      }
+
+      if ("misstake" in data)
+        description += `\n\nДерево засыхает! Ему необходимо на ${ ending(misstake - msgs, "сообщени", "й", "е", "я") } больше.`;
+      
+      guild.chatSend("Статистика сервера", { description: description });
     });
 
 
