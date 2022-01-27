@@ -25,7 +25,7 @@ client.on("ready", async () => {
     client.user.setActivity("Ведутся разработки", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
   }
   else {
-    client.user.setActivity("как же сбежать", {type: "WATCHING"});
+    client.user.setActivity("намана", {type: "WATCHING"});
   }
 
 
@@ -6625,7 +6625,8 @@ const commands = {
   eval: new Command(async (msg, op) => {
     let noArgs;
 
-    let isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396"].includes(msg.author.id);
+    let isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396", "921403577539387454"]
+      .includes(msg.author.id);
 
     if (!isDev && op.args){
       msg.channel.msg("Э, вы не хозяин -_-'", "ff0000");
@@ -7731,7 +7732,7 @@ const timeEvents = {
 
       if ("misstake" in data)
         description += `\n\nДерево засыхает! Ему необходимо на ${ ending(misstake - msgs, "сообщени", "й", "е", "я") } больше.`;
-      
+
       guild.chatSend("Статистика сервера", { description: description });
     });
 
