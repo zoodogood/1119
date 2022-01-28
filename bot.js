@@ -3474,7 +3474,7 @@ const commands = {
        }
       ]
     }});
-  }, {delete: true, cooldown: 10, try: 2, type: "bot"}, "бот stats статс ping пинг стата"),
+  }, {delete: true, cooldown: 10, try: 2, type: "bot"}, "бот stats статс ping пинг стата invite пригласить"),
 
   top: new Command(async (msg, op) => {
     let guild = msg.guild;
