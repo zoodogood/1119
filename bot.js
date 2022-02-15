@@ -4644,7 +4644,7 @@ const commands = {
         around:        `В среднем: ${  Math.round((guild.data.day_msg + guild.data.msg_total) / guild.data.days)  }`,
         record:        `Рекорд: ${  ending(guild.data.day_max, "сообщени", "й", "е", "я")  }\n`,
         commands:      `Использовано команд: ${  guild.data.commandsLaunched  }`,
-        todayCommands: `Сегодня: ${  Object.keys(guild.data.commandsUsed).length  }`
+        todayCommands: `Сегодня: ${  Object.values(guild.data.commandsUsed).reduce((acc, count) => acc + count, 0) - guild.data.commandsLaunched  }`
       },
       members: {
         count:         `Всего: ${guild.memberCount}`,
@@ -7699,12 +7699,13 @@ const timeEvents = {
     });
 
     client.guilds.cache.forEach(guild => {
+      let data = guild.data;
+      let msgs = data.day_msg || 0;
+
       let misstake = data.misstake;
       delete data.misstake;
 
       guild.data.coins += 2 * guild.memberCount;
-      let data = guild.data;
-      let msgs = data.day_msg || 0;
 
       data.days = data.days + 1 || 1;
       data.msg_total = data.msg_total + msgs || msgs;
@@ -7730,7 +7731,7 @@ const timeEvents = {
         // description = ["Сегодня не было отправленно ни одно сообщение", "Сегодня на сервере пусто", "За целый день ни один смертный не проявил активность", "Похоже, тишина — второе имя этого сервера"].random();
       }
 
-      if ("misstake" in data)
+      if (misstake)
         description += `\n\nДерево засыхает! Ему необходимо на ${ ending(misstake - msgs, "сообщени", "й", "е", "я") } больше.`;
 
       guild.chatSend("Статистика сервера", { description: description });
