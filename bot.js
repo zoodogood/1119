@@ -274,19 +274,22 @@ client.on("ready", async () => {
     process.exit(1);
   })
 
-  client.ws.on('INTERACTION_CREATE', async e => {
-    console.log(e);
+  client.ws.on('INTERACTION_CREATE', async interaction => {
+
+    if (interaction.data.custom_id !== "bot_hi" && interaction.data.name !== "help")
+      return;
 
 
-    client.api.interactions(e.id, e.token).callback.post({data: {
+
+    client.api.interactions(interaction.id, interaction.token).callback.post({data: {
         type: 4,
         data: {
           content: "",
           embeds: [{
-            title: e.type == 2 ? "Отображение команды:" : "Сообщение удалено",
+            title: interaction.type == 2 ? "Отображение команды:" : "Сообщение удалено",
             description: e.type === 2 ? `Если вам нужно подробное описание, введите \`!commandInfo {название команды}\`\nТакже вы можете посетить сервер бота, если у вас есть какие-нибудь вопросы [<https://greenghost>](https://discord.gg/76hCg2h7r8)` : "Зачем удалено, почему удалено, что было бы если бы вы не удалили это сообщение, имело ли это какой-нибудь скрытый смысл...?",
             author: {
-              name: e.member.user.username,
+              name: interaction.member.user.username,
               icon_url: client.rest.cdn.Avatar(e.member.user.id, e.member.user.avatar)
             },
             color: 65280
@@ -296,19 +299,19 @@ client.on("ready", async () => {
 
 
     if (e.type != 2){
-      let message = await client.guilds.cache.get(e.guild_id).channels.cache.get(e.channel_id).messages.fetch(e.message.id);
+      let message = await client.guilds.cache.get(interaction.guild_id).channels.cache.get(interaction.channel_id).messages.fetch(interaction.message.id);
       message.delete();
       return;
     }
 
     let
-      guild    = client.guilds.cache.get(e.guild_id),
-      channel  = guild.channels.cache.get(e.channel_id),
-      author   = guild.members.cache.get(e.member.user.id).user,
+      guild    = client.guilds.cache.get(interaction.guild_id),
+      channel  = guild.channels.cache.get(interaction.channel_id),
+      author   = guild.members.cache.get(interaction.member.user.id).user,
       message  = {channel, author},
 
-      command  = e.data.name.toLowerCase(),
-      args     = e.data.options;
+      command  = interaction.data.name.toLowerCase(),
+      args     = interaction.data.options;
 
       message = Object.assign(Object.create(Discord.Message.prototype), message);
 
