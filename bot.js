@@ -287,7 +287,7 @@ client.on("ready", async () => {
           content: "",
           embeds: [{
             title: interaction.type == 2 ? "Отображение команды:" : "Сообщение удалено",
-            description: e.type === 2 ? `Если вам нужно подробное описание, введите \`!commandInfo {название команды}\`\nТакже вы можете посетить сервер бота, если у вас есть какие-нибудь вопросы [<https://greenghost>](https://discord.gg/76hCg2h7r8)` : "Зачем удалено, почему удалено, что было бы если бы вы не удалили это сообщение, имело ли это какой-нибудь скрытый смысл...?",
+            description: interaction.type === 2 ? `Если вам нужно подробное описание, введите \`!commandInfo {название команды}\`\nТакже вы можете посетить сервер бота, если у вас есть какие-нибудь вопросы [<https://greenghost>](https://discord.gg/76hCg2h7r8)` : "Зачем удалено, почему удалено, что было бы если бы вы не удалили это сообщение, имело ли это какой-нибудь скрытый смысл...?",
             author: {
               name: interaction.member.user.username,
               icon_url: client.rest.cdn.Avatar(e.member.user.id, e.member.user.avatar)
