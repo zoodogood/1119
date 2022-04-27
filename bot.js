@@ -58,7 +58,7 @@ client.on("ready", async () => {
     let whoAdded = await guild.Audit(e => e.target.id === client.user.id, {type: "BOT_ADD"});
     whoAdded = whoAdded ? whoAdded.target : null;
 
-    client.guilds.cache.get("752898200993660959").channels.cache.get("763637440174227506").msg(`Бот присоеденился к серверу ${guild.name}!`, {description: `Участников: ${members.size}\nКол-во знакомых боту людей: ${members.filter(e => data.users.some(el => el.id == e.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.member(whoAdded) ? "Да" : "Нет"}.`, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
+    client.guilds.cache.get("752898200993660959").channels.cache.get("763637440174227506").msg(`Бот присоеденился к серверу ${ guild.name }!`, {description: `Участников: ${ members.size }\nКол-во знакомых боту людей: ${members.filter(e => data.users.some(el => el.id == e.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.member(whoAdded) ? "Да" : "Нет"}.`, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
     guild.invites = await guild.fetchInvites();
     data.bot.newGuildTimestamp = getTime();
   });
@@ -7601,7 +7601,7 @@ const commands = {
         body: JSON.stringify({
           max_age: 86400,
           max_uses: 0,
-          target_application_id: "755600276941176913",
+          target_application_id: "880218394199220334",
           target_type: 2,
           temporary: false,
           validate: null
@@ -7624,7 +7624,7 @@ const commands = {
       return;
     }
     msg.msg("Необходимо находится в голосовом канале", {color: "ff0000", delete: 7000});
-  }, {dm: true, type: "other", myPermissions: 1, dev: true}, "ютуб ютубвместе youtubetogether"),
+  }, {dm: true, type: "other", myPermissions: 1}, "ютуб ютубвместе youtubetogether"),
 
   invites: new Command(async (msg, op) => {
     let answer = await accept("invites_command", {message: "Присвойте ссылкам их уникальную роль", description: "Как это работает?\nВы как администратор создаете роль, назовём её \"Фунтик\" и решаете, какие пользователи будут получать её при входе на сервер. Есть несколько типов условий, которые это определяют, они указаны в порядке приоритета и их может быть несколько.\n\n1) В режиме постоянной ссылки, вы просто указывете её, и всем, кто пришёл на сервер через эту ссылку будет выдана роль Фунтик.\n2) Выдаваемая роль будет определяться наличием у пригласившего другой роли, например, \"Хороший друг\". Любая ссылка созданная \"Хорошим другом\" будет давать Фунтика \n3) По умолчанию. Если не отработал ни один вариант выше, будет выдана наша роль\n\nЗачем это?\nВы можете определить права участника в зависимости от того, кто его пригласил; ведение статистики, распределение людей которые пришли с партнёрки и по знакомству, тому подобное. Это то, что вы можете сделать с помощью этой команды"}, msg.channel, msg.author.data);
