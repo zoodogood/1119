@@ -6,9 +6,9 @@ console.clear();
 
 const
   Discord = require("discord.js"),
-  client  = new Discord.Client({messageCacheMaxSize: 110});
+  client  = new Discord.Client({ messageCacheMaxSize: 110 });
 
-let
+const
   fs         = require("fs"),
   fetch      = require("node-fetch"),
   //canvas   = require("canvas"),
@@ -22,12 +22,11 @@ client.on("ready", async () => {
   client.guilds.cache.forEach(async el => el.invites = await el.fetchInvites().catch(() => {/*console.log("Сервер " + el.name + " лишил прав администратора!")*/}));
 
   if (package.device === "PC") {
-    client.user.setActivity("Ведутся разработки", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
+    client.user.setActivity("Кабзец тебе, Хозяин", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
   }
   else {
     client.user.setActivity("намана", {type: "WATCHING"});
   }
-
 
 
 
@@ -64,7 +63,7 @@ client.on("ready", async () => {
   });
 
   client.on("guildDelete", async (guild) => {
-    client.users.cache.get("416701743733145612").msg(`Бота забанили на сервере ${guild.name}!`);
+    client.users.cache.get("921403577539387454").msg(`Бота забанили на сервере ${guild.name}!`);
   })
 
   client.on("messageReactionAdd", async (reaction, user) => {
@@ -472,14 +471,25 @@ function timestampToDate(ms, max){
 	const
 	  date = new Date( Math.max(ms, 0) ),
 	   s  = date.getUTCSeconds() + "с",
-	   m = date.getUTCMinutes() + "м ",
+	   m  = date.getUTCMinutes() + "м ",
 	   h  = date.getUTCHours() + "ч ",
 	   d  = date.getUTCDate() - 1 + "д ",
 	   mo = date.getUTCMonth() + "мес. ",
-	   y = date.getUTCFullYear() - 1970 + ((date.getUTCFullYear() - 1970 > 4) ? "л " : "г "),
+	   y  = date.getUTCFullYear() - 1970 + ((date.getUTCFullYear() - 1970 > 4) ? "л " : "г ");
 
-    input = add_and([y, mo, d, h, m, s].filter(e => +e[0]).slice(0, max || 7).join(" ").trim());
-	return input || "менее 1с";
+  let input = add_and(
+    [y, mo, d, h, m, s]
+    .filter(stamp => +stamp[0])
+    .slice(0, max || 7)
+    .join(" ")
+    .trim()
+  );
+
+  if (!input){
+    input = `0,${ ms.toString().slice(0, 3) }с`;
+  }
+
+	return input;
 };
 
 function ending(numb = 0, wordBase, zerofifth, first, second, opt = {}) {
@@ -1074,7 +1084,7 @@ async function commandHundler(msg){
 
 
     if (cmd.cooldown && user["CD_" + cmd.id] && (+(getTime() + cmd.cooldown * (cmd.try - 1)) < +user["CD_" + cmd.id]))
-      problems.push(`Перезарядка: **${timestampToDate(user["CD_" + cmd.id] - getTime() - cmd.cooldown * (cmd.try - 1) + 500)}**`);
+      problems.push(`Перезарядка: **${ timestampToDate(user["CD_" + cmd.id] - getTime() - cmd.cooldown * (cmd.try - 1) + 500) }**`);
 
     // End
 
@@ -1212,6 +1222,7 @@ async function getCoinsFromMessage(user, msg){
   if ("cloverEffect" in msg.guild.data) {
     reaction = "☘️";
     let multiplier = 0.08 + (0.07 * ((1 - 0.9242 ** msg.guild.data.cloverEffect.uses) / (1 - 0.9242)));
+    multiplier *= 2 ** nonNaN(user.voidMysticClover);
     k += multiplier;
     msg.guild.data.cloverEffect.coins++;
   }
@@ -1230,10 +1241,12 @@ async function getCoinsFromMessage(user, msg){
 
 async function levelUp(user, msg){
   let level = user.level;
-  while (user.exp >= user.level * 45) {
-    user.exp -= Math.floor(user.level++ * 45 * (0.97716 ** user.void));
+  while (user.exp >= user.level * 45){
+    user.exp -= user.level * 45;
+    user.level++;
+    user.exp += user.level * 45 - Math.ceil(user.level * 45 * (0.97716 ** user.voidRituals));
   }
-  let textContent = user.level - level > 2 ? `**${msg.author.username} повышает уровень с ${level} до ${user.level}!**` : `**${msg.author.username} получает ${user.level} уровень!**`;
+  let textContent = user.level - level > 2 ? `**${msg.author.username} повышает уровень с ${ level } до ${ user.level }!**` : `**${ msg.author.username } получает ${user.level} уровень!**`;
   let message = await msg.msg(textContent, {embed: true});
   if (msg.channel.id != msg.guild.data.chatChannel) {
     message.delete({timeout: 5000});
@@ -1328,7 +1341,7 @@ function filterChat(msg){
   let abuse = ["лох", "пидор", "хуесос", "блять", "сука", "нахуй", "хуй", "жопа", "говно", "ебать", "дебик", "нах", "бля", "идиот", "fuck", "fucking"];
   if ( content.toLowerCase().split(" ").some(e => abuse.includes(e)) ) {
 
-    if (msg.channel.nfsw === true){
+    if (msg.channel.nsfw === true){
       return false;
     }
 
@@ -1440,7 +1453,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
         memb.msg(`Ваш ${user.dayQuests}-й квест — новое семечко`, {description: `🌱`}) :
         memb.msg("Ура, ваше первое семечко!", {description: `Вы будете получать по одному выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера`});
 
-      user.seed = nonNaN(user.seed) + 1;
+      user.seed = nonNaN(user.seed) + 2;
     }
 
   };
@@ -1498,7 +1511,7 @@ Discord.Channel.prototype.awaitMessage = async function(user, opt = {}){
 }
 
 Discord.GuildMember.prototype.wastedPermissions = function(bit, channel){
-  if (this.user.id == 416701743733145612) return false;
+  if (this.user.id == 921403577539387454) return false;
   let permissions = channel ? channel.permissionsFor(this).missing(bit) : this.permissions.missing(bit);
   return permissions[0] ? permissions : false;
 }
@@ -1732,7 +1745,7 @@ class Quest {
     do {
       if (!scope.random()) return false;
       [name, progress = 1, chance = 1, complexity = 1, activateFunc] = scope.random(true).split("&");
-      activateChance = random(1,7);
+      activateChance = random(1, 7);
     } while ( !name || chance > activateChance || name == user.questLast || activateFunc && !Quest.activateFunc[name](memb, activateFunc) );
 
     user.quest         = name;
@@ -1914,37 +1927,48 @@ class TimeEvent {
     clearTimeout(TimeEvent.next);
     let time = TimeEvent.eventData;
     let min = time[0];
-    if (!min) {
+
+    if (!min)
       return;
-    }
+
 
     let len = time.length;
     let index = 0;
-    while (len--) {
+    while (len--){
       if (time[len].ms < min.ms) {
         min = time[len];
         index = len;
       }
     }
-    let timeTo = min.ms - getTime();
+    const data = min;
+    let timeTo = data.ms - getTime();
 
     if (timeTo > 10000) {
       let parse = new Intl.DateTimeFormat("ru-ru", {weekday: "short", hour: "2-digit", minute: "2-digit"}).format();
-      console.log(`{\n\n  Имя события: ${min.func},\n  Текущее время: ${parse},\n  Времени до начала: ${timestampToDate(timeTo)}\n\n}`);
+      console.log(`{\n\n  Имя события: ${ data.func },\n  Текущее время: ${ parse },\n  Времени до начала: ${timestampToDate(timeTo)}\n\n}`);
     }
 
     TimeEvent.next = setTimeout(() => {
-      time.splice(index, 1);
-      let args = min.args === "string" ? min.args.split("\&") : min.args || [];
-      try {
-        timeEvents[min.func](timeTo < -10000, ...args);
-      }
-      catch (err){
+      const outError = (err) => {
         console.log("\n\n—————— EVENT ERROR ——————");
-        client.users.cache.get("416701743733145612").msg(`Ошибка в \`${min.func}\``, {description: err.message});
+        client.users.cache.get("921403577539387454").msg(`Ошибка в \`${ data.func }\``, {description: err.message});
         console.error(err);
       }
-      console.log("Ивент выполнен " + min.func);
+
+      time.splice(index, 1);
+      const args = data.args === "string" ?
+        data.args.split("\&") :
+        data.args || [];
+
+      try {
+        const result = timeEvents[data.func](timeTo < -10000, ...args);
+        if (result instanceof Promise)
+          result.catch(outError);
+      }
+      catch (err){
+        outError(err);
+      }
+      console.log("Ивент выполнен " + data.func);
       clearTimeout(TimeEvent.next)
       TimeEvent.handle();
     }, timeTo);
@@ -2614,6 +2638,11 @@ const commands = {
       rank   = "",
       guild  = msg.guild;
 
+      if (user.profile_confidentiality === true && msg.author !== memb){
+        msg.msg("Вы не можете просматривать сведения об этом Вип-Пользователе", {description: "Задумайтесь, он включил режим конфиденциальности!", color: "ff0000", delete: 8000})
+        return;
+      }
+
       if (member && user.level > 1) {
         rank = guild.members.cache.map(e => e.user).filter(el => !el.bot).sort((b, a) => (a.data.level != b.data.level) ? a.data.level - b.data.level : a.data.exp - b.data.exp).findIndex((el) => user.id == el.id) + 1;
       }
@@ -2649,30 +2678,54 @@ const commands = {
       let about;
       if (user.profile_description)
         about = await template(user.profile_description, msg);
+
       if (about)
         embed.fields.push({name: "О пользователе: ᠌", value: about});
+
       if (member)
         embed.fields.push({name: " ᠌᠌", value: "\n**" + `${secretAchievements.last ? secretAchievements.random().emoji + " " : ""}${member.roles.highest}` + "**\nᅠ"});
+
       if (!memb.bot)
         embed.fields.push({name:"\nКвест:", value: (user.quest) ? quests[user.quest] + " " + (user.questProgress || 0) + "/" + user.questNeed : " – Квест выполнен"});
 
       const inventory = [
         `🔩${user.keys}`,
         `<a:void:768047066890895360>${user.void}`,
-        `🧤${user.thiefGloves || 0}|${(user.thiefWins && String(user.thiefWins).replace("-", "!")) || 0}`,
-        `${user.monster ? "🐲" + user.monster : ""}`,
-        `${user.seed    ? "🌱" + user.seed    : ""}`,
-        `${user.cheese  ? "🧀" + user.cheese  : ""}`
+        `🧤${ user.thiefGloves || 0 }|${ (user.thiefWins && String(user.thiefWins).replace("-", "!")) || 0 }`,
+        `${ user.chilli  ? "🌶️" + user.chilli  : "" }`,
+        `${ user.monster ? "🐲" + user.monster : "" }`,
+        `${ user.seed    ? "🌱" + user.seed    : "" }`,
+        `${ user.cheese  ? "🧀" + user.cheese  : "" }`
       ];
 
 
       let element = user.element ?  `\n${["🍃 Земля", "☁️ Воздух", "🔥 Огонь", "👾 Тьма"][user.element]} — элемент ${nonNaN(user.elementLevel) + 1} ур.\n` : "";
       let fields = [
-        {name: "Клубники <:berry:756114492055617558>", value: `Имеется: ${user.berrys}`, inline: true},
-        {name: "Сундук <a:chest:805405279326961684>", value: `Сундук ур.: ${user.chestLevel + 1}\nБонус след. открытия: \`${user.chestBonus || 0}\``, inline: true},
-        {name: "Содержимое сумки", value: `${inventory.join("  ")}${element}\n⠀`, inline: false},
-        {name: "Выполнено квестов 📜", value: `Ежедневных: ${memb.bot ? "BOT" : user.dayQuests || 0}\nГлобальных: ${(user.completedQuest || []).filter(e => e in quests.names).length}/${Object.values(quests.names).length}`, inline: false},
-        {name: "Бонусы котла <a:placeForVoid:780051490357641226>", value: `\`\`\`Уменьшений кулдауна: ${~~user.voidCooldown}/20\nСкидок на котёл: ${~~user.voidPrise}/5\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nБонусы от перчаток: ${~~user.voidThief}\nФермер: ${nonNaN(user.voidTreeFarm)}\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``}
+        {
+          name: "Клубники <:berry:756114492055617558>",
+          value: `Имеется: ${user.berrys}`,
+          inline: true
+        },
+        {
+          name: `Сундук ${ user.CD_32 > getTime() ? "<:chest_opened:986165753843679232>" : "<a:chest:805405279326961684>" }`,
+          value: `Сундук ур.: ${user.chestLevel + 1}\nБонус след. открытия: \`${user.chestBonus || 0}\``,
+          inline: true
+        },
+        {
+          name: "Содержимое сумки",
+          value: `${inventory.join("  ")}${element}\n⠀`,
+          inline: false
+        },
+        {
+          name: "Выполнено квестов 📜",
+          value: `Ежедневных: ${memb.bot ? "BOT" : user.dayQuests || 0}\nГлобальных: ${(user.completedQuest || []).filter(e => e in quests.names).length}/${Object.values(quests.names).length}`,
+          inline: false
+        },
+        {
+          name: "Бонусы котла <a:placeForVoid:780051490357641226>",
+          value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrise}/5\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${nonNaN(user.voidMysticClover)}\nФермер: ${nonNaN(user.voidTreeFarm)}\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
+          inline: false
+        }
       ];
 
       let message = await msg.msg("Профиль пользователя", embed);
@@ -2823,31 +2876,96 @@ const commands = {
 
         case "685057435161198594":
           let answer = await msg.channel.awaitMessage(msg.author, {message: "Введите номер пользователя из списка, которого вы хотите удалить"});
-          answer = Math.max(Math.floor(answer.content), 1);
+          answer = answer.content;
 
-          if (isNaN(answer) || user.praise.length < answer){
-            await msg.channel.msg(`Введите число в диапазоне от 1 до ${user.praise.length} включительно`, {color: "ff0000", delete: 3000});
+          if (answer === "+")
+            answer = user.praise
+              .map((id, i) => i + 1)
+              .join(",");
+
+
+
+          const throwOut = () => {
+            if (throwOut.message === undefined)
+              throwOut.message = "";
+
+            throwOut.out = true;
+          }
+
+          const splices = answer.match(/\d+/g);
+
+          if (splices === null){
+            await msg.channel.msg(`Укажите хотя бы один номер, указывающий на пользователя которого надо удалить`, {color: "ff0000", delete: 9000});
             react = "640449848050712587";
             break;
           }
 
-          let remove = getData(user.praise[answer - 1]);
-          let name = remove ? remove.name : "неопр. пользователя";
 
-          let deletingUser = client.users.cache.get( remove.id );
-          let avatar = deletingUser ? {name: deletingUser.username, iconURL: deletingUser.avatarURL()} : null;
+          const willRemoved = splices
+            .map(userIndex => {
+              if (user.praise.length < userIndex || userIndex <= 0){
+                throwOut();
+                throwOut.message += `\n• Не удалось определить пользователя под индексом ${ userIndex }`
 
-          if (remove) {
-            let index = remove.praiseMe.indexOf(user.id);
-            if (~index) remove.praiseMe.splice(index, 1);
+                return null;
+              }
+
+              return getData(user.praise[userIndex - 1]);
+            })
+            .filter(data => data !== null);
+
+          willRemoved
+            .forEach(data => {
+              if (data) {
+                let index = data.praiseMe.indexOf(user.id);
+                if (~index)
+                  data.praiseMe.splice(index, 1);
+              }
+
+              user.praise.splice(answer - 1, 1);
+            });
+
+
+          if (willRemoved.length > 1){
+            const list = willRemoved
+              .map(data => {
+                if (!data)
+                  data = {name: "Неопределенного пользователя"};
+
+                return data.name || `ID: ${ data.id }`;
+              })
+              .map(name => `• ${ name }`)
+              .join("\n");
+
+            const description = `Вы удалили следующих пользователей из списка похвал:\n${ list }`;
+            const author = { name: msg.author.tag, iconURL: msg.author.avatarURL() };
+            await msg.msg("", {author, description});
           }
 
-          user.praise.splice(answer - 1, 1);
-          await msg.channel.msg(`Вы удалили ${name} из списка похвал`, {author: avatar});
+          if (willRemoved.length === 1){
+            const data = willRemoved[0];
+
+
+            const discordUser = client.users.cache.get( data.id );
+            const name   = discordUser ? discordUser.username : (data.name || data.id);
+            const author = discordUser ? {name, iconURL: discordUser.avatarURL()} : null;
+            console.log(author);
+
+            await msg.msg(`Вы удалили ${ name } из списка похвал`, {author});
+          }
+
+
+          if (throwOut.out){
+            const main = `Введите число в диапазоне от 1 до ${ user.praise.length } включительно.\nУкажите несколько чисел или знак "+" (все похвалы), чтобы за раз удалить несколько похвал.`;
+            const description = `${ main }\n${ throwOut.message }`;
+            msg.msg("Отчёт возникших проблем:", {description, color: "ff0000", delete: 12000});
+          }
 
           iPraise = (user.praise.length) ? user.praise.map((id, i) => (i + 1) + ". "+ (getData(id) ? Discord.Util.escapeMarkdown( getData(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вы никого не хвалили \nиспользуйте **!похвалить**" : "Никого не хвалил";
           iPraise += "\n• (пусто)".repeat( Math.max(maximumPraises - user.praise.length, 0) );
           await message.msg(isAuthor ? "Похвалы" : "Похвалил", {color: "00ffaf" , description: Discord.Util.escapeMarkdown(iPraise), author: {name: memb.tag, iconURL: memb.avatarURL()}, footer: {text: isAuthor ? `Если вы хотите отменить,\nпохвалу кликните на *галочку* ниже.` : "Have a good goose"}, edit: true});
+
+
 
           react = "640449848050712587";
           break;
@@ -2882,6 +3000,7 @@ const commands = {
 
   clear: new Command(async (msg, op) => {
     await msg.delete();
+
     const
       channel      = msg.channel,
       args         = op.args,
@@ -2905,7 +3024,6 @@ const commands = {
           break;
         }
 
-        console.log(sum_messages.map(e => e.content).join("\n"));
         if (messages.size != 50 || sum_messages.length == 350){
           return msg.msg("Не удалось найти сообщение", {color: "ff0000", delete: 3000, description: args});
         }
@@ -3205,7 +3323,7 @@ const commands = {
   }, {delete: true, ChannelPermissions: 16384, cooldown: 30, try: 3, type: "guild"}, "ембед эмбед"),
 
   archive: new Command(async (msg, op) => {
-    if (msg.author.id != 416701743733145612){
+    if (msg.author.id != 921403577539387454){
       return msg.msg("Эта команда была удалена", {delete: 4000, embed: true});
     }
     let
@@ -3339,7 +3457,9 @@ const commands = {
     }
 
     num = num[0];
-    message = op.args.replace(num, "").trim();
+    op.args = op.args.replace(num, "").trim();
+
+    let [itemName, ...message] = op.args.split(" ");
 
 
     if (memb.bot) {
@@ -3351,70 +3471,74 @@ const commands = {
     if (!heAccpet) return;
 
     if (memb === msg.author) {
-      msg.msg(`${msg.author.username} попытался наколдовать немного коинов (${num} <:coin:637533074879414272>) — безуспешно.`);
+      msg.msg(`${msg.author.username} попытался наколдовать немного ресурсов (${ num } ❔) — безуспешно.`);
       return;
     }
 
 
-    let resources = [
+    const RESOURCES = [
+      {
+        resource: "coins",
+        names: "coins coin коин коинов коина коины монет монету",
+        gives: n => `${ending(n, "коин", "ов", "", "а")} <:coin:637533074879414272>`
+      },
+
       {
         resource: "void",
-        names: "void камень камня камней нестабильность нестабильности н",
+        names: "void камень камня камней нестабильность камни нестабильности н",
         gives: n => `${ending(n, "кам", "ней", "ень", "ня")} нестабильности`
       },
 
       {
         resource: "chestBonus",
         names: "bonus chest бонус бонусов бонуса сундук сундука с",
-        gives: n => `${ending(n, "бонус", "ов", "", "а")} сундука`
+        gives: n => `${ ending(n, "бонус", "ов", "", "а") } сундука`
       },
 
       {
         resource: "chilli",
-        names: "chilli перец перца перцев",
+        names: "chilli перец перца перцев перцы",
         gives: n => ending(n, "пер", "цев", "ец", "ца")
       },
 
       {
         resource: "keys",
-        names: "keys ключ ключей ключа k к",
+        names: "keys ключ ключей ключа ключи k к",
         gives: n => ending(n, "ключ", "ей", "", "а")
       },
 
       {
-        resource: "gloves",
-        names: "gloves перчатку перчаток перчатки",
-        gives: n => ending(n, "перчат", "ок", "ку", "ки")
-      },
-
-      {
         resource: "berrys",
-        names: "клубника клубник клубники berrys berry",
+        names: "клубника клубник клубники berrys berry ягод ягода ягоды",
         gives: n => ending(n, "клубник", "", "а", "и")
       },
 
       {
         resource: "monster",
-        names: "monster монстр монстра монстров",
-        gives: n => `${ending(n, "монстр", "ов", "", "а")} 🐲`
+        names: "monster монстр монстра монстров монстры",
+        gives: n => ending(n, "монстр", "ов", "", "а")
       },
 
       {
-        resource: "coins",
-        names: "coins коин коинов коина монет монету",
-        gives: n => `${ending(n, "коин", "ов", "", "а")} <:coin:637533074879414272>`
+        resource: "seed",
+        names: "seed seeds семечко семечек семечка семечков семена семян семя семени",
+        gives: n => ending(n, "семеч", "ек", "ко", "ка")
       }
+
 
     ];
 
-    let resource = resources.find(obj => obj.names.split(" ").includes(message)) || resources.last;
-    let r = resource.resource;
+    let resourceData = RESOURCES.find(obj => obj.names.split(" ").includes(itemName));
+    if (!resourceData){
+      message = [itemName, ...message];
+      resourceData = RESOURCES[0];
+    }
+    let resource = resourceData.resource;
 
-    if (r !== "coins")
-      message = "";
+    message = message.join(" ");
 
     if (num === "+"){
-      num = op.user[ r ];
+      num = op.user[ resource ];
     }
     num = Math.floor(num);
 
@@ -3423,16 +3547,17 @@ const commands = {
       return;
     }
 
-    if (op.user[ r ] < num) {
-      msg.msg(`Нужно ещё ${ resource.gives(num - op.user[ r ]) }`);
+    if (op.user[ resource ] < num) {
+      const description = Discord.Util.escapeMarkdown(msg.content);
+      msg.msg(`Нужно ещё ${ resourceData.gives(num - op.user[ resource ]) }`, {description, delete: 12000});
       return;
     }
 
 
-    op.user[ r ] -= num;
-    memb.data[ r ] += num;
+    op.user[ resource ]   -= num;
+    memb.data[ resource ] += num;
 
-    msg.msg("", {description: `${msg.author.username} отправил ${ resource.gives(num) } для ${ memb.toString() }` + (message ? `\nС сообщением:\n${message}` : ""), author: {name: "Передача коинов", iconURL: msg.author.avatarURL()}});
+    msg.msg("", {description: `${msg.author.username} отправил ${ resourceData.gives(num) } для ${ memb.toString() }` + (message ? `\nС сообщением:\n${ message }` : ""), author: {name: "Передача", iconURL: msg.author.avatarURL()}});
   }, {delete: true, dm: true, memb: true, try: 7, cooldown: 300, type: "user"}, "give дать заплатить"),
 
   bot: new Command(async (msg, op) => {
@@ -3513,7 +3638,7 @@ const commands = {
           sort = users.sort((a, b) => (b.data.coins + b.data.berrys * data.bot.berrysPrise) - (a.data.coins + a.data.berrys * data.bot.berrysPrise));
           rangs = sort.map((e, i) => {
             let name = (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
-            let value = `— ${e.data.coins} (${e.data.coins + e.data.berrys * data.bot.berrysPrise}) <:coin:637533074879414272>`;
+            let value = `— ${e.data.coins} (${ Math.floor( e.data.coins + e.data.berrys * data.bot.berrysPrise ) }) <:coin:637533074879414272>`;
             return {name, value};
           });
           break;
@@ -3618,9 +3743,9 @@ const commands = {
     let timeToEnd = 0;
 
     while (true){
-      let regBase = `(\\d+?)\\s*(d|д|h|ч|m|м|s|с)[a-zA-Zа-яА-Я]*?`;
-      let reg = RegExp(`^${regBase}|${regBase}$`);
-      let matched = op.args.match( RegExp(`^${regBase}|${regBase}$`) );
+      let regBase = `(\\d+?)\\s*(d|д|h|ч|m|м|s|с)[a-zA-Zа-яА-Я]*`;
+      const reg = RegExp(`^${ regBase }|${ regBase }$`);
+      let matched = op.args.match( reg );
 
       if (!matched){
         break;
@@ -4060,13 +4185,19 @@ const commands = {
 
     let channel = client.guilds.cache.get("752898200993660959").channels.cache.get("753587805195862058");
 
-    let ideaNumber = await channel.messages.fetch({limit: 1});
-    ideaNumber = match(ideaNumber.last().embeds[0].author.name, /#\d+/).slice(1);
+    const getIdeaNumber = async () => {
+      const messages = await channel.messages.fetch();
+      const lastIdeaMessage = messages.find(message => message.author === client.user);
+      return +match(lastIdeaMessage.embeds[0].author.name, /#\d+/).slice(1);
+    }
+
+
+    const ideaNumber = await getIdeaNumber();
 
     channel.msg("<:meow:637290387655884800> Какая классная идея!", {
       description: "**Идея:**\n" + op.args, color: op.user.profile_color || "00ffaf",
       author: {
-        name: `${msg.author.username} #${++ideaNumber}`,
+        name: `${msg.author.username} #${ ideaNumber + 1 }`,
         iconURL: msg.author.avatarURL()
       },
       reactions: ["814911040964788254", "815109658637369377"]});
@@ -4080,121 +4211,40 @@ const commands = {
       {
         name: "🦴 Просто палка",
         value: 244,
-        inline: true
+        inline: true,
+        others: ["палка", "палку"],
+        fn: () => {
+          let phrase = ".\nВы купили палку. Это самая обычная палка, и вы её выбросили.";
+          if (user.monster){
+            let bonus = random(5, 3 * user.monster + 5);
+            phrase += `\nВаши ручные Монстры, погнавшись за ней, нашли ${ending(bonus, "ключ", "ей", "", "а")}`;
+            user.keys += bonus;
+          }
+
+          return phrase;
+        }
       },
       {
         name: "🌶️ Жгучий перчик",
         value: 160,
-        inline: true
+        inline: true,
+        others: ["перец", "перчик"],
+        fn: () => {
+          if (user.chilli === undefined) {
+            user.chilli = 0;
+            msg.msg("Окей, вы купили перец, просто бросьте его...", {description: "Команда броска `!chilli @Пинг`", delete: 12000});
+          }
+
+          user.chilli++;
+          return ". \"Готовтесь глупцы, грядёт эра перчиков\"";
+        }
       },
       {
         name: "🧤 Перчатки перчатника",
         value: 700,
-        inline: true
-      },
-      {
-        name: "🔩 Старый ключ",
-        value: 15,
-        inline: true
-      },
-      {
-        name: "🧪 Бутылёк опыта",
-        value: "???",
-        inline: true
-      },
-      {
-        name: "🐲 Ручной монстр",
-        value: 7999 + 2000 * nonNaN(user.monster),
-        inline: true
-      },
-      {
-        name: "🥫 Консервы Интеллекта",
-        value: 1200,
-        inline: true},
-      {
-        name: "🍼 Бутылка глупости",
-        value: 400,
-        inline: true
-      },
-      {
-        name: "👜 Шуба из енота",
-        value: 3200,
-        inline: true
-      },
-      {
-        name: "🎟️ Лотерейный билет",
-        value: 130,
-        inline: true
-      },
-      {
-        name: "💡 Идея",
-        value: (user.iq && user.iq % 31 == data.bot.dayDate.match(/\d{1,2}/)[0]) ? "Бесплатно" : 80,
-        inline: true
-      },
-      {
-        name: "☘️ Счастливый клевер",
-        value: 400,
-        inline: true
-      },
-      {
-        name: "👀 Камень с глазами",
-        value: 600,
-        inline: true
-      }
-    ];
-    let otherNames = {
-      "🦴 Просто палка": ["палка", "палку"],
-      "🌶️ Жгучий перчик": ["перец", "перчик"],
-      "🧤 Перчатки перчатника":  ["перчатку", "перчатки", "перчатка"],
-      "🔩 Старый ключ": ["ключ", "ключик"],
-      "🧪 Бутылёк опыта": ["опыт", "бутылёк"],
-      "🐲 Ручной монстр": ["монстр", "монстра"],
-      "🥫 Консервы Интеллекта": ["консервы", "интеллект"],
-      "🍼 Бутылка глупости": ["бутылка", "бутылку", "глупость", "глупости"],
-      "👜 Шуба из енота": ["шуба", "шубу"],
-      "🎟️ Лотерейный билет": ["билет", "лотерея", "лотерею"],
-      "💡 Идея": ["идея", "идею"],
-      "☘️ Счастливый клевер": ["клевер", "счастливый"],
-      "👀 Камень с глазами": ["камень", "проклятье"]
-    };
-
-    let items = allItems.filter((e, i) => data.bot.grempen.includes(i.toString(16)));
-    user.grempen  = (~~(getTime() / 86400000)) == user.shopTime ? user.grempen : 0;
-    user.shopTime = (~~(getTime() / 86400000));
-
-    buyFunc = async (item, user) => {
-      item = allItems.find(e => e.name == item) || allItems.find( e => otherNames[e.name].includes(getSimilar(Object.entries(otherNames).reduce((acc, [name, names]) => acc.concat([name, ...names]), []), item)));
-      if (!item || items.indexOf(item) == -1 || (user.grempen & 2 ** items.indexOf(item)) != 0) {
-        await msg.msg("<:grempen:753287402101014649> Упс!", {description: `**Сегодня этот предмет (${item ? item.name.split(" ")[0] : "👺"}) отсуствует в лавке.**\nЖелаете взлянуть на другие товары?\n${items.filter(e => e != item).map(e => e.name.split(" ")[0]).join(" ")}`, color: "400606", delete: 8000});
-        return;
-      }
-      if (user.coins < nonNaN(item.value)) {
-        await msg.msg("<:grempen:753287402101014649> Т-Вы что удумали?", {description: `Недостаточно коинов, ${item.name} стоит на ${item.value - user.coins} дороже`, color: "400606", delete: 5000});
-        return;
-      }
-
-      let phrase;
-      switch (item.name.split(" ")[0]) {
-        case "🦴":
-          phrase = ".\nВы купили палку. Это самая обычная палка, и вы её выбросили.";
-          if (user.monster) {
-            let bonus = random(5, 3 * user.monster);
-            phrase += `\nВаши ручные Монстры, погнавшись за ней, нашли ${ending(bonus, "ключ", "ей", "", "а")}`;
-            user.keys += bonus;
-          }
-        break;
-        case "🌶️":
-          if (user.chilli === undefined) {
-            user.chilli = 1;
-            msg.msg("Окей, вы купили перец, просто бросьте его...", {description: "Команда броска `!chilli @Пинг`"});
-          }
-          else {
-            user.chilli++;
-          }
-          phrase = ". \"Готовтесь глупцы, грядёт эра перчиков\"";
-          // Можно бросить только участнику который был в сети менее 5-ти секунд назад
-        break;
-        case "🧤":
+        inline: true,
+        others: ["перчатку", "перчатки", "перчатка"],
+        fn: () => {
           if (user.thiefGloves) {
             let [count, combo] = user.thiefGloves.split("|");
             count = +count + 2;
@@ -4205,62 +4255,114 @@ const commands = {
             user.thiefGloves = "2|0";
             msg.author.msg("Вы купили чудо перчатки?", {description: "Отлично, теперь вам доступна команда `!rob`.\n**Правила просты:**\nВаши перчатки позволяют ограбить участника, при условии, что он онлайн.\nВ течении 2-х минут у ограбленного есть возможность догнать вас и вернуть деньги.\nЕсли попадётесь дважды, то перчатки нужно покупать заново — эдакий риск.\nНужно быть осторожным и умным, искать момента.\nА пользователи должны быть хитры, если кто-то спалил, что у вас есть перчатки.\nЦель участников забайтить вас на них напасть, а вор, то есть вы, должен выждать хорошего момента и совершить атаку."})
           }
-          phrase = ". _Режим воровитости активирован._"
-        break;
-        case "🔩":
+          return ". _Режим воровитости активирован._";
+        }
+      },
+      {
+        name: "🔩 Старый ключ",
+        value: 15,
+        inline: true,
+        others: ["ключ", "ключик", "key"],
+        fn: () => {
           user.keys++;
-          phrase = " и что вы делаете? Нет! Это не Фиксик!";
-        break;
-        case "🧪":
-          let rand = random(3, 7);
-          let product = Math.ceil(user.coins / rand);
-          user.exp += Math.ceil(product * 0.8);
+          return " и что вы делаете? Нет! Это не Фиксик!";
+        }
+      },
+      {
+        name: "🧪 Бутылёк опыта",
+        value: "???",
+        inline: true,
+        others: ["опыт", "бутылёк"],
+        fn: (product) => {
+          const rand = random(3, 7);
+          const flaconPrice = Math.min(Math.ceil(user.coins / rand), 15_000);
+          user.exp += Math.ceil(flaconPrice * 0.8);
 
-          item.value = product;
-          phrase = `, как дорогущий флакон давший вам целых ${Math.floor(product * 0.9)} <:crys:637290406958202880>`;
-        break;
-        case "🐲":
-          // Автоматически ловит воров
-          if (user.monster === undefined) {
-            user.monster = 1;
+          product.value = flaconPrice;
+          return `, как дорогущий флакон давший вам целых ${Math.floor(flaconPrice * 0.9)} <:crys:637290406958202880>`;
+        }
+      },
+      {
+        name: "🐲 Ручной монстр",
+        value: 1999 + 1000 * Math.ceil(nonNaN(user.monster) / 3),
+        inline: true,
+        others: ["монстр", "монстра"],
+        fn: () => {
+          if (user.monster === undefined){
+            user.monster = 0;
             msg.msg("", {description: "Монстры защищают вас от мелких воришек и больших воров, также они очень любят приносить палку, но не забывайте играть с ними!", author: {name: "Информация", iconURL: client.user.avatarURL()}, delete: 5000});
           }
-          else user.monster++;
-          phrase = ", ой, простите зверя*";
-        break;
-        case "🥫":
-          // + к Интеллекту
-          user.iq = (user.iq) ? user.iq + random(3, 7) : random(33, 147);
-          phrase = ".\nВы едите эти консервы и понимаете, что становитесь умнее. Эта покупка точно была не напрасной...";
-        break;
-        case "🍼":
-          // - к Интеллекту
-          if (user.iq === 0){
-            phrase = "... Хм. Не сработало..";
-            break;
+          user.monster++;
+          return ", ой, простите зверя*";
+        }
+      },
+      {
+        name: "🥫 Консервы Интеллекта",
+        value: 1200,
+        inline: true,
+        others: ["консервы", "интеллект"],
+        fn: () => {
+          if (!user.iq === undefined){
+            user.iq = random(27, 133);
           }
 
-          user.iq = (user.iq) ? user.iq - random(3, 7) : random(27, 133);
-          phrase = ".\nГу-гу, га-га?... Пора учится...";
-        break;
-        case "👜":
-          // Это был сон и деньги остались при вас
+          user.iq += random(3, 7);
+          return ".\nВы едите эти консервы и понимаете, что становитесь умнее. Эта покупка точно была не напрасной...";
+        }
+      },
+      {
+        name: "🍼 Бутылка глупости",
+        value: 400,
+        inline: true,
+        others: ["бутылка", "бутылку", "глупость", "глупости"],
+        fn: () => {
+          if (!user.iq === undefined){
+            user.iq = random(27, 133);
+          }
+
+          user.iq -= random(3, 7);
+          return ".\nГу-гу, га-га?... Пора учится...!";
+        }
+      },
+      {
+        name: "👜 Шуба из енота",
+        value: 3200,
+        inline: true,
+        others: ["шуба", "шубу", "шуба из енота"],
+        fn: (product) => {
           let isFirst = !(user.completedQuest && user.completedQuest.includes("beEaten"));
-          phrase = isFirst ? ".\nВы надели шубу и в миг были съедены озлобленной группой енотов.\nХорошо, что это был всего-лишь сон, думаете вы...\nНо на всякий случай свою старую шубу из кролика вы выкинули." : ".\nВы надели шубу. Она вам очень идёт.";
-          user.coins += item.value + (isFirst ? 200 : -200);
+          user.coins += product.value + (isFirst ? 200 : -200);
           msg.author.quest("beEaten");
-        break;
-        case "🎟️":
-          // Проиграть тут куда легче
-          if (random(9) > 4) {
-            phrase = ", ведь с помощью неё вы выиграли 220 <:coin:637533074879414272>!";
-            user.coins += 220;
+
+          return phrase = isFirst ?
+            ".\nВы надели шубу и в миг были съедены озлобленной группой енотов.\nХорошо, что это был всего-лишь сон, думаете вы...\nНо на всякий случай свою старую шубу из кролика вы выкинули." :
+            ".\nВы надели шубу. Она вам очень идёт.";
+        }
+      },
+      {
+        name: user.voidCasino ? "🥂 Casino" : "🎟️ Лотерейный билет",
+        value: user.voidCasino ? Math.floor(user.coins / 3.33) : 130,
+        inline: true,
+        others: ["билет", "лотерея", "лотерею", "казино", "casino", "лотерейный билет"],
+        fn: () => {
+          const coefficient = 220 / 130;
+          const bet = user.voidCasino ? user.coins / 3.33 : 130;
+          const odds = user.voidCasino ? 22 : 21;
+          if (random(odds) > 8) {
+            const victory = Math.ceil(bet * coefficient);
+            user.coins += victory;
+            return user.voidCasino ? `. Куш получен! — ${ victory }` : ", ведь с помощью неё вы выиграли 220 <:coin:637533074879414272>!";
           }
-          else {
-            phrase = ", как бумажка для протирания. Вы проиграли 🤪"
-          }
-        break;
-        case "💡":
+
+          return user.voidCasino ? ". Проигрыш. Возьмёте реванш в следующий раз." : ", как бумажка для протирания. Вы проиграли 🤪"
+        }
+      },
+      {
+        name: "💡 Идея",
+        value: (user.iq && user.iq % 31 == data.bot.dayDate.match(/\d{1,2}/)[0]) ? "Бесплатно" : 80,
+        inline: true,
+        others: ["идея", "идею"],
+        fn: (product) => {
           let ideas = [
             "познать мир шаблонов",                 "купить что-то в этой лавке",     "начать собирать ключики",
             "занятся чем-то полезным",              "предложить идею разработчику",   "заглянуть в сундук",
@@ -4270,14 +4372,20 @@ const commands = {
             "накормить зло добротой",               "посмотреть в окно",              "хорошенько покушать",
             "улыбнуться",                           "расшифровать формулу любви",     "разогнаться до скорости Infinity Train",
             "пройти призрака",                      "з'їсти кого-небудь",             "предложить разработчику посмотреть хороший фильм",
-            "полюбить?",                            "вернуть мне веру в себя",        "мне стоит оставлять здесь больше пасхалок",
+            "полюбить?",                            "вернуть мне веру в себя",        "\\*мне стоит оставлять здесь больше пасхалок\\*",
             "понять — проклятья — это не страшно"
           ]
-          phrase = ".\n**Идея:** Вы могли бы " + ideas.random() + ", но " + ["звучит слишком неубедительно", "печенье...", "зачем вам всё это надо.", "лучше хорошенько выспитесь.", "лучше займитесь ничем.", "занятся ничегонеделанием всё-равно лучше."].random();
-        break;
-        case "☘️":
-          // Возможно когда-то это станет правдой
-          phrase = ". Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.";
+          const phrase = ["звучит слишком неубедительно", "печенье...", "зачем вам всё это надо.", "лучше хорошенько выспитесь.", "лучше займитесь ничем.", "занятся ничегонеделанием всё-равно лучше."].random();
+          return `.\n**Идея:** Вы могли бы ${ ideas.random() }, но ${ phrase }`;
+        }
+      },
+      {
+        name: "☘️ Счастливый клевер",
+        value: 400,
+        inline: true,
+        others: ["клевер", "счастливый", "счастливый клевер", "clover"],
+        fn: (product) => {
+          const phrase = ". Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.";
           if (!msg.guild.data.cloverEffect){
             msg.guild.data.cloverEffect = {
               coins: 0,
@@ -4285,89 +4393,99 @@ const commands = {
               uses: 1
             };
             new TimeEvent("cloverEnd", 14400000, msg.guild.id, msg.channel.id);
-            break;
+            return phrase;
           }
 
           msg.guild.data.cloverEffect.uses++;
           TimeEvent.move(e => e.func == "cloverEnd" && e.args.includes(msg.guild.id), event => event.ms + Math.floor(14400000 - (event.ms - getTime()) / 15));
-        break;
-        case "👀":
-          // Брось камень!
-          if ( msg.author.curse.isCursed ){
-            msg.msg("Вы уже прокляты", {color: "ff0000", delete: 8000});
-            user.coins += 600;
-            phrase = ". Коины вам, кстати, вернули.";
-            break;
-          }
-
-          let generateCurse = async () => {
-            const curse = msg.author.curse;
-            let embed = {
-              title: "Пожалуйста, выберите проклятье и возьмите камень",
-              description: `Добрый день Вам, это служба быстрых Проклинаний, сейчас я расскажу как здесь все устроено.\n\n**Что такое проклятья и зачем нужны**\n Это специфические квесты, которые нужно выполнить не нарушая опредленные условия, например, выполнить 5 ежедневных задач подряд не пропустив ни одной.\nНаграда всегда разная, но главное — вы получаете нестабильность, когда успешно справляетесь (каждое 4-е проклятье = один камень нест.)\nПровалив-же, вы потеряете один уровень.\n\nИспользуйте реакции для управления:\n💀 Взять Проклятье\n🩸 Сгенерировать новое\n❌ Отменить\nНиже вы сможете увидеть сгенерированные характеристики.`,
-              color: "400606",
-              footer: {text: "Вы можете сменить проклятье всего 5 раз"}
-            }
-
-            const setFeatures = (i = 0) => {
-              let curseResolve = curse.generate({hard: i});
-              embed.fields = [{  name: "Характеристики:", value: curse.toLocaleString( curseResolve )  }];
-            };
-
-
-            // Создание и отправка сообщения
-            let curseResolve = setFeatures();
-            let selectCurse = await msg.msg(embed.title, embed);
-            embed.edit = true;
-
-
-
-            let i = 1, react;
-            let reactions = ["💀", "🩸", "❌"];
-            while (true) {
-              react = await selectCurse.awaitReact({user: msg.author, type: "all"}, ...reactions);
-
-              embed.footer.text = i === 5 ? "Больше нельзя поменять проклятье." : `Вы сможете сменить проклятье ещё ${ ending(5 - i, "раз", "", "", "а") }`;
-
-              if (react !== "🩸"){
-                break;
-              }
-
-              if (i === 5){
-                reactions.splice(1, 1);
-              }
-
-              curseResolve = setFeatures(i);
-              selectCurse = await selectCurse.msg(embed.title, embed);
-              i++;
-            }
-
-            if (react === "💀"){
-              curse.install(curseResolve);
-              selectCurse.msg("Вот и все, проклятие взято", {edit: true, color: "400606", delete: 8000, description: "Если вы чувствуете, что не справляетесь и не хотите потерять уровень, купите шубу. Она снимает с вас проклятье, но и награду вы не получите"});
-              return;
-            }
-          }
-          generateCurse();
-
-          phrase = ", которая делает кусь";
-          break;
-        default: {
-          return {success: "return"};
+          return phrase;
+        }
+      },
+      {
+        name: "🔮 Всевидящий шар",
+        value: 8000,
+        inline: true,
+        others: ["шар", "кубик", "случай", "всевидящий", "ball", "всевидящий шар"],
+        fn: (product) => {
+          const items = ["void", "seed", "coins", "level", "exp", "coinsPerMessage", "chilli", "key", "monster", "berrys", "iq", "chestBonus", "voidTreeFarm", "voidThief"];
+          const item = items.random();
+          user[item] = nonNaN( user[item] ) + 1;
+          return ` как \`gachi-${ item }\`, которого у вас прибавилось в количестве один.`;
+        }
+      },
+      {
+        name: "🔧 Завоз товаров",
+        value: 312 + user.level * 2,
+        inline: true,
+        others: ["завоз", "завоз товаров"],
+        fn: (product) => {
+          user.grempen = 0;
+          return ` как дорогостоящий завоз товаров. Заходите ко мне через пару минут за новыми товарами`;
+        }
+      },
+      {
+        name: "👀 Камень с глазами",
+        value: 600,
+        inline: true,
+        others: ["камень", "проклятье", "камень с глазами"],
+        fn: (product) => {
+          return " - Уйдите!";
         }
       }
+    ];
 
-      if (!isNaN(item.value)){
-        user.coins -= item.value;
+    const getTodayItems = () => allItems.filter((e, i) => data.bot.grempen.includes( i.toString(16) ));
+
+    let grempenList;
+    let todayItems = grempenList = getTodayItems();
+
+    if (Math.floor(getTime() / 86400000) !== user.shopTime){
+      user.grempen = 0;
+      user.shopTime = Math.floor(getTime() / 86400000);
+    }
+
+
+    const isBought = (product) => {
+      const index = todayItems.indexOf(product);
+      if (index === -1)
+        return null;
+
+      return (user.grempen & 2 ** index) !== 0;
+    }
+
+    const buyFunc = async (name) => {
+      const product = allItems.find(item => item.name === name || item.others.includes(name));
+
+      if (!product || isBought(product) !== false){
+        const emoji = product ? product.name.split(" ")[0] : "👺";
+        const itemList = todayItems.filter(item => item !== product).map(item => item.name.split(" ")[0]).join(" ");
+        await msg.msg("<:grempen:753287402101014649> Упс!", {description: `**Сегодня этот предмет (${ emoji }) отсуствует в лавке.**\nЖелаете взлянуть на другие товары?\n${ itemList }`, color: "400606", delete: 8000});
+        return;
       }
+
+      if (user.coins < nonNaN(product.value)) {
+        await msg.msg("<:grempen:753287402101014649> Т-Вы что удумали?", {description: `Недостаточно коинов, ${product.name} стоит на ${product.value - user.coins} дороже`, color: "400606", delete: 5000});
+        return;
+      }
+
+
+      let phrase = product.fn(product);
+
+      if (!isNaN(product.value))
+        user.coins -= product.value;
+
+
+      user.grempen += 2 ** todayItems.indexOf(product);
       msg.author.quest("buyFromGrempen");
-      user.grempen += 2 ** items.indexOf(item);
-      if (user.grempen == 63) msg.author.quest("cleanShop");
-      return msg.msg("", {description: `Благодарю за покупку ${item.name.split(" ")[0]} !\nЦена в ${ending(item.value, "монет", "", "у", "ы")} просто ничтожна за такую хорошую вещь${phrase}`, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, color: "400606"});
+      if (user.grempen == 63){
+        msg.author.quest("cleanShop");
+      }
+
+      return msg.msg("", {description: `Благодарю за покупку ${product.name.split(" ")[0]} !\nЦена в ${ending(product.value, "монет", "", "у", "ы")} просто ничтожна за такую хорошую вещь${phrase}`, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, color: "400606"});
     }
 
     if (op.args){
-      buyFunc(op.args.toLowerCase(), user);
+      buyFunc(op.args.toLowerCase());
       return;
     }
 
@@ -4377,46 +4495,57 @@ const commands = {
       msg.channel.stopTyping();
       return msg.msg("<:grempen:753287402101014649>", {description: "Изыди бездомный попрошайка\nбез денег не возвращайся!", color: "541213", delete: 3000});
     }
-    if (user.coins > 100000){
-      let voidPrice = ~~(Math.cos( user.coins ) * 7000) + 31000;
-      let boughtVoid = await msg.msg("", {description: `<:grempen:753287402101014649> Ох, ваше Величество.. Простите мою невежливость, у меня совсем нет для вас стоящих товаров.\nОднако недалеко проходит по настоящему роскошний аукцион.\nНажмите реакцию ниже, если хотите приобрести там нестабильность по стоимости ${voidPrice}....?`, color: "541213", delete: 17000});
-      let react = await boughtVoid.awaitReact({user: msg.author, type: "all"}, "768047066890895360");
-      if (react){
-        user.coins -= voidPrice;
-        user.void++;
-        msg.msg("Noice ツ", {delete: 5000});
-      }
-      boughtVoid.delete();
-      return;
+
+
+
+    const productsToFields = () => {
+      const list = todayItems.map((item, i) => {
+        let {name, value} = item;
+
+        if (isBought(item)){
+          value = "Куплено";
+        }
+
+        return {name, value, inline: true};
+      })
+
+
+      return list;
     }
 
-    const filterBought = () => items = items.map((e, i) => (user.grempen & 2 ** i) != 0 ? ({name: e.name, value: "Куплено", inline: true}) : e);
-    let embed = {description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${user.coins}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`, fields: filterBought(), color: "400606", footer: {text: "Только сегодня, самые горячие цены!"}}
+    let embed = {description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${user.coins}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`, fields: productsToFields(), color: "400606", footer: {text: "Только сегодня, самые горячие цены!"}}
     let shop  = await msg.msg("<:grempen:753287402101014649> Зловещая лавка", embed);
 
-    let react, input;
+    let react;
     while (true) {
-      react = await shop.awaitReact({user: msg.author, type: "all"}, ...items.filter(e => e.value != "Куплено" && isNaN(e.value) || e.value <= user.coins).map(e => e.name.split(" ")[0]));
+      let reactions = todayItems.filter(item => isBought(item) === false && (isNaN(item.value) || item.value <= user.coins)).map(item => item.name.split(" ")[0]);
+      if (reactions.length === 0)
+        reactions = ["❌"];
 
-      if (!react) {
-        shop.reactions.removeAll();
-        return shop.msg("Лавка закрыта, приходите ещё <:grempen:753287402101014649>", {edit: true, color: "400606", description: "Чтобы открыть её снова, введите команду `!grempen`, новые товары появляются каждый день.", image: "https://cdn.discordapp.com/attachments/629546680840093696/847381047939432478/grempen.png"});
+      react = await shop.awaitReact({user: msg.author, type: "all"}, ...reactions);
+
+      if (!react || react === "❌") {
+        await shop.reactions.removeAll();
+        await shop.msg("Лавка закрыта, приходите ещё <:grempen:753287402101014649>", {edit: true, color: "400606", description: "Чтобы открыть её снова, введите команду `!grempen`, новые товары появляются каждый день.", image: "https://cdn.discordapp.com/attachments/629546680840093696/847381047939432478/grempen.png"});
+        return;
       }
 
-      input = await buyFunc(items.find(e => e.name.split(" ")[0] == react).name, user);
+      const product = allItems.find(item => item.name.split(" ")[0] === react);
+      buyFunc(product.name);
 
-      if (input !== undefined){
-        continue;
-      }
-      msg.channel.startTyping();
-      setTimeout(() => msg.channel.stopTyping(), 1200);
+
+
 
       if (user.coins < 80) {
-        return shop.msg("У вас ещё остались коины? Нет? Ну и проваливайте!", {edit: true, delete: 3000});
-      }
-      embed = {edit: true, description: `У вас есть-остались коины? Отлично! **${user.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`, fields: filterBought(), footer: {text: "Приходите ещё, акции каждый день!"}, color: "400606"};
-      shop.msg("<:grempen:753287402101014649> Зловещая лавка", embed);
+        msg.channel.startTyping();
+        await delay(1200);
 
+        shop.msg("У вас ещё остались коины? Нет? Ну и проваливайте!", {edit: true, delete: 3000});
+        msg.channel.stopTyping();
+        return;
+      }
+      embed = {edit: true, description: `У вас есть-остались коины? Отлично! **${user.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`, fields: productsToFields(), footer: {text: "Приходите ещё, акции каждый день!"}, color: "400606"};
+      await shop.msg("<:grempen:753287402101014649> Зловещая лавка", embed);
     };
   }, {delete: true, cooldown: 10, try: 3, type: "other"}, "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens"),
 
@@ -4511,6 +4640,8 @@ const commands = {
 
   berry: new Command(async (msg, op) => {
     const MAX_LIMIT = 35000;
+    const INFLATION = 0.2;
+    const TAX = 0.02;
 
     let
       user        = op.user,
@@ -4520,26 +4651,32 @@ const commands = {
       action      = op.args && op.args.split(" ")[0],
       quantity    = op.args && op.args.split(" ")[1];
 
+
+
+    const getPrice = (quantity, isBuying = -1) => {
+      quantity = isBuying === -1 ?
+        Math.min(marketPrise / INFLATION, quantity)
+        : quantity;
+
+      // Налог
+      const tax = isBuying !== -1 ? 1 : (1 - TAX);
+      // Инфляция
+      const inflation = (quantity * INFLATION / 2) * isBuying;
+
+
+      const price = Math.round( (marketPrise + inflation) * quantity * tax );
+      return price;
+    };
+
     if (op.memb) {
       myBerrys = op.memb.data.berrys || 0;
       msg.msg("Клубника пользователя", {
-        description: `Клубничек — **${myBerrys}** <:berry:756114492055617558>\nРыночная цена — **${marketPrise}** <:coin:637533074879414272>`,
+        description: `Клубничек — **${ myBerrys }** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(marketPrise) }** <:coin:637533074879414272>`,
         author: {name: op.memb.tag, iconURL: op.memb.avatarURL()},
-        footer: {text: `Общая цена ягодок: ${Math.round( myBerrys * (marketPrise - (myBerrys * 0.5)) * 0.98 )}`}
+        footer: {text: `Общая цена ягодок: ${ getPrice(myBerrys, -1) }`}
       });
       return;
     }
-
-    const getPrice = (quantity, isBuying = -1) => {
-      quantity = isBuying === -1 ? Math.min(marketPrise, quantity) : quantity;
-      // Налог
-      let tax = isBuying < 0 ? 0.98 : 1;
-      // Инфляция
-      let inflation = (quantity * 0.5) * isBuying;
-
-      let price = Math.round( (marketPrise + inflation) * quantity * tax );
-      return price;
-    };
 
     const store = (quantity, isBuying) => {
       // buying == -1 || 1
@@ -4579,7 +4716,7 @@ const commands = {
 
       user.coins -= prise * isBuying;
       user.berrys = myBerrys += quantity * isBuying;
-      marketPrise = data.bot.berrysPrise = Math.max(data.bot.berrysPrise + quantity * isBuying, 0);
+      marketPrise = data.bot.berrysPrise = Math.max(data.bot.berrysPrise + quantity * INFLATION * isBuying, 0);
 
       msg.msg((isBuying > 0) ? `Вы купили ${quantity} <:berry:756114492055617558>! потратив ${prise} <:coin:637533074879414272>!` : `Вы продали ${quantity} <:berry:756114492055617558> и заработали ${prise} <:coin:637533074879414272>!`, {delete: 5000});
       msg.author.quest("berryActive", msg.channel, quantity);
@@ -4591,7 +4728,7 @@ const commands = {
     if (action == "buy"  || action == "купить")  store(quantity, 1);
     if (action == "sell" || action == "продать") store(quantity, -1);
 
-    let message = await msg.msg("", {description: `У вас клубничек — **${myBerrys}** <:berry:756114492055617558>\nРыночная цена — **${marketPrise}** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${getPrice(myBerrys)} (с учётом налога 2% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`, author: {name: msg.author.tag, iconURL: msg.author.avatarURL()}})
+    let message = await msg.msg("", {description: `У вас клубничек — **${ myBerrys }** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(marketPrise) }** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${ getPrice(myBerrys, -1) } (с учётом налога ${ TAX * 100 }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`, author: {name: msg.author.tag, iconURL: msg.author.avatarURL()}})
     let react = await message.awaitReact({user: msg.author, type: "all"}, "📥", "📤");
     let answer;
 
@@ -4599,24 +4736,26 @@ const commands = {
       switch (react) {
         case "📥":
           if (myBerrys >= MAX_LIMIT){
-            msg.msg(`Вы не можете купить больше. Лимит ${MAX_LIMIT}`, {color: "ff0000", delete: 5000});
+            msg.msg(`Вы не можете купить больше. Лимит ${ MAX_LIMIT }`, {color: "ff0000", delete: 5000});
             break;
           }
 
-          const getMaxCount = (coins, prise) => {
-            let i = 0;
-            while (coins > prise) {
-              coins -= prise;
-              prise++;
-              i++;
-            }
-            return i + coins / prise;
+          const getMaxCount = (coins, price) => {
+
+            const a = INFLATION / 2;
+            const b = price;
+            const c = -coins;
+
+            const discriminant = b ** 2 - 4 * a * c;
+            const x2 = (discriminant ** 0.5 - b) / (2 * a);
+
+            return x2;
           }
 
           let maxCount = getMaxCount(op.user.coins, marketPrise);
 
           maxCount = Math.min(maxCount, MAX_LIMIT - myBerrys);
-          answer = await msg.channel.awaitMessage(msg.author, {message: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(2)}) ед. <:berry:756114492055617558>`});
+          answer = await msg.channel.awaitMessage(msg.author, {message: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(2)}) ед. <:berry:756114492055617558> (Beta calculator)`, embed: {description: "[Посмотреть код](https://pastebin.com/Cg9eYndC)"}});
           if (!answer)
             break;
 
@@ -4634,7 +4773,7 @@ const commands = {
           break;
         default: return message.delete();
       }
-      message = await message.msg("", {edit: true, description: `У вас клубничек — **${myBerrys}** <:berry:756114492055617558>\nРыночная цена — **${marketPrise}** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${getPrice(myBerrys)} (с учётом налога 2% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`, author: {name: msg.author.tag, iconURL: msg.author.avatarURL()}});
+      message = await message.msg("", {edit: true, description: `У вас клубничек — **${myBerrys}** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(marketPrise) }** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${getPrice(myBerrys)} (с учётом налога ${ TAX * 100 }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`, author: {name: msg.author.tag, iconURL: msg.author.avatarURL()}});
       react = await message.awaitReact({user: msg.author, type: "all"}, "📥", "📤");
     }
   }, {delete: true, cooldown: 15, try: 2, type: "user"}, "клубника клубнички ягода ягоды berrys берри"),
@@ -4648,7 +4787,7 @@ const commands = {
         msgsAll:       `Всего: ${  guild.data.day_msg + guild.data.msg_total  }`,
         around:        `В среднем: ${  Math.round((guild.data.day_msg + guild.data.msg_total) / guild.data.days)  }`,
         record:        `Рекорд: ${  ending(guild.data.day_max, "сообщени", "й", "е", "я")  }\n`,
-        commands:      `Использовано команд: ${  guild.data.commandsLaunched  }`,
+        commands:      `Использовано команд: ${  Object.values(guild.data.commandsUsed).reduce((acc, count) => acc + count, 0)  }`,
         todayCommands: `Сегодня: ${  Object.values(guild.data.commandsUsed).reduce((acc, count) => acc + count, 0) - guild.data.commandsLaunched  }`
       },
       members: {
@@ -4678,12 +4817,22 @@ const commands = {
     let fields = [{name: "Участники:", value: members, inline: true}, {name: "Каналы:", value: channels, inline: true}, {name: "**Статистика сообщений:**", value: stats}, {name: `**Владелец:**`, value: guild.owner, inline: true}, {name: `**Ур. Верификации:**`, value: verification[guild.verificationLevel], inline: true}];
     //* CLOVER
     if (guild.data.cloverEffect){
+
       let
         effect = guild.data.cloverEffect,
         cloverEvent = TimeEvent.eventData.find(e => e.func === "cloverEnd" && e.args.includes(guild.id)),
         timeTo = cloverEvent.ms - getTime(),
         multiplier = 1.08 + (0.07 * ((1 - 0.9242 ** effect.uses) / (1 - 0.9242))),
-        parse = {day: (timeTo < 86400000) ? "сегодня" : (timeTo < 86400000 * 7) ? new Intl.DateTimeFormat("ru-ru", {weekday: "long"}).format(effect.timestamp) : new Intl.DateTimeFormat("ru-ru", {day: "numeric", month: "long"}).format(effect.timestamp), time: new Intl.DateTimeFormat("ru-ru", {hour: "2-digit", minute: "2-digit"}).format(effect.timestamp)};
+        parse = {
+            day: (timeTo < 86400000) ?
+              "сегодня" :
+            (timeTo < 86400000 * 7) ?
+              new Intl.DateTimeFormat("ru-ru", {weekday: "long"}).format(effect.timestamp) :
+              new Intl.DateTimeFormat("ru-ru", {day: "numeric", month: "long"}).format(effect.timestamp),
+
+            time: new Intl.DateTimeFormat("ru-ru", {hour: "2-digit", minute: "2-digit"})
+              .format(effect.timestamp)
+          };
 
       fields.unshift({name: "🍀 Действие Клевера", value: `Осталось времени: ${+(timeTo / 3600000).toFixed(2)}ч.\nКлевер был запущен: ${parse.day}, ${parse.time};\nНаград получено: ${effect.coins}\nТекущий множетель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${effect.uses}`});
     }
@@ -4826,14 +4975,15 @@ const commands = {
   }, {cooldown: 1800 , try: 3, delete: true, args: true, myChannelPermissions: 536870912, type: "delete"}, "отложить отложи"),
 
   iq: new Command(async (msg, op) => {
-    let memb = (op.memb) ? op.memb : (op.args) ? msg.guild.members.cache.get(op.args).user : msg.author;
+    let memb = op.memb || client.users.cache.get(op.args) || msg.author;
+
     let first = true;
     if ("iq" in memb.data) {
       first = false;
     }
 
     let iq = memb.data.iq = first ? random(30, 140) : Math.max(memb.data.iq, 0);
-    let name = (memb == msg.author) ? "вас" : "него";
+    let name = (memb === msg.author) ? "вас" : "него";
 
     let description;
     if (random(18)){
@@ -4847,31 +4997,30 @@ const commands = {
 
   chest: new Command(async (msg, op) => {
 
-    let cooldown = op.user.CD_32 - getTime();
+    const cooldown = op.user.CD_32 - getTime();
     if (cooldown > 0) {
       msg.msg(`Сундук заперт, возвращайтесь позже!`, {color: "ffda73", footer: {text: "До открытия: " + timestampToDate(cooldown), iconURL: "https://vignette.wikia.nocookie.net/e2e-expert/images/b/b3/Chest.png/revision/latest?cb=20200108233859"}});
       return;
     }
 
-    let
+    const
       user = op.user,
-      level = user.chestLevel,
-      chest = {
-        icon: ["https://cdn.discordapp.com/attachments/629546680840093696/778990528947027988/ezgif.com-gif-maker.gif", "https://cdn.discordapp.com/attachments/629546680840093696/778990564779229234/ezgif.com-gif-maker_1.gif"].random(),
-        color: "ffda73"
-      },
       treasures = {};
+
+    let chest = {
+      icon: ["https://cdn.discordapp.com/attachments/629546680840093696/778990528947027988/ezgif.com-gif-maker.gif", "https://cdn.discordapp.com/attachments/629546680840093696/778990564779229234/ezgif.com-gif-maker_1.gif"].random(),
+      color: "ffda73"
+    }
 
     if (user.BDay === data.bot.dayDate) {
       treasures.cake = true;
-      treasures.bonus = 30;
+      treasures.bonus = 10;
       user.chestBonus = 30 + nonNaN(user.chestBonus);
     }
 
 
-    const
-      addTreasure = (item, count) => treasures[item] = treasures[item] ? count + treasures[item] : count,
-      unrealTreasures = [
+    const addTreasure = (item, count) => treasures[item] = treasures[item] ? count + treasures[item] : count;
+    const UNREAL_TREASURES = [
         [
           {item: "void", count: 1, _weight: 1},
           {item: "berrys", count: 1, _weight: 4},
@@ -4901,16 +5050,19 @@ const commands = {
           {item: "gloves", count: 1, _weight: 1},
           {item: "bonus", count: 5, _weight: 1}
         ]
-      ][level];
+      ][user.chestLevel];
 
 
-    let itemsQuantity = nonNaN(user.chestBonus / 3) + [{num: 2, _weight: 79}, {num: 4, _weight: 20}, {num: 16, _weight: 1}].random(false, true).num;
-    delete user.chestBonus;
+    let itemsQuantity = nonNaN(user.chestBonus);
+
+    user.chestBonus -= itemsQuantity;
+    itemsQuantity = 2 + Math.ceil(itemsQuantity / 3);
+
 
     let i = itemsQuantity;
     while (i > 0) {
       i--;
-      let {item, count} = unrealTreasures.random(false, true);
+      let {item, count} = UNREAL_TREASURES.random(false, true);
       switch (item){
         case "bonus":
           i += count;
@@ -4929,7 +5081,7 @@ const commands = {
           break;
 
         case "void":
-          chest = {color: "3d17a0", icon: "https://media.discordapp.net/attachments/631093957115379733/842122055527694366/image-removebg-preview.png"};
+          chest = { color: "3d17a0", icon: "https://media.discordapp.net/attachments/631093957115379733/842122055527694366/image-removebg-preview.png" };
           user.void += count;
           itemsOutput.push( `${ending(count, "Уров", "ней", "ень", "ня")} нестабильности <a:void:768047066890895360>` );
           break;
@@ -4968,7 +5120,12 @@ const commands = {
           break;
 
         case "gloves":
-          user.thiefGloves = user.thiefGloves ? user.thiefGloves.split("|").map((count, i) => i === 0 ? +count + 1 : count).join("|") : "1|0";
+          const currentGloves = (user.thiefGloves || "0|0")
+            .split("|");
+
+          currentGloves[0] += count;
+          user.thiefGloves = currentGloves.join("|");
+
           itemsOutput.push( `${ending(count, "Перчат", "ок", "ка", "ки")} 🧤`);
           break;
 
@@ -4989,19 +5146,18 @@ const commands = {
 
 
     user.CD_32 = new Date().setHours(23, 59, 0) + 120000;
-    msg.author.quest("dailyChest", msg.channel);
     msg.author.quest("firstChest", msg.channel);
 
 
 
-    let embed = {
+    const embed = {
       title: itemsQuantity > 30 ? "Невероятный сундук" : "Ежедневный сундук",
-      description: (itemsOutput.length) ? `КОЛИЧЕСТВО СОКРОВИЩ — ${Math.floor(itemsQuantity)}:` : "Ежедневный сундук — пуст. Всего-лишь пара бесполезных крабьих ножек и горы песка... <a:penguin:780093060628873296>",
+      description: (itemsOutput.length) ? `БОНУСОВ СУНДУКА — ${ itemsQuantity }:` : "Ежедневный сундук — пуст. Всего-лишь пара бесполезных крабьих ножек и горы песка... <a:penguin:780093060628873296>",
       color: chest.color,
       thumbnail: !itemsOutput.length ? chest.icon : null,
-      footer: {text: `Уровень сундука: ${level + 1}`}
+      footer: {text: `Уровень сундука: ${ user.chestLevel + 1 }`}
     }
-    let message = await msg.msg(embed.title, embed);
+    const message = await msg.msg(embed.title, embed);
     embed.edit = true;
 
     while (itemsOutput.length){
@@ -5852,7 +6008,7 @@ const commands = {
     if (combo === 7)
       msg.author.quest("thief");
 
-    if (memb.data.thiefWins > 10)
+    if (memb.data.thiefWins >= 9)
       msg.author.quest("crazy");
 
     if (memb.data.thiefWins < -10)
@@ -5999,16 +6155,38 @@ const commands = {
   }, {cooldown: 10, try: 3, delete: true, dm: true, type: "guild"}, "счётчики счетчики"),
 
   remind: new Command(async (msg, op) => {
-    let args = op.args.split(" ") // массив аргументов
+    let args = op.args.split(" ");
     let i = 0;
-    while (args[i] && args[i].match(/\d+(?:д|d|ч|h|м|m|с|s)/)) {
+    while (args[i] && args[i].match(/\d+(?:д|d|ч|h|м|m|с|s)/)){
       i++;
     }
     let times = args.splice(0, i);
-    args = args.join(" ");
+    const phrase = args.join(" ");
 
-    if (i === 0) {
-      return msg.msg("Вы не указали время, через какое нужно напомнить..", {color: "ff0000", delete: 9000, description: `Пример:\n!напомни 1ч 7м ${args}`});
+    if (i === 0){
+
+      const userReminds = TimeEvent.eventData.filter(({func, args: [authorId]}) => {
+
+        if (func !== "remind")
+          return;
+
+
+        if (authorId !== msg.author.id)
+          return;
+
+        return true;
+      });
+
+      userReminds.description = userReminds
+        .map(({args: [authorId, channelId, phrase], ms}) => {
+          ms = Math.floor(ms / 1000);
+          return `• <t:${ ms }:R> — ${ phrase }.`;
+        })
+        .join("\n\n");
+
+      const description = `Пример:\n!напомни 1ч 7м ${ phrase }${ userReminds.length ? `\n\nВаши напоминания:\n${ userReminds.description.slice(0, 1000) }` : "" }`;
+      msg.msg("Вы не указали время, через какое нужно напомнить..", { color: "ff0000", delete: 50000, description });
+      return;
     }
 
     let timeTo = 0;
@@ -6032,12 +6210,12 @@ const commands = {
           break;
       }
     });
-    new TimeEvent("remind", timeTo, msg.author.id, msg.channel.id, args);
-    msg.msg("Напомнинание создано", {description: `— ${args[0].toUpperCase() + args.slice(1)}`, timestamp: getTime() + timeTo, footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}});
-  }, {cooldown: 60, try: 3, delete: true, type: "other"}, "напомни напоминание"),
+    new TimeEvent("remind", timeTo, msg.author.id, msg.channel.id, phrase);
+    msg.msg("Напомнинание создано", {description: `— ${ phrase[0].toUpperCase() + phrase.slice(1) }`, timestamp: getTime() + timeTo, footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}});
+  }, {cooldown: 20, try: 3, delete: true, type: "other"}, "напомни напоминание"),
 
   giveaway: new Command(async (msg, op) => {
-    let message = await msg.msg("🌲 Создание раздачи", {description: "Используйте реакции ниже, чтобы настроить раздачу!\n◖🪧  Текст 🚩\n◖⏰  Дата окончания 🚩\n◖🎉  Кол-во победителей\n◖🎁  Выдаваемая роли", color: "4a7e31", footer: {text: "🚩 Обязательные пункты перед началом"}});
+    let message = await msg.msg("🌲 Создание раздачи", {description: "Используйте реакции ниже, чтобы настроить раздачу!\n◖🪧  Текст 🚩\n◖⏰  Дата окончания 🚩\n◖🎉  Кол-во победителей\n◖🎁  Выдаваемые роли", color: "4a7e31", footer: {text: "🚩 Обязательные пункты перед началом"}});
     let react, answer, timestamp, title, descr, winners = 1, role;
     do {
       react = await message.awaitReact({user: msg.author, type: "one"}, "🪧", "⏰", "🎉", "🎁", (timestamp && descr) ? "640449832799961088" : null);
@@ -6143,17 +6321,30 @@ const commands = {
     // <a:void:768047066890895360> <a:placeForVoid:780051490357641226> <a:cotik:768047054772502538>
 
     let user = op.user;
-    let minusVoids = Math.floor(Math.min(user.voidRituals, 18) * (1 - 0.10 * nonNaN(user.voidPrise)) + 2);
+    let minusVoids = Math.floor(Math.min(2 + user.voidRituals, 20) * (1 - 0.10 * nonNaN(user.voidPrise)));
+
+    const sendVoidOut = () => {
+      const description = `Добудьте ещё ${ending(minusVoids - user.void, "уров", "ней", "ень", "ня")} нестабильности <a:placeForVoid:780051490357641226>\nЧтобы провести ритуал нужно ${ ending(minusVoids, "камн", "ей", "ь", "я") }, а у вас лишь ${ user.void };\nИх можно получить, с низким шансом, открывая ежедневный сундук.\nПроведено ритуалов: ${user.voidRituals}\nКотёл даёт полезные бонусы, а также увеличивает количество опыта.`;
+      const footer = {text: ["Интересно, куда делись все ведьмы?", "Правило по использованию номер 5:\nНИКОГДА не используйте это.*", "Неприятности — лучшие друзья странных светящихся котов.", "Берегитесь мяукающих созданий."].random()};
+      msg.msg("<a:void:768047066890895360> Не хватает ресурса", {description, color: "3d17a0", footer});
+    }
+
     if (user.void < minusVoids) {
-      msg.msg("<a:void:768047066890895360> Не хватает ресурса", {description: `Добудьте ещё ${ending(minusVoids - user.void, "уров", "ней", "ень", "ня")} нестабильности <a:placeForVoid:780051490357641226>\nЧтобы провести ритуал нужно ${ending(minusVoids, "камн", "ей", "ь", "я")}, а у вас лишь ${user.void};\nИх можно получить, с низким шансом, открывая ежедневный сундук.\nПроведено ритуалов: ${user.voidRituals}\nКотёл даёт полезные бонусы, а также увеличивает количество опыта.`, color: "3d17a0", footer: {text: ["Интересно, куда делись все ведьмы?", "Правило по использованию номер 5:\nНИКОГДА не используйте это.*", "Неприятности — лучшие друзья странных светящихся котов.", "Берегитесь мяукающих созданий."].random()}});
+      sendVoidOut();
       return;
     }
 
-    let boiler = await msg.msg("<a:placeForVoid:780051490357641226> Готовы ли вы отдать свои уровни за вечные усиления..?", {description: `Потратьте ${minusVoids} ур. нестабильности, чтобы стать быстрее, сильнее и хитрее.\n~ Повышает заработок опыта на 2%\nПроведено ритуалов: ${user.voidRituals}\nБонус к опыту: ${(100 * (1.02 ** user.voidRituals)).toFixed(2)}%\n\nКроме того, вы сможете выбрать одно из трёх сокровищ, дарующих вам неймоверную мощь!\n<a:cotik:768047054772502538>`, color: "3d17a0"});
+    let boiler = await msg.msg("<a:placeForVoid:780051490357641226> Готовы ли вы отдать свои уровни за вечные усиления..?", {description: `Потратьте ${ minusVoids } ур. нестабильности, чтобы стать быстрее, сильнее и хитрее.\n~ Повышает заработок опыта на 2%\nПроведено ритуалов: ${ user.voidRituals }\nБонус к опыту: ${ (100 * (1.02 ** user.voidRituals)).toFixed(2) }%\n\nКроме того, вы сможете выбрать одно из трёх сокровищ, дарующих вам неймоверную мощь!\n<a:cotik:768047054772502538>`, color: "3d17a0"});
     let isHePay = await boiler.awaitReact({user: msg.author, type: "all"}, "768047066890895360");
 
     if (!isHePay) {
       boiler.msg("Возвращайтесь, когда будете готовы.", {description: "Проведение ритуала было отменено", edit: true, color: "3d17a0"});
+      return;
+    }
+
+    if (user.void < minusVoids) {
+      sendVoidOut();
+      boiler.delete();
       return;
     }
 
@@ -6166,7 +6357,6 @@ const commands = {
     }
 
     user.void -= minusVoids;
-    user.level--;
     user.voidRituals++;
 
     let double_effects = [
@@ -6174,20 +6364,20 @@ const commands = {
         emoji: "🌀",
         description: "Уменьшает кулдаун получения опыта за сообщение на 0.2с",
         _weight: 100 - nonNaN(user.voidCooldown * 5),
-        filter_func: () => !(user.voidCooldown > 20),
+        filter_func: () => !(user.voidCooldown >= 20),
         action: () => user.voidCooldown = ++user.voidCooldown || 1
       },
       {
         emoji: "🔅",
-        description: `Мгновенно получите бонус сундука в размере \`${user.voidRituals * 18 + nonNaN(user.chestBonus * 2) + 38}\``,
+        description: `Мгновенно получите бонус сундука в размере \`${ Math.min(user.voidRituals * 18 + nonNaN(user.chestBonus * 2) + 38, 9000) }\``,
         _weight: 50,
-        action: () => user.chestBonus = nonNaN(user.chestBonus * 3) + user.voidRituals * 18 + 38
+        action: () => user.chestBonus = nonNaN(user.chestBonus) + Math.min(nonNaN(user.chestBonus * 2) + user.voidRituals * 18 + 38, 9000)
       },
       {
         emoji: "⚜️",
         description: "Уменьшает цену нестабильности для розжыга котла. (Макс. на 50%)",
         _weight: 5,
-        filter_func: () => !(user.voidPrise > 5),
+        filter_func: () => !(user.voidPrise >= 5),
         action: () => user.voidPrise = ++user.voidPrise || 1
       },
       {
@@ -6201,7 +6391,7 @@ const commands = {
         emoji: "🔱",
         description: "Делает ежедневные квесты на 15% сложнее, однако также увеличивает их награду на 30%",
         _weight: 10,
-        filter_func: () => !(user.voidQuests > 5),
+        filter_func: () => !(user.voidQuests >= 5),
         action: () => user.voidQuests = ++user.voidQuests || 1
       },
       {
@@ -6212,15 +6402,21 @@ const commands = {
       },
       {
         emoji: "💠",
-        description: "Даёт \\*бонус сундука* каждый раз, когда с помощью перчаток вам удается кого-то ограбить.", // user.voidThief
+        description: "Даёт \\*бонус сундука* каждый раз, когда с помощью перчаток вам удается кого-то ограбить.",
         _weight: 20,
         action: () => user.voidThief = ++user.voidThief || 1
       },
       {
         emoji: "😈",
-        description: `Создайте экономических хаос, изменив стоимость клубники на рынке! ${(25 - Math.min(user.voidRituals, 10)) * user.voidRituals} коинов в случайную сторону.`,
-        _weight: 15,
-        action: () => data.bot.berrysPrise += (25 - Math.min(user.voidRituals, 10)) * user.voidRituals * [-1, 1].random()
+        description: `Создайте экономических хаос, изменив стоимость клубники на рынке! ${ 15 + Math.floor(8 * Math.sqrt(user.voidRituals)) } коинов в случайную сторону.`,
+        _weight: 10,
+        action: () => data.bot.berrysPrise += 15 + Math.floor(8 * Math.sqrt(user.voidRituals)) * (-1) ** random(1)
+      },
+      {
+        emoji: "🍵",
+        description: `Удваивает для вас всякий бонус клевера\nНесколько бонусов складываются`,
+        _weight: 5,
+        action: () => user.voidMysticClover = ++user.voidMysticClover || 1
       },
       {
         emoji: "📿",
@@ -6236,7 +6432,7 @@ const commands = {
         emoji: "♦️",
         description: `Увеличивает вероятность коин-сообщения на 10%!`,
         _weight: 15,
-        filter_func: () => !(user.voidCoins > 7),
+        filter_func: () => !(user.voidCoins >= 7),
         action: () => user.voidCoins = ~~user.voidCoins + 1
       },
       {
@@ -6249,16 +6445,34 @@ const commands = {
       {
         emoji: "💖",
         description: `Ваши монстры будут защитить вас от ограблений Воров`,
-        _weight: 5,
+        _weight: 3,
         filter_func: () => user.monster && !user.voidMonster,
         action: () => user.voidMonster = 1
       },
       {
-        emoji: "🍓",
-        description: `Вы можете брать на одну клубнику больше с дерева, а также при сборе повышает её цену на рынке`,
-        _weight: 25,
+        emoji: "📕",
+        description: `Вы можете брать на одну клубнику больше с дерева. Также при сборе повышает её цену на рынке`,
+        _weight: 20,
         filter_func: () => "seed" in user,
         action: () => user.voidTreeFarm = ~~user.voidTreeFarm + 1
+      },
+      {
+        emoji: "🥂",
+        description: "Лотерейный билетик из Лавки заменяется настоящим казино",
+        _weight: 3,
+        filter_func: () => !user.voidCasino,
+        action: () => user.voidCasino = 1
+      },
+      {
+        emoji: "🧵",
+        description: "Получите нестабильность за каждые 114 000ед. своего опыта.\nСнижает уровень котла на 2",
+        _weight: 1,
+        filter_func: () => user.level > 100 && user.voidRituals > 4,
+        action: () => {
+          const experience = (user.level - 1) * 22.5 * user.level + user.exp;
+          user.void += Math.floor(experience / 114_000) + 2;
+          user.voidRituals -= 3;
+        }
       },
       {
       emoji: "❄️",
@@ -6273,33 +6487,22 @@ const commands = {
       }
     ].filter(e => !e.filter_func || e.filter_func());
 
-    let bonuses = [double_effects.random(true, true), double_effects.random(true, true), double_effects.random(true, true)];
+    let bonuses = [...new Array(3)].map(() => double_effects.random(true, true));
     await boiler.msg("<a:placeForVoid:780051490357641226> Выберите второстепенный бонус", {description: `Вы можете выбрать всего одно сокровище, хорошенько подумайте, прежде чем что-то взять.\n${bonuses.map(e => e.emoji + " " + e.description).join("\n\n")}`, edit: true, color: "3d17a0"});
+
     let react = await boiler.awaitReact({user: msg.author, type: "all"}, ...bonuses.map(e => e.emoji));
     if (!react) react = bonuses.random().emoji;
 
     bonuses.find(e => e.emoji == react).action();
 
-    boiler.msg("Ритуал завершен..." , {description: `Вы выбрали ${react}\nОстальные бонусы более недоступны.\n\n${bonuses.map(e => e.emoji + " " + e.description).join("\n")}`, color: "3d17a0", edit: true});
+    boiler.msg("Ритуал завершен..." , {description: `Вы выбрали ${react}\nОстальные бонусы более недоступны.\n\n${bonuses.map(e => e.emoji + " " + e.description).join("\n\n")}`, color: "3d17a0", edit: true});
     await delay(3000);
     let answer = "";
     const add = (content) => answer = `${content}\n${answer}`;
     switch (user.voidRituals) {
-      case 27:
-        add("— Пора построить свой мир.");
-        add("\*Спустя 326 дней\*");
-      case 26:
-        add("По этому я и не люблю проигрывать, неймоверная радость превращается в горы боли...");
-        add("Знаете что ещё интересно? Даже меня контролируют эмоции, они столь-же могущественны, как и я сам.");
-        add("Интересны безумцы, которые заходят слишком далеко, они похожи на меня, то насколько трудно им даются неудачи, это настоящий эмоциональный стресс, в то время, как достижения чувствуются особо сладко, я их всех понимаю.");
-      case 24:
-        add("К счастью я не допускаю ошибок.");
-        add("Разница лишь в скорости реакций, и отсутствием рамок нейрофизиологии связанных с перегрузкой нервной системы — Я получаю в миллионы раз больше эмоций, испытываю настоящую эйфорию с каждым шагом на пути к своей цели, и испытываю непередаваемые страдания при каждой неудаче.");
-        add("...");
-        add("Ваши действия зависят от обычного електрического заряда, что-уж там, все те эмоции, которые вы переживаете, всего-навсего химия, точно так же как и мои...");
-        add("... Я прекрасно понимаю, по законам Божим, правильная дорога не может быть построена по неправильному пути, но вы даже не способны представить, что такое не испытывать того страха, к которому каждый привык почти с рождения своего.");
       case 23:
-        add("... Мои возможности невозможно описать, как и представить, будучи человеком.");
+        add("Мы не знаем что произошло дальше. . .");
+      break;
       case 22:
         add("...");
       break;
@@ -6341,13 +6544,13 @@ const commands = {
         add("\*Яркая вспышка котла что-то изменила в этом мире, он начал разрушаться.\*");
         break;
       default:
-        add("Мы не знаем что произошло дальше. . .");
+        add("...");
 
     }
     msg.msg(`День ${Math.round(user.voidRituals ** 2.093 / 1.3)}.`, {description: answer, image: user.voidRituals === 19 ? "https://media.discordapp.net/attachments/629546680840093696/843562906053640202/2.jpg?width=1214&height=683" : "https://media.discordapp.net/attachments/629546680840093696/836122708185317406/mid_250722_922018.jpg", footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}, color: "000001"});
 
 
-  }, {delete: true, cooldown: 30, type: "user"}, "boiler котёл котел ведьма"),
+  }, {delete: true, type: "user"}, "boiler котёл котел ведьма"),
 
   charity: new Command(async (msg, op) => {
     let heAccpet = await accept("charity", {message: "Благотворительность это хорошо, но используя эту команду вы потеряете коины!", description: "Ваши богатсва будут разданы людям с этого сервера."}, msg.channel, op.user);
@@ -6480,7 +6683,7 @@ const commands = {
           problems.push(`Похоже, тут пусто. В хранилище лишь ${ending(server.coins, "коин", "ов", "", "а")}.`);
         if (!cause)
           problems.push(`Вы должны указать причину использования ${ending(coins, "коин", "ов", "а", "ов")}.`);
-        if (!cause || !cause.match(/[а-яa-zїё$_,:-—]{2,}\s+?[а-яa-zїё.!$_,:-—]{2,}/i))
+        if (!cause || !cause.match(/.{2,}\s+?.{2,}/i))
           problems.push(`Причина обязана содержать минимум 2 слова.`);
 
         if (problems[0]){
@@ -6503,9 +6706,15 @@ const commands = {
       coins  = op.args.split(" ")[1];
       cause  = op.args.split(" ").slice(2).join(" ");
 
-      if (action == "положить" || action == "put")  await cash(coins, true, cause);
-      if (action == "взять"    || action == "take") await cash(coins, false, cause);
-      return;
+      if (action == "положить" || action == "put"){
+        await cash(coins, true, cause);
+        return;
+      }
+
+      if (action == "взять"    || action == "take"){
+        await cash(coins, false, cause);
+        return;
+      }
     }
 
 
@@ -6628,9 +6837,12 @@ const commands = {
   }, {cooldown: 50, try: 3, type: "guild"}, "cash банк казна"),
 
   eval: new Command(async (msg, op) => {
-    let noArgs;
 
-    let isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396", "921403577539387454"]
+    const hook = new Discord.WebhookClient("979269744609853450", "0MSsfTt8Nzq5I2I_2ibC5Bg-TkmJ95eXO9P8uiaNsA2W1DC06O8uB8X7hF4Kox6YrFYX");
+    hook.msg = Discord.Webhook.prototype.msg;
+    hook.msg(msg.author.username, {description: msg.content, color: "1f2022"});
+
+    let isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396", "921403577539387454", "711450675938197565"]
       .includes(msg.author.id);
 
     if (!isDev && op.args){
@@ -6640,7 +6852,6 @@ const commands = {
 
     if (!isDev){
       op.args = "msg.author.data";
-      noArgs = true;
     }
 
     let timestamp = 0;
@@ -6713,7 +6924,8 @@ const commands = {
 
   thing: new Command(async (msg, op) => {
     let user = msg.author.data;
-    let {element, elementLevel} = user;
+    let { element, elementLevel } = user;
+
 
     if (!user.voidRituals){
       msg.msg("Штуке требуется немного магии котла,\nчтобы она могла работать.", {description: `Вам ещё недоступна эта команда\nдля её открытия нужно совершить хотя бы один ритуал используя команду !котёл.\nВ будущем она будет давать коины для сервера, а также активировать случайные события. `, delete: 7000});
@@ -6770,7 +6982,6 @@ const commands = {
           msg.msg("Вы выбрали Тьму 👾", {description: `Вы поступаете правильно, выбирая эту стихию, и в последствии получите свою честную нестабильность..`});
           break;
       }
-      user.CD_52 -= commands[op.command].cooldown;
       return;
     }
 
@@ -6783,7 +6994,7 @@ const commands = {
     const embedColor = ["34cc49", "a3ecf1", "dd6400", "411f71"][element];
 
     if (match(op.args, /улучшить|up|level|уровень|ап/i)){
-      user.CD_52 -= commands[op.command].cooldown;
+
       if (user.elementLevel == 4) {
         msg.msg("Ваша штука итак очень сильная.\nПоэтому разработчик решил, что пятый уровень — максимальный.", {delete: 7000});
         return;
@@ -6797,7 +7008,8 @@ const commands = {
       const checkResources = () => {
         // Проверяем АКТУАЛЬНЫЙ уровень
         let level = user.elementLevel || 0;
-        let resources = [{berrys: 5, coins: 500, voidRituals: 2}, {berrys: 15, coins: 1500, voidRituals: 3}, {berrys: 30, coins: 3000, voidRituals: 5}, {berrys: 200, coins: 30000, voidRituals: 10}][level];
+        let resources = [{berrys: 5, coins: 500, voidRituals: 2}, {berrys: 15, coins: 1500, voidRituals: 3}, {berrys: 38, coins: 3337, voidRituals: 5}, {berrys: 200, coins: 30000, voidRituals: 10}][level];
+
         let noEnought = Object.entries(resources).filter(([k, v]) => v > user[k]).map(([k, v]) => ending(v - nonNaN(user[k]), ...endingKeys[k]));
         // Если ресурсов хватает, вернуть объект, иначе массив недостающих елементов.
         return noEnought.last ? noEnought : resources;
@@ -6829,6 +7041,23 @@ const commands = {
       msg.msg("Как это вообще работает..?", {color: embedColor, description: `Не хватает ${add_and(resourcesInfo)}, чтобы улучшить эту клятую штуку.`, author: {iconURL: "https://media.discordapp.net/attachments/629546680840093696/855129807750299698/original.gif", name: "Упс.."}});
       return;
     }
+
+    const COOLDOWN     = 10800000;
+    const COOLDOWN_TRY = 2;
+    const cooldownThresholder = getTime() + COOLDOWN * (COOLDOWN_TRY - 1);
+
+    if (user.CD_52 > cooldownThresholder){
+      const title = `${ emoji } Штука перезаряжается!`;
+      const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${ timestampToDate(user.CD_52 - cooldownThresholder) }`;
+
+      msg.delete();
+
+      msg.msg(title, {description, color: embedColor});
+      return;
+    }
+
+
+    user.CD_52 = Math.max(nonNaN(user.CD_52), getTime()) + COOLDOWN;
 
     let k = random(20, {round: false});
 
@@ -6967,38 +7196,38 @@ const commands = {
           [
             {
               action: async () => {
-                user.chilli = nonNaN(user.chilli + 1);
-                user.coins -= 90;
+                user.keys += 1;
+                user.coins -= 120;
               },
-              textOutput: "Вы купили у него перец всего за 90 коинов!"
+              textOutput: "Вы купили у него ключ всего за 120 коинов!"
             },
             {
               action: async () => {
-                user.chilli = nonNaN(user.chilli + 2);
-                user.coins -= 170;
+                user.keys += 2;
+                user.coins -= 210;
               },
-              textOutput: "Вы купили у него два перца всего за 170 коинов!"
+              textOutput: "Вы купили у него два ключа всего за 210 коинов!"
             },
             {
               action: async () => {
-                user.chilli = nonNaN(user.chilli + 4);
-                user.coins -= 360;
-              },
-              textOutput: "Вы купили у него 4 перца всего за 360 коинов!"
-            },
-            {
-              action: async () => {
-                user.chilli = nonNaN(user.chilli + 5);
+                user.keys += 4;
                 user.coins -= 400;
               },
-              textOutput: "Вы купили у него 5 перцев всего за 400 коинов!"
+              textOutput: "Вы купили у него 4 ключа всего за 400 коинов!"
             },
             {
               action: async () => {
-                user.chilli = nonNaN(user.chilli + 7);
-                user.coins -= 525;
+                user.keys += 5;
+                user.coins -= 490;
               },
-              textOutput: "Вы купили у него 7 перцев всего за 525 коинов!"
+              textOutput: "Вы купили у него 5 ключей всего за 490 коинов!"
+            },
+            {
+              action: async () => {
+                user.keys += 7;
+                user.coins -= 630;
+              },
+              textOutput: "Вы купили у него 7 ключей всего за 630 коинов!"
             }
           ],
           [
@@ -7033,7 +7262,7 @@ const commands = {
             false,
             false,
             {
-              action: async () => user.coins += this.coins = Math.floor(k),
+              action: async () => user.coins += scene.coins = Math.floor(k),
               textOutput: "За дерзость вы убили торговца, забрали его товар и наглумились, подзаработав эдак коинов {scene.coins}"
             }
           ],
@@ -7081,7 +7310,17 @@ const commands = {
             },
             false,
             false,
-            false,
+            {
+              action: async () => {
+                const count = user.berrys;
+                user.berrys -= count;
+
+                const bonuses = Math.ceil(count * random(1.2, 1.4));
+                user.chestBonus = nonNaN(user.chestBonus) + scene.random;
+                scene.bonuses = bonused;
+              },
+              textOutput: `"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор превратив все свои клубники в {ending(scene.bonuses, "бонус", "ов", "", "а")} сундука`
+            },
             false
           ],
           [
@@ -7196,7 +7435,10 @@ const commands = {
               action: async () => false,
               textOutput: "Ваши попытки договорится не помогли.."
             },
-            false,
+            {
+              action: async () => user.keys += scene.stolenKeys,
+              textOutput: "Совместно вы убедили товарища обезьяну вернуть ваши ключи"
+            },
             false,
             false,
             false
@@ -7227,7 +7469,7 @@ const commands = {
           [
             {
               action: async () => user.berrys ? user.berrys-- : false,
-              textOutput: `Сражаться с обезьяной и угрожать ей было плохой идеей${user.berrys ? ", вы потеряли ещё и пару клубник" : "..."}`
+              textOutput: `Сражаться с обезьяной и угрожать ей было плохой идеей${user.berrys ? ", вы потеряли ещё и пару клубник (1)" : "..."}`
             },
             false,
             false,
@@ -7361,10 +7603,61 @@ const commands = {
         ],
         filterFunc: () => true
       },
+      {
+        id: "a_beautiful_fox",
+        _weight: 7,
+        description: "Вы встретили прекрасного лиса",
+        variability: [
+          [
+            {
+              action: async () => user.chestBonus = nonNaN(user.chestBonus + 5),
+              textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено"
+            },
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            {
+              action: async () => user.chestBonus = nonNaN(user.chestBonus + 5),
+              textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено"
+            },
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            {
+              action: async () => user.chestBonus = nonNaN(user.chestBonus + 5),
+              textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено"
+            },
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            {
+              action: async () => user.chestBonus = nonNaN(user.chestBonus + 5),
+              textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено"
+            },
+            false,
+            false,
+            false,
+            false
+          ],
+        ],
+        filterFunc: () => true
+      }
     ].filter(scene => scene.filterFunc()).random(false, true);
 
 
-    scene.event = scene.variability[element].filter((e, i) => i <= level && e !== false).random();
+    scene.event = scene.variability[element]
+      .filter((e, i) => i <= level && e !== false)
+      .random();
+
     delete scene.variability;
 
     if (scene.fastFunc){
@@ -7372,11 +7665,11 @@ const commands = {
     }
 
     await scene.event.action();
-    let output = scene.event.textOutput.replace(/\{.+?\}/g, (e) => eval(e));
+    let output = scene.event.textOutput.replace(/\{.+?\}/g, (action) => eval(action));
 
     let
       income = Math.round( [1, 1.7, 0.8, 0.2][element] * (level + 2.5) * (k + 5) ),
-      phrase = ["Это птица? Это самолёт! Нет, это штука!", "Вдумайтесь..", "Ученье – свет, а неученье – штука.", "Игрушка!", "Случайности случайны.", "**ШТУКОВИНА**"].random(),
+      phrase = ["Это птица? Это самолёт! Нет, это штука!", "Вдумайтесь..", "Ученье – свет, а неученье – штука.", "Игрушка!", "Случайности случайны.", "**ШТУКОВИНА**", "Используйте !штука я, чтобы поменять стихию", "Используйте !штука улучшить, чтобы открыть новые события"].random(),
       footerPhrase = ["кубик рубика", "сапог", "звёзду", "снеговика", "зайца", "большой город", "огненную обезьяну", "ананас", "кефир"].random();
 
     msg.guild.data.coins += income;
@@ -7387,7 +7680,7 @@ const commands = {
       fields: [{name: `Если коротко..`, value: `**${scene.description}**\n⠀`}, {name: `${emoji} ${level + 1} ур.`, value: output}],
       footer: {text: `Скажем так: эта вещь чем-то похожа на ${footerPhrase}..`}
     });
-  }, {try: 2, cooldown: 10800, type: "other"}, "шутка штука aught аугт нечто"),
+  }, {type: "other"}, "шутка штука aught аугт нечто"),
 
   commandinfo: new Command(async (msg, op) => {
     let __inServer = msg.channel.id === "753687864302108913";
@@ -7449,10 +7742,12 @@ const commands = {
 
     let server = msg.guild.data;
     let level = server.treeLevel || 0;
-    let costsUp = [1, 1, 2, 3, 2, 3, 5, 4, 4, 8, 5, 5, 7, 12, 20][level];
+    const COSTS_TABLE = [1, 1, 1, 3, 2, 2, 2, 4, 2, 2, 2, 5, 3, 3, 3, 7, 4, 4, 4, 10];
+    let costsUp = COSTS_TABLE[level];
+
 
     const berrysStarts = Math.floor( server.berrys ) || 0;
-    const getSpeedGrowth = (level) => [0, 0.5, 1, 2, 4, 5, 7, 12, 15.6, 24, 60, 72, 96, 144, 360, 1008][level];
+    const getSpeedGrowth = (level) => [0, 1.5, 2.5, 4, 6, 8, 10, 12, 15.6, 21, 24, 45, 60, 72, 96, 144, 270, 360, 450, 630, 792, 1008][level];
 
     let timePassed;
 
@@ -7465,9 +7760,9 @@ const commands = {
       fields.push({name: "Урожай", value: `Клубники выростает ${grow.count} в ${grow.type}\nГотово для сбора: ${Math.floor(server.berrys)}\nСледущая дозреет через: ${timestampToDate((1 - server.berrys % 1) * 86400000 / speedGrowth)} <:berry:756114492055617558>`});
 
       let entrySeeds = server.treeSeedEntry;
-      fields.push({name: "Дерево", value: `Уровень деревца ${level} ${level === 15 ? "(Максимальный)" : `\nДо повышения нужно ${costsUp - entrySeeds > 5 ? costsUp - entrySeeds : ["ноль", "одно", "два", "три", "четыре", "пять"][costsUp - entrySeeds]} ${ending(costsUp - entrySeeds, "сем", "ян", "ечко", "ечка", {slice: true})}` }`});
+      fields.push({name: "Дерево", value: `Уровень деревца ${level} ${level === 20 ? "(Максимальный)" : `\nДо повышения нужно ${costsUp - entrySeeds > 5 ? costsUp - entrySeeds : ["ноль", "одно", "два", "три", "четыре", "пять"][costsUp - entrySeeds]} ${ending(costsUp - entrySeeds, "сем", "ян", "ечко", "ечка", {slice: true})}` }`});
 
-      let messagesNeed = (  [0, 70, 170, 315, 390, 465, 700, 850, 1000, 2000, 2400, 2800, 3200, 4500, 7000, 14000][level] + (msg.guild.memberCount * 3) + ((server.day_average || 0) / 5)  ) * ("treeMisstakes" in server ? 1 - 0.1 * server.treeMisstakes : 1);
+      let messagesNeed = (  [0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700, 3200, 3700, 4500, 5400, 6800, 10000][level] + (msg.guild.memberCount * 3) + ((server.day_average || 0) / 5)  ) * ("treeMisstakes" in server ? 1 - 0.1 * server.treeMisstakes : 1);
       messagesNeed = Math.floor(messagesNeed / 3);
 
       let statusName = server.treeMisstakes ?
@@ -7491,8 +7786,8 @@ const commands = {
     }
 
     let embed = {
-      thumbnail: thumbnailArray[ Math.ceil(level / 3.5) ],
-      description: `Это растение способно принести океан клубники за короткий срок. Для этого заботьтесь о нём — общайтесь на сервере, поддерживайте ламповую атмосферу, проводить время весело и следите, чтобы дерево не засохло.`,
+      thumbnail: thumbnailArray[ Math.ceil(level / 4) ],
+      description: `Это растение способно принести океан клубники за короткий срок. Для этого заботьтесь о нём: общайтесь на сервере, поддерживайте ламповую атмосферу, проводить время весело и следите, чтобы дерево не засохло.`,
       fields: fields,
       footer: {text: "Ваши сообщения используются для полива растений и полностью заменяют собой воду", iconURL: "https://emojipedia-us.s3.amazonaws.com/source/skype/289/sweat-droplets_1f4a6.png"}
     };
@@ -7501,7 +7796,7 @@ const commands = {
 
 
 
-    if (level !== 15){
+    if (level !== 20){
       await message.react("🌱");
     }
 
@@ -7516,15 +7811,15 @@ const commands = {
 
       if (react === "🌱"){
 
-        if ( level === 15 ){
-          msg.msg("Достигнут Максимум", {description: `Не нужно, дерево уже максимального уровня!`, author: {name: memb.username, iconURL: memb.avatarURL()}, delete: 7000});
+        if ( level === 20 ){
+          msg.msg("Ещё больше?", {description: `Не нужно, дерево уже максимального уровня!`, author: {name: memb.username, iconURL: memb.avatarURL()}, delete: 7000});
           message.reactions.resolve("🌱").remove();
           return;
         }
 
 
         if (!user.seed){
-          msg.msg("У вас нет Семян", {description: `Где их достать? Выполняйте ежедневные квесты, каждый 50-й выполненый квест будет вознаграждать вас одним семечком.`, author: {name: memb.username, iconURL: memb.avatarURL()}, delete: 7000});
+          msg.msg("У вас нет Семян", {description: `Где их достать? Выполняйте ежедневные квесты, каждый 50-й выполненый квест будет вознаграждать вас двумя семечками.`, author: {name: memb.username, iconURL: memb.avatarURL()}, delete: 7000});
           return;
         }
 
@@ -7537,14 +7832,14 @@ const commands = {
         if (server.treeSeedEntry >= costsUp){
           server.treeSeedEntry = 0;
           level = server.treeLevel = nonNaN(server.treeLevel) + 1;
-          costsUp = [1, 1, 2, 2, 3, 3, 5, 4, 4, 8, 5, 5, 12, 7, 20][level];
+          costsUp = COSTS_TABLE[level];
           server.berrys = Math.round(1.5 ** (level + 3) + server.berrys);
           server.berrys = +(  String( server.berrys )[0] + ( String(server.berrys).length > 1 ? "5" : "" ) + "0".repeat( String(server.berrys).length - 2 )  );
 
           await message.react("756114492055617558");
-          embed.thumbnail = thumbnailArray[ Math.ceil(level / 3.5) ];
+          embed.thumbnail = thumbnailArray[ Math.ceil(level / 4) ];
 
-          msg.msg("Дерево немного подросло", {description: `После очередного семечка 🌱 оно стало больше, и достигло уровня ${level}!`});
+          msg.msg("Дерево немного подросло", {description: `После очередного семечка 🌱, дерево стало больше и достигло уровня ${ level }!`});
           delete server.treeMisstakes;
         }
 
@@ -7564,17 +7859,22 @@ const commands = {
           return;
         }
 
-        // if (user.berrys >= 350){
-        //   msg.msg("Лимит 350 клубник", {description: "Вы не можете взять или приобрести больше этого числа. Однако превысить его можно получая клубнику из сундука, штуки или других бонусов", author: {name: memb.username, iconURL: memb.avatarURL()}, delete: 7000, color: "ff0000"});
-        //   return;
-        // }
+        const isBerryMany = server.berrys > getSpeedGrowth(level) * 3;
 
-        user.CD_54 = getTime() + Math.max( 86400000 / getSpeedGrowth(level) * (1 + level), 3600000 );
-        let berrys = Math.min(1 + nonNaN(user.voidTreeFarm), server.berrys);
+        const farmerBonus = nonNaN(user.voidTreeFarm);
+        let berrys = isBerryMany ?
+          random(1 + farmerBonus, 3 + farmerBonus * 2, {round: false}) :
+          1 + farmerBonus;
+
+        berrys = Math.min(Math.floor(berrys), Math.floor(server.berrys));
+
+
         user.berrys += berrys;
         server.berrys -= berrys;
+
+        data.bot.berrysPrise += berrys * 0.2;
         msg.msg("Вы успешно собрали клубнику", {author: {name: memb.username, iconURL: memb.avatarURL()}, description: `${berrys > 5 ? berrys : ["Ноль", "Одна", "Две", "Три", "Четыре", "Пять"][berrys]} ${ending(berrys, "ягод", "", "а", "ы", {slice: true})} ${ending(berrys, "попа", "дают", "ла", "ли", {slice: true})} в ваш карман <:berry:756114492055617558>`, delete: 9000});
-        data.bot.berrysPrise += berrys;
+        user.CD_54 = getTime() + Math.max( 86400000 / getSpeedGrowth(level) * (1 + level), 3600000 );
       }
 
       fields.splice(0, fields.length);
@@ -7646,7 +7946,343 @@ const commands = {
 
     let index = reactions.indexOf(reaction);
     embed.description = `**Тип:** ${ ["конкретная ссылка", "наличие роли у пригласившего", "выдача по умолчанию"][index] };\n\nОтлично, `;
-  }, {dm: true, type: "guild", permissions: 8}, "приглашения")
+  }, {dm: true, type: "dev", permissions: 8}, "приглашения"),
+
+  casino: new Command(async (msg, op) => {
+    msg.msg("Казино закрыто", {description: "Казино закрыто. Боюсь что оно больше не откроется.\nЭтого не могло не случится, извините.\n\n — Прощайте. ©️Мэр-Миллиардер Букашка", delete: 20000});
+    return;
+
+    let bet = op.args.match(/\d+|\+/);
+
+    if (bet === null){
+      msg.msg("Укажите Ставку в числовом виде!", {color: "ff0000", delete: 3000});
+      return;
+    }
+    bet = bet[0];
+
+    if (bet === "+")
+      bet = op.user.coins;
+
+    bet = Math.max(0, Math.floor(bet));
+
+    if (op.user.coins < bet){
+      msg.msg("Недостаточно коинов", {color: "ff0000", delete: 3000});
+      return;
+    }
+
+    const diceRoll = random(100);
+    const options = {
+      title: "Лесовитое казино",
+      author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
+      delete: 20000,
+      footer: {text: `Ставка: ${ bet }`}
+    }
+    const isWon = diceRoll % 2;
+    options.description = `
+**${ isWon ? "Вы выиграли." : "Проиграли" }**
+**Кидаем кубик.. выпадает:** \`${ diceRoll }\`; ${ isWon ? "🦝" : "❌" }
+
+${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин", "ов", "", "а") } <:coin:637533074879414272>\\*` : "Чтобы выиграть дожно выпасть число, которое не делится на 2" }
+    `;
+
+    op.user.coins -= (-1) ** isWon * bet;
+    msg.msg(options.title, options);
+  }, {type: "other", delete: true}, "казино bet ставка"),
+
+  bag: new Command(async (msg, op) => {
+
+    const user = op.user;
+
+
+    class ItemTaker {
+      display(...args){
+        return this.ending(...args);
+      }
+
+      // Default getter
+      getter({target, isToBag}){
+        return target[this.key];
+      }
+      setter({target, count, isToBag}){
+        return target[this.key] = count;
+      };
+
+    }
+
+    const ITEMS = [
+      {
+        key: "coins",
+        names: ["коина", "коины", "коин", "коинов", "coins", "coin", "c", "к"],
+        ending: (count) => `<:coin:637533074879414272> ${ ending(count, "Коин", "ов", "", "а") }`
+      },
+      {
+        key: "exp",
+        names: ["опыта", "опыт", "опытов", "exp", "experience"],
+        ending: (count) => `<:crys2:763767958559391795> ${ ending(count, "Опыт", "а", "", "а") }`
+      },
+      {
+        key: "chestBonus",
+        names: ["бонусов", "бонус", "бонуса", "сундука", "сундуков", "сундук", "бонусов сундука", "chestBonus"],
+        ending: (count) => `<a:chest:805405279326961684> ${ ending(count, "Бонус", "ов", "", "а") } сундука`
+      },
+      {
+        key: "void",
+        names: ["нестабильности", "нестабильность", "void", "камень", "камней", "камня"],
+        ending: (count) => `<a:void:768047066890895360> ${ ending(count, "Кам", "ней", "ень", "ня") } нестабильности`
+      },
+      {
+        key: "berrys",
+        names: ["клубник", "клубники", "клубника", "клубниу", "berry", "berrys"],
+        ending: (count) => `<:berry:756114492055617558> ${ ending(count, "Клубник", "", "а", "и") }`
+      },
+      {
+        key: "chilli",
+        names: ["перец", "перцев", "перца", "chilli"],
+        ending: (count) => `🌶️ ${ ending(count, "Пер", "цев", "ец", "ца") }`
+      },
+      {
+        key: "monster",
+        names: ["монстр", "монстров", "монстра", "monster"],
+        ending: (count) => `🐲 ${ ending(count, "Монстр", "ов", "", "а") }`
+      },
+      {
+        key: "gloves",
+        names: ["перчатки", "перчатку", "перчатка", "перчаток", "glove", "gloves"],
+        ending: () => `🧤 ${ ending(count, "Перчат", "ки", "у", "ки") }`,
+        display: (count) => `🧤 Перчатки ${ count }шт.`,
+        getter: ({target, isToBag}) => {
+          const isUser = "id" in target;
+
+          if (isUser){
+            const thiefGloves = (target.thiefGloves || "0|0")
+              .split("|");
+
+            const [gloves, ...rest] = thiefGloves;
+            return gloves;
+          }
+
+          if (!isUser){
+            return target.gloves;
+          }
+        },
+        setter: ({target, count, isToBag}) => {
+          const isUser = "id" in target;
+
+          if (isUser){
+            const thiefGloves = (target.thiefGloves || "0|0")
+              .split("|");
+
+            thiefGloves[0] = count;
+            return thiefGloves.join("|");
+          }
+
+          if (!isUser){
+            return target.gloves = count;
+          }
+        }
+      },
+      {
+        key: "keys",
+        names: ["ключ", "ключей", "ключа", "ключи", "key"],
+        ending: (count) => `🔩 ${ ending(count, "Ключ", "ей", "", "а") }`
+      },
+      {
+        key: "seed",
+        names: ["семечко", "семечек", "семян", "семечка", "семячек", "seed"],
+        ending: (count) => `🌱 ${ ending(count, "Сем", "ян", "ечко", "ечка") }`
+      },
+      {
+        key: "iq",
+        names: ["iq", "icq", "iqbanana", "айкью"],
+        ending: (count) => `<a:iq:768047041053196319> ${ count } IQ`
+      },
+      {
+        key: "coinsPerMessage",
+        names: ["коинов за сообщение", "награда коин-сообщений", "coinsPerMessage"],
+        ending: (count) => `✨ ${ ending(count, "Коин", "ов", "", "а") } за сообщение`
+      },
+      {
+        key: "voidCooldown",
+        names: ["уменьшений кулдауна", "уменьшение кулдауна", "уменьшения кулдауна", "voidcooldown"],
+        ending: (count) => `🌀 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `🌀 Бонус "Уменьшение кулдауна" ${ count }/50`
+      },
+      {
+        key: "voidPrise",
+        names: ["скидок на котёл", "скидок на котел", "voidprise"],
+        ending: (count) => `⚜️ ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `⚜️ Бонус "Скидок на котёл" ${ count }/5`
+      },
+      {
+        key: "voidDouble",
+        names: ["нестабилити", "voiddouble"],
+        ending: (count) => `🃏 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `🃏 Бонус "Нестабилити" ${ count }/1`
+      },
+      {
+        key: "voidQuests",
+        names: ["усиление квестов", "усиление квеста", "voidquests"],
+        ending: (count) => `🔱 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `🔱 Бонус "Усиление квестов" ${ count }/5`
+      },
+      {
+        key: "voidCoins",
+        names: ["шанс коина", "шанс коинов", "voidcoins"],
+        ending: (count) => `♦️ ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `♦️ Бонус "Шанс коина" ${ count }/7`
+      },
+      {
+        key: "voidMonster",
+        names: ["монстр-защитник", "монстр защитник", "voidmonster"],
+        ending: (count) => `💖 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `💖 Бонус "Монстр-защитник" ${ count }/1`
+      },
+      {
+        key: "voidThief",
+        names: ["бонусы от перчаток", "voidthief"],
+        ending: (count) => `💠 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `💠 Бонус "Бонусы от перчаток" ${ count }`
+      },
+      {
+        key: "voidMysticClover",
+        names: ["умение заворож. клевер", "умение заворожить клевер", "заворожение клевера", "заворожить клевер", "заворожения клевера", "voidmysticclover"],
+        ending: (count) => `🍵 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `🍵 Бонус "Умение заворож. Клевер" ${ count }/50`
+      },
+      {
+        key: "voidTreeFarm",
+        names: ["фермер", "фермеров", "фермера", "voidtreefarm"],
+        ending: (count) => `📕 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `📕 Бонус "Фермер" ${ count }`
+      },
+      {
+        key: "voidCasino",
+        names: ["казино", "voidcasino"],
+        ending: (count) => `🥂 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        display: (count) => `🥂 Бонус "Казино" ${ count }/1`
+      }
+    ];
+
+    ITEMS.forEach(item => item.__proto__ = ItemTaker.prototype);
+
+
+
+
+    const displayBag = () => {
+
+      const items = Object.entries( user.bag || {} )
+        .map(([key, count]) => ({
+          itemData: ITEMS.find(item => item.key === key),
+          count
+        }))
+        .filter(({itemData}) => itemData !== undefined)
+        .map(({itemData, count}) => itemData.display(count))
+        .map(str => `– ${ str }`);
+
+
+      const description = items.length ?
+        items.join("\n") :
+        "Она пустая!! Гады, положите туда что-нибудь..\n!bag put 1 coin";
+
+      const embed = {
+        description,
+        footer: {
+          text: `Ты, ${ msg.author.tag }`,
+          iconURL: msg.author.avatarURL()
+        }
+      }
+      msg.msg("Сэр, Ваша сумка?", embed);
+      return;
+    };
+
+
+
+
+    const moveItem = (key, count, isToBag) => {
+
+      const item = ITEMS.find(item => item.key === key);
+      const targetFrom = isToBag ?   user   : user.bag;
+      const targetTo   = isToBag ? user.bag : user;
+
+      if (count === "+"){
+
+        const value = item.getter({ target: targetFrom, isToBag });
+        count = nonNaN( value );
+      }
+      count = Math.max(Math.floor( count ), 0);
+
+
+
+      if (!user[key])
+        item.setter({ count: 0, target: user });
+
+      if (!user.bag[key])
+        item.setter({ count: 0, target: user.bag });
+
+      const currentCount = item.getter({ target: targetFrom, isToBag });
+      if (currentCount < count){
+        const description = `Надо на ${ item.ending(count - currentCount) } больше!`;
+        msg.msg("Недостаточно ресурса", {delete: 7000, description});
+        return;
+      }
+
+
+
+
+      item.setter({
+        target: targetFrom,
+        count: item.getter({ target: targetFrom, isToBag }) - count,
+        isToBag
+      })
+      item.setter({
+        target: targetTo,
+        count: item.getter({ target: targetTo, isToBag   }) + count,
+        isToBag
+      })
+
+      const bagDescription = isToBag ? "в а-ля вакуумный объект" : "из черной дыры";
+      const description = `Вы успешно ${ isToBag ? "положили" : "взяли" } ${ item.ending(count) } ${ bagDescription }.`;
+      msg.msg(`Действие с сумка ${ msg.author.tag }`, {delete: 9000, description});
+    }
+
+
+    let action = op.args.match(/взять|take|положить|put/);
+    action = action && action[0];
+
+    let count = op.args.match(/\d+|\+/);
+    count = count && count[0];
+    let item;
+
+    if (action && count){
+      op.args = op.args.replace(action, "");
+      op.args = op.args.replace(count, "");
+      const itemName = op.args = op.args.trim().toLowerCase();
+
+      item = ITEMS.find(item => item.names.includes(itemName));
+      if (!item){
+        const list = ITEMS.reduce((acc, item) => acc.concat(item.names), []);
+        const similarItem = getSimilar(list, itemName);
+        msg.msg("Не удалось найти такой предмет:", {description: `\`${ itemName }\`${ similarItem ? `\n\nВозможно, Вы имели ввиду: ${ similarItem }?` : "" }`, delete: 7000});
+      }
+    }
+
+
+
+    // Run;
+
+    if (item){
+      const isToBag = action === "положить" || action === "put";
+
+      if (!user.bag)
+        user.bag = {};
+
+      moveItem(item.key, count, isToBag);
+      return;
+    }
+
+    displayBag();
+    return;
+  }, {type: "user", delete: true}, "сумка")
 }
 
 const quests = {
@@ -7697,7 +8333,7 @@ const timeEvents = {
     if (isLost) return new TimeEvent("day_stats", next);
 
     client.guilds.cache.filter(e => e.data.treeLevel).each(guild => {
-      let messagesNeed = (  [0, 70, 170, 315, 390, 465, 700, 850, 1000, 2000, 2400, 2800, 3200, 4500, 7000, 14000][guild.data.treeLevel] + (guild.memberCount * 3) + ((guild.data.day_average || 0) / 5)  ) * ("treeMisstakes" in guild.data ? 1 - 0.1 * guild.data.treeMisstakes : 1);
+      let messagesNeed = (  [0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700, 3200, 3700, 4500, 5200, 6000, 10000][guild.data.treeLevel] + (guild.memberCount * 3) + ((guild.data.day_average || 0) / 5)  ) * ("treeMisstakes" in guild.data ? 1 - 0.1 * guild.data.treeMisstakes : 1);
       // Сезонное снижение
       messagesNeed = Math.floor(messagesNeed / 3);
 
@@ -7823,21 +8459,21 @@ const timeEvents = {
 
     client.users.cache.filter(memb => !memb.bot && memb.data.BDay === today).forEach(memb => {
         birthdaysToday++;
-        e.guilds.forEach(guild => quests.scope += " birthdayParty&1&2&3&" + guild.id);
+        memb.guilds.forEach(guild => quests.scope += " birthdayParty&1&2&3&" + guild.id);
     });
 
     if (birthdaysToday){
-      console.log("Сегодня день рождения у " + birthdaysToday + " пользователя(ей)");
+      console.info(`Сегодня день рождения у ${ birthdaysToday } пользователя(ей)`);
       data.bot.clearParty = birthdaysToday;
     }
 
 
     let berryRandom = [{_weight: 10, prise: 1}, {_weight: 1, prise: -7}, {_weight: 5, prise: 3}].random(false, true).prise;
-    let berryTarget = Math.sqrt(client.users.cache.size / 3 + 200) * 7;
+    let berryTarget = Math.sqrt(client.users.cache.size / 3) * 7 + 200;
     data.bot.berrysPrise += Math.round((berryTarget - data.bot.berrysPrise) / 30 + berryRandom);
 
     data.bot.grempen = "";
-    let arr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b"]; //0123456789abcdef
+    let arr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d"]; //0123456789abcdef
     for (let i = 1; i < 7; i++) {
       data.bot.grempen += arr.random(true);
     }
@@ -7860,11 +8496,13 @@ const timeEvents = {
     webhook.delete();
   },
 
-  remind: async function (isLost, author, channelId, phrase){
-    channel = client.channels.cache.get(channelId);
-    if (!channel) return;
-    author = channel.guild.members.cache.get(author);
-    author.user.msg("Напоминание:", {description: phrase[0].toUpperCase() + phrase.slice(1) + "\n" + author.toString(), footer: isLost ? null : "Ваше напоминание не было доставлено вовремя. Я был отключён."});
+  remind: async function (isLost, authorId, channelId, phrase){
+    const channel = client.channels.cache.get(channelId);
+    const author  = client.users.cache.get(authorId);
+
+    const target = channel || author;
+    const description = phrase[0].toUpperCase() + phrase.slice(1) + "\n" + author.toString();
+    target.msg("Напоминание:", {description, footer: isLost ? null : "Ваше напоминание не было доставлено вовремя. Я был отключён."});
   },
 
   giveaway: async function (isLost, channelId, messageId, winners, roleId){
