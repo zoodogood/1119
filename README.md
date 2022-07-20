@@ -1,5 +1,12 @@
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/52154209/179919919-1dbe8380-5a08-4c19-8039-9f3520f582d9.png" data- width="200" height="200" />
+<p>
+
+
+
 > `npm install`
 Чтобы загрузить модули
+
 
 > `node bot`
 Для запуска
