@@ -183,9 +183,12 @@ client.on("ready", async () => {
     let banInfo = (  await e.guild.Audit(audit => audit.target.id === e.id, {limit: 50, type: "MEMBER_BAN_ADD"})  ) || (  await e.guild.Audit(audit => audit.target.id === e.id, {limit: 50, type: "MEMBER_KICK"})  );
     const reason = () => banInfo.reason ? `\nПричина: ${banInfo.reason}` : "";
 
+    const name = `Имя: ${ e.user.tag }${ e.user.bot ? " BOT" : "" }`;
+
     let message = (banInfo) ?
-      {mes: `Участник был ${banInfo.action == "MEMBER_KICK" ? "кикнут" : "забанен"}`, des: `Имя: ${e.user.tag}${e.user.bot ? " BOT" : ""}\nВыгнавший с сервера: ${e.guild.member(banInfo.executor).displayName}` + reason()} :
-      {mes: "Участник покинул сервер", des: "Имя: " + e.user.tag + "\nНадеемся, он скоро вернётся"};
+      {mes: `Участник был ${banInfo.action == "MEMBER_KICK" ? "кикнут" : "забанен"}`, des: `${ name }\nВыгнавший с сервера: ${e.guild.member(banInfo.executor).displayName}` + reason()} :
+      {mes: "Участник покинул сервер", des: `${ name }\nНадеемся, он скоро вернётся`};
+
     e.guild.logSend(message.mes, {description: message.des, color: banInfo ? "ff0000" : "00ff00"});
   });
 
@@ -289,7 +292,7 @@ client.on("ready", async () => {
             description: interaction.type === 2 ? `Если вам нужно подробное описание, введите \`!commandInfo {название команды}\`\nТакже вы можете посетить сервер бота, если у вас есть какие-нибудь вопросы [<https://greenghost>](https://discord.gg/76hCg2h7r8)` : "Зачем удалено, почему удалено, что было бы если бы вы не удалили это сообщение, имело ли это какой-нибудь скрытый смысл...?",
             author: {
               name: interaction.member.user.username,
-              icon_url: client.rest.cdn.Avatar(e.member.user.id, e.member.user.avatar)
+              icon_url: client.rest.cdn.Avatar(interaction.member.user.id, interaction.member.user.avatar)
             },
             color: 65280
           }]
@@ -388,6 +391,8 @@ async function msg(msg, opt = {}){
     image        = opt.image,
     deleted      = opt.delete,
 
+    reference    = opt.reference,
+
     fields = opt.fields, author = opt.author, files = opt.files, timest = opt.timestamp, footer = opt.footer;
 
 
@@ -418,10 +423,14 @@ async function msg(msg, opt = {}){
     msg.description = await template(msg.description, msgs, scope);
   }
 
+
+
   if ( opt.editable ){
     delete opt.editable;
     opt.edit = true;
   }
+
+
 
   let message = (!edit) ? obj.send(msg) : obj.edit(msg);
   if (deleted) {
@@ -590,6 +599,13 @@ async function accept(name, embed, channel, user){
   return false;
 };
 
+function toDayDate(date){
+  const month = (date.getMonth() + 1).toString();
+  const day   = date.getDate().toString();
+
+  return `${ day.padStart(2, "0") }.${ month.padStart(2, "0") }`;
+}
+
 function json_save(variable){
   (variable) ? fs.writeFile(`./main/${variable}.json`, JSON.stringify(eval(variable)), (err, input) => {if (err) console.error(err)}) : console.error(`WARNING: ${variable} be undefined`);
 }
@@ -724,7 +740,7 @@ async function template(msg, obj, opt = {}){
 async function getFromScope(obj, template, opt){
   let func, args;
 
-  let way = template.match(/(?:[^.]+?\(.+?\))($|(?=\.))|([a-z0-9]+)(?!=[(])/gim);
+  let way = template.match(/(?:[^.]+?\(.+?\))($|(?=\.))|([a-z0-9_$а-яёъ]+)(?!=[(])/gim);
   if (!way) return `\\!{${template}}`;
 
   const openScope = {
@@ -816,6 +832,14 @@ async function getFromScope(obj, template, opt){
         data: {
           get coins(){
             return obj.guild.data.coins;
+          },
+
+          get berrys(){
+            return obj.guild.data.berrys;
+          },
+
+          get _data(){
+            return obj.guild.data;
           }
         }
       },
@@ -968,6 +992,25 @@ async function getFromScope(obj, template, opt){
            },
            get berrys(){
              return obj.author.data.berrys;
+           },
+           get void(){
+             return obj.author.data.chilli || 0;
+           },
+           get key(){
+             return obj.author.data.keys || 0;
+           },
+           get chestBonus(){
+             return obj.author.data.chestBonus || 0;
+           },
+           get cooldowns(){
+             return Object.fromEntries(
+               Object.keys(obj.author.data)
+                 .filter(key => key.startsWith("CD"))
+                 .map(key => [key, obj.author.data[key]])
+             )
+           },
+           get _data(){
+             return obj.author.data;
            }
          }
        }
@@ -1152,7 +1195,13 @@ async function commandHundler(msg){
   }
   catch (e) {
     const timestamp = getTime();
-    let err = {name: e.name, stroke: e.stack.match(/js:(\d+)/)[1], command, message: e.message, timeFromStart: timestampToDate(timestamp - msg.createdTimestamp) || "0с"};
+    let err = {
+      name: e.name,
+      stroke: e.stack.match(/js:(\d+)/)[1],
+      command,
+      message: e.message,
+      timeFromStart: timestamp - msg.createdTimestamp < 1000 ? "менее 1с" : timestampToDate(timestamp - msg.createdTimestamp)
+    };
     console.error(err);
 
     if (e.name == "DiscordAPIError") return;
@@ -1181,7 +1230,7 @@ async function eventHundler(msg){
 
   // 120000 = 8000 * 15
   if (getTime() + 120000 > author.CD_msg){
-    author.CD_msg += 8000;
+    author.CD_msg += (8000 - 200 * nonNaN(user.voidCooldown));
 
     if (random(1, 85 * 0.90 ** user.voidCoins) === 1) {
       getCoinsFromMessage(user, msg);
@@ -1419,7 +1468,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
     user.chestBonus = nonNaN(user.chestBonus) + 10;
 
     let percentMade = +(data.users.reduce((acc, last) => acc + ~~(last.completedQuest && last.completedQuest.includes(name)), 0) / data.users.length * 100).toFixed(2) + "%";
-    this.msg(`Вы выполнили глобальный квест\n"${realName}"!`, {description: `Описание: "${quests[name]}"\nОпыта получено: **${exp}**\nЭтот квест смогло выполнить ${percentMade} пользователей.\n[Я молодец.](https://superherojacked.com/wp-content/uploads/2016/12/batman-gif.gif)`});
+    this.msg(`Вы выполнили глобальный квест\n"${realName}"!`, {description: `Описание: "${quests[name]}"\nОпыта получено: **${ exp }**\nЭтот квест смогло выполнить ${percentMade} пользователей.\n[Я молодец.](https://superherojacked.com/wp-content/uploads/2016/12/batman-gif.gif)`});
   }
 
 
@@ -1435,12 +1484,12 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
   if (user.questProgress >= user.questNeed){
     user.questLast = name;
     user.quest = undefined;
-    const k = Math.round(user.questReward * 1.5);
+    const k = user.questReward * 1.4;
 
-    let exp = (user.level + 5) * k;
+    let exp = Math.round((user.level + 5) * k);
     user.exp += exp;
 
-    user.chestBonus = nonNaN(user.chestBonus) + k * 2;
+    user.chestBonus = nonNaN(user.chestBonus) + Math.round(k * 2);
     channel.msg("Вы выполнили сегодняшний квест и получили опыт!", {description: `Опыта получено: **${exp}**\nОписание квеста:\n${quests[name]}\n\n[Я молодец.](https://cf.ppt-online.org/files/slide/d/dWroQsFb9wiCVhG7u1tfSRgmcTpnUB5Hl3vXOJ/slide-5.jpg)`, author: {iconURL: this.avatarURL(), name: this.username}}) //на будущее: "серия квестов"*, "X2 опыт за сообщения"
 
     user.dayQuests = ++user.dayQuests || 1;
@@ -1451,7 +1500,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
     if ( !(user.dayQuests % 50) ){
       "seed" in user ?
         memb.msg(`Ваш ${user.dayQuests}-й квест — новое семечко`, {description: `🌱`}) :
-        memb.msg("Ура, ваше первое семечко!", {description: `Вы будете получать по одному выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера`});
+        memb.msg("Ура, ваши первые семечки!", {description: `Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера`});
 
       user.seed = nonNaN(user.seed) + 2;
     }
@@ -2609,6 +2658,98 @@ class CurseManager {
 }
 
 
+class BossManager {
+  static bossApparance(guild){
+    const data = guild.data;
+
+    const now = new Date();
+
+    const TWO_MONTH = 5259600000;
+
+    if ( guild.me.joinedTimestamp + TWO_MONTH < getTime() )
+      return;
+
+
+    const generateEndDate = () => {
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
+
+      data.boss.endingDate = toDayDate(date);
+    }
+
+    const generateNextApparance = () => {
+
+      // the boss cannot spawn on other days
+      const MIN = 2;
+      const MAX = 25;
+      const date = new Date(now.getFullYear(), now.getMonth() + 1, random(MIN, MAX));
+
+      data.boss.apparanceDate = toDayDate(date);
+    }
+
+
+
+    if (!data.boss){
+      data.boss = {};
+      generateNextApparance();
+    }
+
+    if (data.boss.endingDate === data.bot.dayDate){
+      delete data.boss;
+    }
+
+    if (data.boss.apparanceDate === data.bot.dayDate){
+      generateEndDate();
+      delete data.boss.apparanceDate;
+
+      data.boss.level = 1;
+      data.boss.users = {};
+    }
+
+
+
+  }
+
+  static makeDamage(){
+
+  }
+
+  static async beforeApparance(guild){
+
+    if (!data.boss){
+      return;
+    }
+
+    const now = Date.now();
+
+    const checkNextDay = () => {
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      return toDayDate(date);
+    }
+
+    if (checkNextDay() !== data.boss.apparanceDate){
+      return;
+    }
+
+    await delay(3000);
+
+    const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
+    const descriptionFacts = `С завтрашенего дня, в течении трёх дней, босс будет проходить по нашим землям в определенном образе. За это время мы должны нанести как можно больше урона.\nТеперь на сервере доступна команда **!босс**`;
+    const description = `${ descriptionImage }\n\n${ descriptionFacts }`;
+
+    const embed = {
+      color: "210052",
+      title: "",
+      author: {name: "Тест"}
+      //description
+    }
+
+    guild.chatSend(embed.title, embed);
+  }
+}
+
+
+
+
 //---------------------------------{#Objects--}------------------------------
 
 
@@ -2670,7 +2811,7 @@ const commands = {
           iconURL: memb.avatarURL({dynamic : true})
         },
         color: user.profile_color || "RANDOM",
-        description: `Коинов: **${user.coins}**<:coin:637533074879414272> \n <a:crystal:637290417360076822>Уровень: **${user.level || 1}** \n <:crys:637290406958202880>Опыт: **${user.exp || 0}/${(user.level || 1) * 45}**\n\n ${status}\n`,
+        description: `Коинов: **${ Math.letters(user.coins) }**<:coin:637533074879414272> \n <a:crystal:637290417360076822>Уровень: **${user.level || 1}** \n <:crys:637290406958202880>Опыт: **${user.exp || 0}/${(user.level || 1) * 45}**\n\n ${status}\n`,
         fields: [{name: " ᠌", value: " ᠌"}],
         footer: {text: `Похвал: ${user.praiseMe.length || "0"}   ${(rank) ? "Ранг: " + rank + "/" + guild.members.cache.filter((el) => el.user.data.level > 1).size : ""}`},
       };
@@ -2703,7 +2844,7 @@ const commands = {
       let fields = [
         {
           name: "Клубники <:berry:756114492055617558>",
-          value: `Имеется: ${user.berrys}`,
+          value: `Имеется: ${ user.berrys }`,
           inline: true
         },
         {
@@ -2850,7 +2991,10 @@ const commands = {
       iPraise  = (user.praise && user.praise.length) ? user.praise.map((id, i) => (i + 1) + ". "+ (getData(id) ? Discord.Util.escapeMarkdown( getData(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вы никого не хвалили \nиспользуйте **!похвалить**" : "Никого не хвалил",
       mePraise = (user.praiseMe && user.praiseMe.length) ? user.praiseMe.map((id, i) => (i + 1) + ". "+ (getData(id) ? Discord.Util.escapeMarkdown( getData(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вас никто не похвалил, напомните им это сделать" : "Его никто не хвалил, похвалите его!";
 
-    const maximumPraises = 2 + Math.floor(user.level * 1.5 / 10);
+    const maximumPraises = Math.min(
+      2 + Math.floor(user.level * 1.5 / 10),
+      20
+    );
 
     user.praise = user.praise || [];
     if ( user.praise[0] ) {
@@ -3003,64 +3147,151 @@ const commands = {
 
     const
       channel      = msg.channel,
-      args         = op.args,
-      mode         = (args && args.replace(Discord.MessageMentions.USERS_PATTERN, "") == "") ? "user" : (args) ? (isNaN(args)) ? "string" : "number" : "all",
-      sum_messages = [],
-      twoWeek      = new Date() - 1209600000;
-      limit        = (mode == "number") ? Math.min(args, 900) : 75,
-      options      = {limit: 50};
+      args         = op.args;
 
-    let last_id;
+    const referenceId = msg.reference ? msg.reference.messageID : null;
+
+    const userId  = match(args, /\d{17,19}/);
+    const limit   = match(args, /(?:\s|^)\d{1,16}(?:\s|$)/);
+
+
+    const
+      foundedMessages = [],
+      twoWeekAgo      = new Date() - 1209600000,
+      options         = { limit: 50 };
+
+    const foundLimit =
+      referenceId ? 500 :
+      Math.min(
+        limit !== false ? limit : 75,
+        900
+      );
+
+    let lastMessageId = null;
     while (true) {
-      if (last_id) options.before = last_id;
+      if (lastMessageId)
+        options.before = lastMessageId;
+
       const messages = await channel.messages.fetch(options);
-      sum_messages.push(...messages.array());
+      foundedMessages.push(...messages.array());
 
-      if (mode == "string"){
-        let element = messages.find(msg => msg.content == args);
+      if (referenceId){
+        const founded = messages.find(msg => msg.id === referenceId);
 
-        if (element) {
-          sum_messages.splice(sum_messages.indexOf(element));
+        if (founded){
+          foundedMessages.splice(foundedMessages.indexOf(founded));
           break;
         }
 
-        if (messages.size != 50 || sum_messages.length == 350){
-          return msg.msg("Не удалось найти сообщение", {color: "ff0000", delete: 3000, description: args});
+        if (messages.size !== 50 || foundedMessages.length === 350){
+          msg.msg("Не удалось найти сообщение", {color: "ff0000", delete: 3000, description: args});
+          return;
         }
       }
 
-      last_id = messages.last().id;
-      if (messages.size != 50 || sum_messages.length >= limit) break;
+      lastMessageId = messages.last().id;
+      if (messages.size !== 50 || foundedMessages.length >= foundLimit){
+        break;
+      }
     };
-    messages = sum_messages.filter(el => !el.pinned);
 
-    if (mode == "user")
-      messages = messages.filter(el => el.author.id == op.memb.id);
+    let messages = foundedMessages
+      .filter(el => !el.pinned);
 
-    if (mode == "number")
-      messages.splice(args);
+
+    if (userId)
+      messages = messages.filter(msg => msg.author.id === userId);
+
+    messages.splice(foundLimit);
 
     if (messages.length === 0)
       return msg.msg("Вроде-как удалено 0 сообщений", {delete: 3000, description: "Я серьёзно! Не удалено ни единого сообщения!"});
 
 
-    let counter = await msg.msg("Пожалуйста, Подождите... " + ending(messages.length, "сообщени", "й", "е", "я") + " на удаление.");
-    let deleted = messages.length;
+    let counter = await msg.msg(`Пожалуйста, Подождите... ${ ending(messages.length, "сообщени", "й", "е", "я") } на удаление.`, {description: "Нажмите реакцию чтобы отменить чистку", reactions: ["❌"]});
+    let toDelete = messages.length;
 
+    await delay(3000);
 
     if (messages.length > 120){
-        msg.channel.startTyping();
+      msg.channel.startTyping();
     }
 
-    let bulk = [];
-    messages = messages.filter(e => e.createdTimestamp - twoWeek < 0 ? true : (bulk.push(e), false) );
-    while (bulk.length) await channel.bulkDelete( bulk.splice(0, 50) ).catch(e => console.error(e));
-    while (messages.length) await messages.splice(0, random(20, 35)).asyncForEach(async e => await e.delete()), counter = await counter.msg("Пожалуйста, Подождите..." + (deleted - messages.length) + "/" + deleted, {edit: true});
+    const newest = [];
+    const oldest = [];
 
-    await delay(deleted * 30);
+    messages = messages.forEach(msg => {
+      if (msg.createdTimestamp - twoWeekAgo < 0)
+        return oldest.push(msg);
+
+      newest.push(msg);
+    });
+
+    const updateCounter = async () => {
+      const current = toDelete - oldest.length - newest.length;
+      counter = await counter.msg(`Пожалуйста, Подождите... ${ current } / ${ toDelete }`, {edit: true});
+    }
+
+    const isReaction = () => {
+      const reacted = counter.reactions.cache.get("❌");
+      if (reacted)
+        return reacted.users.cache.has(msg.author.id);
+    }
+
+    const sendLog = () => {
+      const current = toDelete - oldest.length - newest.length;
+
+      if (current === 0)
+        return;
+
+      const mode = (referenceId) ? `До указанного сообщения` : (userId) ? `Сообщения пользователя <@${ userId }>` : (limit) ? "Количественная выборка" : "Все сообщения";
+      const isCancel = !!(toDelete - current);
+      const description = `В канале: ${ channel.toString() }\nУдалил: ${msg.author.toString()}\nТип чистки: ${ mode }${ isCancel ? "\n\nЧистка была отменена" : "" }`;
+
+
+      msg.guild.logSend(`Удалено ${ ending(current, "сообщени", "й", "е", "я") }`, {description});
+    }
+
+    while (newest.length || oldest.length){
+
+
+      if ( isReaction() ){
+        counter.delete();
+
+        const current = toDelete - oldest.length - newest.length;
+        const description = `Было очищено ${ ending(current, "сообщени", "й", "е", "я") } до отмены`;
+        msg.msg("Очистка была отменена", {description, delete: 12000});
+
+        sendLog();
+
+        msg.channel.stopTyping();
+
+        return;
+      }
+
+
+
+
+      if (newest.length){
+        await channel.bulkDelete( newest.splice(0, 50) );
+      }
+
+      else {
+        await messages.splice(0, random(20, 35))
+          .asyncForEach(async msg => await msg.delete());
+      }
+
+
+
+      updateCounter();
+    }
+
+    await delay(toDelete * 30);
     msg.channel.stopTyping();
-    counter.msg(`Удалено ${ending(deleted, "сообщени", "й", "е", "я")}!`, {edit: true, delete: 1500});
-    msg.guild.logSend("Удалено " + ending(deleted, "сообщени", "й", "е", "я"), {description: `В канале: ${channel.toString()}\nУдалил: ${msg.author.toString()}\nТип чистки: ${(mode == "string") ? `До указанного сообщения \`${op.args}\`` : (mode == "user") ? `Сообщения пользователя ${op.memb.toString()}` : (mode == "number") ? "Количественная выборка" : "Все сообщения"}`})
+
+    counter.msg(`Удалено ${ ending(toDelete, "сообщени", "й", "е", "я") }!`, { edit: true, delete: 1500 });
+
+    sendLog();
   }, {dm: true, myChannelPermissions: 8192, ChannelPermissions: 8192, cooldown: 15, try: 5, type: "guild"}, "очистить очисти очисть клир клиар"),
 
   embed: new Command(async (msg, op) => {
@@ -3503,7 +3734,7 @@ const commands = {
 
       {
         resource: "keys",
-        names: "keys ключ ключей ключа ключи k к",
+        names: "keys key ключ ключей ключа ключи k к",
         gives: n => ending(n, "ключ", "ей", "", "а")
       },
 
@@ -3520,15 +3751,56 @@ const commands = {
       },
 
       {
-        resource: "seed",
-        names: "seed seeds семечко семечек семечка семечков семена семян семя семени",
-        gives: n => ending(n, "семеч", "ек", "ко", "ка")
-      }
+        resource: "voidDouble",
+        names: "voiddouble",
+        gives: n => `🃏 ${ ending(n, "Бонус", "ов", "", "а") }`
+      },
 
+      {
+        resource: "voidThief",
+        names: "voidthief",
+        gives: n => `💠 ${ ending(n, "Бонус", "ов", "", "а") }`
+      },
+
+      {
+        resource: "voidMonster",
+        names: "voidmonster",
+        gives: n => `💖 ${ ending(n, "Бонус", "ов", "", "а") }`
+      },
+
+      {
+        resource: "coinsPerMessage",
+        names: "coinspermessage",
+        gives: n => `✨ ${ ending(n, "Коин", "ов", "", "а") } за сообщение`
+      },
+
+      {
+        resource: "voidQuests",
+        names: "voidquests",
+        gives: n => `🔱 ${ ending(n, "Бонус", "ов", "", "а") }`
+      },
+
+      {
+        resource: "voidMysticClover",
+        names: "voidmysticclover",
+        gives: n => `🍵 ${ ending(n, "Бонус", "ов", "", "а") }`
+      },
+
+      {
+        resource: "voidTreeFarm",
+        names: "voidtreefarm",
+        gives: n => `📕 ${ ending(n, "Бонус", "ов", "", "а") }`
+      },
+
+      {
+        resource: "voidCasino",
+        names: "voidcasino",
+        gives: n => `🥂 ${ ending(n, "Бонус", "ов", "", "а") }`
+      }
 
     ];
 
-    let resourceData = RESOURCES.find(obj => obj.names.split(" ").includes(itemName));
+    let resourceData = RESOURCES.find(obj => obj.names.split(" ").includes( itemName.toLowerCase() ));
     if (!resourceData){
       message = [itemName, ...message];
       resourceData = RESOURCES[0];
@@ -4346,7 +4618,7 @@ const commands = {
         others: ["билет", "лотерея", "лотерею", "казино", "casino", "лотерейный билет"],
         fn: () => {
           const coefficient = 220 / 130;
-          const bet = user.voidCasino ? user.coins / 3.33 : 130;
+          const bet = user.voidCasino ? user.coins * 0.3 : 130;
           const odds = user.voidCasino ? 22 : 21;
           if (random(odds) > 8) {
             const victory = Math.ceil(bet * coefficient);
@@ -4397,7 +4669,16 @@ const commands = {
           }
 
           msg.guild.data.cloverEffect.uses++;
-          TimeEvent.move(e => e.func == "cloverEnd" && e.args.includes(msg.guild.id), event => event.ms + Math.floor(14400000 - (event.ms - getTime()) / 15));
+
+          const setNewTimestamp = (event) => {
+            const addingMs = Math.floor(14400000 - (event.ms - getTime()) / 18);
+            const ms = event.ms + Math.max(addingMs, 0);
+            return ms;
+          }
+
+          const filter = (event) => event.func === "cloverEnd" && event.args.includes(msg.guild.id);
+
+          TimeEvent.move(filter, setNewTimestamp);
           return phrase;
         }
       },
@@ -4407,7 +4688,7 @@ const commands = {
         inline: true,
         others: ["шар", "кубик", "случай", "всевидящий", "ball", "всевидящий шар"],
         fn: (product) => {
-          const items = ["void", "seed", "coins", "level", "exp", "coinsPerMessage", "chilli", "key", "monster", "berrys", "iq", "chestBonus", "voidTreeFarm", "voidThief"];
+          const items = ["void", "seed", "coins", "level", "exp", "coinsPerMessage", "chilli", "key", "monster", "berrys", "iq", "chestBonus"];
           const item = items.random();
           user[item] = nonNaN( user[item] ) + 1;
           return ` как \`gachi-${ item }\`, которого у вас прибавилось в количестве один.`;
@@ -5123,7 +5404,7 @@ const commands = {
           const currentGloves = (user.thiefGloves || "0|0")
             .split("|");
 
-          currentGloves[0] += count;
+          currentGloves[0] = +currentGloves[0] + count;
           user.thiefGloves = currentGloves.join("|");
 
           itemsOutput.push( `${ending(count, "Перчат", "ок", "ка", "ки")} 🧤`);
@@ -5169,7 +5450,11 @@ const commands = {
   }, {type: "other"}, "сундук daily"),
 
   level: new Command(async (msg, op) => {
-    return;
+    const canvas = require("canvas");
+
+    const FONT_FAMILY = "VAG World";
+    await canvas.registerFont("./main/resources/VAG-font.ttf", {family: "VAG World"});
+
     let
       canv    = canvas.createCanvas(900, 225),
       ctx     = canv.getContext("2d"),
@@ -5226,12 +5511,12 @@ const commands = {
       ctx.globalCompositeOperation = 'source-in';
 
       avatar = await canvas.loadImage(avatar);
-      ctx.drawImage(avatar, 65, 55, 90, 90);
+      ctx.drawImage(avatar, 0, 0, 90, 90);
       ctx.restore();
 
-      ctx.font = "bold 20px VAG World";
-      width = ctx.measureText(user.level + " уровень").width;
-      ctx.fillText(user.level + " уровень", 110 - width / 2, 170);
+      ctx.font = `bold 20px ${ FONT_FAMILY }`;
+      const { width: levelFontWidth } = ctx.measureText(user.level + " уровень");
+      ctx.fillText(user.level + " уровень", 110 - levelFontWidth / 2, 170);
 
       ctx.strokeStyle = "rgba(119,119,119, 1)";
       ctx.beginPath();
@@ -5243,24 +5528,28 @@ const commands = {
       ctx.save();
 
       ctx.beginPath();
-      ctx.font = "bold 5px 'VAG World', 'sans-serif'";
+      ctx.font = `bold 5px "${ FONT_FAMILY }", 'sans-serif'`;
       ctx.fillStyle = "#b0b4b0";
       width = {font: Math.min(545 / ctx.measureText(member.username).width * 5, 180)};
 
 
 
-      ctx.font = `bold ${width.font}px "VAG World", "sans-serif"`;
+
+
+      ctx.font = `bold ${ width.font }px "${ FONT_FAMILY }", "sans-serif"`;
 
       width.textHeight = ctx.measureText(member.username).actualBoundingBoxAscent + ctx.measureText(member.username).actualBoundingBoxDescent;
 
       let expCanvas = canvas.createCanvas(670, 165);
       let ctx2 = expCanvas.getContext("2d");
+
+      ctx2.textBaseline = "middle";
       ctx2.fillStyle = "#b0b4b0";
 
       ctx2.font = ctx.font;
       expLine = (670 - ctx.measureText(member.username).width) / 2;
 
-      ctx2.fillText(member.username, expLine, 85 + width.textHeight / 2);
+      ctx2.fillText(member.username, expLine, 60);
       ctx2.globalCompositeOperation = "source-atop";
 
       ctx2.fillStyle = (user.profile_color) ? "#" + user.profile_color : "#0c0";
@@ -5277,8 +5566,8 @@ const commands = {
 
 
     let image = canv.toBuffer("image/png");
-    msg.msg(new Discord.MessageAttachment(image, "level.png"), {embed: true});
-  }, {delete: true, type: "dev"}, "уровень rang rank ранг ранк lvl лвл"),
+    msg.msg(new Discord.MessageAttachment(image, "level.png"), {embed: true, delete: 1_000_000});
+  }, {delete: true, dev: true}, "уровень rang rank ранг ранк lvl лвл"),
 
   puzzle: new Command(async (msg, op) => {
     return;
@@ -6408,9 +6697,9 @@ const commands = {
       },
       {
         emoji: "😈",
-        description: `Создайте экономических хаос, изменив стоимость клубники на рынке! ${ 15 + Math.floor(8 * Math.sqrt(user.voidRituals)) } коинов в случайную сторону.`,
+        description: `Создайте экономических хаос, изменив стоимость клубники на рынке! ${ 7 + Math.floor(5 * Math.sqrt(user.voidRituals)) } коинов в случайную сторону.`,
         _weight: 10,
-        action: () => data.bot.berrysPrise += 15 + Math.floor(8 * Math.sqrt(user.voidRituals)) * (-1) ** random(1)
+        action: () => data.bot.berrysPrise += 7 + Math.floor(5 * Math.sqrt(user.voidRituals)) * (-1) ** random(1)
       },
       {
         emoji: "🍵",
@@ -6420,7 +6709,7 @@ const commands = {
       },
       {
         emoji: "📿",
-        description: `Получите ${Math.floor(user.keys / 100)} ур. нестабильности взамен ${user.keys - (user.keys % 100)} ключей.`,
+        description: `Получите ${ Math.floor(user.keys / 100) } ур. нестабильности взамен ${user.keys - (user.keys % 100)} ключей.`,
         _weight: 30,
         filter_func: () => user.keys >= 100 && user.chestLevel,
         action: () => {
@@ -6721,7 +7010,7 @@ const commands = {
 
 
 
-    let embed = {description: `В хранилище **${Math.letters(server.coins)}** <:coin:637533074879414272>\n\n<a:message:794632668137652225> ⠿ Заработные платы\n<:meow:637290387655884800> ⠿ Положить\n<:merunna:755844134677512273> ${[..."⠯⠷⠟⠻"].random()} Взять`, author: {name: msg.guild.name, iconURL: msg.guild.iconURL()}, image: "https://media.discordapp.net/attachments/629546680840093696/830774000597991434/96-967226_tree-forest-green-vector-map-of-the-trees.png"};
+    let embed = {description: `В хранилище **${ Math.letters(server.coins) }** <:coin:637533074879414272>\n\n<a:message:794632668137652225> ⠿ Заработные платы\n<:meow:637290387655884800> ⠿ Положить\n<:merunna:755844134677512273> ${[..."⠯⠷⠟⠻"].random()} Взять`, author: {name: msg.guild.name, iconURL: msg.guild.iconURL()}, image: "https://media.discordapp.net/attachments/629546680840093696/830774000597991434/96-967226_tree-forest-green-vector-map-of-the-trees.png"};
     let coinInfo = server.coins;
     let react, answer;
     let reactions = ["637290387655884800", isAdmin ? "755844134677512273" : null, "794632668137652225"];
@@ -6850,7 +7139,26 @@ const commands = {
       return;
     }
 
-    if (!isDev){
+    if (msg.reference){
+
+      const changeParams = (message) => {
+        const blockQuote = message.content.match(/```js\n((?:.|\n)+?)```/);
+        if (!blockQuote)
+          return;
+
+        op.args = blockQuote[1];
+      }
+
+      const messageId = msg.reference.messageID;
+      const message = await msg.channel.messages.fetch(messageId);
+
+      if (message){
+        changeParams(message);
+      }
+
+    }
+
+    if (!isDev || !op.args){
       op.args = "msg.author.data";
     }
 
@@ -6860,7 +7168,7 @@ const commands = {
     let output;
     try {
       let startTimestamp = getTime();
-      output = await eval( `try{${code}} catch(err){err}` );
+      output = await eval( `try{${ code }} catch(err){err}` );
       timestamp = getTime() - startTimestamp;
     }
     catch (error){
@@ -7291,7 +7599,7 @@ const commands = {
             },
             {
               action: async () => random(1) ? user.berrys++ : data.bot.berrysPrise++,
-              textOutput: "Она вроде увеличилась, то-ли увеличилась её цена. Никто так и не понял.."
+              textOutput: "Она вроде увеличилась, а вроде увеличилась её цена. Никто так и не понял.."
             },
             false,
             false,
@@ -7317,7 +7625,7 @@ const commands = {
 
                 const bonuses = Math.ceil(count * random(1.2, 1.4));
                 user.chestBonus = nonNaN(user.chestBonus) + scene.random;
-                scene.bonuses = bonused;
+                scene.bonuses = bonuses;
               },
               textOutput: `"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор превратив все свои клубники в {ending(scene.bonuses, "бонус", "ов", "", "а")} сундука`
             },
@@ -7350,7 +7658,7 @@ const commands = {
           [
             {
               action: async () => {
-                scene.random = random(9, 20);
+                scene.random = random(3, 8);
                 data.bot.berrysPrise += scene.random;
               },
               textOutput: `Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {ending(scene.random, "коин", "ов", "", "а")} дороже.`
@@ -7459,7 +7767,7 @@ const commands = {
                 scene.random = random(15, 45);
                 user.coins += scene.stolenKeys * scene.random;
               },
-              textOutput: "Вам удалось договорится — обезьяна в замен ключей дала вам {scene.stolenKeys * scene.random} <:coin:637533074879414272>"
+              textOutput: "Вам удалось договорится — обезьяна взамен ключей дала вам {scene.stolenKeys * scene.random} <:coin:637533074879414272>"
             },
             false,
             false,
@@ -7546,7 +7854,7 @@ const commands = {
         ],
         filterFunc: () => "cloverEffect" in msg.guild.data && level > 2
       },
-      {
+       {
         id: "school",
         _weight: 5,
         description: "Тихим учебным днём...",
@@ -7555,9 +7863,9 @@ const commands = {
             {
               action: async () => {
                 user.berrys++;
-                data.bot.berrysPrise += 5;
+                data.bot.berrysPrise += 3;
               },
-              textOutput: "Труд-труд-труд.. Учёба идёт вам на пользу. Вы получили одну клубнику, а их цена на рынке поднялась на 5ед."
+              textOutput: "Труд-труд и ещё раз труд.. За усердную работу вы получили одну клубнику, а их цена на рынке поднялась на 3ед."
             },
             false,
             false,
@@ -7747,7 +8055,7 @@ const commands = {
 
 
     const berrysStarts = Math.floor( server.berrys ) || 0;
-    const getSpeedGrowth = (level) => [0, 1.5, 2.5, 4, 6, 8, 10, 12, 15.6, 21, 24, 45, 60, 72, 96, 144, 270, 360, 450, 630, 792, 1008][level];
+    const getSpeedGrowth = (level) => [0, 1.2, 1.8, 2.5, 5, 7.5, 10, 12, 15.6, 21, 24, 42, 54, 66, 84, 108, 144, 252, 360, 450, 792, 1008][level];
 
     let timePassed;
 
@@ -7762,7 +8070,7 @@ const commands = {
       let entrySeeds = server.treeSeedEntry;
       fields.push({name: "Дерево", value: `Уровень деревца ${level} ${level === 20 ? "(Максимальный)" : `\nДо повышения нужно ${costsUp - entrySeeds > 5 ? costsUp - entrySeeds : ["ноль", "одно", "два", "три", "четыре", "пять"][costsUp - entrySeeds]} ${ending(costsUp - entrySeeds, "сем", "ян", "ечко", "ечка", {slice: true})}` }`});
 
-      let messagesNeed = (  [0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700, 3200, 3700, 4500, 5400, 6800, 10000][level] + (msg.guild.memberCount * 3) + ((server.day_average || 0) / 5)  ) * ("treeMisstakes" in server ? 1 - 0.1 * server.treeMisstakes : 1);
+      let messagesNeed = (  [0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700, 3200, 3700, 4500, 5400, 7400, 12000][level] + (msg.guild.memberCount * 3) + ((server.day_average || 0) / 5)  ) * ("treeMisstakes" in server ? 1 - 0.1 * server.treeMisstakes : 1);
       messagesNeed = Math.floor(messagesNeed / 3);
 
       let statusName = server.treeMisstakes ?
@@ -7781,7 +8089,7 @@ const commands = {
       fillEmbed();
     }
     else {
-      fields.push({name: "Общая инфомация", value: "Ему ещё предстоит вырасти, будучи семечком дерево не может давать плоды.\nОбязательно посадите семя, если оно у вас есть.\n\n❓ Выполняя каждый 50-й квест вы получаете по одной штуке"});
+      fields.push({name: "Общая инфомация", value: "Ему ещё предстоит вырасти, будучи семечком дерево не может давать плоды.\nОбязательно посадите семя, если оно у вас есть.\n\n❓ Выполняя каждый 50-й квест вы получаете по две штуки"});
       timePassed = (getTime() - server.treeEntryTimestamp) || 0;
     }
 
@@ -7874,7 +8182,7 @@ const commands = {
 
         data.bot.berrysPrise += berrys * 0.2;
         msg.msg("Вы успешно собрали клубнику", {author: {name: memb.username, iconURL: memb.avatarURL()}, description: `${berrys > 5 ? berrys : ["Ноль", "Одна", "Две", "Три", "Четыре", "Пять"][berrys]} ${ending(berrys, "ягод", "", "а", "ы", {slice: true})} ${ending(berrys, "попа", "дают", "ла", "ли", {slice: true})} в ваш карман <:berry:756114492055617558>`, delete: 9000});
-        user.CD_54 = getTime() + Math.max( 86400000 / getSpeedGrowth(level) * (1 + level), 3600000 );
+        user.CD_54 = getTime() + Math.max( 86400000 / getSpeedGrowth(level) * (1 + level), 7200000 );
       }
 
       fields.splice(0, fields.length);
@@ -7987,7 +8295,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
 
     op.user.coins -= (-1) ** isWon * bet;
     msg.msg(options.title, options);
-  }, {type: "other", delete: true}, "казино bet ставка"),
+  }, {type: "other", delete: true, dev: true}, "казино bet ставка"),
 
   bag: new Command(async (msg, op) => {
 
@@ -8022,7 +8330,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       },
       {
         key: "chestBonus",
-        names: ["бонусов", "бонус", "бонуса", "сундука", "сундуков", "сундук", "бонусов сундука", "chestBonus"],
+        names: ["бонусов", "бонус", "бонуса", "сундука", "сундуков", "сундук", "бонусов сундука", "chestbonus"],
         ending: (count) => `<a:chest:805405279326961684> ${ ending(count, "Бонус", "ов", "", "а") } сундука`
       },
       {
@@ -8032,7 +8340,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       },
       {
         key: "berrys",
-        names: ["клубник", "клубники", "клубника", "клубниу", "berry", "berrys"],
+        names: ["клубник", "клубники", "клубника", "клубниу", "ягоды", "ягод", "ягода", "berry", "berrys"],
         ending: (count) => `<:berry:756114492055617558> ${ ending(count, "Клубник", "", "а", "и") }`
       },
       {
@@ -8046,7 +8354,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
         ending: (count) => `🐲 ${ ending(count, "Монстр", "ов", "", "а") }`
       },
       {
-        key: "gloves",
+        key: "thiefGloves",
         names: ["перчатки", "перчатку", "перчатка", "перчаток", "glove", "gloves"],
         ending: () => `🧤 ${ ending(count, "Перчат", "ки", "у", "ки") }`,
         display: (count) => `🧤 Перчатки ${ count }шт.`,
@@ -8058,11 +8366,11 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
               .split("|");
 
             const [gloves, ...rest] = thiefGloves;
-            return gloves;
+            return +gloves;
           }
 
           if (!isUser){
-            return target.gloves;
+            return target.thiefGloves;
           }
         },
         setter: ({target, count, isToBag}) => {
@@ -8073,11 +8381,11 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
               .split("|");
 
             thiefGloves[0] = count;
-            return thiefGloves.join("|");
+            return target.thiefGloves = thiefGloves.join("|");
           }
 
           if (!isUser){
-            return target.gloves = count;
+            return target.thiefGloves = count;
           }
         }
       },
@@ -8105,7 +8413,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
         key: "voidCooldown",
         names: ["уменьшений кулдауна", "уменьшение кулдауна", "уменьшения кулдауна", "voidcooldown"],
         ending: (count) => `🌀 ${ ending(count, "Бонус", "ов", "", "а") }`,
-        display: (count) => `🌀 Бонус "Уменьшение кулдауна" ${ count }/50`
+        display: (count) => `🌀 Бонус "Уменьшение кулдауна" ${ count }/20`
       },
       {
         key: "voidPrise",
@@ -8187,7 +8495,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       const embed = {
         description,
         footer: {
-          text: `Ты, ${ msg.author.tag }`,
+          text: `Ты, Сэр ${ msg.author.tag }`,
           iconURL: msg.author.avatarURL()
         }
       }
@@ -8212,11 +8520,10 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       count = Math.max(Math.floor( count ), 0);
 
 
-
-      if (!user[key])
+      if (user[key] === undefined)
         item.setter({ count: 0, target: user });
 
-      if (!user.bag[key])
+      if (user.bag[key] === undefined)
         item.setter({ count: 0, target: user.bag });
 
       const currentCount = item.getter({ target: targetFrom, isToBag });
@@ -8282,7 +8589,23 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
 
     displayBag();
     return;
-  }, {type: "user", delete: true}, "сумка")
+  }, {type: "user", delete: true}, "сумка рюкзак"),
+
+  boss: new Command(async (msg, op) => {
+    const guild = msg.guild;
+    const boss = guild.data.boss;
+    if (boss === undefined || boss.level === undefined){
+      return;
+    }
+
+    const description = `Уйдет ${ boss.endingData }`;
+
+    const embed = {
+      title: "",
+      description
+    }
+    msg.msg(embed.title, embed);
+  }, {type: "other"}, "босс")
 }
 
 const quests = {
@@ -8426,7 +8749,8 @@ const timeEvents = {
 
     });
 
-
+    client.guilds.cache
+      .each((guild) => BossManager.beforeApparance(guild));
 
 
     data_save();
@@ -8442,6 +8766,7 @@ const timeEvents = {
   new_day: async function (isLost){
     let next = new Date(getTime() + 14500000).setHours(23, 59, 50) - getTime();
     new TimeEvent("new_day", next);
+
     if (isLost){
       return;
     }
@@ -8452,10 +8777,12 @@ const timeEvents = {
     }
     await delay(20000);
 
-    let today = new Date();
-    today = ("0" + today.getDate()).slice(-2) + "." + ("0" + (today.getMonth() + 1)).slice(-2); //19.11
+    const today = toDayDate( new Date() );
     let birthdaysToday = 0;
     data.bot.dayDate = today;
+
+    client.guilds.cache
+      .each((guild) => BossManager.bossApparance(guild));
 
     client.users.cache.filter(memb => !memb.bot && memb.data.BDay === today).forEach(memb => {
         birthdaysToday++;
