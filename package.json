@@ -1,19 +1,19 @@
 {
-  "name": "greenghost",
+  "name": "bot",
   "version": "0.2.5.3",
+  "type": "module",
   "description": "",
   "device": "PC",
-  "token": "*ТОКЕН*",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "github.com/zoodogood",
+  "author": "zoodogood",
   "license": "ISC",
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
-    "canvas": "^2.6.1",
     "discord.js": "^12.5.1",
+    "dotenv": "^16.0.3",
     "ffmpeg": "0.0.4",
     "ffmpeg-static": "^4.2.7",
     "node-fetch": "^2.6.0"

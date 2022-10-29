@@ -2,22 +2,25 @@
 // 𝘁𝗵𝗲𝗿𝗲 𝗶𝘀 𝗰𝗼𝗱𝗲 𝗻𝗮𝘃𝗶𝗴𝗮𝘁𝗶𝗼𝗻 𝗯𝗲𝗹𝗼𝘄. | Снизу находится навигация по коду.
 console.clear();
 
+import 'dotenv/config';
 
-
-const Discord = require("discord.js");
+import Discord from "discord.js";
 const Collection = Discord.Collection;
 
-const Util = require("./util.js");
+import * as Util from "./util.js";
 
 
 const client = new Discord.Client({ messageCacheMaxSize: 110 });
 
-const
-  fs         = require("fs"),
-  fetch      = require("node-fetch"),
-  //canvas   = require("canvas"),
-  data       = require("./main/data.json"),
-  package    = require("./package.json");
+
+import fs from "fs";
+import fetch from "node-fetch";
+
+
+
+const { default: data } = await import("./main/data.json", {
+  assert: {type: "json"}
+});
 
 
 
@@ -25,7 +28,7 @@ client.on("ready", async () => {
   client.options.disableMentions = "everyone";
   client.guilds.cache.forEach(async el => el.invites = await el.fetchInvites().catch(() => {}));
 
-  if (package.device === "PC") {
+  if (process.env.DEVELOPMENT === "PC") {
     client.user.setActivity("Кабзец тебе, Хозяин", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
   }
   else {
@@ -140,10 +143,13 @@ client.on("ready", async () => {
 
 
     if (invite){
-      guild.logSend("Новый участник!", {description: "Имя: " + e.user.tag + "\nИнвайтнул: " + invite.inviter.tag + "\nПриглашение использовано: " + invite.uses, footer: {text: "Приглашение создано: "}, timestamp: invite.createdTimestamp});
+      const inviter = invite.inviter;
+      guild.logSend("Новый участник!", {description: "Имя: " + e.user.tag + "\nИнвайтнул: " + inviter.tag + "\nПриглашение использовано: " + invite.uses, footer: {text: "Приглашение создано: "}, timestamp: invite.createdTimestamp});
 
-      if (e.id !== invite.inviter.id)
-        invite.inviter.quest("inviteFriend");
+      if (e.id !== inviter.id)
+        inviter.quest("inviteFriend");
+
+      inviter.data.invites = nonNaN(inviter.data.invites) + 1;
     }
 
 
@@ -388,7 +394,7 @@ async function msg(msg, opt = {}){
   }
 
   let
-    color        = opt.color       || ((package.device != "PC") ? "23ee23" : "000100"),
+    color        = opt.color       || ((process.env.DEVELOPMENT === "FALSE") ? "23ee23" : "000100"),
     offEmbed     = opt.embed       || false,
     description  = opt.description || "",
     react        = opt.reactions,
@@ -514,7 +520,7 @@ function ending(numb = 0, wordBase, zerofifth, first, second, opt = {}) {
   if (numb > 20) fix = 10;
   let end = (numb % fix > 4 || numb % fix == 0) ? zerofifth : (numb % fix > 1) ? second : first;
 
-  input = wordBase + end;
+  let input = wordBase + end;
   if (opt.bold) {
     numb = "**" + numb + "**";
   }
@@ -616,17 +622,17 @@ function json_save(variable){
   (variable) ? fs.writeFile(`./main/${variable}.json`, JSON.stringify(eval(variable)), (err, input) => {if (err) console.error(err)}) : console.error(`WARNING: ${variable} be undefined`);
 }
 
-function random(...arguments){
-  let lastArgument = arguments.splice(-1).last;
+function random(...params){
+  let lastArgument = params.splice(-1).last;
   let options = {round: true};
 
   if (typeof lastArgument === "object"){
     Object.assign(options, lastArgument);
-    lastArgument = arguments.splice(-1).last;
+    lastArgument = params.splice(-1).last;
   }
 
   const max = lastArgument + Number(options.round);
-  const min = arguments.length ? arguments[0] : 0;
+  const min = params.length ? params[0] : 0;
   let rand = Math.random() * (max - min) + min;
 
   if (options.round){
@@ -1213,7 +1219,7 @@ async function commandHundler(msg){
 
     if (e.name == "DiscordAPIError") return;
     let quote,
-      message   = await msg.msg("Произошла ошибка 🙄", {color: "f0cc50", delete: 180000});
+      message   = await msg.msg("Произошла ошибка 🙄", {color: "f0cc50", delete: 180000}),
       react     = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
 
     while (react){
@@ -1475,13 +1481,21 @@ Discord.User.prototype.action = function(id, data){
   //   BossManager.gameEvents[id].onAction.call(null, data);
   // }
 
-  if (this.data.curse){
-    const curseBase = CurseManager.cursesBase.get(this.data.curse.id);
-    if (id in curseBase.callback)
-      curseBase.callback[id].call(null, this, data);
+  /** Curse */
+  if (this.data.curses)
+  for (const curse of this.data.curses){
+    const curseBase = CurseManager.cursesBase.get(curse.id);
+    try {
+      if (id in curseBase.callback)
+        curseBase.callback[id].call(null, this, curse, data);
 
+    } catch (err) {
+      console.error(err);
+    }
   }
+  
 
+  /** generalize */
   if (id !== "_any"){
     this.action("_any", {id, data});
   }
@@ -1542,7 +1556,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
 
     if ( !(user.dayQuests % 50) ){
       "seed" in user ?
-        memb.msg(`Ваш ${user.dayQuests}-й квест — новое семечко`, {description: `🌱`}) :
+        memb.msg(`Ваш ${user.dayQuests}-й квест — новые семечки`, {description: `🌱`}) :
         memb.msg("Ура, ваши первые семечки!", {description: `Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера`});
 
       user.seed = nonNaN(user.seed) + 2;
@@ -1988,8 +2002,9 @@ class TimeEvent {
      });
   }
 
-  static readFile(){
-    return require("./main/time.json");
+  static async readFile(){
+    const { default: data } = await import("./main/time.json", {assert: {type: "json"}});
+    return data;
   }
 
   static move(func, msFunc){
@@ -2054,8 +2069,11 @@ class TimeEvent {
     }, timeTo);
     return;
   }
-
-  static eventData = TimeEvent.readFile().sortBy("ms");
+  static async loadEventFromFile(){
+    const content = await TimeEvent.readFile();
+    return content.sortBy("ms");
+  }
+  static eventData = [];
 }
 
 
@@ -2064,32 +2082,34 @@ class WebSocket {}
 
 class ReactionsManager {
   constructor (id, channel, guild, type, reactions){
-    let reactionsArray = ReactionsManager.readFile();
     let reactionObject = {id, channel, guild, type, reactions};
     let isExists = ReactionsManager.reactData.find(e => e.id == id);
     if (isExists){
       Object.assign(isExists, reactionObject);
     }
     else {
-      reactionsArray.push(reactionObject);
+      ReactionsManager.reactData.push(reactionObject);
     }
-    fs.writeFileSync("./main/reactData.json", JSON.stringify(reactionsArray), (err, input) => false);
+    fs.writeFileSync("./main/reactData.json", JSON.stringify(ReactionsManager.reactData), (err, input) => false);
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
 
-  static reactData = ReactionsManager.getMain();
+  static reactData = [];
 
-  static readFile(){
-    return require("./main/reactData.json");
+  static async readFile(){
+    const { default: data } = await import("./main/reactData.json", {assert: {type: "json"}});
+    return data;
   }
 
-  static getMain(){
-    return ReactionsManager.readFile().map( react => (({id, type, reactions}) => ({id, type, reactions}))(react) );
+  static async getMain(){
+    const data = await ReactionsManager.readFile()
+    return data.map( react => (({id, type, reactions}) => ({id, type, reactions}))(react) );
   }
 
   static async handle(){
     let reactions = [];
-    await ReactionsManager.readFile().asyncForEach(async e => {
+    const data = await ReactionsManager.readFile();
+    data.asyncForEach(async e => {
       try {
         let message = await client.guilds.cache.get(e.guild).channels.cache.get(e.channel).messages.fetch(e.id);
         if (!message.id) throw new Error("failed to find message");
@@ -2100,24 +2120,29 @@ class ReactionsManager {
     fs.writeFileSync("./main/reactData.json", JSON.stringify(reactions), (err, input) => false);
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
+  
+  static async loadReactionsFromFile(){
+    ReactionsManager.reactData = await ReactionsManager.getMain();
+  }
 }
 
 
 class CounterManager {
   constructor (channel, guild, type, template, args){
-    let counters = CounterManager.readFile();
     let counter = {channel, guild, type, template, args};
-    counters.push(counter);
+
+    CounterManager.counterData.push(counter);
     CounterManager.writeFile();
     CounterManager.counterData = CounterManager.readFile();
     CounterManager.up(counter);
     return counter;
   }
 
-  static counterData = CounterManager.readFile();
+  static counterData = [];
 
-  static readFile(){
-    return require("./main/counterData.json");
+  static async readFile(){
+    const { default: data } = await import("./main/counterData.json", {assert: {type: "json"}});
+    return data;
   }
 
   static writeFile(){
@@ -2126,7 +2151,8 @@ class CounterManager {
 
   static async clearSuperfluous(){
     let counters = [];
-    await CounterManager.readFile().asyncForEach(async e => {
+    const data = await CounterManager.readFile();
+    data.asyncForEach(async e => {
       try {
         let channel = client.guilds.cache.get(e.guild).channels.cache.get(e.channel);
         if (!channel.id) throw new Error("failed to find channel");
@@ -2139,7 +2165,7 @@ class CounterManager {
       catch (err){ return console.error(err.message) }
     })
     CounterManager.writeFile();
-    CounterManager.counterData = CounterManager.readFile();
+    CounterManager.counterData = await CounterManager.readFile();
     CounterManager.handle();
   }
 
@@ -2190,6 +2216,10 @@ class CounterManager {
       CounterManager.delete(counter);
     }
     return;
+  }
+
+  static async loadCountersFromFile(){
+    CounterManager.counterData = await CounterManager.readFile();
   }
 }
 
@@ -2636,10 +2666,6 @@ class CurseManager {
 
   static generate({hard = null, user}){
 
-    if ( user.data.curse ){
-      return false;
-    }
-
     const curseBase = [...CurseManager.cursesBase.values()]
       .filter(curseBase => hard === null || curseBase.hard === hard)
       .filter(curseBase => !curseBase.filter || curseBase.filter(user))
@@ -2667,20 +2693,19 @@ class CurseManager {
   }
 
   static init({curse, user}){
-    user.data.curse = curse;
+    if (!user.data.curses){
+      user.data.curses = [];
+    }
 
-    const curseBase = CurseManager.cursesBase.get(curse.id);
+    user.data.curses.push(curse);
+
 
     if (curse.values.timer){
       const args = [user.id, curse.timestamp];
-      const eventInfo = new TimeEvent("curseTimeoutEnd", curse.values.timer, ...args);
+      new TimeEvent("curseTimeoutEnd", curse.values.timer, ...args);
     }
 
-    if ("onCurseInit" in curseBase.callback){
-      curseBase.callback.onCurseInit(user, curse);
-    }
-
-
+    user.action("curseInit", {curse});
   }
 
 
@@ -2689,14 +2714,15 @@ class CurseManager {
       {
         _weight: 10,
         id: "callUserCommand",
-        description: "Используйте команду !юзер",
+        description: "Используйте команду !юзер <:piggeorg:758711403027759106>",
         hard: 0,
         values: {
           goal: () => random(1, 5),
           timer: () => random(1, 3) * 86_400_000
         },
         callback: {
-          callUserCommand: (user, data) => CurseManager.userCurse(user).incrementProgress(1)
+          callUserCommand: (user, curse) => CurseManager.intarface({user, curse})
+            .incrementProgress(1)
         },
         reward: 4
       },
@@ -2710,32 +2736,38 @@ class CurseManager {
           timer: () => random(1, 2) * 86_400_000
         },
         callback: {
-          berryBarter: (user, {quantity, isBuying}) => {
+          berryBarter: (user, curse, {quantity, isBuying}) => {
             isBuying === 1 ?
-              CurseManager.userCurse(user).incrementProgress(quantity) :
-              CurseManager.userCurse(user).fail();
+              CurseManager.intarface({user, curse}).incrementProgress(quantity) :
+              CurseManager.intarface({user, curse}).fail();
           }
         },
         reward: 4
       },
       {
-        _weight: 10,
+        _weight: 7,
         id: "weekdaysQuest",
         description: "Не пропускайте выполнение ежедневного квеста",
         hard: 2,
         values: {
           goal: () => random(3, 5),
-          timer: (user, curse) => (curse.values.goal - 1) * 86_400_000
+          timer: (user, curse) => {
+            const now = new Date();
+            const adding = curse.values.goal;
+            const timestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate() + adding).getTime();
+            return Math.floor(timestamp - now);
+          }
         },
         callback: {
-          onCurseInit: (user) => user.data.questProgress >= user.data.questNeed ?
-            CurseManager.userCurse(user).incrementProgress(1) :
-            null,
+          curseInit: (user, curse, data) => data.curse === curse &&
+            user.data.questProgress >= user.data.questNeed ?
+              CurseManager.intarface({user, curse}).incrementProgress(1) :
+              null,
 
-          dailyQuestCompete: (user, data) => CurseManager.userCurse(user).incrementProgress(1),
-          dailyQuestSkiped: () => CurseManager.userCurse(user).fail()
+          dailyQuestCompete: (user, curse) => CurseManager.intarface({user, curse}).incrementProgress(1),
+          dailyQuestSkiped:  (user, curse) => CurseManager.intarface({user, curse}).fail()
         },
-        reward: 20
+        reward: 16
       },
       {
         _weight: 10,
@@ -2751,8 +2783,8 @@ class CurseManager {
           }
         },
         callback: {
-          dailyQuestCompete: (user, data) => CurseManager.userCurse(user).incrementProgress(1),
-          callBotStupid: (user) => CurseManager.userCurse(user).fail()
+          dailyQuestCompete: (user, curse) => CurseManager.intarface({user, curse}).incrementProgress(1),
+          callBotStupid:     (user, curse) => CurseManager.intarface({user, curse}).fail()
         },
         filter: (user) => user.data.quest === "namebot",
         reward: 4
@@ -2763,12 +2795,12 @@ class CurseManager {
         description: "Победите в мини-игре с перцем",
         hard: 0,
         values: {
-          goal: () => 1,
+          goal: () => 2,
           timer: () => 86_400_000 * 2
         },
         callback: {
-          chilliBooh: (user, {boohIn}) => boohIn !== user ?
-            CurseManager.userCurse(user).incrementProgress(1) :
+          chilliBooh: (user, curse, {boohIn}) => boohIn !== user ?
+            CurseManager.intarface({user, curse}).incrementProgress(1) :
             null,
         },
         reward: 4
@@ -2779,7 +2811,7 @@ class CurseManager {
         description: "Победите в мини-игре с перцем. Нельзя проигрывать",
         hard: 0,
         values: {
-          goal: () => random(2, 3),
+          goal: () => 1,
           timer: (user, curse) => {
             const now = new Date();
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
@@ -2787,11 +2819,11 @@ class CurseManager {
           }
         },
         callback: {
-          chilliBooh: (user, {boohIn}) => boohIn !== user ?
-            CurseManager.userCurse(user).incrementProgress(1) :
-            CurseManager.userCurse(user).fail(),
+          chilliBooh: (user, curse, {boohIn}) => boohIn !== user ?
+            CurseManager.intarface({user, curse}).incrementProgress(1) :
+            CurseManager.intarface({user, curse}).fail(),
         },
-        reward: 4
+        reward: 7
       },
       {
         _weight: 10,
@@ -2803,15 +2835,15 @@ class CurseManager {
           timer: () => 86_400_000 * 10
         },
         callback: {
-          openChest: (user, {treasures}) => "void" in treasures ?
-            CurseManager.userCurse(user).incrementProgress(1) :
-            CurseManager.userCurse(user).fail(),
+          openChest: (user, curse, {treasures}) => "void" in treasures ?
+            CurseManager.intarface({user, curse}).incrementProgress(1) :
+            null,
 
         },
-        reward: 4
+        reward: 15
       },
       {
-        _weight: Infinity,
+        _weight: 10,
         id: "sonic",
         description: "Отправьте 70 сообщний за минуту",
         hard: 1,
@@ -2821,7 +2853,7 @@ class CurseManager {
           messages: () => []
         },
         callback: {
-          message: (user) => {
+          message: (user, curse) => {
             const now = Date.now();
             const messages = user.data.curse.values.messages;
 
@@ -2830,21 +2862,112 @@ class CurseManager {
             const extraTimeForMobileUsers = 5_000 * ("mobile" in (user.presence.clientStatus || {}));
             const TIMEOUT = 68_000 + extraTimeForMobileUsers;
 
-            while (messages.at(0) + TIMEOUT < now){
+            while (messages[0] + TIMEOUT < now){
               messages.shift();
             }
 
-            CurseManager.userCurse(user).setProgress(messages.length);
+            CurseManager.intarface({user, curse}).setProgress(messages.length);
           }
         },
         reward: 4
+      },
+      {
+        _weight: 1,
+        id: "mentionForDistribute",
+        description: "Упомяните двух человек, у которых нет, и не было сего, проклятия. Проклятие распространяется на каждого, кого вы упомянули",
+        hard: 0,
+        values: {
+          goal: () => 2,
+          timer: () => 86_400_000 / 2,
+          listOfUsers: (user) => [user.id]
+        },
+        callback: {
+          message: (user, curse, message) => {
+            const content = message.content;
+            const mentions = content.matchAll(Discord.MessageMentions.USERS_PATTERN)
+              .next()
+              .value;
+
+
+            if (!mentions){
+              return;
+            }
+
+            const target = client.users.cache.get(mentions[1]);
+            if (target.id === user.id || target.bot){
+              return;
+            }
+
+            if (!user.curses){
+              user.curses = [];
+            }
+            const haveCurse = user.data.curses.length;
+            if (haveCurse && user.data.voidFreedomCurse){
+              return;
+            }
+
+
+            const list = user.data.curse.values.listOfUsers || [];
+
+            if (list.includes(target.id)){
+              message.react("❌");
+              return; 
+            }
+
+            message.react("💀");
+
+            const curseBase = this.cursesBase.get( user.data.curse.id );
+            const createdCurse = this.generateOfBase({curseBase, user: target});
+
+            
+
+            this.init({curse: createdCurse, user: target});
+            list.push(target.id);
+            createdCurse.values.listOfUsers = list;
+
+            CurseManager.intarface({user, curse}).incrementProgress(1);
+          }
+        },
+        reward: 1
+      },
+      {
+        _weight: 5,
+        id: "coinFever",
+        description: "Отправьте коин-сообщения или дождитесь окончания. Даёт дополнительный шанс в 16% получить коин из сообщения. Однако количество денег будет уменьшаться",
+        hard: 0,
+        values: {
+          goal: (user) => 48 - nonNaN(user.data.chectLevel) * 16,
+          timer: () => 3_600_000 / 2
+        },
+        callback: {
+          message: (user, curse, message) => {
+            if (random(6)){
+              return;
+            }
+
+            const data = user.data;
+
+            const currentCoins = data.coins;
+            getCoinsFromMessage(data, message);
+            const difference = currentCoins - data.coins;
+
+            data.coins -= difference * 2;
+            CurseManager.intarface({user, curse}).incrementProgress(1);
+          },
+          curseTimeEnd: (user, curse, event) => {
+            const goal = curse.values.goal;
+            event.preventDefault();
+
+            CurseManager.intarface({user, curse}).setProgress(goal);
+          }
+        },
+        reward: 7
       }
     ]
     .map(curse => [curse.id, curse])
   );
 
-  static userCurse(user){
-    const curse = user.data.curse;
+  static intarface({curse, user}){
 
     const incrementProgress = (value) => {
       curse.values.progress = (curse.values.progress || 0) + value;
@@ -2861,7 +2984,7 @@ class CurseManager {
     const toString = () => {
       const curseBase = CurseManager.cursesBase.get(curse.id);
 
-      const description = `Описание:\n${ curseBase.description }`;
+      const description = curseBase.description;
       const progress = `Прогресс: ${ curse.values.progress || 0 }/${ curse.values.goal }`;
       const timer = curse.values.timer ? `\nТаймер: <t:${ Math.floor((curse.timestamp + curse.values.timer) / 1000) }:R> будет провалено` : "";
 
@@ -2881,33 +3004,47 @@ class CurseManager {
     }
   }
 
-  static checkAvailable(user){
-    const curse = user.data.curse;
+  static checkAvailable({curse, user}){
+
     if (!curse){
       return null;
     }
 
     if (curse.values.progress >= curse.values.goal){
-      CurseManager.curseEnd({user, lost: false});
+      CurseManager.curseEnd({user, curse, lost: false});
     }
 
     if (curse.values.timer && Date.now() > curse.timestamp + curse.values.timer){
-      CurseManager.curseEnd({user, lost: true});
+      const event = new Event("curseTimeEnd", {cancelable: true});
+      user.action("curseTimeEnd", {event, curse});
+      if (!event.defaultPrevented){
+        CurseManager.curseEnd({user, curse, lost: true});
+      }
     }
   }
 
-  static curseEnd({lost, user}){
-    const curse = user.data.curse;
+  static checkAvailableAll(user){
+    user.data.curses.forEach(
+      (curse) => this.checkAvailable({curse, user})
+    );
+  }
+
+  static curseEnd({lost, user, curse}){
     const curseBase = CurseManager.cursesBase.get(curse.id);
 
-    delete user.data.curse;
+    const index = user.data.curses.indexOf(curse);
+    if (index === -1){
+      return null;
+    }
+
+    user.data.curses.splice(index, 1);
 
     const getDefaultFields = () => {
       const fields = [];
       fields.push({
         name: "Прогресс:",
         value: Object.entries(curse.values)
-            .map(([key, value]) => `**${ key }**: \`${ Util.toLocaleDelevoperString(value) }\``)
+            .map(([key, value]) => `${ key }: \`${ Util.toLocaleDelevoperString(value) }\``)
             .join("\n")
 
       });
@@ -2915,7 +3052,7 @@ class CurseManager {
       fields.push({
         name: "Основа:",
         value: Object.entries(curseBase)
-            .map(([key, value]) => `**${ key }**: \`${ Util.toLocaleDelevoperString(value) }\``)
+            .map(([key, value]) => `${ key }: \`${ Util.toLocaleDelevoperString(value) }\``)
             .join("\n")
 
       });
@@ -2934,7 +3071,7 @@ class CurseManager {
     }
 
     if (lost){
-      user.level = Math.max(1, user.level - 1);
+      user.data.level = Math.max(1, user.data.level - 1);
       const fields = getDefaultFields();
       const image = "https://media.discordapp.net/attachments/629546680840093696/1014076170364534805/penguinwalk.gif";
       user.msg("Вы не смогли его одолеть 💀", {description: "Проклятие не было остановлено, а последствия необратимы. Вы теряете один уровень и, возможно, что-то ещё.", fields, color: "000000", image});
@@ -2957,18 +3094,18 @@ class CurseManager {
       const voidReward = getVoidReward();
 
       const getCoinsReward = () => {
-        const BASIC_REWARD = 800;
-        const ADDING_REWARD = 450;
-        return BASIC_REWARD + ADDING_REWARD * curseBase.hard;
+        const BASIC_REWARD = 200;
+        const ADDING_REWARD = 115;
+        return (BASIC_REWARD + ADDING_REWARD * curseBase.hard) * curseBase.reward;
       }
       const coinsReward = getCoinsReward();
 
-      user.coins += coinsReward;
-      user.void += voidReward;
+      user.data.coins += coinsReward;
+      user.data.void += voidReward;
 
       const rewardContent = `${ ending(coinsReward, "коин", "ов", "", "а") }${ voidReward ? ` и ${ ending(voidReward, "нестабильност", "и", "ь", "и") }` : "" }`;
       const descriptionFooter = `${ coinsReward ? "<:coin:637533074879414272>" : "" } ${ voidReward ? "<a:void:768047066890895360>" : "" }`;
-      const description = `Это ${ user.data.cursesEnded }-й раз, когда Вам удаётся преодолеть условия созданные нашей машиной для генерации проклятий.\nВ этот раз вы получаете: ${ rewardContent }. Награда такая незначительная только потому, что основным поставщиком ресурсов итак является сундук. Да будь он проклят!\n${ descriptionFooter }`;
+      const description = `Это ${ user.data.cursesEnded }-й раз, когда Вам удаётся преодолеть условия созданные нашей машиной для генерации проклятий.\nВ этот раз вы получаете: ${ rewardContent }. Награда такая незначительная в связи с тем, что основным поставщиком ресурсов является сундук. Да будь он проклят!\n${ descriptionFooter }`;
 
       const image = "https://media.discordapp.net/attachments/629546680840093696/1014076170364534805/penguinwalk.gif";
 
@@ -3019,6 +3156,7 @@ class BossManager {
 
     if (guildData.boss.endingDate === data.bot.dayDate){
       delete guildData.boss;
+      return;
     }
 
     if (guildData.boss.apparanceDate === data.bot.dayDate){
@@ -3058,7 +3196,7 @@ class BossManager {
   }
 
   static async beforeApparance(guild){
-    if (msg.guild.id !== "628993637530992650"){
+    if (guild.id !== "628993637530992650"){
       return;
     }
     const data = guild.data;
@@ -3122,10 +3260,15 @@ const commands = {
   user: new Command(async (msg, op) => {
     let
       memb   = (op.args) ? op.memb || client.users.cache.get(op.args) || msg.author : msg.author,
-      member = (msg.guild) ? msg.guild.member(memb) : false,
+      member = (msg.guild) ? msg.guild.member(memb) : null,
       user   = memb.data,
       rank   = "",
       guild  = msg.guild;
+
+      if (member === undefined){
+        msg.msg("На сервере нет упомянутого пользователя", {color: "ff0000", delete: 9000});
+        return;
+      }
 
       msg.author.action("callUserCommand", {msg, op});
 
@@ -3152,7 +3295,7 @@ const commands = {
 
       let embed = {
         author: {
-          name: "#" + member.displayName || memb.username,
+          name: `#${ member ? member.displayName : memb.username }`,
           iconURL: memb.avatarURL({dynamic : true})
         },
         color: user.profile_color || "RANDOM",
@@ -3174,9 +3317,12 @@ const commands = {
       if (!memb.bot)
         embed.fields.push({name:"\nКвест:", value: (user.quest) ? `${ quests[user.quest] } ${ user.questProgress || 0 }/${ user.questNeed }` : " – Квест выполнен"});
 
-      if (user.curse)
-        embed.fields.push({name: "᠌᠌", value: `Прогресс проклятия: ${ user.curse.values.progress || 0 }/${ user.curse.values.goal }`});
+      if (user.curses && user.curses.length)
+        embed.fields.push({name: "᠌᠌", value: `Прогресс проклятия: ${ 
+          user.curses.map(curse => `・${ curse.values.progress || 0 }/${ curse.values.goal }`).join("; ")
+         }`});
 
+        
 
       const inventory = [
         `🔩${user.keys}`,
@@ -3213,9 +3359,22 @@ const commands = {
         },
         {
           name: "Проклятия 💀",
-          value: `Пережито проклятий: ${ user.cursesEnded || 0 }\n Текущее проклятие: ${ !user.curse ? "отсуствует." : `\n>>> ${ CurseManager.userCurse(memb).toString() }` }`,
+          value: (() => {
+            const surviveContent = `Пережито проклятий: ${ user.cursesEnded || 0 }`;
+            const getCurrentContent = () => {
+              if (!user.curses){
+                return "Проклятия отсуствуют.";
+              }
+              
+              const count = ending(user.curses.length, "", `Текущие проклятия (их ${ user.curses.length })`, "Текущее проклятие", "Текущие два проклятия", {slice: true});
+              const curse = user.curses.random();
+              const description = CurseManager.intarface({user: memb, curse}).toString();
+              return `>>> ${ count }:\n${ description }`
+            }
+            return `${ surviveContent }\n${ getCurrentContent() }`;
+          })(),
           inline: false,
-          filter: () => user.cursesEnded || user.curse
+          filter: () => user.cursesEnded || user.curses
         },
         {
           name: "Бонусы котла <a:placeForVoid:780051490357641226>",
@@ -3236,7 +3395,6 @@ const commands = {
             break;
           case "640449832799961088":
             let footer = member ? {text: `На сервере с ${new Intl.DateTimeFormat("ru-ru", {day: "numeric", year: "numeric", month: "long"}).format(member.joinedTimestamp)}`} : null;
-
             message = await message.msg(`Статистика ${memb.tag}`, {
               fields: fields.filter(field => !field.filter || field.filter()),
               edit: true,
@@ -3345,8 +3503,35 @@ const commands = {
   }, {delete: true, memb: true, type: "user"}, "похвалить like лайк лайкнуть"),
 
   praises: new Command(async (msg, op) => {
+
+    if (op.args === "+"){
+      const data = msg.author.data;
+
+      const currentPraises = data.praise || [];
+      const currentLength = currentPraises.length;
+
+      currentPraises.forEach(id => {
+        const target = client.users.cache.get(id).data.praiseMe;
+        if (!target)
+          return;
+
+        const index = target.indexOf( msg.author.id );
+        if (index === -1)
+          return;
+
+        target.splice(index, 1);
+      });
+
+      data.praise = [];
+
+
+
+      msg.msg("", {description: `Использован параметр "+" — все похвалы были удалены (${ currentLength })`, delete: 10000});
+    }
+
+
     let
-      memb = (op.memb) ? op.memb : (op.args) ? msg.guild.members.cache.get(op.args).user : msg.author,
+      memb = op.memb || msg.guild.members.cache.get(op.args) || msg.author,
       user = memb.data,
       isAuthor = memb == msg.author,
       iPraise  = (user.praise && user.praise.length) ? user.praise.map((id, i) => (i + 1) + ". "+ (getData(id) ? Discord.Util.escapeMarkdown( getData(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вы никого не хвалили \nиспользуйте **!похвалить**" : "Никого не хвалил",
@@ -3661,7 +3846,7 @@ const commands = {
     if (!op.args){
       embed = new Discord.MessageEmbed()
       .setTitle("Эмбед конструктор")
-      .setColor(((package.device != "PC") ? "23ee23" : "000100"))
+      .setColor(((process.env.DEVELOPMENT === "FALSE") ? "23ee23" : "000100"))
       .setDescription(commandDescription)
     }
     else {
@@ -3673,7 +3858,7 @@ const commands = {
         msg.msg("В JSON(-е) ошибка, или аргументы не являются json(-м)", {description: e.message, delete: 10000})
         embed = new Discord.MessageEmbed()
         .setTitle("Эмбед конструктор")
-        .setColor(((package.device != "PC") ? "23ee23" : "000100"))
+        .setColor(((process.env.DEVELOPMENT === "FALSE") ? "23ee23" : "000100"))
         .setDescription(commandDescription)
       }
     }
@@ -4043,7 +4228,7 @@ const commands = {
     let num = op.args.match(/\d+|\+/);
 
     if (!num) {
-      msg.msg("Вы не ввели значение. Ожидаеся сумма передачи.", {color: "ff0000"});
+      msg.msg("Вы не ввели значение. Ожидается сумма передачи.", {color: "ff0000"});
       return;
     }
 
@@ -4157,6 +4342,8 @@ const commands = {
   }, {delete: true, dm: true, memb: true, try: 7, cooldown: 300, type: "user"}, "give дать заплатить"),
 
   bot: new Command(async (msg, op) => {
+
+
     let {rss, heapTotal} = process.memoryUsage();
     let season = ["Зима", "Весна", "Лето", "Осень"][Math.floor((new Date().getMonth() + 1) / 3) % 4];
     const VERSION = "V5.740 BETA";
@@ -4684,7 +4871,10 @@ const commands = {
   }, {dm: true, type: "dev"}, "войс"),
 
   birthdays: new Command(async (msg, op) => {
-    const [currentDay, currentMonth] = data.bot.dayDate.split(".");
+    const splitDate = (date) => date.split(".").map(Number);
+
+    const [currentDay, currentMonth] = splitDate(data.bot.dayDate);
+
 
 
     const users = msg.guild.members.cache
@@ -4692,8 +4882,8 @@ const commands = {
       .filter(user => user.data.BDay && !user.data.profile_confidentiality);
 
     const sortByDate = (userA, userB) => {
-      const [aDay, aMonth] = userA.data.BDay.split(".");
-      const [bDay, bMonth] = userB.data.BDay.split(".");
+      const [aDay, aMonth] = splitDate(userA.data.BDay);
+      const [bDay, bMonth] = splitDate(userB.data.BDay);
 
 
       if (aMonth !== bMonth){
@@ -4712,13 +4902,16 @@ const commands = {
       inNextYear: []
     }
 
-    users.forEach(user => {
-      const [day, month] = user.data.BDay.split(".");
-
-      const inThisYear =
+    const checkInThisYear = (day, month) => 
         month > currentMonth ||
         month === currentMonth && day >= currentDay;
+    
 
+    users.forEach(user => {
+      const [day, month] = splitDate(user.data.BDay);
+
+      const inThisYear = checkInThisYear(day, month);
+      
       inThisYear ?
         usersByBirthdays.inThisYear.push(user) :
         usersByBirthdays.inNextYear.push(user);
@@ -4730,10 +4923,30 @@ const commands = {
       usersByBirthdays.inThisYear.sort(sortByDate) :
       [...usersByBirthdays.inThisYear.sort(sortByDate), ...usersByBirthdays.inNextYear.sort(sortByDate)];
 
+
+    const daysTo = ({date: [day, month], current}) => {
+      const year = new Date().getFullYear() + (+!current);
+      const compare = new Date(`${ year }.${ month }.${ day }`);
+
+      const diff = compare.getTime() - Date.now();
+      return Math.ceil(diff / 86_400_000);
+    }
+
+    const toField = (user) => {
+      const isToday = user.data.BDay === data.bot.dayDate;
+      const inThisYear = checkInThisYear(...splitDate(user.data.BDay));
+
+      const dateContent = isToday ? "сегодня! 🎁" : user.data.BDay;
+      const inDaysContent = ` (через ${ daysTo({current: inThisYear, date: splitDate(user.data.BDay)}) }д.)`;
+      const name = `${ dateContent }${ inDaysContent }`;
+      const value = user.tag;
+      return {name, value, inline: true};
+    };
+
     const fields = sortedUsers.length ?
       sortedUsers
         .slice(0, 20)
-        .map(user => ({name: user.data.BDay === data.bot.dayDate ? "сегодня! 🎁" : user.data.BDay, value: user.tag, inline: true})) :
+        .map(toField) :
       [{name: "Никто не установил дату своего дня рождения", value: "Сделать это можно — `!нп др <date>`"}];
 
 
@@ -4835,6 +5048,24 @@ const commands = {
   }, {args: true, cooldown: 1200, try: 2, delete: true, type: "bot"}, "идея innovation новвоведение"),
 
   grempen: new Command(async (msg, op) => {
+
+    if (op.memb){
+      const data = op.memb.data;
+      const wordNumbers = ["ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"];
+
+      const getList = (mask) => wordNumbers.filter((word, index) => (2 ** index) & mask);
+      const list = getList(data.grempen || 0);
+
+      const buyingItemsContent = data.shopTime === Math.floor(getTime() / 86400000) && data.grempen ?
+        `приобрел ${ ending(list.length, "товар", "ов", "", "а") } под номером: ${ add_and( list.sort(Math.random) ) }. Если считать с нуля конечно-же.` :
+        "сегодня ничего не приобретал.\nМожет Вы сами желаете чего-нибудь прикупить?";
+
+      const description = `Ох, таки здравствуйте. Человек, о котором Вы спрашиваете ${ buyingItemsContent }`;
+      msg.msg("<:grempen:753287402101014649> Зловещая лавка", {description, color: "541213", thumbnail: op.memb.avatarURL()});
+      return;
+    }
+
+
     let user = msg.author.data;
 
     const allItems = [
@@ -5087,7 +5318,13 @@ const commands = {
         inline: true,
         others: ["камень", "проклятие", "камень с глазами"],
         fn: (product) => {
-          if (user.curse){
+          if (!user.curses){
+            user.curses = [];
+          }
+
+          const already = user.curses.length;
+
+          if (already && !user.voidFreedomCurse){
             user.coins += product.value;
             user.grempen -= 2 ** todayItems.indexOf(product);
             return " как ничто. Ведь вы уже были прокляты!";
@@ -5097,7 +5334,7 @@ const commands = {
           const curseBase = CurseManager.cursesBase.get(curse.id);
           CurseManager.init({user: msg.author, curse});
 
-          return ` как новое проклятие: ${ curseBase.description }, чтобы избавится от бича камня.`;
+          return ` как новое проклятие. Чтобы избавится от бича камня: ${ curseBase.description }.`;
         }
       }
     ];
@@ -5350,10 +5587,10 @@ const commands = {
       // buying == -1 || 1
       myBerrys = user.berrys;
 
-      quantity = Math.floor(quantity);
-
       if (quantity === "+")
-        quantity = user.berrys;
+        quantity = myBerrys;
+
+      quantity = Math.floor(quantity);
 
       if ( isNaN(quantity) ){
         msg.msg("Указана строка вместо числа", {color: "ff0000", delete: 5000});
@@ -5366,7 +5603,7 @@ const commands = {
       }
 
       if (isBuying < 0 && quantity > myBerrys){
-        msg.msg(`Вы не можете продать ${quantity} <:berry:756114492055617558>, у вас всего ${myBerrys}`, {color: "ff0000", delete: 5000});
+        msg.msg(`Вы не можете продать ${ quantity } <:berry:756114492055617558>, у вас всего ${myBerrys}`, {color: "ff0000", delete: 5000});
         return;
       }
 
@@ -6501,18 +6738,16 @@ const commands = {
 
   chilli: new Command(async (msg, op) => {
     let memb = op.memb;
-    let chilli = msg.channel.chilli && msg.channel.chilli.find(e => e.id == msg.author.id);
+    let chilli = msg.channel.chilli && msg.channel.chilli.find(chilli => chilli.current === msg.author.id);
     setTimeout(() => msg.delete(), 30000);
 
     const addName = (memb) => {
-      let current = memb.displayName;
       let newName = memb.displayName + "(🌶)";
-      memb.setNickname(newName);
+      memb.setNickname(newName).catch(() => {});
     }
     const removeName = (memb) => {
-      let current = memb.displayName;
       let newName = memb.displayName.replace(/\(🌶\)/g, "").trim();
-      memb.setNickname(newName);
+      memb.setNickname(newName).catch(() => {});
     }
 
 
@@ -6527,7 +6762,7 @@ const commands = {
     }
 
     if (chilli){
-      chilli.id = memb.id;
+      chilli.current = memb.id;
       chilli.players[msg.author.id] = ++chilli.players[msg.author.id] || 1;
       removeName(op.member);
       addName(msg.guild.member(memb));
@@ -6545,30 +6780,46 @@ const commands = {
       return;
     }
 
+    const confirm = await msg.msg("Подготовка", {description: `${ msg.author.username }, вы бросили перец, нажмите "❌" чтобы отменить`, reactions: ["❌"]});
+
+    await delay(2000);
+    confirm.delete();
+
+    const confirmed = !confirm.reactions.cache.get("❌").users.cache.has(msg.author.id);
+    if (!confirmed){
+      msg.msg("Отменено 🌶️", {delete: 7000});
+      return;
+    }
+      
+
+
     msg.author.data.chilli--;
     msg.channel.chilli = msg.channel.chilli || [];
+
     msg.msg(`Перец падает! Перец падает!!`, {description: `\*перец упал в руки ${memb.toString()}\*\nЧтобы кинуть обратно используйте \`!chilli @memb\``, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"}});
     addName(msg.guild.member(memb));
     let ms = random(30, 37) * 1000;
-    chilli = {timestamp: getTime() + ms, players: {}, id: memb.id, rebounds: 0};
+
+    chilli = { timestamp: getTime() + ms, players: {}, current: memb.id, rebounds: 0, author: msg.author.id };
+    chilli.players[ memb.id ] = 0;
+    chilli.players[ msg.author.id ] = 0;
+
     msg.channel.chilli.push(chilli);
 
     chilli.timeout = setTimeout(() => {
-      let member = msg.guild.members.cache.get(chilli.id);
-
+      let member = msg.guild.members.cache.get(chilli.current);
 
       Object.keys(chilli.players)
         .forEach(id => client.users.cache.get(id).action("chilliBooh", {boohTarget: member, chilli, msg, op}));
 
       msg.msg("Бах! Перчик взорвался!", {
         description: `Перец бахнул прямо у ${ member }\nИгра окончена.\nБыло совершено отскоков: ${ chilli.rebounds }`,
-        fields: Object.entries(chilli.players).sortBy("1", true).map(([id, score]) => ({name: msg.guild.members.cache.get(id).user.username, value: `Счёт: ${score}`})).slice(0, 20),
+        fields: Object.entries(chilli.players).sortBy("1", true).map(([id, score]) => ({name: msg.guild.members.cache.get(id).user.username, value: `Счёт: ${ score }`})).slice(0, 20),
         footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"}
       });
       removeName(member);
       msg.channel.chilli.splice(msg.channel.chilli.indexOf(chilli), 1);
 
-      Object.keys(chilli.players).forEach(e => getData(e).CD_38 = getTime() + 30000);
 
       if (!msg.channel.chilli[0]) {
         delete msg.channel.chilli;
@@ -6597,14 +6848,14 @@ const commands = {
 
 
     let membWins = memb.data.thiefWins |= 0;
-    let k = (1 + (membWins > 0 ? membWins * 0.8 : Math.max(membWins, -10) * 0.07));
+    let k = (1 + (membWins > 0 ? membWins * 1.2 : Math.max(membWins, -10) * 0.07));
 
     if (memb.data.voidMonster){
       k *= 12;
     }
 
 
-    let rand = ~~(random(21, 49) * (combo / 10 + 1) * k);
+    let rand = ~~(random(21, 49) * (combo / 10 + 1) * k) + memb.data.level;
 
     if (memb.presence.status == "offline")
       return msg.msg("Вы не можете ограбить пользователя, который в оффлайн", {color: "ff0000", delete: 7000});
@@ -6676,7 +6927,7 @@ const commands = {
       }
 
       if (detective){
-        coinsReturn = memb.data.thiefWins * -100 * Math.round(combo / 2 + 2);
+        coinsReturn = -memb.data.thiefWins * 50 * Math.round(combo / 2 + 2);
         op.user.coins -= coinsReturn;
         op.user.thiefGloves = "-2|0";
         memb.data.thiefWins += 5;
@@ -6698,7 +6949,7 @@ const commands = {
       memb.quest("hopeless");
 
     if (op.user.voidThief)
-      op.user.chestBonus = nonNaN(op.user.chestBonus) + op.user.voidThief * 2;
+      op.user.chestBonus = nonNaN(op.user.chestBonus) + op.user.voidThief * 10;
 
 
 
@@ -6895,7 +7146,7 @@ const commands = {
     });
     new TimeEvent("remind", timeTo, msg.author.id, msg.channel.id, phrase);
     msg.msg("Напомнинание создано", {description: `— ${ phrase[0].toUpperCase() + phrase.slice(1) }`, timestamp: getTime() + timeTo, footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}});
-  }, {cooldown: 20, try: 3, delete: true, type: "other"}, "напомни напоминание"),
+  }, {cooldown: 20, try: 3, delete: true, type: "other"}, "напомни напоминание напомнить"),
 
   giveaway: new Command(async (msg, op) => {
     let message = await msg.msg("🌲 Создание раздачи", {description: "Используйте реакции ниже, чтобы настроить раздачу!\n◖🪧  Текст 🚩\n◖⏰  Дата окончания 🚩\n◖🎉  Кол-во победителей\n◖🎁  Выдаваемые роли", color: "4a7e31", footer: {text: "🚩 Обязательные пункты перед началом"}});
@@ -7003,6 +7254,12 @@ const commands = {
   witch: new Command(async (msg, op) => {
     // <a:void:768047066890895360> <a:placeForVoid:780051490357641226> <a:cotik:768047054772502538>
 
+    if (op.memb){
+      const data = op.memb.data;
+      msg.msg("<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг", {description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${ op.memb.username }, использовал котёл ${ data.voidRituals } раз.\nЕго бонус к опыту: ${ (100 * (1.02 ** data.voidRituals)).toFixed(2) }% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`, color: "3d17a0"});
+      return;
+    }
+
     let user = op.user;
     let minusVoids = Math.floor(Math.min(2 + user.voidRituals, 20) * (1 - 0.10 * nonNaN(user.voidPrise)));
 
@@ -7085,7 +7342,7 @@ const commands = {
       },
       {
         emoji: "💠",
-        description: "Даёт \\*бонус сундука* каждый раз, когда с помощью перчаток вам удается кого-то ограбить.",
+        description: "Даёт \\*бонуы сундука* каждый раз, когда с помощью перчаток вам удается кого-то ограбить.",
         _weight: 20,
         action: () => user.voidThief = ++user.voidThief || 1
       },
@@ -7127,7 +7384,7 @@ const commands = {
       },
       {
         emoji: "💖",
-        description: `Ваши монстры будут защитить вас от ограблений Воров`,
+        description: `Ваши монстры будут защищать вас от ограблений Воров`,
         _weight: 3,
         filter_func: () => user.monster && !user.voidMonster,
         action: () => user.voidMonster = 1
@@ -7156,6 +7413,13 @@ const commands = {
           user.void += voids;
           user.voidRituals -= 3;
         }
+      },
+      {
+        emoji: "🪸",
+        description: `Позволяет иметь более более одного проклятия`,
+        _weight: Infinity,
+        filter_func: () => !(user.cursesEnded % 10) && !user.voidFreedomCurse,
+        action: () => user.voidFreedomCurse = 1
       },
       {
       emoji: "❄️",
@@ -7601,7 +7865,7 @@ const commands = {
         output = String(output);
     }
 
-    if (package.device === "HOST"){
+    if (process.env.DEVELOPMENT === "FALSE"){
       const hook = new Discord.WebhookClient("1006423793100664953", "dFUlXrQkpMu7Kb3ytBYzzfsHPDRucDonBwMGpqApi426J3OKuFEMttvw2ivlIcbrtAFJ");
       hook.msg = Discord.Webhook.prototype.msg;
       hook.msg("", {author: {name: `${ msg.author.username }, в #${ msg.channel.id }`, iconURL: client.user.avatarURL()}, description: `\`\`\`js\n${ code }\`\`\``, color: "1f2022", footer: {iconURL: client.emojis.cache.get(emoji).url, text: "Вызвана команда !eval"}, destroy: true});
@@ -7634,6 +7898,41 @@ const commands = {
   }, {type: "other"}, "dev евал эвал"),
 
   thing: new Command(async (msg, op) => {
+
+    const getColor = (element) => ["34cc49", "a3ecf1", "dd6400", "411f71"][element];
+    const getEmoji = (element) => ["🍃", "☁️", "🔥", "👾"][element];
+
+    const getCooldownInfo = () => {
+      const COOLDOWN     = 10800000;
+      const COOLDOWN_TRY = 2;
+      const cooldownThresholder = getTime() + COOLDOWN * (COOLDOWN_TRY - 1);
+
+      return {COOLDOWN, COOLDOWN_TRY, cooldownThresholder};
+    }
+
+    if (op.memb){
+      const element = op.memb.data.element || null;
+      if (element === null){
+        msg.msg("", {description: "Упомянутый пользователь пока не открыл штуку.."});
+        return;
+      }
+
+      const username = op.memb.username;
+
+      const color = getColor(element);
+      const emoji = getEmoji(element);
+
+      // ENOT-enot-enot...
+      const mentionContent = [username.toUpperCase(), username.toLowerCase(), username.toLowerCase()].join("-");
+
+      const {cooldownThresholder} = getCooldownInfo();
+      const inCooldownContent = ["Нет.", "Да."][ +(op.memb.data.CD_52 > cooldownThresholder) ];
+
+      const description = `${ mentionContent }...\nВыбранная стихия: ${ emoji }\nУровень штуки: ${ (op.memb.data.elementLevel || 0) + 1 }\n\nНа перезарядке: ${ inCooldownContent }`
+      msg.msg("", {description, color});
+      return;
+    }
+
     let user = msg.author.data;
     let { element, elementLevel } = user;
 
@@ -7700,9 +7999,9 @@ const commands = {
       return commands.thing.code(msg, {command: "thing", args: "я"});
     }
 
-    let emoji = ["🍃", "☁️", "🔥", "👾"][element];
+    let emoji = getEmoji(element);
+    let embedColor = getColor(element);
     let level = elementLevel || 0;
-    const embedColor = ["34cc49", "a3ecf1", "dd6400", "411f71"][element];
 
     if (match(op.args, /улучшить|up|level|уровень|ап/i)){
 
@@ -7753,9 +8052,7 @@ const commands = {
       return;
     }
 
-    const COOLDOWN     = 10800000;
-    const COOLDOWN_TRY = 2;
-    const cooldownThresholder = getTime() + COOLDOWN * (COOLDOWN_TRY - 1);
+    const {cooldownThresholder, COOLDOWN} = getCooldownInfo();
 
     if (user.CD_52 > cooldownThresholder){
       const title = `${ emoji } Штука перезаряжается!`;
@@ -7795,7 +8092,7 @@ const commands = {
               action: async () => {
                 if (user.chilli && !random(5)){
                   let sellingCount = nonNaN( Math.min(user.chilli, 3 + user.elementLevel) );
-                  let prise = random(sellingCount * 140, sellingCount * 170);
+                  let prise = random(sellingCount * 160, sellingCount * 190);
                   user.chilli -= sellingCount;
                   user.coins += prise;
                   scene.phrase = `Вы смогли продать ${ending(sellingCount, "пер", "цев", "ец", "ца")} и заработали ${prise} <:coin:637533074879414272>`;
@@ -8652,7 +8949,7 @@ const commands = {
     let guideDescription;
 
 
-    guideDescription = fs.readFileSync("main/cmdsDescription.txt", "utf-8").split("---")[cmd.id - 1] || "Описание для этой команды пока отсуствует...";
+    guideDescription = fs.readFileSync("main/descriptions-commands.txt", "utf-8").split("---")[cmd.id - 1] || "Описание для этой команды пока отсуствует...";
     let gifURL = match(guideDescription, /(?<=\n)http\S+/);
     if (gifURL){
       guideDescription = guideDescription.replace(gifURL, "").trim();
@@ -8865,6 +9162,34 @@ const commands = {
   }, {dm: true, type: "other", myPermissions: 1}, "ютуб ютубвместе youtubetogether"),
 
   invites: new Command(async (msg, op) => {
+    if (op.memb){
+      const member = msg.guild.member(op.memb);
+
+      const getGuildMemberInvites = async (member) => {
+        const guild = member.guild;
+        const invites = await guild.fetchInvites();
+        
+        if (!invites){
+          return null;
+        }
+
+        return invites.filter(({inviter}) => inviter === member.user);
+      }
+
+      const invitesCount = member.user.data.invites || 0;
+
+      const byInvitesCountContent = `За время пребывания бота на сервере, упомянутый пользователь пригласил ${ ending(invitesCount, "человек", "", "", "а") }.`;
+
+      const guildInvites = await getGuildMemberInvites(member);
+      const byGuildDataContent = guildInvites && guildInvites.size ? `${ member.displayName } создал(-a) ${ ending(guildInvites.size, "", "ссыллок-приглашений", "ссылку-приглашение", "ссылки-приглашения") } — посетило ${ ending(guildInvites.reduce((acc, invite) => (invite.uses || 0) + acc, 0), "персон", "", "а", "ы") } <:treeJoke:827441080492490752>` : "";
+
+      const description = `${ byInvitesCountContent }\n${ byGuildDataContent }`;
+      const footer = {iconURL: member.user.avatarURL(), text: member.username};
+
+      msg.msg("", {footer, description});
+      return;
+    }
+
     let answer = await accept("invites_command", {message: "Присвойте ссылкам их уникальную роль", description: "Как это работает?\nВы как администратор создаете роль, назовём её \"Фунтик\" и решаете, какие пользователи будут получать её при входе на сервер. Есть несколько типов условий, которые это определяют, они указаны в порядке приоритета и их может быть несколько.\n\n1) В режиме постоянной ссылки, вы просто указывете её, и всем, кто пришёл на сервер через эту ссылку будет выдана роль Фунтик.\n2) Выдаваемая роль будет определяться наличием у пригласившего другой роли, например, \"Хороший друг\". Любая ссылка созданная \"Хорошим другом\" будет давать Фунтика \n3) По умолчанию. Если не отработал ни один вариант выше, будет выдана наша роль\n\nЗачем это?\nВы можете определить права участника в зависимости от того, кто его пригласил; ведение статистики, распределение людей которые пришли с партнёрки и по знакомству, тому подобное. Это то, что вы можете сделать с помощью этой команды"}, msg.channel, msg.author.data);
     if (!answer) return;
 
@@ -8874,7 +9199,7 @@ const commands = {
         text: "Орифлейм. Стоп-контроль"
       }
     }
-    let message = msg.msg("Присвойте ссылкам их уникальную роль", embed);
+    let message = await msg.msg("Присвойте ссылкам их уникальную роль", embed);
     embed.edit = true;
     let reactions = ["1️⃣", "2️⃣", "3️⃣"];
     let react = await message.awaitReact({ user: msg.author, type: "all" }, ...reactions);
@@ -9260,7 +9585,18 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       description
     }
     msg.msg(embed.title, embed);
-  }, {type: "other"}, "босс")
+  }, {type: "other"}, "босс"),
+
+  dump: new Command(async (msg, op) => {
+    const message = await msg.channel.send({
+      files: [{
+        attachment: "main/data.json",
+        name: new Intl.DateTimeFormat("ru-ru", {year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric"}).format()
+      }]
+    });
+
+    setTimeout(() => message.delete(), 1_000_000);
+  }, {type: "other", cooldown: 100}, "дамп")
 }
 
 const quests = {
@@ -9541,18 +9877,16 @@ const timeEvents = {
 
   curseTimeoutEnd: function(isLost, userId, timestamp){
     const user = client.users.cache.get(userId);
-    const curse = user.data.curse;
+    const curses = user.data.curses;
+    
+    const compare = curse => curse.timestamp === timestamp;
+    const curse = curses.find(compare);
 
     if (!curse){
       return;
     }
 
-    // is other curse
-    if (curse.timestamp !== timestamp){
-      return;
-    }
-
-    CurseManager.checkAvailable(user);
+    CurseManager.checkAvailable({user, curse});
   }
 };
 
@@ -9605,8 +9939,11 @@ getSaves();
 //
 // !eval console.log(Object.keys(commands).map(e => e + " " + commands[e].id));
 
+await TimeEvent.loadEventFromFile();
+await ReactionsManager.loadReactionsFromFile();
+await CounterManager.loadCountersFromFile();
 
-setTimeout(() => client.login(package.token), 100);
+setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
 // <:coin:637533074879414272> <a:void:768047066890895360>
 
 

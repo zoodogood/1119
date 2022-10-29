@@ -15,6 +15,6 @@ function toLocaleDelevoperString(value){
 }
 
 
-module.exports = {
+export {
   toLocaleDelevoperString
-};;
+};
