@@ -1,14 +1,14 @@
 {
-  "name": "bot",
+  "name": "greenghost",
   "version": "0.2.5.3",
   "description": "",
   "device": "PC",
   "token": "*ТОКЕН*",
-  "main": "bot.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "ZooDoGooD",
+  "author": "github.com/zoodogood",
   "license": "ISC",
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
