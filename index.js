@@ -5209,8 +5209,8 @@ const commands = {
           user.coins += product.value + (isFirst ? 200 : -200);
           msg.author.quest("beEaten");
 
-          if (user.curse){
-            delete user.curse;
+          if (user.curses.length > 0){
+            delete user.curses;
             return ", как магический артефакт, защитивший вас от проклятия";
           }
 
