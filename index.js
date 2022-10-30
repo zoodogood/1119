@@ -5177,7 +5177,7 @@ const commands = {
         inline: true,
         others: ["консервы", "интеллект"],
         fn: () => {
-          if (!user.iq === undefined){
+          if (user.iq === undefined){
             user.iq = random(27, 133);
           }
 
@@ -5191,7 +5191,7 @@ const commands = {
         inline: true,
         others: ["бутылка", "бутылку", "глупость", "глупости"],
         fn: () => {
-          if (!user.iq === undefined){
+          if (user.iq === undefined){
             user.iq = random(27, 133);
           }
 
