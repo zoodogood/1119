@@ -28,7 +28,7 @@ client.on("ready", async () => {
   client.options.disableMentions = "everyone";
   client.guilds.cache.forEach(async el => el.invites = await el.fetchInvites().catch(() => {}));
 
-  if (process.env.DEVELOPMENT === "PC") {
+  if (process.env.DEVELOPMENT === "TRUE") {
     client.user.setActivity("Кабзец тебе, Хозяин", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
   }
   else {
@@ -197,11 +197,11 @@ client.on("ready", async () => {
 
     const name = `Имя: ${ e.user.tag }${ e.user.bot ? " BOT" : "" }`;
 
-    let message = (banInfo) ?
-      {mes: `Участник был ${banInfo.action == "MEMBER_KICK" ? "кикнут" : "забанен"}`, des: `${ name }\nВыгнавший с сервера: ${e.guild.member(banInfo.executor).displayName}` + reason()} :
-      {mes: "Участник покинул сервер", des: `${ name }\nНадеемся, он скоро вернётся`};
+    const message = banInfo ?
+      {content: `Участник был ${banInfo.action == "MEMBER_KICK" ? "кикнут" : "забанен"}`, description: `${ name }\nВыгнавший с сервера: ${e.guild.member(banInfo.executor).displayName} ${ JSON.stringify(reason()).slice(0, 1000) }`} :
+      {content: "Участник покинул сервер", description: `${ name }\nНадеемся, он скоро вернётся`};
 
-    e.guild.logSend(message.mes, {description: message.des, color: banInfo ? "ff0000" : "00ff00"});
+    e.guild.logSend(message.content, {description: message.description, color: banInfo ? "ff0000" : "00ff00"});
   });
 
   client.on("guildMemberUpdate", async (old, memb) => {
