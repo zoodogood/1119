@@ -7831,6 +7831,8 @@ const commands = {
       output = error;
     }
 
+    let emoji;
+
     switch (true){
       case (output === undefined):
         output = "```{Пусто}```";
