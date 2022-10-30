@@ -1504,9 +1504,9 @@ Discord.User.prototype.action = function(id, data){
 Discord.User.prototype.quest = function(name, channel = this, count = 1){
   if (this.bot) return;
   let
-    memb   = this,
-    user   = memb.data,
-    days   = data.bot.dayDate;
+    memb        = this,
+    user        = memb.data,
+    currentDate = data.bot.dayDate;
 
   if (quests.names[name]){
     user.completedQuest = user.completedQuest || [];
@@ -1524,7 +1524,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
   }
 
 
-  if (user.questTime != days) {
+  if (user.questTime !== currentDate) {
     if (user.quest !== undefined){
       this.action("dailyQuestSkiped", {quest: user.quest});
     }
