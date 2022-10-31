@@ -3468,8 +3468,8 @@ const commands = {
 
   praise: new Command(async (msg, op) => {
     let
-      memb     = op.memb;
-      user     = op.user;
+      memb     = op.memb,
+      user     = op.user,
       membUser = memb.data;
 
     if (memb == msg.author) {
