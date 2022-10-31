@@ -28,11 +28,11 @@ client.on("ready", async () => {
   client.options.disableMentions = "everyone";
   client.guilds.cache.forEach(async el => el.invites = await el.fetchInvites().catch(() => {}));
 
-  if (process.env.DEVELOPMENT === "TRUE") {
-    client.user.setActivity("Кабзец тебе, Хозяин", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
+  if (process.env.DEVELOPMENT === "FALSE") {
+    client.user.setActivity("намана", {type: "WATCHING"});
   }
   else {
-    client.user.setActivity("намана", {type: "WATCHING"});
+    client.user.setActivity("Кабзец тебе, Хозяин", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
   }
 
 
