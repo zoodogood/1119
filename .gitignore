@@ -1,2 +1,6 @@
 .env
 node_modules/
+main/data.json
+main/time.json
+main/counterData.json
+main/reactData.json
