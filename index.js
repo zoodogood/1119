@@ -2855,7 +2855,7 @@ class CurseManager {
         callback: {
           message: (user, curse) => {
             const now = Date.now();
-            const messages = user.data.curse.values.messages;
+            const messages = curse.values.messages;
 
             messages.push( now );
 
@@ -2907,7 +2907,7 @@ class CurseManager {
             }
 
 
-            const list = user.data.curse.values.listOfUsers || [];
+            const list = curse.values.listOfUsers || [];
 
             if (list.includes(target.id)){
               message.react("❌");
@@ -2916,7 +2916,7 @@ class CurseManager {
 
             message.react("💀");
 
-            const curseBase = this.cursesBase.get( user.data.curse.id );
+            const curseBase = this.cursesBase.get( curse.id );
             const createdCurse = this.generateOfBase({curseBase, user: target});
 
             
@@ -2969,15 +2969,17 @@ class CurseManager {
 
   static intarface({curse, user}){
 
+    console.log(curse);
+
     const incrementProgress = (value) => {
       curse.values.progress = (curse.values.progress || 0) + value;
-      CurseManager.checkAvailable(user);
+      CurseManager.checkAvailable({curse, user});
       return curse.values.progress;
     };
 
     const setProgress = (value) => {
       curse.values.progress = value;
-      CurseManager.checkAvailable(user);
+      CurseManager.checkAvailable({curse, user});
       return curse.values.progress;
     }
 
@@ -3005,11 +3007,12 @@ class CurseManager {
   }
 
   static checkAvailable({curse, user}){
+    console.log(123);
 
     if (!curse){
       return null;
     }
-
+    
     if (curse.values.progress >= curse.values.goal){
       CurseManager.curseEnd({user, curse, lost: false});
     }
@@ -3362,7 +3365,7 @@ const commands = {
           value: (() => {
             const surviveContent = `Пережито проклятий: ${ user.cursesEnded || 0 }`;
             const getCurrentContent = () => {
-              if (!user.curses){
+              if (!user.curses || !user.curses.length){
                 return "Проклятия отсуствуют.";
               }
               
@@ -9590,6 +9593,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
   }, {type: "other"}, "босс"),
 
   dump: new Command(async (msg, op) => {
+    data_save();
     const message = await msg.channel.send({
       files: [{
         attachment: "main/data.json",
