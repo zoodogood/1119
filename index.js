@@ -2969,8 +2969,6 @@ class CurseManager {
 
   static intarface({curse, user}){
 
-    console.log(curse);
-
     const incrementProgress = (value) => {
       curse.values.progress = (curse.values.progress || 0) + value;
       CurseManager.checkAvailable({curse, user});
@@ -3007,7 +3005,6 @@ class CurseManager {
   }
 
   static checkAvailable({curse, user}){
-    console.log(123);
 
     if (!curse){
       return null;
@@ -9911,7 +9908,7 @@ getSaves();
 // data.users.forEach((item, i) => {
 //   for (e in item){
 //     if (item[e] === null || item[e] === NaN){
-//       console.log(e + " - " + item[e]);
+//       console.info(e + " - " + item[e]);
 //       item[e] = 0;
 //     }
 //   }
@@ -9920,7 +9917,7 @@ getSaves();
 // data.guilds.forEach((item, i) => {
 //   for (e in item){
 //     if (item[e] === null || item[e] === NaN){
-//       console.log(e + " - " + item[e]);
+//       console.info(e + " - " + item[e]);
 //       item[e] = 0;
 //     }
 //   }
@@ -9933,7 +9930,7 @@ getSaves();
 //   })
 // });
 //
-// console.log(x);
+// console.info(x);
 // x = [];
 //
 // data.guilds.forEach(item => {
@@ -9941,9 +9938,9 @@ getSaves();
 //     if (!x.includes(e)) x.push(e);
 //   })
 // });
-// console.log(x);
+// console.info(x);
 //
-// !eval console.log(Object.keys(commands).map(e => e + " " + commands[e].id));
+// !eval console.info(Object.keys(commands).map(e => e + " " + commands[e].id));
 
 await TimeEvent.loadEventFromFile();
 await ReactionsManager.loadReactionsFromFile();
