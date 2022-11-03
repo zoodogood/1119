@@ -9618,7 +9618,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
 }
 
 const quests = {
-  scope: "onlyCoin&1&7&1.2 messagesFountain&30&1&1.5 messagesFountain&280&7&4 like&1&5 praiseMe&1&5 namebot&2&5 berryActive&2&2", //name progress chance complexity id
+  scope: "onlyCoin&1&9&1.2 messagesFountain&30&1&1.5 messagesFountain&280&7&4 like&1&5 praiseMe&1&5 namebot&2&5 berryActive&2&2", //name progress chance complexity id
   undefined: "Квесты выполнены.",
   messagesFountain: "Отправьте сообщения",
   like: "Поставьте лайк своему другу!",
