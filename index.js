@@ -9120,11 +9120,13 @@ const commands = {
         const becomeCoinMessage = async (user) => {
           const collector = new Util.CustomCollector({target: client, event: "message", filter: (message) => message.author.id === user.id, time: 500_000});
           collector.setCallback((message) => {
-            getCoinsFromMessage(user, message);
             collector.end();
+            getCoinsFromMessage(user, message);
           });
         }
-        becomeCoinMessage(user);
+        if (!random(0, 5)){
+          becomeCoinMessage(user);
+        }
       }
 
       fields.splice(0, fields.length);
