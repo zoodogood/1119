@@ -9116,6 +9116,15 @@ const commands = {
         data.bot.berrysPrise += berrys * 0.2;
         msg.msg("Вы успешно собрали клубнику", {author: {name: memb.username, iconURL: memb.avatarURL()}, description: `${berrys > 5 ? berrys : ["Ноль", "Одна", "Две", "Три", "Четыре", "Пять"][berrys]} ${ending(berrys, "ягод", "", "а", "ы", {slice: true})} ${ending(berrys, "попа", "дают", "ла", "ли", {slice: true})} в ваш карман <:berry:756114492055617558>`, delete: 9000});
         user.CD_54 = getTime() + Math.max( 86400000 / getSpeedGrowth(level) * (1 + level), 7200000 );
+
+        const becomeCoinMessage = async (user) => {
+          const collector = new Util.CustomCollector({target: client, event: "message", filter: (message) => message.author.id === user.id, time: 500_000});
+          collector.setCallback((message) => {
+            getCoinsFromMessage(user, message);
+            collector.end();
+          });
+        }
+        becomeCoinMessage(user);
       }
 
       fields.splice(0, fields.length);
