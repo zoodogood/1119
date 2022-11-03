@@ -2071,7 +2071,7 @@ class TimeEvent {
   }
   static async loadEventFromFile(){
     const content = await TimeEvent.readFile();
-    return content.sortBy("ms");
+    return this.eventData = content.sortBy("ms");
   }
   static eventData = [];
 }
@@ -2954,9 +2954,13 @@ class CurseManager {
             data.coins -= difference * 2;
             CurseManager.intarface({user, curse}).incrementProgress(1);
           },
-          curseTimeEnd: (user, curse, event) => {
+          curseTimeEnd: (user, curse, data) => {
+            if (data.curse !== curse){
+              return;
+            }
+
             const goal = curse.values.goal;
-            event.preventDefault();
+            data.event.preventDefault();
 
             CurseManager.intarface({user, curse}).setProgress(goal);
           }
