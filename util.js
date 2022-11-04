@@ -1,44 +1,53 @@
 class CustomCollector {
-  #handler;
   #callback;
 
-  constructor({target, event, filter, limit = 0}){
+  constructor({target, event, filter, time = 0}){
     if ("on" in target === false){
       throw new Error("Target must extends EventEmitter");
     }
 
-    this.#handler = this.handleEvent.bind(this);
     this.target = target;
     this.event = event;
     this.filter = filter;
-    this.handle();
-
-    if (limit){
-      this.setTimer(limit);
-    }
-  }
-
-  handleEvent(data){
-    if (!!this?.filter(data) === true){
-      this.#callback?.call(this, data);
-    }
+    this.time = time;
   }
 
   setCallback(callback){
-    this.#callback = callback;
+  
+    const handler = (...params) => {
+      const passed = this?.filter(params);
+
+      if (!!passed === true){
+        callback.apply(this, params);
+      };
+    }
+    
+    this.handle(handler);
   }
 
   handle(){
-    this.target.on(this.event, this.#handler);
+    this.end();
+    
+    this.#callback = handler;
+    this.target.on(this.event, this.#callback);
+
+    if (this.time > 0){
+      this.setTimeout(this.time);
+    };
   }
 
   end(){
-    this.target.removeListener(this.event, this.#handler);
+    this.removeTimeout();
+    this.target.removeListener(this.event, this.#callback);
   }
 
-  setTimer(ms){
+  removeTimeout(){
+    clearTimeout(this.timeoutId);
+  }
+
+  setTimeout(ms){
     const callback = this.end.bind(this);
-    setTimeout(callback, ms);
+    this.timeoutId = setTimeout(callback, ms);
   }
 }
 
