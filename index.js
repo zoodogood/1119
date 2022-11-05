@@ -4259,7 +4259,7 @@ const commands = {
     const RESOURCES = [
       {
         resource: "coins",
-        names: "coins coin коин коинов коина коины монет монету",
+        names: "coins coin коин коинов коина коины монет монету монеты монета",
         gives: n => `${ending(n, "коин", "ов", "", "а")} <:coin:637533074879414272>`
       },
 
@@ -4271,7 +4271,7 @@ const commands = {
 
       {
         resource: "chestBonus",
-        names: "bonus chest бонус бонусов бонуса сундук сундука с",
+        names: "bonus chest бонус бонусов бонуса бонусы сундук сундука сундуки сундуков б с",
         gives: n => `${ ending(n, "бонус", "ов", "", "а") } сундука`
       },
 
