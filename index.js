@@ -1260,7 +1260,7 @@ async function eventHundler(msg){
 
   author.quest("messagesFountain", msg.channel);
 
-  if (server.boss && server.boss.endingDate){
+  if (server.boss && server.boss.isArrived){
     BossManager.onMessage.call(BossManager, msg);
   }
 
@@ -3124,15 +3124,13 @@ class CurseManager {
 class BossManager {
   static bossApparance(guild){
 
-    const guildData = guild.data;
-
-    const now = new Date();
-
     const TWO_MONTH = 5259600000;
 
     if ( guild.me.joinedTimestamp > getTime() + TWO_MONTH )
       return;
 
+    const guildData = guild.data;
+    const now = new Date();
 
     const generateEndDate = () => {
       const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
@@ -3167,8 +3165,7 @@ class BossManager {
       generateEndDate();
       delete guildData.boss.apparanceDate;
 
-      guildData.boss.level = 1;
-      guildData.boss.users = {};
+      BossManager.initBossData(guildData.boss);
     }
 
 
@@ -3189,14 +3186,36 @@ class BossManager {
 
     const userStats = this.getUserStats(boss, authorId);
     userStats.messages++;
+
+    const DAMAGE = 1;
+    BossManager.makeDamage(boss, DAMAGE);
   }
 
-  static calculateHealthPoint(boss){
-    return 11_000 + Math.floor(boss.level * 500 * 1.1 ** boss.level);
+  static calculateHealthPoint(level){
+    return 11_000 + Math.floor(level * 500 * 1.1 ** level);
   }
 
-  static makeDamage(){
+  static calculateHealthPointThresholder(level){
+    const totalOfPrevious = [...new Array(level - 1)]
+      .map((_, level) => BossManager.calculateHealthPoint(level))
+      .reduce((acc, points) => acc + points, 0);
 
+    return BossManager.calculateHealthPoint(level) + totalOfPrevious;
+  }
+
+
+  static makeDamage(boss, damage, {sourceUser}){
+    boss.damageTaken += damage;
+    if (sourceUser){
+      const stats = BossManager.getUserStats(boss, sourceUser.id);
+      stats.damage ||= 0;
+      stats.damage += damage;
+    }
+
+    if (boss.damageTaken >= boss.healthThresholder){
+      boss.level++;
+      boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
+    }
   }
 
   static async beforeApparance(guild){
@@ -3234,6 +3253,15 @@ class BossManager {
     console.time();
     await guild.chatSend(embed.title, embed);
     console.timeEnd();
+  }
+
+  static initBossData(boss){
+    boss.level = 1;
+    boss.users = {};
+    boss.isArrived = true;
+    boss.damageTaken = 0;
+
+    boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
   }
 }
 
@@ -9612,6 +9640,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
 
     const guild = msg.guild;
     const boss = guild.data.boss;
+
     if (boss === undefined){
       msg.msg("", {description: "Момент появления босса пока неизвестен", color: "000000"});
       return
@@ -9622,8 +9651,8 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       return;
     }
 
-    const description = `Уровень: ${ boss.level + 1 }\nУйдет ${ boss.endingData }`;
-
+    const currentHealthPointPercent = Math.floor((1 - boss.damageTaken / boss.healthThresholder) * 100);
+    const description = `Уровень: ${ boss.level }.\nУйдет ${ boss.endingDate }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
     const embed = {
       title: "",
       description
