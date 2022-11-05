@@ -9226,7 +9226,7 @@ const commands = {
 
     let index = reactions.indexOf(reaction);
     embed.description = `**Тип:** ${ ["конкретная ссылка", "наличие роли у пригласившего", "выдача по умолчанию"][index] };\n\nОтлично, `;
-  }, {dm: true, type: "dev", permissions: 8}, "приглашения"),
+  }, {dm: true, type: "guild", permissions: 8}, "приглашения"),
 
   casino: new Command(async (msg, op) => {
     msg.msg("Казино закрыто", {description: "Казино закрыто. Боюсь что оно больше не откроется.\nЭтого не могло не случится, извините.\n\n — Прощайте. ©️Мэр-Миллиардер Букашка", delete: 20000});
