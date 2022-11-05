@@ -1292,9 +1292,9 @@ async function getCoinsFromMessage(user, msg){
     k += multiplier;
     msg.guild.data.cloverEffect.coins++;
   }
-  let coins = Math.round((35 + user.coinsPerMessage || 35) * k);
+  let coins = Math.round((35 + nonNaN(user.coinsPerMessage)) * k);
   user.coins += coins;
-  user.chestBonus = ~~user.chestBonus + 2;
+  user.chestBonus = nonNaN(user.chestBonus) + 2;
 
   let react = await msg.awaitReact({user: msg.author, type: "full", time: 20000}, reaction);
   msg.author.quest("onlyCoin", msg.channel);
