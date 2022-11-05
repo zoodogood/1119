@@ -3219,7 +3219,8 @@ class BossManager {
   }
 
   static async beforeApparance(guild){
-    if (guild.id !== "628993637530992650"){
+    // Delevop crutch!
+    if (!["628993637530992650", "752898200993660959"].includes(guild.id)){
       return;
     }
     const data = guild.data;
@@ -3250,9 +3251,8 @@ class BossManager {
       title: "",
       description
     }
-    console.time();
+ 
     await guild.chatSend(embed.title, embed);
-    console.timeEnd();
   }
 
   static initBossData(boss){
