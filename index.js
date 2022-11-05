@@ -1245,7 +1245,7 @@ async function eventHundler(msg){
   if (getTime() + 120000 > author.CD_msg){
     author.CD_msg += (8000 - 200 * nonNaN(user.voidCooldown));
 
-    if (random(1, 85 * 0.90 ** user.voidCoins) === 1) {
+    if (random(1, 85 * 0.90 ** user.voidCoins) === 1){
       getCoinsFromMessage(user, msg);
     }
 
@@ -1294,7 +1294,7 @@ async function getCoinsFromMessage(user, msg){
   }
   let coins = Math.round((35 + nonNaN(user.coinsPerMessage)) * k);
   user.coins += coins;
-  user.chestBonus = nonNaN(user.chestBonus) + 2;
+  user.chestBonus = nonNaN(user.chestBonus) + 5;
 
   let react = await msg.awaitReact({user: msg.author, type: "full", time: 20000}, reaction);
   msg.author.quest("onlyCoin", msg.channel);
