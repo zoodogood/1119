@@ -3183,7 +3183,7 @@ class BossManager {
     userStats.messages++;
 
     const DEFAULT_DAMAGE = 1;
-    const damage = DEFAULT_DAMAGE + (damagePerMessage ?? 0);
+    const damage = DEFAULT_DAMAGE + (userStats.damagePerMessage ?? 0);
     BossManager.makeDamage(boss, damage, {sourceUser: message.author});
   }
 
@@ -3425,28 +3425,29 @@ class BossManager {
           boss.diceDamageMultiplayer ||= 1;
           boss.diceDamageMultiplayer += 0.01;
         },
-        "📡": {
-          emoji: "📡",
-          keyword: "anntena",
-          description: "На 1 больше урона за сообщение",
-          basePrice: 1000,
-          priceMultiplayer: 2,
-          callback: ({userStats}) => {
-            userStats.damagePerMessage ||= 0;
-            userStats.damagePerMessage += 1;
-          },
+      },
+      "📡": {
+        emoji: "📡",
+        keyword: "anntena",
+        description: "На 1 больше урона за сообщение",
+        basePrice: 1000,
+        priceMultiplayer: 2,
+        callback: ({userStats}) => {
+          userStats.damagePerMessage ||= 0;
+          userStats.damagePerMessage += 1;
         },
-        "🪦": {
-          emoji: "🪦",
-          keyword: "headstone",
-          description: "Полностью сбрасывает персонажа",
-          basePrice: 300,
-          priceMultiplayer: 10,
-          callback: ({boss, user}) => {
-            delete boss.users[user.id];
-          }
+      },
+      "🪦": {
+        emoji: "🪦",
+        keyword: "headstone",
+        description: "Полностью сбрасывает персонажа",
+        basePrice: 300,
+        priceMultiplayer: 10,
+        callback: ({boss, user}) => {
+          delete boss.users[user.id];
         }
       }
+      
     }));
     const createEmbed = ({boss, user, edit}) => {
       const data = user.data;
