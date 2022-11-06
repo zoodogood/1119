@@ -378,7 +378,6 @@ client.on("ready", async () => {
 const
   data_save     = () => (data) ? fs.writeFileSync("./main/data.json", JSON.stringify(data), (err, input) => false) : console.error("WARNING: data be undefined"),
   delay         = (ms) => new Promise((response) => setTimeout(response, ms)),
-  timeout       = (func, ms) => (ms > 0) ? setTimeout(func, ms) : false,
   nonNaN        = (num) => isNaN(num) ? 0 : num,
   getTime       = () => Date.now();
 
@@ -616,10 +615,6 @@ function toDayDate(date){
   const day   = date.getDate().toString();
 
   return `${ day.padStart(2, "0") }.${ month.padStart(2, "0") }`;
-}
-
-function json_save(variable){
-  (variable) ? fs.writeFile(`./main/${variable}.json`, JSON.stringify(eval(variable)), (err, input) => {if (err) console.error(err)}) : console.error(`WARNING: ${variable} be undefined`);
 }
 
 function random(...params){
@@ -1477,9 +1472,9 @@ Object.prototype.console = function(actions){
 
 Discord.User.prototype.action = function(id, data){
 
-  // if (data.msg && data.msg.guild.data.boss){
-  //   BossManager.gameEvents[id].onAction.call(null, data);
-  // }
+  if (data.msg && data.msg.guild.data.boss){
+    BossManager.effectBases[id].onAction.call(null, data);
+  }
 
   /** Curse */
   if (this.data.curses)
@@ -3165,7 +3160,7 @@ class BossManager {
       generateEndDate();
       delete guildData.boss.apparanceDate;
 
-      BossManager.initBossData(guildData.boss);
+      BossManager.initBossData(guildData.boss, guild);
     }
 
 
@@ -3188,7 +3183,7 @@ class BossManager {
     userStats.messages++;
 
     const DAMAGE = 1;
-    BossManager.makeDamage(boss, DAMAGE);
+    BossManager.makeDamage(boss, DAMAGE, {sourceUser: message.author});
   }
 
   static calculateHealthPoint(level){
@@ -3223,7 +3218,7 @@ class BossManager {
       boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
       const guild = client.guilds.cache.get(boss.guildId);
       const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
-      guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
+      guild.chatSend({message: "", description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
       BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
     }
   }
@@ -3231,11 +3226,15 @@ class BossManager {
   static async createBonusesChest({guild, boss, thatLevel}){
     const color = "ffda73";
     const embed = {
-      color
+      message: "Сундук с наградами",
+      description: `Получите бонусы за победу над боссом ур. ${ thatLevel }.\nВремя ограничено одним часом с момента отправки этого сообщения.`,
+      thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038767024643522600/1476613756146739089.png?width=593&height=593",
+      color,
+      reactions: ["637533074879414272"]
     };
     const message = await guild.chatSend(embed);
-    const collector = message.createReactionCollector(() => true, {time: 60_000});
-    collector.on("collect", () => {
+    const collector = message.createReactionCollector((reaction) => !reaction.me, {time: 3_600_000});
+    collector.on("collect", (reaction, user) => {
       const userStats = BossManager.getUserStats(boss, user);
       userStats.bonuses ||= {};
       const key = `that${ thatLevel }`;
@@ -3247,12 +3246,10 @@ class BossManager {
       const reward = thatLevel * 10;
       userStats[key] = true;
       user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
-      message.msg({description: `Получено ${ ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color});
+      message.msg({message: "", description: `Получено ${ ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color});
     })
 
     collector.on("end", () => message.delete());
-
-
   }
 
   static async beforeApparance(guild){
@@ -3292,19 +3289,20 @@ class BossManager {
     await guild.chatSend(embed.title, embed);
   }
 
-  static initBossData(boss){
+  static initBossData(boss, guild){
     boss.level = 1;
     boss.users = {};
     boss.isArrived = true;
     boss.damageTaken = 0;
     boss.type = this.BOSS_TYPES.random();
 
+    boss.guildId = guild.id;
     boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
   }
 
   static userAttack({boss, user, channel}){
     const userStats = BossManager.getUserStats(boss, user.id);
-    console.log(userStats);
+    
     userStats.attack_CD ||= 0;
     userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
 
@@ -3354,6 +3352,8 @@ class BossManager {
         callback: ({userStats}) => {
           userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
           userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
+
+          delete userStats.attack_CD;
         }
       },
       "🥛": {
@@ -9818,6 +9818,8 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
   }, {type: "user", delete: true}, "сумка рюкзак"),
 
   boss: new Command(async (msg, op) => {
+    const member = op.memb ?? msg.author;
+
     msg.author.action("callBossCommand", {msg, op});
 
     const guild = msg.guild;
@@ -9833,13 +9835,13 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       return;
     }
 
-    const currentHealthPointPercent = Math.floor((1 - boss.damageTaken / boss.healthThresholder) * 100);
+    const currentHealthPointPercent = Math.ceil((1 - boss.damageTaken / boss.healthThresholder) * 100);
     const description = `Уровень: ${ boss.level }.\nУйдет ${ boss.endingDate }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
     const reactions = ["⚔️", "🕋"];
     const fields = [
       {
         name: "Пользователь",
-        value: Object.entries(BossManager.getUserStats(boss, msg.author.id))
+        value: Object.entries(BossManager.getUserStats(boss, member.id))
           .map(([key, value]) => `${ key }: ${ Util.toLocaleDelevoperString(value) }`)
           .join("\n")
         
@@ -9851,7 +9853,8 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       description,
       reactions,
       fields,
-      thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038714401861161000/pngegg_1.png?width=595&height=593"
+      thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038714401861161000/pngegg_1.png?width=595&height=593",
+      footer: {text: member.tag, iconURL: member.avatarURL()}
     }
     const message = await msg.msg(embed.title, embed);
     
