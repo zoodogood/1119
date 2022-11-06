@@ -3182,8 +3182,9 @@ class BossManager {
     const userStats = this.getUserStats(boss, authorId);
     userStats.messages++;
 
-    const DAMAGE = 1;
-    BossManager.makeDamage(boss, DAMAGE, {sourceUser: message.author});
+    const DEFAULT_DAMAGE = 1;
+    const damage = DEFAULT_DAMAGE + (damagePerMessage ?? 0);
+    BossManager.makeDamage(boss, damage, {sourceUser: message.author});
   }
 
   static calculateHealthPoint(level){
@@ -3423,6 +3424,27 @@ class BossManager {
         callback: ({boss}) => {
           boss.diceDamageMultiplayer ||= 1;
           boss.diceDamageMultiplayer += 0.01;
+        },
+        "📡": {
+          emoji: "📡",
+          keyword: "anntena",
+          description: "На 1 больше урона за сообщение",
+          basePrice: 1000,
+          priceMultiplayer: 2,
+          callback: ({userStats}) => {
+            userStats.damagePerMessage ||= 0;
+            userStats.damagePerMessage += 1;
+          },
+        },
+        "🪦": {
+          emoji: "🪦",
+          keyword: "headstone",
+          description: "Полностью сбрасывает персонажа",
+          basePrice: 300,
+          priceMultiplayer: 10,
+          callback: ({boss, user}) => {
+            delete boss.users[user.id];
+          }
         }
       }
     }));
@@ -3482,7 +3504,9 @@ class BossManager {
       description: "Перезарядка атаки больше на 20 минут",
       callback: ({userStats}) => {
         userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
-        userStats.attackCooldown += 60_000 * 20;
+        const adding = 60_000 * 20
+        userStats.attackCooldown += adding;
+        userStats.attack_CD += adding;
       },
       filter: ({attackContext}) => 
         !attackContext.listOfEvents.some(({id}) => ["reduceAttackDamage"].includes(id))      
@@ -3495,7 +3519,7 @@ class BossManager {
         attackContext.damageMultiplayer *= 5;
       }     
     },
-    increaseCurrentAttackDamage: {
+    giveChestBonus: {
       _weight: 5,
       id: "giveChestBonus",
       description: "Выбито 4 бонуса сундука",
