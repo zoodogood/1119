@@ -3200,11 +3200,15 @@ class BossManager {
 
 
   static makeDamage(boss, damage, {sourceUser} = {}){
+    damage *= (boss.diceDamageMultiplayer ?? 1);
+    damage = Math.floor(damage);
+
     boss.damageTaken += damage;
+
     if (sourceUser){
       const stats = BossManager.getUserStats(boss, sourceUser.id);
-      stats.damage ||= 0;
-      stats.damage += damage;
+      stats.damageDealt ||= 0;
+      stats.damageDealt += damage;
     }
 
     if (boss.damageTaken >= boss.healthThresholder){
@@ -3339,8 +3343,11 @@ class BossManager {
         basePrice: 100,
         priceMultiplayer: 2,
         callback: ({userStats}) => {
-          userStats.attacksDamageMultiplayer ||= 1;
-          userStats.attacksDamageMultiplayer *= 1.25
+          const multiplier = 1.25;
+          userStats.attacksDamageMultiplayer = +(
+            (userStats.attacksDamageMultiplayer ?? 0) *
+            multiplier
+          ).toFixed(3);
         }
       },
       "🐺": {
@@ -3438,6 +3445,20 @@ class BossManager {
     collector.on("end", () => message.reactions.removeAll());
 
   }
+
+  static eventBases = new Collection(Object.entries({
+    increaseAttackCooldown: {
+      _weight: 5,
+      id: "increaseAttackCooldown",
+      description: "Увеличивает перезарядку атаки на 20 минут",
+      callback: ({userStats}) => {
+        userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+        userStats.attackCooldown += 60_000 * 20;
+      },
+      filter: ({attackContext}) => 
+        attackContext.events.some(({id}) => !["reduceAttackDamage"].includes(id))      
+    }
+  }));
 
   static BOSS_TYPES = new Collection([
 
