@@ -3528,6 +3528,15 @@ class BossManager {
       callback: ({user}) => {
         user.data.chestBonus = (user.data.chestBonus ?? 0) + 4;
       }     
+    },
+    applyCurse: {
+      _weight: 5,
+      id: "applyCurse",
+      description: "Вас прокляли",
+      callback: ({user}) => {
+        const curse = CurseManager.generate({user});
+        CurseManager.cursrInit({user, curse});
+      }     
     }
   }));
 
