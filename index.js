@@ -1472,9 +1472,9 @@ Object.prototype.console = function(actions){
 
 Discord.User.prototype.action = function(id, data){
 
-  if (data.msg && data.msg.guild.data.boss){
-    BossManager.effectBases[id].onAction.call(null, data);
-  }
+  // if (data.msg && data.msg.guild.data.boss){
+  //   BossManager.effectBases[id].onAction.call(null, data);
+  // }
 
   /** Curse */
   if (this.data.curses)
