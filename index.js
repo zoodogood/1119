@@ -3204,7 +3204,7 @@ class BossManager {
   }
 
 
-  static makeDamage(boss, damage, {sourceUser}){
+  static makeDamage(boss, damage, {sourceUser} = {}){
     boss.damageTaken += damage;
     if (sourceUser){
       const stats = BossManager.getUserStats(boss, sourceUser.id);
@@ -3260,9 +3260,99 @@ class BossManager {
     boss.users = {};
     boss.isArrived = true;
     boss.damageTaken = 0;
+    boss.type = this.BOSS_TYPES.random();
 
     boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
   }
+
+  static userAttack({boss, user}){
+
+  }
+
+  static async createShop({guild, channel, user}){
+    const boss = guild.data.boss;
+    const ITEMS = new Collection(Object.entries({
+      "🧩": {
+        emoji: "🧩",
+        keyword: "puzzle",
+        description: "Множитель атаки: 1.25",
+        basePrice: 100,
+        priceMultiplayer: 2
+      },
+      "🐺": {
+        emoji: "🐺",
+        keyword: "wolf",
+        description: "Перезарядка атаки в 2 раза меньше",
+        basePrice: 50,
+        priceMultiplayer: 3
+      },
+      "🥛": {
+        emoji: "🥛",
+        keyword: "milk",
+        description: "Снимает негативные эффекты",
+        basePrice: 200,
+        priceMultiplayer: 3
+      },
+      "🎲": {
+        emoji: "🎲",
+        keyword: "dice",
+        description: "Урон участников сервера на 1% эффективнее",
+        basePrice: 10,
+        priceMultiplayer: 5
+      }
+    }));
+    const createEmbed = ({boss, user, edit}) => {
+      const data = user.data;
+
+      const productsContent = ITEMS
+        .map((item) => `${ item.emoji } — ${ item.description }.\n${ calculatePrice(item, userStats.bought[item.keyword]) };`)
+        .join("\n");
+
+      const description = `Приобретите эти товары! Ваши экономические возможности: ${ ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> на руках\n\n${ productsContent }`;
+
+      return {
+        message: "Тайная лавка Гремпенса",
+        author: {name: user.username, iconURL: user.avatarURL()},
+        description,
+        edit,
+        reactions: edit ? [] : [...ITEMS.map(({emoji}) => emoji)]
+      };
+    }
+
+    const userStats = BossManager.getUserStats(boss, user);
+    userStats.bought ||= {};
+
+    const calculatePrice = (item, boughtCount) => item.basePrice * item.priceMultiplayer ** (boughtCount ?? 0);
+    
+    let message = await channel.msg( createEmbed({boss, user, edit: false}) );
+    const collector = message.createReactionCollector((reaction, member) => user.id === member.id, {time: 60_000});
+
+    collector.on("collect", async (reaction, user) => {
+      reaction.users.remove(user);
+      const product = ITEMS.get(reaction.emoji.name);
+      const currentBought = userStats.bought[ product.keyword ] ?? 0;
+      const price = calculatePrice(product, currentBought);
+
+      if (user.data.coins < price){
+        message.msg("Недостаточно средств!", {delete: 3000});
+        reaction.remove();
+        return;
+      }
+      user.data.coins -= price;
+      userStats.bought[ product.keyword ] = currentBought + 1;
+      message.msg("", {description: `${ product.emoji } +1`, delete: 7000})
+      message = await message.msg( createEmbed({boss, user, edit: true}) );
+    });
+    
+    collector.on("end", () => message.reactions.removeAll());
+
+  }
+
+  static BOSS_TYPES = new Collection([
+
+  ].map((type, index) => [index, type]));
+
+  static USER_DEFAULT_ATTACK_COOLDOWN = 36_000_000 * 2;
 }
 
 
@@ -9653,11 +9743,41 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
 
     const currentHealthPointPercent = Math.floor((1 - boss.damageTaken / boss.healthThresholder) * 100);
     const description = `Уровень: ${ boss.level }.\nУйдет ${ boss.endingDate }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
+    const reactions = ["⚔️", "🕋"];
+    const fields = [
+      {
+        name: "Пользователь",
+        value: Object.entries(BossManager.getUserStats(boss, msg.author.id))
+          .map(([key, value]) => `${ key }: ${ Util.toLocaleDelevoperString(value) }`)
+          .join("\n")
+        
+      }
+    ];
+
     const embed = {
       title: "",
-      description
+      description,
+      reactions,
+      fields,
+      thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038714401861161000/pngegg_1.png?width=595&height=593"
     }
-    msg.msg(embed.title, embed);
+    const message = await msg.msg(embed.title, embed);
+    
+    const collector = message.createReactionCollector((reaction, user) => user.id !== client.user.id && reactions.includes(reaction.emoji.name), {time: 60_000});
+    collector.on("collect", async (reaction, user) => {
+      reaction.users.remove(user);
+
+      if (reaction.emoji.name === "⚔️"){
+        BossManager.userAttack({boss, user});
+      }
+
+      if (reaction.emoji.name === "🕋"){
+        BossManager.createShop({channel: message.channel, user, guild: message.guild});
+      }
+    });
+
+    collector.on("end", () => message.reactions.removeAll());
+
   }, {type: "other"}, "босс"),
 
   dump: new Command(async (msg, op) => {
