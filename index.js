@@ -3375,7 +3375,7 @@ class BossManager {
         callback: ({userStats}) => {
           const multiplier = 1.25;
           userStats.attacksDamageMultiplayer = +(
-            (userStats.attacksDamageMultiplayer ?? 0) *
+            (userStats.attacksDamageMultiplayer ?? 1) *
             multiplier
           ).toFixed(3);
         }
