@@ -1143,7 +1143,7 @@ async function commandHundler(msg){
     }
 
     let title = problems[0];
-    embed = {
+    let embed = {
       author: {iconURL: author.avatarURL(), name: author.username},
       color: "ff0000",
       delete: 20000
@@ -3445,6 +3445,7 @@ class BossManager {
         priceMultiplayer: 10,
         callback: ({boss, user}) => {
           delete boss.users[user.id];
+          message.delete();
         }
       }
       
