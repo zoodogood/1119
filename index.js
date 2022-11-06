@@ -3320,10 +3320,39 @@ class BossManager {
     
     userStats.attack_CD = Date.now() + userStats.attackCooldown;
 
-    const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * this.USER_DEFAULT_ATTACK_DAMAGE);
+    
+    const attackContext = {
+      damageMultiplayer: 1,
+      listOfEvents: []
+    };
+    const pull = [...BossManager.eventBases.values()];
+    const data = {user, userStats, boss, channel, attackContext};
+    const eventsCount = Math.floor(boss.level ** 0.5) + random(-1, 1);
+ 
+    for (let i = 0; i < eventsCount; i++){
+      for (const event of pull){
+        const needSkip = event.filter && !event.filter(data);
+        
+        if (needSkip){
+          const index = pull.indexOf(event);
+          (~index) ? pull.splice(index, 1) : null;
+        }
+      };
+
+      const event = pull.random({pop: true, weights: true});
+      if (!event){
+        break;
+      }
+      event.callback(data);
+      attackContext.listOfEvents.push(event);
+    }
+
+    const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * this.USER_DEFAULT_ATTACK_DAMAGE * attackContext.damageMultiplayer);
     BossManager.makeDamage(boss, damage, {sourceUser: user});
 
-    const eventsContent = "";
+    
+
+    const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
     const description = `Нанесено урона с прямой атаки: ${ damage }ед.\n\n${ eventsContent }`;
     const embed = {
       message: `⚔️ За сервер ${ channel.guild.name }!`,
@@ -3450,13 +3479,29 @@ class BossManager {
     increaseAttackCooldown: {
       _weight: 5,
       id: "increaseAttackCooldown",
-      description: "Увеличивает перезарядку атаки на 20 минут",
+      description: "Перезарядка атаки больше на 20 минут",
       callback: ({userStats}) => {
         userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
         userStats.attackCooldown += 60_000 * 20;
       },
       filter: ({attackContext}) => 
-        attackContext.events.some(({id}) => !["reduceAttackDamage"].includes(id))      
+        !attackContext.listOfEvents.some(({id}) => ["reduceAttackDamage"].includes(id))      
+    },
+    increaseCurrentAttackDamage: {
+      _weight: 5,
+      id: "increaseAttackCooldown",
+      description: "Урон текущей атаки был увеличен",
+      callback: ({attackContext}) => {
+        attackContext.damageMultiplayer *= 5;
+      }     
+    },
+    increaseCurrentAttackDamage: {
+      _weight: 5,
+      id: "giveChestBonus",
+      description: "Выбито 4 бонуса сундука",
+      callback: ({user}) => {
+        user.data.chestBonus = (user.data.chestBonus ?? 0) + 4;
+      }     
     }
   }));
 
