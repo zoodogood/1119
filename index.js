@@ -3302,7 +3302,7 @@ class BossManager {
         priceMultiplayer: 2,
         callback: ({userStats}) => {
           userStats.attacksDamageMultiplayer ||= 1;
-          userStats.attacksDamageMultiplayer **= 1.25;
+          userStats.attacksDamageMultiplayer *= 1.25
         }
       },
       "🐺": {
