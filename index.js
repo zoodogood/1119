@@ -3300,7 +3300,7 @@ class BossManager {
         description: "Множитель атаки: 1.25",
         basePrice: 100,
         priceMultiplayer: 2,
-        callback: () => {
+        callback: ({userStats}) => {
           userStats.attacksDamageMultiplayer ||= 1;
           userStats.attacksDamageMultiplayer **= 1.25;
         }
@@ -3311,7 +3311,7 @@ class BossManager {
         description: "Перезарядка атаки в 2 раза меньше",
         basePrice: 50,
         priceMultiplayer: 3,
-        callback: () => {
+        callback: ({userStats}) => {
           userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
           userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
         }
@@ -3322,7 +3322,7 @@ class BossManager {
         description: "Снимает негативные и нейтральные эффекты",
         basePrice: 200,
         priceMultiplayer: 3,
-        callback: () => {
+        callback: ({userStats}) => {
           const toRemove = userStats.effects
             .filter(effect => {
               const base = BossManager.effectBases.get(effect.id);
@@ -3344,7 +3344,7 @@ class BossManager {
         description: "Урон участников сервера на 1% эффективнее",
         basePrice: 10,
         priceMultiplayer: 5,
-        callback: () => {
+        callback: ({boss}) => {
           boss.diceDamageMultiplayer ||= 1;
           boss.diceDamageMultiplayer += 0.01;
         }
@@ -3387,8 +3387,10 @@ class BossManager {
         reaction.remove();
         return;
       }
-      user.data.coins -= price;
+
+      product.callback({ user, userStats, boss });
       userStats.bought[ product.keyword ] = currentBought + 1;
+      user.data.coins -= price;
       message.msg("", {description: `${ product.emoji } +1`, delete: 7000})
       message = await message.msg( createEmbed({boss, user, edit: true}) );
     });
@@ -3401,7 +3403,7 @@ class BossManager {
 
   ].map((type, index) => [index, type]));
 
-  static USER_DEFAULT_ATTACK_COOLDOWN = 36_000_000 * 2;
+  static USER_DEFAULT_ATTACK_COOLDOWN = 3_600_000 * 2;
   static USER_DEFAULT_ATTACK_DAMAGE = 10;
 }
 
