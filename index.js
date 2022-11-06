@@ -3266,6 +3266,11 @@ class BossManager {
   }
 
   static userAttack({boss, user}){
+    const data = user.data;
+    const userStats = BossManager.getUserStats(user);
+    userStats.attack_CD ||= 0;
+    userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+
 
   }
 
@@ -3277,28 +3282,55 @@ class BossManager {
         keyword: "puzzle",
         description: "Множитель атаки: 1.25",
         basePrice: 100,
-        priceMultiplayer: 2
+        priceMultiplayer: 2,
+        callback: () => {
+          userStats.attacksDamageMultiplayer ||= 1;
+          userStats.attacksDamageMultiplayer **= 1.25;
+        }
       },
       "🐺": {
         emoji: "🐺",
         keyword: "wolf",
         description: "Перезарядка атаки в 2 раза меньше",
         basePrice: 50,
-        priceMultiplayer: 3
+        priceMultiplayer: 3,
+        callback: () => {
+          userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+          userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
+        }
       },
       "🥛": {
         emoji: "🥛",
         keyword: "milk",
-        description: "Снимает негативные эффекты",
+        description: "Снимает негативные и нейтральные эффекты",
         basePrice: 200,
-        priceMultiplayer: 3
+        priceMultiplayer: 3,
+        callback: () => {
+          const toRemove = userStats.effects
+            .filter(effect => {
+              const base = BossManager.effectBases.get(effect.id);
+              return base.influence === "negative" || base.influence === "neutral";
+            });
+
+          while (toRemove.length){
+            const effect = toRemove.pop();
+            const index = userStats.effects.indexOf(effect);
+            if (~index){
+              userStats.effects.splice(index, 1);
+            }
+          };
+        }
       },
       "🎲": {
         emoji: "🎲",
         keyword: "dice",
         description: "Урон участников сервера на 1% эффективнее",
         basePrice: 10,
-        priceMultiplayer: 5
+        priceMultiplayer: 5,
+        callback: () => {
+          boss.diceDamageMultiplayer ||= 1;
+          boss.diceDamageMultiplayer += 0.01;
+        }
       }
     }));
     const createEmbed = ({boss, user, edit}) => {
