@@ -3279,7 +3279,7 @@ class BossManager {
 
     userStats.attack_CD = Date.now() + userStats.attackCooldown;
 
-    const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 0) * this.USER_DEFAULT_ATTACK_DAMAGE);
+    const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * this.USER_DEFAULT_ATTACK_DAMAGE);
     BossManager.makeDamage(boss, damage, {sourceUser: user});
 
     const eventsContent = "";
