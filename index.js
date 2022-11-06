@@ -4,7 +4,7 @@ console.clear();
 
 import 'dotenv/config';
 
-import Discord from "discord.js";
+import Discord, { User } from "discord.js";
 const Collection = Discord.Collection;
 
 import * as Util from "./util.js";
@@ -3265,13 +3265,30 @@ class BossManager {
     boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
   }
 
-  static userAttack({boss, user}){
-    const data = user.data;
-    const userStats = BossManager.getUserStats(user);
+  static userAttack({boss, user, channel}){
+    const userStats = BossManager.getUserStats(boss, user.id);
+    console.log(userStats);
     userStats.attack_CD ||= 0;
     userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
 
+    if (userStats.attack_CD > Date.now()){
+      const description = `**${ timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
+      channel.msg("⚔️ Перезарядка..!", {color: "ff0000", description, delete: 7000})
+      return;
+    }
 
+    userStats.attack_CD = Date.now() + userStats.attackCooldown;
+
+    const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 0) * this.USER_DEFAULT_ATTACK_DAMAGE);
+    BossManager.makeDamage(boss, damage, {sourceUser: user});
+
+    const eventsContent = "";
+    const description = `Нанесено урона с прямой атаки: ${ damage }ед.\n\n${ eventsContent }`;
+    const embed = {
+      message: `⚔️ За сервер ${ channel.guild.name }!`,
+      description
+    }
+    channel.msg(embed);
   }
 
   static async createShop({guild, channel, user}){
@@ -3351,7 +3368,7 @@ class BossManager {
       };
     }
 
-    const userStats = BossManager.getUserStats(boss, user);
+    const userStats = BossManager.getUserStats(boss, user.id);
     userStats.bought ||= {};
 
     const calculatePrice = (item, boughtCount) => item.basePrice * item.priceMultiplayer ** (boughtCount ?? 0);
@@ -3385,6 +3402,7 @@ class BossManager {
   ].map((type, index) => [index, type]));
 
   static USER_DEFAULT_ATTACK_COOLDOWN = 36_000_000 * 2;
+  static USER_DEFAULT_ATTACK_DAMAGE = 10;
 }
 
 
@@ -9800,7 +9818,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       reaction.users.remove(user);
 
       if (reaction.emoji.name === "⚔️"){
-        BossManager.userAttack({boss, user});
+        BossManager.userAttack({boss, user, channel: message.channel});
       }
 
       if (reaction.emoji.name === "🕋"){
