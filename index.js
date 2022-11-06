@@ -3213,9 +3213,46 @@ class BossManager {
     }
 
     if (boss.damageTaken >= boss.healthThresholder){
+      const expReward = 500 + 500 * boss.level;
+      const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон"
+      if (sourceUser){
+        sourceUser.data.exp += expReward;
+      }
+      
       boss.level++;
       boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
+      const guild = client.guilds.cache.get(boss.guildId);
+      const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
+      guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
+      BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
     }
+  }
+
+  static async createBonusesChest({guild, boss, thatLevel}){
+    const color = "ffda73";
+    const embed = {
+      color
+    };
+    const message = await guild.chatSend(embed);
+    const collector = message.createReactionCollector(() => true, {time: 60_000});
+    collector.on("collect", () => {
+      const userStats = BossManager.getUserStats(boss, user);
+      userStats.bonuses ||= {};
+      const key = `that${ thatLevel }`;
+      if (key in userStats){
+        message.msg("Вы уже взяли награду", {delete: 5000});
+        return;
+      };
+
+      const reward = thatLevel * 10;
+      userStats[key] = true;
+      user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
+      message.msg({description: `Получено ${ ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color});
+    })
+
+    collector.on("end", () => message.delete());
+
+
   }
 
   static async beforeApparance(guild){
@@ -3271,12 +3308,14 @@ class BossManager {
     userStats.attack_CD ||= 0;
     userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
 
+    const footer = {iconURL: user.avatarURL(), text: user.tag};
     if (userStats.attack_CD > Date.now()){
       const description = `**${ timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
-      channel.msg("⚔️ Перезарядка..!", {color: "ff0000", description, delete: 7000})
+      channel.msg("⚔️ Перезарядка..!", {color: "ff0000", description, delete: 7000, footer});
       return;
     }
 
+    
     userStats.attack_CD = Date.now() + userStats.attackCooldown;
 
     const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * this.USER_DEFAULT_ATTACK_DAMAGE);
@@ -3286,7 +3325,8 @@ class BossManager {
     const description = `Нанесено урона с прямой атаки: ${ damage }ед.\n\n${ eventsContent }`;
     const embed = {
       message: `⚔️ За сервер ${ channel.guild.name }!`,
-      description
+      description,
+      footer
     }
     channel.msg(embed);
   }
