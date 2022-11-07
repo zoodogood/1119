@@ -3458,9 +3458,15 @@ class BossManager {
         description: "Полностью сбрасывает персонажа",
         basePrice: 300,
         priceMultiplayer: 10,
-        callback: ({boss, user}) => {
+        callback: ({boss, user, userStats}) => {
+          const keyword = "headstone";
+          const currentBought = userStats.bought?.[keyword] ?? 0;
+
           delete boss.users[user.id];
           message.delete();
+
+          userStats = BossManager.getUserStats(boss, user.id);
+          userStats.bought = {[keyword]: currentBought};
         }
       }
       
