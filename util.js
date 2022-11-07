@@ -66,7 +66,7 @@ function toLocaleDelevoperString(value){
   }
 }
 
-omit(object, filter){
+function omit(object, filter){
   const entries = Object.entries(object)
     .filter(([k,v]) => filter(k, v));
   return Object.fromEntries(entries);
