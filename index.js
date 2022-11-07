@@ -3535,7 +3535,7 @@ class BossManager {
       description: "Вас прокляли",
       callback: ({user}) => {
         const curse = CurseManager.generate({user});
-        CurseManager.cursrInit({user, curse});
+        CurseManager.init({user, curse});
       }     
     }
   }));
