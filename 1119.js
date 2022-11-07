@@ -3224,12 +3224,12 @@ class BossManager {
         sourceUser.data.exp += expReward;
       }
       
-      boss.level++;
       boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
       const guild = client.guilds.cache.get(boss.guildId);
       const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
       guild.chatSend({message: "", description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
       BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
+      boss.level++;
 
       Object.values(boss.users)
         .forEach(userStats => delete userStats.attack_CD);
@@ -3255,10 +3255,10 @@ class BossManager {
         return;
       };
 
-      const reward = thatLevel * 10;
+      const reward = thatLevel * 10 + 10;
       userStats[key] = true;
       user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
-      message.msg({message: "", description: `Получено ${ ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color});
+      message.msg({message: "", description: `Получено ${ ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color, delete: 7000});
     })
 
     collector.on("end", () => message.delete());
