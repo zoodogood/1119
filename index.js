@@ -2942,9 +2942,9 @@ class CurseManager {
 
             const data = user.data;
 
-            const currentCoins = data.coins;
+            const previousCoins = data.coins;
             getCoinsFromMessage(data, message);
-            const difference = currentCoins - data.coins;
+            const difference = data.coins - previousCoins;
 
             data.coins -= difference * 2;
             CurseManager.intarface({user, curse}).incrementProgress(1);
@@ -3188,7 +3188,7 @@ class BossManager {
   }
 
   static calculateHealthPoint(level){
-    return 11_000 + Math.floor(level * 500 * 1.1 ** level);
+    return 7_000 + Math.floor(level * 500 * 1.2 ** level);
   }
 
   static calculateHealthPointThresholder(level){
@@ -3198,7 +3198,7 @@ class BossManager {
 
     return BossManager.calculateHealthPoint(level) + totalOfPrevious;
   }
-  
+
 
   static makeDamage(boss, damage, {sourceUser} = {}){
     damage *= (boss.diceDamageMultiplayer ?? 1);
@@ -3213,8 +3213,13 @@ class BossManager {
     }
 
     if (boss.damageTaken >= boss.healthThresholder){
-      const expReward = 500 + 500 * boss.level;
-      const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон"
+      BossManager.kill({boss, sourceUser})
+    }
+  }
+
+  static kill({boss, sourceUser}){
+    const expReward = 500 + 500 * boss.level;
+      const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон";
       if (sourceUser){
         sourceUser.data.exp += expReward;
       }
@@ -3225,7 +3230,9 @@ class BossManager {
       const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
       guild.chatSend({message: "", description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
       BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
-    }
+
+      Object.values(boss.users)
+        .forEach(userStats => delete userStats.attack_CD);
   }
 
   static async createBonusesChest({guild, boss, thatLevel}){
@@ -3340,10 +3347,15 @@ class BossManager {
         }
       };
 
-      const event = pull.random({pop: true, weights: true});
+      const event = pull.random({weights: true});
       if (!event){
         break;
       }
+      if (!event.repeats){
+        const index = pull.indexOf(event);
+        ~index ? pull.splice(index, 1) : null;
+      }
+
       event.callback(data);
       attackContext.listOfEvents.push(event);
     }
@@ -3385,7 +3397,7 @@ class BossManager {
         keyword: "wolf",
         description: "Перезарядка атаки в 2 раза меньше",
         basePrice: 50,
-        priceMultiplayer: 3,
+        priceMultiplayer: 1.75,
         callback: ({userStats}) => {
           userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
           userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
@@ -3400,6 +3412,9 @@ class BossManager {
         basePrice: 200,
         priceMultiplayer: 3,
         callback: ({userStats}) => {
+          if (!userStats.effects){
+            return false;
+          }
           const toRemove = userStats.effects
             .filter(effect => {
               const base = BossManager.effectBases.get(effect.id);
@@ -3415,17 +3430,6 @@ class BossManager {
           };
         }
       },
-      "🎲": {
-        emoji: "🎲",
-        keyword: "dice",
-        description: "Урон участников сервера на 1% эффективнее",
-        basePrice: 10,
-        priceMultiplayer: 5,
-        callback: ({boss}) => {
-          boss.diceDamageMultiplayer ||= 1;
-          boss.diceDamageMultiplayer += 0.01;
-        },
-      },
       "📡": {
         emoji: "📡",
         keyword: "anntena",
@@ -3437,23 +3441,27 @@ class BossManager {
           userStats.damagePerMessage += 1;
         },
       },
+      "🎲": {
+        emoji: "🎲",
+        keyword: "dice",
+        description: "Урон участников сервера на 1% эффективнее",
+        basePrice: 10,
+        priceMultiplayer: 5,
+        callback: ({boss}) => {
+          boss.diceDamageMultiplayer ||= 1;
+          boss.diceDamageMultiplayer += 0.01;
+        },
+      },
       "🪦": {
         emoji: "🪦",
         keyword: "headstone",
         description: "Полностью сбрасывает персонажа",
         basePrice: 300,
         priceMultiplayer: 10,
-        callback: ({boss, user, userStats}) => {
-          const keyword = "headstone";
-          const currentBought = userStats.bought?.[keyword] ?? 0;
+        callback: ({boss, user}) => {
           delete boss.users[user.id];
           message.delete();
-          
-          userStats = BossManager.getUserStats(boss, user.id);
-          userStats.bought = {[keyword]: currentBought};
-            
-        },
-        filter: ({user}) => !user.data.curses?.length || user.data.voidFreedomCurse
+        }
       }
       
     }));
@@ -3478,7 +3486,11 @@ class BossManager {
     const userStats = BossManager.getUserStats(boss, user.id);
     userStats.bought ||= {};
 
-    const calculatePrice = (item, boughtCount) => item.basePrice * item.priceMultiplayer ** (boughtCount ?? 0);
+    const calculatePrice = (item, boughtCount) => {
+      const grossPrice = item.basePrice * item.priceMultiplayer ** (boughtCount ?? 0);
+      const price = Math.floor(grossPrice - (grossPrice % 5));
+      return price;
+    }
     
     let message = await channel.msg( createEmbed({boss, user, edit: false}) );
     const collector = message.createReactionCollector((reaction, member) => user.id === member.id, {time: 60_000});
@@ -3521,7 +3533,8 @@ class BossManager {
         !attackContext.listOfEvents.some(({id}) => ["reduceAttackDamage"].includes(id))      
     },
     increaseCurrentAttackDamage: {
-      _weight: 5,
+      _weight: 15,
+      repeats: true,
       id: "increaseAttackCooldown",
       description: "Урон текущей атаки был увеличен",
       callback: ({attackContext}) => {
@@ -3537,14 +3550,89 @@ class BossManager {
       }     
     },
     applyCurse: {
-      _weight: 5,
+      _weight: 3,
       id: "applyCurse",
       description: "Вас прокляли",
-      callback: ({user}) => {
-        const curse = CurseManager.generate({user});
+      callback: ({user, boss}) => {
+        const hard = Math.floor(boss.level / 3);
+        const curse = CurseManager.generate({user, hard});
         CurseManager.init({user, curse});
-      }     
-    }
+      },
+      filter: ({user}) => !user.data.curses?.length || user.data.voidFreedomCurse     
+    },
+    improveDamageForAll: {
+      _weight: 5,
+      id: "applyCurse",
+      description: "Урон по боссу увеличен на 1%",
+      callback: ({user, boss}) => {
+        boss.diceDamageMultiplayer += 0.01;
+      },
+      filter: ({boss}) => boss.diceDamageMultiplayer 
+    },
+    ______e4example: {
+      _weight: 2,
+      id: "______e4example",
+      description: "Требуется совершить выбор",
+      callback: async ({user, boss, channel, userStats}) => {
+        const reactions = ["⚔️", "🛡️"];
+        const embed = {
+          message: "",
+          author: {name: user.username, iconURL: user.avatarURL()},
+          description: "Вас атакуют!\n— Пытаться контратаковать\n— Защитная поза",
+          reactions
+        }
+
+        channel.startTyping();
+        await delay(2000);
+        channel.stopTyping();
+
+        const message = await channel.msg(embed);
+        const collector = message.createReactionCollector(({emoji}, member) => user === member && reactions.includes(emoji.name), {time: 30_000, max: 1});
+        collector.on("collect", (reaction) => {
+          const isLucky = random(0, 1);
+          const emoji = reaction.emoji.name;
+
+          if (emoji === "⚔️" && isLucky){
+            const content = "Успех! Нанесено 125 урона";
+            message.msg("", {description: content, delete: 8000});
+            BossManager.makeDamage(boss, 125, {sourceUser: user});
+            return;
+          }
+
+          if (emoji === "⚔️" && !isLucky){
+            const content = "После неудачной контратаки ваше оружие ушло на дополнительную перезарядку";
+            message.msg("", {description: content, delete: 8000});
+            userStats.attack_CD += 3_600_000;
+            return;
+          }
+
+          if (emoji === "🛡️" && isLucky){
+            const content = "Успех! Получено 1000 золота";
+            message.msg("", {description: content, delete: 8000});
+            user.data.coins += 1000;
+            return;
+          }
+
+          if (emoji === "🛡️" && !isLucky){
+            const content = "После неудачной защиты ваше оружие ушло на дополнительную перезарядку";
+            message.msg("", {description: content, delete: 8000});
+            userStats.attack_CD += 3_600_000;
+            return;
+          }
+        });
+
+        collector.on("end", () => message.delete());
+      },
+      filter: ({boss}) => boss.diceDamageMultiplayer 
+    },
+    // ______e4example: {
+    //   _weight: 2,
+    //   id: "______e4example",
+    //   description: "Требуется совершить выбор",
+    //   callback: async ({user, boss, channel, userStats}) => {
+    //   }
+    // }
+
   }));
 
   static BOSS_TYPES = new Collection([
@@ -4713,8 +4801,7 @@ const commands = {
 
   top: new Command(async (msg, op) => {
     let guild = msg.guild;
-    let type;
-    let others = ["637533074879414272", "763767958559391795", "630463177314009115", "🧤", "📜", "⚜️"];
+    let others = ["637533074879414272", "763767958559391795", "630463177314009115", "🧤", "📜", "⚜️", (guild.data.boss?.isArrived ? "⚔️" : null)];
 
     let users = guild.members.cache.map(e => e.user).filter(el => !el.bot && !el.data.profile_confidentiality).sort((b, a) => ( (a.data.level - 1) * 22.5 * a.data.level + a.data.exp) - ( (b.data.level - 1) * 22.5 * b.data.level + b.data.exp));
     let rangs, sort;
@@ -4722,10 +4809,11 @@ const commands = {
     let pages = [];
 
     let page = 0;
-    let embed = {fields: pages[0], author: {name: "Spartaper", iconURL: "https://cdnb.artstation.com/p/assets/images/images/027/213/749/original/carlo-salandanan-pixel-spartan-attack.gif"}};
+    let embed = {fields: pages[0], author: {name: `Топ на сервере ${ guild.name }`, iconURL: guild.iconURL()}, message: "Загрузка Топа.."};
     if (pages[1]) embed.footer = {text: `Страница: ${page + 1} / ${pages.length}`};
-    let message = await msg.msg("This is TOP1!!", embed);
+    let message = await msg.msg( embed);
     let react = "763767958559391795";
+    let index = -1;
 
 
     embed.edit = true;
@@ -4741,6 +4829,7 @@ const commands = {
         case "637533074879414272":
           // coins
           sort = users.sort((a, b) => (b.data.coins + b.data.berrys * data.bot.berrysPrise) - (a.data.coins + a.data.berrys * data.bot.berrysPrise));
+          index = sort.indexOf(msg.author);
           rangs = sort.map((e, i) => {
             let name = (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
             let value = `— ${e.data.coins} (${ Math.floor( e.data.coins + e.data.berrys * data.bot.berrysPrise ) }) <:coin:637533074879414272>`;
@@ -4751,6 +4840,7 @@ const commands = {
         case "763767958559391795":
           // level
           sort = users.sort((b, a) => ( (a.data.level - 1) * 22.5 * a.data.level + a.data.exp) - ( (b.data.level - 1) * 22.5 * b.data.level + b.data.exp));
+          index = sort.indexOf(msg.author);
           rangs = sort.map((e, i) => {
             let name = ((i == 0) ? "<a:crystal:637290417360076822> " : (i == 1) ? "<:crys3:763767653571231804> " : (i == 2) ? "<:crys2:763767958559391795>" : "<:crys:637290406958202880> ") + (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
             let value = `Уровень: **${ e.data.level }** | Опыта: ${(e.data.level - 1) * 22.5 * e.data.level + e.data.exp}`;
@@ -4761,6 +4851,7 @@ const commands = {
         case "630463177314009115":
           // praises
           sort = users.filter(e => e.data.praiseMe).sort((a, b) => (b.data.praiseMe.length) - (a.data.praiseMe.length));
+          index = sort.indexOf(msg.author);
           if (!msg.author.data.praiseMe) msg.author.data.praiseMe = [];
           rangs = sort.map((e, i) => {
             let name = (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
@@ -4772,6 +4863,7 @@ const commands = {
         case "🧤":
           // thief
           sort = users.sort((a, b) => ((b.data.thiefGloves ? +b.data.thiefGloves.split("|")[1] : 0) + ~~b.data.thiefWins / 5) - ((a.data.thiefGloves ? +a.data.thiefGloves.split("|")[1] : 0) + ~~a.data.thiefWins / 5));
+          index = sort.indexOf(msg.author);
           rangs = sort.map((e, i) => {
             let name = (i + 1) + ". " + e.username;
             let value = `Состояние перчаток: \`${e.data.thiefGloves || "0|0"}\` > Отбито атак: ${e.data.thiefWins | 0}`.replace(/-/g, "!");
@@ -4782,6 +4874,7 @@ const commands = {
         case "📜":
           // quests
           sort = users.filter(e => e.data.dayQuests).sort((a, b) => (b.data.dayQuests) - (a.data.dayQuests));
+          index = sort.indexOf(msg.author);
           rangs = sort.map((e, i) => {
             let name = ((i == 0) ? "<a:cupZ:806813908241350696> " : (i == 1) ? "<a:cupY:806813850745176114> " : (i == 2) ? "<a:cupX:806813757832953876> " : "") + (i + 1) + ". " + e.username;
             let value = `Выполнено ежедневных квестов: ${e.data.dayQuests || 0} | Глобальных: ${(e.data.completedQuest || []).length}/${Object.values(quests.names).length}`;
@@ -4792,9 +4885,20 @@ const commands = {
         case "⚜️":
           // void
           sort = users.filter(e => e.data.voidRituals).sort((a, b) => (b.data.voidRituals) - (a.data.voidRituals));
+          index = sort.indexOf(msg.author);
           rangs = sort.map((e, i) => {
             let name = (i + 1) + ". " + ((e.id == msg.author.id) ? "?".repeat(e.username.length) : e.username) + ((i == 0) ? " <a:neonThumbnail:806176512159252512>" : "") + (random(9) ? "" : " <a:void:768047066890895360>");
             let value = `Использований котла ${random(3) ? e.data.voidRituals : "???"}`;
+            return {name, value};
+          });
+          break;
+
+        case "⚔️":
+          sort = users.filter(user => guild.data.boss.users[user.id]?.damageDealt).sort((a, b) => guild.data.boss.users[b.id].damageDealt - guild.data.boss.users[a.id].damageDealt);
+          index = sort.indexOf(msg.author);
+          rangs = sort.map((user, i) => {
+            const name = `${ i + 1 }. ${ user.username }`;
+            const value = `Великий воин нанёс ${ guild.data.boss.users[user.id].damageDealt }ед. урона`;
             return {name, value};
           });
           break;
@@ -4807,10 +4911,11 @@ const commands = {
         pages = [];
         while (rangs.length) pages.push(rangs.splice(0, 15));
       }
+      embed.message = index !== -1 ? `Вы находитесь на ${ index + 1 } месте, ${ msg.author.username }` : `Вы не числитесь в этом топе, ${ msg.author.username }`
       embed.footer = (pages[1]) ? {text: `Страница: ${page + 1} / ${pages.length}`} : null;
       embed.fields = (pages[0]) ? pages[page] : [{name: "Ещё никто не попал в топ", value: "Значит вы лёгко можете стать первым(-ой)"}];
 
-      message = await message.msg("This is TOP", embed);
+      message = await message.msg(embed);
       react = await message.awaitReact({user: msg.author, type: "all"}, (page != 0 ? "640449848050712587" : null), ((pages[1] && page != pages.length - 1) ? "640449832799961088" : null), ...others.filter(e => e != react));
     }
 
