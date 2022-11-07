@@ -3188,7 +3188,7 @@ class BossManager {
   }
 
   static calculateHealthPoint(level){
-    return 11_000 + Math.floor(level * 500 * 1.1 ** level);
+    return 7_000 + Math.floor(level * 500 * 1.2 ** level);
   }
 
   static calculateHealthPointThresholder(level){
@@ -3385,7 +3385,7 @@ class BossManager {
         keyword: "wolf",
         description: "Перезарядка атаки в 2 раза меньше",
         basePrice: 50,
-        priceMultiplayer: 3,
+        priceMultiplayer: 1.75,
         callback: ({userStats}) => {
           userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
           userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
@@ -3415,17 +3415,6 @@ class BossManager {
           };
         }
       },
-      "🎲": {
-        emoji: "🎲",
-        keyword: "dice",
-        description: "Урон участников сервера на 1% эффективнее",
-        basePrice: 10,
-        priceMultiplayer: 5,
-        callback: ({boss}) => {
-          boss.diceDamageMultiplayer ||= 1;
-          boss.diceDamageMultiplayer += 0.01;
-        },
-      },
       "📡": {
         emoji: "📡",
         keyword: "anntena",
@@ -3435,6 +3424,17 @@ class BossManager {
         callback: ({userStats}) => {
           userStats.damagePerMessage ||= 1;
           userStats.damagePerMessage += 1;
+        },
+      },
+      "🎲": {
+        emoji: "🎲",
+        keyword: "dice",
+        description: "Урон участников сервера на 1% эффективнее",
+        basePrice: 10,
+        priceMultiplayer: 5,
+        callback: ({boss}) => {
+          boss.diceDamageMultiplayer ||= 1;
+          boss.diceDamageMultiplayer += 0.01;
         },
       },
       "🪦": {
@@ -3471,7 +3471,11 @@ class BossManager {
     const userStats = BossManager.getUserStats(boss, user.id);
     userStats.bought ||= {};
 
-    const calculatePrice = (item, boughtCount) => item.basePrice * item.priceMultiplayer ** (boughtCount ?? 0);
+    const calculatePrice = (item, boughtCount) => {
+      const grossPrice = item.basePrice * item.priceMultiplayer ** (boughtCount ?? 0);
+      const price = Math.floor(grossPrice - (grossPrice % 5));
+      return price;
+    }
     
     let message = await channel.msg( createEmbed({boss, user, edit: false}) );
     const collector = message.createReactionCollector((reaction, member) => user.id === member.id, {time: 60_000});
@@ -3514,7 +3518,7 @@ class BossManager {
         !attackContext.listOfEvents.some(({id}) => ["reduceAttackDamage"].includes(id))      
     },
     increaseCurrentAttackDamage: {
-      _weight: 5,
+      _weight: 15,
       id: "increaseAttackCooldown",
       description: "Урон текущей атаки был увеличен",
       callback: ({attackContext}) => {
@@ -3530,13 +3534,24 @@ class BossManager {
       }     
     },
     applyCurse: {
-      _weight: 5,
+      _weight: 3,
       id: "applyCurse",
       description: "Вас прокляли",
-      callback: ({user}) => {
-        const curse = CurseManager.generate({user});
+      callback: ({user, boss}) => {
+        const hard = Math.floor(boss.level / 3);
+        const curse = CurseManager.generate({user, hard});
         CurseManager.init({user, curse});
-      }     
+      },
+      filter: ({user}) => !user.data.curses?.length || user.data.voidFreedomCurse     
+    },
+    improveDamageForAll: {
+      _weight: 5,
+      id: "applyCurse",
+      description: "Урон по боссу увеличен на 1%",
+      callback: ({user, boss}) => {
+        boss.diceDamageMultiplayer += 0.01;
+      },
+      filter: ({boss}) => boss.diceDamageMultiplayer 
     }
   }));
 
