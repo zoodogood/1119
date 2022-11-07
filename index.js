@@ -3183,7 +3183,7 @@ class BossManager {
     userStats.messages++;
 
     const DEFAULT_DAMAGE = 1;
-    const damage = DEFAULT_DAMAGE + (userStats.damagePerMessage ?? 0);
+    const damage = userStats.damagePerMessage ?? DEFAULT_DAMAGE;
     BossManager.makeDamage(boss, damage, {sourceUser: message.author});
   }
 
@@ -3433,7 +3433,7 @@ class BossManager {
         basePrice: 1000,
         priceMultiplayer: 2,
         callback: ({userStats}) => {
-          userStats.damagePerMessage ||= 0;
+          userStats.damagePerMessage ||= 1;
           userStats.damagePerMessage += 1;
         },
       },
