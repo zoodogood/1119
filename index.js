@@ -3213,8 +3213,13 @@ class BossManager {
     }
 
     if (boss.damageTaken >= boss.healthThresholder){
-      const expReward = 500 + 500 * boss.level;
-      const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон"
+      BossManager.kill({boss, sourceUser})
+    }
+  }
+
+  static kill({boss, sourceUser}){
+    const expReward = 500 + 500 * boss.level;
+      const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон";
       if (sourceUser){
         sourceUser.data.exp += expReward;
       }
@@ -3225,7 +3230,6 @@ class BossManager {
       const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
       guild.chatSend({message: "", description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
       BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
-    }
   }
 
   static async createBonusesChest({guild, boss, thatLevel}){
@@ -3340,10 +3344,15 @@ class BossManager {
         }
       };
 
-      const event = pull.random({pop: true, weights: true});
+      const event = pull.random({weights: true});
       if (!event){
         break;
       }
+      if (!event.repeats){
+        const index = pull.indexOf(event);
+        ~index ? pull.splice(index, 1) : null;
+      }
+
       event.callback(data);
       attackContext.listOfEvents.push(event);
     }
@@ -3522,6 +3531,7 @@ class BossManager {
     },
     increaseCurrentAttackDamage: {
       _weight: 15,
+      repeats: true,
       id: "increaseAttackCooldown",
       description: "Урон текущей атаки был увеличен",
       callback: ({attackContext}) => {
@@ -3568,9 +3578,11 @@ class BossManager {
           description: "Вас атакуют!\n— Пытаться контратаковать\n— Защитная поза",
           reactions
         }
+
         channel.startTyping();
         await delay(2000);
         channel.stopTyping();
+
         const message = await channel.msg(embed);
         const collector = message.createReactionCollector(({emoji}, member) => user === member && reactions.includes(emoji.name), {time: 30_000, max: 1});
         collector.on("collect", (reaction) => {
@@ -3578,9 +3590,9 @@ class BossManager {
           const emoji = reaction.emoji.name;
 
           if (emoji === "⚔️" && isLucky){
-            const content = "Успех! Нанесено 300 урона";
+            const content = "Успех! Нанесено 125 урона";
             message.msg("", {description: content, delete: 8000});
-            BossManager.makeDamage(boss, 300, {sourceUser: user});
+            BossManager.makeDamage(boss, 125, {sourceUser: user});
             return;
           }
 
@@ -3609,7 +3621,14 @@ class BossManager {
         collector.on("end", () => message.delete());
       },
       filter: ({boss}) => boss.diceDamageMultiplayer 
-    }
+    },
+    // ______e4example: {
+    //   _weight: 2,
+    //   id: "______e4example",
+    //   description: "Требуется совершить выбор",
+    //   callback: async ({user, boss, channel, userStats}) => {
+    //   }
+    // }
 
   }));
 
