@@ -3400,6 +3400,9 @@ class BossManager {
         basePrice: 200,
         priceMultiplayer: 3,
         callback: ({userStats}) => {
+          if (!userStats.effects){
+            return false;
+          }
           const toRemove = userStats.effects
             .filter(effect => {
               const base = BossManager.effectBases.get(effect.id);
@@ -3552,7 +3555,62 @@ class BossManager {
         boss.diceDamageMultiplayer += 0.01;
       },
       filter: ({boss}) => boss.diceDamageMultiplayer 
+    },
+    ______e4example: {
+      _weight: 2,
+      id: "______e4example",
+      description: "Требуется совершить выбор",
+      callback: async ({user, boss, channel, userStats}) => {
+        const reactions = ["⚔️", "🛡️"];
+        const embed = {
+          message: "",
+          author: {name: user.username, iconURL: user.avatarURL()},
+          description: "Вас атакуют!\n— Пытаться контратаковать\n— Защитная поза",
+          reactions
+        }
+        channel.startTyping();
+        await delay(2000);
+        channel.stopTyping();
+        const message = await channel.msg(embed);
+        const collector = message.createReactionCollector(({emoji}, member) => user === member && reactions.includes(emoji.name), {time: 30_000, max: 1});
+        collector.on("collect", (reaction) => {
+          const isLucky = random(0, 1);
+          const emoji = reaction.emoji.name;
+
+          if (emoji === "⚔️" && isLucky){
+            const content = "Успех! Нанесено 300 урона";
+            message.msg("", {description: content, delete: 8000});
+            BossManager.makeDamage(boss, 300, {sourceUser: user});
+            return;
+          }
+
+          if (emoji === "⚔️" && !isLucky){
+            const content = "После неудачной контратаки ваше оружие ушло на дополнительную перезарядку";
+            message.msg("", {description: content, delete: 8000});
+            userStats.attack_CD += 3_600_000;
+            return;
+          }
+
+          if (emoji === "🛡️" && isLucky){
+            const content = "Успех! Получено 1000 золота";
+            message.msg("", {description: content, delete: 8000});
+            user.data.coins += 1000;
+            return;
+          }
+
+          if (emoji === "🛡️" && !isLucky){
+            const content = "После неудачной защиты ваше оружие ушло на дополнительную перезарядку";
+            message.msg("", {description: content, delete: 8000});
+            userStats.attack_CD += 3_600_000;
+            return;
+          }
+        });
+
+        collector.on("end", () => message.delete());
+      },
+      filter: ({boss}) => boss.diceDamageMultiplayer 
     }
+
   }));
 
   static BOSS_TYPES = new Collection([
