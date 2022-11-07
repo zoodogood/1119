@@ -2942,9 +2942,9 @@ class CurseManager {
 
             const data = user.data;
 
-            const currentCoins = data.coins;
+            const previousCoins = data.coins;
             getCoinsFromMessage(data, message);
-            const difference = currentCoins - data.coins;
+            const difference = data.coins - previousCoins;
 
             data.coins -= difference * 2;
             CurseManager.intarface({user, curse}).incrementProgress(1);
