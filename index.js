@@ -3230,6 +3230,9 @@ class BossManager {
       const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
       guild.chatSend({message: "", description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
       BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
+
+      Object.values(boss.users)
+        .forEach(userStats => delete userStats.attack_CD);
   }
 
   static async createBonusesChest({guild, boss, thatLevel}){
