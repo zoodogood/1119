@@ -66,8 +66,15 @@ function toLocaleDelevoperString(value){
   }
 }
 
+omit(object, filter){
+  const entries = Object.entries(object)
+    .filter(([k,v]) => filter(k, v));
+  return Object.fromEntries(entries);
+}
+
 
 export {
   toLocaleDelevoperString,
-  CustomCollector
+  CustomCollector,
+  omit
 };
