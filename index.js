@@ -4814,7 +4814,7 @@ const commands = {
           break;
 
         case "⚔️":
-          sort = users.filter(user => guild.data.boss.users?.[user.id].damageDealt).sort((a, b) => guild.data.boss.users[b.id].damageDealt - guild.data.boss.users[a.id].damageDealt);
+          sort = users.filter(user => guild.data.boss.users[user.id]?.damageDealt).sort((a, b) => guild.data.boss.users[b.id].damageDealt - guild.data.boss.users[a.id].damageDealt);
           index = sort.indexOf(msg.author);
           rangs = sort.map((user, i) => {
             const name = `${ i + 1 }. ${ user.username }`;
