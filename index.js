@@ -3117,7 +3117,7 @@ class CurseManager {
 
 
 class BossManager {
-  static bossApparance(guild){
+  static async bossApparance(guild){
 
     const TWO_MONTH = 5259600000;
 
@@ -3152,6 +3152,7 @@ class BossManager {
     }
 
     if (guildData.boss.endingDate === data.bot.dayDate){
+      await BossManager.beforeEnd(guild);
       delete guildData.boss;
       return;
     }
@@ -3299,6 +3300,58 @@ class BossManager {
     }
  
     await guild.chatSend(embed.title, embed);
+  }
+
+  static async beroreEnd(guild){
+    const boss = guild.data.boss;
+
+    if (boss.level > 1 === false){
+      guild.chatSend("Босс покинул сервер в страхе...");
+      return;
+    }
+    
+
+    const contents = {
+      dice: `Максимальный бонус к урону от кубика: Х${ +((boss.diceDamageMultiplayer ?? 1) - 1).toFixed(2) };`,
+      damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
+      usersCount: `Приняло участие: ${ ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
+      rewards: "Награды:"
+    }
+
+    const usersTable = {};
+    const rewardsCount = Math.floor(boss.level ** 1.2);
+
+    for (let i = 0; i < rewardsCount; i++){
+      const id = Object.entries(boss.users)
+        .map(([id, {damageDealt: _weight}]) => ({id, _weight}))
+        .random({_weight: true})
+        .id;
+
+     usersTable[id] ||= 0;
+     usersTable[id] += 1;
+    }
+
+    Object.entries(usersTable).forEach(([id, voidCount]) => {
+      const user = client.users.cache.get(id);
+      user.data.void += voidCount;
+    })
+
+    const fields = Object.entries(usersTable).map(([id, voidCount]) => {
+      const user = client.users.cache.get(id);
+      const damage = boss.users[id].damageDealt;
+      const value = `Нестабильности: ${ voidCount };\nУрона: ${ damage }ед.`;
+      return {name: user.username, value, inline: true};
+    });
+      
+    
+
+    const description = `${ contents.dice }\n\n${ contents.damageDealt }. ${ contents.usersCount }`;
+    const embed = {
+      message: "Среди ночи босс покинул этот сервер",
+      description,
+      fields
+    };
+    guild.chatSend(embed);
   }
 
   static initBossData(boss, guild){
