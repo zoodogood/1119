@@ -3302,7 +3302,7 @@ class BossManager {
     await guild.chatSend(embed.title, embed);
   }
 
-  static async beroreEnd(guild){
+  static async beforeEnd(guild){
     const boss = guild.data.boss;
 
     if (boss.level > 1 === false){
