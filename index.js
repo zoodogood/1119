@@ -3474,7 +3474,7 @@ class BossManager {
           userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
           userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
 
-          delete userStats.attack_CD;
+          userStats.attack_CD -= userStats.attackCooldown;
         }
       },
       "🥛": {
