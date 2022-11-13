@@ -3657,7 +3657,8 @@ class BossManager {
           message: "",
           author: {name: user.username, iconURL: user.avatarURL()},
           description: "Вас атакуют!\n— Пытаться контратаковать\n— Защитная поза",
-          reactions
+          reactions,
+          footer: {iconURL: user.avatarURL(), text: "Вы можете проигнорировать это сообщение"}
         }
 
         channel.startTyping();
@@ -3672,28 +3673,28 @@ class BossManager {
 
           if (emoji === "⚔️" && isLucky){
             const content = "Успех! Нанесено 125 урона";
-            message.msg("", {description: content, delete: 8000});
+            message.msg("", {description: content});
             BossManager.makeDamage(boss, 125, {sourceUser: user});
             return;
           }
 
           if (emoji === "⚔️" && !isLucky){
             const content = "После неудачной контратаки ваше оружие ушло на дополнительную перезарядку";
-            message.msg("", {description: content, delete: 8000});
+            message.msg("", {description: content});
             userStats.attack_CD += 3_600_000;
             return;
           }
 
           if (emoji === "🛡️" && isLucky){
             const content = "Успех! Получено 1000 золота";
-            message.msg("", {description: content, delete: 8000});
+            message.msg("", {description: content});
             user.data.coins += 1000;
             return;
           }
 
           if (emoji === "🛡️" && !isLucky){
             const content = "После неудачной защиты ваше оружие ушло на дополнительную перезарядку";
-            message.msg("", {description: content, delete: 8000});
+            message.msg("", {description: content});
             userStats.attack_CD += 3_600_000;
             return;
           }
