@@ -2737,7 +2737,7 @@ class CurseManager {
               CurseManager.intarface({user, curse}).fail();
           }
         },
-        reward: 4
+        reward: 12
       },
       {
         _weight: 7,
