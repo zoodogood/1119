@@ -3305,7 +3305,7 @@ class BossManager {
     await guild.chatSend(embed.title, embed);
   }
 
-  static async beroreEnd(guild){
+  static async beforeEnd(guild){
     const boss = guild.data.boss;
 
     if (boss.level > 1 === false){
@@ -3320,20 +3320,26 @@ class BossManager {
       usersCount: `Приняло участие: ${ ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
       rewards: "Награды:"
     }
-
-    const usersTable = {};
-    const rewardsCount = Math.floor(boss.level ** 1.2);
-
-    for (let i = 0; i < rewardsCount; i++){
-      const id = Object.entries(boss.users)
-        .map(([id, {damageDealt: _weight}]) => ({id, _weight}))
-        .random({_weight: true})
-        .id;
-
-     usersTable[id] ||= 0;
-     usersTable[id] += 1;
+    
+    const getUsetsRewardTable = () => {
+      const table = {};
+      const rewardsCount = Math.floor(boss.level ** 1.2);
+      const usersOdds = Object.entries(boss.users)
+        .map(([id, {damageDealt: _weight}]) => ({id, _weight}));
+        
+      for (let i = 0; i < rewardsCount; i++){
+        const id = usersOdds.random({_weight: true})
+          .id;
+        
+        table[id] ||= 0;
+        table[id] += 1;
+      }
+      
+      return table;
     }
-
+   
+    const usersTable = getUsetsRewardTable();
+    
     Object.entries(usersTable).forEach(([id, voidCount]) => {
       const user = client.users.cache.get(id);
       user.data.void += voidCount;
