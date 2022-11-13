@@ -3422,7 +3422,13 @@ class BossManager {
         ~index ? pull.splice(index, 1) : null;
       }
 
-      event.callback(data);
+      try {
+        event.callback(data);
+      }
+      catch (error){
+        msg.msg(`Источник исключения: ${ data.id }. Он был убран из списка возможных событий на неопределенный срок`, {color: "", description: `**${ error.message }:**\n${ error.stack }`});
+        BossManager.eventBases.remove(data.id);
+      }
       attackContext.listOfEvents.push(event);
     }
 
