@@ -3169,6 +3169,10 @@ class BossManager {
   }
 
   static getUserStats(boss, id){
+    if (typeof id !== "string"){
+      throw new TypeError("Expected id");
+    }
+
     const bossUsers = boss.users;
     if (id in bossUsers === false)
       bossUsers[id] = { messages: 0 };
@@ -3251,7 +3255,7 @@ class BossManager {
     const message = await guild.chatSend(embed);
     const collector = message.createReactionCollector((reaction) => !reaction.me, {time: 3_600_000 * 2});
     collector.on("collect", (_reaction, user) => {
-      const userStats = BossManager.getUserStats(boss, user);
+      const userStats = BossManager.getUserStats(boss, user.id);
       userStats.bonuses ||= {};
  
       if ("chestReward" in userStats){
