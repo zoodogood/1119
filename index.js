@@ -3240,24 +3240,27 @@ class BossManager {
     const color = "ffda73";
     const embed = {
       message: "Сундук с наградами",
-      description: `Получите бонусы за победу над боссом ур. ${ thatLevel }.\nВремя ограничено одним часом с момента отправки этого сообщения.`,
+      description: `Получите бонусы за победу над боссом ур. ${ thatLevel }.\nВремя ограничено двумя часами с момента отправки этого сообщения.`,
       thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038767024643522600/1476613756146739089.png?width=593&height=593",
       color,
       reactions: ["637533074879414272"]
     };
+
+    const calculateReward = (level) => 120 + level * 10;
+
     const message = await guild.chatSend(embed);
-    const collector = message.createReactionCollector((reaction) => !reaction.me, {time: 3_600_000});
-    collector.on("collect", (reaction, user) => {
+    const collector = message.createReactionCollector((reaction) => !reaction.me, {time: 3_600_000 * 2});
+    collector.on("collect", (_reaction, user) => {
       const userStats = BossManager.getUserStats(boss, user);
       userStats.bonuses ||= {};
-      const key = `that${ thatLevel }`;
-      if (key in userStats){
-        message.msg("Вы уже взяли награду", {delete: 5000});
+ 
+      if ("chestReward" in userStats){
+        message.msg(`Вы уже взяли награду на ур. ${ userStats.chestReward }`, {delete: 5000});
         return;
       };
 
-      const reward = thatLevel * 10 + 10;
-      userStats[key] = true;
+      const reward = calculateReward(thatLevel);
+      userStats.chestReward = thatLevel;
       user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
       message.msg({message: "", description: `Получено ${ ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color, delete: 7000});
     })
