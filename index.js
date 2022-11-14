@@ -3636,7 +3636,7 @@ class BossManager {
       description: "Вас прокляли",
       callback: ({user, boss}) => {
         const hard = Math.min(
-          Math.floor(boss.level / 3,
+          Math.floor(boss.level / 3),
           2
          );
         const curse = CurseManager.generate({user, hard});
