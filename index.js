@@ -3427,7 +3427,7 @@ class BossManager {
       }
       catch (error){
         channel.msg(`Источник исключения: ${ event.id }. Он был убран из списка возможных событий на неопределенный срок`, {color: "", description: `**${ error.message }:**\n${ error.stack }`});
-        BossManager.eventBases.remove(event.id);
+        BossManager.eventBases.delete(event.id);
       }
       attackContext.listOfEvents.push(event);
     }
