@@ -2660,6 +2660,9 @@ class GuildVariablesManager {
 class CurseManager {
 
   static generate({hard = null, user}){
+  	if (hard >= 2){
+  	  throw new RangeError("Maximal of curse hard is 2");
+      }
 
     const curseBase = [...CurseManager.cursesBase.values()]
       .filter(curseBase => hard === null || curseBase.hard === hard)
@@ -3632,7 +3635,10 @@ class BossManager {
       id: "applyCurse",
       description: "Вас прокляли",
       callback: ({user, boss}) => {
-        const hard = Math.floor(boss.level / 3);
+        const hard = Math.min(
+          Math.floor(boss.level / 3,
+          2
+         );
         const curse = CurseManager.generate({user, hard});
         CurseManager.init({user, curse});
       },
@@ -6257,7 +6263,7 @@ const commands = {
     let guild = msg.guild
     let server = guild.data;
     let settingsAll = [
-      ["description", "?? Настроить описание сервера", "Описание сервера удачно настроено"],
+      ["description", "🪧 Настроить описание сервера", "Описание сервера удачно настроено"],
       ["banner", "🌌 Установите баннер", "На сервере есть свой баннер!"],
       ["chatFilter", "🚸 Фильтр чата выключен", "Фильтр чата включён :)"],
       ["hi", "👋 Не настроено приветсвие новых участников ", "«Привет тебе, новый участник»"],
