@@ -2660,7 +2660,7 @@ class GuildVariablesManager {
 class CurseManager {
 
   static generate({hard = null, user}){
-  	if (hard >= 2){
+  	if (hard > 2){
   	  throw new RangeError("Maximal of curse hard is 2");
       }
 
