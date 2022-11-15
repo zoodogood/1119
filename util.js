@@ -52,6 +52,10 @@ class CustomCollector {
 }
 
 function toLocaleDelevoperString(value){
+  if (!value){
+    return String(value);
+  }
+
   if (typeof value === "string"){
     return `"${ value }"`;
   }
