@@ -3436,6 +3436,7 @@ class BossManager {
     }
 
     const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * this.USER_DEFAULT_ATTACK_DAMAGE * attackContext.damageMultiplayer);
+    attackContext.defaultDamageDealt = attackContext.damageDealt = damage;
     BossManager.makeDamage(boss, damage, {sourceUser: user});
 
     
@@ -3623,7 +3624,7 @@ class BossManager {
       }     
     },
     giveChestBonus: {
-      _weight: 5,
+      _weight: 4,
       id: "giveChestBonus",
       description: "Выбито 4 бонуса сундука",
       callback: ({user}) => {
@@ -3653,9 +3654,9 @@ class BossManager {
       },
       filter: ({boss}) => boss.diceDamageMultiplayer 
     },
-    ______e4example: {
+    choiseAttackDefense: {
       _weight: 2,
-      id: "______e4example",
+      id: "choiseAttackDefense",
       description: "Требуется совершить выбор",
       callback: async ({user, boss, channel, userStats}) => {
         const reactions = ["⚔️", "🛡️"];
@@ -3707,9 +3708,197 @@ class BossManager {
         });
 
         collector.on("end", () => message.delete());
-      },
-      filter: ({boss}) => boss.diceDamageMultiplayer 
+      }
     },
+    choiseCreatePotion: {
+      _weight: Infinity,
+      id: "choiseCreatePotion",
+      description: "Требуется совершить выбор",
+      callback: async ({user, boss, channel, userStats, attackContext}) => {
+        const reactions = ["🧪", "🍯", "🩸"];
+        const embed = {
+          message: "",
+          author: {name: user.username, iconURL: user.avatarURL()},
+          description: "Сварите правильный эликсир\n— 🧪 Добавить больше порошка\n— 🍯 Подсыпать пудры\n— 🩸 Средство для усиления эффекта",
+          reactions,
+          footer: {iconURL: user.avatarURL(), text: "Используйте три реакции для наилучшего эффекта"}
+        }
+
+        channel.startTyping();
+        await delay(2000);
+        channel.stopTyping();
+
+        const ingredients = [];
+
+        const createSpell = (ingredients) => {
+          const spellsTable = {
+            "🧪🧪🧪": {
+              description: "Создаёт особый котёл, который уменьшает перезарядку атаки каждого, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
+              callback: async (message, _embed) => {
+                await message.react("🧪");
+                const collector = message.createReactionCollector(() => true, {time: 3_600_000});
+                const gotTable = {};
+                collector.on("collect", (_reaction, user) => {
+                  if (user.id in gotTable){
+                    message.msg("Вы уже воспользовались котлом", {color: "ff0000", delete: 3000});
+                    return;
+                  }
+
+                  if (Object.keys(gotTable) >= 5){
+                    collector.stop();
+                  }
+
+                  gotTable[user.id] = true;
+                  const userStats = BossManager.getUserStats(boss, user.id);
+                  const current = userStats.attackCooldown;
+                  userStats.attackCooldown = Math.floor(userStats.attackCooldown * 0.75);
+
+                  const description = `Перезарядка снизилась на ${ timestampToDate(current - userStats.attackCooldown) }`;
+        
+                  message.msg("", {description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
+                });
+
+                collector.on("end", () => message.reactions.removeAll());
+              }
+            },
+            "🧪🧪🍯": {
+              description: "Создаёт особый котёл, который дарует богатсва каждому, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
+              callback: async (message, _embed) => {
+                await message.react("🧪");
+                const collector = message.createReactionCollector(() => true, {time: 3_600_000});
+                const gotTable = {};
+                collector.on("collect", (_reaction, user) => {
+                  if (user.id in gotTable){
+                    message.msg("Вы уже воспользовались котлом", {color: "ff0000", delete: 3000});
+                    return;
+                  }
+
+                  if (Object.keys(gotTable) >= 5){
+                    collector.stop();
+                  }
+
+                  gotTable[user.id] = true;
+
+                  user.data.chestBonus ||= 0;
+                  user.data.chestBonus += 10;
+                  const description = `Получено 10 бонусов сундука`;
+        
+                  message.msg("", {description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
+                });
+
+                collector.on("end", () => message.reactions.removeAll());
+              }
+            },
+            "🧪🧪🩸": {
+              description: "Сбрасывает перезарядку на атаку и уменьшает постоянный кулдаун в три раза",
+              callback: (_message, _embed) => {
+                delete userStats.attack_CD;
+                userStats.attackCooldown = Math.floor(userStats.attackCooldown / 3);
+              }
+            },
+            "🧪🍯🍯": {
+              description: "Значительно уменьшает цену на волка из лавки босса",
+              callback: (_message, _embed) => {
+                userStats.bought ||= {};
+                userStats.bought.wolf ||= 0;
+                userStats.bought.wolf -= 2;
+              }
+            },
+            "🧪🩸🩸": {
+              description: "Значительно уменьшает цену на пазл из лавки босса",
+              callback: (_message, _embed) => {
+                userStats.bought ||= {};
+                userStats.bought.puzzle ||= 0;
+                userStats.bought.puzzle -= 2;
+              }
+            },
+            "🍯🍯🍯": {
+              description: "Вы мгновенно получаете 35 бонусов сундука!",
+              callback: (_message, _embed) => {
+                user.data.chestBonus ||= 0;
+                user.data.chestBonus += 35;
+              }
+            },
+            "🩸🩸🩸": {
+              description: "Босс теряет 15% от своего текущего здоровья",
+              callback: (message, embed) => {
+                const thresholder = BossManager.calculateHealthPointThresholder(boss.level);
+                const currentHealth = thresholder - boss.damageTaken;
+                const damage = Math.floor(currentHealth * 0.15);
+                BossManager.makeDamage(boss, damage, {sourceUser: user});
+
+                embed.edit = true;
+                embed.author = {name: `Нанесено ${ damage }ед. урона`};
+                message.msg(embed);
+              }
+            },
+            "🧪🍯🩸": {
+              description: "Вы попросту перевели продукты..",
+              callback: (_message, _embed) => {
+
+              }
+            },
+            "🍯🍯🩸": {
+              description: "Вы попросту перевели продукты..",
+              callback: (_message, _embed) => {
+
+              }
+            },
+            "🍯🩸🩸": {
+              description: "Наносит ещё одну атаку с увеличенным уроном. Множитель урона Х11",
+              callback: (message, embed) => {
+                const previousDamage = attackContext.damageDealt;
+                const damage = previousDamage * 11;
+                BossManager.makeDamage(boss, damage, {sourceUser: user});
+
+                embed.edit = true;
+                embed.author = {name: `Нанесено ${ damage }ед. урона`};
+                message.msg(embed);
+              }
+            }
+          }
+
+          const sort = (a, b) => reactions.indexOf(a) > reactions.indexOf(b) ? 1 : -1;
+
+          const key = ingredients.sort(sort).join("");
+          const {callback, description} = spellsTable[key];
+          return {callback, description};
+        }
+
+
+        const message = await channel.msg(embed);
+        const collector = message.createReactionCollector(({emoji}, member) => user === member && reactions.includes(emoji.name), {time: 90_000});
+        collector.on("collect", async (reaction, user) => {
+          reaction.users.remove(user);
+
+          const emoji = reaction.emoji.name;
+
+          
+
+          ingredients.push(emoji);
+          const MAX_INGEDIENTS = 3;
+
+          const ingredientsContent = `[${ ingredients.join("") }] + ${ ingredients.length }/${ MAX_INGEDIENTS }`;
+          await channel.msg("", {description: ingredientsContent, delete: 3000});
+
+
+          if (ingredients.length === MAX_INGEDIENTS){
+            collector.stop();
+            const {callback, description} = createSpell(ingredients);
+            const embed = {
+              message: "Трепещи, босс, я изобрёл нечто!",
+              description,
+              footer: {iconURL: user.avatarURL(), text: user.tag}
+            }
+            const message = await channel.msg(embed);
+            callback.call(null, message, embed);
+          }
+
+        });
+
+        collector.on("end", () => message.delete());
+      }
+    }
     // ______e4example: {
     //   _weight: 2,
     //   id: "______e4example",
@@ -8609,7 +8798,7 @@ const commands = {
                   let prise = random(sellingCount * 160, sellingCount * 190);
                   user.chilli -= sellingCount;
                   user.coins += prise;
-                  scene.phrase = `Вы смогли продать ${ending(sellingCount, "пер", "цев", "ец", "ца")} и заработали ${prise} <:coin:637533074879414272>`;
+                  scene.phrase = `Вы смогли продать ${ending(sellingCount, "пер", "цев", "ец", "ца")} и заработали ${ prise } <:coin:637533074879414272>`;
                   return;
                 }
 
