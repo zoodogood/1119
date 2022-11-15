@@ -3711,7 +3711,7 @@ class BossManager {
       }
     },
     choiseCreatePotion: {
-      _weight: Infinity,
+      _weight: 1,
       id: "choiseCreatePotion",
       description: "Требуется совершить выбор",
       callback: async ({user, boss, channel, userStats, attackContext}) => {
