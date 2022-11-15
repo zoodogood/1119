@@ -3232,12 +3232,12 @@ class BossManager {
         sourceUser.data.exp += expReward;
       }
       
-      boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
       const guild = client.guilds.cache.get(boss.guildId);
       const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
       guild.chatSend({message: "", description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
       BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
       boss.level++;
+      boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
 
       Object.values(boss.users)
         .forEach(userStats => delete userStats.attack_CD);
