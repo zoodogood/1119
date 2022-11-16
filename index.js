@@ -402,9 +402,16 @@ async function msg(msg, opt = {}){
     image        = opt.image,
     deleted      = opt.delete,
 
+    mentions     = opt.mentions,
     reference    = opt.reference,
 
     fields = opt.fields, author = opt.author, files = opt.files, timest = opt.timestamp, footer = opt.footer;
+
+  const options = {};
+
+  if (mentions){
+    options.allowMentions = {users: mentions};
+  }
 
 
   if (obj instanceof Discord.Message && !edit) {
@@ -443,7 +450,7 @@ async function msg(msg, opt = {}){
 
 
 
-  let message = (!edit) ? obj.send(msg) : obj.edit(msg);
+  let message = (!edit) ? obj.send(msg, options) : obj.edit(msg, options);
   if (deleted) {
     message.then( e => e.delete({timeout: deleted}) );
   }
