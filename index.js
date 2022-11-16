@@ -4372,7 +4372,8 @@ const commands = {
   }, {delete: true, memb: true, dm: true, try: 3, cooldown: 120, Permissions: 4194304, type: "guild"}, "пред варн"),
 
   clear: new Command(async (msg, op) => {
-    await msg.delete();
+    await msg.delete()
+      .catch(() => {});
 
     const
       channel      = msg.channel,
@@ -4424,12 +4425,16 @@ const commands = {
       }
     };
 
-    let messages = foundedMessages
-      .filter(el => !el.pinned);
+    let messages = foundedMessages;
+
+    messages = messages.filter(message => !message.pinned);
+
+    if (msg.channel.type === "dm")
+      messages = messages.filter(message => message.author === client.user);
 
 
     if (userId)
-      messages = messages.filter(msg => msg.author.id === userId);
+      messages = messages.filter(message => message.author.id === userId);
 
     messages.splice(foundLimit);
 
@@ -4446,18 +4451,21 @@ const commands = {
       msg.channel.startTyping();
     }
 
-    const newest = [];
-    const oldest = [];
+    const byBulkDelete = [];
+    const byOneDelete  = [];
 
     messages.forEach(msg => {
-      if (msg.createdTimestamp - twoWeekAgo < 0)
-        return oldest.push(msg);
+      if (msg.channel.type === "dm")
+        return byOneDelete.push(msg);
 
-      newest.push(msg);
+      if (msg.createdTimestamp - twoWeekAgo < 0)
+        return byOneDelete.push(msg);
+
+      byBulkDelete.push(msg);
     });
 
     const updateCounter = async () => {
-      const current = toDelete - oldest.length - newest.length;
+      const current = toDelete - byOneDelete.length - byBulkDelete.length;
       counter = await counter.msg(`Пожалуйста, Подождите... ${ current } / ${ toDelete }`, {edit: true});
     }
 
@@ -4468,7 +4476,7 @@ const commands = {
     }
 
     const sendLog = () => {
-      const current = toDelete - oldest.length - newest.length;
+      const current = toDelete - byOneDelete.length - byBulkDelete.length;
 
       if (current === 0)
         return;
@@ -4477,17 +4485,17 @@ const commands = {
       const isCancel = !!(toDelete - current);
       const description = `В канале: ${ channel.toString() }\nУдалил: ${msg.author.toString()}\nТип чистки: ${ mode }${ isCancel ? "\n\nЧистка была отменена" : "" }`;
 
-
-      msg.guild.logSend(`Удалено ${ ending(current, "сообщени", "й", "е", "я") }`, {description});
+      if (msg.guild)
+        msg.guild.logSend(`Удалено ${ ending(current, "сообщени", "й", "е", "я") }`, {description});
     }
 
-    while (newest.length || oldest.length){
+    while (byBulkDelete.length || byOneDelete.length){
 
 
       if ( isReaction() ){
         counter.delete();
 
-        const current = toDelete - oldest.length - newest.length;
+        const current = toDelete - byOneDelete.length - byBulkDelete.length;
         const description = `Было очищено ${ ending(current, "сообщени", "й", "е", "я") } до отмены`;
         msg.msg("Очистка была отменена", {description, delete: 12000});
 
@@ -4501,13 +4509,14 @@ const commands = {
 
 
 
-      if (newest.length){
-        await channel.bulkDelete( newest.splice(0, 50) );
+      if (byBulkDelete.length){
+        await channel.bulkDelete( byBulkDelete.splice(0, 50) );
       }
 
       else {
-        await messages.splice(0, random(20, 35))
-          .asyncForEach(async msg => await msg.delete());
+        for (const message of byOneDelete.splice(0, random(5, 15))){
+          await message.delete();
+        }
       }
 
 
@@ -4521,7 +4530,7 @@ const commands = {
     counter.msg(`Удалено ${ ending(toDelete, "сообщени", "й", "е", "я") }!`, { edit: true, delete: 1500 });
 
     sendLog();
-  }, {dm: true, myChannelPermissions: 8192, ChannelPermissions: 8192, cooldown: 15, try: 5, type: "guild"}, "очистить очисти очисть клир клиар"),
+  }, {myChannelPermissions: 8192, ChannelPermissions: 8192, cooldown: 15, try: 5, type: "guild"}, "очистить очисти очисть клир клиар"),
 
   embed: new Command(async (msg, op) => {
     let author = msg.author, embed;
