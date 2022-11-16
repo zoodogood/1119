@@ -3798,7 +3798,7 @@ class BossManager {
             "🧪🧪🍯": {
               description: "Создаёт особый котёл, который дарует богатсва каждому, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
               callback: async (message, _embed) => {
-                await message.react("🧪");
+                await message.react("🍯");
                 const collector = message.createReactionCollector(() => true, {time: 3_600_000});
                 const gotTable = {};
                 collector.on("collect", (_reaction, user) => {
