@@ -4055,7 +4055,7 @@ const commands = {
         
 
         if (user.profile_description){
-          about = await template(user.profile_description, msg);
+          const about = await template(user.profile_description, msg);
           embed.fields.push({name: "О пользователе: ᠌", value: about});
         }
           
