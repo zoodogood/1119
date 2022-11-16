@@ -614,7 +614,7 @@ function toDayDate(date){
   if (date instanceof Date === false){
     date = new Date(date);
   }
-  
+
   const month = (date.getMonth() + 1).toString();
   const day   = date.getDate().toString();
 
@@ -3994,14 +3994,38 @@ const commands = {
   }, {args: true, delete: true, myChannelPermissions: 8192, type: "other"}, "с c сенд s"),
 
   user: new Command(async (msg, op) => {
-    let
+    
+
+    const
       memb   = (op.args) ? op.memb || client.users.cache.get(op.args) || msg.author : msg.author,
       member = (msg.guild) ? msg.guild.member(memb) : null,
       user   = memb.data,
-      rank   = "",
       guild  = msg.guild;
 
-      if (member === undefined){
+      const commandContext = {
+        currentCurseView: 0,
+  
+        rank: {
+          position: null,
+          members: guild ?
+            guild.members.cache.map(m => m.user)
+              .filter(user => !user.bot)
+              .filter(user => user.data.level > 1)
+            : null
+        },
+        
+        status: null,
+        embedColor: user.profile_color || "RANDOM",
+        controller: {
+          message: null,
+          editEmbed: false,
+          reactions: ["640449832799961088"]
+        }
+        
+      };
+
+
+      if (guild && member === undefined){
         msg.msg("На сервере нет упомянутого пользователя", {color: "ff0000", delete: 9000});
         return;
       }
@@ -4009,136 +4033,176 @@ const commands = {
       msg.author.action("callUserCommand", {msg, op});
 
       if (member && user.level > 1) {
-        rank = guild.members.cache.map(e => e.user).filter(el => !el.bot).sort((b, a) => (a.data.level != b.data.level) ? a.data.level - b.data.level : a.data.exp - b.data.exp).findIndex((el) => user.id == el.id) + 1;
+        commandContext.rank.position = [...commandContext.rank.members.values()]
+          .sort((b, a) => (a.data.level != b.data.level) ? a.data.level - b.data.level : a.data.exp - b.data.exp)
+          .indexOf(member) + 1;
       }
 
-      let status;
       if (
         memb.presence.status != "offline" ||
         memb === msg.author
       ) {
-        status = "<:online:637544335037956096> В сети";
+        commandContext.status = "<:online:637544335037956096> В сети";
       }
       else {
-         let dateMs = getTime() - nonNaN(user.last_online);
-         dateMs = user.profile_confidentiality ? "" : (31556926000000 < dateMs) ? "более года" : (dateMs > 2629743000) ? "более месяца" : timestampToDate(dateMs);
-         status = "<:offline:637544283737686027> Не в сети " + dateMs;
+         const lastOnline = getTime() - nonNaN(user.last_online);
+         const getDateContent = () => (31556926000000 < lastOnline) ? "более года" : (lastOnline > 2629743000) ? "более месяца" : timestampToDate(lastOnline);
+         const dateContent = user.profile_confidentiality ? "" : getDateContent();
+         commandContext.status = `<:offline:637544283737686027> Не в сети ${ dateContent }`;
       }
 
       memb.quest("check");
-      let secretAchievements = [{emoji: "👑", prop: user.crown}, {emoji: "❄️", prop: user.voidIce}].filter(e => e.prop);
-      if (!user.praiseMe) user.praiseMe = [];
 
-      let embed = {
-        author: {
-          name: `#${ member ? member.displayName : memb.username }`,
-          iconURL: memb.avatarURL({dynamic : true})
-        },
-        color: user.profile_color || "RANDOM",
-        description: `Коинов: **${ Math.letters(user.coins) }**<:coin:637533074879414272> \n <a:crystal:637290417360076822>Уровень: **${user.level || 1}** \n <:crys:637290406958202880>Опыт: **${user.exp || 0}/${(user.level || 1) * 45}**\n\n ${status}\n`,
-        fields: [{name: " ᠌", value: " ᠌"}],
-        footer: {text: `Похвал: ${user.praiseMe.length || "0"}   ${(rank) ? "Ранг: " + rank + "/" + guild.members.cache.filter((el) => el.user.data.level > 1).size : ""}`},
-      };
 
-      let about;
-      if (user.profile_description)
-        about = await template(user.profile_description, msg);
+      const createEmbedAtFirstPage = async () => {
+        const description = `Коинов: **${ Math.letters(user.coins) }**<:coin:637533074879414272> \n <a:crystal:637290417360076822>Уровень: **${user.level || 1}** \n <:crys:637290406958202880>Опыт: **${user.exp || 0}/${(user.level || 1) * 45}**\n\n ${commandContext.status}\n`
 
-      if (about)
-        embed.fields.push({name: "О пользователе: ᠌", value: about});
-
-      if (member)
-        embed.fields.push({name: " ᠌᠌", value: "\n**" + `${secretAchievements.last ? secretAchievements.random().emoji + " " : ""}${member.roles.highest}` + "**\nᅠ"});
-
-      if (!memb.bot)
-        embed.fields.push({name:"\nКвест:", value: (user.quest) ? `${ quests[user.quest] } ${ user.questProgress || 0 }/${ user.questNeed }` : " – Квест выполнен"});
-
-      if (user.curses && user.curses.length)
-        embed.fields.push({name: "᠌᠌", value: `Прогресс проклятия: ${ 
-          user.curses.map(curse => `・${ curse.values.progress || 0 }/${ curse.values.goal }`).join("; ")
-         }`});
+        const embed = {
+          message: "Профиль пользователя",
+          author: {
+            name: `#${ member ? member.displayName : memb.username }`,
+            iconURL: memb.avatarURL({dynamic : true})
+          },
+          color: commandContext.embedColor,
+          edit: commandContext.controller.editEmbed,
+          description,
+          fields: [{name: " ᠌", value: " ᠌"}],
+          footer: {text: `Похвал: ${user.praiseMe?.length || "0"}   ${commandContext.rank ? `Ранг: ${commandContext.rank.position}/${ commandContext.rank.members.length }` : ""}`},
+        }
 
         
 
-      const inventory = [
-        `🔩${user.keys}`,
-        `<a:void:768047066890895360>${user.void}`,
-        `🧤${ user.thiefGloves || 0 }|${ (user.thiefWins && String(user.thiefWins).replace("-", "!")) || 0 }`,
-        `${ user.chilli  ? "🌶️" + user.chilli  : "" }`,
-        `${ user.monster ? "🐲" + user.monster : "" }`,
-        `${ user.seed    ? "🌱" + user.seed    : "" }`,
-        `${ user.cheese  ? "🧀" + user.cheese  : "" }`
-      ];
-
-
-      let element = user.element ?  `\n${["🍃 Земля", "☁️ Воздух", "🔥 Огонь", "👾 Тьма"][user.element]} — элемент ${nonNaN(user.elementLevel) + 1} ур.\n` : "";
-      let fields = [
-        {
-          name: "Клубники <:berry:756114492055617558>",
-          value: `Имеется: ${ user.berrys }`,
-          inline: true
-        },
-        {
-          name: `Сундук ${ user.CD_32 > getTime() ? "<:chest_opened:986165753843679232>" : "<a:chest:805405279326961684>" }`,
-          value: `Сундук ур.: ${user.chestLevel + 1}\nБонус след. открытия: \`${user.chestBonus || 0}\``,
-          inline: true
-        },
-        {
-          name: "Содержимое сумки",
-          value: `${inventory.join("  ")}${element}\n⠀`,
-          inline: false
-        },
-        {
-          name: "Выполнено квестов 📜",
-          value: `Ежедневных: ${memb.bot ? "BOT" : user.dayQuests || 0}\nГлобальных: ${(user.completedQuest || []).filter(e => e in quests.names).length}/${Object.values(quests.names).length}`,
-          inline: false
-        },
-        {
-          name: "Проклятия 💀",
-          value: (() => {
-            const surviveContent = `Пережито проклятий: ${ user.cursesEnded || 0 }`;
-            const getCurrentContent = () => {
-              if (!user.curses || !user.curses.length){
-                return "Проклятия отсуствуют.";
-              }
-              
-              const count = ending(user.curses.length, "", `Текущие проклятия (их ${ user.curses.length })`, "Текущее проклятие", "Текущие два проклятия", {slice: true});
-              const curse = user.curses.random();
-              const description = CurseManager.intarface({user: memb, curse}).toString();
-              return `>>> ${ count }:\n${ description }`
-            }
-            return `${ surviveContent }\n${ getCurrentContent() }`;
-          })(),
-          inline: false,
-          filter: () => user.cursesEnded || user.curses
-        },
-        {
-          name: "Бонусы котла <a:placeForVoid:780051490357641226>",
-          value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrise}/5\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${nonNaN(user.voidMysticClover)}\nФермер: ${nonNaN(user.voidTreeFarm)}\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
-          inline: false
+        if (user.profile_description){
+          about = await template(user.profile_description, msg);
+          embed.fields.push({name: "О пользователе: ᠌", value: about});
         }
-      ];
+          
+        if (member){
+          const secretAchievements = [{emoji: "👑", property: "crown"}, {emoji: "❄️", property: "voidIce"}]
+            .filter(({property}) => property in user);
 
-      let message = await msg.msg("Профиль пользователя", embed);
-      let react = await message.awaitReact({user: "any", type: "all", time: 20000}, "640449832799961088");
-      embed.edit = true;
+          const achiementContent = secretAchievements.last ? secretAchievements.random().emoji + " " : "";
+          embed.fields.push({name: " ᠌᠌", value: "\n**" + `${ achiementContent }${ member.roles.highest }**\nᅠ`});
+        }
+
+        if (!memb.bot){
+          const value = user.quest ? `${ quests[user.quest] } ${ user.questProgress || 0 }/${ user.questNeed }` : " – Квест выполнен";
+          embed.fields.push({name:"\nКвест:", value});
+        }
+
+        if (user.curses && user.curses.length){
+          const content = user.curses.map(curse => `・${ curse.values.progress || 0 }/${ curse.values.goal }`).join("; ");
+          embed.fields.push({name: "᠌᠌", value: `Прогресс проклятия: ${ content }`});
+        }
+        
+        return embed;
+      }
+
+
+      const createEmbedAtSecondPage = async () => {
+        const footer = member ?
+          {text: `На сервере с ${new Intl.DateTimeFormat("ru-ru", {day: "numeric", year: "numeric", month: "long"}).format(member.joinedTimestamp)}`} :
+          null;
+
+        const embed = {
+          message: `Статистика ${ memb.tag }`,
+          color: commandContext.embedColor,
+          footer,
+          edit: commandContext.controller.editEmbed
+        }
+
+        const contents = [];
+
+        const inventory = [
+          `🔩${user.keys}`,
+          `<a:void:768047066890895360>${user.void}`,
+          `🧤${ user.thiefGloves || 0 }|${ (user.thiefWins && String(user.thiefWins).replace("-", "!")) || 0 }`,
+          `${ user.chilli  ? "🌶️" + user.chilli  : "" }`,
+          `${ user.monster ? "🐲" + user.monster : "" }`,
+          `${ user.seed    ? "🌱" + user.seed    : "" }`,
+          `${ user.cheese  ? "🧀" + user.cheese  : "" }`
+        ];
+
+        if (user.element){
+          const emoji = ["🍃 Земля", "☁️ Воздух", "🔥 Огонь", "👾 Тьма"][user.element];
+          const content = `\n${ emoji } — элемент ${nonNaN(user.elementLevel) + 1} ур.\n`;
+          contents.element = content;
+        }
+
+        const fields = [
+          {
+            name: "Клубники <:berry:756114492055617558>",
+            value: `Имеется: ${ user.berrys }`,
+            inline: true
+          },
+          {
+            name: `Сундук ${ user.CD_32 > getTime() ? "<:chest_opened:986165753843679232>" : "<a:chest:805405279326961684>" }`,
+            value: `Сундук ур.: ${user.chestLevel + 1}\nБонус след. открытия: \`${user.chestBonus || 0}\``,
+            inline: true
+          },
+          {
+            name: "Содержимое сумки",
+            value: `${inventory.join("  ")}${ contents.element }\n⠀`,
+            inline: false
+          },
+          {
+            name: "Выполнено квестов 📜",
+            value: `Ежедневных: ${memb.bot ? "BOT" : user.dayQuests || 0}\nГлобальных: ${(user.completedQuest || []).filter(e => e in quests.names).length}/${Object.values(quests.names).length}`,
+            inline: false
+          },
+          {
+            name: "Проклятия 💀",
+            value: (() => {
+              const surviveContent = `Пережито проклятий: ${ user.cursesEnded || 0 }`;
+              const getCurrentContent = () => {
+                if (!user.curses || !user.curses.length){
+                  return "Проклятия отсуствуют.";
+                }
+                
+                const count = ending(user.curses.length, "", `Текущие проклятия (их ${ user.curses.length })`, "Текущее проклятие", "Текущие два проклятия", {slice: true});
+                const curse = user.curses.at(commandContext.currentCurseView);
+                const description = CurseManager.intarface({user: memb, curse}).toString();
+                return `>>> ${ count }:\n${ description }`
+              }
+              return `${ surviveContent }\n${ getCurrentContent() }`;
+            })(),
+            inline: false,
+            filter: () => user.cursesEnded || user.curses
+          },
+          {
+            name: "Бонусы котла <a:placeForVoid:780051490357641226>",
+            value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrise}/5\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${nonNaN(user.voidMysticClover)}\nФермер: ${nonNaN(user.voidTreeFarm)}\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
+            inline: false
+          }
+        ];
+
+        embed.fields = fields.filter(field => !field.filter || field.filter());
+        return embed;
+      }
+
+
+
+     
+
+      const controller = commandContext.controller;
+      controller.message = await msg.msg( await createEmbedAtFirstPage() );
+      controller.editEmbed = true;
+
       while (true) {
         delay(8500);
+
+        const react = await controller.message.awaitReact({user: "any", type: "all", time: 20000}, ...controller.reactions);
         switch (react) {
           case "640449848050712587":
-            message = await message.msg("Профиль пользователя", embed);
-            react = await message.awaitReact({user: "any", type: "all", time: 20000}, "640449832799961088");
+            commandContext.currentCurseView = commandContext.currentCurseView + 1 % user.curses.length;
+            await controller.message.msg( await createEmbedAtFirstPage() );
+            controller.reactions = ["640449832799961088"];
             break;
           case "640449832799961088":
-            let footer = member ? {text: `На сервере с ${new Intl.DateTimeFormat("ru-ru", {day: "numeric", year: "numeric", month: "long"}).format(member.joinedTimestamp)}`} : null;
-            message = await message.msg(`Статистика ${memb.tag}`, {
-              fields: fields.filter(field => !field.filter || field.filter()),
-              edit: true,
-              color: embed.color,
-              footer
-            });
-            react = await message.awaitReact({user: "any", type: "all", time: 20000}, "640449848050712587");
+            await controller.message.msg( await createEmbedAtSecondPage() );
+            controller.reactions = ["640449848050712587"];
             break;
+
           default: return;
         }
       }
