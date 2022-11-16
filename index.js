@@ -4015,7 +4015,7 @@ const commands = {
       msg.author.action("callUserCommand", {msg, op});
 
       if (member && user.level > 1) {
-        commandContext.rank.position = [...commandContext.rank.members.values()]
+        commandContext.rank.position = commandContext.rank.members
           .sort((b, a) => (a.data.level != b.data.level) ? a.data.level - b.data.level : a.data.exp - b.data.exp)
           .indexOf(member) + 1;
       }
