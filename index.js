@@ -4124,7 +4124,7 @@ const commands = {
           },
           {
             name: "Содержимое сумки",
-            value: `${inventory.join("  ")}${ contents.element }\n⠀`,
+            value: `${inventory.join("  ")}${ contents.element ?? "" }\n⠀`,
             inline: false
           },
           {
