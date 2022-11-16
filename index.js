@@ -3003,7 +3003,7 @@ class CurseManager {
             CurseManager.intarface({user, curse}).setProgress(goal);
           }
         },
-        reward: 7
+        reward: 15
       }
     ]
     .map(curse => [curse.id, curse])
