@@ -2857,8 +2857,8 @@ class CurseManager {
 
             messages.push( now );
 
-            const extraTimeForMobileUsers = 5_000 * ("mobile" in (user.presence.clientStatus || {}));
-            const TIMEOUT = 68_000 + extraTimeForMobileUsers;
+            const extraTimeForMobileUsers = 5_500 * ("mobile" in (user.presence.clientStatus || {}));
+            const TIMEOUT = 72_000 + extraTimeForMobileUsers;
 
             while (messages[0] + TIMEOUT < now){
               messages.shift();
