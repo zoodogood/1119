@@ -10711,6 +10711,7 @@ const timeEvents = {
 
     const target = channel || author;
     const description = phrase[0].toUpperCase() + phrase.slice(1) + "\n" + author.toString();
+    target.msg(author.toString(), {embed: true, mentions: [author.id]});
     target.msg("Напоминание:", {description, footer: isLost ? null : "Ваше напоминание не было доставлено вовремя. Я был отключён."});
   },
 
