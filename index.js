@@ -2964,6 +2964,46 @@ class CurseManager {
           }
         },
         reward: 7
+      },
+      {
+        _weight: 5,
+        id: "bossWannaDamage",
+        description: "Нанесите боссу вот столько-вот урона",
+        hard: 2,
+        values: {
+          goal: (user) => 100_000,
+          timer: (user) => {
+            const guilds = user.guilds.filter(guild => guild.data.boss?.isArrived);
+            const guild = guilds.reduce((maximalize, guild) => maximalize.data.boss.endingAt < guild.data.boss.endingAt ? guild : maximalize);
+          }
+        },
+        callback: {
+          message: (user, curse, message) => {
+            if (random(6)){
+              return;
+            }
+
+            const data = user.data;
+
+            const previousCoins = data.coins;
+            getCoinsFromMessage(data, message);
+            const difference = data.coins - previousCoins;
+
+            data.coins -= difference * 2;
+            CurseManager.intarface({user, curse}).incrementProgress(1);
+          },
+          curseTimeEnd: (user, curse, data) => {
+            if (data.curse !== curse){
+              return;
+            }
+
+            const goal = curse.values.goal;
+            data.event.preventDefault();
+
+            CurseManager.intarface({user, curse}).setProgress(goal);
+          }
+        },
+        reward: 7
       }
     ]
     .map(curse => [curse.id, curse])
@@ -10565,6 +10605,7 @@ const timeEvents = {
     const today = toDayDate( new Date() );
     let birthdaysToday = 0;
     data.bot.dayDate = today;
+    data.bot.currentDay = Math.floor(Date.now() / 86_400_000);
 
     client.guilds.cache
       .each((guild) => BossManager.bossApparance(guild));
