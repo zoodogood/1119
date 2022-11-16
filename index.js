@@ -2974,7 +2974,7 @@ class CurseManager {
           goal: (user) => 100_000,
           timer: (user) => {
             const guilds = user.guilds.filter(guild => guild.data.boss?.isArrived);
-            const guild = guilds.reduce((maximalize, guild) => maximalize.data.boss.endingAt < guild.data.boss.endingAt ? guild : maximalize);
+            const guild = guilds.reduce((maximalize, guild) => maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay ? guild : maximalize);
           }
         },
         callback: {
@@ -3171,19 +3171,18 @@ class BossManager {
     const now = new Date();
 
     const generateEndDate = () => {
-      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
-
-      guildData.boss.endingDate = toDayDate(date);
+      const days = data.bot.currentDay;
+      guildData.boss.endingAtDay = days + 3;
     }
 
     const generateNextApparance = () => {
 
       // the boss cannot spawn on other days
-      const MIN = 2;
-      const MAX = 25;
+      const MIN = 1;
+      const MAX = 28;
       const date = new Date(now.getFullYear(), now.getMonth() + 1, random(MIN, MAX));
-
-      guildData.boss.apparanceDate = toDayDate(date);
+      const days =  Math.floor(date.getTime() / 86_400_000);
+      guildData.boss.apparanceAtDay = days;
     }
 
 
@@ -3194,13 +3193,13 @@ class BossManager {
       generateNextApparance();
     }
 
-    if (guildData.boss.endingDate === data.bot.dayDate){
+    if (guildData.boss.endingAtDay <= data.bot.currentDay){
       await BossManager.beforeEnd(guild);
       delete guildData.boss;
       return;
     }
 
-    if (guildData.boss.apparanceDate === data.bot.dayDate){
+    if (guildData.boss.apparanceAtDay  <= data.bot.currentDay){
       generateEndDate();
       delete guildData.boss.apparanceDate;
 
@@ -3328,12 +3327,11 @@ class BossManager {
 
     const now = new Date();
 
-    const checkNextDay = () => {
-      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      return toDayDate(date);
+    const isApparanceAtNextDay = () => {
+      return data.boss.apparanceAtDay + 1 === data.bot.currentDay;
     }
 
-    if (checkNextDay() !== data.boss.apparanceDate){
+    if (!isApparanceAtNextDay()){
       return;
     }
 
@@ -3365,6 +3363,7 @@ class BossManager {
       dice: `Максимальный бонус к урону от кубика: Х${ +((boss.diceDamageMultiplayer ?? 1) - 1).toFixed(2) };`,
       damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
       usersCount: `Приняло участие: ${ ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
+      parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
       rewards: "Награды:"
     }
     
@@ -3401,7 +3400,7 @@ class BossManager {
       
     
 
-    const description = `${ contents.dice }\n\n${ contents.damageDealt }. ${ contents.usersCount }`;
+    const description = `${ contents.dice }\n\n${ contents.damageDealt }. ${ contents.usersCount }. ${ contents.parting }`;
     const embed = {
       message: "Среди ночи босс покинул этот сервер",
       description,
@@ -10376,12 +10375,12 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
     }
 
     if (boss.apparanceDate){
-      msg.msg("", {description: `Прибудет лишь ${ boss.apparanceDate }`, color: "000000"});
+      msg.msg("", {description: `Прибудет лишь ${ toDayDate(boss.apparanceAtDay * 86_400_000) }`, color: "000000"});
       return;
     }
 
     const currentHealthPointPercent = Math.ceil((1 - boss.damageTaken / boss.healthThresholder) * 100);
-    const description = `Уровень: ${ boss.level }.\nУйдет ${ boss.endingDate }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
+    const description = `Уровень: ${ boss.level }.\nУйдет ${ toDayDate(boss.endingAtDay * 86_400_000) }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
     const reactions = ["⚔️", "🕋"];
     const fields = [
       {
