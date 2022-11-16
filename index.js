@@ -3751,9 +3751,9 @@ class BossManager {
                   gotTable[user.id] = true;
                   const userStats = BossManager.getUserStats(boss, user.id);
                   const current = userStats.attackCooldown;
-                  userStats.attackCooldown = Math.floor(userStats.attackCooldown * 0.75);
+                  userStats.attackCooldown = Math.floor(userStats.attackCooldown * 0.80);
 
-                  const description = `Перезарядка снизилась на ${ timestampToDate(current - userStats.attackCooldown) }`;
+                  const description = `Кулдаун снизился на ${ timestampToDate(current - userStats.attackCooldown) }`;
         
                   message.msg("", {description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
                 });
@@ -3780,8 +3780,8 @@ class BossManager {
                   gotTable[user.id] = true;
 
                   user.data.chestBonus ||= 0;
-                  user.data.chestBonus += 10;
-                  const description = `Получено 10 бонусов сундука`;
+                  user.data.chestBonus += 7;
+                  const description = `Получено 7 бонусов сундука`;
         
                   message.msg("", {description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
                 });
@@ -3790,10 +3790,10 @@ class BossManager {
               }
             },
             "🧪🧪🩸": {
-              description: "Сбрасывает перезарядку на атаку и уменьшает постоянный кулдаун в три раза",
+              description: "Сбрасывает перезарядку на атаку и уменьшает постоянный кулдаун в полтора раза",
               callback: (_message, _embed) => {
                 delete userStats.attack_CD;
-                userStats.attackCooldown = Math.floor(userStats.attackCooldown / 3);
+                userStats.attackCooldown = Math.floor(userStats.attackCooldown / 1.5);
               }
             },
             "🧪🍯🍯": {
@@ -3820,11 +3820,11 @@ class BossManager {
               }
             },
             "🩸🩸🩸": {
-              description: "Босс теряет 15% от своего текущего здоровья",
+              description: "Босс теряет 10% от своего текущего здоровья",
               callback: (message, embed) => {
                 const thresholder = BossManager.calculateHealthPointThresholder(boss.level);
                 const currentHealth = thresholder - boss.damageTaken;
-                const damage = Math.floor(currentHealth * 0.15);
+                const damage = Math.floor(currentHealth * 0.10);
                 BossManager.makeDamage(boss, damage, {sourceUser: user});
 
                 embed.edit = true;
@@ -3845,10 +3845,10 @@ class BossManager {
               }
             },
             "🍯🩸🩸": {
-              description: "Наносит ещё одну атаку с увеличенным уроном. Множитель урона Х11",
+              description: "Наносит ещё одну атаку с увеличенным уроном. Множитель урона Х4",
               callback: (message, embed) => {
                 const previousDamage = attackContext.damageDealt;
-                const damage = previousDamage * 11;
+                const damage = previousDamage * 4;
                 BossManager.makeDamage(boss, damage, {sourceUser: user});
 
                 embed.edit = true;
