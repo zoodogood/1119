@@ -2858,7 +2858,7 @@ class CurseManager {
             messages.push( now );
 
             const extraTimeForMobileUsers = 5_500 * ("mobile" in (user.presence.clientStatus || {}));
-            const TIMEOUT = 72_000 + extraTimeForMobileUsers;
+            const TIMEOUT = 90_000 + extraTimeForMobileUsers;
 
             while (messages[0] + TIMEOUT < now){
               messages.shift();
@@ -3878,12 +3878,21 @@ class BossManager {
           ingredients.push(emoji);
           const MAX_INGEDIENTS = 3;
 
-          const ingredientsContent = `[${ ingredients.join("") }] + ${ ingredients.length }/${ MAX_INGEDIENTS }`;
+          const ingredientsContent = `[__${ ingredients.join("") }__] + ${ ingredients.length }/${ MAX_INGEDIENTS }`;
           await channel.msg("", {description: ingredientsContent, delete: 3000});
+
+          
 
 
           if (ingredients.length === MAX_INGEDIENTS){
             collector.stop();
+
+            if (!random(0, 15)){
+              const description = "Вы попросту перевели ресурсы, варево неудалось";
+              channel.msg("Мухомор, пудра, утконос", {description, footer: {iconURL: user.avatarURL(), text: user.tag}});
+              return;
+            }
+
             const {callback, description} = createSpell(ingredients);
             const embed = {
               message: "Трепещи, босс, я изобрёл нечто!",
