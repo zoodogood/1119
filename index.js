@@ -409,8 +409,8 @@ async function msg(msg, opt = {}){
 
   const options = {};
 
-  if (mentions){
-    options.allowMentions = {users: mentions};
+  if (typeof msg === "object" && mentions){
+    msg.allowMentions = {users: mentions};
   }
 
 
@@ -450,7 +450,7 @@ async function msg(msg, opt = {}){
 
 
 
-  let message = (!edit) ? obj.send(msg, options) : obj.edit(msg, options);
+  let message = (!edit) ? obj.send(msg) : obj.edit(msg);
   if (deleted) {
     message.then( e => e.delete({timeout: deleted}) );
   }
@@ -10711,7 +10711,7 @@ const timeEvents = {
 
     const target = channel || author;
     const description = phrase[0].toUpperCase() + phrase.slice(1) + "\n" + author.toString();
-    target.msg(author.toString(), {embed: true, mentions: [author.id]});
+    target.msg({content: author.toString(), mentions: [author.id]});
     target.msg("Напоминание:", {description, footer: isLost ? null : "Ваше напоминание не было доставлено вовремя. Я был отключён."});
   },
 
