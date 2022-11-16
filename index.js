@@ -2982,29 +2982,8 @@ class CurseManager {
           }
         },
         callback: {
-          message: (user, curse, message) => {
-            if (random(6)){
-              return;
-            }
-
-            const data = user.data;
-
-            const previousCoins = data.coins;
-            getCoinsFromMessage(data, message);
-            const difference = data.coins - previousCoins;
-
-            data.coins -= difference * 2;
-            CurseManager.intarface({user, curse}).incrementProgress(1);
-          },
-          curseTimeEnd: (user, curse, data) => {
-            if (data.curse !== curse){
-              return;
-            }
-
-            const goal = curse.values.goal;
-            data.event.preventDefault();
-
-            CurseManager.intarface({user, curse}).setProgress(goal);
+          bossMakeDamage: (user, curse, {damage}) => {
+            CurseManager.intarface({user, curse}).incrementProgress(damage);
           }
         },
         reward: 15
@@ -3255,12 +3234,15 @@ class BossManager {
     damage *= (boss.diceDamageMultiplayer ?? 1);
     damage = Math.floor(damage);
 
+
     boss.damageTaken += damage;
 
     if (sourceUser){
       const stats = BossManager.getUserStats(boss, sourceUser.id);
       stats.damageDealt ||= 0;
       stats.damageDealt += damage;
+
+      sourceUser.action("bossMakeDamage", {boss, damage});
     }
 
     if (boss.damageTaken >= boss.healthThresholder){
