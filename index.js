@@ -2986,6 +2986,8 @@ class CurseManager {
           timer: (user) => {
             const guilds = user.guilds.filter(guild => guild.data.boss?.isArrived);
             const guild = guilds.reduce((maximalize, guild) => maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay ? guild : maximalize);
+            const timestamp = guild.data.boss.endingAtDay * 86_400_000;
+            return timestamp - Date.now();
           }
         },
         callback: {
