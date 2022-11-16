@@ -611,6 +611,10 @@ async function accept(name, embed, channel, user){
 };
 
 function toDayDate(date){
+  if (date instanceof Date === false){
+    date = new Date(date);
+  }
+  
   const month = (date.getMonth() + 1).toString();
   const day   = date.getDate().toString();
 
