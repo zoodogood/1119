@@ -8600,16 +8600,12 @@ const commands = {
   }, {cooldown: 50, try: 3, type: "guild"}, "cash банк казна"),
 
   eval: new Command(async (msg, op) => {
+    const { VM } = await import("vm2");
 
 
-
-    let isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396", "921403577539387454", "711450675938197565"]
+    const isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396", "921403577539387454", "711450675938197565"]
       .includes(msg.author.id);
 
-    if (!isDev && op.args){
-      msg.channel.msg("Э, вы не хозяин -_-'", "ff0000");
-      return;
-    }
 
     if (msg.reference){
 
@@ -8630,17 +8626,38 @@ const commands = {
 
     }
 
-    if (!isDev || !op.args){
-      op.args = "msg.author.data";
-    }
-
     let timestamp = 0;
+
+    const sandbox = {};
+    const vm = new VM({sandbox});
+
+    vm.freeze({
+      user: op.user,
+      options: JSON.parse(JSON.stringify(op)),
+      message: JSON.parse(JSON.stringify(msg))
+
+    }, "context");
+
+    if (isDev){
+      Object.defineProperty(vm.sandbox, "bridge", {
+        get: () => globalThis
+      });
+
+      Object.defineProperty(vm.sandbox, "msg", {
+        get: () => msg
+      });
+
+      Object.defineProperty(vm.sandbox, "op", {
+        get: () => op
+      });
+    }
+    
 
     let code = op.args;
     let output;
     try {
       let startTimestamp = getTime();
-      output = await eval( `try{${ code }} catch(err){err}` );
+      output = await vm.run(code);
       timestamp = getTime() - startTimestamp;
     }
     catch (error){
@@ -8713,7 +8730,7 @@ const commands = {
     );
 
 
-  }, {type: "other"}, "dev евал эвал"),
+  }, {type: "other"}, "dev евал эвал vm worker"),
 
   thing: new Command(async (msg, op) => {
 
