@@ -4059,7 +4059,7 @@ const commands = {
           edit: commandContext.controller.editEmbed,
           description,
           fields: [{name: " ᠌", value: " ᠌"}],
-          footer: {text: `Похвал: ${user.praiseMe?.length || "0"}   ${commandContext.rank ? `Ранг: ${commandContext.rank.position}/${ commandContext.rank.members.length }` : ""}`},
+          footer: {text: `Похвал: ${user.praiseMe?.length || "0"}   ${commandContext.rank ? `Ранг: ${commandContext.rank.position ?? 0}/${ commandContext.rank.members.length }` : ""}`},
         }
 
         
