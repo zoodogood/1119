@@ -1489,7 +1489,7 @@ Discord.User.prototype.action = function(id, data){
 
   /** Curse */
   if (this.data.curses)
-  for (const curse of this.data.curses){
+  for (const curse of [...this.data.curses]){
     const curseBase = CurseManager.cursesBase.get(curse.id);
     try {
       if (id in curseBase.callback)
