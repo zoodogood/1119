@@ -3310,10 +3310,7 @@ class BossManager {
   }
 
   static async beforeApparance(guild){
-    // Delevop crutch!
-    if (!["628993637530992650", "752898200993660959"].includes(guild.id)){
-      return;
-    }
+
     const data = guild.data;
 
     if (!data.boss){
