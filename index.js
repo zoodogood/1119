@@ -7913,7 +7913,7 @@ const commands = {
       i++;
     }
     let times = args.splice(0, i);
-    const phrase = (args.join(" ") || "Напоминание")
+    const phrase = (args.join(" ") || "Без описания")
       .replace(/[a-zа-яъёь]/i, (letter) => letter.toUpperCase());
 
     if (i === 0){
