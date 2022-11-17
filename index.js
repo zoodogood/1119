@@ -3366,6 +3366,7 @@ class BossManager {
       const table = {};
       const rewardsCount = Math.floor(boss.level ** 1.2);
       const usersOdds = Object.entries(boss.users)
+        .filter(([id]) => guild.members.cache.has(id)
         .map(([id, {damageDealt: _weight}]) => ({id, _weight}));
         
       for (let i = 0; i < rewardsCount; i++){
