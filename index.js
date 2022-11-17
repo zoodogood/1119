@@ -7913,7 +7913,8 @@ const commands = {
       i++;
     }
     let times = args.splice(0, i);
-    const phrase = args.join(" ");
+    const phrase = (args.join(" ") || "Напоминание")
+      .replace(/[a-zа-яъёь]/i, (letter) => letter.toUpperCase());
 
     if (i === 0){
 
@@ -7963,7 +7964,7 @@ const commands = {
       }
     });
     new TimeEvent("remind", timeTo, msg.author.id, msg.channel.id, phrase);
-    msg.msg("Напомнинание создано", {description: `— ${ phrase[0].toUpperCase() + phrase.slice(1) }`, timestamp: getTime() + timeTo, footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}});
+    msg.msg("Напомнинание создано", {description: `— ${ phrase }`, timestamp: getTime() + timeTo, footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}});
   }, {cooldown: 20, try: 3, delete: true, type: "other"}, "напомни напоминание напомнить"),
 
   giveaway: new Command(async (msg, op) => {
@@ -10713,8 +10714,10 @@ const timeEvents = {
     const author  = client.users.cache.get(authorId);
 
     const target = channel || author;
-    const description = phrase[0].toUpperCase() + phrase.slice(1) + "\n" + author.toString();
-    target.msg({message: author.toString(), embed: true, mentions: [author.id]});
+    const description = phrase + "\n" + author.toString();
+    if (target !== author)
+      target.msg({message: author.toString(), embed: true, mentions: [author.id]});
+      
     target.msg("Напоминание:", {description, footer: isLost ? null : "Ваше напоминание не было доставлено вовремя. Я был отключён."});
   },
 
