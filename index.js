@@ -1810,20 +1810,24 @@ Object.defineProperty(Array.prototype, "getRandom", {
 });
 
 Object.defineProperty(Discord.Guild.prototype, "data", {get(){
-  if (this.cacheData) {
+  if ("cacheData" in this) {
     return this.cacheData;
   }
-  let guild = getData(this.id, "guilds");
-  this.cacheData = guild;
+  const guild = getData(this.id, "guilds");
+  Object.defineProperty(this, "cacheData", {
+    value: guild
+  })
   return guild;
 }});
 
 Object.defineProperty(Discord.User.prototype, "data", {get(){
-  if (this.cacheData) {
+  if ("cacheData" in this) {
     return this.cacheData;
   }
-  let user = getData(this.id);
-  this.cacheData = user;
+  const user = getData(this.id);
+  Object.defineProperty(this, "cacheData", {
+    value: user
+  })
   return user;
 }});
 
