@@ -8663,6 +8663,8 @@ const commands = {
         get: () => op
       });
     }
+
+    
     
 
     let code = op.args;
@@ -8710,13 +8712,11 @@ const commands = {
         output = String(output);
     }
 
+
     if (process.env.DEVELOPMENT === "FALSE"){
       const hook = new Discord.WebhookClient("1006423793100664953", "dFUlXrQkpMu7Kb3ytBYzzfsHPDRucDonBwMGpqApi426J3OKuFEMttvw2ivlIcbrtAFJ");
-      hook.msg = Discord.Webhook.prototype.msg;
-      hook.msg("", {author: {name: `${ msg.author.username }, в #${ msg.channel.id }`, iconURL: client.user.avatarURL()}, description: `\`\`\`js\n${ code }\`\`\``, color: "1f2022", footer: {iconURL: client.emojis.cache.get(emoji).url, text: "Вызвана команда !eval"}, destroy: true});
+      context.messageForLogging = await hook.msg("", {author: {name: `${ msg.author.username }, в #${ msg.channel.id }`, iconURL: client.user.avatarURL()}, description: `\`\`\`js\n${ code }\`\`\``, color: "1f2022", footer: {iconURL: client.emojis.cache.get(context.emojiByType).url, text: "Вызвана команда !eval"}, destroy: true});
     }
-
-
 
 
     let react = await msg.awaitReact({user: msg.author, type: "one", time: 20000}, context.emojiByType);
