@@ -8643,8 +8643,11 @@ const commands = {
     }, "context");
 
     if (isDev){
-      Object.defineProperty(vm.sandbox, "bridge", {
-        get: () => globalThis
+      const available = {Util, client, data, commands, timeEvents};
+      
+      for (const key in available)
+      Object.defineProperty(vm.sandbox, key, {
+        value: available[key]
       });
 
       Object.defineProperty(vm.sandbox, "msg", {
