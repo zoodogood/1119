@@ -8633,7 +8633,8 @@ const commands = {
     let timestamp = 0;
 
     const sandbox = {};
-    const vm = new VM({sandbox});
+    const MAX_TIMEOUT = 10_000;
+    const vm = new VM({sandbox, timeout: MAX_TIMEOUT});
 
     vm.freeze({
       user: op.user,
