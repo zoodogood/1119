@@ -10670,9 +10670,7 @@ const timeEvents = {
     let next = new Date(getTime() + 14500000).setHours(23, 59, 50) - getTime();
     new TimeEvent("new_day", next);
 
-    if (isLost){
-      return;
-    }
+    
 
     if (data.bot.clearParty) {
       delete data.bot.clearParty
@@ -10681,9 +10679,26 @@ const timeEvents = {
     await delay(20000);
 
     const today = toDayDate( new Date() );
-    let birthdaysToday = 0;
     data.bot.dayDate = today;
     data.bot.currentDay = Math.floor(Date.now() / 86_400_000);
+
+    data.bot.grempen = "";
+    let arr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e"]; //0123456789abcdef
+    for (let i = 1; i < 7; i++) {
+      data.bot.grempen += arr.random({pop: true});
+    }
+
+    let berryRandom = [{_weight: 10, prise: 1}, {_weight: 1, prise: -7}, {_weight: 5, prise: 3}].random({weights: true}).prise;
+    let berryTarget = Math.sqrt(client.users.cache.size / 3) * 7 + 200;
+    data.bot.berrysPrise += Math.round((berryTarget - data.bot.berrysPrise) / 30 + berryRandom);
+
+    let birthdaysToday = 0;
+
+    
+
+    if (isLost){
+      return;
+    }
 
     client.guilds.cache
       .each((guild) => BossManager.bossApparance(guild));
@@ -10699,15 +10714,9 @@ const timeEvents = {
     }
 
 
-    let berryRandom = [{_weight: 10, prise: 1}, {_weight: 1, prise: -7}, {_weight: 5, prise: 3}].random({weights: true}).prise;
-    let berryTarget = Math.sqrt(client.users.cache.size / 3) * 7 + 200;
-    data.bot.berrysPrise += Math.round((berryTarget - data.bot.berrysPrise) / 30 + berryRandom);
+    
 
-    data.bot.grempen = "";
-    let arr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e"]; //0123456789abcdef
-    for (let i = 1; i < 7; i++) {
-      data.bot.grempen += arr.random({pop: true});
-    }
+    
 
     data.guilds.forEach(e => e.commandsLaunched = Object.values(e.commandsUsed).reduce((acc, e) => acc + e, 0));
     let commandsLaunched = Object.values(data.bot.commandsUsed).reduce( ((acc, e) => acc + e), 0);
@@ -10810,14 +10819,20 @@ const timeEvents = {
 //---------------------------------{#End--}------------------------------                            #ff0
 
 (() => {
+  getSaves();
+
   let cleanTimestamp = getTime();
   data.users.forEach(user =>
     Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < cleanTimestamp ? delete user[key] : false)
   );
   data.users = data.users.sort((a, b) => b.level - a.level);
+
+  if (data.bot.dayDate !== toDayDate( Date.now() )){
+    timeEvents["new_day"].call(null, true);
+  }
 })()
 
-getSaves();
+
 // data.users.forEach((item, i) => {
 //   for (e in item){
 //     if (item[e] === null || item[e] === NaN){
