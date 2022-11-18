@@ -8630,10 +8630,14 @@ const commands = {
 
     }
 
-    let timestamp = 0;
+    const context = {
+      launchTimestamp: Date.now(),
+      leadTime: null,
+      emojiByType: null
+    }
 
     const sandbox = {};
-    const MAX_TIMEOUT = 10_000;
+    const MAX_TIMEOUT = 50;
     const vm = new VM({sandbox, timeout: MAX_TIMEOUT});
 
     vm.freeze({
@@ -8664,20 +8668,18 @@ const commands = {
     let code = op.args;
     let output;
     try {
-      let startTimestamp = getTime();
       output = await vm.run(code);
-      timestamp = getTime() - startTimestamp;
     }
     catch (error){
       output = error;
     }
+    context.leadTime = Date.now() - context.launchTimestamp;
 
-    let emoji;
 
     switch (true){
       case (output === undefined):
         output = "```{Пусто}```";
-        emoji = "753916360802959444";
+        context.emojiByType = "753916360802959444";
         break;
       case (output instanceof Error):
         let stroke = output.stack.match(/(?<=\>:)\d+:\d+/);
@@ -8697,14 +8699,14 @@ const commands = {
         let boldedLine = `${ lineOfCode.prev }**${ lineOfCode.word }**${ lineOfCode.next }`;
         output = `Ошибка (${output.name}):\n${output.message}\nНа строке: #${stroke}\n${boldedLine}`;
 
-        emoji = "753916394135093289";
+        context.emojiByType = "753916394135093289";
         break;
       case (typeof output === "object"):
         output = `\`\`\`json\n${Discord.Util.escapeCodeBlock(  JSON.stringify(output, null, 3)  )}\`\`\``;
-        emoji = "753916315755872266";
+        context.emojiByType = "753916315755872266";
         break;
       default:
-        emoji = "753916145177722941";
+        context.emojiByType = "753916145177722941";
         output = String(output);
     }
 
@@ -8717,7 +8719,7 @@ const commands = {
 
 
 
-    let react = await msg.awaitReact({user: msg.author, type: "one", time: 20000}, emoji);
+    let react = await msg.awaitReact({user: msg.author, type: "one", time: 20000}, context.emojiByType);
     if (!react){
       return;
     }
@@ -8727,7 +8729,7 @@ const commands = {
       author: {name: "Вывод консоли"},
       description: output,
       color: "1f2022",
-      footer: {text: `Количество символов: ${output.length}\nВремя выполнения кода: ${timestamp}мс`},
+      footer: {text: `Количество символов: ${output.length}\nВремя выполнения кода: ${ context.leadTime }мс`},
       destroy: true
     }
     ).catch(
