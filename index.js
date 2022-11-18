@@ -1470,10 +1470,11 @@ function getSaves(){
 
 
 
-Discord.User.prototype.msg    = msg;
+Discord.User.prototype.msg = msg;
 Discord.Message.prototype.msg = msg;
 Discord.Channel.prototype.msg = msg;
 Discord.Webhook.prototype.msg = msg;
+Discord.WebhookClient.prototype.msg = msg;
 
 Object.prototype.console = function(actions){
   if (actions) eval(actions);
