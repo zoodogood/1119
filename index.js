@@ -3300,13 +3300,13 @@ class BossManager {
       const userStats = BossManager.getUserStats(boss, user.id);
       userStats.bonuses ||= {};
  
-      if ("chestReward" in userStats){
+      if ("chestRewardAt" in userStats){
         message.msg(`Вы уже взяли награду на ур. ${ userStats.chestReward }`, {delete: 5000});
         return;
       };
 
       const reward = calculateReward(thatLevel);
-      userStats.chestReward = thatLevel;
+      userStats.chestRewardAt = thatLevel;
       user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
       message.msg({message: "", description: `Получено ${ ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color, delete: 7000});
     })
@@ -10461,7 +10461,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       return
     }
 
-    if (boss.apparanceDate){
+    if (boss.apparanceAtDay){
       msg.msg("", {description: `Прибудет лишь ${ toDayDate(boss.apparanceAtDay * 86_400_000) }`, color: "000000"});
       return;
     }
