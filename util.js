@@ -1,3 +1,7 @@
+import { ending } from '@zoodogood/utils/primitives';
+import { omit } from '@zoodogood/utils/objectives';
+
+
 class CustomCollector {
   #callback;
 
@@ -70,15 +74,98 @@ function toLocaleDelevoperString(value){
   }
 }
 
-function omit(object, filter){
-  const entries = Object.entries(object)
-    .filter(([k,v]) => filter(k, v));
-  return Object.fromEntries(entries);
+
+function sleep(ms){
+  return new Promise((response) => setTimeout(response, ms));
 }
+
+function random(...params){
+  let lastArgument = params.splice(-1).last;
+  let options = {round: true};
+
+  if (typeof lastArgument === "object"){
+    Object.assign(options, lastArgument);
+    lastArgument = params.splice(-1).last;
+  }
+
+  const max = lastArgument + Number(options.round);
+  const min = params.length ? params[0] : 0;
+  let rand = Math.random() * (max - min) + min;
+
+  if (options.round){
+    rand = Math.floor(rand);
+  }
+  return rand;
+}
+
+async function awaitUserAccept(name, embed, channel, user){
+  if (`first_${name}` in user) {
+    return true;
+  }
+  let el = await channel.msg(embed);
+  let collected = await el.awaitReact({user: user, type: "all"}, "685057435161198594", "763807890573885456");
+  await el.delete();
+
+  if (collected == "685057435161198594") {
+    user[`first_${name}`] = 1;
+    return true;
+  }
+  return false;
+};
+
+function joinWithAndSeparator(arr, ignore = false){
+  if (typeof arr == "string") {
+    arr = arr.includes("&AND") && !ignore ? arr.split("&AND") : arr.split(" ");
+    arr = arr.filter(el => el != "" && el != " ");
+  }
+  if (arr.length == 1) {
+    return arr[0];
+  }
+
+  if (arr.length > 1) {
+    arr.last = "и " + arr.last;
+  }
+  return arr.join(" ");
+}
+
+function timestampToDate(ms, max){
+
+  if ( isNaN(ms) ){
+    return NaN;
+  }
+
+	const
+	  date = new Date( Math.max(ms, 0) ),
+	   s  = date.getUTCSeconds() + "с",
+	   m  = date.getUTCMinutes() + "м ",
+	   h  = date.getUTCHours() + "ч ",
+	   d  = date.getUTCDate() - 1 + "д ",
+	   mo = date.getUTCMonth() + "мес. ",
+	   y  = date.getUTCFullYear() - 1970 + ((date.getUTCFullYear() - 1970 > 4) ? "л " : "г ");
+
+  let input = joinWithAndSeparator(
+    [y, mo, d, h, m, s]
+    .filter(stamp => +stamp[0])
+    .slice(0, max || 7)
+    .join(" ")
+    .trim()
+  );
+
+  if (!input){
+    input = `0,${ ms.toString().slice(0, 3) }с`;
+  }
+
+	return input;
+};
+
 
 
 export {
   toLocaleDelevoperString,
   CustomCollector,
-  omit
+  omit,
+  sleep, 
+  random,
+  ending,
+  awaitUserAccept
 };

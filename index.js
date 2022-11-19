@@ -11,6 +11,7 @@ import * as Util from "./util.js";
 
 
 const client = new Discord.Client({ messageCacheMaxSize: 110 });
+globalThis.client = client;
 
 
 import fs from "fs";
@@ -68,7 +69,7 @@ client.on("ready", async () => {
 
     client.guilds.cache.get("752898200993660959").channels.cache.get("763637440174227506").msg(`Бот присоеденился к серверу ${ guild.name }!`, {description: `Участников: ${ members.size }\nКол-во знакомых боту людей: ${members.filter(e => data.users.some(el => el.id == e.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.member(whoAdded) ? "Да" : "Нет"}.`, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
     guild.invites = await guild.fetchInvites();
-    data.bot.newGuildTimestamp = getTime();
+    data.bot.newGuildTimestamp = Date.now();
   });
 
   client.on("guildDelete", async (guild) => {
@@ -149,7 +150,7 @@ client.on("ready", async () => {
       if (e.id !== inviter.id)
         inviter.quest("inviteFriend");
 
-      inviter.data.invites = nonNaN(inviter.data.invites) + 1;
+      inviter.data.invites = (inviter.data.invites ?? 0) + 1;
     }
 
 
@@ -163,7 +164,7 @@ client.on("ready", async () => {
       }
 
       channel.startTyping();
-      await delay(3500);
+      await Util.sleep(3500);
       await channel.msg("На сервере появился новый участник!", {color: guild.data.hi.color, image: guild.data.hi.image, description: guild.data.hi.message, scope: {tag: e.user.toString(), name: e.user.username}});
       channel.stopTyping();
       channel.msg("👋", {embed: true, delete: 150000});
@@ -177,7 +178,7 @@ client.on("ready", async () => {
         //     acceptRules = true;
         //     break;
         //   }
-        //   await delay(3000);
+        //   await Util.sleep(3000);
         // }
         //
         // if (acceptedRules)
@@ -360,7 +361,7 @@ client.on("ready", async () => {
       }
 
       user.berrys += berrys;
-      msg.msg("Отдел по отлову клубники...", {description: `Отдел по отлову клубники успешно перехватил ${rarity} ягоду в количестве ${ending(count, "единиц", "", "ы", "")}, а также перевёл её в привычный нам вид и оставил на земле.\n${user.name} смог спокойно забрать и унести ${ending(berrys, "клубник", "", "а", "и")} с собой.`, reactions: ["685057435161198594"]});
+      msg.msg("Отдел по отлову клубники...", {description: `Отдел по отлову клубники успешно перехватил ${rarity} ягоду в количестве ${ Util.ending(count, "единиц", "", "ы", "")}, а также перевёл её в привычный нам вид и оставил на земле.\n${user.name} смог спокойно забрать и унести ${ Util.ending(berrys, "клубник", "", "а", "и")} с собой.`, reactions: ["685057435161198594"]});
     }
   });
 
@@ -377,9 +378,6 @@ client.on("ready", async () => {
 
 const
   data_save     = () => (data) ? fs.writeFileSync("./main/data.json", JSON.stringify(data), (err, input) => false) : console.error("WARNING: data be undefined"),
-  delay         = (ms) => new Promise((response) => setTimeout(response, ms)),
-  nonNaN        = (num) => isNaN(num) ? 0 : num,
-  getTime       = () => Date.now();
 
 
 async function msg(msg, opt = {}){
@@ -482,79 +480,18 @@ function reactOrMessage(msg, user, ...reactions){
       resolve(e.first());
     });
 
-    await delay(900000);
+    await Util.sleep(900000);
     msg.reactions.cache.filter(e => e.me).each(e => e.remove());
 
     resolve(false);
   });
 };
 
-function timestampToDate(ms, max){
-
-  if ( isNaN(ms) ){
-    return NaN;
-  }
-
-	const
-	  date = new Date( Math.max(ms, 0) ),
-	   s  = date.getUTCSeconds() + "с",
-	   m  = date.getUTCMinutes() + "м ",
-	   h  = date.getUTCHours() + "ч ",
-	   d  = date.getUTCDate() - 1 + "д ",
-	   mo = date.getUTCMonth() + "мес. ",
-	   y  = date.getUTCFullYear() - 1970 + ((date.getUTCFullYear() - 1970 > 4) ? "л " : "г ");
-
-  let input = add_and(
-    [y, mo, d, h, m, s]
-    .filter(stamp => +stamp[0])
-    .slice(0, max || 7)
-    .join(" ")
-    .trim()
-  );
-
-  if (!input){
-    input = `0,${ ms.toString().slice(0, 3) }с`;
-  }
-
-	return input;
-};
-
-function ending(numb = 0, wordBase, zerofifth, first, second, opt = {}) {
-  numb = nonNaN(Number(numb));
-  let fix = Infinity;
-
-  if (numb > 20) fix = 10;
-  let end = (numb % fix > 4 || numb % fix == 0) ? zerofifth : (numb % fix > 1) ? second : first;
-
-  let input = wordBase + end;
-  if (opt.bold) {
-    numb = "**" + numb + "**";
-  }
-  if (!opt.slice){
-    input = numb + " " + input;
-  }
-  return input;
-};
 
 function match(str = "", ...reg){
   reg = RegExp(...reg);
   let find = String(str).match(reg);
   return find ? find[0] : false;
-}
-
-function add_and(arr, ignore = false) {
-  if (typeof arr == "string") {
-    arr = arr.includes("&AND") && !ignore ? arr.split("&AND") : arr.split(" ");
-    arr = arr.filter(el => el != "" && el != " ");
-  }
-  if (arr.length == 1) {
-    return arr[0];
-  }
-
-  if (arr.length > 1) {
-    arr.last = "и " + arr.last;
-  }
-  return arr.join(" ");
 }
 
 function similarity(a, b) {
@@ -602,21 +539,6 @@ function getSimilar(arr, str) {
   return input || false;
 }
 
-async function accept(name, embed, channel, user){
-  if (`first_${name}` in user) {
-    return true;
-  }
-  let el = await channel.msg(embed);
-  let collected = await el.awaitReact({user: user, type: "all"}, "685057435161198594", "763807890573885456");
-  await el.delete();
-
-  if (collected == "685057435161198594") {
-    user[`first_${name}`] = 1;
-    return true;
-  }
-  return false;
-};
-
 function toDayDate(date){
   if (date instanceof Date === false){
     date = new Date(date);
@@ -626,25 +548,6 @@ function toDayDate(date){
   const day   = date.getDate().toString();
 
   return `${ day.padStart(2, "0") }.${ month.padStart(2, "0") }`;
-}
-
-function random(...params){
-  let lastArgument = params.splice(-1).last;
-  let options = {round: true};
-
-  if (typeof lastArgument === "object"){
-    Object.assign(options, lastArgument);
-    lastArgument = params.splice(-1).last;
-  }
-
-  const max = lastArgument + Number(options.round);
-  const min = params.length ? params[0] : 0;
-  let rand = Math.random() * (max - min) + min;
-
-  if (options.round){
-    rand = Math.floor(rand);
-  }
-  return rand;
 }
 
 function getData(id, type = "users", specimen = false){
@@ -943,11 +846,11 @@ async function getFromScope(obj, template, opt){
           get random(){
             if (!args) return {false_func: "{number or string}"};
             if (args[1]) return args.random();
-            return random(+args);
+            return Util.random(+args);
           },
           get ending(){
             if (!args) return {false_func: "{num} {word} {0, 5-9} {1} {2-4}"};
-            return ending(...args)
+            return  Util.ending(...args)
           },
           get math(){
             if (!args) return {false_func: "{math regular}"};
@@ -983,7 +886,7 @@ async function getFromScope(obj, template, opt){
               return `${("0" + date.getHours()).slice(-2)}:${("0" + date.getMinutes()).slice(-2)}`;
             },
             get display(){
-              return new Intl.DateTimeFormat("ru-ru", {weekday: "short", hour: "2-digit", minute: "2-digit"}).format(getTime());
+              return new Intl.DateTimeFormat("ru-ru", {weekday: "short", hour: "2-digit", minute: "2-digit"}).format(Date.now());
             }
           }
         },
@@ -1132,20 +1035,20 @@ async function commandHundler(msg){
 
 
     if (dm != "dm" && cmd.myChannelPermissions && (trash = msg.guild.me.wastedPermissions(cmd.myChannelPermissions, msg.channel)))
-      problems.push(`У меня нет прав ${add_and( trash.map(e => Command.permissions[e]) )} в этом канале`);
+      problems.push(`У меня нет прав ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )} в этом канале`);
 
     if (dm != "dm" &&    cmd.myPermissions     && (trash = msg.guild.me.wastedPermissions(cmd.myPermissions)))
-      problems.push(`У меня нет прав ${add_and( trash.map(e => Command.permissions[e]) )}`);
+      problems.push(`У меня нет прав ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
 
     if (dm != "dm" &&  cmd.ChannelPermissions  && (trash = member.wastedPermissions(cmd.ChannelPermissions, msg.channel)))
-      problems.push(`Недостаточно прав в этом канале, вы не можете ${add_and( trash.map(e => Command.permissions[e]) )}`);
+      problems.push(`Недостаточно прав в этом канале, вы не можете ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
 
     if (dm != "dm" &&     cmd.Permissions      && (trash = member.wastedPermissions(cmd.Permissions)))
-      problems.push(`Недостаточно прав, вам нужно уметь ${add_and( trash.map(e => Command.permissions[e]) )}`);
+      problems.push(`Недостаточно прав, вам нужно уметь ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
 
 
-    if (cmd.cooldown && user["CD_" + cmd.id] && (+(getTime() + cmd.cooldown * (cmd.try - 1)) < +user["CD_" + cmd.id]))
-      problems.push(`Перезарядка: **${ timestampToDate(user["CD_" + cmd.id] - getTime() - cmd.cooldown * (cmd.try - 1) + 500) }**`);
+    if (cmd.cooldown && user["CD_" + cmd.id] && (+(Date.now() + cmd.cooldown * (cmd.try - 1)) < +user["CD_" + cmd.id]))
+      problems.push(`Перезарядка: **${ Util.timestampToDate(user["CD_" + cmd.id] - Date.now() - cmd.cooldown * (cmd.try - 1) + 500) }**`);
 
     // End
 
@@ -1182,7 +1085,7 @@ async function commandHundler(msg){
       }
 
       let helper = await commands.commandinfo.code(msg, {args: command});
-      await delay(20000);
+      await Util.sleep(20000);
       helper.delete();
     }
     helpMessage();
@@ -1196,7 +1099,7 @@ async function commandHundler(msg){
   }
 
   if (cmd.cooldown) {
-    user["CD_" + cmd.id] = Math.max(user["CD_" + cmd.id] || 0, getTime()) + cmd.cooldown;
+    user["CD_" + cmd.id] = Math.max(user["CD_" + cmd.id] || 0, Date.now()) + cmd.cooldown;
   }
 
   let options = {command, user, memb, args, member};
@@ -1207,18 +1110,18 @@ async function commandHundler(msg){
     await commands[command].code(msg, options);
 
     if (dm != "dm") {
-      msg.guild.data.commandsUsed[cmd.id] = nonNaN(msg.guild.data.commandsUsed[cmd.id]) + 1;
+      msg.guild.data.commandsUsed[cmd.id] = (msg.guild.data.commandsUsed[cmd.id] ?? 0) + 1;
     }
-    data.bot.commandsUsed[cmd.id] = nonNaN(data.bot.commandsUsed[cmd.id]) + 1;
+    data.bot.commandsUsed[cmd.id] = (data.bot.commandsUsed[cmd.id] ?? 0) + 1;
   }
   catch (e) {
-    const timestamp = getTime();
+    const timestamp = Date.now();
     let err = {
       name: e.name,
       stroke: e.stack.match(/js:(\d+)/)[1],
       command,
       message: e.message,
-      timeFromStart: timestamp - msg.createdTimestamp < 1000 ? "менее 1с" : timestampToDate(timestamp - msg.createdTimestamp)
+      timeFromStart: timestamp - msg.createdTimestamp < 1000 ? "менее 1с" : Util.timestampToDate(timestamp - msg.createdTimestamp)
     };
     console.error(e);
     console.error(err);
@@ -1231,7 +1134,7 @@ async function commandHundler(msg){
     while (react){
       quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
       message.msg("Упс... Мы кажется накосячили 😶", {color: "f0cc50", description: `**Сведения об ошибке:**\n• **Имя:** ${e.name}\n• **Номер строки:** #${err.stroke}\n• **Текст:** \n\`\`\`\n${e.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${err.timeFromStart}`, footer: {text: quote}, delete: 12000});
-      await delay(10000);
+      await Util.sleep(10000);
       react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
     }
     message.delete();
@@ -1245,11 +1148,11 @@ async function eventHundler(msg){
     server = (msg.guild) ? msg.guild.data : {};
 
   // ANTI-SPAM
-  author.CD_msg = Math.max( author.CD_msg || 0 , getTime()) + 2000;
+  author.CD_msg = Math.max( author.CD_msg || 0 , Date.now()) + 2000;
 
   // 120000 = 8000 * 15
-  if (getTime() + 120000 > author.CD_msg){
-    author.CD_msg += (8000 - 200 * nonNaN(user.voidCooldown));
+  if (Date.now() + 120000 > author.CD_msg){
+    author.CD_msg += (8000 - 200 * (user.voidCooldown ?? 0));
 
     if (random(1, 85 * 0.90 ** user.voidCoins) === 1){
       getCoinsFromMessage(user, msg);
@@ -1262,7 +1165,7 @@ async function eventHundler(msg){
 
     server.day_msg++;
   }
-  user.last_online = getTime();
+  user.last_online = Date.now();
 
   author.quest("messagesFountain", msg.channel);
 
@@ -1294,13 +1197,13 @@ async function getCoinsFromMessage(user, msg){
   if (msg.guild && "cloverEffect" in msg.guild.data) {
     reaction = "☘️";
     let multiplier = 0.08 + (0.07 * ((1 - 0.9242 ** msg.guild.data.cloverEffect.uses) / (1 - 0.9242)));
-    multiplier *= 2 ** nonNaN(user.voidMysticClover);
+    multiplier *= 2 ** (user.voidMysticClover ?? 0);
     k += multiplier;
     msg.guild.data.cloverEffect.coins++;
   }
-  let coins = Math.round((35 + nonNaN(user.coinsPerMessage)) * k);
+  let coins = Math.round((35 + (user.coinsPerMessage ?? 0)) * k);
   user.coins += coins;
-  user.chestBonus = nonNaN(user.chestBonus) + 5;
+  user.chestBonus = (user.chestBonus ?? 0) + 5;
 
   let react = await msg.awaitReact({user: msg.author, type: "full", time: 20000}, reaction);
   msg.author.quest("onlyCoin", msg.channel);
@@ -1308,7 +1211,7 @@ async function getCoinsFromMessage(user, msg){
     return;
   }
 
-  msg.msg(`> У вас ${ending(user.coins, "коин", "ов", "", "а", {bold: true})} <:coin:637533074879414272>!\n> Получено ${coins}\n> Бонус сундука: ${user.chestBonus || 0}`, {embed: true, delete: 2500});
+  msg.msg(`> У вас ${ Util.ending(user.coins, "коин", "ов", "", "а", {bold: true})} <:coin:637533074879414272>!\n> Получено ${coins}\n> Бонус сундука: ${user.chestBonus || 0}`, {embed: true, delete: 2500});
 };
 
 async function levelUp(user, msg){
@@ -1341,7 +1244,7 @@ async function stupid_bot(user, msg) {
   }
 
   msg.channel.startTyping();
-  await delay(2000);
+  await Util.sleep(2000);
   switch (msg.guild.data.stupid_evil) {
     case 1: msg.msg("Недостаточно прав!", {embed: true});
     break;
@@ -1360,7 +1263,7 @@ async function stupid_bot(user, msg) {
       msg.react("🇩");
       msg.react("🇴");
       msg.react("🇷");
-      await delay(5000);
+      await Util.sleep(5000);
       msg.reactions.removeAll();
     });
     break;
@@ -1524,7 +1427,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
 
     let [realName, exp] = quests.names[name].split("&");
     user.exp += +exp;
-    user.chestBonus = nonNaN(user.chestBonus) + 10;
+    user.chestBonus = (user.chestBonus ?? 0) + 10;
 
     let percentMade = +(data.users.reduce((acc, last) => acc + ~~(last.completedQuest && last.completedQuest.includes(name)), 0) / data.users.length * 100).toFixed(2) + "%";
     this.msg(`Вы выполнили глобальный квест\n"${realName}"!`, {description: `Описание: "${quests[name]}"\nОпыта получено: **${ exp }**\nЭтот квест смогло выполнить ${percentMade} пользователей.\n[Я молодец.](https://superherojacked.com/wp-content/uploads/2016/12/batman-gif.gif)`});
@@ -1551,7 +1454,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
     let exp = Math.round((user.level + 5) * k);
     user.exp += exp;
 
-    user.chestBonus = nonNaN(user.chestBonus) + Math.round(k * 2);
+    user.chestBonus = (user.chestBonus ?? 0) + Math.round(k * 2);
     channel.msg("Вы выполнили сегодняшний квест и получили опыт!", {description: `Опыта получено: **${exp}**\nОписание квеста:\n${quests[name]}\n\n[Я молодец.](https://cf.ppt-online.org/files/slide/d/dWroQsFb9wiCVhG7u1tfSRgmcTpnUB5Hl3vXOJ/slide-5.jpg)`, author: {iconURL: this.avatarURL(), name: this.username}}) //на будущее: "серия квестов"*, "X2 опыт за сообщения"
 
     user.dayQuests = ++user.dayQuests || 1;
@@ -1566,7 +1469,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
         memb.msg(`Ваш ${user.dayQuests}-й квест — новые семечки`, {description: `🌱`}) :
         memb.msg("Ура, ваши первые семечки!", {description: `Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера`});
 
-      user.seed = nonNaN(user.seed) + 2;
+      user.seed = (user.seed ?? 0) + 2;
     }
 
   };
@@ -1850,13 +1753,13 @@ class Quest {
     do {
       if (!scope.random()) return false;
       [name, progress = 1, chance = 1, complexity = 1, activateFunc] = scope.random({pop: true}).split("&");
-      activateChance = random(1, 7);
+      activateChance = Util.random(1, 7);
     } while ( !name || chance > activateChance || name == user.questLast || activateFunc && !Quest.activateFunc[name](memb, activateFunc) );
 
     user.quest         = name;
     user.questProgress = 0;
-    user.questNeed     = progress != 1 ? +String( Math.floor(String(Math.floor(Math.random() * progress + progress / 1.5) * (1 + nonNaN(user.voidQuests) * 0.15))) ).replace(/(?<=\d)\d/g, e => "0") : 1;
-    user.questReward   = (user.questNeed / progress * (complexity || 1)) * (1 + nonNaN(user.voidQuests) * 0.30);
+    user.questNeed     = progress != 1 ? +String( Math.floor(String(Math.floor(Math.random() * progress + progress / 1.5) * (1 + (user.voidQuests ?? 0) * 0.15))) ).replace(/(?<=\d)\d/g, e => "0") : 1;
+    user.questReward   = (user.questNeed / progress * (complexity || 1)) * (1 + (user.voidQuests ?? 0) * 0.30);
     user.questTime     = data.bot.dayDate;
   }
 
@@ -1935,8 +1838,8 @@ class Command {
   static async CustomCommand(msg, name, args){
     let cmd = getData(msg.guild.id, "guilds").commands[name];
 
-    if (getTime() < cmd[msg.author.id + "_CD"]) return msg.msg("Перезарядка " + timestampToDate(cmd[msg.author.id + "_CD"] - getTime()), {delete: 3000});
-    else cmd[msg.author.id + "_CD"] = getTime() + cmd.cooldown;
+    if (Date.now() < cmd[msg.author.id + "_CD"]) return msg.msg("Перезарядка " + Util.timestampToDate(cmd[msg.author.id + "_CD"] - Date.now()), {delete: 3000});
+    else cmd[msg.author.id + "_CD"] = Date.now() + cmd.cooldown;
     cmd = Object.assign({}, cmd);
 
     const code = async (msg) => {
@@ -1962,15 +1865,15 @@ class Command {
     }
     catch (e) {
       console.error(e);
-      let timestamp = getTime();
+      let timestamp = Date.now();
       let message = await msg.msg("Произошла ошибка 🙄", {color: "f0cc50", delete: 180000});
       let react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
       let quote;
       while (react){
         quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
-        let errorContext = `**Сведения об ошибке:**\n• **Имя:** ${e.name}\n• **Номер строки:** #${e.stack.match(/js:(\d+)/)[1]}\n	• **Текст:** \n\`\`\`\n${e.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${timestampToDate(timestamp - msg.createdTimestamp) || "0с"}`
+        let errorContext = `**Сведения об ошибке:**\n• **Имя:** ${e.name}\n• **Номер строки:** #${e.stack.match(/js:(\d+)/)[1]}\n	• **Текст:** \n\`\`\`\n${e.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${Util.timestampToDate(timestamp - msg.createdTimestamp) || "0с"}`
         message.msg("Эта команда вызвала ошибку .-.", {color: "f0cc50", description: errorContext, footer: {text: quote}, delete: 12000});
-        await delay(10000);
+        await Util.sleep(10000);
         react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
       }
       message.delete();
@@ -1985,7 +1888,7 @@ class TimeEvent {
 
   constructor (func, ms, ...args) {
     let time = TimeEvent.eventData;
-    let obj = {func: func, ms: getTime() + ms};
+    let obj = {func: func, ms: Date.now() + ms};
     obj.args = args;
     time.push(obj);
     console.info("Ивент создан " + func);
@@ -2050,11 +1953,11 @@ class TimeEvent {
       }
     }
     const data = min;
-    let timeTo = data.ms - getTime();
+    let timeTo = data.ms - Date.now();
 
     if (timeTo > 10000) {
       let parse = new Intl.DateTimeFormat("ru-ru", {weekday: "short", hour: "2-digit", minute: "2-digit"}).format();
-      console.info(`{\n\n  Имя события: ${ data.func },\n  Текущее время: ${ parse },\n  Времени до начала: ${timestampToDate(timeTo)}\n\n}`);
+      console.info(`{\n\n  Имя события: ${ data.func },\n  Текущее время: ${ parse },\n  Времени до начала: ${Util.timestampToDate(timeTo)}\n\n}`);
     }
 
     TimeEvent.next = setTimeout(() => {
@@ -2202,7 +2105,7 @@ class CounterManager {
     while (true) {
       let counter = CounterManager.counterData[i];
       CounterManager.up(counter);
-      await delay(900000 / (CounterManager.counterData.length + 1));
+      await Util.sleep(900000 / (CounterManager.counterData.length + 1));
       i++;
       i %= CounterManager.counterData.length;
     }
@@ -2515,11 +2418,11 @@ class Template {
             get random(){
               if (!args) return {false_func: "{number or string}"};
               if (args[1]) return args.random();
-              return random(+args);
+              return Util.random(+args);
             },
             get ending(){
               if (!args) return {false_func: "{num} {word} {0, 5-9} {1} {2-4}"};
-              return ending(...args)
+              return  Util.ending(...args)
             },
             get math(){
               if (!args) return {false_func: "{math regular}"};
@@ -2740,8 +2643,8 @@ class CurseManager {
         description: "Используйте команду !юзер <:piggeorg:758711403027759106>",
         hard: 0,
         values: {
-          goal: () => random(1, 5),
-          timer: () => random(1, 3) * 86_400_000
+          goal: () => Util.random(1, 5),
+          timer: () => Util.random(1, 3) * 86_400_000
         },
         callback: {
           callUserCommand: (user, curse) => CurseManager.intarface({user, curse})
@@ -2755,8 +2658,8 @@ class CurseManager {
         description: "Купите клубнику, не продав ни одной",
         hard: 0,
         values: {
-          goal: () => random(5, 20),
-          timer: () => random(1, 2) * 86_400_000
+          goal: () => Util.random(5, 20),
+          timer: () => Util.random(1, 2) * 86_400_000
         },
         callback: {
           berryBarter: (user, curse, {quantity, isBuying}) => {
@@ -2773,11 +2676,11 @@ class CurseManager {
         description: "Не пропускайте выполнение ежедневного квеста",
         hard: 2,
         values: {
-          goal: () => random(3, 5),
+          goal: () => Util.random(3, 5),
           timer: (user, curse) => {
             const now = new Date();
             const adding = curse.values.goal;
-            const timestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate() + adding).getTime();
+            const timestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate() + adding).Date.now();
             return Math.floor(timestamp - now);
           }
         },
@@ -2801,7 +2704,7 @@ class CurseManager {
           goal: () => 1,
           timer: (user, curse) => {
             const now = new Date();
-            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).Date.now();
             return Math.floor(tomorrow - now);
           }
         },
@@ -2837,7 +2740,7 @@ class CurseManager {
           goal: () => 1,
           timer: (user, curse) => {
             const now = new Date();
-            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).Date.now();
             return Math.floor(tomorrow - now);
           }
         },
@@ -2959,7 +2862,7 @@ class CurseManager {
         description: "Отправьте коин-сообщения или дождитесь окончания. Даёт дополнительный шанс в 16% получить коин из сообщения. Однако количество денег будет уменьшаться",
         hard: 0,
         values: {
-          goal: (user) => 48 - nonNaN(user.data.chectLevel) * 16,
+          goal: (user) => 48 - (user.data.chectLevel ?? 0) * 16,
           timer: () => 3_600_000 / 2
         },
         callback: {
@@ -3129,7 +3032,7 @@ class CurseManager {
 
 
     if (!lost){
-      user.data.cursesEnded = nonNaN(user.data.cursesEnded) + 1;
+      user.data.cursesEnded = (user.data.cursesEnded ?? 0) + 1;
       const fields = getDefaultFields();
 
       const getVoidReward = () => {
@@ -3151,7 +3054,7 @@ class CurseManager {
       user.data.coins += coinsReward;
       user.data.void += voidReward;
 
-      const rewardContent = `${ ending(coinsReward, "коин", "ов", "", "а") }${ voidReward ? ` и ${ ending(voidReward, "нестабильност", "и", "ь", "и") }` : "" }`;
+      const rewardContent = `${  Util.ending(coinsReward, "коин", "ов", "", "а") }${ voidReward ? ` и ${  Util.ending(voidReward, "нестабильност", "и", "ь", "и") }` : "" }`;
       const descriptionFooter = `${ coinsReward ? "<:coin:637533074879414272>" : "" } ${ voidReward ? "<a:void:768047066890895360>" : "" }`;
       const description = `Это ${ user.data.cursesEnded }-й раз, когда Вам удаётся преодолеть условия созданные нашей машиной для генерации проклятий.\nВ этот раз вы получаете: ${ rewardContent }. Награда такая незначительная в связи с тем, что основным поставщиком ресурсов является сундук. Да будь он проклят!\n${ descriptionFooter }`;
 
@@ -3170,7 +3073,7 @@ class BossManager {
 
     const TWO_MONTH = 5259600000;
 
-    if ( guild.me.joinedTimestamp > getTime() + TWO_MONTH )
+    if ( guild.me.joinedTimestamp > Date.now() + TWO_MONTH )
       return;
 
     const guildData = guild.data;
@@ -3186,8 +3089,8 @@ class BossManager {
       // the boss cannot spawn on other days
       const MIN = 1;
       const MAX = 28;
-      const date = new Date(now.getFullYear(), now.getMonth() + 1, random(MIN, MAX));
-      const days =  Math.floor(date.getTime() / 86_400_000);
+      const date = new Date(now.getFullYear(), now.getMonth() + 1, Util.random(MIN, MAX));
+      const days =  Math.floor(date.Date.now() / 86_400_000);
       guildData.boss.apparanceAtDay = days;
     }
 
@@ -3317,7 +3220,7 @@ class BossManager {
       const reward = calculateReward(thatLevel);
       userStats.chestRewardAt = thatLevel;
       user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
-      message.msg({message: "", description: `Получено ${ ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color, delete: 7000});
+      message.msg({message: "", description: `Получено ${  Util.ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color, delete: 7000});
     })
 
     collector.on("end", () => message.delete());
@@ -3341,7 +3244,7 @@ class BossManager {
       return;
     }
 
-    await delay(3000);
+    await Util.sleep(3000);
 
     const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
     const descriptionFacts = `С завтрашенего дня, в течении трёх дней, босс будет проходить по нашим землям в определенном образе. За это время мы должны нанести как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**`;
@@ -3368,7 +3271,7 @@ class BossManager {
     const contents = {
       dice: `Максимальный бонус к урону от кубика: Х${ +((boss.diceDamageMultiplayer ?? 1) - 1).toFixed(2) };`,
       damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
-      usersCount: `Приняло участие: ${ ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
+      usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
       parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
       rewards: "Награды:"
     }
@@ -3436,7 +3339,7 @@ class BossManager {
 
     const footer = {iconURL: user.avatarURL(), text: user.tag};
     if (userStats.attack_CD > Date.now()){
-      const description = `**${ timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
+      const description = `**${ Util.timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
       channel.msg("⚔️ Перезарядка..!", {color: "ff0000", description, delete: 7000, footer});
       return;
     }
@@ -3451,7 +3354,7 @@ class BossManager {
     };
     const pull = [...BossManager.eventBases.values()];
     const data = {user, userStats, boss, channel, attackContext};
-    const eventsCount = Math.floor(boss.level ** 0.5) + random(-1, 1);
+    const eventsCount = Math.floor(boss.level ** 0.5) + Util.random(-1, 1);
  
     for (let i = 0; i < eventsCount; i++){
       for (const event of pull){
@@ -3601,7 +3504,7 @@ class BossManager {
         .map((item) => `${ item.emoji } — ${ item.description }.\n${ calculatePrice(item, userStats.bought[item.keyword]) };`)
         .join("\n");
 
-      const description = `Приобретите эти товары! Ваши экономические возможности: ${ ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> на руках\n\n${ productsContent }`;
+      const description = `Приобретите эти товары! Ваши экономические возможности: ${  Util.ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> на руках\n\n${ productsContent }`;
 
       return {
         message: "Тайная лавка Гремпенса",
@@ -3716,13 +3619,13 @@ class BossManager {
         }
 
         channel.startTyping();
-        await delay(2000);
+        await Util.sleep(2000);
         channel.stopTyping();
 
         const message = await channel.msg(embed);
         const collector = message.createReactionCollector(({emoji}, member) => user === member && reactions.includes(emoji.name), {time: 30_000, max: 1});
         collector.on("collect", (reaction) => {
-          const isLucky = random(0, 1);
+          const isLucky = Util.random(0, 1);
           const emoji = reaction.emoji.name;
 
           if (emoji === "⚔️" && isLucky){
@@ -3772,7 +3675,7 @@ class BossManager {
         }
 
         channel.startTyping();
-        await delay(2000);
+        await Util.sleep(2000);
         channel.stopTyping();
 
         const ingredients = [];
@@ -3800,7 +3703,7 @@ class BossManager {
                   const current = userStats.attackCooldown;
                   userStats.attackCooldown = Math.floor(userStats.attackCooldown * 0.80);
 
-                  const description = `Кулдаун снизился на ${ timestampToDate(current - userStats.attackCooldown) }`;
+                  const description = `Кулдаун снизился на ${ Util.timestampToDate(current - userStats.attackCooldown) }`;
         
                   message.msg("", {description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
                 });
@@ -4049,8 +3952,8 @@ const commands = {
         commandContext.status = "<:online:637544335037956096> В сети";
       }
       else {
-         const lastOnline = getTime() - nonNaN(user.last_online);
-         const getDateContent = () => (31556926000000 < lastOnline) ? "более года" : (lastOnline > 2629743000) ? "более месяца" : timestampToDate(lastOnline);
+         const lastOnline = Date.now() - (user.last_online ?? 0);
+         const getDateContent = () => (31556926000000 < lastOnline) ? "более года" : (lastOnline > 2629743000) ? "более месяца" : Util.timestampToDate(lastOnline);
          const dateContent = user.profile_confidentiality ? "" : getDateContent();
          commandContext.status = `<:offline:637544283737686027> Не в сети ${ dateContent }`;
       }
@@ -4129,7 +4032,7 @@ const commands = {
 
         if (user.element){
           const emoji = ["🍃 Земля", "☁️ Воздух", "🔥 Огонь", "👾 Тьма"][user.element];
-          const content = `\n${ emoji } — элемент ${nonNaN(user.elementLevel) + 1} ур.\n`;
+          const content = `\n${ emoji } — элемент ${(user.elementLevel ?? 0) + 1} ур.\n`;
           contents.element = content;
         }
 
@@ -4140,7 +4043,7 @@ const commands = {
             inline: true
           },
           {
-            name: `Сундук ${ user.CD_32 > getTime() ? "<:chest_opened:986165753843679232>" : "<a:chest:805405279326961684>" }`,
+            name: `Сундук ${ user.CD_32 > Date.now() ? "<:chest_opened:986165753843679232>" : "<a:chest:805405279326961684>" }`,
             value: `Сундук ур.: ${user.chestLevel + 1}\nБонус след. открытия: \`${user.chestBonus || 0}\``,
             inline: true
           },
@@ -4163,7 +4066,7 @@ const commands = {
                   return "Проклятия отсуствуют.";
                 }
                 
-                const count = ending(user.curses.length, "", `Текущие проклятия (их ${ user.curses.length })`, "Текущее проклятие", "Текущие два проклятия", {slice: true});
+                const count = Util.ending(user.curses.length, "", `Текущие проклятия (их ${ user.curses.length })`, "Текущее проклятие", "Текущие два проклятия", {slice: true});
                 const curse = user.curses.at(commandContext.currentCurseView);
                 const description = CurseManager.intarface({user: memb, curse}).toString();
                 return `>>> ${ count }:\n${ description }`
@@ -4175,7 +4078,7 @@ const commands = {
           },
           {
             name: "Бонусы котла <a:placeForVoid:780051490357641226>",
-            value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrise}/5\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nСвобода проклятий: ${ ~~user.voidFreedomCurse }/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${nonNaN(user.voidMysticClover)}\nФермер: ${nonNaN(user.voidTreeFarm)}\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
+            value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrise}/5\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nСвобода проклятий: ${ ~~user.voidFreedomCurse }/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${user.voidMysticClover ?? 0 }\nФермер: ${user.voidTreeFarm ?? 0 }\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
             inline: false
           }
         ];
@@ -4193,7 +4096,7 @@ const commands = {
       controller.editEmbed = true;
 
       while (true) {
-        delay(8500);
+        Util.sleep(8500);
 
         const react = await controller.message.awaitReact({user: "any", type: "all", time: 20000}, ...controller.reactions);
         switch (react) {
@@ -4281,7 +4184,7 @@ const commands = {
       return;
     }
 
-    let heAccpet = await accept("praise", "Количество похвал ограничено\nПродолжить?", msg.channel, user);
+    let heAccpet = await Util.awaitUserAccept("praise", "Количество похвал ограничено\nПродолжить?", msg.channel, user);
     if (!heAccpet) {
       return;
     };
@@ -4562,10 +4465,10 @@ const commands = {
       return msg.msg("Вроде-как удалено 0 сообщений", {delete: 3000, description: "Я серьёзно! Не удалено ни единого сообщения!"});
 
 
-    let counter = await msg.msg(`Пожалуйста, Подождите... ${ ending(messages.length, "сообщени", "й", "е", "я") } на удаление.`, {description: "Нажмите реакцию чтобы отменить чистку", reactions: ["❌"]});
+    let counter = await msg.msg(`Пожалуйста, Подождите... ${  Util.ending(messages.length, "сообщени", "й", "е", "я") } на удаление.`, {description: "Нажмите реакцию чтобы отменить чистку", reactions: ["❌"]});
     let toDelete = messages.length;
 
-    await delay(3000);
+    await Util.sleep(3000);
 
     if (messages.length > 120){
       msg.channel.startTyping();
@@ -4606,7 +4509,7 @@ const commands = {
       const description = `В канале: ${ channel.toString() }\nУдалил: ${msg.author.toString()}\nТип чистки: ${ mode }${ isCancel ? "\n\nЧистка была отменена" : "" }`;
 
       if (msg.guild)
-        msg.guild.logSend(`Удалено ${ ending(current, "сообщени", "й", "е", "я") }`, {description});
+        msg.guild.logSend(`Удалено ${  Util.ending(current, "сообщени", "й", "е", "я") }`, {description});
     }
 
     while (byBulkDelete.length || byOneDelete.length){
@@ -4616,7 +4519,7 @@ const commands = {
         counter.delete();
 
         const current = toDelete - byOneDelete.length - byBulkDelete.length;
-        const description = `Было очищено ${ ending(current, "сообщени", "й", "е", "я") } до отмены`;
+        const description = `Было очищено ${  Util.ending(current, "сообщени", "й", "е", "я") } до отмены`;
         msg.msg("Очистка была отменена", {description, delete: 12000});
 
         sendLog();
@@ -4634,7 +4537,7 @@ const commands = {
       }
 
       else {
-        for (const message of byOneDelete.splice(0, random(5, 15))){
+        for (const message of byOneDelete.splice(0, Util.random(5, 15))){
           await message.delete();
         }
       }
@@ -4644,10 +4547,10 @@ const commands = {
       updateCounter();
     }
 
-    await delay(toDelete * 30);
+    await Util.sleep(toDelete * 30);
     msg.channel.stopTyping();
 
-    counter.msg(`Удалено ${ ending(toDelete, "сообщени", "й", "е", "я") }!`, { edit: true, delete: 1500 });
+    counter.msg(`Удалено ${  Util.ending(toDelete, "сообщени", "й", "е", "я") }!`, { edit: true, delete: 1500 });
 
     sendLog();
   }, {myChannelPermissions: 8192, ChannelPermissions: 8192, cooldown: 15, try: 5, type: "guild"}, "очистить очисти очисть клир клиар"),
@@ -5056,7 +4959,7 @@ const commands = {
       return;
     }
 
-    let heAccpet = await accept("give", "Используя эту команду вы потеряете коины или другие ресурсы", msg.channel, op.user);
+    let heAccpet = await Util.awaitUserAccept("give", "Используя эту команду вы потеряете коины или другие ресурсы", msg.channel, op.user);
     if (!heAccpet) return;
 
     if (memb === msg.author) {
@@ -5069,43 +4972,43 @@ const commands = {
       {
         resource: "coins",
         names: "coins coin коин коинов коина коины монет монету монеты монета",
-        gives: n => `${ending(n, "коин", "ов", "", "а")} <:coin:637533074879414272>`
+        gives: n => `${ Util.ending(n, "коин", "ов", "", "а")} <:coin:637533074879414272>`
       },
 
       {
         resource: "void",
         names: "void камень камня камней нестабильность камни нестабильности нест н",
-        gives: n => `${ending(n, "кам", "ней", "ень", "ня")} нестабильности`
+        gives: n => `${ Util.ending(n, "кам", "ней", "ень", "ня")} нестабильности`
       },
 
       {
         resource: "chestBonus",
         names: "bonus chest бонус бонусов бонуса бонусы сундук сундука сундуки сундуков б с",
-        gives: n => `${ ending(n, "бонус", "ов", "", "а") } сундука`
+        gives: n => `${  Util.ending(n, "бонус", "ов", "", "а") } сундука`
       },
 
       {
         resource: "chilli",
         names: "chilli перец перца перцев перцы",
-        gives: n => ending(n, "пер", "цев", "ец", "ца")
+        gives: n =>  Util.ending(n, "пер", "цев", "ец", "ца")
       },
 
       {
         resource: "keys",
         names: "keys key ключ ключей ключа ключи k к",
-        gives: n => ending(n, "ключ", "ей", "", "а")
+        gives: n =>  Util.ending(n, "ключ", "ей", "", "а")
       },
 
       {
         resource: "berrys",
         names: "клубника клубник клубники berrys berry ягод ягода ягоды",
-        gives: n => ending(n, "клубник", "", "а", "и")
+        gives: n =>  Util.ending(n, "клубник", "", "а", "и")
       },
 
       {
         resource: "monster",
         names: "monster монстр монстра монстров монстры",
-        gives: n => ending(n, "монстр", "ов", "", "а")
+        gives: n =>  Util.ending(n, "монстр", "ов", "", "а")
       }
     ];
 
@@ -5162,14 +5065,14 @@ const commands = {
     const VERSION = "V5.740 BETA";
     const characters = data.bot.characters;
 
-    let markdown = ["x", "**", "||", "__", "_", "`"].filter( () => random(1) );
+    let markdown = ["x", "**", "||", "__", "_", "`"].filter( () => Util.random(1) );
 
     client.api.channels(msg.channel.id).messages.post({data: {
       "embed": {
         "title": "ну типа.. ай, да, я живой, да",
         "color": 	65280,
         "description": `<:online:637544335037956096> Пинг: ${client.ws.ping} ${VERSION} [#${season}](https://hytale.com/supersecretpage), что сюда ещё запихнуть?\nСерваков...**${client.guilds.cache.size}** (?) Команд: ${Command.cmds}\nСимволов в скрипте: примерно **#**Почему-то это никому не понравилось и было удалено;\n\`${(heapTotal/1024/1024).toFixed(2)} мб / ${(rss/1024/1024).toFixed(2)} МБ\``,
-        "footer": {"text": `Укушу! Прошло времени с момента добавления бота на новый сервер: ${timestampToDate(getTime() - data.bot.newGuildTimestamp, 2)}`}
+        "footer": {"text": `Укушу! Прошло времени с момента добавления бота на новый сервер: ${Util.timestampToDate(Date.now() - data.bot.newGuildTimestamp, 2)}`}
       },
       "content": "",
       "components": [
@@ -5258,7 +5161,7 @@ const commands = {
           if (!msg.author.data.praiseMe) msg.author.data.praiseMe = [];
           rangs = sort.map((e, i) => {
             let name = (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
-            let value = "— Был похвален " + ending(e.data.praiseMe.length, "раз", "", "", "а") + " <:wellplayed:630463177314009115>";
+            let value = "— Был похвален " + Util.ending(e.data.praiseMe.length, "раз", "", "", "а") + " <:wellplayed:630463177314009115>";
             return {name, value};
           });
           break;
@@ -5399,12 +5302,12 @@ const commands = {
 
     if (timeToEnd){
       new TimeEvent("offMuteAutomatic", timeToEnd, msg.guild.id, guildMember.id);
-      timeToEnd = new Intl.DateTimeFormat("ru-ru", {day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit"}).format(getTime() + timeToEnd);
+      timeToEnd = new Intl.DateTimeFormat("ru-ru", {day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit"}).format(Date.now() + timeToEnd);
     }
 
     guildMember.roles.add(role, `Muted from ${msg.author.id}`);
 
-    await delay(700);
+    await Util.sleep(700);
 
     let embed = {
       description: `Пользователь ${guildMember} был замучен.${cause ? `\nПричина: ${cause}` : ""}${timeToEnd ? `\nОграничения автоматически будут сняты ${timeToEnd}` : ""}`,
@@ -5475,7 +5378,7 @@ const commands = {
   }, {memb: true, dm: true, delete: true, Permissions: 4194304, myPermissions: 268435456, type: "guild"}, "анмут анмьют"),
 
   reactor: new Command(async (msg, op) => {
-    let answer = await accept("reactor", "С помощью этой команды вы можете создавать реакции выдающее роли. \nРеакции должны быть установлены заранее\nВы уже установили реакциии?)", msg.channel, msg.author.data);
+    let answer = await Util.awaitUserAccept("reactor", "С помощью этой команды вы можете создавать реакции выдающее роли. \nРеакции должны быть установлены заранее\nВы уже установили реакциии?)", msg.channel, msg.author.data);
     if (!answer) return;
 
     let whatChannel = await msg.msg("Укажите айди или упомяните канал в котором находится сообщение.\nЕсли оно находится в этом канале, нажмите реакцию ниже");
@@ -5575,7 +5478,7 @@ const commands = {
         }
 
         let helper = await commands.commandinfo.code(msg, {args: "setprofile"});
-        await delay(20000);
+        await Util.sleep(20000);
         helper.delete();
         /**/
 
@@ -5758,7 +5661,7 @@ const commands = {
       const year = new Date().getFullYear() + (+!current);
       const compare = new Date(`${ year }.${ month }.${ day }`);
 
-      const diff = compare.getTime() - Date.now();
+      const diff = compare.Date.now() - Date.now();
       return Math.ceil(diff / 86_400_000);
     }
 
@@ -5805,7 +5708,7 @@ const commands = {
       }
 
       let author = await emoji.fetchAuthor();
-      msg.msg("О нём:", {description: "> " + emoji.toString(), thumbnail: emoji.url, author: {name: "Эмотикон :>\nС сервера " + emoji.guild.name, iconURL: emoji.guild.iconURL()}, footer: {text: "ID: " + emoji.id}, fields: [{name: "Имя:", value: "`" + emoji.name + "`", inline: true}, {name: "Эмодзи добавил:", value: author.tag, inline: true}, {name: "Был добавлен на сервер: ", value: timestampToDate(getTime() - emoji.createdTimestamp, 4) + " назад."}]})
+      msg.msg("О нём:", {description: "> " + emoji.toString(), thumbnail: emoji.url, author: {name: "Эмотикон :>\nС сервера " + emoji.guild.name, iconURL: emoji.guild.iconURL()}, footer: {text: "ID: " + emoji.id}, fields: [{name: "Имя:", value: "`" + emoji.name + "`", inline: true}, {name: "Эмодзи добавил:", value: author.tag, inline: true}, {name: "Был добавлен на сервер: ", value: Util.timestampToDate(Date.now() - emoji.createdTimestamp, 4) + " назад."}]})
       return;
     };
 
@@ -5853,7 +5756,7 @@ const commands = {
   }, {delete: true, cooldown: 7, try: 3, type: "other"}, "emoji смайлики эмодзи эмоджи"),
 
   idea: new Command(async (msg, op) => {
-    let heAccpet = await accept("idea", {message: "<a:crystal:637290417360076822> Подать идею", description: "После подтверждения этого сообщения, текст, который вы ввели вместе с командой, будет отправлен разработчику.\nВсё идеи попадают **[сюда.](https://discord.gg/76hCg2h7r8)**"}, msg, op.user);
+    let heAccpet = await Util.awaitUserAccept("idea", {message: "<a:crystal:637290417360076822> Подать идею", description: "После подтверждения этого сообщения, текст, который вы ввели вместе с командой, будет отправлен разработчику.\nВсё идеи попадают **[сюда.](https://discord.gg/76hCg2h7r8)**"}, msg, op.user);
     if (!heAccpet) return msg.author.msg("Ваша идея не была отправлена так как вы не подтвердили отправку", {description: "Текст идеи:\n" + op.args, color: "ff0000"});
 
     let channel = client.guilds.cache.get("752898200993660959").channels.cache.get("753587805195862058");
@@ -5886,8 +5789,8 @@ const commands = {
       const getList = (mask) => wordNumbers.filter((word, index) => (2 ** index) & mask);
       const list = getList(data.grempen || 0);
 
-      const buyingItemsContent = data.shopTime === Math.floor(getTime() / 86400000) && data.grempen ?
-        `приобрел ${ ending(list.length, "товар", "ов", "", "а") } под номером: ${ add_and( list.sort(Math.random) ) }. Если считать с нуля конечно-же.` :
+      const buyingItemsContent = data.shopTime === Math.floor(Date.now() / 86400000) && data.grempen ?
+        `приобрел ${  Util.ending(list.length, "товар", "ов", "", "а") } под номером: ${ Util.joinWithAndSeparator( list.sort(Math.random) ) }. Если считать с нуля конечно-же.` :
         "сегодня ничего не приобретал.\nМожет Вы сами желаете чего-нибудь прикупить?";
 
       const description = `Ох, таки здравствуйте. Человек, о котором Вы спрашиваете ${ buyingItemsContent }`;
@@ -5914,9 +5817,9 @@ const commands = {
 
             const max = (COMMON_VALUE * (1 - DENOMINATOR ** user.monster)) / (1 - DENOMINATOR) + MIN;
             const count = Math.ceil(
-              random(MIN, max)
+              Util.random(MIN, max)
             );
-            phrase += `\nВаши ручные Монстры, погнавшись за ней, нашли ${ ending(count, "ключ", "ей", "", "а") }`;
+            phrase += `\nВаши ручные Монстры, погнавшись за ней, нашли ${  Util.ending(count, "ключ", "ей", "", "а") }`;
             user.keys += count;
           }
 
@@ -5973,7 +5876,7 @@ const commands = {
         inline: true,
         others: ["опыт", "бутылёк"],
         fn: (product) => {
-          const rand = random(3, 7);
+          const rand = Util.random(3, 7);
           const LIMIT = 15_000;
           const flaconPrice = Math.min(
             Math.ceil(user.coins / rand),
@@ -5987,7 +5890,7 @@ const commands = {
       },
       {
         name: "🐲 Ручной монстр",
-        value: 1999 + 1000 * Math.ceil(nonNaN(user.monstersBought) / 3),
+        value: 1999 + 1000 * Math.ceil((user.monstersBought ?? 0) / 3),
         inline: true,
         others: ["монстр", "монстра"],
         fn: () => {
@@ -6008,10 +5911,10 @@ const commands = {
         others: ["консервы", "интеллект"],
         fn: () => {
           if (user.iq === undefined){
-            user.iq = random(27, 133);
+            user.iq = Util.random(27, 133);
           }
 
-          user.iq += random(3, 7);
+          user.iq += Util.random(3, 7);
           return ".\nВы едите эти консервы и понимаете, что становитесь умнее. Эта покупка точно была не напрасной...";
         }
       },
@@ -6022,10 +5925,10 @@ const commands = {
         others: ["бутылка", "бутылку", "глупость", "глупости"],
         fn: () => {
           if (user.iq === undefined){
-            user.iq = random(27, 133);
+            user.iq = Util.random(27, 133);
           }
 
-          user.iq -= random(3, 7);
+          user.iq -= Util.random(3, 7);
           return ".\nГу-гу, га-га?... Пора учится...!";
         }
       },
@@ -6099,7 +6002,7 @@ const commands = {
           if (!msg.guild.data.cloverEffect){
             msg.guild.data.cloverEffect = {
               coins: 0,
-              timestamp: getTime(),
+              timestamp: Date.now(),
               uses: 1
             };
             new TimeEvent("cloverEnd", 14400000, msg.guild.id, msg.channel.id);
@@ -6109,7 +6012,7 @@ const commands = {
           msg.guild.data.cloverEffect.uses++;
 
           const setNewTimestamp = (event) => {
-            const addingMs = Math.floor(14400000 - (event.ms - getTime()) / 18);
+            const addingMs = Math.floor(14400000 - (event.ms - Date.now()) / 18);
             const ms = event.ms + Math.max(addingMs, 0);
             return ms;
           }
@@ -6128,7 +6031,7 @@ const commands = {
         fn: (product) => {
           const items = ["void", "seed", "coins", "level", "exp", "coinsPerMessage", "chilli", "key", "monster", "berrys", "iq", "chestBonus"];
           const item = items.random();
-          user[item] = nonNaN( user[item] ) + 1;
+          user[item] = (user[item] ?? 0) + 1;
           return ` как \`gachi-${ item }\`, которого у вас прибавилось в количестве один.`;
         }
       },
@@ -6174,9 +6077,9 @@ const commands = {
     let grempenList;
     let todayItems = grempenList = getTodayItems();
 
-    if (Math.floor(getTime() / 86400000) !== user.shopTime){
+    if (Math.floor(Date.now() / 86400000) !== user.shopTime){
       user.grempen = 0;
-      user.shopTime = Math.floor(getTime() / 86400000);
+      user.shopTime = Math.floor(Date.now() / 86400000);
     }
 
 
@@ -6198,7 +6101,7 @@ const commands = {
         return;
       }
 
-      if (user.coins < nonNaN(product.value)) {
+      if (user.coins < (product.value ?? 0)) {
         await msg.msg("<:grempen:753287402101014649> Т-Вы что удумали?", {description: `Недостаточно коинов, ${product.name} стоит на ${product.value - user.coins} дороже`, color: "400606", delete: 5000});
         return;
       }
@@ -6216,7 +6119,7 @@ const commands = {
         msg.author.quest("cleanShop");
       }
 
-      return msg.msg("", {description: `Благодарю за покупку ${product.name.split(" ")[0]} !\nЦена в ${ending(product.value, "монет", "", "у", "ы")} просто ничтожна за такую хорошую вещь${phrase}`, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, color: "400606"});
+      return msg.msg("", {description: `Благодарю за покупку ${product.name.split(" ")[0]} !\nЦена в ${ Util.ending(product.value, "монет", "", "у", "ы")} просто ничтожна за такую хорошую вещь${phrase}`, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, color: "400606"});
     }
 
     if (op.args){
@@ -6226,7 +6129,7 @@ const commands = {
 
     if (user.coins < 80) {
       msg.channel.startTyping();
-      await delay(1700);
+      await Util.sleep(1700);
       msg.channel.stopTyping();
       return msg.msg("<:grempen:753287402101014649>", {description: "Изыди бездомный попрошайка\nбез денег не возвращайся!", color: "541213", delete: 3000});
     }
@@ -6273,7 +6176,7 @@ const commands = {
 
       if (user.coins < 80) {
         msg.channel.startTyping();
-        await delay(1200);
+        await Util.sleep(1200);
 
         shop.msg("У вас ещё остались коины? Нет? Ну и проваливайте!", {edit: true, delete: 3000});
         msg.channel.stopTyping();
@@ -6282,10 +6185,10 @@ const commands = {
       embed = {edit: true, description: `У вас есть-остались коины? Отлично! **${user.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`, fields: productsToFields(), footer: {text: "Приходите ещё, акции каждый день!"}, color: "400606"};
       await shop.msg("<:grempen:753287402101014649> Зловещая лавка", embed);
     };
-  }, {delete: true, cooldown: 10, try: 3, type: "other"}, "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens"),
+  }, {delete: true, cooldown: 10, try: 3, type: "other"}, "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop"),
 
   embeds: new Command(async (msg, op) => {
-    let answer = await accept("embeds", {message: "Эта команда находит до 70-ти эмбедов в канале", description: "С её помощью вы можете переставлять местами эмбед сообщения или получить их в JSON формате\nОбратите внимание, всё обычные сообщения будут **удалены**, а эмбеды будут заново отправленны в новом порядке **от имени Призрака**\n\nРеакции:\n • <:json:754777124413505577> - отправляет вам JSON выбранного сообщения\n • <:swap:754780992023167007> - меняет местами два эмбеда\n • <:right:756212089911247021> - применить изменения и завершить команду"}, msg.channel, msg.author.data);
+    let answer = await Util.awaitUserAccept("embeds", {message: "Эта команда находит до 70-ти эмбедов в канале", description: "С её помощью вы можете переставлять местами эмбед сообщения или получить их в JSON формате\nОбратите внимание, всё обычные сообщения будут **удалены**, а эмбеды будут заново отправленны в новом порядке **от имени Призрака**\n\nРеакции:\n • <:json:754777124413505577> - отправляет вам JSON выбранного сообщения\n • <:swap:754780992023167007> - меняет местами два эмбеда\n • <:right:756212089911247021> - применить изменения и завершить команду"}, msg.channel, msg.author.data);
     if (!answer) return;
 
     let embeds = await msg.channel.messages.fetch({limit: 100, before: (op.args || null)});
@@ -6522,7 +6425,7 @@ const commands = {
         msgs:          `За сегодня: ${  guild.data.day_msg  }`,
         msgsAll:       `Всего: ${  guild.data.day_msg + guild.data.msg_total  }`,
         around:        `В среднем: ${  Math.round((guild.data.day_msg + guild.data.msg_total) / guild.data.days)  }`,
-        record:        `Рекорд: ${  ending(guild.data.day_max, "сообщени", "й", "е", "я")  }\n`,
+        record:        `Рекорд: ${   Util.ending(guild.data.day_max, "сообщени", "й", "е", "я")  }\n`,
         commands:      `Использовано команд: ${  Object.values(guild.data.commandsUsed).reduce((acc, count) => acc + count, 0)  }`,
         todayCommands: `Сегодня: ${  Object.values(guild.data.commandsUsed).reduce((acc, count) => acc + count, 0) - guild.data.commandsLaunched  }`
       },
@@ -6557,7 +6460,7 @@ const commands = {
       let
         effect = guild.data.cloverEffect,
         cloverEvent = TimeEvent.eventData.find(e => e.func === "cloverEnd" && e.args.includes(guild.id)),
-        timeTo = cloverEvent.ms - getTime(),
+        timeTo = cloverEvent.ms - Date.now(),
         multiplier = 1.08 + (0.07 * ((1 - 0.9242 ** effect.uses) / (1 - 0.9242))),
         parse = {
             day: (timeTo < 86400000) ?
@@ -6574,7 +6477,7 @@ const commands = {
     }
     //**
 
-    msg.msg(guild.name + " " + ["❤️", "🧡", "💛", "💚", "💙", "💜"].random(), {thumbnail: guild.iconURL(), description: guild.data.description || "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера", footer: {text: "Сервер был создан " + timestampToDate(getTime() - guild.createdTimestamp, 3) + " назад." + "\nID: " + guild.id}, image: guild.data.banner, fields});
+    msg.msg(guild.name + " " + ["❤️", "🧡", "💛", "💚", "💙", "💜"].random(), {thumbnail: guild.iconURL(), description: guild.data.description || "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера", footer: {text: "Сервер был создан " + Util.timestampToDate(Date.now() - guild.createdTimestamp, 3) + " назад." + "\nID: " + guild.id}, image: guild.data.banner, fields});
   }, {delete: true, type: "guild"}, "сервер"),
 
   editserver: new Command(async (msg, op) => {
@@ -6704,10 +6607,10 @@ const commands = {
     date.setHours(time[0]);
     date.setMinutes(time[1]);
 
-    let timeTo = date.getTime() - getTime();
+    let timeTo = date.Date.now() - Date.now();
     if (timeTo < 60000) return msg.msg(`Я не могу отложить отправку на ${time.join(":")}, текущее время превышает или равно этой метке.\nОбратите внимание, время на сервере — ${(date = new Date()), date.getHours()}:${date.getMinutes()}`, {delete: 5000});
     new TimeEvent("postpone", timeTo, msg.author.id, msg.channel.id, text);
-    msg.msg("Готово! Ваше сообщение будет отправленно через " + timestampToDate(timeTo), {delete: 5000});
+    msg.msg("Готово! Ваше сообщение будет отправленно через " + Util.timestampToDate(timeTo), {delete: 5000});
   }, {cooldown: 1800 , try: 3, delete: true, args: true, myChannelPermissions: 536870912, type: "delete"}, "отложить отложи"),
 
   iq: new Command(async (msg, op) => {
@@ -6718,7 +6621,7 @@ const commands = {
       first = false;
     }
 
-    let iq = memb.data.iq = first ? random(30, 140) : Math.max(memb.data.iq, 0);
+    let iq = memb.data.iq = first ? Util.random(30, 140) : Math.max(memb.data.iq, 0);
     let name = (memb === msg.author) ? "вас" : "него";
 
     let description;
@@ -6733,9 +6636,9 @@ const commands = {
 
   chest: new Command(async (msg, op) => {
 
-    const cooldown = op.user.CD_32 - getTime();
+    const cooldown = op.user.CD_32 - Date.now();
     if (cooldown > 0) {
-      msg.msg(`Сундук заперт, возвращайтесь позже!`, {color: "ffda73", footer: {text: "До открытия: " + timestampToDate(cooldown), iconURL: "https://vignette.wikia.nocookie.net/e2e-expert/images/b/b3/Chest.png/revision/latest?cb=20200108233859"}});
+      msg.msg(`Сундук заперт, возвращайтесь позже!`, {color: "ffda73", footer: {text: "До открытия: " + Util.timestampToDate(cooldown), iconURL: "https://vignette.wikia.nocookie.net/e2e-expert/images/b/b3/Chest.png/revision/latest?cb=20200108233859"}});
       return;
     }
 
@@ -6751,7 +6654,7 @@ const commands = {
     if (user.BDay === data.bot.dayDate) {
       treasures.cake = true;
       treasures.bonus = 10;
-      user.chestBonus = 30 + nonNaN(user.chestBonus);
+      user.chestBonus = 30 + (user.chestBonus ?? 0);
     }
 
 
@@ -6760,36 +6663,36 @@ const commands = {
         [
           {item: "void", count: 1, _weight: 1},
           {item: "berrys", count: 1, _weight: 4},
-          {item: "keys", count: random(2, 3), _weight: 9},
+          {item: "keys", count: Util.random(2, 3), _weight: 9},
           {item: "trash", count: 0, _weight: 13},
-          {item: "exp", count: random(19, 119), _weight: 22},
-          {item: "coins", count: random(23, 40), _weight: 46},
+          {item: "exp", count: Util.random(19, 119), _weight: 22},
+          {item: "coins", count: Util.random(23, 40), _weight: 46},
           {item: "chilli", count: 1, _weight: 4},
           {item: "gloves", count: 1, _weight: 1}
         ],
         [
           {item: "void", count: 1, _weight: 1},
-          {item: "berrys", count: random(1, 2), _weight: 8},
-          {item: "keys", count: random(3, 5), _weight: 7},
+          {item: "berrys", count: Util.random(1, 2), _weight: 8},
+          {item: "keys", count: Util.random(3, 5), _weight: 7},
           {item: "trash", count: 0, _weight: 3},
-          {item: "exp", count: random(30, 200), _weight: 22},
-          {item: "coins", count: random(88, 148), _weight: 54},
+          {item: "exp", count: Util.random(30, 200), _weight: 22},
+          {item: "coins", count: Util.random(88, 148), _weight: 54},
           {item: "chilli", count: 1, _weight: 3},
           {item: "gloves", count: 1, _weight: 2}
         ],
         [
           {item: "void", count: 1, _weight: 1},
-          {item: "berrys", count: random(1, 3), _weight: 12},
+          {item: "berrys", count: Util.random(1, 3), _weight: 12},
           {item: "keys", count: 9, _weight: 1},
-          {item: "exp", count: random(470), _weight: 22},
-          {item: "coins", count: random(304, 479), _weight: 62},
+          {item: "exp", count: Util.random(470), _weight: 22},
+          {item: "coins", count: Util.random(304, 479), _weight: 62},
           {item: "gloves", count: 1, _weight: 1},
           {item: "bonus", count: 5, _weight: 1}
         ]
       ][user.chestLevel];
 
 
-    let itemsQuantity = nonNaN(user.chestBonus);
+    let itemsQuantity = (user.chestBonus ?? 0);
 
     user.chestBonus -= itemsQuantity;
     itemsQuantity = 2 + Math.ceil(itemsQuantity / 3);
@@ -6819,12 +6722,12 @@ const commands = {
         case "void":
           chest = { color: "3d17a0", icon: "https://media.discordapp.net/attachments/631093957115379733/842122055527694366/image-removebg-preview.png" };
           user.void += count;
-          itemsOutput.push( `${ending(count, "Уров", "ней", "ень", "ня")} нестабильности <a:void:768047066890895360>` );
+          itemsOutput.push( `${ Util.ending(count, "Уров", "ней", "ень", "ня")} нестабильности <a:void:768047066890895360>` );
           break;
 
         case "keys":
           user.keys += count;
-          itemsOutput.push( `${ending(count, "Ключ", "ей", "", "а")} 🔩` );
+          itemsOutput.push( `${ Util.ending(count, "Ключ", "ей", "", "а")} 🔩` );
 
           if (count > 99){
             msg.author.quest("bigHungredBonus");
@@ -6833,18 +6736,18 @@ const commands = {
 
         case "coins":
           user.coins += count;
-          itemsOutput.push( `${ending(count, "Коин", "ов", "", "а")} <:coin:637533074879414272>` );
+          itemsOutput.push( `${ Util.ending(count, "Коин", "ов", "", "а")} <:coin:637533074879414272>` );
           break;
 
         case "exp":
           user.exp += count;
           let emoji = ["<:crys:637290406958202880>", "<:crys2:763767958559391795>", "<:crys3:763767653571231804>"][Math.min(2, Math.floor(count / 10))];
-          itemsOutput.push( `${ending(count, "Опыт", "а", "", "а")} ${emoji}` );
+          itemsOutput.push( `${ Util.ending(count, "Опыт", "а", "", "а")} ${emoji}` );
           break;
 
         case "berrys":
           user.berrys += count;
-          itemsOutput.push( `${ending(count, "Клубник", "", "а", "и")} <:berry:756114492055617558>` );
+          itemsOutput.push( `${ Util.ending(count, "Клубник", "", "а", "и")} <:berry:756114492055617558>` );
           break;
 
         case "cake":
@@ -6852,7 +6755,7 @@ const commands = {
           break;
 
         case "bonus":
-          itemsOutput.push( `${ending(count, "Сокровищ", "", "е", "а")} для этого сундука <a:chest:805405279326961684>`);
+          itemsOutput.push( `${ Util.ending(count, "Сокровищ", "", "е", "а")} для этого сундука <a:chest:805405279326961684>`);
           break;
 
         case "gloves":
@@ -6862,12 +6765,12 @@ const commands = {
           currentGloves[0] = +currentGloves[0] + count;
           user.thiefGloves = currentGloves.join("|");
 
-          itemsOutput.push( `${ending(count, "Перчат", "ок", "ка", "ки")} 🧤`);
+          itemsOutput.push( `${ Util.ending(count, "Перчат", "ок", "ка", "ки")} 🧤`);
           break;
 
         case "chilli":
-          user.chilli = nonNaN(user.chilli) + count;
-          itemsOutput.push( `${ending(count, "Пер", "цев", "ец", "ца")} 🌶️`);
+          user.chilli = (user.chilli ?? 0) + count;
+          itemsOutput.push( `${ Util.ending(count, "Пер", "цев", "ец", "ца")} 🌶️`);
           break;
 
         default:
@@ -6897,7 +6800,7 @@ const commands = {
     embed.edit = true;
 
     while (itemsOutput.length){
-      await delay(1500 / (itemsOutput.length / 2));
+      await Util.sleep(1500 / (itemsOutput.length / 2));
       embed.description += itemsOutput.splice(0, 1).map(e => `\n${e}`).join("");
       embed.thumbnail = itemsOutput.length ? null : chest.icon;
       await message.msg(embed.title, embed);
@@ -7034,7 +6937,7 @@ const commands = {
       ctx = canv.getContext("2d"),
 
       rules = {"!111": "3", "!222": "32", "!11": "21", "!22": "22", "!33": "23", "!1": "11", "!2": "12", "!3": "13"},
-      last = String( random(1, 1) );
+      last = String( Util.random(1, 1) );
 
 
       ctx.font = "bold 20px sans-serif";
@@ -7053,10 +6956,10 @@ const commands = {
           input += rules[found];
           last = last.slice(found.length - 1);
           ctx.fillStyle = "#f2fafa";
-          ctx.fillRect(random(canv.width), random(canv.height), 2, 2);
-          ctx.fillRect(random(canv.width), random(canv.height), 1, 1);
+          ctx.fillRect(random(canv.width), Util.random(canv.height), 2, 2);
+          ctx.fillRect(random(canv.width), Util.random(canv.height), 1, 1);
           ctx.fillStyle = "rgba(242, 250, 250, 0.5)";
-          ctx.fillRect(random(canv.width), random(canv.height), 3, 3)
+          ctx.fillRect(random(canv.width), Util.random(canv.height), 3, 3)
         }
 
         last = input;
@@ -7092,7 +6995,7 @@ const commands = {
       ctx.fill();
 
       let image = new Discord.MessageAttachment( canv.toBuffer("image/png"), "pazzle.png" );
-      let reward = (getTime() - 1607558400000) / 500000;
+      let reward = (Date.now() - 1607558400000) / 500000;
       reward = reward - (reward % 5);
 
       let message = await msg.msg("Новогодняя ёлочка", {description: `Решите головоломку и получите награду!\nЗамените "???", в конце ёлочки, на число, чтобы ответить правильно, обязательно используйте голову.\nДля ввода ответ, нажмите реакцию ниже*. Удачи.\nТекущая награда: **${reward}** <:coin:637533074879414272>`, image: "attachment://pazzle.png", files: image, color: "f2fafa", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}});
@@ -7270,7 +7173,7 @@ const commands = {
           break;
 
         case "🐭":
-          fields = Object.entries(manager.list()).map(([name, count]) => ({name, value: `Повторяется: ${ending(count, "раз", "", "", "а")}`}));
+          fields = Object.entries(manager.list()).map(([name, count]) => ({name, value: `Повторяется: ${Util.ending(count, "раз", "", "", "а")}`}));
           break;
 
         case "🦅":
@@ -7299,7 +7202,7 @@ const commands = {
           }
 
           output = manager.remove(answer.content, target);
-          fields = [{name: "Удалено", value: `Удалено ${ending(+output, "свойств", "", "о", "а")} с названием ${answer.content}`}];
+          fields = [{name: "Удалено", value: `Удалено ${ Util.ending(+output, "свойств", "", "о", "а")} с названием ${answer.content}`}];
           break;
 
 
@@ -7320,7 +7223,7 @@ const commands = {
   }, {delete: true, dm: true, Permissions: 256, type: "guild"}, "variable вар var переменная переменные"),
 
   guildcommand: new Command(async (msg, op) => {
-    let heAccpet = await accept("guildCommand", {description: "Здравствуйте, эта команда очень универсальна и проста, если её не боятся конечно. Она поможет вам создать свои собсвенные команды основанные на \"[Шаблонных строках](https://discord.gg/7ATCf8jJF2)\".\nЕсли у вас возникнут сложности, обращайтесь :)", message: "Команда для создания команд 🤔"}, msg.channel, op.user);
+    let heAccpet = await Util.awaitUserAccept("guildCommand", {description: "Здравствуйте, эта команда очень универсальна и проста, если её не боятся конечно. Она поможет вам создать свои собсвенные команды основанные на \"[Шаблонных строках](https://discord.gg/7ATCf8jJF2)\".\nЕсли у вас возникнут сложности, обращайтесь :)", message: "Команда для создания команд 🤔"}, msg.channel, op.user);
     if (!heAccpet) return;
 
     let answer, react;
@@ -7405,7 +7308,7 @@ const commands = {
   }, {Permissions: 8, delete: true, type: "guild"}, "guildcommands createcommand команда"),
 
   role: new Command(async (msg, op) => {
-    let heAccpet = await accept("tieRoles", "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми", msg.channel, op.user);
+    let heAccpet = await Util.awaitUserAccept("tieRoles", "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми", msg.channel, op.user);
     if (!heAccpet) {
       return;
     }
@@ -7533,7 +7436,7 @@ const commands = {
             tieRoles[controller.id].push(e.id);
           });
           guildRoles[controller.id] = controller;
-          msg.msg(`Успешно добавлено ${ending(rolesList.length, "связ", "ей", "ь", "и")}`, {footer: {text: "Связь установлена, а главное никакой мистики!"}, description: rolesList.map(role => `• ${role}`).join("\n"), delete: 12000});
+          msg.msg(`Успешно добавлено ${Util.ending(rolesList.length, "связ", "ей", "ь", "и")}`, {footer: {text: "Связь установлена, а главное никакой мистики!"}, description: rolesList.map(role => `• ${role}`).join("\n"), delete: 12000});
           createPages();
         break;
 
@@ -7612,7 +7515,7 @@ const commands = {
 
     const confirm = await msg.msg("Подготовка", {description: `${ msg.author.username }, вы бросили перец, нажмите "❌" чтобы отменить`, reactions: ["❌"]});
 
-    await delay(2000);
+    await Util.sleep(2000);
     confirm.delete();
 
     const confirmed = !confirm.reactions.cache.get("❌").users.cache.has(msg.author.id);
@@ -7628,9 +7531,9 @@ const commands = {
 
     msg.msg(`Перец падает! Перец падает!!`, {description: `\*перец упал в руки ${memb.toString()}\*\nЧтобы кинуть обратно используйте \`!chilli @memb\``, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"}});
     addName(msg.guild.member(memb));
-    let ms = random(30, 37) * 1000;
+    let ms = Util.random(30, 37) * 1000;
 
-    chilli = { timestamp: getTime() + ms, players: {}, current: memb.id, rebounds: 0, author: msg.author.id };
+    chilli = { timestamp: Date.now() + ms, players: {}, current: memb.id, rebounds: 0, author: msg.author.id };
     chilli.players[ memb.id ] = 0;
     chilli.players[ msg.author.id ] = 0;
 
@@ -7707,9 +7610,9 @@ const commands = {
 
     const
       note         = op.args.slice(op.memb.toString().length + 1).trim(),
-      monsterHelps = memb.data.voidMonster && !(memb.data.CD_39 > getTime()),
+      monsterHelps = memb.data.voidMonster && !(memb.data.CD_39 > Date.now()),
       hurt         = memb.data.thiefWins < -5,
-      detective    = hurt && random(1 / (-memb.data.thiefWins * 2.87), {round: false}) <= 0.01;
+      detective    = hurt && Util.random(1 / (-memb.data.thiefWins * 2.87), {round: false}) <= 0.01;
 
 
     if (react || monsterHelps || detective) {
@@ -7727,7 +7630,7 @@ const commands = {
           let hurtMessage = await memb.msg("❔ Простить Вора?", {description: `Если вы его простите, возможно, он украдёт снова, по статистике 98% воров делают это опять, и опять.\nОсторожно! Вы не сможете узнать кто вас ограбил и не обнулите серию пропущенных атак.\nВ ином случае часть его коинов уйдет к вам.`});
           react = await hurtMessage.awaitReact({user: memb, type: "none", time: 60000}, "😇", "😈");
           if (react === "😇"){
-            msg.author.msg(`Вы были пойманы`, {description: `${memb.username} уверен, что это вы его ограбили ${ending(-memb.data.thiefWins, "раз", "", "а", "")} подряд, но также решил просто простить вас за это и не требовать с вас никаких денег.` , color: "ff0000"});
+            msg.author.msg(`Вы были пойманы`, {description: `${memb.username} уверен, что это вы его ограбили ${ Util.ending(-memb.data.thiefWins, "раз", "", "а", "")} подряд, но также решил просто простить вас за это и не требовать с вас никаких денег.` , color: "ff0000"});
             message.msg("", {footer: {text: "— 💚."}, author: {iconURL: client.user.avatarURL(), name: "Что-же... Это было мило. Наверное..."}});
             return;
           }
@@ -7736,7 +7639,7 @@ const commands = {
           memb.data.coins += coinsReturn;
           op.user.coins -= coinsReturn;
           accusation = `Сейчас он обвиняется как миниум в ${-memb.data.thiefWins} грабежах и других серьёзных преступлениях, к его горю пострадавший не смог простить такого предательства. В качестве компенсации 30% коинов пользователя (${coinsReturn}) <:coin:637533074879414272> переданы их новому владельцу.`;
-          action = `Однако вы не смогли простить предательства, будучи уверенными, что все ${ending(-memb.data.thiefWins, "раз", "", "а", "")} были ограблены именно им.`;
+          action = `Однако вы не смогли простить предательства, будучи уверенными, что все ${ Util.ending(-memb.data.thiefWins, "раз", "", "а", "")} были ограблены именно им.`;
         }
 
         msg.msg("Пойманный вор", {description: `Сегодня енотовская полиция задержала всеми знакомого жителя ${msg.author.toString()}, он был пойман при попыке стащить коины у ${memb.username}, как утверждает сам задержанный, эти коины ему нужны были, чтобы сделать подарок детишкам.`, color: "ff0000", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {text: memb.username, iconURL: memb.avatarURL()}});
@@ -7779,7 +7682,7 @@ const commands = {
       memb.quest("hopeless");
 
     if (op.user.voidThief)
-      op.user.chestBonus = nonNaN(op.user.chestBonus) + op.user.voidThief * 10;
+      op.user.chestBonus = (op.user.chestBonus ?? 0) + op.user.voidThief * 10;
 
 
 
@@ -7804,10 +7707,10 @@ const commands = {
     }
 
     msg.channel.startTyping();
-    await delay(700);
+    await Util.sleep(700);
     let answer = [{_weight: 1, answer: "*Что-то на призрачном*"}, {_weight: 1, answer: "Ты скучный, я спать"}, {_weight: 2, answer: "\\*Звуки свёрчков\\*"}, {_weight: 3, answer: "нет-нет-нет."}, {_weight: 3, answer: "Я проверил — нет"}, {_weight: 3, answer: "Может быть в другой вселенной"}, {_weight: 4, answer: "Абсолютно и беспрекословно, мой ответ — нет."}, {_weight: 5, answer: "Меч лжи говорит, что да"}, {_weight: 6, answer: "Точно нет"}, {_weight: 7, answer: "неа"}, {_weight: 8, answer: "нет"}].random({weights: true}).answer;
     client.api.channels(msg.channel.id).messages.post({data: {"content": `${answer}`, "message_reference": {message_id: msg.id}}});
-    await delay(1500);
+    await Util.sleep(1500);
     msg.channel.stopTyping();
   }, {cooldown: 3, try: 2, args: true, type: "other"}, "8ball шар"),
 
@@ -7848,7 +7751,7 @@ const commands = {
         }
 
         msg.msg("Через секунду здесь появится сообщение", {description: "Это и будет готовый счётчик", delete: 7000});
-        await delay(1500);
+        await Util.sleep(1500);
         counter = await msg.msg(textValue, embed);
         new CounterManager(msg.channel.id, msg.guild.id, "message", template, counter.id);
       break;
@@ -7867,7 +7770,7 @@ const commands = {
         if (!interval) return msg.msg("Неверное значение", {color: "ff0000", delete: 4000});
         new CounterManager(msg.channel.id, msg.guild.id, "poster", template, interval);
       break;
-      default: return await delay(2000);
+      default: return await Util.sleep(2000);
 
     }
   }, {delete: true, Permissions: 16, dm: true, type: "guild"}, "счётчик счетчик count"),
@@ -7976,7 +7879,7 @@ const commands = {
       }
     });
     new TimeEvent("remind", timeTo, msg.author.id, msg.channel.id, phrase);
-    msg.msg("Напомнинание создано", {description: `— ${ phrase }`, timestamp: getTime() + timeTo, footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}});
+    msg.msg("Напомнинание создано", {description: `— ${ phrase }`, timestamp: Date.now() + timeTo, footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}});
   }, {cooldown: 20, try: 3, delete: true, type: "other"}, "напомни напоминание напомнить"),
 
   giveaway: new Command(async (msg, op) => {
@@ -8009,7 +7912,7 @@ const commands = {
           }
           let [month = parse.getMonth() + 1, days = parse.getDate(), hours = parse.getHours(), minutes = 0] = finded;
           timestamp = new Date(parse.getFullYear(), month - 1, days, hours, minutes, 0);
-          if (timestamp.getTime() - getTime() < 0) {
+          if (timestamp.Date.now() - Date.now() < 0) {
             let messageSetYear = await msg.msg("Эта дата уже прошла, хотите установить на следующий год?");
             react = await messageSetYear.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
             messageSetYear.delete();
@@ -8019,8 +7922,8 @@ const commands = {
               break;
             }
           }
-          timestamp = timestamp.getTime();
-          msg.msg(`Готово! Времени до окончания ~${timestampToDate(timestamp - getTime(), 3)}`, {delete: 3000, timestamp});
+          timestamp = timestamp.Date.now();
+          msg.msg(`Готово! Времени до окончания ~${Util.timestampToDate(timestamp - Date.now(), 3)}`, {delete: 3000, timestamp});
           break;
         case "🎉":
           answer = await msg.channel.awaitMessage(msg.author, {message: `Введите количество возможных победителей`});
@@ -8040,9 +7943,9 @@ const commands = {
           break;
         case "640449832799961088":
           let giveaway = await msg.msg(title, {description: descr, timestamp, reactions: ["🌲"], color: "4a7e31", footer: {text: "Окончание раздачи: "}});
-          new TimeEvent("giveaway", timestamp - getTime(), msg.channel.id, giveaway.id, winners, role);
+          new TimeEvent("giveaway", timestamp - Date.now(), msg.channel.id, giveaway.id, winners, role);
         default:
-          await delay(1000);
+          await Util.sleep(1000);
           message.delete();
           return;
       }
@@ -8064,7 +7967,7 @@ const commands = {
     let globalQuests = Object.entries(quests.names).map(([key, name]) => user.completedQuest.includes(key) ? "<a:yes:763371572073201714> " + "**" + name.split("&")[0] + "**": "<a:Yno:763371626908876830> " + name.split("&")[0]);
     let secretAchievements = [user.voidIce, user.crown];
 
-    let nextDaily = `До обновления: \`${+((new Date().setHours(23, 59, 50) - getTime()) / 3600000).toFixed(1)}ч\``;
+    let nextDaily = `До обновления: \`${+((new Date().setHours(23, 59, 50) - Date.now()) / 3600000).toFixed(1)}ч\``;
     let fields = [
       {
         name: "Прогресс достижений:",
@@ -8092,10 +7995,10 @@ const commands = {
     }
 
     let user = op.user;
-    let minusVoids = Math.floor(Math.min(2 + user.voidRituals, 20) * (1 - 0.10 * nonNaN(user.voidPrise)));
+    let minusVoids = Math.floor(Math.min(2 + user.voidRituals, 20) * (1 - 0.10 * (user.voidPrise ?? 0)));
 
     const sendVoidOut = () => {
-      const description = `Добудьте ещё ${ending(minusVoids - user.void, "уров", "ней", "ень", "ня")} нестабильности <a:placeForVoid:780051490357641226>\nЧтобы провести ритуал нужно ${ ending(minusVoids, "камн", "ей", "ь", "я") }, а у вас лишь ${ user.void };\nИх можно получить, с низким шансом, открывая ежедневный сундук.\nПроведено ритуалов: ${user.voidRituals}\nКотёл даёт полезные бонусы, а также увеличивает количество опыта.`;
+      const description = `Добудьте ещё ${ Util.ending(minusVoids - user.void, "уров", "ней", "ень", "ня")} нестабильности <a:placeForVoid:780051490357641226>\nЧтобы провести ритуал нужно ${  Util.ending(minusVoids, "камн", "ей", "ь", "я") }, а у вас лишь ${ user.void };\nИх можно получить, с низким шансом, открывая ежедневный сундук.\nПроведено ритуалов: ${user.voidRituals}\nКотёл даёт полезные бонусы, а также увеличивает количество опыта.`;
       const footer = {text: ["Интересно, куда делись все ведьмы?", "Правило по использованию номер 5:\nНИКОГДА не используйте это.*", "Неприятности — лучшие друзья странных светящихся котов.", "Берегитесь мяукающих созданий."].random()};
       msg.msg("<a:void:768047066890895360> Не хватает ресурса", {description, color: "3d17a0", footer});
     }
@@ -8119,11 +8022,11 @@ const commands = {
       return;
     }
 
-    // user.CD_48 = getTime() + 259200000;
-    await delay(1000);
+    // user.CD_48 = Date.now() + 259200000;
+    await Util.sleep(1000);
 
     // Вы не потеряете нестабильность
-    if (  user.voidDouble && random(11) === 1 ){
+    if (  user.voidDouble && Util.random(11) === 1 ){
       minusVoids = 0;
     }
 
@@ -8134,15 +8037,15 @@ const commands = {
       {
         emoji: "🌀",
         description: "Уменьшает кулдаун получения опыта за сообщение на 0.2с",
-        _weight: 100 - nonNaN(user.voidCooldown * 5),
+        _weight: 100 - (user.voidCooldown * 5 ?? 0),
         filter_func: () => !(user.voidCooldown >= 20),
         action: () => user.voidCooldown = ++user.voidCooldown || 1
       },
       {
         emoji: "🔅",
-        description: `Мгновенно получите бонус сундука в размере \`${ Math.min(user.voidRituals * 18 + nonNaN(user.chestBonus * 2) + 38, 9000) }\``,
+        description: `Мгновенно получите бонус сундука в размере \`${ Math.min(user.voidRituals * 18 + (user.chestBonus * 2 ?? 0) + 38, 9000) }\``,
         _weight: 50,
-        action: () => user.chestBonus = nonNaN(user.chestBonus) + Math.min(nonNaN(user.chestBonus * 2) + user.voidRituals * 18 + 38, 9000)
+        action: () => user.chestBonus = (user.chestBonus ?? 0) + Math.min((user.chestBonus * 2 ?? 0) + user.voidRituals * 18 + 38, 9000)
       },
       {
         emoji: "⚜️",
@@ -8169,7 +8072,7 @@ const commands = {
         emoji: "✨",
         description: `Увеличивает награду коин-сообщений на ${7 + user.voidRituals} ед.`,
         _weight: 35,
-        action: () => user.coinsPerMessage = nonNaN(user.coinsPerMessage) + 7 + user.voidRituals
+        action: () => user.coinsPerMessage = (user.coinsPerMessage ?? 0) + 7 + user.voidRituals
       },
       {
         emoji: "💠",
@@ -8181,7 +8084,7 @@ const commands = {
         emoji: "😈",
         description: `Создайте экономических хаос, изменив стоимость клубники на рынке! ${ 7 + Math.floor(5 * Math.sqrt(user.voidRituals)) } коинов в случайную сторону.`,
         _weight: 10,
-        action: () => data.bot.berrysPrise += 7 + Math.floor(5 * Math.sqrt(user.voidRituals)) * (-1) ** random(1)
+        action: () => data.bot.berrysPrise += 7 + Math.floor(5 * Math.sqrt(user.voidRituals)) * (-1) ** Util.random(1)
       },
       {
         emoji: "🍵",
@@ -8240,7 +8143,7 @@ const commands = {
         _weight: 2,
         filter_func: () => user.voidRituals > 4,
         action: () => {
-          const voids = random(1, minusVoids * 2) + !(user.level % 4);
+          const voids = Util.random(1, minusVoids * 2) + !(user.level % 4);
           user.void += voids;
           user.voidRituals -= 3;
         }
@@ -8274,7 +8177,7 @@ const commands = {
     bonuses.find(e => e.emoji == react).action();
 
     boiler.msg("Ритуал завершен..." , {description: `Вы выбрали ${react}\nОстальные бонусы более недоступны.\n\n${bonuses.map(e => e.emoji + " " + e.description).join("\n\n")}`, color: "3d17a0", edit: true});
-    await delay(3000);
+    await Util.sleep(3000);
     let answer = "";
     const add = (content) => answer = `${content}\n${answer}`;
     switch (user.voidRituals) {
@@ -8331,7 +8234,7 @@ const commands = {
   }, {delete: true, type: "user"}, "boiler котёл котел ведьма"),
 
   charity: new Command(async (msg, op) => {
-    let heAccpet = await accept("charity", {message: "Благотворительность это хорошо, но используя эту команду вы потеряете коины!", description: "Ваши богатсва будут разданы людям с этого сервера."}, msg.channel, op.user);
+    let heAccpet = await Util.awaitUserAccept("charity", {message: "Благотворительность это хорошо, но используя эту команду вы потеряете коины!", description: "Ваши богатсва будут разданы людям с этого сервера."}, msg.channel, op.user);
     if (!heAccpet) return;
 
     let cash = op.args.match(/\d+|\+/);
@@ -8371,7 +8274,7 @@ const commands = {
     }
 
     if (cash < needCash){
-      msg.msg("Мало коинов", {description: `Для благотворительности такой размерности (${ending(countUsers, "человек", "", "", "а")}) требует минимум ${needCash} коинов!`, delete: 8000, color: "ff0000"});
+      msg.msg("Мало коинов", {description: `Для благотворительности такой размерности (${ Util.ending(countUsers, "человек", "", "", "а")}) требует минимум ${needCash} коинов!`, delete: 8000, color: "ff0000"});
       msg.react("❌");
       return;
     }
@@ -8379,17 +8282,17 @@ const commands = {
     let note = op.args;
 
     let
-     count   = countUsers || random(11, 22),
+     count   = countUsers || Util.random(11, 22),
      members = [...msg.guild.members.cache.filter( e => !e.user.bot && e.user.id != msg.author.id ).random( count ).filter( e => e )];
      sum     = Math.floor(cash / members.length);
 
     members.forEach(e => e.user.data.coins += sum);
     op.user.coins -= cash;
-    msg.guild.data.coins = nonNaN(msg.guild.data.coins) + cash - sum * members.length;
+    msg.guild.data.coins = (msg.guild.data.coins ?? 0) + cash - sum * members.length;
 
     let embed = {
       title: "Вы сотворили Акт благотворительности",
-      description: `Ваши <:coin:637533074879414272> ${ending(cash, "коин", "ов", "", "а")} были распределены между ${members.length} случайными участниками сервера, эти люди вам благодарны:\n${   members.map((e, i) => `${  i % 3 ? "<:crys3:763767653571231804>" : "<:crys:637290406958202880>"  } ${Discord.Util.escapeMarkdown(e.toString())} — ${[{_weight: 2, x: "Спасибо!"}, {_weight: 2, x: "Благодарю!"}, {_weight: 2, x: "Вы самые лучшие!"}, {_weight: 15, x: "💚"}, {_weight: 15, x: "💖"}, {_weight: 1, x: "🦝"}].random({weights: true}).x}`).join("\n")   }`,
+      description: `Ваши <:coin:637533074879414272> ${ Util.ending(cash, "коин", "ов", "", "а")} были распределены между ${members.length} случайными участниками сервера, эти люди вам благодарны:\n${   members.map((e, i) => `${  i % 3 ? "<:crys3:763767653571231804>" : "<:crys:637290406958202880>"  } ${Discord.Util.escapeMarkdown(e.toString())} — ${[{_weight: 2, x: "Спасибо!"}, {_weight: 2, x: "Благодарю!"}, {_weight: 2, x: "Вы самые лучшие!"}, {_weight: 15, x: "💚"}, {_weight: 15, x: "💖"}, {_weight: 1, x: "🦝"}].random({weights: true}).x}`).join("\n")   }`,
       author: {
         iconURL: msg.author.avatarURL(),
         name: msg.author.username
@@ -8434,7 +8337,7 @@ const commands = {
       }
 
       if (isPut){
-        heAccpet = await accept("bank_put", {message: "Вы точно хотите это сделать?", description: "<a:message:794632668137652225> Отправленненные в общую казну коины более не будут предналежать вам, и вы не сможете ими свободно распоряжаться.\nПродолжить?"}, msg.channel, op.user);
+        heAccpet = await Util.awaitUserAccept("bank_put", {message: "Вы точно хотите это сделать?", description: "<a:message:794632668137652225> Отправленненные в общую казну коины более не будут предналежать вам, и вы не сможете ими свободно распоряжаться.\nПродолжить?"}, msg.channel, op.user);
         if (!heAccpet) return;
 
         if (op.user.coins < coins){
@@ -8444,23 +8347,23 @@ const commands = {
 
         op.user.coins -= coins;
         server.coins += coins;
-        msg.guild.logSend("Содержимое банка изменено:", {description: `${op.member.displayName} отнёс в казну ${ending(coins, "коин", "ов", "а", "ов")}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
+        msg.guild.logSend("Содержимое банка изменено:", {description: `${op.member.displayName} отнёс в казну ${Util.ending(coins, "коин", "ов", "а", "ов")}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
         msg.react("👌");
-        msg.msg(`Вы успешно вложили **${ending(coins, "коин", "ов", "а", "ов")}** на развитие сервера`, {delete: 5000});
+        msg.msg(`Вы успешно вложили **${ Util.ending(coins, "коин", "ов", "а", "ов")}** на развитие сервера`, {delete: 5000});
         return;
       }
 
       if (!isPut){
-        heAccpet = await accept("bank", {message: "Осторожно, ответственность!", description: "<a:message:794632668137652225> Не важно как сюда попадают коины, главное — они предналежат пользователям этого сервера\nРаспоряжайтесь ими с пользой, умом."}, msg.channel, op.user);
+        heAccpet = await Util.awaitUserAccept("bank", {message: "Осторожно, ответственность!", description: "<a:message:794632668137652225> Не важно как сюда попадают коины, главное — они предналежат пользователям этого сервера\nРаспоряжайтесь ими с пользой, умом."}, msg.channel, op.user);
         if (!heAccpet) return;
         let problems = [];
 
         if (!isAdmin)
           problems.push("Для использования содержимого казны требуется право \"Управление сервером\"");
         if (server.coins < coins)
-          problems.push(`Похоже, тут пусто. В хранилище лишь ${ending(server.coins, "коин", "ов", "", "а")}.`);
+          problems.push(`Похоже, тут пусто. В хранилище лишь ${ Util.ending(server.coins, "коин", "ов", "", "а")}.`);
         if (!cause)
-          problems.push(`Вы должны указать причину использования ${ending(coins, "коин", "ов", "а", "ов")}.`);
+          problems.push(`Вы должны указать причину использования ${ Util.ending(coins, "коин", "ов", "а", "ов")}.`);
         if (!cause || !cause.match(/.{2,}\s+?.{2,}/i))
           problems.push(`Причина обязана содержать минимум 2 слова.`);
 
@@ -8471,9 +8374,9 @@ const commands = {
 
         op.user.coins += coins;
         server.coins -= coins;
-        msg.guild.logSend("Содержимое банка изменено:", {description: `${op.member.displayName} обналичил казну на сумму **${ending(coins, "коин", "ов", "а", "ов")}**\nПричина: ${cause}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
+        msg.guild.logSend("Содержимое банка изменено:", {description: `${op.member.displayName} обналичил казну на сумму **${ Util.ending(coins, "коин", "ов", "а", "ов")}**\nПричина: ${cause}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
         msg.react("👌");
-        msg.msg(`Вы успешно взяли **${ending(coins, "коин", "ов", "а", "ов")}** из казны сервера\nПо причине: ${cause}`, {delete: 5000});
+        msg.msg(`Вы успешно взяли **${ Util.ending(coins, "коин", "ов", "а", "ов")}** из казны сервера\nПо причине: ${cause}`, {delete: 5000});
         return;
       }
     }
@@ -8549,7 +8452,7 @@ const commands = {
             });
             workersList = Object.entries(professions).map(([id, cost]) => {
               let allCost = [...workers].filter(memb => memb.roles.cache.has(id)).length;
-              return `${msg.guild.roles.cache.get(id)}\n${cost} <:coin:637533074879414272> в день (${ending(allCost, "Пользовател", "ей", "ь", "я")})`;
+              return `${msg.guild.roles.cache.get(id)}\n${cost} <:coin:637533074879414272> в день (${ Util.ending(allCost, "Пользовател", "ей", "ь", "я")})`;
             });
             workersList = workersList.filter(e => e).join("\n");
 
@@ -8557,7 +8460,7 @@ const commands = {
           }
           let professionManager = await msg.msg("- Работы сервера",
             {
-              description: `**Созданные профессии ${Object.keys(professions).length}/20**\n${workersList}\n\n\`\`\`Доходы: ${msg.guild.memberCount * 2}\nРасходы: ${costs}\n${ending(workers.size, "пользовател", "ей", "ь", "я")} получает зарплату\`\`\``,
+              description: `**Созданные профессии ${Object.keys(professions).length}/20**\n${workersList}\n\n\`\`\`Доходы: ${msg.guild.memberCount * 2}\nРасходы: ${costs}\n${ Util.ending(workers.size, "пользовател", "ей", "ь", "я")} получает зарплату\`\`\``,
               footer: {text: "Используйте реакции, чтобы создать, удалить профессию или закрыть это окно."}
             }
           )
@@ -8610,7 +8513,7 @@ const commands = {
           break;
         default: return message.delete();
       }
-      embed.description += `\n\nВ хранилище: ${ending(server.coins, "золот", "ых", "ая", "ых", {bold: true})}!\nКоличество коинов ${server.coins - coinInfo === 0 ? "не изменилось" : server.coins - coinInfo > 0 ? "увеличилось на " + (server.coins - coinInfo) : "уменьшилось на " + (coinInfo - server.coins) } <:coin:637533074879414272>`;
+      embed.description += `\n\nВ хранилище: ${ Util.ending(server.coins, "золот", "ых", "ая", "ых", {bold: true})}!\nКоличество коинов ${server.coins - coinInfo === 0 ? "не изменилось" : server.coins - coinInfo > 0 ? "увеличилось на " + (server.coins - coinInfo) : "уменьшилось на " + (coinInfo - server.coins) } <:coin:637533074879414272>`;
     }
   }, {cooldown: 50, try: 3, type: "guild"}, "cash банк казна"),
 
@@ -8659,7 +8562,7 @@ const commands = {
     }, "context");
 
     if (isDev){
-      const available = {Util, client, data, commands, timeEvents, delay};
+      const available = {Util, client, data, commands, timeEvents};
 
       for (const key in available)
       Object.defineProperty(vm.sandbox, key, {
@@ -8746,7 +8649,7 @@ const commands = {
     ).catch(
       err => {
         console.info(output);
-        msg.msg("Лимит символов", {color: "1f2022", description: `Не удалось отправить сообщение, его длина равна ${ending(output.length, "символ", "ов", "у", "ам")}\nСодержимое ошибки:\n${err}`});
+        msg.msg("Лимит символов", {color: "1f2022", description: `Не удалось отправить сообщение, его длина равна ${ Util.ending(output.length, "символ", "ов", "у", "ам")}\nСодержимое ошибки:\n${err}`});
       }
     );
 
@@ -8761,7 +8664,7 @@ const commands = {
     const getCooldownInfo = () => {
       const COOLDOWN     = 10800000;
       const COOLDOWN_TRY = 2;
-      const cooldownThresholder = getTime() + COOLDOWN * (COOLDOWN_TRY - 1);
+      const cooldownThresholder = Date.now() + COOLDOWN * (COOLDOWN_TRY - 1);
 
       return {COOLDOWN, COOLDOWN_TRY, cooldownThresholder};
     }
@@ -8876,7 +8779,7 @@ const commands = {
         let level = user.elementLevel || 0;
         let resources = [{berrys: 5, coins: 500, voidRituals: 2}, {berrys: 15, coins: 1500, voidRituals: 3}, {berrys: 38, coins: 3337, voidRituals: 5}, {berrys: 200, coins: 30000, voidRituals: 10}][level];
 
-        let noEnought = Object.entries(resources).filter(([k, v]) => v > user[k]).map(([k, v]) => ending(v - nonNaN(user[k]), ...endingKeys[k]));
+        let noEnought = Object.entries(resources).filter(([k, v]) => v > user[k]).map(([k, v]) =>  Util.ending(v - (user[k] ?? 0), ...endingKeys[k]));
         // Если ресурсов хватает, вернуть объект, иначе массив недостающих елементов.
         return noEnought.last ? noEnought : resources;
       };
@@ -8884,7 +8787,7 @@ const commands = {
 
       let resourcesInfo = checkResources();
       if (!(resourcesInfo instanceof Array)){
-        let confirmation = await msg.msg("Подтвердите", {description: `Улучшение стоит целых ${ending(resourcesInfo.coins, ...endingKeys.coins)} и ${ending(resourcesInfo.berrys, ...endingKeys.berrys)}\nВы хотите продолжить?`, color: embedColor});
+        let confirmation = await msg.msg("Подтвердите", {description: `Улучшение стоит целых ${ Util.ending(resourcesInfo.coins, ...endingKeys.coins)} и ${ Util.ending(resourcesInfo.berrys, ...endingKeys.berrys)}\nВы хотите продолжить?`, color: embedColor});
         let react = await confirmation.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763804850508136478");
         confirmation.delete();
         if (react != "685057435161198594"){
@@ -8904,7 +8807,7 @@ const commands = {
       }
 
 
-      msg.msg("Как это вообще работает..?", {color: embedColor, description: `Не хватает ${add_and(resourcesInfo)}, чтобы улучшить эту клятую штуку.`, author: {iconURL: "https://media.discordapp.net/attachments/629546680840093696/855129807750299698/original.gif", name: "Упс.."}});
+      msg.msg("Как это вообще работает..?", {color: embedColor, description: `Не хватает ${Util.joinWithAndSeparator(resourcesInfo)}, чтобы улучшить эту клятую штуку.`, author: {iconURL: "https://media.discordapp.net/attachments/629546680840093696/855129807750299698/original.gif", name: "Упс.."}});
       return;
     }
 
@@ -8912,7 +8815,7 @@ const commands = {
 
     if (user.CD_52 > cooldownThresholder){
       const title = `${ emoji } Штука перезаряжается!`;
-      const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${ timestampToDate(user.CD_52 - cooldownThresholder) }`;
+      const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${ Util.timestampToDate(user.CD_52 - cooldownThresholder) }`;
 
       msg.delete();
 
@@ -8921,9 +8824,9 @@ const commands = {
     }
 
 
-    user.CD_52 = Math.max(nonNaN(user.CD_52), getTime()) + COOLDOWN;
+    user.CD_52 = Math.max(user.CD_52 ?? 0, Date.now()) + COOLDOWN;
 
-    let k = random(20, {round: false});
+    let k = Util.random(20, {round: false});
 
     const scene = [
       {
@@ -8947,11 +8850,11 @@ const commands = {
             {
               action: async () => {
                 if (user.chilli && !random(5)){
-                  let sellingCount = nonNaN( Math.min(user.chilli, 3 + user.elementLevel) );
-                  let prise = random(sellingCount * 160, sellingCount * 190);
+                  let sellingCount = Math.min(user.chilli, 3 + user.elementLevel) ?? 0;
+                  let prise = Util.random(sellingCount * 160, sellingCount * 190);
                   user.chilli -= sellingCount;
                   user.coins += prise;
-                  scene.phrase = `Вы смогли продать ${ending(sellingCount, "пер", "цев", "ец", "ца")} и заработали ${ prise } <:coin:637533074879414272>`;
+                  scene.phrase = `Вы смогли продать ${ Util.ending(sellingCount, "пер", "цев", "ец", "ца")} и заработали ${ prise } <:coin:637533074879414272>`;
                   return;
                 }
 
@@ -9097,9 +9000,9 @@ const commands = {
           [
             {
               action: async () => {
-                user.chilli = nonNaN(user.chilli + 1);
+                user.chilli = (user.chilli ?? 0) + 1 ;
                 user.coins -= 220;
-                user.coinsPerMessage = nonNaN(user.coinsPerMessage) + 1;
+                user.coinsPerMessage = (user.coinsPerMessage ?? 0) + 1;
               },
               textOutput: "Вы купили у него перец и дали на чай\nВсего пришлось заплатить 220 коинов, но и этим очень порадовали старика.\nТеперь вы получаете на одну монету больше за каждое коин-сообщение"
             },
@@ -9111,13 +9014,13 @@ const commands = {
           [
             {
               action: async () => {
-                if ( random((level + 1) / 2) ){
+                if ( Util.random((level + 1) / 2) ){
                   user.coins += scene.coins = Math.floor(k);
-                  scene.phrase = `Считай, заработали ${ending(scene.coins, "коин", "ов", "", "а")}`;
+                  scene.phrase = `Считай, заработали ${ Util.ending(scene.coins, "коин", "ов", "", "а")}`;
                 }
                 else {
                   user.coins -= scene.coins = Math.floor(k);
-                  scene.phrase = `Однако, к вашему огромною удивлению дедуля отбил вашу атаку и справедливо отобрал ваши ${ending(scene.coins, "коин", "ов", "", "а")}`;
+                  scene.phrase = `Однако, к вашему огромною удивлению дедуля отбил вашу атаку и справедливо отобрал ваши ${Util.ending(scene.coins, "коин", "ов", "", "а")}`;
                 }
               },
               textOutput: "За дерзость вы нагло забрали его товар, который он держал прямо перед вашим лицом\n{scene.phrase}"
@@ -9150,24 +9053,24 @@ const commands = {
           ],
           [
             {
-              action: async () => random(1) ? user.berrys++ : user.berrys--,
+              action: async () => Util.random(1) ? user.berrys++ : user.berrys--,
               textOutput: "Она то-ли увеличилась, то-ли уменьшилась. Никто так и не понял.."
             },
             {
-              action: async () => random(1) ? user.berrys++ : data.bot.berrysPrise++,
+              action: async () => Util.random(1) ? user.berrys++ : data.bot.berrysPrise++,
               textOutput: "Она вроде увеличилась, а вроде увеличилась её цена. Никто так и не понял.."
             },
             false,
             false,
             {
-              action: async () => user.berrys += random(2),
+              action: async () => user.berrys += Util.random(2),
               textOutput: "Она вроде увеличилась, а вроде ещё раз увеличилась. Вдвойне выгодно."
             },
           ],
           [
             {
               action: async () => {
-                user.coinsPerMessage = nonNaN(user.coinsPerMessage) + 2 + level;
+                user.coinsPerMessage = (user.coinsPerMessage ?? 0) + 2 + level;
                 user.berrys--;
               },
               textOutput: `Поглотили её силу и сразу увеличили награду коин-сообщений на ${2 + level} ед.\nК слову, клубника была действительно вкусной.`
@@ -9179,11 +9082,11 @@ const commands = {
                 const count = user.berrys;
                 user.berrys -= count;
 
-                const bonuses = Math.ceil(count * random(1.2, 1.4));
-                user.chestBonus = nonNaN(user.chestBonus) + scene.random;
+                const bonuses = Math.ceil(count * Util.random(1.2, 1.4));
+                user.chestBonus = (user.chestBonus ?? 0) + scene.random;
                 scene.bonuses = bonuses;
               },
-              textOutput: `"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор превратив все свои клубники в {ending(scene.bonuses, "бонус", "ов", "", "а")} сундука`
+              textOutput: `"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор превратив все свои клубники в {Util.ending(scene.bonuses, "бонус", "ов", "", "а")} сундука`
             },
             false
           ],
@@ -9197,7 +9100,7 @@ const commands = {
             {
               action: async () => {
                 user.berrys -= 2;
-                user.coinsPerMessage = nonNaN(user.coinsPerMessage) + 6;
+                user.coinsPerMessage = (user.coinsPerMessage ?? 0) + 6;
               },
               textOutput: "В ходе экспериментов вам удалось их оживить, увеличив заработок коин-сообщений на 6 единиц"
             },
@@ -9214,10 +9117,10 @@ const commands = {
           [
             {
               action: async () => {
-                scene.random = random(3, 8);
+                scene.random = Util.random(3, 8);
                 data.bot.berrysPrise += scene.random;
               },
-              textOutput: `Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {ending(scene.random, "коин", "ов", "", "а")} дороже.`
+              textOutput: `Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, "коин", "ов", "", "а")} дороже.`
             },
             false,
             false,
@@ -9241,13 +9144,13 @@ const commands = {
             false,
             false,
             {
-              action: async () => user.coins += scene.coins = 500 * random(2, 15),
+              action: async () => user.coins += scene.coins = 500 * Util.random(2, 15),
               textOutput: "Повысив удачу вы построили парк развлечений и заработали {scene.coins} <:coin:637533074879414272>"
             },
           ],
           [
             {
-              action: async () => user.coinsPerMessage = Math.ceil(nonNaN(user.coinsPerMessage) * 1.02),
+              action: async () => user.coinsPerMessage = Math.ceil((user.coinsPerMessage ?? 0) * 1.02),
               textOutput: `Укрепили силу духа, на том и закончили. Бонус коинов за сообщения увеличен на 2%`
             },
             false,
@@ -9261,7 +9164,7 @@ const commands = {
           [
             {
               action: async () => {
-                user.level -= random(1, 2);
+                user.level -= Util.random(1, 2);
                 user.void++
               },
               textOutput: "Вы породили кусок нестабильности <a:void:768047066890895360>, но потеряли много опыта и крошечку рассудка."
@@ -9271,10 +9174,10 @@ const commands = {
               action: async () => {
                 user.keys -= 5;
                 user.berrys--;
-                user.coins -= random(300, 700);
-                user.void += scene.voids = random(1, 2);
+                user.coins -= Util.random(300, 700);
+                user.void += scene.voids = Util.random(1, 2);
               },
-              textOutput: `Преобразуя материальные предметы вы получаете {ending(scene.voids, "уровн", "ей", "ь", "я")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег.`
+              textOutput: `Преобразуя материальные предметы вы получаете {Util.ending(scene.voids, "уровн", "ей", "ь", "я")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег.`
             },
             false,
             {
@@ -9290,7 +9193,7 @@ const commands = {
         _weight: 15,
         description: "Огненная обезьяна утащила стопку ваших ключей!",
         fastFunc: () => {
-          scene.stolenKeys = random(3, 7);
+          scene.stolenKeys = Util.random(3, 7);
           user.keys -= scene.stolenKeys;
         },
         variability: [
@@ -9320,7 +9223,7 @@ const commands = {
           [
             {
               action: async () => {
-                scene.random = random(15, 45);
+                scene.random = Util.random(15, 45);
                 user.coins += scene.stolenKeys * scene.random;
               },
               textOutput: "Вам удалось договорится — обезьяна взамен ключей дала вам {scene.stolenKeys * scene.random} <:coin:637533074879414272>"
@@ -9368,11 +9271,11 @@ const commands = {
                   while ((!reaction || !reaction.me) && i < 100){
                     reaction = cloverMessage.reactions.cache.get("☘️");
                     i++;
-                    await delay(100);
+                    await Util.sleep(100);
                   }
 
                   if (reaction && reaction.me){
-                    await delay(2000);
+                    await Util.sleep(2000);
                     let author = cloverMessage.author;
                     author.data.void++;
                     cloverMessage.msg("Нестабилити!", {author: {name: author.username, iconURL: author.avatarURL()}, description: `**${author.username}!!!1!!!!111111!11111!!!!** Вот это да! Магияей клевера вы превратили небольшую горстку монет в камень нестабильности <a:void:768047066890895360>\nПо информации из математических источников это удавалось всего-лишь единицам из тысяч и вы теперь входите в их число!`, reactions: ["806176512159252512"]});
@@ -9389,7 +9292,7 @@ const commands = {
           ],
           [
             {
-              action: async () => user.coins += scene.coins = random(10, 30),
+              action: async () => user.coins += scene.coins = Util.random(10, 30),
               textOutput: "Разумеется, вы не могли упустить такого момента, и заработали {scene.coins} мелочи"
             },
             false,
@@ -9441,8 +9344,8 @@ const commands = {
           [
             {
               action: async () => {
-                scene.random = random(1, 3);
-                user.chestBonus = nonNaN(user.chestBonus) + scene.random;
+                scene.random = Util.random(1, 3);
+                user.chestBonus = (user.chestBonus ?? 0) + scene.random;
               },
               textOutput: "Сундук знаний пополнился — Получено бонус сундука Х{scene.random}"
             },
@@ -9474,7 +9377,7 @@ const commands = {
         variability: [
           [
             {
-              action: async () => user.chestBonus = nonNaN(user.chestBonus + 5),
+              action: async () => user.chestBonus = (user.chestBonus ?? 0) + 5,
               textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено"
             },
             false,
@@ -9484,7 +9387,7 @@ const commands = {
           ],
           [
             {
-              action: async () => user.chestBonus = nonNaN(user.chestBonus + 5),
+              action: async () => user.chestBonus = (user.chestBonus ?? 0) + 5,
               textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено"
             },
             false,
@@ -9494,7 +9397,7 @@ const commands = {
           ],
           [
             {
-              action: async () => user.chestBonus = nonNaN(user.chestBonus + 5),
+              action: async () => user.chestBonus = (user.chestBonus ?? 0) + 5,
               textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено"
             },
             false,
@@ -9504,7 +9407,7 @@ const commands = {
           ],
           [
             {
-              action: async () => user.chestBonus = nonNaN(user.chestBonus + 5),
+              action: async () => user.chestBonus = (user.chestBonus ?? 0) + 5,
               textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено"
             },
             false,
@@ -9565,7 +9468,7 @@ const commands = {
       },
       {
         id: "thingNotFound",
-        _weight: 5 + nonNaN(Math.sqrt(user.voidRituals / 2) * 5),
+        _weight: 5 + (Math.sqrt(user.voidRituals / 2) * 5 ?? 0),
         description: "Штука Вам больше не отвечает.",
         variability: [
           [
@@ -9765,7 +9668,7 @@ const commands = {
 
     msg.guild.data.coins += income;
     msg.msg(phrase, {
-      description: `Вы помогли серверу — он получил ${ending(income, "коин", "ов", "", "а")}${scene.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"}`,
+      description: `Вы помогли серверу — он получил ${Util.ending(income, "коин", "ов", "", "а")}${scene.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"}`,
       color: embedColor,
       author: {iconURL: msg.author.avatarURL(), name: msg.author.username},
       fields: [{name: `Если коротко..`, value: `**${scene.description}**\n⠀`}, {name: `${emoji} ${level + 1} ур.`, value: output}],
@@ -9845,13 +9748,13 @@ const commands = {
     let fields = [];
     const fillEmbed = () => {
       const speedGrowth = getSpeedGrowth(level);
-      server.berrys = Math.min( nonNaN(server.berrys) + (timePassed / 86400000) * speedGrowth, speedGrowth * 360 );
+      server.berrys = Math.min( (server.berrys ?? 0) + (timePassed / 86400000) * speedGrowth, speedGrowth * 360 );
 
       let grow = speedGrowth > 100 ? {type: "минуту", count: speedGrowth / 1440} : speedGrowth > 10 ? {type: "час", count: speedGrowth / 24} : {type: "день", count: speedGrowth};
-      fields.push({name: "Урожай", value: `Клубники выростает ${grow.count} в ${grow.type}\nГотово для сбора: ${Math.floor(server.berrys)}\nСледущая дозреет через: ${timestampToDate((1 - server.berrys % 1) * 86400000 / speedGrowth)} <:berry:756114492055617558>`});
+      fields.push({name: "Урожай", value: `Клубники выростает ${grow.count} в ${grow.type}\nГотово для сбора: ${Math.floor(server.berrys)}\nСледущая дозреет через: ${Util.timestampToDate((1 - server.berrys % 1) * 86400000 / speedGrowth)} <:berry:756114492055617558>`});
 
       let entrySeeds = server.treeSeedEntry || 0;
-      fields.push({name: "Дерево", value: `Уровень деревца ${ level } ${level === 20 ? "(Максимальный)" : `\nДо повышения нужно ${costsUp - entrySeeds > 5 ? costsUp - entrySeeds : ["ноль", "одно", "два", "три", "четыре", "пять"][costsUp - entrySeeds]} ${ending(costsUp - entrySeeds, "сем", "ян", "ечко", "ечка", {slice: true})}` }`});
+      fields.push({name: "Дерево", value: `Уровень деревца ${ level } ${level === 20 ? "(Максимальный)" : `\nДо повышения нужно ${costsUp - entrySeeds > 5 ? costsUp - entrySeeds : ["ноль", "одно", "два", "три", "четыре", "пять"][costsUp - entrySeeds]} ${Util.ending(costsUp - entrySeeds, "сем", "ян", "ечко", "ечка", {slice: true})}` }`});
 
       let messagesNeed = (  [0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700, 3200, 3700, 4500, 5400, 7400, 12000][level] + (msg.guild.memberCount * 3) + ((server.day_average || 0) / 5)  ) * ("treeMisstakes" in server ? 1 - 0.1 * server.treeMisstakes : 1);
       messagesNeed = Math.floor(messagesNeed / 3);
@@ -9867,13 +9770,13 @@ const commands = {
     }
 
     if (level !== 0){
-      timePassed = (getTime() - server.treeEntryTimestamp) || 0;
-      server.treeEntryTimestamp = getTime();
+      timePassed = (Date.now() - server.treeEntryTimestamp) || 0;
+      server.treeEntryTimestamp = Date.now();
       fillEmbed();
     }
     else {
       fields.push({name: "Общая инфомация", value: "Ему ещё предстоит вырасти, будучи семечком дерево не может давать плоды.\nОбязательно посадите семя, если оно у вас есть.\n\n❓ Выполняя каждый 50-й квест вы получаете по две штуки"});
-      timePassed = (getTime() - server.treeEntryTimestamp) || 0;
+      timePassed = (Date.now() - server.treeEntryTimestamp) || 0;
     }
 
     let embed = {
@@ -9915,17 +9818,17 @@ const commands = {
         }
 
 
-        server.treeSeedEntry = nonNaN(server.treeSeedEntry) + 1;
+        server.treeSeedEntry = (server.treeSeedEntry ?? 0) + 1;
         user.seed--;
         msg.msg(`Спасибо за семечко, ${memb.username}`, {description: `🌱 `, delete: 7000});
 
         // Если уровень дерева увеличился
         if (server.treeSeedEntry >= costsUp){
           server.treeSeedEntry = 0;
-          level = server.treeLevel = nonNaN(server.treeLevel) + 1;
+          level = server.treeLevel = (server.treeLevel ?? 0) + 1;
           costsUp = COSTS_TABLE[level];
           server.berrys = Math.round(1.5 ** (level + 3) + server.berrys);
-          server.berrys = nonNaN(server.berrys) + getSpeedGrowth(level) * 5;
+          server.berrys = (server.berrys ?? 0) + getSpeedGrowth(level) * 5;
 
           await message.react("756114492055617558");
           embed.thumbnail = thumbnailArray[ Math.ceil(level / 4) ];
@@ -9940,8 +9843,8 @@ const commands = {
 
       // Berry take
       if (react === "756114492055617558"){
-        if (user.CD_54 > getTime()){
-          msg.msg("Перезарядка...", {description: `Вы сможете собрать клубнику только через **${timestampToDate( user.CD_54 - getTime() )}**`, footer: {text: "Перезарядка уменьшается по мере роста дерева"}, author: {name: memb.username, iconURL: memb.avatarURL()}, delete: 7000, color: "ff0000"});
+        if (user.CD_54 > Date.now()){
+          msg.msg("Перезарядка...", {description: `Вы сможете собрать клубнику только через **${Util.timestampToDate( user.CD_54 - Date.now() )}**`, footer: {text: "Перезарядка уменьшается по мере роста дерева"}, author: {name: memb.username, iconURL: memb.avatarURL()}, delete: 7000, color: "ff0000"});
           return;
         }
 
@@ -9952,9 +9855,9 @@ const commands = {
 
         const isBerryMany = server.berrys > getSpeedGrowth(level) * 3;
 
-        const farmerBonus = nonNaN(user.voidTreeFarm);
+        const farmerBonus = user.voidTreeFarm ?? 0;
         let berrys = isBerryMany ?
-          random(1 + farmerBonus, 3 + farmerBonus * 2, {round: false}) :
+          Util.random(1 + farmerBonus, 3 + farmerBonus * 2, {round: false}) :
           1 + farmerBonus;
 
         berrys = Math.min(Math.floor(berrys), Math.floor(server.berrys));
@@ -9964,8 +9867,8 @@ const commands = {
         server.berrys -= berrys;
 
         data.bot.berrysPrise += berrys * 0.2;
-        msg.msg("Вы успешно собрали клубнику", {author: {name: memb.username, iconURL: memb.avatarURL()}, description: `${berrys > 5 ? berrys : ["Ноль", "Одна", "Две", "Три", "Четыре", "Пять"][berrys]} ${ending(berrys, "ягод", "", "а", "ы", {slice: true})} ${ending(berrys, "попа", "дают", "ла", "ли", {slice: true})} в ваш карман <:berry:756114492055617558>`, delete: 9000});
-        user.CD_54 = getTime() + Math.max( 86400000 / getSpeedGrowth(level) * (1 + level), 7200000 );
+        msg.msg("Вы успешно собрали клубнику", {author: {name: memb.username, iconURL: memb.avatarURL()}, description: `${berrys > 5 ? berrys : ["Ноль", "Одна", "Две", "Три", "Четыре", "Пять"][berrys]} ${Util.ending(berrys, "ягод", "", "а", "ы", {slice: true})} ${Util.ending(berrys, "попа", "дают", "ла", "ли", {slice: true})} в ваш карман <:berry:756114492055617558>`, delete: 9000});
+        user.CD_54 = Date.now() + Math.max( 86400000 / getSpeedGrowth(level) * (1 + level), 7200000 );
 
         const becomeCoinMessage = async (user) => {
           const collector = new Util.CustomCollector({target: client, event: "message", filter: (message) => message.author.id === user.id, time: 500_000});
@@ -9984,7 +9887,7 @@ const commands = {
 
       // Показывает сколько клубники собрали пользователи
       if (  berrysStarts - Math.floor(server.berrys) > 0 ){
-        let berrysTaken = { name: "Клубники собрали участники", value: `${ending(  berrysStarts - Math.floor(server.berrys), "штук", "", "а", "и"  )};` };
+        let berrysTaken = { name: "Клубники собрали участники", value: `${Util.ending(  berrysStarts - Math.floor(server.berrys), "штук", "", "а", "и"  )};` };
         fields.splice(-1, 0, berrysTaken);
       }
 
@@ -10045,10 +9948,10 @@ const commands = {
 
       const invitesCount = member.user.data.invites || 0;
 
-      const byInvitesCountContent = `За время пребывания бота на сервере, упомянутый пользователь пригласил ${ ending(invitesCount, "человек", "", "", "а") }.`;
+      const byInvitesCountContent = `За время пребывания бота на сервере, упомянутый пользователь пригласил ${ Util.ending(invitesCount, "человек", "", "", "а") }.`;
 
       const guildInvites = await getGuildMemberInvites(member);
-      const byGuildDataContent = guildInvites && guildInvites.size ? `${ member.displayName } создал(-a) ${ ending(guildInvites.size, "", "ссыллок-приглашений", "ссылку-приглашение", "ссылки-приглашения") } — посетило ${ ending(guildInvites.reduce((acc, invite) => (invite.uses || 0) + acc, 0), "персон", "", "а", "ы") } <:treeJoke:827441080492490752>` : "";
+      const byGuildDataContent = guildInvites && guildInvites.size ? `${ member.displayName } создал(-a) ${ Util.ending(guildInvites.size, "", "ссыллок-приглашений", "ссылку-приглашение", "ссылки-приглашения") } — посетило ${ Util.ending(guildInvites.reduce((acc, invite) => (invite.uses || 0) + acc, 0), "персон", "", "а", "ы") } <:treeJoke:827441080492490752>` : "";
 
       const description = `${ byInvitesCountContent }\n${ byGuildDataContent }`;
       const footer = {iconURL: member.user.avatarURL(), text: member.username};
@@ -10057,7 +9960,7 @@ const commands = {
       return;
     }
 
-    let answer = await accept("invites_command", {message: "Присвойте ссылкам их уникальную роль", description: "Как это работает?\nВы как администратор создаете роль, назовём её \"Фунтик\" и решаете, какие пользователи будут получать её при входе в систему. Есть несколько типов условий:\n\n1) В режиме постоянной ссылки: Всем зашедшим через эту ссылку будет выдана роль Фунтик.\n2) Выдаваемая роль будет определяться наличием у пригласившего другой роли, например, \"Хороший друг\". Любая ссылка созданная Хорошим другом предвкушает Фунтика \n3) По умолчанию — если не отработал ни один вариант выше.\n\nЗачем это?\nВы можете определить права участника в зависимости от того, кто его пригласил; ведение статистики, распределение людей которые пришли с партнёрки и по знакомству, тому подобное. Это то, что вы можете сделать с помощью этой команды"}, msg.channel, msg.author.data);
+    let answer = await Util.awaitUserAccept("invites_command", {message: "Присвойте ссылкам их уникальную роль", description: "Как это работает?\nВы как администратор создаете роль, назовём её \"Фунтик\" и решаете, какие пользователи будут получать её при входе в систему. Есть несколько типов условий:\n\n1) В режиме постоянной ссылки: Всем зашедшим через эту ссылку будет выдана роль Фунтик.\n2) Выдаваемая роль будет определяться наличием у пригласившего другой роли, например, \"Хороший друг\". Любая ссылка созданная Хорошим другом предвкушает Фунтика \n3) По умолчанию — если не отработал ни один вариант выше.\n\nЗачем это?\nВы можете определить права участника в зависимости от того, кто его пригласил; ведение статистики, распределение людей которые пришли с партнёрки и по знакомству, тому подобное. Это то, что вы можете сделать с помощью этой команды"}, msg.channel, msg.author.data);
     if (!answer) return;
 
     const numericReactions = ["1️⃣", "2️⃣", "3️⃣"];
@@ -10127,7 +10030,7 @@ const commands = {
       return;
     }
 
-    const diceRoll = random(100);
+    const diceRoll = Util.random(100);
     const options = {
       title: "Лесовитое казино",
       author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
@@ -10139,7 +10042,7 @@ const commands = {
 **${ isWon ? "Вы выиграли." : "Проиграли" }**
 **Кидаем кубик.. выпадает:** \`${ diceRoll }\`; ${ isWon ? "🦝" : "❌" }
 
-${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин", "ов", "", "а") } <:coin:637533074879414272>\\*` : "Чтобы выиграть дожно выпасть число, которое не делится на 2" }
+${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "коин", "ов", "", "а") } <:coin:637533074879414272>\\*` : "Чтобы выиграть дожно выпасть число, которое не делится на 2" }
     `;
 
     op.user.coins -= (-1) ** isWon * bet;
@@ -10178,42 +10081,42 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       {
         key: "coins",
         names: ["коина", "коины", "коин", "коинов", "coins", "coin", "c", "к"],
-        ending: (count) => `<:coin:637533074879414272> ${ ending(count, "Коин", "ов", "", "а") }`
+        ending: (count) => `<:coin:637533074879414272> ${ Util.ending(count, "Коин", "ов", "", "а") }`
       },
       {
         key: "exp",
         names: ["опыта", "опыт", "опытов", "exp", "experience"],
-        ending: (count) => `<:crys2:763767958559391795> ${ ending(count, "Опыт", "а", "", "а") }`
+        ending: (count) => `<:crys2:763767958559391795> ${ Util.ending(count, "Опыт", "а", "", "а") }`
       },
       {
         key: "chestBonus",
         names: ["бонусов", "бонус", "бонуса", "сундука", "сундуков", "сундук", "бонусов сундука", "chestbonus"],
-        ending: (count) => `<a:chest:805405279326961684> ${ ending(count, "Бонус", "ов", "", "а") } сундука`
+        ending: (count) => `<a:chest:805405279326961684> ${ Util.ending(count, "Бонус", "ов", "", "а") } сундука`
       },
       {
         key: "void",
         names: ["нестабильности", "нестабильность", "void", "камень", "камней", "камня"],
-        ending: (count) => `<a:void:768047066890895360> ${ ending(count, "Кам", "ней", "ень", "ня") } нестабильности`
+        ending: (count) => `<a:void:768047066890895360> ${ Util.ending(count, "Кам", "ней", "ень", "ня") } нестабильности`
       },
       {
         key: "berrys",
         names: ["клубник", "клубники", "клубника", "клубниу", "ягоды", "ягод", "ягода", "berry", "berrys"],
-        ending: (count) => `<:berry:756114492055617558> ${ ending(count, "Клубник", "", "а", "и") }`
+        ending: (count) => `<:berry:756114492055617558> ${ Util.ending(count, "Клубник", "", "а", "и") }`
       },
       {
         key: "chilli",
         names: ["перец", "перцев", "перца", "chilli"],
-        ending: (count) => `🌶️ ${ ending(count, "Пер", "цев", "ец", "ца") }`
+        ending: (count) => `🌶️ ${ Util.ending(count, "Пер", "цев", "ец", "ца") }`
       },
       {
         key: "monster",
         names: ["монстр", "монстров", "монстра", "monster"],
-        ending: (count) => `🐲 ${ ending(count, "Монстр", "ов", "", "а") }`
+        ending: (count) => `🐲 ${ Util.ending(count, "Монстр", "ов", "", "а") }`
       },
       {
         key: "thiefGloves",
         names: ["перчатки", "перчатку", "перчатка", "перчаток", "glove", "gloves"],
-        ending: () => `🧤 ${ ending(count, "Перчат", "ки", "у", "ки") }`,
+        ending: () => `🧤 ${ Util.ending(count, "Перчат", "ки", "у", "ки") }`,
         display: (count) => `🧤 Перчатки ${ count }шт.`,
         getter: ({target}) => {
           const isUser = "id" in target;
@@ -10249,12 +10152,12 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       {
         key: "keys",
         names: ["ключ", "ключей", "ключа", "ключи", "key"],
-        ending: (count) => `🔩 ${ ending(count, "Ключ", "ей", "", "а") }`
+        ending: (count) => `🔩 ${ Util.ending(count, "Ключ", "ей", "", "а") }`
       },
       {
         key: "seed",
         names: ["семечко", "семечек", "семян", "семечка", "семячек", "seed"],
-        ending: (count) => `🌱 ${ ending(count, "Сем", "ян", "ечко", "ечка") }`
+        ending: (count) => `🌱 ${ Util.ending(count, "Сем", "ян", "ечко", "ечка") }`
       },
       {
         key: "iq",
@@ -10264,73 +10167,73 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       {
         key: "coinsPerMessage",
         names: ["коинов за сообщение", "награда коин-сообщений", "coinsPerMessage"],
-        ending: (count) => `✨ ${ ending(count, "Коин", "ов", "", "а") } за сообщение`
+        ending: (count) => `✨ ${ Util.ending(count, "Коин", "ов", "", "а") } за сообщение`
       },
       {
         key: "voidCooldown",
         names: ["уменьшений кулдауна", "уменьшение кулдауна", "уменьшения кулдауна", "voidcooldown"],
         limit: 20,
-        ending: (count) => `🌀 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `🌀 ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `🌀 Бонус "Уменьшение кулдауна" ${ count }/20`
       },
       {
         key: "voidPrise",
         names: ["скидок на котёл", "скидок на котел", "voidprise"],
         limit: 5,
-        ending: (count) => `⚜️ ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `⚜️ ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `⚜️ Бонус "Скидок на котёл" ${ count }/5`
       },
       {
         key: "voidDouble",
         names: ["нестабилити", "voiddouble"],
         limit: 1,
-        ending: (count) => `🃏 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `🃏 ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `🃏 Бонус "Нестабилити" ${ count }/1`
       },
       {
         key: "voidQuests",
         names: ["усиление квестов", "усиление квеста", "voidquests"],
         limit: 5,
-        ending: (count) => `🔱 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `🔱 ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `🔱 Бонус "Усиление квестов" ${ count }/5`
       },
       {
         key: "voidCoins",
         names: ["шанс коина", "шанс коинов", "voidcoins"],
         limit: 7,
-        ending: (count) => `♦️ ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `♦️ ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `♦️ Бонус "Шанс коина" ${ count }/7`
       },
       {
         key: "voidMonster",
         names: ["монстр-защитник", "монстр защитник", "voidmonster"],
         limit: 1,
-        ending: (count) => `💖 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `💖 ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `💖 Бонус "Монстр-защитник" ${ count }/1`
       },
       {
         key: "voidThief",
         names: ["бонусы от перчаток", "voidthief"],
-        ending: (count) => `💠 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `💠 ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `💠 Бонус "Бонусы от перчаток" ${ count }`
       },
       {
         key: "voidMysticClover",
         names: ["умение заворож. клевер", "умение заворожить клевер", "заворожение клевера", "заворожить клевер", "заворожения клевера", "voidmysticclover"],
-        ending: (count) => `🍵 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `🍵 ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `🍵 Бонус "Умение заворож. Клевер" ${ count }/50`
       },
       {
         key: "voidTreeFarm",
         names: ["фермер", "фермеров", "фермера", "voidtreefarm"],
-        ending: (count) => `📕 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `📕 ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `📕 Бонус "Фермер" ${ count }`
       },
       {
         key: "voidCasino",
         names: ["казино", "voidcasino"],
         limit: 1,
-        ending: (count) => `🥂 ${ ending(count, "Бонус", "ов", "", "а") }`,
+        ending: (count) => `🥂 ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
         display: (count) => `🥂 Бонус "Казино" ${ count }/1`
       }
     ];
@@ -10379,7 +10282,7 @@ ${ isWon ? `\\*Вам достается куш — ${ ending(bet * 2, "коин
       if (count === "+"){
 
         const value = item.getter({ target: targetFrom });
-        count = nonNaN( value );
+        count = value ?? 0;
       }
       count = Math.max(Math.floor( count ), 0);
 
@@ -10572,7 +10475,7 @@ const quests = {
 
 const timeEvents = {
   day_stats: function (isLost){
-    let next = new Date(getTime() + 14500000).setHours(20, 0, 0) - getTime();
+    let next = new Date(Date.now() + 14500000).setHours(20, 0, 0) - Date.now();
     if (isLost) return new TimeEvent("day_stats", next);
 
     client.guilds.cache.filter(e => e.data.treeLevel).each(guild => {
@@ -10581,7 +10484,7 @@ const timeEvents = {
       messagesNeed = Math.floor(messagesNeed / 3);
 
       if (guild.data.day_msg < messagesNeed){
-        guild.data.treeMisstakes = nonNaN(guild.data.treeMisstakes) + 0.2 + Number( (1 - guild.data.day_msg / messagesNeed).toFixed(1) );
+        guild.data.treeMisstakes = (guild.data.treeMisstakes ?? 0) + 0.2 + Number( (1 - guild.data.day_msg / messagesNeed).toFixed(1) );
         guild.data.misstake = messagesNeed;
 
         if (guild.data.treeMisstakes >= 4){
@@ -10592,7 +10495,7 @@ const timeEvents = {
         return;
       }
 
-      guild.data.treeMisstakes = nonNaN(guild.data.treeMisstakes) - 0.2;
+      guild.data.treeMisstakes = (guild.data.treeMisstakes ?? 0) - 0.2;
 
       if (guild.data.treeMisstakes <= 0)
         delete guild.data.treeMisstakes;
@@ -10613,7 +10516,7 @@ const timeEvents = {
       data.msg_total = data.msg_total + msgs || msgs;
 
 
-      let description = `За этот день было отправлено ${ending(msgs, "сообщени", "й", "е", "я")}\nРекордное количество: ${data.day_max || (data.day_max = 0)}`;
+      let description = `За этот день было отправлено ${Util.ending(msgs, "сообщени", "й", "е", "я")}\nРекордное количество: ${data.day_max || (data.day_max = 0)}`;
 
       if (data.days > 3) {
         description += `\nВсего сообщений: ${Math.letters(data.msg_total)}\nВ среднем за день: ${Math.round(data.msg_total / data.days)}`;
@@ -10634,7 +10537,7 @@ const timeEvents = {
       }
 
       if (misstake)
-        description += `\n\nДерево засыхает! Ему необходимо на ${ ending(misstake - msgs, "сообщени", "й", "е", "я") } больше 💧`;
+        description += `\n\nДерево засыхает! Ему необходимо на ${ Util.ending(misstake - msgs, "сообщени", "й", "е", "я") } больше 💧`;
 
       guild.chatSend("Статистика сервера", { description: description });
     });
@@ -10665,7 +10568,7 @@ const timeEvents = {
         entries.forEach(([id, cost]) => memb.roles.cache.has(id) ? memb.user.data.coins += +cost : false);
       });
       guild.data.coins -= costs;
-      guild.logSend(`Были выданы зарплаты`, {description: `С казны было автоматически списано ${ending(costs, "коин", "ов", "", "а")} на заработные платы пользователям\nИх список вы можете просмотреть в команде \`!банк\`\nУчастников получило коины: ${workers.size}`});
+      guild.logSend(`Были выданы зарплаты`, {description: `С казны было автоматически списано ${Util.ending(costs, "коин", "ов", "", "а")} на заработные платы пользователям\nИх список вы можете просмотреть в команде \`!банк\`\nУчастников получило коины: ${workers.size}`});
 
     });
 
@@ -10684,7 +10587,7 @@ const timeEvents = {
   },
 
   new_day: async function (isLost){
-    let next = new Date(getTime() + 14500000).setHours(23, 59, 50) - getTime();
+    let next = new Date(Date.now() + 14500000).setHours(23, 59, 50) - Date.now();
     new TimeEvent("new_day", next);
 
     
@@ -10693,7 +10596,7 @@ const timeEvents = {
       delete data.bot.clearParty
       quests.scope = quests.scope.replace(/birthdayParty(\.+?)(?:\s|$)/g, "");
     }
-    await delay(20000);
+    await Util.sleep(20000);
 
     const today = toDayDate( new Date() );
     data.bot.dayDate = today;
@@ -10784,7 +10687,7 @@ const timeEvents = {
     if (roleId) {
       winners.forEach(e => channel.guild.member(e).roles.add(roleId, "Win In Giveway"));
     }
-    await delay(1000);
+    await Util.sleep(1000);
     giveaway.reactions.cache.get("🌲").remove();
   },
 
@@ -10802,7 +10705,7 @@ const timeEvents = {
 
     let channel = guild.channels.cache.get(channelId);
     let multiplier = 1.08 + (0.07 * ((1 - 0.9242 ** effect.uses) / (1 - 0.9242)));
-    channel.msg("☘️ Ивент Клевера завершился", {color: "21c96c", description: `Получено наград во время действия эффекта: ${effect.coins}\nМаксимальный множитель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${effect.uses}\nКлевер длился ${((getTime() - effect.timestamp) / 3600000).toFixed(1)}ч.`});
+    channel.msg("☘️ Ивент Клевера завершился", {color: "21c96c", description: `Получено наград во время действия эффекта: ${effect.coins}\nМаксимальный множитель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${effect.uses}\nКлевер длился ${((Date.now() - effect.timestamp) / 3600000).toFixed(1)}ч.`});
     delete guild.data.cloverEffect;
   },
 
@@ -10838,7 +10741,7 @@ const timeEvents = {
 (() => {
   getSaves();
 
-  let cleanTimestamp = getTime();
+  let cleanTimestamp = Date.now();
   data.users.forEach(user =>
     Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < cleanTimestamp ? delete user[key] : false)
   );
@@ -10988,4 +10891,4 @@ memb   = client.users!
 */
 
 
-console.info(  timestampToDate(    ((new Date().getHours() < 20) ? (new Date().setHours(20, 0, 0)) : (new Date(getTime() + 14500000).setHours(20, 0, 0)))  - getTime()  )  );
+console.info(  Util.timestampToDate(    ((new Date().getHours() < 20) ? (new Date().setHours(20, 0, 0)) : (new Date(Date.now() + 14500000).setHours(20, 0, 0)))  - Date.now()  )  );
