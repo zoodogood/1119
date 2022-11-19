@@ -18,7 +18,7 @@ import fetch from "node-fetch";
 
 
 
-const { default: data } = await import("./main/data.json", {
+const { default: data } = await import("./data/main.json", {
   assert: {type: "json"}
 });
 
@@ -284,7 +284,7 @@ client.on("ready", async () => {
   process.on("SIGINT", e => {
     console.info("\n   ЗАВЕРШЕНИЕ...\n");
     data_save();
-    fs.writeFileSync("./main/time.json", JSON.stringify(TimeEvent.eventData), (err, input) => false);
+    fs.writeFileSync(TimeEvent.path, JSON.stringify(TimeEvent.eventData), (err, input) => false);
     process.exit(1);
   })
 
@@ -1624,7 +1624,7 @@ Discord.Channel.prototype.awaitMessage = async function(user, opt = {}){
 }
 
 Discord.GuildMember.prototype.wastedPermissions = function(bit, channel){
-  if (this.user.id == 921403577539387454) return false;
+  if (this.user.id === "921403577539387454") return false;
   let permissions = channel ? channel.permissionsFor(this).missing(bit) : this.permissions.missing(bit);
   return permissions[0] ? permissions : false;
 }
@@ -1980,13 +1980,16 @@ class Command {
 
 
 class TimeEvent {
+
+  static path = "./data/time.json";
+
   constructor (func, ms, ...args) {
     let time = TimeEvent.eventData;
     let obj = {func: func, ms: getTime() + ms};
     obj.args = args;
     time.push(obj);
     console.info("Ивент создан " + func);
-    if (time) fs.writeFileSync("./main/time.json", JSON.stringify(time), (err, input) => false);
+    if (time) fs.writeFileSync(this.constructor.path, JSON.stringify(time), (err, input) => false);
     TimeEvent.handle();
     return obj;
   }
@@ -2014,7 +2017,7 @@ class TimeEvent {
   }
 
   static async readFile(){
-    const { default: data } = await import("./main/time.json", {assert: {type: "json"}});
+    const { default: data } = await import(this.path, {assert: {type: "json"}});
     return data;
   }
 
@@ -2092,6 +2095,9 @@ class WebSocket {}
 
 
 class ReactionsManager {
+
+  static path = "./data/reactions.json";
+  
   constructor (id, channel, guild, type, reactions){
     let reactionObject = {id, channel, guild, type, reactions};
     let isExists = ReactionsManager.reactData.find(e => e.id == id);
@@ -2101,14 +2107,14 @@ class ReactionsManager {
     else {
       ReactionsManager.reactData.push(reactionObject);
     }
-    fs.writeFileSync("./main/reactData.json", JSON.stringify(ReactionsManager.reactData), (err, input) => false);
+    fs.writeFileSync(this.constructor.path, JSON.stringify(ReactionsManager.reactData), (err, input) => false);
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
 
   static reactData = [];
 
   static async readFile(){
-    const { default: data } = await import("./main/reactData.json", {assert: {type: "json"}});
+    const { default: data } = await import(this.path, {assert: {type: "json"}});
     return data;
   }
 
@@ -2128,7 +2134,7 @@ class ReactionsManager {
       }
       catch (e){ return console.error(e) }
     })
-    fs.writeFileSync("./main/reactData.json", JSON.stringify(reactions), (err, input) => false);
+    fs.writeFileSync(this.path, JSON.stringify(reactions), (err, input) => false);
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
   
@@ -2139,6 +2145,9 @@ class ReactionsManager {
 
 
 class CounterManager {
+
+  static path = "./data/counters.json";
+
   constructor (channel, guild, type, template, args){
     let counter = {channel, guild, type, template, args};
 
@@ -2152,12 +2161,12 @@ class CounterManager {
   static counterData = [];
 
   static async readFile(){
-    const { default: data } = await import("./main/counterData.json", {assert: {type: "json"}});
+    const { default: data } = await import(this.path, {assert: {type: "json"}});
     return data;
   }
 
   static writeFile(){
-    fs.writeFileSync("./main/counterData.json", JSON.stringify(CounterManager.counterData), (err, input) => false);
+    fs.writeFileSync(this.path, JSON.stringify(CounterManager.counterData), (err, input) => false);
   }
 
   static async clearSuperfluous(){
