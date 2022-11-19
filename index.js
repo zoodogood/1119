@@ -3369,7 +3369,8 @@ class BossManager {
       const rewardsCount = Math.floor(boss.level ** 1.2);
       const usersOdds = Object.entries(boss.users)
         .filter(([id]) => guild.members.cache.has(id))
-        .map(([id, {damageDealt: _weight}]) => ({id, _weight}));
+        .map(([id, {damageDealt: _weight}]) => ({id, _weight}))
+        .filter(({_weight}) => _weight);
         
       for (let i = 0; i < rewardsCount; i++){
         const id = usersOdds.random({_weight: true})
