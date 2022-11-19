@@ -3373,7 +3373,7 @@ class BossManager {
         .filter(({_weight}) => _weight);
         
       for (let i = 0; i < rewardsCount; i++){
-        const id = usersOdds.random({_weight: true})
+        const id = usersOdds.random({_weights: true})
           .id;
         
         table[id] ||= 0;
