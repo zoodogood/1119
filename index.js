@@ -4166,7 +4166,7 @@ const commands = {
           },
           {
             name: "Бонусы котла <a:placeForVoid:780051490357641226>",
-            value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrise}/5\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nСвобода проклятий: ${ ~~voidCurseFreedom }/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${nonNaN(user.voidMysticClover)}\nФермер: ${nonNaN(user.voidTreeFarm)}\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
+            value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrise}/5\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nСвобода проклятий: ${ ~~user.voidCurseFreedom }/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${nonNaN(user.voidMysticClover)}\nФермер: ${nonNaN(user.voidTreeFarm)}\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
             inline: false
           }
         ];
