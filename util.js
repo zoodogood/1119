@@ -1,59 +1,6 @@
 import { ending } from '@zoodogood/utils/primitives';
-import { omit } from '@zoodogood/utils/objectives';
+import { omit, CustomCollector } from '@zoodogood/utils/objectives';
 
-
-class CustomCollector {
-  #callback;
-
-  constructor({target, event, filter, time = 0}){
-    if ("on" in target === false){
-      throw new Error("Target must extends EventEmitter");
-    }
-
-    this.target = target;
-    this.event = event;
-    this.filter = filter;
-    this.time = time;
-  }
-
-  setCallback(callback){
-  
-    const handler = (...params) => {
-      const passed = this?.filter(params);
-
-      if (!!passed === true){
-        callback.apply(this, params);
-      };
-    }
-    
-    this.handle(handler);
-  }
-
-  handle(){
-    this.end();
-    
-    this.#callback = handler;
-    this.target.on(this.event, this.#callback);
-
-    if (this.time > 0){
-      this.setTimeout(this.time);
-    };
-  }
-
-  end(){
-    this.removeTimeout();
-    this.target.removeListener(this.event, this.#callback);
-  }
-
-  removeTimeout(){
-    clearTimeout(this.timeoutId);
-  }
-
-  setTimeout(ms){
-    const callback = this.end.bind(this);
-    this.timeoutId = setTimeout(callback, ms);
-  }
-}
 
 function toLocaleDelevoperString(value){
   if (!value){
@@ -98,6 +45,12 @@ function random(...params){
   return rand;
 }
 
+function match(string = "", regular, flags){
+  const reg = RegExp(regular, flags);
+  let find = string.match(reg);
+  return find ? find[0] : null;
+}
+
 async function awaitUserAccept(name, embed, channel, user){
   if (`first_${name}` in user) {
     return true;
@@ -112,6 +65,47 @@ async function awaitUserAccept(name, embed, channel, user){
   }
   return false;
 };
+
+function awaitReactOrMessage(msg, user, ...reactions){
+  reactions = reactions.filter(Boolean);
+  const MAX_TIMEOUT = 900000;
+  const collectorOptions = {max: 1, time: MAX_TIMEOUT};
+  
+
+  return new Promise(async (resolve) => {
+    let isFulfilled = false;
+
+    reactions.forEach(reaction => msg.react(reaction));
+    msg.awaitReactions((reaction, member) => member.id === user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name), collectorOptions)
+    .then(reaction => {
+      if ((isFulfilled ^= 1) === 0) {
+        return;
+      }
+
+      const emoji = reaction.first().emoji;
+      resolve(emoji.id || emoji.name);
+    });
+
+    msg.channel.awaitMessages(message => message.author.id === user.id, collectorOptions)
+    .then(messages => {
+      if ((isFulfilled ^= 1) === 0) {
+        return;
+      }
+  
+      const message = messages.first();
+      message.delete();
+      resolve(message);
+    });
+
+    await Util.sleep(MAX_TIMEOUT);
+    msg.reactions.cache
+      .filter(reaction => reaction.me)
+      .each(reaction => reaction.remove());
+
+    resolve(false);
+  });
+};
+
 
 function joinWithAndSeparator(arr, ignore = false){
   if (typeof arr == "string") {
@@ -158,6 +152,64 @@ function timestampToDate(ms, max){
 	return input;
 };
 
+function toDayDate(date){
+  if (date instanceof Date === false){
+    date = new Date(date);
+  }
+
+  const month = (date.getMonth() + 1).toString();
+  const day   = date.getDate().toString();
+
+  return `${ day.padStart(2, "0") }.${ month.padStart(2, "0") }`;
+}
+
+function similarity(a, b) {
+
+  if (a.toLowerCase() == b.toLowerCase()) return 0;
+  a = a.toLowerCase().split("");
+  b = b.toLowerCase().split("");
+  let i = 0, w = 0;
+
+  while( i < Math.max(a.length, b.length) ){
+    if (a[i] == b[i]) {}
+    else if (a[i] == b[i + 1] && a[i + 1] == b[i]){
+      a[i] = b[i + 1];
+      a[i + 1] = b[i];
+      b[i] = a[i];
+      b[i + 1] = a[i + 1];
+      w += 1;
+      i++;
+    }
+    else if (a[i] == b[i + 1]){
+      b.splice(i, 1);
+      w += 0.75;
+    }
+    else if (a[i + 1] == b[i] || b[i] == undefined){
+      b.splice(i, 0, a[i])
+      w += 0.75;
+    }
+    else {
+      b[i] = a[i];
+      w += 1;
+    }
+    i++;
+  }
+  return w;
+};
+
+function getSimilar(arr, str) {
+  if (arr.find((el) => el.toLowerCase() === str.toLowerCase())) return str;
+  let max = Infinity;
+  let input;
+  arr.filter(el => el.length - str.length < 2 && el.length - str.length > -2).forEach(el => {
+      let w = similarity(str, el);
+      if (w < max && w < str.length + 2) max = w, input = el;
+  });
+  return input || false;
+}
+
+
+
 
 
 export {
@@ -167,5 +219,11 @@ export {
   sleep, 
   random,
   ending,
-  awaitUserAccept
+  timestampToDate,
+  toDayDate,
+  awaitUserAccept,
+  awaitReactOrMessage,
+  similarity,
+  getSimilar,
+  match
 };

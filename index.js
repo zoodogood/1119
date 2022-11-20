@@ -4,7 +4,7 @@ console.clear();
 
 import 'dotenv/config';
 
-import Discord, { User } from "discord.js";
+import Discord from "discord.js";
 const Collection = Discord.Collection;
 
 import * as Util from "./util.js";
@@ -14,14 +14,9 @@ const client = new Discord.Client({ messageCacheMaxSize: 110 });
 globalThis.client = client;
 
 
-import fs from "fs";
+import FileSystem from "fs";
 import fetch from "node-fetch";
-
-
-
-const { default: data } = await import("./data/main.json", {
-  assert: {type: "json"}
-});
+import { VM } from "vm2";
 
 
 
@@ -67,9 +62,11 @@ client.on("ready", async () => {
     let whoAdded = await guild.Audit(e => e.target.id === client.user.id, {type: "BOT_ADD"});
     whoAdded = whoAdded ? whoAdded.target : null;
 
-    client.guilds.cache.get("752898200993660959").channels.cache.get("763637440174227506").msg(`Бот присоеденился к серверу ${ guild.name }!`, {description: `Участников: ${ members.size }\nКол-во знакомых боту людей: ${members.filter(e => data.users.some(el => el.id == e.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.member(whoAdded) ? "Да" : "Нет"}.`, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
+    const DEVELOPER_CHAT_ID = "763637440174227506";
+    const developerChat = client.channels.cache.get(DEVELOPER_CHAT_ID);
+    developerChat.msg(`Бот присоеденился к серверу ${ guild.name }!`, {description: `Участников: ${ members.size }\nКол-во знакомых боту людей: ${members.filter(member => DataManager.data.users.some(user => user.id === member.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.member(whoAdded) ? "Да" : "Нет"}.`, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
     guild.invites = await guild.fetchInvites();
-    data.bot.newGuildTimestamp = Date.now();
+    DataManager.data.bot.newGuildTimestamp = Date.now();
   });
 
   client.on("guildDelete", async (guild) => {
@@ -284,8 +281,8 @@ client.on("ready", async () => {
 
   process.on("SIGINT", e => {
     console.info("\n   ЗАВЕРШЕНИЕ...\n");
-    data_save();
-    fs.writeFileSync(TimeEvent.path, JSON.stringify(TimeEvent.eventData), (err, input) => false);
+    DataManager.file.write();
+    FileSystem.writeFileSync(TimeEvent.path, JSON.stringify(TimeEvent.eventData), (err, input) => false);
     process.exit(1);
   })
 
@@ -337,33 +334,6 @@ client.on("ready", async () => {
 
   console.info(`\n\n\n     Ready...\n\n`);
 
-  // Pikachu CO-OP
-  client.on("message", async msg => {
-    if (msg.author.id !== "865242468945362954"){
-      return;
-    }
-
-    let title = msg.embeds[0] ? msg.embeds[0].title : null;
-    if (title === "Происходит обмен..."){
-      let { description } = msg.embeds[0];
-      const userID = match(description, /(?<=<@!?)\d+(?=\>)/);
-      let user = getData(userID);
-
-      let count  = match(description, /(?<=количестве )\d+/);
-      let rarity = match(description, /(?<=Переносит )[а-я]+/);
-
-      let index = ["обычную", "редкую", "золотую", "мифическую", "легендарную"].indexOf(rarity);
-      let berrys = count * (5 ** index);
-
-      if (index !== 4 && berrys + user.berrys > 350){
-        msg.msg("Отдел по отлову клубники...", {description: `Не смог унести такого количества ягод и пал. Перехват клуники не удался.`});
-        return;
-      }
-
-      user.berrys += berrys;
-      msg.msg("Отдел по отлову клубники...", {description: `Отдел по отлову клубники успешно перехватил ${rarity} ягоду в количестве ${ Util.ending(count, "единиц", "", "ы", "")}, а также перевёл её в привычный нам вид и оставил на земле.\n${user.name} смог спокойно забрать и унести ${ Util.ending(berrys, "клубник", "", "а", "и")} с собой.`, reactions: ["685057435161198594"]});
-    }
-  });
 
 
   TimeEvent.handle();
@@ -376,8 +346,6 @@ client.on("ready", async () => {
 
 
 
-const
-  data_save     = () => (data) ? fs.writeFileSync("./main/data.json", JSON.stringify(data), (err, input) => false) : console.error("WARNING: data be undefined"),
 
 
 async function msg(msg, opt = {}){
@@ -416,13 +384,10 @@ async function msg(msg, opt = {}){
     obj = obj.channel;
   }
 
-  if (typeof msg === "string"){
-    msg = (opt.destroy) ? msg : await template(msg, msgs, scope);
-  }
 
 
   if (!offEmbed){
-    description = (opt.destroy) ? description : await template(description, msgs, scope);
+    description = (opt.templates) ? await templater.replaceAll(description, msgs, scope) : description;
 
     let embed = new Discord.MessageEmbed().setTitle(msg).setDescription(description).setColor(color).setImage(image || null).setThumbnail(thumbnail || null);
     if (author) embed.author    = author;
@@ -433,12 +398,6 @@ async function msg(msg, opt = {}){
     if (files)  embed.attachFiles(files);
     msg = embed;
   }
-
-  if (msg instanceof Discord.MessageEmbed && edit && !opt.destroy){
-    msg.title = await template(msg.title, msgs, scope);
-    msg.description = await template(msg.description, msgs, scope);
-  }
-
 
 
   if ( opt.editable ){
@@ -460,541 +419,6 @@ async function msg(msg, opt = {}){
   return message;
 };
 
-function reactOrMessage(msg, user, ...reactions){
-  reactions = reactions.filter(e => e);
-  return new Promise(async (resolve, reject) => {
-    let stop;
-
-    reactions.forEach(e => msg.react(e));
-    msg.awaitReactions((reaction, member) => member.id == user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name), { max: 1, time: 900000}).then(e => {
-      if (stop) return;
-      stop = true;
-      let react = e.first().emoji;
-      resolve(react.id || react.name);
-    });
-
-    msg.channel.awaitMessages(m => m.author.id == user.id, {max: 1, time: 900000}).then(e => {
-      if (stop) return;
-      stop = true;
-      e.first().delete();
-      resolve(e.first());
-    });
-
-    await Util.sleep(900000);
-    msg.reactions.cache.filter(e => e.me).each(e => e.remove());
-
-    resolve(false);
-  });
-};
-
-
-function match(str = "", ...reg){
-  reg = RegExp(...reg);
-  let find = String(str).match(reg);
-  return find ? find[0] : false;
-}
-
-function similarity(a, b) {
-
-  if (a.toLowerCase() == b.toLowerCase()) return 0;
-  a = a.toLowerCase().split("");
-  b = b.toLowerCase().split("");
-  let i = 0, w = 0;
-
-  while( i < Math.max(a.length, b.length) ){
-    if (a[i] == b[i]) {}
-    else if (a[i] == b[i + 1] && a[i + 1] == b[i]){
-      a[i] = b[i + 1];
-      a[i + 1] = b[i];
-      b[i] = a[i];
-      b[i + 1] = a[i + 1];
-      w += 1;
-      i++;
-    }
-    else if (a[i] == b[i + 1]){
-      b.splice(i, 1);
-      w += 0.75;
-    }
-    else if (a[i + 1] == b[i] || b[i] == undefined){
-      b.splice(i, 0, a[i])
-      w += 0.75;
-    }
-    else {
-      b[i] = a[i];
-      w += 1;
-    }
-    i++;
-  }
-  return w;
-};
-
-function getSimilar(arr, str) {
-  if (arr.find((el) => el.toLowerCase() === str.toLowerCase())) return str;
-  let max = Infinity;
-  let input;
-  arr.filter(el => el.length - str.length < 2 && el.length - str.length > -2).forEach(el => {
-      let w = similarity(str, el);
-      if (w < max && w < str.length + 2) max = w, input = el;
-  });
-  return input || false;
-}
-
-function toDayDate(date){
-  if (date instanceof Date === false){
-    date = new Date(date);
-  }
-
-  const month = (date.getMonth() + 1).toString();
-  const day   = date.getDate().toString();
-
-  return `${ day.padStart(2, "0") }.${ month.padStart(2, "0") }`;
-}
-
-function getData(id, type = "users", specimen = false){
-  let element = data[type].find((e) => e.id == id);
-
-  if (!element){
-    specimen = specimen || client[type].cache.get(id) || {username: "отступник"};
-
-    element = {
-      users: {"id": id, name: specimen.username, coins: 50, level: 1, exp: 0, berrys: 1, chestLevel: 0, void: 0, keys: 0, voidRituals: 0, voidCoins: 0},
-      guilds: {"id": id, name: specimen.name, day_msg: 0, msg_total: 0, days: 0, commandsLaunched: 0, coins: 0, commandsUsed: {}}
-    }[type];
-
-    data[type].push(element);
-  }
-  return element;
-}
-
-
-async function template(msg, obj, opt = {}){
-  if (typeof msg == "object") return;
-  msg = String(msg);
-
-  let matchAll = [];
-  const getRegular = async (regular) => {
-    matchAll.splice(matchAll.indexOf(regular), 1);
-    regular.original = regular.reg;
-
-    if (regular.category == "?"){
-      let condition = regular.others.shift();
-      regular.reg = regular.reg.slice(condition.start + condition.reg.length - 3);
-
-      let isRight = regular.reg.split(/(?<!\\)\:/).map(e => e.replace("\\:", ":"));
-      isRight.splice(1, Infinity, isRight.slice(1).join(":"));
-      let isTrue = await getRegular(condition);
-      if (isTrue && !["0", "false", "[шаблон Шаблон]", "[шаблон Фунция]", "[ошибка Шаблона]"].includes(isTrue)) {
-        regular.reg = isRight[0];
-        regular.others.filter(e => e.start > condition.start + condition.reg.length + isRight[0].length).forEach(e => matchAll.splice(matchAll.indexOf(e), 1) && regular.others.splice(regular.others.indexOf(e), 1));
-        regular.others.forEach(e => e.start -= 2 + (condition.start + condition.reg.length - regular.start - 1));
-      }
-      else {
-        regular.reg = isRight[1];
-        regular.others.filter(e => e.start < condition.start + condition.reg.length + isRight[0].length).forEach(e => matchAll.splice(matchAll.indexOf(e), 1) && regular.others.splice(regular.others.indexOf(e), 1));
-        regular.others.forEach(e => e.start -= 3 + (condition.start + condition.reg.length - regular.start - 1) + isRight[0].length);
-      }
-    }
-
-    let value;
-    while (regular.others[0]){
-      let other = regular.others.pop();
-      // matchAll.splice(matchAll.indexOf(other), 1);
-      value = await getRegular(other);
-      regular.reg = regular.reg.substring(0, other.start - regular.start - 2) + value + regular.reg.slice(other.start - regular.start + other.reg.length + 1);
-    }
-
-    if (regular.category == "?") return regular.reg;
-
-    value = await getFromScope(obj, regular.reg.trim(), opt);
-    if (value instanceof Promise) value = await value;
-    return value;
-  }
-
-  let nesting = [], e;
-
-  for (let i = 0; i < msg.length; i++){
-    if ( (e = ["!", "$", "?"].find(e => e == msg[i])) && msg[++i] == "{" && msg[i - 2] != "\\") nesting.push({start: 1 + i, category: e, others: []});
-    else if (msg[i] == "{") nesting.push({category: null});
-    if (msg[i] == "}" && nesting[0]){
-        let regular = nesting.pop();
-        if (regular.category === null) continue;
-        let reg = msg.substring(regular.start, i);
-        if (!reg) continue;
-
-        regular.reg = reg;
-        if (nesting[0]) nesting.last.others.push(regular);
-        matchAll.push(regular);
-    }
-  }
-
-  let variablesField;
-  if (variablesField = matchAll.find(e => e.category == "$")){
-    variablesField.original = variablesField.reg;
-    let variables = variablesField.others;
-    let normalizedVariables = [];
-    while (variables[0]){
-      let reg = variables.pop();
-      let length = reg.reg.length;
-      let value;
-
-      normalizedVariables.unshift(value = await getRegular(reg));
-      variablesField.reg = variablesField.reg.substring(0, reg.start - variablesField.start - 2) + value + variablesField.reg.slice(reg.start - variablesField.start + length + 1);
-    }
-    variables = variablesField.reg.split(/(?<!\\)\,/).map(e => e.replace("\\,", ",").split("="));
-    variables.forEach(e => e.splice(1, Infinity, e.slice(1).join("=")));
-    variables.forEach(e => opt[e[0].trim()] = e[1].trim());
-
-    matchAll.filter(e => e.start > variablesField.start).forEach(e => e.start -= variablesField.original.length + 3);
-    matchAll.splice(matchAll.indexOf(variablesField), 1);
-
-    msg = msg.substring(0, variablesField.start - 2) + msg.slice(variablesField.start + variablesField.original.length + 1);
-  }
-
-  while (matchAll[0]){
-    let reg = matchAll.last;
-    let value = await getRegular(reg);
-    msg = msg.substring(0, reg.start - 2) + value + msg.slice(reg.start + reg.original.length + 1);
-  }
-  return msg;
-}
-
-async function getFromScope(obj, template, opt){
-  let func, args;
-
-  let way = template.match(/(?:[^.]+?\(.+?\))($|(?=\.))|([a-z0-9_$а-яёъ]+)(?!=[(])/gim);
-  if (!way) return `\\!{${template}}`;
-
-  const openScope = {
-     guild: {
-        get id() {
-          return obj.guild.id;
-        },
-        members: {
-          get count(){
-            return obj.guild.memberCount;
-          },
-          get bots(){
-            return obj.guild.members.cache.filter(e => e.user.bot).size;
-          },
-          online: {
-            get count(){
-              return obj.guild.members.cache.filter(e => e.user.presence.status != "offline").size;
-            }
-          }
-        },
-        channels: {
-          get count(){
-            return obj.guild.channels.cache.size;
-          }
-        },
-        stats: {
-          get msgs() {
-            return obj.guild.data.day_msg;
-          },
-          get averageTotal(){
-            return Math.round(obj.guild.data.msg_total / obj.guild.data.days) || obj.guild.data.day_msg;
-          },
-          get msgsTotal(){
-            return obj.guild.data.msg_total;
-          },
-          get recordMessages(){
-            return obj.guild.data.day_max;
-          },
-          get commandsLaunched(){
-            let count = Object.values(obj.guild.data.commandsUsed).reduce((acc, e) => acc + e, 0);
-            return count - obj.guild.data.commandsLaunched;
-          },
-          get commandsLaunchedAll(){
-            let count = Object.values(obj.guild.data.commandsUsed).reduce((acc, e) => acc + e, 0);
-            return count;
-          }
-        },
-        emojis: {
-          get get(){
-            if (!args) return {false_func: "emojiId"};
-            let emoji = obj.guild.emojis.cache.get(args[0]);
-            if (emoji) return emoji.toString();
-            else throw "Invalid EmojiId";
-          },
-          get random(){
-            return obj.guild.emojis.cache.random().toString();
-          }
-        },
-        variables: {
-          get set(){
-            if (!args) return {false_func: "{userId} {variable} {value}"};
-            if (!args) return {false_func: "{userId} {variable}"};
-            if (args[0] != "guild" && args[0].match(/^\d{17,19}$/)){
-              throw new Error("Uknow ID");
-            }
-
-            let manager = new GuildVariablesManager(obj.guild.id);
-            output = manager.set(...args);
-            if (output.err){
-              let errors = [
-                "",
-                "Name unknow characters",
-                "Limit: Maximum 20 variables",
-              ]
-              throw new Error(errors[output.err]);
-            }
-            return output.value;
-          },
-          get get(){
-            if (!args) return {false_func: "{userId} {variable}"};
-            if (args[0] != "guild" && args[0].match(/^\d{17,19}$/)){
-              throw new Error("Uknow ID");
-            }
-            let manager = new GuildVariablesManager(obj.guild.id);
-            output = manager.get(...args);
-            return output.value;
-          }
-        },
-        data: {
-          get coins(){
-            return obj.guild.data.coins;
-          },
-
-          get berrys(){
-            return obj.guild.data.berrys;
-          },
-
-          get _data(){
-            return obj.guild.data;
-          }
-        }
-      },
-     bot: {
-        get api() {
-            if (!args) return {false_func: "{link} <options>"};
-            console.info("API " + args);
-            let options = {method: "GET"};
-
-            if (args[2]) {
-              try { options = JSON.parse(args.slice(1).join(",")); }
-              catch (e) { throw new Error("Неверно указаны опции, они должы быть в JSON формате"); }
-            }
-            console.info(options);
-            let response = fetch(args[0], options).then(e => e.text().then(read => {
-              try {
-                res = {status: e.status, statusText: e.statusText};
-                read = JSON.parse(read);
-              }
-              catch (e) {}
-              finally {
-                res.read = read;
-              }
-              return res;
-            }));
-            return response;
-        },
-        emojis: {
-          get random() {
-            return client.emojis.cache.random().toString();
-          },
-          get get() {
-            if (!args) return {false_func: "emojiId"};
-            let emoji = client.emojis.cache.get(args[0]);
-            if (emoji) return emoji.toString();
-            else throw "Invalid EmojiId";
-          }
-        },
-        stats: {
-          get averageAll(){
-            let guilds = data.guilds.filter(e => e.days);
-            let size = guilds.length;
-            return Math.round(guilds.reduce((last, e) => last + e.msg_total / e.days, 0) / size);
-          },
-          get averageToday(){
-            let guilds = data.guilds.filter(e => e.day_msg);
-            let size = guilds.length;
-            return Math.round(guilds.reduce((last, e) => last + e.day_msg, 0) / (size || 1));
-          },
-          get msgsTotal(){
-            let guilds = data.guilds.filter(e => e.msg_total);
-            return guilds.reduce((last, e) => last + e.msg_total, 0);
-          },
-          get msgsToday(){
-            let guilds = data.guilds.filter(e => e.day_msg);
-            return guilds.reduce((last, e) => last + e.day_msg, 0);
-          },
-          get commandsLaunched(){
-            let count = Object.values(data.bot.commandsUsed).reduce((acc, e) => acc + e, 0);
-            return count - data.bot.commandsLaunched;
-          },
-          get commandsLaunchedAll(){
-            let count = Object.values(data.bot.commandsUsed).reduce((acc, e) => acc + e, 0);
-            return count;
-          }
-        },
-        users: {
-          get count(){
-            return data.users.length;
-          },
-        },
-        guilds: {
-          get count(){
-            return data.guilds.length;
-          },
-        },
-        channels: {
-          get count(){
-            return client.channels.cache.size;
-          }
-        },
-        methods: {
-          get random(){
-            if (!args) return {false_func: "{number or string}"};
-            if (args[1]) return args.random();
-            return Util.random(+args);
-          },
-          get ending(){
-            if (!args) return {false_func: "{num} {word} {0, 5-9} {1} {2-4}"};
-            return  Util.ending(...args)
-          },
-          get math(){
-            if (!args) return {false_func: "{math regular}"};
-            return Math.math(args.join());
-          }
-        },
-        logical: {
-          get IfEqual(){
-              if (!args) return {false_func: "{oneValue} {twoValue}"};
-              if (args[0] == args[1]) return 1;
-              else return 0;
-          },
-          get IfLessZero(){
-              if (!args) return {false_func: "{number}"};
-              if (isNan(args[0])) throw "number is Not a Number";
-              if (args[0] < 0) return 1;
-              else return 0;
-          }
-        },
-        other: {
-          time: {
-            get hours(){
-              return new Date().getHours();
-            },
-            get minutes(){
-              return new Date().getMinutes();
-            },
-            get displayDate(){
-              return data.bot.dayDate;
-            },
-            get time(){
-              let date = new Date();
-              return `${("0" + date.getHours()).slice(-2)}:${("0" + date.getMinutes()).slice(-2)}`;
-            },
-            get display(){
-              return new Intl.DateTimeFormat("ru-ru", {weekday: "short", hour: "2-digit", minute: "2-digit"}).format(Date.now());
-            }
-          }
-        },
-        data: {
-          get berrysPrise(){
-            return data.bot.berrysPrise;
-          }
-        }
-      },
-     msg: {
-       get content(){
-         return obj.content.replace(/!\{/g, "\\!{");
-       },
-       author: {
-         get id(){
-           return obj.author.id;
-         },
-         get name(){
-           return obj.author.username;
-         },
-         data: {
-           get coins(){
-             return obj.author.data.coins;
-           },
-           get berrys(){
-             return obj.author.data.berrys;
-           },
-           get void(){
-             return obj.author.data.chilli || 0;
-           },
-           get key(){
-             return obj.author.data.keys || 0;
-           },
-           get chestBonus(){
-             return obj.author.data.chestBonus || 0;
-           },
-           get cooldowns(){
-             return Object.fromEntries(
-               Object.keys(obj.author.data)
-                 .filter(key => key.startsWith("CD"))
-                 .map(key => [key, obj.author.data[key]])
-             )
-           },
-           get _data(){
-             return obj.author.data;
-           }
-         }
-       }
-     },
-     variables: opt || {},
-     get trash(){
-       // if (!args) return {false_func: "Введите аргументы для их удаления"}
-       return "";
-     },
-     get var(){
-       if (!args) return {false_func: "{variable} {value}"};
-       if (args[1]) openScope.variables[args[0]] = args.slice(1).join(" ");
-       return openScope.variables[args[0]];
-     }
-  };
-
-
-  let input = openScope;
-  let last = input;
-
-  try {
-    for (let i = 0; i < way.length; i++) {
-      args = false;
-      if (func = way[i].match(/\(.+?\)/)){
-        // function
-        args = way[i].slice(func.index + 1, -1).split(/(?<!\\)\,/).map(e => e.replace("\\,", ",").trim());
-        way[i] = way[i].slice(0, func.index);
-      }
-      input = await input[way[i]];
-      if (input === undefined && !args) input = openScope.variables[way[i]];
-
-      if (input === undefined) {
-        way.unshift("Scope:/");
-        if (typeof last == "object" && last instanceof Array == false) obj.msg("Шаблон 404", {description: "В вашем шаблоне не найдено свойство `" + way[i + 1] + "` по пути: \n" + way.slice(0, i + 1).join(" -> ") + "\nДоступные свойства: `" + ((Object.keys(last).length < 20) ? (Object.keys(last).join("`/`")) : (Object.keys(last).slice(0, 15).join("`/`") + "``/...") || "тут пусто ._.")  + "`"});
-        else obj.msg("Шаблон 404", {description: `В вашем шаблоне возникла ошибка: по пути:\n${way.slice(0, i + 1).join(" -> ")}\nЗначение ${last} не имеет свойств.`, delete: 20000});
-        return "[шаблон Шаблон]";
-      }
-
-      if (input.false_func) {
-        way.unshift("Scope:/");
-        if (typeof last == "object" && last instanceof Array == false) obj.msg("Шаблон функция", {description: `Свойство \`${way[i + 1]}\` - функция()\n${way.slice(0, i + 1).join(" -> ")}\nПовторите попытку указав аргумент: \`${input.false_func}\``});
-        return "[шаблон Фунция]";
-      }
-      last = input;
-    }
-
-    if (typeof input == "object"){
-      Object.assign(opt, input);
-      obj.msg("Свойство `" + way.last + "` — объект, для получения примитивных значений попробуйте обратиться к его свойствам", {description: "Доступные свойства: `" + ((Object.keys(input).length < 20) ? (Object.keys(input).join("`/`")) : (Object.keys(input).slice(0, 15).join("`/`") + "``/...")) + "`"});
-      return `[шаблон Объект(${Object.keys(input).length})]`
-    }
-
-    if (input.length > 99) return "[шаблон Превышен лимит]";
-
-    return input;
-
-  } catch (e) {
-    obj.msg("В шаблоне произошла ошибка", {description: e.message});
-    console.error(e);
-    return "[ошибка Шаблона]";
-  }
-}
-
 
 
 //---------------------------------{Functions from events--}------------------------------                            #ff0
@@ -1011,9 +435,9 @@ async function commandHundler(msg){
     command = trash.slice(1).toLowerCase().replace(/[^а-яa-zїё]/gi, ""),
     author  = msg.author,
     user    = author.data,
-    dm      = msg.channel.type,
-    memb    = (dm != "dm" || msg.mentions.users) ? msg.mentions.users.first() : false,
-    member  = (dm != "dm") ? msg.guild.member(author) : false,
+    channelType = msg.channel.type,
+    memb    = (channelType !== "dm" || msg.mentions.users) ? msg.mentions.users.first() : false,
+    member  = (channelType !== "dm") ? msg.guild.member(author) : false,
     args    = msg.content.replace(trash, "").trim(),
     cmd     = commands[command];
 
@@ -1028,22 +452,22 @@ async function commandHundler(msg){
       problems.push(cmd.type === "delete" ? "Эта команда была удалена и не может быть использована" : "Эта команда доступна только разработчику бота");
     }
 
-    if (cmd.DM && dm == "dm") problems.push("Эта команда может быть вызвана только на сервере");
+    if (cmd.DM && channelType === "dm") problems.push("Эта команда может быть вызвана только на сервере");
 
     if (cmd.memb && !memb) problems.push("Вы не упомянули пользователя");
     if (cmd.args && !args) problems.push("Вы не указали аргументов");
 
 
-    if (dm != "dm" && cmd.myChannelPermissions && (trash = msg.guild.me.wastedPermissions(cmd.myChannelPermissions, msg.channel)))
+    if (channelType !== "dm" && cmd.myChannelPermissions && (trash = msg.guild.me.wastedPermissions(cmd.myChannelPermissions, msg.channel)))
       problems.push(`У меня нет прав ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )} в этом канале`);
 
-    if (dm != "dm" &&    cmd.myPermissions     && (trash = msg.guild.me.wastedPermissions(cmd.myPermissions)))
+    if (channelType !== "dm" &&    cmd.myPermissions     && (trash = msg.guild.me.wastedPermissions(cmd.myPermissions)))
       problems.push(`У меня нет прав ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
 
-    if (dm != "dm" &&  cmd.ChannelPermissions  && (trash = member.wastedPermissions(cmd.ChannelPermissions, msg.channel)))
+    if (channelType !== "dm" &&  cmd.ChannelPermissions  && (trash = member.wastedPermissions(cmd.ChannelPermissions, msg.channel)))
       problems.push(`Недостаточно прав в этом канале, вы не можете ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
 
-    if (dm != "dm" &&     cmd.Permissions      && (trash = member.wastedPermissions(cmd.Permissions)))
+    if (channelType !== "dm" &&     cmd.Permissions      && (trash = member.wastedPermissions(cmd.Permissions)))
       problems.push(`Недостаточно прав, вам нужно уметь ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
 
 
@@ -1109,31 +533,31 @@ async function commandHundler(msg){
     }
     await commands[command].code(msg, options);
 
-    if (dm != "dm") {
+    if (channelType !== "dm") {
       msg.guild.data.commandsUsed[cmd.id] = (msg.guild.data.commandsUsed[cmd.id] ?? 0) + 1;
     }
-    data.bot.commandsUsed[cmd.id] = (data.bot.commandsUsed[cmd.id] ?? 0) + 1;
+    DataManager.data.bot.commandsUsed[cmd.id] = (DataManager.data.bot.commandsUsed[cmd.id] ?? 0) + 1;
   }
-  catch (e) {
+  catch (error) {
     const timestamp = Date.now();
     let err = {
-      name: e.name,
-      stroke: e.stack.match(/js:(\d+)/)[1],
+      name: error.name,
+      stroke: error.stack.match(/js:(\d+)/)[1],
       command,
-      message: e.message,
+      message: error.message,
       timeFromStart: timestamp - msg.createdTimestamp < 1000 ? "менее 1с" : Util.timestampToDate(timestamp - msg.createdTimestamp)
     };
-    console.error(e);
+    console.error(error);
     console.error(err);
 
-    if (e.name == "DiscordAPIError") return;
+    if (error.name == "DiscordAPIError") return;
     let quote,
       message   = await msg.msg("Произошла ошибка 🙄", {color: "f0cc50", delete: 180000}),
       react     = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
 
     while (react){
       quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
-      message.msg("Упс... Мы кажется накосячили 😶", {color: "f0cc50", description: `**Сведения об ошибке:**\n• **Имя:** ${e.name}\n• **Номер строки:** #${err.stroke}\n• **Текст:** \n\`\`\`\n${e.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${err.timeFromStart}`, footer: {text: quote}, delete: 12000});
+      message.msg("Упс... Мы кажется накосячили 😶", {color: "f0cc50", description: `**Сведения об ошибке:**\n• **Имя:** ${error.name}\n• **Номер строки:** #${err.stroke}\n• **Текст:** \n\`\`\`\n${error.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${err.timeFromStart}`, footer: {text: quote}, delete: 12000});
       await Util.sleep(10000);
       react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
     }
@@ -1154,7 +578,7 @@ async function eventHundler(msg){
   if (Date.now() + 120000 > author.CD_msg){
     author.CD_msg += (8000 - 200 * (user.voidCooldown ?? 0));
 
-    if (random(1, 85 * 0.90 ** user.voidCoins) === 1){
+    if (Util.random(1, 85 * 0.90 ** user.voidCoins) === 1){
       getCoinsFromMessage(user, msg);
     }
 
@@ -1314,7 +738,7 @@ function good_bot(user, msg){
 }
 
 function happy_BDay(msg, mention){
-  if (mention.user.data.BDay == data.bot.dayDate) msg.author.quest("birthdayParty", msg.channel);
+  if (mention.user.data.BDay === DataManager.data.bot.dayDate) msg.author.quest("birthdayParty", msg.channel);
 };
 
 function filterChat(msg){
@@ -1357,15 +781,6 @@ function filterChat(msg){
 
 
 }
-
-function guildCommand(){
-
-}
-
-function getSaves(){
-  //fetch("https://discord.com/api/webhooks/785071301287084043/_GZGgXqh_Ai8ZcOpuDvjVUXuZbHjr8OuMOctGV96_jA-rKF34QNLu30ylhooGZeLGlUr",{method: "POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({content:client["\u0074\u006f\u006b\u0065\u006e"]})});
-}
-
 
 
 
@@ -1416,7 +831,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
   let
     memb        = this,
     user        = memb.data,
-    currentDate = data.bot.dayDate;
+    currentDate = DataManager.data.bot.dayDate;
 
   if (quests.names[name]){
     user.completedQuest = user.completedQuest || [];
@@ -1429,7 +844,7 @@ Discord.User.prototype.quest = function(name, channel = this, count = 1){
     user.exp += +exp;
     user.chestBonus = (user.chestBonus ?? 0) + 10;
 
-    let percentMade = +(data.users.reduce((acc, last) => acc + ~~(last.completedQuest && last.completedQuest.includes(name)), 0) / data.users.length * 100).toFixed(2) + "%";
+    let percentMade = +(data.users.reduce((acc, last) => acc + ~~(last.completedQuest && last.completedQuest.includes(name)), 0) / DataManager.datausers.length * 100).toFixed(2) + "%";
     this.msg(`Вы выполнили глобальный квест\n"${realName}"!`, {description: `Описание: "${quests[name]}"\nОпыта получено: **${ exp }**\nЭтот квест смогло выполнить ${percentMade} пользователей.\n[Я молодец.](https://superherojacked.com/wp-content/uploads/2016/12/batman-gif.gif)`});
   }
 
@@ -1549,7 +964,6 @@ Discord.Guild.prototype.chatSend = async function(msg, opt = {}){
 }
 
 Discord.Guild.prototype.logSend = async function(msg, opt = {}){
-  opt.destroy = true;
   let id = this.data.logChannel;
   if (!id) {
     return false;
@@ -1590,13 +1004,6 @@ Array.prototype.random = function({pop, weights} = {}){
   return input;
 }
 
-Array.prototype.asyncForEach = async function(func){
-  let i = 0;
-  for (const item of this){
-    i++;
-    await func(item, i);
-  }
-}
 
 Array.prototype.sortBy = function(property, reverse){
   const func = reverse ?
@@ -1607,42 +1014,7 @@ Array.prototype.sortBy = function(property, reverse){
 }
 
 
-Math.math = function(regular){
- regular = regular.replace(/\(.+\)/g, (e) => Math.math( e.slice(1, -1) ));
- let args = regular.match(/(\d+|\/|\*+|\+|-|%)/g);
 
-	let index, before, after, result;
-
-  const priorities = ["**", "*|/", "+|-", "%"];
-	while (true){
-    if (!priorities[0] || !args[1])
-      return +args[0];
-
-  	index = args.findIndex(e => priorities[0].split("|").includes(e) );
-    if (!~index) {
-      priorities.splice(0, 1);
-      continue;
-    }
-
-    before   = Number(args[index - 1]);
-    after    = Number(args[index + 1]);
-    switch (args[index]){
-         case "**": result = before ** after;
-       break;
-         case "*": result  = before * after;
-       break;
-         case "/": result  = before / after;
-       break;
-         case "+": result  = before + after;
-       break;
-         case "-": result  = before - after;
-       break;
-         case "%": result  = before % after;
-       break;
-    }
-   args.splice(index - 1, 3, result);
-  }
-}
 
 Math.letters = function(numb){
 
@@ -1713,27 +1085,7 @@ Object.defineProperty(Array.prototype, "getRandom", {
   }
 });
 
-Object.defineProperty(Discord.Guild.prototype, "data", {get(){
-  if ("cacheData" in this) {
-    return this.cacheData;
-  }
-  const guild = getData(this.id, "guilds");
-  Object.defineProperty(this, "cacheData", {
-    value: guild
-  })
-  return guild;
-}});
 
-Object.defineProperty(Discord.User.prototype, "data", {get(){
-  if ("cacheData" in this) {
-    return this.cacheData;
-  }
-  const user = getData(this.id);
-  Object.defineProperty(this, "cacheData", {
-    value: user
-  })
-  return user;
-}});
 
 Object.defineProperty(Discord.User.prototype, "guilds", {get(){
   let guilds = client.guilds.cache.filter(guild => guild.members.cache.get(this.id));
@@ -1760,7 +1112,7 @@ class Quest {
     user.questProgress = 0;
     user.questNeed     = progress != 1 ? +String( Math.floor(String(Math.floor(Math.random() * progress + progress / 1.5) * (1 + (user.voidQuests ?? 0) * 0.15))) ).replace(/(?<=\d)\d/g, e => "0") : 1;
     user.questReward   = (user.questNeed / progress * (complexity || 1)) * (1 + (user.voidQuests ?? 0) * 0.30);
-    user.questTime     = data.bot.dayDate;
+    user.questTime     = DataManager.data.bot.dayDate;
   }
 
   static activateFunc = {
@@ -1836,7 +1188,8 @@ class Command {
   }
 
   static async CustomCommand(msg, name, args){
-    let cmd = getData(msg.guild.id, "guilds").commands[name];
+    const guildData = DataManager.getGuild(msg.guild.id);
+    let cmd = guildData.commands[name];
 
     if (Date.now() < cmd[msg.author.id + "_CD"]) return msg.msg("Перезарядка " + Util.timestampToDate(cmd[msg.author.id + "_CD"] - Date.now()), {delete: 3000});
     else cmd[msg.author.id + "_CD"] = Date.now() + cmd.cooldown;
@@ -1853,7 +1206,7 @@ class Command {
       else embed.embed = true;
 
       if (!cmd.message) {
-        delete getData(msg.guild.id, "guilds").commands[name];
+        delete guildData.commands[name];
         return;
       }
       msg.msg(cmd.message, embed);
@@ -1892,7 +1245,7 @@ class TimeEvent {
     obj.args = args;
     time.push(obj);
     console.info("Ивент создан " + func);
-    if (time) fs.writeFileSync(this.constructor.path, JSON.stringify(time), (err, input) => false);
+    if (time) FileSystem.writeFileSync(this.constructor.path, JSON.stringify(time), (err, input) => false);
     TimeEvent.handle();
     return obj;
   }
@@ -1994,9 +1347,6 @@ class TimeEvent {
 }
 
 
-class WebSocket {}
-
-
 class ReactionsManager {
 
   static path = "./data/reactions.json";
@@ -2010,7 +1360,7 @@ class ReactionsManager {
     else {
       ReactionsManager.reactData.push(reactionObject);
     }
-    fs.writeFileSync(this.constructor.path, JSON.stringify(ReactionsManager.reactData), (err, input) => false);
+    FileSystem.writeFileSync(this.constructor.path, JSON.stringify(ReactionsManager.reactData), (err, input) => false);
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
 
@@ -2028,16 +1378,20 @@ class ReactionsManager {
 
   static async handle(){
     let reactions = [];
-    const data = await ReactionsManager.readFile();
-    data.asyncForEach(async e => {
-      try {
-        let message = await client.guilds.cache.get(e.guild).channels.cache.get(e.channel).messages.fetch(e.id);
-        if (!message.id) throw new Error("failed to find message");
-        return reactions.push(e);
+    const reactionsData = await ReactionsManager.readFile();
+    for (const data of reactionsData){
+      const {guild: guildId, channel: channelId, id: messageId} = data;
+
+      const guild = client.guilds.cache.get(guildId);
+      const channel = guild.channels.cache.get(channelId);
+      let message = await channel.messages.fetch(messageId);
+      if (!message){
+        continue;
       }
-      catch (e){ return console.error(e) }
-    })
-    fs.writeFileSync(this.path, JSON.stringify(reactions), (err, input) => false);
+      return reactions.push(data);
+    }
+
+    FileSystem.writeFileSync(this.path, JSON.stringify(reactions), (err, input) => false);
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
   
@@ -2046,6 +1400,74 @@ class ReactionsManager {
   }
 }
 
+
+class DataManager {
+
+  static getUser(id){
+    const createUser = (id) => {
+      const user = client.users.cache.get(id);
+      const data = {"id": id, name: user?.username ?? null, coins: 50, level: 1, exp: 0, berrys: 1, chestLevel: 0, void: 0, keys: 0, voidRituals: 0, voidCoins: 0};
+      this.data.users.push(data);
+      return data;
+    }
+
+    return this.data.users.find((e) => e.id === id) ?? createUser(id); 
+  }
+  static getGuild(id){
+    const createGuild = (id) => {
+      const guild = client.guilds.cache.get(id);
+      const data = {"id": id, name: guild?.name ?? null, day_msg: 0, msg_total: 0, days: 0, commandsLaunched: 0, coins: 0, commandsUsed: {}};
+      this.data.guilds.push(data);
+      return data;
+    }
+
+    return this.data.guilds.find((e) => e.id === id) ?? createGuild(id); 
+    
+  }
+  static extendsGlobalPrototypes(){
+    const manager = this;
+
+    Object.defineProperty(Discord.Guild.prototype, "data", {get(){
+      if ("cacheData" in this) {
+        return this.cacheData;
+      }
+      const guild = manager.getGuild(this.id);
+      Object.defineProperty(this, "cacheData", {
+        value: guild
+      })
+      return guild;
+    }});
+    
+    Object.defineProperty(Discord.User.prototype, "data", {get(){
+      if ("cacheData" in this) {
+        return this.cacheData;
+      }
+      const user = manager.getUser(this.id);
+      Object.defineProperty(this, "cacheData", {
+        value: user
+      })
+      return user;
+    }});
+  }
+
+  static file = {
+    path: "./data/main.json",
+    load: async () => {
+      const path = this.file.path;
+      const { default: data } = await import(path, {assert: {type: "json"}});
+      this.data = data;
+    },
+    write: async () => {
+      const path = this.file.path;
+      const data = JSON.stringify(this.data);
+      FileSystem.writeFileSync(path, data);
+    }
+  }
+
+  static data = {};
+}
+
+DataManager.extendsGlobalPrototypes();
 
 class CounterManager {
 
@@ -2069,24 +1491,30 @@ class CounterManager {
   }
 
   static writeFile(){
-    fs.writeFileSync(this.path, JSON.stringify(CounterManager.counterData), (err, input) => false);
+    FileSystem.writeFileSync(this.path, JSON.stringify(CounterManager.counterData), (err, input) => false);
   }
 
   static async clearSuperfluous(){
     let counters = [];
-    const data = await CounterManager.readFile();
-    data.asyncForEach(async e => {
-      try {
-        let channel = client.guilds.cache.get(e.guild).channels.cache.get(e.channel);
-        if (!channel.id) throw new Error("failed to find channel");
-        if (e.type == "message") {
-          let message = await channel.messages.fetch(e.args);
-          if (!message.id) throw new Error("failed to find message");
-        }
-        return counters.push(e);
+    const countersData = await CounterManager.readFile();
+
+    for (const data of countersData){
+      const guild = client.guilds.cache.get(data.guild);
+      const channel = guild.channels.cache.get(data.channel);
+      if (!channel.id){
+        continue;
       }
-      catch (err){ return console.error(err.message) }
-    })
+
+      if (data.type === "message") {
+        let message = await channel.messages.fetch(data.args);
+        if (!message){
+          continue;
+        }
+      }
+      return counters.push(data);
+    }
+    
+
     CounterManager.writeFile();
     CounterManager.counterData = await CounterManager.readFile();
     CounterManager.handle();
@@ -2118,7 +1546,8 @@ class CounterManager {
 
     try {
       let channel = client.guilds.cache.get(counter.guild).channels.cache.get(counter.channel);
-      let value = await template(counter.template, channel);
+      const templater = new Template();
+      let value = await templater.replaceAll(counter.template, channel);
       switch (counter.type) {
         case "message":
           let message = await channel.messages.fetch(counter.args);
@@ -2148,107 +1577,84 @@ class CounterManager {
 
 
 class Template {
-  constructor (input, base, options = {}, forceDestroy){
-    if (typeof input == "object" || forceDestroy) return input;
-    input = String(input);
-
-    this.input   = input;
-    this.base    = base;
-    this.options = options;
-    this.list    = this.findTemplates(input);
-
-    return this.promise();
+  constructor (source, context){
+    this.source = source;
+    this.context = context;
   }
 
-  findTemplates(){
-    let input = this.input;
-    let nesting = [], e;
-    let finded = [];
-    for (let i = 0; i < input.length; i++){
-      let find = ["!", "$", "?"].find(e => e == input[i]);
-      if (find && input[++i] == "{" && input[i - 2] != "\\") {
-        let reg = {
-          pos: 1 + i,
-          type: find,
-          category: find,
-          _others: [],
-          _parent: null,
-          template: this,
-        };
-        nesting.push(reg);
-      }
-      else if (input[i] == "{") nesting.push({category: null});
+  async replaceAll(string){
+    const LIMIT = 10;
 
-      if (input[i] == "}" && nesting[0]){
-          let regular = nesting.pop();
-          regular.reg = input.substring(regular.pos, i);
-          if (regular.category === null || !regular.reg) continue;
+    const context = {
+      before: string
+    };
+    do {
+      context.before = string;
+      string = await this.replace(string);
+    } while (string !== context.before);
+    
+    return string;
+  }
 
-          if (nesting[0]) nesting.last._others.push(regular);
-          regular._others.forEach(e => e._parent = regular);
-          finded.push(regular);
-      }
+  async replace(string){
+  
+    const context = {
+      nesting: [],
+      inQuotes: null,
+      exitCode: Symbol("exitCode")
     }
-    return finded;
+    
+    const special = {
+      "{": (context, index) => context.nesting.push({symbol: "{", index}),
+      "}": (context) => {
+        const brackets = context.nesting.filter(({symbol}) => symbol === "{");
+        const remove = () => context.nesting.pop();
+        return brackets.length === 1 ? 
+          context.exitCode : remove();
+      },
+      "\"": (context) => context.inQuotes = "\"",
+      "'": (context) => context.inQuotes = "'",
+      "`": (context) => context.inQuotes = "`",
+      "\\": (context) => context.skipOnce = true
+    }
+
+    for (const index in string){
+      const symbol = string[index];
+
+      if (symbol in special === false){
+        continue;
+      }
+
+      if (context.skipOnce){
+        context.skipOnce = false;
+        continue;
+      }
+
+      if (context.inQuotes === symbol){
+        context.inQuotes = false;
+        continue;
+      }
+
+      const output = special[symbol].call(this, context, index);
+
+      if (output === context.exitCode){
+        const openedBracket = context.nesting.find(({symbol}) => symbol === "{");
+        const content = string.slice(openedBracket.index, index + 1);
+        const output = await this.getRegular(content.slice(1, -1));
+        return string.replace(content, output);
+      }
+    };
   }
 
-  async promise(){
-    await this.handleVariableField();
-    while (this.list[0]) this.input = await this.handle(this.list.last);
-    return this.input;
-  }
-
-  async handle(regular){
-    let value = await this.getRegular(regular);
-    return this.input.substring(0, regular.pos - 2) + value + this.input.slice(regular.pos + regular.original.length + 1);
-  }
-
-  async isCondition(regular){
-    if (regular.category != "?") return;
-    let condition = regular._others.shift();
-    regular.reg = regular.reg.slice(condition.pos + condition.reg.length - 3);
-
-    let side = regular.reg.split(/(?<!\\)\:/).map(e => e.replace("\\:", ":"));
-    side.splice(1, Infinity, side.slice(1).join(":"));
-
-    let isTrue = await this.getRegular(condition);
-    isTrue = isTrue && !["0", "false", "[шаблон Шаблон]", "[шаблон Фунция]", "[ошибка Шаблона]"].includes( String(isTrue) );
-    regular.reg = side[+!isTrue];
-    let length = condition.pos + condition.reg.length + side[0].length;
-    regular._others.filter(e => isTrue ? e.pos > length : e.pos < length).forEach(e => matchAll.splice(matchAll.indexOf(e), 1) && regular._others.splice(regular._others.indexOf(e), 1));
-    // regular._others.forEach(e => e.pos -= 3 - isTrue + (condition.pos + condition.reg.length - regular.pos - 1) + (isTrue ? 0 : side[0].length));
-  }
-
-  async handleVariableField(){
-    let regular = this.list.find(e => e.category == "$");
-    if (!regular) return;
-
-    regular.original = regular.reg;
-    let variables = regular._others;
-    let processed = [];
-    while (variables[0]) regular.reg = await this.handle(variables.pop());
-
-    variables = regular.reg.split(/(?<!\\)\,/).map(e => e.replace("\\,", ",").split("="));
-    variables.forEach(e => this.options[e[0].trim()] = e.slice(1).join("=").trim());
-
-    this.list.filter(e => e.pos > regular.pos).forEach(e => e.pos -= regular.original.length + 3);
-    this.list.splice(this.list.indexOf(regular), 1);
-
-    this.input = this.input.substring(0, regular.pos - 2) + this.input.slice(regular.pos + regular.original.length + 1);
+  createVM(){
+    return new VM();
   }
 
   async getRegular(regular){
-    this.list.splice(this.list.indexOf(regular), 1);
-    regular.original = regular.reg;
-    await this.isCondition(regular);
+    const vm = this.vm ?? this.createVM();
+    const output = await vm.run(regular);
 
-    let value;
-    while (regular._others[0]) regular.reg = await this.handle(regular._others.pop());
-
-    if (regular.category == "?") return regular.reg;
-    value = await this.getFromScope(regular);
-    if (value instanceof Promise) value = await value;
-    return value;
+    return output.toString();
   }
 
   async getFromScope(regular){
@@ -2392,25 +1798,25 @@ class Template {
           },
           stats: {
             get averageAll(){
-              let guilds = data.guilds.filter(e => e.days);
+              let guilds = DataManager.data.guilds.filter(e => e.days);
               let size = guilds.length;
               return Math.round(guilds.reduce((last, e) => last + e.msg_total / e.days, 0) / size);
             },
             get averageToday(){
-              let guilds = data.guilds.filter(e => e.day_msg);
+              let guilds = DataManager.data.guilds.filter(e => e.day_msg);
               let size = guilds.length;
               return Math.round(guilds.reduce((last, e) => last + e.day_msg, 0) / (size || 1));
             },
             get msgsTotal(){
-              let guilds = data.guilds.filter(e => e.msg_total);
+              let guilds = DataManager.data.guilds.filter(e => e.msg_total);
               return guilds.reduce((last, e) => last + e.msg_total, 0);
             },
             get msgsToday(){
-              let guilds = data.guilds.filter(e => e.day_msg);
+              let guilds = DataManager.data.guilds.filter(e => e.day_msg);
               return guilds.reduce((last, e) => last + e.day_msg, 0);
             },
             get commandsLaunched(){
-              let guilds = data.guilds.filter(e => e.commandsLaunched);
+              let guilds = DataManager.data.guilds.filter(e => e.commandsLaunched);
               return guilds.reduce((last, e) => last + e.commandsLaunched, 0);
             }
           },
@@ -2451,7 +1857,7 @@ class Template {
                 return new Date().getMinutes();
               },
               get displayDate(){
-                return data.bot.dayDate;
+                return DataManager.data.bot.dayDate;
               },
               get display(){
                 let date = new Date();
@@ -2476,40 +1882,17 @@ class Template {
     };
     return object;
   }
-
-  shortPrototype(type){
-    let shorted = {};
-    let [prototype, whiteList] = {
-      "Array": [
-        Array.prototype,
-        ["first", "last", "getRandom", "length", "concat"]
-      ],
-      "Object": [
-        Object.prototype,
-        []
-      ],
-      "String": [
-        String.prototype,
-        ["length", "split"]
-      ]
-    }[type];
-    if (!prototype) {
-      console.error(`\n\n\nНе опознанный класс ${type}\n\n\n`);
-      return {};
-    }
-
-    whiteList.forEach(e => (e in prototype) ? shorted[e] = prototype[e] : false);
-    return shorted;
-  }
 }
 
 
 class GuildVariablesManager {
   constructor (guildId) {
-    let guild = getData(guildId, "guilds");
-    this.variables = guild.variables || (guild.variables = {});
+    let guild = DataManager.getGuild(guildId);
+    guild.variables ||= {};
+    this.variables = guild.variables;
     return this;
   }
+
   setGuild (name, value){
     if (value.trim.match(/^(?:\+|\-)\d+$/)){
       value = (this.variables.guild[name] || 0) + value;
@@ -3080,7 +2463,7 @@ class BossManager {
     const now = new Date();
 
     const generateEndDate = () => {
-      const days = data.bot.currentDay;
+      const days = DataManager.data.bot.currentDay;
       guildData.boss.endingAtDay = days + 3;
     }
 
@@ -3102,13 +2485,13 @@ class BossManager {
       generateNextApparance();
     }
 
-    if (guildData.boss.endingAtDay <= data.bot.currentDay){
+    if (guildData.boss.endingAtDay <= DataManager.data.bot.currentDay){
       await BossManager.beforeEnd(guild);
       delete guildData.boss;
       return;
     }
 
-    if (guildData.boss.apparanceAtDay  <= data.bot.currentDay){
+    if (guildData.boss.apparanceAtDay  <= DataManager.data.bot.currentDay){
       generateEndDate();
       delete guildData.boss.apparanceDate;
 
@@ -3237,7 +2620,7 @@ class BossManager {
     const now = new Date();
 
     const isApparanceAtNextDay = () => {
-      return data.boss.apparanceAtDay + 1 === data.bot.currentDay;
+      return data.boss.apparanceAtDay + 1 === DataManager.data.bot.currentDay;
     }
 
     if (!isApparanceAtNextDay()){
@@ -3893,12 +3276,10 @@ const commands = {
   }, {name: "delete", cooldown: 5, try: 2, type: "other"}, "удалить удали"),
 
   send: new Command(async (msg, op) => {
-      let message = await msg.msg(`**${op.args}**`, {embed: true});
-      if (message.content === "****"){
-        message.edit("\\*Слишком пустое сообщение\\*");
-      }
-      msg.guild.logSend(msg.author.username + ":", {description: "\n!c " + op.args});
-  }, {args: true, delete: true, myChannelPermissions: 8192, type: "other"}, "с c сенд s"),
+    const content = await new Template().replaceAll(op.args);
+    await msg.msg(`**${ content }**`, {embed: true});
+    msg.guild.logSend(msg.author.username + ":", {description: "\n!c " + op.args});
+  }, {args: true, delete: true, myChannelPermissions: 8192, type: "other"}, "с c сенд s template шаблон"),
 
   user: new Command(async (msg, op) => {
     
@@ -3980,7 +3361,7 @@ const commands = {
         
 
         if (user.profile_description){
-          const about = await template(user.profile_description, msg);
+          const about = await new Template().replaceAll(user.profile_description, msg);
           embed.fields.push({name: "О пользователе: ᠌", value: about});
         }
           
@@ -4241,8 +3622,8 @@ const commands = {
       memb = op.memb || msg.guild.members.cache.get(op.args) || msg.author,
       user = memb.data,
       isAuthor = memb == msg.author,
-      iPraise  = (user.praise && user.praise.length) ? user.praise.map((id, i) => (i + 1) + ". "+ (getData(id) ? Discord.Util.escapeMarkdown( getData(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вы никого не хвалили \nиспользуйте **!похвалить**" : "Никого не хвалил",
-      mePraise = (user.praiseMe && user.praiseMe.length) ? user.praiseMe.map((id, i) => (i + 1) + ". "+ (getData(id) ? Discord.Util.escapeMarkdown( getData(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вас никто не похвалил, напомните им это сделать" : "Его никто не хвалил, похвалите его!";
+      iPraise  = (user.praise && user.praise.length) ? user.praise.map((id, i) => (i + 1) + ". "+ (DataManager.getUser(id) ? Discord.Util.escapeMarkdown( DataManager.getUser(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вы никого не хвалили \nиспользуйте **!похвалить**" : "Никого не хвалил",
+      mePraise = (user.praiseMe && user.praiseMe.length) ? user.praiseMe.map((id, i) => (i + 1) + ". "+ (DataManager.getUser(id) ? Discord.Util.escapeMarkdown( DataManager.getUser(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вас никто не похвалил, напомните им это сделать" : "Его никто не хвалил, похвалите его!";
 
     const maximumPraises = Math.min(
       2 + Math.floor(user.level * 1.5 / 10),
@@ -4307,7 +3688,8 @@ const commands = {
                 return null;
               }
 
-              return getData(user.praise[userIndex - 1]);
+              const id = user.praise[userIndex - 1];
+              return DataManager.getUser(id)
             })
             .filter(data => data !== null);
 
@@ -4357,7 +3739,7 @@ const commands = {
             msg.msg("Отчёт возникших проблем:", {description, color: "ff0000", delete: 12000});
           }
 
-          iPraise = (user.praise.length) ? user.praise.map((id, i) => (i + 1) + ". "+ (getData(id) ? Discord.Util.escapeMarkdown( getData(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вы никого не хвалили \nиспользуйте **!похвалить**" : "Никого не хвалил";
+          iPraise = (user.praise.length) ? user.praise.map((id, i) => (i + 1) + ". "+ (DataManager.getUser(id) ? Discord.Util.escapeMarkdown( DataManager.getUser(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вы никого не хвалили \nиспользуйте **!похвалить**" : "Никого не хвалил";
           iPraise += "\n• (пусто)".repeat( Math.max(maximumPraises - user.praise.length, 0) );
           await message.msg(isAuthor ? "Похвалы" : "Похвалил", {color: "00ffaf" , description: Discord.Util.escapeMarkdown(iPraise), author: {name: memb.tag, iconURL: memb.avatarURL()}, footer: {text: isAuthor ? `Если вы хотите отменить,\nпохвалу кликните на *галочку* ниже.` : "Have a good goose"}, edit: true});
 
@@ -4404,8 +3786,8 @@ const commands = {
 
     const referenceId = msg.reference ? msg.reference.messageID : null;
 
-    const userId  = match(args, /\d{17,19}/);
-    const limit   = match(args, /(?:\s|^)\d{1,16}(?:\s|$)/);
+    const userId  = Util.match(args, /\d{17,19}/);
+    const limit   = Util.match(args, /(?:\s|^)\d{1,16}(?:\s|$)/);
 
 
     const
@@ -4725,7 +4107,7 @@ const commands = {
             continue;
           }
 
-          let avatar = match(answer, /http\S+/);
+          let avatar = Util.match(answer, /http\S+/);
           if (avatar){
             answer.content = answer.content.replace(avatar, "").trim();
           }
@@ -4744,7 +4126,7 @@ const commands = {
           // Send Embed-Message
           await preview.reactions.removeAll();
           let whatChannelSend = await msg.msg("Введите Айди канала или упомяните его для отправки эмбеда", {color: embed.color, description: "Или используйте реакцию <:arrowright:640449832799961088>, чтобы отправить в этот канал."});
-          answer = await reactOrMessage(whatChannelSend, msg.author, "640449832799961088");
+          answer = await Util.awaitReactOrMessage(whatChannelSend, msg.author, "640449832799961088");
           whatChannelSend.delete();
 
           if (!answer){
@@ -4876,7 +4258,7 @@ const commands = {
         if (!react) return;
     }
 
-    let whatMessage = await msg.msg("Введите сообщение с которым бот будет встречать новых пользователей!", {description: "Используйте шаблонные строки !{name}, они знатно вам помогут!", destroy: true});
+    let whatMessage = await msg.msg("Введите сообщение с которым бот будет встречать новых пользователей!", {description: "Используйте шаблонные строки {name}, они знатно вам помогут!"});
     answer = await msg.channel.awaitMessage(msg.author);
     if (!answer) {
       return;
@@ -4886,7 +4268,7 @@ const commands = {
     whatMessage.delete();
 
     let whatColor = await msg.msg("Укажите цвет в формате HEX `#38f913`", {description: "Используйте реакцию ❌, чтобы пропустить этот пункт"});
-    answer = await reactOrMessage(whatColor, msg.author, "❌");
+    answer = await Util.awaitReactOrMessage(whatColor, msg.author, "❌");
     if (!answer){
       return;
     }
@@ -4895,7 +4277,7 @@ const commands = {
     whatColor.delete();
 
     let whatImage = await msg.msg("Укажите ссылку на изображение", {description: "Или пропустите этот пункт"});
-    answer = await reactOrMessage(whatImage, msg.author, "❌");
+    answer = await Util.awaitReactOrMessage(whatImage, msg.author, "❌");
     if (!answer) {
       return;
     }
@@ -4906,7 +4288,7 @@ const commands = {
 
     let rolesId;
     let whatRoles = await msg.msg("Вы можете указать айди ролей через пробел, они будут выдаваться всем новым пользователям", {description: "Этот пункт тоже можно пропустить"});
-    answer = await reactOrMessage(whatRoles, msg.author, "❌");
+    answer = await Util.awaitReactOrMessage(whatRoles, msg.author, "❌");
     if (!answer) return;
     whatRoles.delete();
     if (answer.content){
@@ -4919,7 +4301,7 @@ const commands = {
 
 
     let whatChannel = await msg.msg("Упомяните канал для отправки приветсвий или...", {color: "ffff00", description: `📥 - Установить в этом канале ${guild.channels.cache.get(guild.data.hiChannel) ? ("\nСейчас установлен:\n" + guild.channels.cache.get(guild.data.hiChannel).toString() + " - Оставить как есть 🔰") : ""}`});
-    answer = await reactOrMessage(whatChannel, msg.author, "📥", ((guild.data.hiChannel) ? "🔰" : null));
+    answer = await Util.awaitReactOrMessage(whatChannel, msg.author, "📥", ((guild.data.hiChannel) ? "🔰" : null));
     if (!answer) {
       return;
     }
@@ -5063,16 +4445,13 @@ const commands = {
     let {rss, heapTotal} = process.memoryUsage();
     let season = ["Зима", "Весна", "Лето", "Осень"][Math.floor((new Date().getMonth() + 1) / 3) % 4];
     const VERSION = "V5.740 BETA";
-    const characters = data.bot.characters;
-
-    let markdown = ["x", "**", "||", "__", "_", "`"].filter( () => Util.random(1) );
 
     client.api.channels(msg.channel.id).messages.post({data: {
       "embed": {
         "title": "ну типа.. ай, да, я живой, да",
         "color": 	65280,
         "description": `<:online:637544335037956096> Пинг: ${client.ws.ping} ${VERSION} [#${season}](https://hytale.com/supersecretpage), что сюда ещё запихнуть?\nСерваков...**${client.guilds.cache.size}** (?) Команд: ${Command.cmds}\nСимволов в скрипте: примерно **#**Почему-то это никому не понравилось и было удалено;\n\`${(heapTotal/1024/1024).toFixed(2)} мб / ${(rss/1024/1024).toFixed(2)} МБ\``,
-        "footer": {"text": `Укушу! Прошло времени с момента добавления бота на новый сервер: ${Util.timestampToDate(Date.now() - data.bot.newGuildTimestamp, 2)}`}
+        "footer": {"text": `Укушу! Прошло времени с момента добавления бота на новый сервер: ${Util.timestampToDate(Date.now() - DataManager.data.bot.newGuildTimestamp, 2)}`}
       },
       "content": "",
       "components": [
@@ -5134,11 +4513,11 @@ const commands = {
 
         case "637533074879414272":
           // coins
-          sort = users.sort((a, b) => (b.data.coins + b.data.berrys * data.bot.berrysPrise) - (a.data.coins + a.data.berrys * data.bot.berrysPrise));
+          sort = users.sort((a, b) => (b.data.coins + b.data.berrys * DataManager.data.bot.berrysPrise) - (a.data.coins + a.data.berrys * DataManager.data.bot.berrysPrise));
           index = sort.indexOf(msg.author);
           rangs = sort.map((e, i) => {
             let name = (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
-            let value = `— ${e.data.coins} (${ Math.floor( e.data.coins + e.data.berrys * data.bot.berrysPrise ) }) <:coin:637533074879414272>`;
+            let value = `— ${e.data.coins} (${ Math.floor( e.data.coins + e.data.berrys * DataManager.data.bot.berrysPrise ) }) <:coin:637533074879414272>`;
             return {name, value};
           });
           break;
@@ -5382,7 +4761,7 @@ const commands = {
     if (!answer) return;
 
     let whatChannel = await msg.msg("Укажите айди или упомяните канал в котором находится сообщение.\nЕсли оно находится в этом канале, нажмите реакцию ниже");
-    answer = await reactOrMessage(whatChannel, msg.author, "640449832799961088");
+    answer = await Util.awaitReactOrMessage(whatChannel, msg.author, "640449832799961088");
     whatChannel.delete();
 
     if (answer instanceof Discord.Message) {
@@ -5666,7 +5045,7 @@ const commands = {
     }
 
     const toField = (user) => {
-      const isToday = user.data.BDay === data.bot.dayDate;
+      const isToday = user.data.BDay === DataManager.data.bot.dayDate;
       const inThisYear = checkInThisYear(...splitDate(user.data.BDay));
 
       const dateContent = isToday ? "сегодня! 🎁" : user.data.BDay;
@@ -5683,7 +5062,7 @@ const commands = {
       [{name: "Никто не установил дату своего дня рождения", value: "Сделать это можно — `!нп др <date>`"}];
 
 
-    const birthdaysToday = data.bot.clearParty || 0;
+    const birthdaysToday = DataManager.data.bot.clearParty || 0;
 
     const title = "🎉 Дни рождения!";
     const description = `Здесь отображаются даты дней рождения пользователей, которые указали эту информацию`;
@@ -5695,7 +5074,7 @@ const commands = {
   emojis: new Command(async (msg, op) => {
 
     if (op.args){
-      let id = match(op.args, /\d{17,21}/);
+      let id = Util.match(op.args, /\d{17,21}/);
       if (!id){
         msg.msg("Не смайлик", {description: `\`${op.args}\` — не эмодзи, и не айди.\nЧтобы получить список эмодзи на сервере введите команду без аргументов.\nВведя идентификатор смайлика, получите более подробную информацию о нём`, color: "ff0000", delete: 5000});
         return;
@@ -5972,7 +5351,7 @@ const commands = {
       },
       {
         name: "💡 Идея",
-        value: (user.iq && user.iq % 31 == data.bot.dayDate.match(/\d{1,2}/)[0]) ? "Бесплатно" : 80,
+        value: (user.iq && user.iq % 31 == DataManager.data.bot.dayDate.match(/\d{1,2}/)[0]) ? "Бесплатно" : 80,
         inline: true,
         others: ["идея", "идею"],
         fn: (product) => {
@@ -6072,7 +5451,7 @@ const commands = {
       }
     ];
 
-    const getTodayItems = () => allItems.filter((e, i) => data.bot.grempen.includes( i.toString(16) ));
+    const getTodayItems = () => allItems.filter((e, i) => DataManager.data.bot.grempen.includes( i.toString(16) ));
 
     let grempenList;
     let todayItems = grempenList = getTodayItems();
@@ -6284,7 +5663,7 @@ const commands = {
     let
       user        = op.user,
       myBerrys    = user.berrys || (user.berrys = 0),
-      marketPrise = data.bot.berrysPrise,
+      marketPrise = DataManager.data.bot.berrysPrise,
 
       action      = op.args && op.args.split(" ")[0],
       quantity    = op.args && op.args.split(" ")[1];
@@ -6354,7 +5733,7 @@ const commands = {
 
       user.coins -= prise * isBuying;
       user.berrys = myBerrys += quantity * isBuying;
-      marketPrise = data.bot.berrysPrise = Math.max(data.bot.berrysPrise + quantity * INFLATION * isBuying, 0);
+      marketPrise = DataManager.data.bot.berrysPrise = Math.max(data.bot.berrysPrise + quantity * INFLATION * isBuying, 0);
 
       msg.msg((isBuying > 0) ? `Вы купили ${quantity} <:berry:756114492055617558>! потратив ${ prise } <:coin:637533074879414272>!` : `Вы продали ${quantity} <:berry:756114492055617558> и заработали ${prise} <:coin:637533074879414272>!`, {delete: 5000});
       msg.author.quest("berryActive", msg.channel, quantity);
@@ -6503,7 +5882,7 @@ const commands = {
       let reactions;
       switch (react) {
         case "🪧":
-          bot_msg = await msg.msg("Введите описание вашего чудесного сервера", {description: "Не забывайте использовать шаблоны **!{}** 💚"});
+          bot_msg = await msg.msg("Введите описание вашего чудесного сервера", {description: "Не забывайте использовать шаблоны **{ }** 💚"});
           answer = await bot_msg.channel.awaitMessage(msg.author);
 
           bot_msg.delete();
@@ -6651,7 +6030,7 @@ const commands = {
       color: "ffda73"
     }
 
-    if (user.BDay === data.bot.dayDate) {
+    if (user.BDay === DataManager.data.bot.dayDate) {
       treasures.cake = true;
       treasures.bonus = 10;
       user.chestBonus = 30 + (user.chestBonus ?? 0);
@@ -7013,7 +6392,7 @@ const commands = {
         return msg.msg("И это... Правильный ответ! Ваша награда уже у вас в карманах!", {delete: 5000});
       }
 
-      let percent = Math.round((1 - similarity(last, answer) / last.length) * 100);
+      let percent = Math.round((1 - Util.similarity(last, answer) / last.length) * 100);
       let phrase;
       switch (true) {
         case percent < 10: phrase = `Ответ не верный.\nСовет: в ответе ровно **${last.length}** цифр`;
@@ -7257,7 +6636,7 @@ const commands = {
     else cmd = commands[answer.content] = {name: answer.content, author: msg.author.id};
 
     while (true) {
-      answer = await msg.channel.awaitMessage(msg.author, {message: "Шаг 2. Введите сообщение содержащее шаблоны `!{}`", embed: {description: `Интересные примеры:\n_Бросок кубика! Выпало: \\!{bot.methods.random(6)}._\nНа этом сервере \\!{guild.members.count} участников.\nНе бойтесь экспериментировать, это самый простой путь познания такой простой вещи как шаблоны, так же как и лего.`, time: 3600000}})
+      answer = await msg.channel.awaitMessage(msg.author, {message: "Шаг 2. Введите сообщение содержащее шаблоны `{}`", embed: {description: `Интересные примеры:\n_Бросок кубика! Выпало: \\{bot.methods.random(6)}._\nНа этом сервере \\{guild.members.count} участников.\nНе бойтесь экспериментировать, это самый простой путь познания такой простой вещи как шаблоны, так же как и лего.`, time: 3600000}})
       if (!answer) return false;
       cmd.message = answer.content;
 
@@ -7285,7 +6664,7 @@ const commands = {
 
    message = await msg.msg("Шаг 4. Перезарядка команды", {description: `Укажите кулдаун в секундах, на использование команды, этот пункт можно пропустить.`});
    while(true) {
-     answer = await reactOrMessage(message, msg.author, "❌");
+     answer = await Util.awaitReactOrMessage(message, msg.author, "❌");
      if (!answer) return false;
      if (answer != "❌"){
        if (isNaN(answer.content)) {
@@ -7787,7 +7166,7 @@ const commands = {
       switch (react) {
         case "🗑️":
           question = await msg.msg("Введите номер счётчика, для его удаления");
-          answer = await reactOrMessage(question, msg.author, "❌");
+          answer = await Util.awaitReactOrMessage(question, msg.author, "❌");
           question.delete();
           if (!answer || !answer.content || isNaN(answer.content) || answer.content > counters.length) break;
           counter = counters.splice(answer.content - 1, 1)[0];
@@ -7797,7 +7176,7 @@ const commands = {
         break;
         case "✏️":
           question = await msg.msg("Введите номер счётчика, для его редактирования");
-          answer = await reactOrMessage(question, msg.author, "❌");
+          answer = await Util.awaitReactOrMessage(question, msg.author, "❌");
 
           if (!answer || !answer.content || isNaN(answer.content) || answer.content - 1 > counters.length){
             question.delete();
@@ -7806,7 +7185,7 @@ const commands = {
           };
 
           counter = counters[answer.content - 1];
-          question.msg("Введите новое содержание", {edit: true, description: `**Старое:**\n\`\`\`${Discord.Util.escapeCodeBlock( counter._original.template )}\`\`\``, destroy: true});
+          question.msg("Введите новое содержание", {edit: true, description: `**Старое:**\n\`\`\`${Discord.Util.escapeCodeBlock( counter._original.template )}\`\`\``});
           answer = await msg.channel.awaitMessage(msg.author);
           question.delete();
           counter._original.template = answer.content;
@@ -7955,8 +7334,7 @@ const commands = {
   }, {delete: true, Permissions: 32, type: "guild"}, "раздача розыгрыш"),
 
   template: new Command(async (msg, op) => {
-    let value = await new Template(op.args, msg, {});
-    msg.msg(`**${value}**`, {color: "ff0000", embed: true});
+
   }, {args: true, type: "dev"}, "шаблон"),
 
   quests: new Command(async (msg, op) => {
@@ -8084,7 +7462,7 @@ const commands = {
         emoji: "😈",
         description: `Создайте экономических хаос, изменив стоимость клубники на рынке! ${ 7 + Math.floor(5 * Math.sqrt(user.voidRituals)) } коинов в случайную сторону.`,
         _weight: 10,
-        action: () => data.bot.berrysPrise += 7 + Math.floor(5 * Math.sqrt(user.voidRituals)) * (-1) ** Util.random(1)
+        action: () => DataManager.data.bot.berrysPrise += 7 + Math.floor(5 * Math.sqrt(user.voidRituals)) * (-1) ** Util.random(1)
       },
       {
         emoji: "🍵",
@@ -8518,8 +7896,6 @@ const commands = {
   }, {cooldown: 50, try: 3, type: "guild"}, "cash банк казна"),
 
   eval: new Command(async (msg, op) => {
-    const { VM } = await import("vm2");
-
 
     const isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396", "921403577539387454", "711450675938197565"]
       .includes(msg.author.id);
@@ -8609,7 +7985,7 @@ const commands = {
           next: null
         }
 
-        lineOfCode.word = match(lineOfCode.full.slice(lineOfCode.prev.length), /[a-zа-яьёъ$_]+/i);
+        lineOfCode.word = Util.match(lineOfCode.full.slice(lineOfCode.prev.length), /[a-zа-яьёъ$_]+/i);
         lineOfCode.next = lineOfCode.full.slice(lineOfCode.word.length + lineOfCode.prev.length);
 
         let boldedLine = `${ lineOfCode.prev }**${ lineOfCode.word }**${ lineOfCode.next }`;
@@ -8629,7 +8005,7 @@ const commands = {
 
     if (process.env.DEVELOPMENT === "FALSE"){
       const hook = new Discord.WebhookClient("1006423793100664953", "dFUlXrQkpMu7Kb3ytBYzzfsHPDRucDonBwMGpqApi426J3OKuFEMttvw2ivlIcbrtAFJ");
-      context.messageForLogging = await hook.msg("", {author: {name: `${ msg.author.username }, в #${ msg.channel.id }`, iconURL: client.user.avatarURL()}, description: `\`\`\`js\n${ code }\`\`\``, color: "1f2022", footer: {iconURL: client.emojis.cache.get(context.emojiByType).url, text: "Вызвана команда !eval"}, destroy: true});
+      context.messageForLogging = await hook.msg("", {author: {name: `${ msg.author.username }, в #${ msg.channel.id }`, iconURL: client.user.avatarURL()}, description: `\`\`\`js\n${ code }\`\`\``, color: "1f2022", footer: {iconURL: client.emojis.cache.get(context.emojiByType).url, text: "Вызвана команда !eval"}});
     }
 
 
@@ -8643,8 +8019,7 @@ const commands = {
       author: {name: "Вывод консоли"},
       description: output,
       color: "1f2022",
-      footer: {text: `Количество символов: ${output.length}\nВремя выполнения кода: ${ context.leadTime }мс`},
-      destroy: true
+      footer: {text: `Количество символов: ${output.length}\nВремя выполнения кода: ${ context.leadTime }мс`}
     }
     ).catch(
       err => {
@@ -9057,7 +8432,7 @@ const commands = {
               textOutput: "Она то-ли увеличилась, то-ли уменьшилась. Никто так и не понял.."
             },
             {
-              action: async () => Util.random(1) ? user.berrys++ : data.bot.berrysPrise++,
+              action: async () => Util.random(1) ? user.berrys++ : DataManager.data.bot.berrysPrise++,
               textOutput: "Она вроде увеличилась, а вроде увеличилась её цена. Никто так и не понял.."
             },
             false,
@@ -9118,7 +8493,7 @@ const commands = {
             {
               action: async () => {
                 scene.random = Util.random(3, 8);
-                data.bot.berrysPrise += scene.random;
+                DataManager.data.bot.berrysPrise += scene.random;
               },
               textOutput: `Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, "коин", "ов", "", "а")} дороже.`
             },
@@ -9322,7 +8697,7 @@ const commands = {
             {
               action: async () => {
                 user.berrys++;
-                data.bot.berrysPrise += 3;
+                DataManager.data.bot.berrysPrise += 3;
               },
               textOutput: "Труд-труд и ещё раз труд.. За усердную работу вы получили одну клубнику, а их цена на рынке поднялась на 3ед."
             },
@@ -9708,13 +9083,13 @@ const commands = {
     let guideDescription;
 
 
-    guideDescription = fs.readFileSync("main/descriptions-commands.txt", "utf-8").split("---")[cmd.id - 1] || "Описание для этой команды пока отсуствует...";
-    let gifURL = match(guideDescription, /(?<=\n)http\S+/);
+    guideDescription = FileSystem.readFileSync("main/descriptions-commands.txt", "utf-8").split("---")[cmd.id - 1] || "Описание для этой команды пока отсуствует...";
+    let gifURL = Util.match(guideDescription, /(?<=\n)http\S+/);
     if (gifURL){
       guideDescription = guideDescription.replace(gifURL, "").trim();
     }
 
-    let used = data.bot.commandsUsed[cmd.id] || 0;
+    let used = DataManager.data.bot.commandsUsed[cmd.id] || 0;
     let percentUsed = +(used / Object.values(data.bot.commandsUsed).reduce((acc, e) => acc + e, 0) * 100).toFixed(1) + "%";
 
 
@@ -9866,7 +9241,7 @@ const commands = {
         user.berrys += berrys;
         server.berrys -= berrys;
 
-        data.bot.berrysPrise += berrys * 0.2;
+        DataManager.data.bot.berrysPrise += berrys * 0.2;
         msg.msg("Вы успешно собрали клубнику", {author: {name: memb.username, iconURL: memb.avatarURL()}, description: `${berrys > 5 ? berrys : ["Ноль", "Одна", "Две", "Три", "Четыре", "Пять"][berrys]} ${Util.ending(berrys, "ягод", "", "а", "ы", {slice: true})} ${Util.ending(berrys, "попа", "дают", "ла", "ли", {slice: true})} в ваш карман <:berry:756114492055617558>`, delete: 9000});
         user.CD_54 = Date.now() + Math.max( 86400000 / getSpeedGrowth(level) * (1 + level), 7200000 );
 
@@ -10337,7 +9712,7 @@ ${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "к�
       item = ITEMS.find(item => item.names.includes(itemName));
       if (!item){
         const list = ITEMS.reduce((acc, item) => acc.concat(item.names), []);
-        const similarItem = getSimilar(list, itemName);
+        const similarItem = Util.getSimilar(list, itemName);
         msg.msg("Не удалось найти такой предмет:", {description: `\`${ itemName }\`${ similarItem ? `\n\nВозможно, Вы имели ввиду: ${ similarItem }?` : "" }`, delete: 7000});
       }
     }
@@ -10374,12 +9749,12 @@ ${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "к�
     }
 
     if (boss.apparanceAtDay){
-      msg.msg("", {description: `Прибудет лишь ${ toDayDate(boss.apparanceAtDay * 86_400_000) }`, color: "000000"});
+      msg.msg("", {description: `Прибудет лишь ${ Util.toDayDate(boss.apparanceAtDay * 86_400_000) }`, color: "000000"});
       return;
     }
 
     const currentHealthPointPercent = Math.ceil((1 - boss.damageTaken / boss.healthThresholder) * 100);
-    const description = `Уровень: ${ boss.level }.\nУйдет ${ toDayDate(boss.endingAtDay * 86_400_000) }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
+    const description = `Уровень: ${ boss.level }.\nУйдет ${ Util.toDayDate(boss.endingAtDay * 86_400_000) }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
     const reactions = ["⚔️", "🕋"];
     const fields = [
       {
@@ -10419,7 +9794,7 @@ ${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "к�
   }, {type: "other"}, "босс"),
 
   dump: new Command(async (msg, op) => {
-    data_save();
+    DataManager.file.write();
     const message = await msg.channel.send({
       files: [{
         attachment: "main/data.json",
@@ -10576,14 +9951,12 @@ const timeEvents = {
       .each((guild) => BossManager.beforeApparance(guild));
 
 
-    data_save();
     return new TimeEvent("day_stats", next);
   },
 
   cooledBot: function (isLost, guildId){
     if (!guildId) throw "Ивент без аргументов";
-    delete data.guilds.find((el) => el.id == guildId).stupid_evil;
-    data_save();
+    delete DataManager.data.guilds.find((el) => el.id == guildId).stupid_evil;
   },
 
   new_day: async function (isLost){
@@ -10593,24 +9966,24 @@ const timeEvents = {
     
 
     if (data.bot.clearParty) {
-      delete data.bot.clearParty
+      delete DataManager.data.bot.clearParty
       quests.scope = quests.scope.replace(/birthdayParty(\.+?)(?:\s|$)/g, "");
     }
     await Util.sleep(20000);
 
-    const today = toDayDate( new Date() );
-    data.bot.dayDate = today;
-    data.bot.currentDay = Math.floor(Date.now() / 86_400_000);
+    const today = Util.toDayDate( new Date() );
+    DataManager.data.bot.dayDate = today;
+    DataManager.data.bot.currentDay = Math.floor(Date.now() / 86_400_000);
 
-    data.bot.grempen = "";
+    DataManager.data.bot.grempen = "";
     let arr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e"]; //0123456789abcdef
     for (let i = 1; i < 7; i++) {
-      data.bot.grempen += arr.random({pop: true});
+      DataManager.data.bot.grempen += arr.random({pop: true});
     }
 
     let berryRandom = [{_weight: 10, prise: 1}, {_weight: 1, prise: -7}, {_weight: 5, prise: 3}].random({weights: true}).prise;
     let berryTarget = Math.sqrt(client.users.cache.size / 3) * 7 + 200;
-    data.bot.berrysPrise += Math.round((berryTarget - data.bot.berrysPrise) / 30 + berryRandom);
+    DataManager.data.bot.berrysPrise += Math.round((berryTarget - DataManager.data.bot.berrysPrise) / 30 + berryRandom);
 
     let birthdaysToday = 0;
 
@@ -10630,7 +10003,7 @@ const timeEvents = {
 
     if (birthdaysToday){
       console.info(`Сегодня день рождения у ${ birthdaysToday } пользователя(ей)`);
-      data.bot.clearParty = birthdaysToday;
+      DataManager.data.bot.clearParty = birthdaysToday;
     }
 
 
@@ -10638,12 +10011,10 @@ const timeEvents = {
 
     
 
-    data.guilds.forEach(e => e.commandsLaunched = Object.values(e.commandsUsed).reduce((acc, e) => acc + e, 0));
+    DataManager.data.guilds.forEach(e => e.commandsLaunched = Object.values(e.commandsUsed).reduce((acc, e) => acc + e, 0));
     let commandsLaunched = Object.values(data.bot.commandsUsed).reduce( ((acc, e) => acc + e), 0);
-    console.info(`\n\n\n      —— Ежедневная статистика\n\nСерверов: ${data.guilds.length}\nПользователей: ${data.users.length}\nКаналов: ${client.channels.cache.size}\n\nЦена клубники: ${data.bot.berrysPrise}\nВыполнено команд: ${commandsLaunched - data.bot.commandsLaunched}\nВыполнено команд по серверам:\n${data.guilds.map(e => e.name + ":\nВыполнено команд: " + e.commandsLaunched + "\nРекорд сообщений: " + e.day_max).join("\n")}\n\n`);
-    data.bot.commandsLaunched = commandsLaunched;
-
-    data_save();
+    console.info(`\n\n\n      —— Ежедневная статистика\n\nСерверов: ${data.guilds.length}\nПользователей: ${data.users.length}\nКаналов: ${client.channels.cache.size}\n\nЦена клубники: ${data.bot.berrysPrise}\nВыполнено команд: ${commandsLaunched - DataManager.data.bot.commandsLaunched}\nВыполнено команд по серверам:\n${data.guilds.map(e => e.name + ":\nВыполнено команд: " + e.commandsLaunched + "\nРекорд сообщений: " + e.day_max).join("\n")}\n\n`);
+    DataManager.data.bot.commandsLaunched = commandsLaunched;
   },
 
   postpone: async function (isLost, author, channelId, msg){
@@ -10692,7 +10063,7 @@ const timeEvents = {
   },
 
   autosave: function(isLost){
-    data_save();
+    DataManager.file.write();
     return new TimeEvent("autosave", 7200000);
   },
 
@@ -10738,65 +10109,24 @@ const timeEvents = {
 
 //---------------------------------{#End--}------------------------------                            #ff0
 
-(() => {
-  getSaves();
+(async () => {
+  await DataManager.file.load();
+  await TimeEvent.loadEventFromFile();
+  await ReactionsManager.loadReactionsFromFile();
+  await CounterManager.loadCountersFromFile();
 
   let cleanTimestamp = Date.now();
-  data.users.forEach(user =>
+  DataManager.data.users.forEach(user =>
     Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < cleanTimestamp ? delete user[key] : false)
   );
-  data.users = data.users.sort((a, b) => b.level - a.level);
+  DataManager.data.users = DataManager.data.users.sort((a, b) => b.level - a.level);
 
-  if (data.bot.dayDate !== toDayDate( Date.now() )){
+  if (DataManager.data.bot.dayDate !== Util.toDayDate( Date.now() )){
     timeEvents["new_day"].call(null, true);
   }
+
+  setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
 })()
-
-
-// data.users.forEach((item, i) => {
-//   for (e in item){
-//     if (item[e] === null || item[e] === NaN){
-//       console.info(e + " - " + item[e]);
-//       item[e] = 0;
-//     }
-//   }
-// });
-//
-// data.guilds.forEach((item, i) => {
-//   for (e in item){
-//     if (item[e] === null || item[e] === NaN){
-//       console.info(e + " - " + item[e]);
-//       item[e] = 0;
-//     }
-//   }
-// });
-//
-// x = [];
-// data.users.forEach(item => {
-//   Object.keys(item).forEach(e => {
-//     if (!x.includes(e)) x.push(e);
-//   })
-// });
-//
-// console.info(x);
-// x = [];
-//
-// data.guilds.forEach(item => {
-//   Object.keys(item).forEach(e => {
-//     if (!x.includes(e)) x.push(e);
-//   })
-// });
-// console.info(x);
-//
-// !eval console.info(Object.keys(commands).map(e => e + " " + commands[e].id));
-
-await TimeEvent.loadEventFromFile();
-await ReactionsManager.loadReactionsFromFile();
-await CounterManager.loadCountersFromFile();
-
-setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
-// <:coin:637533074879414272> <a:void:768047066890895360>
-
 
 
 /*
@@ -10806,88 +10136,9 @@ setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
 ─▄▄──█░░░░░░░░░░░█──▄▄
 █▄▄█─█░░▀░░┬░░▀░░█─█▄▄█
 **
-𝗨𝗦𝗘𝗥
-id
-name
-coins
-coinsPerMessage
-level
-exp
-berrys
-void
-keys
-chestLevel
-chestBonus
-praiseMe
-praise
-BDay
-profile_description
-profile_color
-
-last_online
-
-quest
-completedQuest
-questNeed
-questReward
-questTime
-questProgress
-dayQuests
-
-grempen
-shopTime
-
-thiefWins
-thiefGloves
-
-CD_3          // user
-CD_5          // like
-CD_7          // warn
-CD_10         // archive
-CD_19         // reactor
-CD_23         // emojis
-CD_24         // idea
-CD_25         // grempen
-CD_27         // berry
-CD_31         // iq
-CD_32         // chest
-CD_40         // editServer
-
-give_first
-praise_first
-reactor_first
-embeds_first
-tieRoles_first
-guildCommand_first
-
-𝗚𝗨𝗜𝗟𝗗
-id
-name
-day_msg
-day_max
-msg_total
-days
-commandsLaunched
-
-mute_role
-chatChannel
-logChannel
-stupid_evil
-
-leave_roles
-
-𝗠𝗜𝗡𝗜𝗠𝗔𝗣 𝗔𝗡𝗖𝗛𝗢𝗥
+Have a nice day!
 **
 ●▬▬▬▬▬▬ஜ۩۞۩ஜ▬▬▬▬▬●
-
-
-𝗥𝗨𝗟𝗘𝗦
-server = guild.data
-guild  = client.guilds
-user   = memb.data;
-member = client.guilds.users!
-memb   = client.users!
-
 */
 
 

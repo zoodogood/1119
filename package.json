@@ -10,7 +10,7 @@
   "author": "zoodogood",
   "license": "ISC",
   "dependencies": {
-    "@zoodogood/utils": "^0.3.0",
+    "@zoodogood/utils": "^0.5.0",
     "discord.js": "^12.5.1",
     "dotenv": "^16.0.3",
     "node-fetch": "^2.6.0",
