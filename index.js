@@ -3985,7 +3985,10 @@ const commands = {
       if (message.content === "****"){
         message.edit("\\*Слишком пустое сообщение\\*");
       }
-      msg.guild.logSend(msg.author.username + ":", {description: "\n!c " + op.args});
+      if (msg.channel.type !== "dm") 
+      {
+        msg.guild.logSend(msg.author.username + ":", {description: "\n!c " + op.args});
+      }
   }, {args: true, delete: true, myChannelPermissions: 8192, type: "other"}, "с c сенд s"),
 
   user: new Command(async (msg, op) => {
