@@ -51,15 +51,16 @@ function match(string = "", regular, flags){
   return find ? find[0] : null;
 }
 
-async function awaitUserAccept(name, embed, channel, user){
+async function awaitUserAccept({name, message, channel, user}){
   if (`first_${name}` in user) {
     return true;
   }
-  let el = await channel.msg(embed);
-  let collected = await el.awaitReact({user: user, type: "all"}, "685057435161198594", "763807890573885456");
-  await el.delete();
+  const context = {};
+  context.message = await channel.msg(message);
+  const react = await context.message.awaitReact({user: user, type: "all"}, "685057435161198594", "763807890573885456");
+  await context.message.delete();
 
-  if (collected == "685057435161198594") {
+  if (react == "685057435161198594") {
     user[`first_${name}`] = 1;
     return true;
   }
@@ -76,7 +77,7 @@ function awaitReactOrMessage(msg, user, ...reactions){
     let isFulfilled = false;
 
     reactions.forEach(reaction => msg.react(reaction));
-    msg.awaitReactions((reaction, member) => member.id === user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name), collectorOptions)
+    msg.awaitReactions({filter: (reaction, member) => member.id === user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name), ...collectorOptions})
     .then(reaction => {
       if ((isFulfilled ^= 1) === 0) {
         return;
@@ -86,7 +87,7 @@ function awaitReactOrMessage(msg, user, ...reactions){
       resolve(emoji.id || emoji.name);
     });
 
-    msg.channel.awaitMessages(message => message.author.id === user.id, collectorOptions)
+    msg.channel.awaitMessages({filter: message => message.author.id === user.id, ...collectorOptions})
     .then(messages => {
       if ((isFulfilled ^= 1) === 0) {
         return;
@@ -97,7 +98,7 @@ function awaitReactOrMessage(msg, user, ...reactions){
       resolve(message);
     });
 
-    await Util.sleep(MAX_TIMEOUT);
+    await sleep(MAX_TIMEOUT);
     msg.reactions.cache
       .filter(reaction => reaction.me)
       .each(reaction => reaction.remove());
@@ -151,6 +152,10 @@ function timestampToDate(ms, max){
 
 	return input;
 };
+
+function timestampDay(timestamp){
+  return Math.floor(timestamp / 86_400_000)
+}
 
 function toDayDate(date){
   if (date instanceof Date === false){
@@ -220,6 +225,7 @@ export {
   random,
   ending,
   timestampToDate,
+  timestampDay,
   toDayDate,
   awaitUserAccept,
   awaitReactOrMessage,
