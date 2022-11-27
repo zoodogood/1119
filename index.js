@@ -8653,7 +8653,7 @@ const commands = {
     }, "context");
 
     if (isDev){
-      const available = {Util, client, data, commands, timeEvents, delay};
+      const available = {Util, client, data, commands, TimeEvent, timeEvents, delay};
 
       for (const key in available)
       Object.defineProperty(vm.sandbox, key, {
