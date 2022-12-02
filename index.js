@@ -3316,16 +3316,16 @@ class BossManager {
 
   static async beforeApparance(guild){
 
-    const data = guild.data;
+    const guildData = guild.data;
 
-    if (!data.boss){
+    if (!guildData.boss){
       return;
     }
 
     const now = new Date();
 
     const isApparanceAtNextDay = () => {
-      return data.boss.apparanceAtDay + 1 === data.bot.currentDay;
+      return guildData.boss.apparanceAtDay + 1 === data.bot.currentDay;
     }
 
     if (!isApparanceAtNextDay()){
