@@ -3198,7 +3198,7 @@ class BossManager {
 
     if (guildData.boss.apparanceAtDay  <= data.bot.currentDay){
       generateEndDate();
-      delete guildData.boss.apparanceDate;
+      delete guildData.boss.apparanceAtDay;
 
       BossManager.initBossData(guildData.boss, guild);
     }
