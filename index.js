@@ -1388,7 +1388,7 @@ const timeEvents = {
   DataManager.extendsGlobalPrototypes();
   ActionManager.extendsGlobalPrototypes();
 
-  await CommandsManager.importCommands(Object.entries(commands));
+  await CommandsManager.importCommands();
   CommandsManager.createCallMap();
 
 
