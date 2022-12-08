@@ -51,7 +51,7 @@ class Command {
       }
 
       if (
-        member.presence.status != "offline" ||
+        member.presence && member.presence.status != "offline" ||
         target === msg.author
       ) {
         interaction.status = "<:online:637544335037956096> В сети";
