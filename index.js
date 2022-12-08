@@ -2,7 +2,7 @@ console.clear();
 
 import 'dotenv/config';
 
-import Discord, { EmbedBuilder } from 'discord.js';
+import Discord, { BaseInteraction } from 'discord.js';
 
 import * as Util from '#src/modules/util.js';
 import { Template, DataManager, BossManager, CurseManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager } from '#src/modules/mod.js';
@@ -294,7 +294,7 @@ client.on("ready", async () => {
 
     
 
-    if (interaction.data.custom_id !== "bot_hi" && interaction.data.name !== "help")
+    if (interaction.customId !== "bot_hi" && interaction.name !== "help")
       return;
 
 
@@ -360,12 +360,16 @@ async function msg(options, ..._devFixParams){
 
   options.color ||= process.env.DEVELOPMENT === "TRUE" ? "#000100" : "#23ee23";
 
-  const messageResolable = CreateMessage(options);
+  const messagePayload = CreateMessage(options);
   const target = this instanceof Discord.Message && !options.edit ? this.channel : this;
   
-  const message = await (
-    options.edit ? target.edit(messageResolable) : target.send(messageResolable)
-  );
+  const message = target instanceof BaseInteraction ? 
+    await (
+      options.edit ? target.editReply(messagePayload) : target.reply(messagePayload)
+    ) :
+    await (
+      options.edit ? target.edit(messagePayload) : target.send(messagePayload)
+    );
 
 
   if (options.delete){
@@ -658,6 +662,7 @@ Discord.Message.prototype.msg = msg;
 Discord.BaseChannel.prototype.msg = msg;
 Discord.Webhook.prototype.msg = msg;
 Discord.WebhookClient.prototype.msg = msg;
+Discord.BaseInteraction.prototype.msg = msg;
 
 
 Discord.Message.prototype.awaitReact = async function(options, ...reactions){

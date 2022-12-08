@@ -1,6 +1,7 @@
 import { Collection, CommandInteraction } from 'discord.js';
 import EventsEmitter from 'events';
 import DataManager from '#src/modules/DataManager.js';
+import ErrorsHandler from '#src/modules/ErrorsHandler.js';
 
 import { ImportDirectory } from '@zoodogood/import-directory';
 
@@ -51,14 +52,10 @@ function parseInputCommandFromMessage(message){
 	return commandContext;
 }
 
-class Command {
-
-}
 
 class CommandsManager {
 
 	static parseInputCommandFromMessage = parseInputCommandFromMessage;
-	static Command = Command;
 
 	static emitter = new EventsEmitter();
 
@@ -207,8 +204,8 @@ class CommandsManager {
 			// To-do, придумать где хранить статистику для ведения статистики
 		}
 		catch (error){
-			console.error(error);
-			// To-do, создать и привязать модуль для в чат отправки данных об ошибках
+			
+			ErrorsHandler.sendAuditMessage({channel: interaction.channel, error, interaction});
 		}
 		
 	}
