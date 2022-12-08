@@ -1,53 +1,56 @@
 import { Collection } from "@discordjs/collection";
+import { DataManager } from "#src/modules/mod.js";
+import { Actions } from '#src/modules/ActionManager.js';
+import * as Util from '#src/modules/util.js';
 
 class BossManager {
 	static async bossApparance(guild){
  
-	  const TWO_MONTH = 5259600000;
+		const TWO_MONTH = 5259600000;
  
-	  if ( guild.me.joinedTimestamp > Date.now() + TWO_MONTH )
-		 return;
+	  	if ( guild.members.me.joinedTimestamp > Date.now() + TWO_MONTH )
+			return;
+
+		
  
-	  const guildData = guild.data;
-	  const now = new Date();
+	  	const guildData = guild.data;
+	  	const now = new Date();
  
-	  const generateEndDate = () => {
-		 const days = DataManager.data.bot.currentDay;
-		 guildData.boss.endingAtDay = days + 3;
-	  }
+	  	const generateEndDate = () => {
+			const days = DataManager.data.bot.currentDay;
+		 	guildData.boss.endingAtDay = days + 3;
+	  	}
  
-	  const generateNextApparance = () => {
+	  	const generateNextApparance = () => {
  
-		 // the boss cannot spawn on other days
-		 const MIN = 1;
-		 const MAX = 28;
-		 const date = new Date(now.getFullYear(), now.getMonth() + 1, Util.random(MIN, MAX));
-		 const days =  Math.floor(date.Date.now() / 86_400_000);
-		 guildData.boss.apparanceAtDay = days;
-	  }
- 
- 
- 
-	  if (!guildData.boss){
- 
-		 guildData.boss = {};
-		 generateNextApparance();
-	  }
- 
-	  if (guildData.boss.endingAtDay <= DataManager.data.bot.currentDay){
-		 await BossManager.beforeEnd(guild);
-		 delete guildData.boss;
-		 return;
-	  }
- 
-	  if (guildData.boss.apparanceAtDay  <= DataManager.data.bot.currentDay){
-		 generateEndDate();
-		 delete guildData.boss.apparanceDate;
- 
-		 BossManager.initBossData(guildData.boss, guild);
-	  }
+		 	// the boss cannot spawn on other days
+		 	const MIN = 1;
+		 	const MAX = 28;
+		 	const date = new Date(now.getFullYear(), now.getMonth() + 1, Util.random(MIN, MAX));
+		 	const days =  Math.floor(date.getTime() / 86_400_000);
+		 	guildData.boss.apparanceAtDay = days;
+	  	}
  
  
+ 
+	  	if (!guildData.boss || !guildData.boss.isArrived && !guildData.boss.apparanceAtDay){
+ 
+		 	guildData.boss = {};
+		 	generateNextApparance();
+	  	}
+ 
+	  	if (guildData.boss.endingAtDay <= DataManager.data.bot.currentDay){
+		 	await BossManager.beforeEnd(guild);
+		 	delete guildData.boss;
+		 	return;
+	  	}
+ 
+	  	if (guildData.boss.apparanceAtDay  <= DataManager.data.bot.currentDay){
+		 	generateEndDate();
+		 	delete guildData.boss.apparanceAtDay;
+ 
+		 	BossManager.initBossData(guildData.boss, guild);
+	  	}
  
 	}
  
@@ -100,7 +103,7 @@ class BossManager {
 		 stats.damageDealt ||= 0;
 		 stats.damageDealt += damage;
  
-		 sourceUser.action("bossMakeDamage", {boss, damage});
+		 sourceUser.action(Actions.bossMakeDamage, {boss, damage});
 	  }
  
 	  if (boss.damageTaken >= boss.healthThresholder){
@@ -166,7 +169,6 @@ class BossManager {
 		 return;
 	  }
  
-	  const now = new Date();
  
 	  const isApparanceAtNextDay = () => {
 		 return data.boss.apparanceAtDay + 1 === DataManager.data.bot.currentDay;
@@ -809,6 +811,6 @@ class BossManager {
 	static setClient(client){
 		this.client = client;
 	}
- }
+}
 
- export default BossManager;
+export default BossManager;

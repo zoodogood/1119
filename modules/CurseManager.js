@@ -1,4 +1,5 @@
 import { Collection } from "@discordjs/collection";
+import { Actions } from '#src/modules/ActionManager.js';
 
 
 class CurseManager {
@@ -47,7 +48,7 @@ class CurseManager {
 		 new TimeEvent("curseTimeoutEnd", curse.values.timer, ...args);
 	  }
  
-	  user.action("curseInit", {curse});
+	  user.action(Actions.curseInit, {curse});
 	}
  
  
@@ -96,7 +97,7 @@ class CurseManager {
 			  timer: (user, curse) => {
 				 const now = new Date();
 				 const adding = curse.values.goal;
-				 const timestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate() + adding).Date.now();
+				 const timestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate() + adding).getTime();
 				 return Math.floor(timestamp - now);
 			  }
 			},
@@ -120,13 +121,13 @@ class CurseManager {
 			  goal: () => 1,
 			  timer: (user, curse) => {
 				 const now = new Date();
-				 const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).Date.now();
+				 const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
 				 return Math.floor(tomorrow - now);
 			  }
 			},
 			callback: {
 			  dailyQuestCompete: (user, curse) => CurseManager.intarface({user, curse}).incrementProgress(1),
-			  callBotStupid:     (user, curse) => CurseManager.intarface({user, curse}).fail()
+			  callBot:		      (user, curse, {type}) => type !== "stupid" && CurseManager.intarface({user, curse}).fail()
 			},
 			filter: (user) => user.data.quest === "namebot",
 			reward: 4
@@ -156,7 +157,7 @@ class CurseManager {
 			  goal: () => 1,
 			  timer: (user, curse) => {
 				 const now = new Date();
-				 const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).Date.now();
+				 const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
 				 return Math.floor(tomorrow - now);
 			  }
 			},
@@ -195,7 +196,7 @@ class CurseManager {
 			  messages: () => []
 			},
 			callback: {
-			  message: (user, curse) => {
+			  messageCreate: (user, curse) => {
 				 const now = Date.now();
 				 const messages = curse.values.messages;
  
@@ -224,7 +225,7 @@ class CurseManager {
 			  listOfUsers: (user) => [user.id]
 			},
 			callback: {
-			  message: (user, curse, message) => {
+			  messageCreate: (user, curse, message) => {
 				 const content = message.content;
 				 const mentions = content.matchAll(Discord.MessageMentions.USERS_PATTERN)
 					.next()
@@ -282,7 +283,7 @@ class CurseManager {
 			  timer: () => 3_600_000 / 2
 			},
 			callback: {
-			  message: (user, curse, message) => {
+			  messageCreate: (user, curse, message) => {
 				 if (random(6)){
 					return;
 				 }
@@ -383,7 +384,7 @@ class CurseManager {
  
 	  if (curse.values.timer && Date.now() > curse.timestamp + curse.values.timer){
 		 const event = new Event("curseTimeEnd", {cancelable: true});
-		 user.action("curseTimeEnd", {event, curse});
+		 user.action(Actions.curseTimeEnd, {event, curse});
 		 if (!event.defaultPrevented){
 			CurseManager.curseEnd({user, curse, lost: true});
 		 }

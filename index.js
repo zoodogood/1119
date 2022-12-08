@@ -2,35 +2,39 @@ console.clear();
 
 import 'dotenv/config';
 
-import Discord from "discord.js";
+import Discord, { EmbedBuilder } from 'discord.js';
 
-import * as Util from "#src/modules/util.js";
-import { Template, DataManager, BossManager, CurseManager, TimeEventsManager } from '#src/modules/mod.js';
+import * as Util from '#src/modules/util.js';
+import { Template, DataManager, BossManager, CurseManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager } from '#src/modules/mod.js';
 import { CreateMessage } from '@zoodogood/utils/discordjs';
 
+import { Partials } from 'discord.js';
 
-const client = new Discord.Client({ messageCacheMaxSize: 110, intents: [3276799] });
+
+const client = new Discord.Client({ messageCacheMaxSize: 110, intents: [3276799], partials: [Partials.Message, Partials.Channel, Partials.Reaction] });
 
 DataManager.setClient(client);
 BossManager.setClient(client);
+
 
 import FileSystem from "fs";
 import fetch from "node-fetch";
 import { VM } from "vm2";
 import { assert } from 'console';
+import { Actions } from '#src/modules/ActionManager.js';
+
 
 
 
 
 client.on("ready", async () => {
-  client.options.disableMentions = "everyone";
   client.guilds.cache.forEach(async guild => guild.invites = await guild.invites.fetch().catch(() => {}));
 
-  if (process.env.DEVELOPMENT === "FALSE") {
-    client.user.setActivity("намана", {type: "WATCHING"});
+  if (process.env.DEVELOPMENT === "TRUE") {
+    client.user.setActivity("Кабзец тебе, Хозяин", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
   }
   else {
-    client.user.setActivity("Кабзец тебе, Хозяин", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
+    client.user.setActivity("намана", {type: "WATCHING"});
   }
 
 
@@ -39,15 +43,19 @@ client.on("ready", async () => {
 //----------------------------------{Events and intervals--}------------------------------                            #0bf
 
 
-  client.on("messageCreate", async msg => {
-    if (msg.author.bot) {
+  client.on("messageCreate", async message => {
+    if (message.author.bot) {
       return;
     }
 
-    msg.author.action("message", msg);
+    message.author.action(Actions.messageCreate, message);
 
-    eventHundler(msg);
-    commandHundler(msg);
+    eventHundler(message);
+    const commandContext = CommandsManager.parseInputCommandFromMessage(message);
+    const command = commandContext?.command;
+    if (commandContext && CommandsManager.checkAvailable(command, commandContext)){
+      CommandsManager.execute(command, commandContext);
+    }
   });
 
   client.on("inviteCreate", async (invite) => {
@@ -77,7 +85,15 @@ client.on("ready", async () => {
   })
 
   client.on("messageReactionAdd", async (reaction, user) => {
-    if (reaction.emoji.name == "👍") user.quest("like");
+
+    if (reaction.emoji.name === "👍"){
+      const target = (await reaction.message.resolve())
+        .author;
+
+      user.action(Actions.likedTheUser, {target, likeType: "reaction", reaction});
+    }
+
+    const guildData = client.guilds.cache.get(reaction.message.guildId);
 
     let msg = reaction.message;
     let rolesReactions = ReactionsManager.reactData.find(el => el.id == msg.id);
@@ -148,7 +164,7 @@ client.on("ready", async () => {
       guild.logSend({title: "Новый участник!", description: "Имя: " + e.user.tag + "\nИнвайтнул: " + inviter.tag + "\nПриглашение использовано: " + invite.uses, footer: {text: "Приглашение создано: "}, timestamp: invite.createdTimestamp});
 
       if (e.id !== inviter.id)
-        inviter.quest("inviteFriend");
+        inviter.action(Actions.globalQuest, {name: "inviteFriend"});
 
       inviter.data.invites = (inviter.data.invites ?? 0) + 1;
     }
@@ -259,23 +275,6 @@ client.on("ready", async () => {
     user.guilds.forEach(guild => guild.logSend({title: `${guild.members.resolve(user).displayName} изменил свой аватар`, author: {name: user.username, iconURL: user.avatarURL({dynamic: true})}, description: "", footer: {text: "Старый аватар", iconURL: old.displayAvatarURL({dynamic: true})}}));
   });
 
-  client.on("raw", async packet => {
-
-    if (!['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) return;
-    if (packet.d.emoji.name != "👍" && !ReactionsManager.reactData.find(el => el.id == packet.d.message_id)) return;
-
-    const channel = client.channels.cache.get(packet.d.channel_id);
-    if (channel.messages.cache.has(packet.d.message_id)) return;
-    let message = await channel.messages.fetch(packet.d.message_id);
-
-    const emoji    = packet.d.emoji.id ? `${packet.d.emoji.name}:${packet.d.emoji.id}` : packet.d.emoji.name;
-    const reaction = message.reactions.cache.get(emoji);
-    if (reaction) reaction.users.cache.set(packet.d.user_id, client.users.cache.get(packet.d.user_id));
-
-    if (packet.t === 'MESSAGE_REACTION_ADD') client.emit('messageReactionAdd', reaction, client.users.cache.get(packet.d.user_id));
-    if (packet.t === 'MESSAGE_REACTION_REMOVE') client.emit('messageReactionRemove', reaction, client.users.cache.get(packet.d.user_id));
-  });
-
   process.on("unhandledRejection", error => {
       if (error.message == "Cannot execute action on a DM channel") return console.error("Cannot in DM: " + error.method);
       if (error.message == "Unknown Message") return;
@@ -290,7 +289,10 @@ client.on("ready", async () => {
     process.exit(1);
   })
 
-  client.ws.on('INTERACTION_CREATE', async interaction => {
+  // to-do: Fix for Discord.js V14
+  client.on("interactionCreate", async interaction => {
+
+    
 
     if (interaction.data.custom_id !== "bot_hi" && interaction.data.name !== "help")
       return;
@@ -340,7 +342,6 @@ client.on("ready", async () => {
 
 
   TimeEventsManager.handle();
-  CounterManager.clearSuperfluous();
 });
 
 
@@ -385,143 +386,50 @@ async function msg(options, ..._devFixParams){
 
 
 async function commandHundler(msg){
-  msg.content = msg.content.trim();
-  if (msg.content[0] != "!") return false;
-  if (msg.content[1] == " ") msg.content = "!" + msg.content.slice(2);
-
-  let
-    trash   = msg.content.split(" ")[0],
-    command = trash.slice(1).toLowerCase().replace(/[^а-яa-zїё]/gi, ""),
-    author  = msg.author,
-    user    = author.data,
-    channelType = msg.channel.type,
-    memb    = (channelType !== "dm" || msg.mentions.users) ? msg.mentions.users.first() : false,
-    member  = (channelType !== "dm") ? msg.guild.members.resolve(author) : false,
-    args    = msg.content.replace(trash, "").trim(),
-    cmd     = commands[command];
-
-  if (!cmd && msg.guild){
-    if (!(cmd = msg.guild.data.commands) || !cmd[command]) return false;
-    return Command.CustomCommand(msg, command, args);
-  }
-
-  const checkAvailable = () => {
-    const problems = [];
-    if (cmd.type === "delete" || cmd.type === "dev" && msg.author.id !== "921403577539387454"){
-      problems.push(cmd.type === "delete" ? "Эта команда была удалена и не может быть использована" : "Эта команда доступна только разработчику бота");
-    }
-
-    if (cmd.DM && channelType === "dm") problems.push("Эта команда может быть вызвана только на сервере");
-
-    if (cmd.memb && !memb) problems.push("Вы не упомянули пользователя");
-    if (cmd.args && !args) problems.push("Вы не указали аргументов");
+  
 
 
-    if (channelType !== "dm" && cmd.myChannelPermissions && (trash = msg.guild.members.me.wastedPermissions(cmd.myChannelPermissions, msg.channel)))
-      problems.push(`У меня нет прав ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )} в этом канале`);
-
-    if (channelType !== "dm" &&    cmd.myPermissions     && (trash = msg.guild.members.me.wastedPermissions(cmd.myPermissions)))
-      problems.push(`У меня нет прав ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
-
-    if (channelType !== "dm" &&  cmd.ChannelPermissions  && (trash = member.wastedPermissions(cmd.ChannelPermissions, msg.channel)))
-      problems.push(`Недостаточно прав в этом канале, вы не можете ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
-
-    if (channelType !== "dm" &&     cmd.Permissions      && (trash = member.wastedPermissions(cmd.Permissions)))
-      problems.push(`Недостаточно прав, вам нужно уметь ${Util.joinWithAndSeparator( trash.map(e => Command.permissions[e]) )}`);
+  // if (!cmd && msg.guild){
+  //   if (!(cmd = msg.guild.data.commands) || !cmd[command]) return false;
+  //   return Command.CustomCommand(msg, command, args);
+  // }
 
 
-    if (cmd.cooldown && user["CD_" + cmd.id] && (+(Date.now() + cmd.cooldown * (cmd.try - 1)) < +user["CD_" + cmd.id]))
-      problems.push(`Перезарядка: **${ Util.timestampToDate(user["CD_" + cmd.id] - Date.now() - cmd.cooldown * (cmd.try - 1) + 500) }**`);
+  // if (cmd.cooldown) {
+  //   user["CD_" + cmd.id] = Math.max(user["CD_" + cmd.id] || 0, Date.now()) + cmd.cooldown;
+  // }
+  // try {
 
-    // End
+  //   if (channelType !== "dm") {
+  //     msg.guild.data.commandsUsed[cmd.id] = (msg.guild.data.commandsUsed[cmd.id] ?? 0) + 1;
+  //   }
+  //   DataManager.data.bot.commandsUsed[cmd.id] = (DataManager.data.bot.commandsUsed[cmd.id] ?? 0) + 1;
+  // }
+  // catch (error) {
+  //   const timestamp = Date.now();
+  //   let err = {
+  //     name: error.name,
+  //     stroke: error.stack.match(/js:(\d+)/)[1],
+  //     command,
+  //     message: error.message,
+  //     timeFromStart: timestamp - msg.createdTimestamp < 1000 ? "менее 1с" : Util.timestampToDate(timestamp - msg.createdTimestamp)
+  //   };
+  //   console.error(error);
+  //   console.error(err);
 
-    if (!problems[0]) {
-      return true;
-    }
+  //   if (error.name == "DiscordAPIError") return;
+  //   let quote,
+  //     message   = await msg.msg({title: "Произошла ошибка 🙄", color: "#f0cc50", delete: 180000}),
+  //     react     = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
 
-    let title = problems[0];
-    let embed = {
-      author: {iconURL: author.avatarURL(), name: author.username},
-      color: "#ff0000",
-      delete: 20000
-    };
-    if (problems[1]) {
-      embed.title = "Упс, образовалось немного проблемок:";
-      embed.description = "• " + problems.join("\n• ");
-    }
-    let problemsMessage = msg.msg(embed);
-
-
-    setTimeout(() => msg.delete(), 20000);
-
-    const helpMessage = async () => {
-      problemsMessage = await problemsMessage;
-
-      let helpedNeeds = problems.includes("Вы не указали аргументов") || problems.includes("Вы не упомянули пользователя");
-      if (!helpedNeeds){
-        return;
-      }
-
-      let react = await problemsMessage.awaitReact({user: msg.author, type: "all"}, "❓");
-      if (!react){
-        return;
-      }
-
-      let helper = await commands.commandinfo.code(msg, {args: command});
-      await Util.sleep(20000);
-      helper.delete();
-    }
-    helpMessage();
-
-
-    return false;
-  };
-
-  if (checkAvailable() === false){
-    return;
-  }
-
-  if (cmd.cooldown) {
-    user["CD_" + cmd.id] = Math.max(user["CD_" + cmd.id] || 0, Date.now()) + cmd.cooldown;
-  }
-
-  let options = {command, user, memb, args, member};
-  try {
-    if (cmd.delete_command) {
-      msg.delete();
-    }
-    await commands[command].code(msg, options);
-
-    if (channelType !== "dm") {
-      msg.guild.data.commandsUsed[cmd.id] = (msg.guild.data.commandsUsed[cmd.id] ?? 0) + 1;
-    }
-    DataManager.data.bot.commandsUsed[cmd.id] = (DataManager.data.bot.commandsUsed[cmd.id] ?? 0) + 1;
-  }
-  catch (error) {
-    const timestamp = Date.now();
-    let err = {
-      name: error.name,
-      stroke: error.stack.match(/js:(\d+)/)[1],
-      command,
-      message: error.message,
-      timeFromStart: timestamp - msg.createdTimestamp < 1000 ? "менее 1с" : Util.timestampToDate(timestamp - msg.createdTimestamp)
-    };
-    console.error(error);
-    console.error(err);
-
-    if (error.name == "DiscordAPIError") return;
-    let quote,
-      message   = await msg.msg({title: "Произошла ошибка 🙄", color: "#f0cc50", delete: 180000}),
-      react     = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
-
-    while (react){
-      quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
-      message.msg({title: "Упс... Мы кажется накосячили 😶", color: "#f0cc50", description: `**Сведения об ошибке:**\n• **Имя:** ${error.name}\n• **Номер строки:** #${err.stroke}\n• **Текст:** \n\`\`\`\n${error.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${err.timeFromStart}`, footer: {text: quote}, delete: 12000});
-      await Util.sleep(10000);
-      react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
-    }
-    message.delete();
-  }
+  //   while (react){
+  //     quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
+  //     message.msg({title: "Упс... Мы кажется накосячили 😶", color: "#f0cc50", description: `**Сведения об ошибке:**\n• **Имя:** ${error.name}\n• **Номер строки:** #${err.stroke}\n• **Текст:** \n\`\`\`\n${error.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${err.timeFromStart}`, footer: {text: quote}, delete: 12000});
+  //     await Util.sleep(10000);
+  //     react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
+  //   }
+  //   message.delete();
+  // }
 }
 
 async function eventHundler(msg){
@@ -550,7 +458,6 @@ async function eventHundler(msg){
   }
   user.last_online = Date.now();
 
-  author.quest("messagesFountain", msg.channel);
 
   if (server.boss && server.boss.isArrived){
     BossManager.onMessage.call(BossManager, msg);
@@ -569,10 +476,12 @@ async function eventHundler(msg){
 }
 
 async function getCoinsFromMessage(user, msg){
+  msg.author.action(Actions.coinFromMessage, {channel: msg.channel});
+
   let reaction = "637533074879414272";
   let k = 1;
 
-  if (data.bot.dayDate == "31.12"){
+  if (DataManager.data.bot.dayDate == "31.12"){
     reaction = "❄️";
     k += 0.2;
   }
@@ -589,7 +498,7 @@ async function getCoinsFromMessage(user, msg){
   user.chestBonus = (user.chestBonus ?? 0) + 5;
 
   let react = await msg.awaitReact({user: msg.author, type: "full", time: 20000}, reaction);
-  msg.author.quest("onlyCoin", msg.channel);
+
   if (!react) {
     return;
   }
@@ -616,8 +525,7 @@ async function stupid_bot(user, msg) {
   if (msg.channel.type == "dm")
     return;
 
-  msg.author.quest("namebot", msg.channel);
-  msg.author.action("callBotStupid", {msg});
+  msg.author.action(Actions.callBot, {msg, channel: msg.channel, type: "stupid"});
 
   if (!msg.guild.data.stupid_evil) {
     msg.guild.data.stupid_evil = 1;
@@ -694,12 +602,9 @@ async function mute(member, off = false){
 
 function good_bot(user, msg){
   if (random(1)) msg.react("🍪");
-  msg.author.quest("namebot", msg.channel);
+  msg.author.action(Actions.callBot, {msg, channel: msg.channel, type: "good"});
 }
 
-function happy_BDay(msg, mention){
-  if (mention.user.data.BDay === DataManager.data.bot.dayDate) msg.author.quest("birthdayParty", msg.channel);
-};
 
 function filterChat(msg){
   let content = msg.content;
@@ -755,112 +660,23 @@ Discord.Webhook.prototype.msg = msg;
 Discord.WebhookClient.prototype.msg = msg;
 
 
-Discord.User.prototype.action = function(id, data){
-
-  // if (data.msg && data.msg.guild.data.boss){
-  //   BossManager.effectBases[id].onAction.call(null, data);
-  // }
-
-  /** Curse */
-  if (this.data.curses)
-  for (const curse of [...this.data.curses]){
-    const curseBase = CurseManager.cursesBase.get(curse.id);
-    try {
-      if (id in curseBase.callback)
-        curseBase.callback[id].call(null, this, curse, data);
-
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  
-
-  /** generalize */
-  if (id !== "_any"){
-    this.action("_any", {id, data});
-  }
-}
-
-Discord.User.prototype.quest = function(name, channel = this, count = 1){
-  if (this.bot) return;
-  let
-    memb        = this,
-    user        = memb.data,
-    currentDate = DataManager.data.bot.dayDate;
-
-  if (quests.names[name]){
-    user.completedQuest = user.completedQuest || [];
-    if (user.completedQuest.includes(name)){
-      return;
-    }
-    user.completedQuest.push(name);
-
-    let [realName, exp] = quests.names[name].split("&");
-    user.exp += +exp;
-    user.chestBonus = (user.chestBonus ?? 0) + 10;
-
-    let percentMade = +(data.users.reduce((acc, last) => acc + ~~(last.completedQuest && last.completedQuest.includes(name)), 0) / DataManager.datausers.length * 100).toFixed(2) + "%";
-    this.msg({title: `Вы выполнили глобальный квест\n"${realName}"!`, description: `Описание: "${quests[name]}"\nОпыта получено: **${ exp }**\nЭтот квест смогло выполнить ${percentMade} пользователей.\n[Я молодец.](https://superherojacked.com/wp-content/uploads/2016/12/batman-gif.gif)`});
-  }
-
-
-  if (user.questTime !== currentDate) {
-    if (user.quest !== undefined){
-      this.action("dailyQuestSkiped", {quest: user.quest});
-    }
-    new Quest(user, memb);
-  }
-  if (user.quest != name) {
-    return;
-  }
-
-  user.questProgress = (user.questProgress + +count || +count);
-
-  if (user.questProgress >= user.questNeed){
-    user.questLast = name;
-    user.quest = undefined;
-    const k = user.questReward * 1.4;
-
-    let exp = Math.round((user.level + 5) * k);
-    user.exp += exp;
-
-    user.chestBonus = (user.chestBonus ?? 0) + Math.round(k * 2);
-    channel.msg({title: "Вы выполнили сегодняшний квест и получили опыт!", description: `Опыта получено: **${exp}**\nОписание квеста:\n${quests[name]}\n\n[Я молодец.](https://cf.ppt-online.org/files/slide/d/dWroQsFb9wiCVhG7u1tfSRgmcTpnUB5Hl3vXOJ/slide-5.jpg)`, author: {iconURL: this.avatarURL(), name: this.username}}) //на будущее: "серия квестов"*, "X2 опыт за сообщения"
-
-    user.dayQuests = ++user.dayQuests || 1;
-
-    memb.action("dailyQuestCompete", {k, quest: name});
-
-    if (user.dayQuests === 100)
-      memb.quest("day100");
-
-    if ( !(user.dayQuests % 50) ){
-      "seed" in user ?
-        memb.msg({title: `Ваш ${user.dayQuests}-й квест — новые семечки`, description: `🌱`}) :
-        memb.msg({title: "Ура, ваши первые семечки!", description: `Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера`});
-
-      user.seed = (user.seed ?? 0) + 2;
-    }
-
-  };
-}
-
-Discord.Message.prototype.awaitReact = async function(opt = {}, ...reactions){
-  if (!opt.user) throw new Error("without user");
+Discord.Message.prototype.awaitReact = async function(options, ...reactions){
+  if (!options.user) throw new Error("without user");
   reactions = reactions.filter(e => e);
 
   if (!reactions.length){
     return false;
   }
 
-  let filter = (reaction, member) => member.id == opt.user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name);
-  if (opt.user == "any") filter = (reaction, member) => member.id != client.user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name);
+  let filter = (reaction, member) => member.id === options.user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name);
+  if (options.user == "any") filter = (reaction, member) => member.id != client.user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name);
 
-  let collected = this.awaitReactions({ filter, max: 1, time: opt.time || 300000 }).then(e => collected = e);
+  let collected = this.awaitReactions({ filter, max: 1, time: options.time || 300000 })
+    .then(reaction => collected = reaction);
 
   for (let i = 0; i < reactions.length; i++) {
     if (collected instanceof Promise == false){
-      if (opt.type != "all") reactions.slice(i).forEach(this.react);
+      if (options.type != "all") reactions.slice(i).forEach(this.react);
       break;
     }
     this.react(reactions[i]);
@@ -873,22 +689,21 @@ Discord.Message.prototype.awaitReact = async function(opt = {}, ...reactions){
     return this.reactions.cache.filter(e => e.me).each(e => e.remove()), false;
   }
 
-  if (opt.type == "all")              this.reactions.removeAll();
-  else if (opt.type == "one")         reaction.users.remove(opt.user);
-  else if (opt.type == "full")        reaction.remove();
+  if (options.type == "all")    this.reactions.removeAll();
+  if (options.type == "one")    reaction.users.remove(options.user);
+  if (options.type == "full")   reaction.remove();
 
   return reaction.emoji.id || reaction.emoji.name;
 }
 
-Discord.BaseChannel.prototype.awaitMessage = async function(user, options = {}){
-  if (options.message) {
-    options.message = await this.msg(options.message);
-  }
-  const filter = m => user === false && !m.author.bot || m.author.id === user.id;
+Discord.BaseChannel.prototype.awaitMessage = async function(options){
+  const user = options.user;
+
+  const filter = message => (user === false && !message.author.bot) || message.author.id === user.id;
   const collector = await this.awaitMessages({filter, max: 1, time: options.time || 100_000});
 
-  let input = collector.first();
-  if (input && !options.preventDelete){
+  const input = collector.first();
+  if (input && options.remove){
     input.delete();
   }
   return input;
@@ -1020,43 +835,20 @@ Object.defineProperty(Discord.User.prototype, "guilds", {get(){
 
 
 
-class Quest {
-  constructor(user, memb){
-    let scope = quests.scope.split(" ");
-    let name, progress, chance, complexity, activateFunc, activateChance;
-    do {
-      if (!scope.random()) return false;
-      [name, progress = 1, chance = 1, complexity = 1, activateFunc] = scope.random({pop: true}).split("&");
-      activateChance = Util.random(1, 7);
-    } while ( !name || chance > activateChance || name == user.questLast || activateFunc && !Quest.activateFunc[name](memb, activateFunc) );
-
-    user.quest         = name;
-    user.questProgress = 0;
-    user.questNeed     = progress != 1 ? +String( Math.floor(String(Math.floor(Math.random() * progress + progress / 1.5) * (1 + (user.voidQuests ?? 0) * 0.15))) ).replace(/(?<=\d)\d/g, e => "0") : 1;
-    user.questReward   = (user.questNeed / progress * (complexity || 1)) * (1 + (user.voidQuests ?? 0) * 0.30);
-    user.questTime     = DataManager.data.bot.dayDate;
-  }
-
-  static activateFunc = {
-    birthdayParty: (user, id) => (user.guilds.includes[id])
-  }
-}
-
 
 class Command {
-  constructor(code, opt, other){
-    if (!code || typeof code != "function") throw "Комманда без функции";
-    if (!opt) opt = {};
+  constructor(code, opt, allias){
+
     this.code = code;
     this.id   = Command.cmds = (++Command.cmds || 1);
 
-    this.delete_command       = opt.delete                || false;
-    this.memb                 = opt.memb                  || false;
-    this.DM                   = opt.dm                    || false;
-    this.args                 = opt.args                  || false;
+    this.removeCallMessage    = opt.delete                || false;
+    this.expectMention        = opt.memb                  || false;
+    this.inDM                 = !opt.dm                   || true;
+    this.expectParams         = opt.args                  || false;
     this.hidden               = opt.hidden                || false;
     this.cooldown             = opt.cooldown * 1000       || 0;
-    this.try                  = opt.try                   || 1;
+    this.cooldownTry          = opt.cooldownTry           || 1;
     // >                      = opt >-<                   ||
     this.type                 = opt.type
     this.myPermissions        = opt.myPermissions
@@ -1064,8 +856,18 @@ class Command {
     this.Permissions          = opt.Permissions
     this.ChannelPermissions   = opt.ChannelPermissions
 
-    if (other) setTimeout(() => other.split(" ").forEach(item => commands[item] = this), 50);
+    
+
+    this.allias =  allias;
+
+    this.options = Util.omit(this, (k) => !["code", ""].includes(k));
+
+    if (allias) setTimeout(() => this.allias.split(" ").forEach(item => commands[item] = this), 50);
     return this;
+  }
+
+  onChatInput(message, context){
+    this.code(message, context);
   }
 
   get name(){
@@ -1107,6 +909,7 @@ class Command {
     "READ_MESSAGE_HISTORY": "Читать историю сообщений",
     "USE_EXTERNAL_EMOJIS": "Использовать внешние эмодзи",
     "VIEW_GUILD_INSIGHTS": "Просматривать аналитику сервера"
+
   }
 
   static async CustomCommand(msg, name, args){
@@ -1180,8 +983,8 @@ class ReactionsManager {
   static reactData = [];
 
   static async readFile(){
-    const { default: data } = await import(this.path, {assert: {type: "json"}});
-    return data;
+    // const { default: data } = await import(this.path, {assert: {type: "json"}});
+    //return data;
   }
 
   static async getMain(){
@@ -1213,112 +1016,6 @@ class ReactionsManager {
   }
 }
 
-
-class CounterManager {
-
-  static path = "./data/counters.json";
-
-  constructor (channel, guild, type, template, args){
-    let counter = {channel, guild, type, template, args};
-
-    CounterManager.counterData.push(counter);
-    CounterManager.writeFile();
-    CounterManager.counterData = CounterManager.readFile();
-    CounterManager.up(counter);
-    return counter;
-  }
-
-  static counterData = [];
-
-  static async readFile(){
-    const { default: data } = await import(this.path, {assert: {type: "json"}});
-    return data;
-  }
-
-  static writeFile(){
-    FileSystem.writeFileSync(this.path, JSON.stringify(CounterManager.counterData), (err, input) => false);
-  }
-
-  static async clearSuperfluous(){
-    let counters = [];
-    const countersData = await CounterManager.readFile();
-
-    for (const data of countersData){
-      const guild = client.guilds.cache.get(data.guild);
-      const channel = guild.channels.cache.get(data.channel);
-      if (!channel.id){
-        continue;
-      }
-
-      if (data.type === "message") {
-        let message = await channel.messages.fetch(data.args);
-        if (!message){
-          continue;
-        }
-      }
-      return counters.push(data);
-    }
-    
-
-    CounterManager.writeFile();
-    CounterManager.counterData = await CounterManager.readFile();
-    CounterManager.handle();
-  }
-
-  static delete(counterOrIndex){
-    let index = (typeof counterOrIndex == "number") ? counterOrIndex : CounterManager.counterData.indexOf(counterOrIndex);
-    if (index == -1) return false;
-
-    CounterManager.counterData.splice(index, 1);
-    CounterManager.writeFile();
-  }
-
-  static async handle(){
-    let i = 0;
-    while (true) {
-      let counter = CounterManager.counterData[i];
-      CounterManager.up(counter);
-      await Util.sleep(900000 / (CounterManager.counterData.length + 1));
-      i++;
-      i %= CounterManager.counterData.length;
-    }
-  }
-
-  static async up(counter){
-    if (!counter){
-        return;
-    }
-
-    try {
-      let channel = client.guilds.cache.get(counter.guild).channels.cache.get(counter.channel);
-      const templater = new Template();
-      let value = await templater.replaceAll(counter.template, channel);
-      switch (counter.type) {
-        case "message":
-          let message = await channel.messages.fetch(counter.args);
-          if (message instanceof Map) throw new Error("Unknown message");
-          if (message.embeds[0]) message.edit("", message.embeds[0].setDescription(value));
-          else await message.msg({edit: true, content: value})
-        break;
-        case "channel": await channel.setName(value, "15m Counter");
-        break;
-        case "poster": await channel.msg({content: value});
-        break;
-      }
-    }
-    catch (e) {
-      if (e.message != "obj.send is not a function") {
-        console.error(e);
-      }
-      CounterManager.delete(counter);
-    }
-    return;
-  }
-
-  static async loadCountersFromFile(){
-    CounterManager.counterData = await CounterManager.readFile();
-  }
-}
 
 
 
@@ -1418,31 +1115,31 @@ class GuildVariablesManager {
 
 
 const commands = {
-  delete: new Command(async (msg, commandOptions) => {
-    if (!commandOptions.args) {
+  delete: new Command(async (msg, interaction) => {
+    if (!interaction.params) {
       return;
     }
 
     msg.msg({description: "Эта бонусная функция доступна только для пользователей поддерживающих нас :green_heart: \nХотите быть одним из них? [**Поддержите нас!**](https://www.youtube.com/watch?v=MX-CO5i5S9g)"});
-  }, {name: "delete", cooldown: 5, try: 2, type: "other"}, "удалить удали"),
+  }, {name: "delete", cooldown: 5, cooldownTry: 2, type: "other"}, "удалить удали"),
 
-  send: new Command(async (msg, commandOptions) => {
-    const content = await new Template().replaceAll(commandOptions.args);
+  send: new Command(async (msg, interaction) => {
+    const content = await new Template().replaceAll(interaction.params);
     await msg.msg({content: `**${ content }**`});
 
-    msg.guild?.logSend({title: `${ msg.author.username }:`, description: `\n!c ${ commandOptions.args }`});
+    msg.guild?.logSend({title: `${ msg.author.username }:`, description: `\n!c ${ interaction.params }`});
   }, {args: true, delete: true, myChannelPermissions: 8192, type: "other"}, "с c сенд s template шаблон"),
 
-  user: new Command(async (msg, commandOptions) => {
+  user: new Command(async (msg, interaction) => {
     
 
     const
-      memb   = (commandOptions.args) ? commandOptions.memb || client.users.cache.get(commandOptions.args) || msg.author : msg.author,
-      member = (msg.guild) ? msg.guild.members.resolve(memb) : null,
-      user   = memb.data,
+      target = (interaction.params) ? interaction.mention || client.users.cache.get(interaction.params) || msg.author : msg.author,
+      member = (msg.guild) ? msg.guild.members.resolve(target) : null,
+      user   = target.data,
       guild  = msg.guild;
 
-      const commandContext = {
+      Object.assign(interaction, {
         currentCurseView: 0,
   
         rank: {
@@ -1462,7 +1159,7 @@ const commands = {
           reactions: ["640449832799961088"]
         }
         
-      };
+      });
 
 
       if (guild && member === undefined){
@@ -1470,44 +1167,43 @@ const commands = {
         return;
       }
 
-      msg.author.action("callUserCommand", {msg, commandOptions});
 
       if (member && user.level > 1) {
-        commandContext.rank.position = commandContext.rank.members
+        interaction.rank.position = interaction.rank.members
           .sort((b, a) => (a.data.level != b.data.level) ? a.data.level - b.data.level : a.data.exp - b.data.exp)
-          .indexOf(memb) + 1;
+          .indexOf(target) + 1;
       }
 
       if (
         member.presence.status != "offline" ||
-        memb === msg.author
+        target === msg.author
       ) {
-        commandContext.status = "<:online:637544335037956096> В сети";
+        interaction.status = "<:online:637544335037956096> В сети";
       }
       else {
          const lastOnline = Date.now() - (user.last_online ?? 0);
          const getDateContent = () => (31556926000000 < lastOnline) ? "более года" : (lastOnline > 2629743000) ? "более месяца" : Util.timestampToDate(lastOnline);
          const dateContent = user.profile_confidentiality ? "" : getDateContent();
-         commandContext.status = `<:offline:637544283737686027> Не в сети ${ dateContent }`;
+         interaction.status = `<:offline:637544283737686027> Не в сети ${ dateContent }`;
       }
 
-      memb.quest("check");
+      QuestManager.checkAvailable({ user: msg.author });
 
 
       const createEmbedAtFirstPage = async () => {
-        const description = `Коинов: **${ Math.letters(user.coins) }**<:coin:637533074879414272> \n <a:crystal:637290417360076822>Уровень: **${user.level || 1}** \n <:crys:637290406958202880>Опыт: **${user.exp || 0}/${(user.level || 1) * 45}**\n\n ${commandContext.status}\n`
+        const description = `Коинов: **${ Math.letters(user.coins) }**<:coin:637533074879414272> \n <a:crystal:637290417360076822>Уровень: **${user.level || 1}** \n <:crys:637290406958202880>Опыт: **${user.exp || 0}/${(user.level || 1) * 45}**\n\n ${interaction.status}\n`
 
         const embed = {
           title: "Профиль пользователя",
           author: {
-            name: `#${ member ? member.displayName : memb.username }`,
-            iconURL: memb.avatarURL({dynamic : true})
+            name: `#${ member ? member.displayName : target.username }`,
+            iconURL: target.avatarURL({dynamic : true})
           },
-          color: commandContext.embedColor,
-          edit: commandContext.controller.editEmbed,
+          color: interaction.embedColor,
+          edit: interaction.controller.editEmbed,
           description,
           fields: [{name: " ᠌", value: " ᠌"}],
-          footer: {text: `Похвал: ${user.praiseMe?.length || "0"}   ${commandContext.rank ? `Ранг: ${commandContext.rank.position ?? 0}/${ commandContext.rank.members.length }` : ""}`},
+          footer: {text: `Похвал: ${user.praiseMe?.length || "0"}   ${interaction.rank ? `Ранг: ${interaction.rank.position ?? 0}/${ interaction.rank.members.length }` : ""}`},
         }
 
         
@@ -1525,9 +1221,11 @@ const commands = {
           embed.fields.push({name: " ᠌᠌", value: "\n**" + `${ achiementContent }${ member.roles.highest }**\nᅠ`});
         }
 
-        if (!memb.bot){
-          const value = user.quest ? `${ quests[user.quest] } ${ user.questProgress || 0 }/${ user.questNeed }` : " – Квест выполнен";
-          embed.fields.push({name:"\nКвест:", value});
+        if (!target.bot){
+          const quest = user.quest;
+          const questBase = QuestManager.questsBase.get(quest.id);
+          const value = quest.isCompleted ? " – Квест выполнен" : `${ questBase.description } ${ quest.progress }/${ quest.goal }`;
+          embed.fields.push({name: "\nКвест:", value});
         }
 
         if (user.curses && user.curses.length){
@@ -1545,10 +1243,10 @@ const commands = {
           null;
 
         const embed = {
-          title: `Статистика ${ memb.tag }`,
-          color: commandContext.embedColor,
+          title: `Статистика ${ target.tag }`,
+          color: interaction.embedColor,
           footer,
-          edit: commandContext.controller.editEmbed
+          edit: interaction.controller.editEmbed
         }
 
         const contents = [];
@@ -1587,7 +1285,12 @@ const commands = {
           },
           {
             name: "Выполнено квестов 📜",
-            value: `Ежедневных: ${memb.bot ? "BOT" : user.dayQuests || 0}\nГлобальных: ${(user.completedQuest || []).filter(e => e in quests.names).length}/${Object.values(quests.names).length}`,
+            value: (() => {
+              const userCompleted = (user.questsGlobalCompleted ?? "").split(" ").filter(Boolean);
+              const globalsContent = `Глобальных: ${ userCompleted.length }/${ QuestManager.questsBase.filter(quest => quest.isGlobal).size }`;
+              const dailyQuestsContent = `Ежедневных: ${target.bot ? "BOT" : user.dayQuests || 0}`;
+              return `${ dailyQuestsContent }\n${ globalsContent }`;
+            })(),
             inline: false
           },
           {
@@ -1600,8 +1303,8 @@ const commands = {
                 }
                 
                 const count = Util.ending(user.curses.length, "", `Текущие проклятия (их ${ user.curses.length })`, "Текущее проклятие", "Текущие два проклятия", {unite: (_quantity, word) => word});
-                const curse = user.curses.at(commandContext.currentCurseView);
-                const description = CurseManager.intarface({user: memb, curse}).toString();
+                const curse = user.curses.at(interaction.currentCurseView);
+                const description = CurseManager.intarface({user: target, curse}).toString();
                 return `>>> ${ count }:\n${ description }`
               }
               return `${ surviveContent }\n${ getCurrentContent() }`;
@@ -1624,7 +1327,7 @@ const commands = {
 
      
 
-      const controller = commandContext.controller;
+      const controller = interaction.controller;
       controller.message = await msg.msg( await createEmbedAtFirstPage() );
       controller.editEmbed = true;
 
@@ -1634,7 +1337,7 @@ const commands = {
         const react = await controller.message.awaitReact({user: "any", type: "all", time: 20000}, ...controller.reactions);
         switch (react) {
           case "640449848050712587":
-            commandContext.currentCurseView = commandContext.currentCurseView + 1 % user.curses?.length || 1;
+            interaction.currentCurseView = interaction.currentCurseView + 1 % user.curses?.length || 1;
             await controller.message.msg( await createEmbedAtFirstPage() );
             controller.reactions = ["640449832799961088"];
             break;
@@ -1646,9 +1349,9 @@ const commands = {
           default: return;
         }
       }
-  }, {delete: true, cooldown: 20, try: 3, type: "user"}, "юзер u ю profile профиль"),
+  }, {delete: true, cooldown: 20, cooldownTry: 3, type: "user"}, "юзер u ю profile профиль"),
 
-  help: new Command(async (msg, commandOptions) => {
+  help: new Command(async (msg, interaction) => {
     let endingIndex = Object.values(commands).findIndex((e, i) => i != 0 && e.id === 1);
     let guildCommands = [];
 
@@ -1679,37 +1382,26 @@ const commands = {
       }
     ];
 
+    const embed = {
+      title: "Команды, которые не сломают ваш сервер",
+      description: `Знаете все-все мои возможности? Вы точно молодец!`,
+      fields,
+      components: {
+        type: 2,
+        label: "Discord",
+        style: 5,
+        url: "https://discord.gg/76hCg2h7r8",
+        emoji: {id: "849587567564554281"}
+      }
+    }
 
-    // msg.msg({title: "Команды, которые не сломают ваш сервер", description: "Знаете все-все мои возможности? Вы точно молодец!", fields});
-    client.api.channels(msg.channel.id).messages.post({data: {
-      "embed": {
-        "title": "Команды, которые не сломают ваш сервер",
-        "color": 	65280,
-        "description": `Знаете все-все мои возможности? Вы точно молодец!`,
-        "fields": fields
-      },
-      "content": "",
-      "components": [
-        {
-           "type": 1,
-           "components": [
-             {
-                    "type": 2,
-                    "label": "Discord",
-                    "style": 5,
-                    "url": "https://discord.gg/76hCg2h7r8",
-                    "emoji": {id: "849587567564554281"}
-              }
-           ]
-       }
-      ]
-    }});
+    msg.msg(embed);
   }, {delete: true, cooldown: 15, type: "other"}, "хелп помощь cmds commands команды х"),
 
-  praise: new Command(async (msg, commandOptions) => {
+  praise: new Command(async (msg, interaction) => {
     let
-      memb     = commandOptions.memb,
-      user     = commandOptions.user,
+      memb     = interaction.mention,
+      userData = interaction.userData,
       membUser = memb.data;
 
     if (memb == msg.author) {
@@ -1717,34 +1409,39 @@ const commands = {
       return;
     }
 
-    let heAccpet = await Util.awaitUserAccept({name: "praise", message: {title: "Количество похвал ограничено\nПродолжить?"}, channel: msg.channel, user});
+    let heAccpet = await Util.awaitUserAccept({name: "praise", message: {title: "Количество похвал ограничено\nПродолжить?"}, channel: msg.channel, userData});
     if (!heAccpet) {
       return;
     };
 
-    user.praise = user.praise || [];
-    if (user.praise.length > 1 + Math.floor(user.level * 1.5 / 10)) {
+    userData.praise = userData.praise || [];
+    if (userData.praise.length > 1 + Math.floor(userData.level * 1.5 / 10)) {
       msg.channel.msg({title: "Вы использовали все похвалы", color: "#ff0000"});
       return;
     }
 
     membUser.praiseMe = membUser.praiseMe || [];
-    if (user.praise.includes(memb.id)) {
+    if (userData.praise.includes(memb.id)) {
       msg.channel.msg({title: "Вы уже хвалили его!"});
       return;
     }
 
-    user.praise.push(memb.id);
-    membUser.praiseMe.push(user.id);
+    userData.praise.push(memb.id);
+    membUser.praiseMe.push(userData.id);
     msg.channel.msg({title: `${memb.username} похвалили ${membUser.praiseMe.length}-й раз\nЭто сделал ${msg.author.username}!`, author: {name: memb.username, iconURL: memb.avatarURL()}});
 
-    msg.author.quest("like", msg.channel);
-    memb.quest("praiseMe", msg.channel);
+    msg.author.action(Actions.likedTheUser, {channel: msg.channel, target: memb, likeType: "byCommand"});
+    msg.author.action(Actions.praiseUser, {channel: msg.channel, target: memb, msg});
+    memb.action(Actions.userPraiseMe, {channel: msg.channel, msg, memb: msg.author});
   }, {delete: true, memb: true, type: "user"}, "похвалить like лайк лайкнуть"),
 
-  praises: new Command(async (msg, commandOptions) => {
+  praises: new Command(async (msg, interaction) => {
 
-    if (commandOptions.args === "+"){
+    const context = {
+      questionMessage: null
+    };
+
+    if (interaction.params === "+"){
       const data = msg.author.data;
 
       const currentPraises = data.praise || [];
@@ -1771,7 +1468,7 @@ const commands = {
 
 
     let
-      memb = commandOptions.memb || msg.guild.members.cache.get(commandOptions.args) || msg.author,
+      memb = interaction.mention || msg.guild.members.cache.get(interaction.params) || msg.author,
       user = memb.data,
       isAuthor = memb == msg.author,
       iPraise  = (user.praise && user.praise.length) ? user.praise.map((id, i) => (i + 1) + ". "+ (DataManager.getUser(id) ? Discord.escapeMarkdown( DataManager.getUser(id).name ) : "пользователь не определен")).join(`\n`) : (isAuthor) ? "Вы никого не хвалили \nиспользуйте **!похвалить**" : "Никого не хвалил",
@@ -1805,8 +1502,9 @@ const commands = {
 
 
         case "685057435161198594":
-          let answer = await msg.channel.awaitMessage(msg.author, {title: "Введите номер пользователя из списка, которого вы хотите удалить"});
-          answer = answer.content;
+          context.questionMessage = await msg.msg({title: "Введите номер пользователя из списка, которого вы хотите удалить"});
+          let answer = await msg.channel.awaitMessage({user: msg.author, remove: true})?.content;
+          context.questionMessage.delete();
 
           if (answer === "+")
             answer = user.praise
@@ -1906,35 +1604,35 @@ const commands = {
          return;
        }
     }
-  }, {delete: true, cooldown: 20, try: 2, type: "user"}, "похвалы лайки likes"),
+  }, {delete: true, cooldown: 20, cooldownTry: 2, type: "user"}, "похвалы лайки likes"),
 
-  warn: new Command(async (msg, commandOptions) => {
-    let memb = commandOptions.memb;
+  warn: new Command(async (msg, interaction) => {
+    let memb = interaction.mention;
 
-    commandOptions.args = commandOptions.args.split(" ").slice(1).join(" ");
+    interaction.params = interaction.params.split(" ").slice(1).join(" ");
 
     if (memb == msg.author) {
-      msg.msg({title: `${msg.author.username} выдал себе предупреждение за то, что ${commandOptions.args.trim() || "смешной такой"}`, color: "#ff0000"});
+      msg.msg({title: `${msg.author.username} выдал себе предупреждение за то, что ${interaction.params.trim() || "смешной такой"}`, color: "#ff0000"});
       return;
     }
 
-    let message = (commandOptions.args) ?
-      `Участник ${msg.author.username} выдал предупреждение ${memb.username}\n**Причина:** ${commandOptions.args}` :
+    let message = (interaction.params) ?
+      `Участник ${msg.author.username} выдал предупреждение ${memb.username}\n**Причина:** ${interaction.params}` :
       `${msg.author.username} выдал предупреждение ${memb.username} без объяснения причин.`;
 
     msg.msg({title: "Выдан пред", description: `${message}`, color: "#ff0000", author: {name: `Выдал: ${msg.author.username}`, iconURL: msg.author.avatarURL()}, footer: {text: "Призрачный бан...", iconURL: memb.avatarURL()}});
 
-    memb.msg({title: `Вам выдано предупреждение \nПричина: ${commandOptions.args || "не указана"}`, color: "#ff0000", footer: {text: "Выдал: " + msg.author.tag}});
+    memb.msg({title: `Вам выдано предупреждение \nПричина: ${interaction.params || "не указана"}`, color: "#ff0000", footer: {text: "Выдал: " + msg.author.tag}});
     msg.guild.logSend({title: `Одному из участников выдано предупреждение`, description: message, color: "#ff0000"});
-  }, {delete: true, memb: true, dm: true, try: 3, cooldown: 120, Permissions: 4194304, type: "guild"}, "пред варн"),
+  }, {delete: true, memb: true, dm: true, cooldownTry: 3, cooldown: 120, Permissions: 4194304, type: "guild"}, "пред варн"),
 
-  clear: new Command(async (msg, commandOptions) => {
+  clear: new Command(async (msg, interaction) => {
     await msg.delete()
       .catch(() => {});
 
     const
       channel      = msg.channel,
-      args         = commandOptions.args;
+      args         = interaction.params;
 
     const referenceId = msg.reference ? msg.reference.messageId : null;
 
@@ -2085,52 +1783,69 @@ const commands = {
     }
 
     await Util.sleep(toDelete * 30);
-    msg.channel.stopTyping();
 
     counter.msg({title: `Удалено ${  Util.ending(toDelete, "сообщени", "й", "е", "я") }!`,  edit: true, delete: 1500 });
 
     sendLog();
-  }, {myChannelPermissions: 8192, ChannelPermissions: 8192, cooldown: 15, try: 5, type: "guild"}, "очистить очисти очисть клир клиар"),
+  }, {myChannelPermissions: 8192, ChannelPermissions: 8192, cooldown: 15, cooldownTry: 5, type: "guild"}, "очистить очисти очисть клир клиар"),
 
-  embed: new Command(async (msg, commandOptions) => {
-    let author = msg.author, embed;
-    let commandDescription = `С помощью реакций создайте великое сообщение \nкоторое не останется незамеченным\nПосле чего отправьте его в любое место этого сервера!\n\n📌 - заглавие/название\n🎨 - цвет\n🎬 - описание\n👤 - автор\n🎏 - подгруппа\n🪤 - изображение сверху\n🪄 - изображение снизу\n🧱 - добавить область\n🕵️ - установить вебхук\n😆 - добавить реакции\n📥 - футер\n\n⭑ После завершения жмякайте <:arrowright:640449832799961088>\n`
+  embed: new Command(async (msg, interaction) => {
 
-    if (!commandOptions.args){
-      embed = new Discord.EmbedBuilder()
-      .setTitle("Эмбед конструктор")
-      .setColor(((process.env.DEVELOPMENT === "FALSE") ? "23ee23" : "000100"))
-      .setDescription(commandDescription)
-    }
-    else {
-      try {
-        embed = new Discord.EmbedBuilder(JSON.parse(commandOptions.args.replace(/\\(?=`)/g, "") ));
-        if (!embed.title && !embed.image && !embed.description && !embed.video) throw new Error("JSON != Embed");
-        if (embed.description) embed.description = embed.description.replace(/\\n/g, "\n");
-      } catch (e) {
-        msg.msg({title: "В JSON(-е) ошибка, или аргументы не являются json(-м)", description: e.message, delete: 10000})
-        embed = new Discord.EmbedBuilder()
-        .setTitle("Эмбед конструктор")
-        .setColor(((process.env.DEVELOPMENT === "FALSE") ? "23ee23" : "000100"))
-        .setDescription(commandDescription)
+    const context = {
+      questionMessage: null,
+      embed: new EmbedBuilder(),
+      previewMessage,
+      updatePreviewMessage: () => {
+        context.previewMessage({edit: true, ...context.embed});
       }
     }
 
+    const createBaseEmbed = (json) => {
+      const title = "Эмбед конструктор";
+      const description = `С помощью реакций создайте великое сообщение \nкоторое не останется незамеченным\nПосле чего отправьте его в любое место этого сервера!\n\n📌 - заглавие/название\n🎨 - цвет\n🎬 - описание\n👤 - автор\n🎏 - подгруппа\n🪤 - изображение сверху\n🪄 - изображение снизу\n🧱 - добавить область\n🕵️ - установить вебхук\n😆 - добавить реакции\n📥 - футер\n\n⭑ После завершения жмякайте <:arrowright:640449832799961088>\n`;
 
+      const embed = {
+        title,
+        description
+      };
+
+      if (json){
+        try {
+          const parsed = JSON.parse(json);
+          Object.assign(embed, parsed);
+        } catch {};
+      }
+     
+
+      return embed;
+    }
+
+    Object.assign(
+      context.embed,
+      createBaseEmbed(interaction.params)
+    );
+
+    let author = msg.author;
+  
+    context.previewMessage = await msg.msg(context.embed);
+
+      
+    
     let
-      preview = await msg.msg({content: embed}),
       react, answer, reactions;
 
 
     while (true) {
       if (typeof react != "object")
-        react = await preview.awaitReact({user: author, type: "one"}, "📌", "🎨", "🎬", "👤", "🎏", "📥", "😆", "640449832799961088");
+        react = await context.previewMessage.awaitReact({user: author, type: "one"}, "📌", "🎨", "🎬", "👤", "🎏", "📥", "😆", "640449832799961088");
       else
-        react = await preview.awaitReact({user: author, type: "one"}, ...react);
+        react = await context.previewMessage.awaitReact({user: author, type: "one"}, ...react);
 
       switch (react) {
         case "📌":
-          answer = await msg.channel.awaitMessage(msg.author, {title: "Введите название 📌", embed: {color: embed.color}});
+          context.questionMessage = await msg.msg({title: "Введите название 📌", color: context.embed.color});
+          answer = await msg.channel.awaitMessage({user: msg.author, remove: true});
+          context.questionMessage.delete();
           if (!answer){
             continue;
           }
@@ -2138,9 +1853,9 @@ const commands = {
           let link = answer.content.match(/https:\/\/.+?(\s|$)/);
           if (link){
             answer.content = answer.content.replace(link[0], "").trim();
-            embed.setURL(link);
+            context.embed.setURL(link);
           }
-          embed.setTitle(answer);
+          context.embed.setTitle(answer);
 
           break;
 
@@ -2158,7 +1873,7 @@ const commands = {
           color = color[0].toLowerCase();
           color = color.length === 3 ? [...color].map(e => e + e).join("") : color;
 
-          embed.color = color;
+          context.embed.color = color;
           break;
 
         case "🎬":
@@ -2166,7 +1881,7 @@ const commands = {
           if (!answer){
             continue;
           }
-          embed.setDescription(answer);
+          context.embed.setDescription(answer);
           break;
 
         case "👤":
@@ -2176,7 +1891,7 @@ const commands = {
           }
           let user = answer.mentions.users.first();
           if (user){
-            embed.setAuthor(user.username, user.avatarURL());
+            context.embed.setAuthor(user.username, user.avatarURL());
             break;
           }
 
@@ -2186,11 +1901,11 @@ const commands = {
           }
 
           image = image ? image[0] : null;
-          embed.setAuthor(answer.content, image);
+          context.embed.setAuthor(answer.content, image);
           break;
 
         case "🎏":
-          await preview.reactions.removeAll();
+          await context.previewMessage.reactions.removeAll();
           react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
           break
 
@@ -2205,16 +1920,16 @@ const commands = {
           }
 
           url = url ? url[0] : null;
-          embed.setFooter(answer, url);
+          context.embed.setFooter(answer, url);
           break;
 
         case "😆":
-          await preview.reactions.removeAll();
+          await context.previewMessage.reactions.removeAll();
           let collector = await msg.msg({title: "Установите реакции прямо под этим сообщением!\nА затем жмякните реакцию\"Готово\"<:mark:685057435161198594>", color: embed.color});
-          react = await preview.awaitReact({user: author, type: "one"}, "685057435161198594");
+          react = await context.previewMessage.awaitReact({user: author, type: "one"}, "685057435161198594");
           reactions = Array.from(collector.reactions.cache.keys());
           collector.delete();
-          await preview.reactions.removeAll();
+          await context.previewMessage.reactions.removeAll();
           break;
 
         case "🪤":
@@ -2226,7 +1941,7 @@ const commands = {
             msg.msg({title: "Вы должны указать ссылку на изображение", color: "#ff0000", delete: 3000});
             continue;
           }
-          embed.setThumbnail(answer.content);
+          context.embed.setThumbnail(answer.content);
           react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
           break;
 
@@ -2239,7 +1954,7 @@ const commands = {
             msg.msg({title: "Вы должны указать ссылку на изображение", color: "#ff0000", delete: 3000});
             continue;
           }
-          embed.setImage(answer.content);
+          context.embed.setImage(answer.content);
           react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
           break;
 
@@ -2252,7 +1967,7 @@ const commands = {
           if (!value){
             continue;
           }
-          embed.addField(name, value, true);
+          context.embed.addField(name, value, true);
           react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
           break;
 
@@ -2267,19 +1982,19 @@ const commands = {
             answer.content = answer.content.replace(avatar, "").trim();
           }
 
-          embed.webhook = {name: answer.content, avatar};
+          context.embed.webhook = {name: answer.content, avatar};
           react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
           msg.msg({title: "Успешно!", author: {name: answer.content, iconURL: avatar}, delete: 3000});
           break;
 
         case "640449848050712587":
           // Arror-Left
-          await preview.reactions.removeAll();
+          await context.previewMessage.reactions.removeAll();
           break;
 
         case "640449832799961088":
           // Send Embed-Message
-          await preview.reactions.removeAll();
+          await context.previewMessage.reactions.removeAll();
           let whatChannelSend = await msg.msg({title: "Введите Айди канала или упомяните его для отправки эмбеда", color: embed.color, description: "Или используйте реакцию <:arrowright:640449832799961088>, чтобы отправить в этот канал."});
           answer = await Util.awaitReactOrMessage(whatChannelSend, msg.author, "640449832799961088");
           whatChannelSend.delete();
@@ -2312,46 +2027,46 @@ const commands = {
             continue;
           }
 
-          if (embed.webhook){
+          if (context.embed.webhook){
             let webhooks = await channel.fetchWebhooks();
-            let hook = webhooks.find(e => e.name === embed.webhook.name);
+            let hook = webhooks.find(e => e.name === context.embed.webhook.name);
 
-            if (hook && embed.webhook.avatar){
-              await webhook.edit({avatar: embed.webhook.avatar});
+            if (hook && context.embed.webhook.avatar){
+              await webhook.edit({avatar: context.embed.webhook.avatar});
             }
 
             if (!hook){
-              hook = await channel.createWebhook(embed.webhook.name, {
-                avatar: embed.webhook.avatar || "https://www.emojiall.com/images/240/openmoji/1f7e9.png",
+              hook = await channel.createWebhook(context.embed.webhook.name, {
+                avatar: context.embed.webhook.avatar || "https://www.emojiall.com/images/240/openmoji/1f7e9.png",
                 reason: `${msg.author.tag} (${msg.author.id}) Created a message with Embed-constructor`
               });
             }
             channel = hook;
           }
 
-          await channel.msg({content: embed, reactions: reactions});
+          await channel.msg({content: context.embed, reactions: reactions});
           react = ["✏️", "❌", "640449832799961088"];
           break;
 
         case "❌":
-          preview.delete();
+          context.previewMessage.delete();
           return;
 
         case "✏️":
-          preview.reactions.removeAll();
+          context.previewMessage.reactions.removeAll();
           break;
 
         default:
           return;
       }
 
-      preview.msg({content: embed, edit: true});
+      context.updatePreviewMessage();
     }
 
 
-  }, {delete: true, ChannelPermissions: 16384, cooldown: 30, try: 3, type: "guild"}, "ембед эмбед"),
+  }, {delete: true, ChannelPermissions: 16384, cooldown: 30, cooldownTry: 3, type: "guild"}, "ембед эмбед"),
 
-  archive: new Command(async (msg, commandOptions) => {
+  archive: new Command(async (msg, interaction) => {
     if (msg.author.id != 921403577539387454){
       return msg.msg({delete: 4000, content: "Эта команда была удалена"});
     }
@@ -2385,11 +2100,11 @@ const commands = {
 
     let buffer = Buffer.from(input.replace("undefined", ""), "utf-8");
 
-    msg.msg({title: new Discord.MessageAttachment(buffer, (commandOptions.args || "archive") + ".txt"), embed: true});
+    msg.msg({title: new Discord.MessageAttachment(buffer, (interaction.params || "archive") + ".txt"), embed: true});
     if (time > 35) msg.msg({title: "Вот ваша печенька ожидания 🍪"});
-  }, {delete: true, try: 1, cooldown: 3600, Permissions: 16, type: "delete"}, "arhive архив"),
+  }, {delete: true, cooldownTry: 1, cooldown: 3600, Permissions: 16, type: "delete"}, "arhive архив"),
 
-  setchat: new Command(async (msg, commandOptions) => {
+  setchat: new Command(async (msg, interaction) => {
     const type = "chatChannel";
     const guild = msg.guild;
     const channel = msg.mentions.channels.first() ?? msg.channel;
@@ -2399,17 +2114,17 @@ const commands = {
     guild.logSend({description: `Каналу #${channel.name} установили метку "чат"`, author: {name: msg.author.username, avatarURL: msg.author.avatarURL()}});
   }, {delete: true, dm: true, Permissions: 32, type: "guild"}, "установитьчат"),
 
-  setlogs: new Command(async (msg, commandOptions) => {
+  setlogs: new Command(async (msg, interaction) => {
     const type = "logChannel";
     const guild = msg.guild;
     const channel = msg.mentions.channels.first() ?? msg.channel;
     guild.data[type] = channel.id;
     msg.msg({title: `Готово. В #${channel.name} будут отправлятся логи сервера`, delete: 9000});
     
-    guild.logSend({description: `Каналу #${channel.name} установили метку "чат"`, author: {name: msg.author.username, avatarURL: msg.author.avatarURL()}});
+    guild.logSend({description: `Каналу #${channel.name} установили метку "логи"`, author: {name: msg.author.username, avatarURL: msg.author.avatarURL()}});
   }, {delete: true, dm: true, Permissions: 32, type: "guild"}, "установитьлоги"),
 
-  welcomer: new Command(async (msg, commandOptions) => {
+  welcomer: new Command(async (msg, interaction) => {
     let guild = msg.guild;
     let answer;
 
@@ -2421,7 +2136,7 @@ const commands = {
     }
 
     let whatMessage = await msg.msg({title: "Введите сообщение с которым бот будет встречать новых пользователей!", description: "Используйте шаблонные строки {name}, они знатно вам помогут!"});
-    answer = await msg.channel.awaitMessage(msg.author);
+    answer = await msg.channel.awaitMessage({user: msg.author});
     if (!answer) {
       return;
     }
@@ -2480,12 +2195,12 @@ const commands = {
 
   }, {delete: true, dm: true, Permissions: 32, type: "guild"}, "установитьприветствие sethello приветствие"),
 
-  pay: new Command(async (msg, commandOptions) => {
-    let memb = commandOptions.memb;
-    commandOptions.args = commandOptions.args.replace(new RegExp(`<@!?${memb.id}>`), "");
+  pay: new Command(async (msg, interaction) => {
+    let memb = interaction.mention;
+    interaction.params = interaction.params.replace(new RegExp(`<@!?${memb.id}>`), "");
 
 
-    let num = commandOptions.args.match(/\d+|\+/);
+    let num = interaction.params.match(/\d+|\+/);
 
     if (!num) {
       msg.msg({title: "Вы не ввели значение. Ожидается сумма передачи.", color: "#ff0000"});
@@ -2493,9 +2208,9 @@ const commands = {
     }
 
     num = num[0];
-    commandOptions.args = commandOptions.args.replace(num, "").trim();
+    interaction.params = interaction.params.replace(num, "").trim();
 
-    let [itemName, ...message] = commandOptions.args.split(" ");
+    let [itemName, ...message] = interaction.params.split(" ");
 
 
     if (memb.bot) {
@@ -2503,7 +2218,7 @@ const commands = {
       return;
     }
 
-    let heAccpet = await Util.awaitUserAccept({name: "give", message: {title: "Используя эту команду вы потеряете коины или другие ресурсы"}, channel: msg.channel, user: commandOptions.user});
+    let heAccpet = await Util.awaitUserAccept({name: "give", message: {title: "Используя эту команду вы потеряете коины или другие ресурсы"}, channel: msg.channel, userData: interaction.userData});
     if (!heAccpet) return;
 
     if (memb === msg.author) {
@@ -2566,7 +2281,7 @@ const commands = {
     message = message.join(" ");
 
     if (num === "+"){
-      num = commandOptions.user[ resource ];
+      num = interaction.userData[ resource ];
     }
     num = Math.floor(num);
 
@@ -2575,8 +2290,8 @@ const commands = {
       return;
     }
 
-    if (isNaN(commandOptions.user[resource])){
-      commandOptions.user[resource] = 0;
+    if (isNaN(interaction.userData[resource])){
+      interaction.userData[resource] = 0;
     }
 
     if (isNaN(memb.data[resource])){
@@ -2584,9 +2299,9 @@ const commands = {
     }
 
 
-    if (commandOptions.user[ resource ] < num) {
+    if (interaction.userData[ resource ] < num) {
       const description = Discord.escapeMarkdown(msg.content);
-      msg.msg({title: `Нужно ещё ${ resourceData.gives(num - commandOptions.user[ resource ]) }`, description, delete: 12000});
+      msg.msg({title: `Нужно ещё ${ resourceData.gives(num - interaction.userData[ resource ]) }`, description, delete: 12000});
       return;
     }
 
@@ -2595,58 +2310,51 @@ const commands = {
 
 
 
-    commandOptions.user[ resource ]   -= num;
+    interaction.userData[ resource ]   -= num;
     memb.data[ resource ] += num;
 
     msg.msg({description: `${msg.author.username} отправил ${ resourceData.gives(num) } для ${ memb.toString() }` + (message ? `\nС сообщением:\n${ message }` : ""), author: {name: "Передача", iconURL: msg.author.avatarURL()}});
-  }, {delete: true, dm: true, memb: true, try: 7, cooldown: 300, type: "user"}, "give дать заплатить"),
+  }, {delete: true, dm: true, memb: true, cooldownTry: 7, cooldown: 300, type: "user"}, "give дать заплатить"),
 
-  bot: new Command(async (msg, commandOptions) => {
+  bot: new Command(async (msg, interaction) => {
 
 
     let {rss, heapTotal} = process.memoryUsage();
     let season = ["Зима", "Весна", "Лето", "Осень"][Math.floor((new Date().getMonth() + 1) / 3) % 4];
-    const VERSION = "V5.740 BETA";
+    const VERSION = "V6.0 BETA";
 
-    client.api.channels(msg.channel.id).messages.post({data: {
-      "embed": {
-        "title": "ну типа.. ай, да, я живой, да",
-        "color": 	65280,
-        "description": `<:online:637544335037956096> Пинг: ${client.ws.ping} ${VERSION} [#${season}](https://hytale.com/supersecretpage), что сюда ещё запихнуть?\nСерваков...**${client.guilds.cache.size}** (?) Команд: ${Command.cmds}\nСимволов в скрипте: примерно **#**Почему-то это никому не понравилось и было удалено;\n\`${(heapTotal/1024/1024).toFixed(2)} мб / ${(rss/1024/1024).toFixed(2)} МБ\``,
-        "footer": {"text": `Укушу! Прошло времени с момента добавления бота на новый сервер: ${Util.timestampToDate(Date.now() - DataManager.data.bot.newGuildTimestamp, 2)}`}
-      },
-      "content": "",
-      "components": [
+    const embed = {
+      title: "ну типа.. ай, да, я живой, да",
+      description: `<:online:637544335037956096> Пинг: ${client.ws.ping} ${VERSION} [#${season}](https://hytale.com/supersecretpage), что сюда ещё запихнуть?\nСерваков...**${client.guilds.cache.size}** (?) Команд: ${Command.cmds}\nСимволов в скрипте: примерно **#**Почему-то это никому не понравилось и было удалено;\n\`${(heapTotal/1024/1024).toFixed(2)} мб / ${(rss/1024/1024).toFixed(2)} МБ\``,
+      footer: {text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${ Util.timestampToDate(Date.now() - DataManager.data.bot.newGuildTimestamp, 2) }`},
+      components: [
         {
-           "type": 1,
-           "components": [
-             {
-                    "type": 2,
-                    "label": "Удалить!",
-                    "style": 1,
-                    "custom_id": "bot_hi"
-              },
-             {
-                    "type": 2,
-                    "label": "Сервер",
-                    "style": 5,
-                    "url": "https://discord.gg/76hCg2h7r8",
-                    "emoji": {name: "grempen", id: "753287402101014649"}
-              },
-              {
-                     "type": 2,
-                     "label": "Пригласить",
-                     "style": 5,
-                     "url": `https://discord.com/api/oauth2/authorize?client_id=${ client.user.id }&permissions=1073741832&scope=applications.commands%20bot`,
-                     "emoji": {name: "berry", id: "756114492055617558"}
-               }
-           ]
-       }
+          type: 2,
+          label: "Удалить!",
+          style: 1,
+          customId: "bot_hi"
+        },
+        {
+          type: 2,
+          label: "Сервер",
+          style: 5,
+          url: "https://discord.gg/76hCg2h7r8",
+          emoji: {name: "grempen", id: "753287402101014649"}
+        },
+        {
+          type: 2,
+          label: "Пригласить",
+          style: 5,
+          url: `https://discord.com/api/oauth2/authorize?client_id=${ client.user.id }&permissions=1073741832&scope=applications.commands%20bot`,
+          emoji: {name: "berry", id: "756114492055617558"}
+        }
       ]
-    }});
-  }, {delete: true, cooldown: 10, try: 2, type: "bot"}, "бот stats статс ping пинг стата invite пригласить"),
+    };
 
-  top: new Command(async (msg, commandOptions) => {
+    msg.msg(embed);
+  }, {delete: true, cooldown: 10, cooldownTry: 2, type: "bot"}, "бот stats статс ping пинг стата invite пригласить"),
+
+  top: new Command(async (msg, interaction) => {
     let guild = msg.guild;
     let others = ["637533074879414272", "763767958559391795", "630463177314009115", "🧤", "📜", "⚜️", (guild.data.boss?.isArrived ? "⚔️" : null)];
 
@@ -2768,23 +2476,23 @@ const commands = {
 
   }, {delete: true, dm: true, Permissions: 16384, cooldown: 20, type: "user"}, "топ ранги rank ranks rangs лидеры leaderboard leaders"),
 
-  mute: new Command(async (msg, commandOptions) => {
+  mute: new Command(async (msg, interaction) => {
     let guild = msg.guild;
-    let guildMember = guild.members.resolve(commandOptions.memb);
+    let guildMember = guild.members.resolve(interaction.mention);
     let role;
 
 
 
-    if (commandOptions.memb === msg.author)
+    if (interaction.mention === msg.author)
       return msg.msg({title: "Вы не можете выдать себе мут, могу только вам его прописать.", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, delete: 12000});
 
-    if (commandOptions.memb === client.user)
+    if (interaction.mention === client.user)
       return msg.msg({title: "Попробуйте другие способы меня замутить, например, объявите за мою поимку награду в 100 000 коинов <:coin:637533074879414272>", delete: 12000});
 
-    if (commandOptions.memb.bot)
+    if (interaction.mention.bot)
       return msg.msg({title: "Если этот бот вам надоедает, то знайте — мне он тоже надоел", description: "Но замутить его я все-равно не могу.", delete: 12000});
 
-    if (guildMember.roles.highest.position > commandOptions.member.roles.highest.position)
+    if (guildMember.roles.highest.position > interaction.mentioner.roles.highest.position)
       return msg.msg({title: "Вы не можете выдать мут участнику, роли которого выше ваших", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, delete: 12000});
 
     if (guildMember.permissions.has("ADMINISTRATOR"))
@@ -2793,7 +2501,7 @@ const commands = {
 
 
 
-    commandOptions.args = commandOptions.args.replace(RegExp(`<@!?${commandOptions.memb.id}>`), "").trim();
+    interaction.params = interaction.params.replace(RegExp(`<@!?${interaction.mention.id}>`), "").trim();
 
 
     // parse timestamps
@@ -2802,7 +2510,7 @@ const commands = {
     while (true){
       let regBase = `(\\d+?)\\s*(d|д|h|ч|m|м|s|с)[a-zA-Zа-яА-Я]*`;
       const reg = RegExp(`^${ regBase }|${ regBase }$`);
-      let matched = commandOptions.args.match( reg );
+      let matched = interaction.params.match( reg );
 
       if (!matched){
         break;
@@ -2815,11 +2523,11 @@ const commands = {
 
       let [value, timeType] = [ matched[1], matched[2] ];
 
-      commandOptions.args = commandOptions.args.replace(matched[0], "").trim();
+      interaction.params = interaction.params.replace(matched[0], "").trim();
       timeToEnd += value * {s: 1000, m: 60000, h: 3600000, d: 84000000, с: 1000, м: 60000, ч: 3600000, д: 84000000}[timeType];
     }
 
-    let cause = commandOptions.args;
+    let cause = interaction.params;
 
 
     // find muted role
@@ -2860,23 +2568,23 @@ const commands = {
     msg.msg({...embed, title: "Участник был замучен"});
   }, {memb: true, dm: true, delete: true, Permissions: 4194304, myPermissions: 268435456, type: "guild"}, "мут мьют"),
 
-  unmute: new Command(async (msg, commandOptions) => {
+  unmute: new Command(async (msg, interaction) => {
     let guild = msg.guild;
-    let guildMember = guild.members.resolve(commandOptions.memb);
+    let guildMember = guild.members.resolve(interaction.mention);
     let role;
 
 
 
-    if (commandOptions.memb === msg.author)
+    if (interaction.mention === msg.author)
       return msg.msg({title: "Если вы смогли отправить это сообщение, значит вы не в муте, верно?", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, delete: 12000});
 
-    if (commandOptions.memb === client.user)
+    if (interaction.mention === client.user)
       return msg.msg({title: "Благодарю, но я не в муте", delete: 12000});
 
-    if (commandOptions.memb.bot)
+    if (interaction.mention.bot)
       return msg.msg({title: "Существует легенда о.. А впрочем не важно. Невозможно размутить другого бота", description: "Но замутить его я все-равно не могу.", delete: 12000});
 
-    if (guildMember.roles.highest.position > commandOptions.member.roles.highest.position)
+    if (guildMember.roles.highest.position > interaction.mentioner.roles.highest.position)
       return msg.msg({title: "Вы не можете размутить участника, роли которого выше ваших", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, delete: 12000});
 
     if (guildMember.permissions.has("ADMINISTRATOR"))
@@ -2918,8 +2626,8 @@ const commands = {
     msg.msg({title: "С участника сняли мут", ...embed});
   }, {memb: true, dm: true, delete: true, Permissions: 4194304, myPermissions: 268435456, type: "guild"}, "анмут анмьют"),
 
-  reactor: new Command(async (msg, commandOptions) => {
-    let answer = await Util.awaitUserAccept({name: "reactor", message: {title: "С помощью этой команды вы можете создавать реакции выдающее роли. \nРеакции должны быть установлены заранее\nВы уже установили реакциии?)"}, channel: msg.channel, user: msg.author.data});
+  reactor: new Command(async (msg, interaction) => {
+    let answer = await Util.awaitUserAccept({name: "reactor", message: {title: "С помощью этой команды вы можете создавать реакции выдающее роли. \nРеакции должны быть установлены заранее\nВы уже установили реакциии?)"}, channel: msg.channel, userData: interaction.userData});
     if (!answer) return;
 
     let whatChannel = await msg.msg({title: "Укажите айди или упомяните канал в котором находится сообщение.\nЕсли оно находится в этом канале, нажмите реакцию ниже"});
@@ -2937,8 +2645,8 @@ const commands = {
     }
 
     let whatMessage = await msg.msg({title: "Укажите айди сообщения"});
-    answer = await msg.channel.awaitMessage(msg.author);
-    // whatMessage.delete();
+    answer = await msg.channel.awaitMessage({user: msg.author});
+    whatMessage.delete();
     let message = await channel.messages.fetch(answer.content).catch( e => {msg.msg({title: "Не удалось найти сообщение", delete: 3000, color: "#ff0000"}); throw e} );
 
     let reactions = [...message.reactions.cache.keys()];
@@ -2960,7 +2668,7 @@ const commands = {
     }
 
     let whatRoles = await msg.msg({title: "Укажите роли через пробел\nВо избежание лишних упоминаний, только по айди"});
-    answer = await msg.channel.awaitMessage(msg.author, 300000);
+    answer = await msg.channel.awaitMessage({user: msg.author, time: 300000});
     whatRoles.delete();
 
     let rolesId = answer.content.match(/\d{17,20}/g);
@@ -3002,10 +2710,10 @@ const commands = {
     msg.guild.logSend({title: "Установлен реактор сообщения", description: `Сообщению с ID ${message.id} были присвоены реакции выдающие следущие роли:\n${roles.map(e => " • " + e.name).join("\n")}`});
   }, {dm: true, delete: true, Permissions: 268435488, myPermissions: 268435456, cooldown: 30, type: "guild"}, "реактор"),
 
-  setprofile: new Command(async (msg, commandOptions) => {
+  setprofile: new Command(async (msg, interaction) => {
     let
-      user  = commandOptions.user,
-      args  = commandOptions.args.split(" "),
+      user  = interaction.userData,
+      args  = interaction.params.split(" "),
       value = args.splice(1).join(" "),
       item  = args[0].toLowerCase();
 
@@ -3117,7 +2825,7 @@ const commands = {
             return msg.msg({title: "Укажите в формате \"19.11\" - день, месяц", color: "#ff0000", delete: 5000});
           }
           user.BDay = day;
-          msg.author.quest("setBirthday");
+          msg.author.action(Actions.globalQuest, {name: "setBirthday"});
           msg.msg({title: "Установлено! 🎉", delete: 3000});
         break;
 
@@ -3131,9 +2839,9 @@ const commands = {
           user.profile_confidentiality = user.profile_confidentiality ? false : true;
         break;
       }
-  }, {delete: true, cooldown: 20, try: 5, type: "user"}, "настроитьпрофиль about осебе sp нп"),
+  }, {delete: true, cooldown: 20, cooldownTry: 5, type: "user"}, "настроитьпрофиль about осебе sp нп"),
 
-  voice: new Command(async (msg, commandOptions) => {
+  voice: new Command(async (msg, interaction) => {
     return false;
     let connection;
     if (msg.member.voice.channel) connection = await msg.member.voice.channel.join();
@@ -3144,7 +2852,7 @@ const commands = {
     //main/images/one.mp3
   }, {dm: true, type: "dev"}, "войс"),
 
-  birthdays: new Command(async (msg, commandOptions) => {
+  birthdays: new Command(async (msg, interaction) => {
     const splitDate = (date) => date.split(".").map(Number);
 
     const [currentDay, currentMonth] = splitDate(DataManager.data.bot.dayDate);
@@ -3202,7 +2910,7 @@ const commands = {
       const year = new Date().getFullYear() + (+!current);
       const compare = new Date(`${ year }.${ month }.${ day }`);
 
-      const diff = compare.Date.now() - Date.now();
+      const diff = compare.getTime() - Date.now();
       return Math.ceil(diff / 86_400_000);
     }
 
@@ -3233,12 +2941,12 @@ const commands = {
     msg.msg({title: title, description, fields, footer});
   }, {delete: true, cooldown: 15, type: "user"}, "parties праздники вечеринки днирождения др"),
 
-  emojis: new Command(async (msg, commandOptions) => {
+  emojis: new Command(async (msg, interaction) => {
 
-    if (commandOptions.args){
-      let id = Util.match(commandOptions.args, /\d{17,21}/);
+    if (interaction.params){
+      let id = Util.match(interaction.params, /\d{17,21}/);
       if (!id){
-        msg.msg({title: "Не смайлик", description: `\`${commandOptions.args}\` — не эмодзи, и не айди.\nЧтобы получить список эмодзи на сервере введите команду без аргументов.\nВведя идентификатор смайлика, получите более подробную информацию о нём`, color: "#ff0000", delete: 5000});
+        msg.msg({title: "Не смайлик", description: `\`${interaction.params}\` — не эмодзи, и не айди.\nЧтобы получить список эмодзи на сервере введите команду без аргументов.\nВведя идентификатор смайлика, получите более подробную информацию о нём`, color: "#ff0000", delete: 5000});
         return;
       }
 
@@ -3296,11 +3004,11 @@ const commands = {
     }
 
 
-  }, {delete: true, cooldown: 7, try: 3, type: "other"}, "emoji смайлики эмодзи эмоджи"),
+  }, {delete: true, cooldown: 7, cooldownTry: 3, type: "other"}, "emoji смайлики эмодзи эмоджи"),
 
-  idea: new Command(async (msg, commandOptions) => {
-    let heAccpet = await Util.awaitUserAccept({name: "idea", message: {title: "<a:crystal:637290417360076822> Подать идею", description: "После подтверждения этого сообщения, текст, который вы ввели вместе с командой, будет отправлен разработчику.\nВсё идеи попадают **[сюда.](https://discord.gg/76hCg2h7r8)**"}, channel: msg.channel, user: commandOptions.user});
-    if (!heAccpet) return msg.author.msg({title: "Ваша идея не была отправлена так как вы не подтвердили отправку", description: "Текст идеи:\n" + commandOptions.args, color: "#ff0000"});
+  idea: new Command(async (msg, interaction) => {
+    let heAccpet = await Util.awaitUserAccept({name: "idea", message: {title: "<a:crystal:637290417360076822> Подать идею", description: "После подтверждения этого сообщения, текст, который вы ввели вместе с командой, будет отправлен разработчику.\nВсё идеи попадают **[сюда.](https://discord.gg/76hCg2h7r8)**"}, channel: msg.channel, userData: interaction.userData});
+    if (!heAccpet) return msg.author.msg({title: "Ваша идея не была отправлена так как вы не подтвердили отправку", description: "Текст идеи:\n" + interaction.params, color: "#ff0000"});
 
     let channel = client.guilds.cache.get("752898200993660959").channels.cache.get("753587805195862058");
 
@@ -3314,19 +3022,19 @@ const commands = {
     const ideaNumber = await getIdeaNumber();
 
     channel.msg({title: "<:meow:637290387655884800> Какая классная идея!", 
-      description: "**Идея:**\n" + commandOptions.args, color: commandOptions.user.profile_color || "00ffaf",
+      description: "**Идея:**\n" + interaction.params, color: interaction.userData.profile_color || "00ffaf",
       author: {
         name: `${msg.author.username} #${ ideaNumber + 1 }`,
         iconURL: msg.author.avatarURL()
       },
       reactions: ["814911040964788254", "815109658637369377"]});
-    msg.msg({title: "<:meow:637290387655884800> Вы отправили нам свою идею! Спасибо!", description: `А что, идея «${commandOptions.args}» весьма не плоха...`, color: "#00ffaf", author: {name: msg.author.username, iconURL: msg.author.avatarURL()} });
-  }, {args: true, cooldown: 1200, try: 2, delete: true, type: "bot"}, "идея innovation новвоведение"),
+    msg.msg({title: "<:meow:637290387655884800> Вы отправили нам свою идею! Спасибо!", description: `А что, идея «${interaction.params}» весьма не плоха...`, color: "#00ffaf", author: {name: msg.author.username, iconURL: msg.author.avatarURL()} });
+  }, {args: true, cooldown: 1200, cooldownTry: 2, delete: true, type: "bot"}, "идея innovation новвоведение"),
 
-  grempen: new Command(async (msg, commandOptions) => {
+  grempen: new Command(async (msg, interaction) => {
 
-    if (commandOptions.memb){
-      const data = commandOptions.memb.data;
+    if (interaction.mention){
+      const data = interaction.mention.data;
       const wordNumbers = ["ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"];
 
       const getList = (mask) => wordNumbers.filter((word, index) => (2 ** index) & mask);
@@ -3337,7 +3045,7 @@ const commands = {
         "сегодня ничего не приобретал.\nМожет Вы сами желаете чего-нибудь прикупить?";
 
       const description = `Ох, таки здравствуйте. Человек, о котором Вы спрашиваете ${ buyingItemsContent }`;
-      msg.msg({title: "<:grempen:753287402101014649> Зловещая лавка", description, color: "#541213", thumbnail: commandOptions.memb.avatarURL()});
+      msg.msg({title: "<:grempen:753287402101014649> Зловещая лавка", description, color: "#541213", thumbnail: interaction.mention.avatarURL()});
       return;
     }
 
@@ -3483,7 +3191,7 @@ const commands = {
         fn: (product) => {
           let isFirst = !(user.completedQuest && user.completedQuest.includes("beEaten"));
           user.coins += product.value + (isFirst ? 200 : -200);
-          msg.author.quest("beEaten");
+          msg.author.action(Actions.globalQuest, {name: "beEaten"});
 
           if (user.curses.length > 0){
             delete user.curses;
@@ -3663,16 +3371,16 @@ const commands = {
 
 
       user.grempen += 2 ** todayItems.indexOf(product);
-      msg.author.quest("buyFromGrempen");
+      msg.author.action(Actions.buyFromGrempen, {product, channel: msg.channel});
       if (user.grempen == 63){
-        msg.author.quest("cleanShop");
+        msg.author.action(Actions.globalQuest, {name: "cleanShop"});
       }
 
       return msg.msg({description: `Благодарю за покупку ${product.name.split(" ")[0]} !\nЦена в ${ Util.ending(product.value, "монет", "", "у", "ы")} просто ничтожна за такую хорошую вещь${phrase}`, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, color: "#400606"});
     }
 
-    if (commandOptions.args){
-      buyFunc(commandOptions.args.toLowerCase());
+    if (interaction.params){
+      buyFunc(interaction.params.toLowerCase());
       return;
     }
 
@@ -3734,13 +3442,13 @@ const commands = {
       embed = {title: "<:grempen:753287402101014649> Зловещая лавка", edit: true, description: `У вас есть-остались коины? Отлично! **${user.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`, fields: productsToFields(), footer: {text: "Приходите ещё, акции каждый день!"}, color: "#400606"};
       await shop.msg(embed);
     };
-  }, {delete: true, cooldown: 10, try: 3, type: "other"}, "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop"),
+  }, {delete: true, cooldown: 10, cooldownTry: 3, type: "other"}, "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop"),
 
-  embeds: new Command(async (msg, commandOptions) => {
-    let answer = await Util.awaitUserAccept({name: "embeds", message: {title: "Эта команда находит до 70-ти эмбедов в канале", description: "С её помощью вы можете переставлять местами эмбед сообщения или получить их в JSON формате\nОбратите внимание, всё обычные сообщения будут **удалены**, а эмбеды будут заново отправленны в новом порядке **от имени Призрака**\n\nРеакции:\n • <:json:754777124413505577> - отправляет вам JSON выбранного сообщения\n • <:swap:754780992023167007> - меняет местами два эмбеда\n • <:right:756212089911247021> - применить изменения и завершить команду"}, channel: msg.channel, user: commandOptions.user});
+  embeds: new Command(async (msg, interaction) => {
+    let answer = await Util.awaitUserAccept({name: "embeds", message: {title: "Эта команда находит до 70-ти эмбедов в канале", description: "С её помощью вы можете переставлять местами эмбед сообщения или получить их в JSON формате\nОбратите внимание, всё обычные сообщения будут **удалены**, а эмбеды будут заново отправленны в новом порядке **от имени Призрака**\n\nРеакции:\n • <:json:754777124413505577> - отправляет вам JSON выбранного сообщения\n • <:swap:754780992023167007> - меняет местами два эмбеда\n • <:right:756212089911247021> - применить изменения и завершить команду"}, channel: msg.channel, userData: interaction.userData});
     if (!answer) return;
 
-    let embeds = await msg.channel.messages.fetch({limit: 100, before: (commandOptions.args || null)});
+    let embeds = await msg.channel.messages.fetch({limit: 100, before: (interaction.params || null)});
       embeds.concat(await msg.channel.messages.fetch({limit: 100, before: embeds.last().id}));
 
     embeds = [...embeds.filter(e => e.embeds.find(e => e.type == "rich" && e.color != 10092543)).values()];
@@ -3825,18 +3533,18 @@ const commands = {
 
   }, {delete: true, type: "guild"}, "эмбедс эмбеды ембеды ембедс"),
 
-  berry: new Command(async (msg, commandOptions) => {
+  berry: new Command(async (msg, interaction) => {
     const MAX_LIMIT = 35000;
     const INFLATION = 0.2;
     const TAX = 0.02;
 
     let
-      user        = commandOptions.user,
+      user        = interaction.userData,
       myBerrys    = user.berrys || (user.berrys = 0),
       marketPrise = DataManager.data.bot.berrysPrise,
 
-      action      = commandOptions.args && commandOptions.args.split(" ")[0],
-      quantity    = commandOptions.args && commandOptions.args.split(" ")[1];
+      action      = interaction.params && interaction.params.split(" ")[0],
+      quantity    = interaction.params && interaction.params.split(" ")[1];
 
 
 
@@ -3855,11 +3563,11 @@ const commands = {
       return price;
     };
 
-    if (commandOptions.memb) {
-      myBerrys = commandOptions.memb.data.berrys || 0;
+    if (interaction.mention) {
+      myBerrys = interaction.mention.data.berrys || 0;
       msg.msg({title: "Клубника пользователя", 
         description: `Клубничек — **${ myBerrys }** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(marketPrise) }** <:coin:637533074879414272>`,
-        author: {name: commandOptions.memb.tag, iconURL: commandOptions.memb.avatarURL()},
+        author: {name: interaction.mention.tag, iconURL: interaction.mention.avatarURL()},
         footer: {text: `Общая цена ягодок: ${ getPrice(myBerrys, -1) }`}
       });
       return;
@@ -3903,11 +3611,10 @@ const commands = {
 
       user.coins -= prise * isBuying;
       user.berrys = myBerrys += quantity * isBuying;
-      marketPrise = DataManager.data.bot.berrysPrise = Math.max(data.bot.berrysPrise + quantity * INFLATION * isBuying, 0);
+      marketPrise = DataManager.data.bot.berrysPrise = Math.max(DataManager.data.bot.berrysPrise + quantity * INFLATION * isBuying, 0);
 
       msg.msg({title: (isBuying > 0) ? `Вы купили ${quantity} <:berry:756114492055617558>! потратив ${ prise } <:coin:637533074879414272>!` : `Вы продали ${quantity} <:berry:756114492055617558> и заработали ${prise} <:coin:637533074879414272>!`, delete: 5000});
-      msg.author.quest("berryActive", msg.channel, quantity);
-      msg.author.action("berryBarter", {quantity, msg, commandOptions, isBuying, prise});
+      msg.author.action(Actions.berryBarter, {quantity, msg, interaction, isBuying, prise});
     }
 
     if (quantity === "+")
@@ -3940,7 +3647,7 @@ const commands = {
             return x2;
           }
 
-          let maxCount = getMaxCount(commandOptions.user.coins, marketPrise);
+          let maxCount = getMaxCount(interaction.userData.coins, marketPrise);
 
           maxCount = Math.min(maxCount, MAX_LIMIT - myBerrys);
           answer = await msg.channel.awaitMessage(msg.author, {title: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(2)}) ед. <:berry:756114492055617558> (Beta calculator)`, embed: {description: "[Посмотреть код](https://pastebin.com/Cg9eYndC)"}});
@@ -3964,9 +3671,9 @@ const commands = {
       message = await message.msg({edit: true, description: `У вас клубничек — **${myBerrys}** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(marketPrise) }** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${getPrice(myBerrys)} (с учётом налога ${ TAX * 100 }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`, author: {name: msg.author.tag, iconURL: msg.author.avatarURL()}});
       react = await message.awaitReact({user: msg.author, type: "all"}, "📥", "📤");
     }
-  }, {delete: true, cooldown: 15, try: 2, type: "user"}, "клубника клубнички ягода ягоды berrys берри"),
+  }, {delete: true, cooldown: 15, cooldownTry: 2, type: "user"}, "клубника клубнички ягода ягоды berrys берри"),
 
-  server: new Command(async (msg, commandOptions) => {
+  server: new Command(async (msg, interaction) => {
     let guild = msg.guild;
 
     const values = {
@@ -4023,7 +3730,7 @@ const commands = {
     msg.msg({title: guild.name + " " + ["❤️", "🧡", "💛", "💚", "💙", "💜"].random(), thumbnail: guild.iconURL(), description: guild.data.description || "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера", footer: {text: "Сервер был создан " + Util.timestampToDate(Date.now() - guild.createdTimestamp, 3) + " назад." + "\nID: " + guild.id}, image: guild.data.banner, fields});
   }, {delete: true, type: "guild"}, "сервер"),
 
-  editserver: new Command(async (msg, commandOptions) => {
+  editserver: new Command(async (msg, interaction) => {
     let guild = msg.guild
     let server = guild.data;
     let settingsAll = [
@@ -4086,7 +3793,7 @@ const commands = {
           break;
 
         case "👋":
-          await commands["sethello"].code(msg, commandOptions);
+          await commands["sethello"].code(msg, interaction);
           channels = [server.chatChannel, server.logChannel, server.hiChannel].map(e => (e) ? (guild.channels.cache.get(e).toString() || "не найден") : "не установлен").map((e, i) => [ "Чат: ", "Для логов: ", "Для приветсвий: "][i] + e);
           break;
 
@@ -4136,9 +3843,9 @@ const commands = {
 
   }, {delete: true, Permissions: 32, type: "guild"}, "настроитьсервер серватиус servatius"),
 
-  postpone: new Command(async (msg, commandOptions) => {
+  postpone: new Command(async (msg, interaction) => {
     let
-      splited = commandOptions.args.split(" "),
+      splited = interaction.params.split(" "),
       time = splited[0],
       text = splited.slice(1).join(" ");
 
@@ -4150,14 +3857,14 @@ const commands = {
     date.setHours(time[0]);
     date.setMinutes(time[1]);
 
-    let timeTo = date.Date.now() - Date.now();
+    let timeTo = date.getTime() - Date.now();
     if (timeTo < 60000) return msg.msg({title: `Я не могу отложить отправку на ${time.join(":")}, текущее время превышает или равно этой метке.\nОбратите внимание, время на сервере — ${(date = new Date()), date.getHours()}:${date.getMinutes()}`, delete: 5000});
     TimeEventsManager.create("postpone", timeTo, [msg.author.id, msg.channel.id, text]);
     msg.msg({title: "Готово! Ваше сообщение будет отправленно через " + Util.timestampToDate(timeTo), delete: 5000});
-  }, {cooldown: 1800 , try: 3, delete: true, args: true, myChannelPermissions: 536870912, type: "delete"}, "отложить отложи"),
+  }, {cooldown: 1800 , cooldownTry: 3, delete: true, args: true, myChannelPermissions: 536870912, type: "delete"}, "отложить отложи"),
 
-  iq: new Command(async (msg, commandOptions) => {
-    let memb = commandOptions.memb || client.users.cache.get(commandOptions.args) || msg.author;
+  iq: new Command(async (msg, interaction) => {
+    let memb = interaction.mention || client.users.cache.get(interaction.params) || msg.author;
 
     let first = true;
     if ("iq" in memb.data) {
@@ -4169,24 +3876,24 @@ const commands = {
 
     let description;
     if (Util.random(18)){
-      description = `У ${name}${(!first) ? " всё так же" : ""} ${iq} ${commandOptions.command.toUpperCase()}`;
+      description = `У ${name}${(!first) ? " всё так же" : ""} ${iq} ${interaction.command.toUpperCase()}`;
     } else {
       iq = ++memb.data.iq;
-      description = `Удивительно у ${name} айкью вырос на одну единицу! Сейчас ${commandOptions.command.toUpperCase()} === ${iq}`;
+      description = `Удивительно у ${name} айкью вырос на одну единицу! Сейчас ${interaction.command.toUpperCase()} === ${iq}`;
     }
     msg.msg({title: "<a:iq:768047041053196319> + <a:iq:768047041053196319> = ICQ²", description, author: {iconURL: memb.avatarURL(), name: memb.username}});
-  }, {cooldown: 15, try: 2, type: "user"}, "iqmeme icq айкю айкью iqbanana"),
+  }, {cooldown: 15, cooldownTry: 2, type: "user"}, "iqmeme icq айкю айкью iqbanana"),
 
-  chest: new Command(async (msg, commandOptions) => {
+  chest: new Command(async (msg, interaction) => {
 
-    const cooldown = commandOptions.user.CD_32 - Date.now();
+    const cooldown = interaction.userData.CD_32 - Date.now();
     if (cooldown > 0) {
       msg.msg({title: `Сундук заперт, возвращайтесь позже!`, color: "#ffda73", footer: {text: "До открытия: " + Util.timestampToDate(cooldown), iconURL: "https://vignette.wikia.nocookie.net/e2e-expert/images/b/b3/Chest.png/revision/latest?cb=20200108233859"}});
       return;
     }
 
     const
-      user = commandOptions.user,
+      user = interaction.userData,
       treasures = {};
 
     let chest = {
@@ -4273,7 +3980,7 @@ const commands = {
           itemsOutput.push( `${ Util.ending(count, "Ключ", "ей", "", "а")} 🔩` );
 
           if (count > 99){
-            msg.author.quest("bigHungredBonus");
+            msg.author.action(Actions.globalQuest, {name: "bigHungredBonus"});
           }
           break;
 
@@ -4325,10 +4032,10 @@ const commands = {
     Object.entries(treasures).forEach(([k, v]) => handleResourse(k, v));
 
 
-    msg.author.action("openChest", {msg, commandOptions, treasures});
+    msg.author.action(Actions.openChest, {msg, interaction, treasures});
 
     user.CD_32 = new Date().setHours(23, 59, 0) + 120000;
-    msg.author.quest("firstChest", msg.channel);
+    msg.author.action(Actions.globalQuest, {name: "firstChest"});
 
 
 
@@ -4350,7 +4057,7 @@ const commands = {
     }
   }, {type: "other"}, "сундук daily"),
 
-  level: new Command(async (msg, commandOptions) => {
+  level: new Command(async (msg, interaction) => {
     return;
     //const canvas = require("canvas");
 
@@ -4360,7 +4067,7 @@ const commands = {
     let
       canv    = canvas.createCanvas(900, 225),
       ctx     = canv.getContext("2d"),
-      member  = (commandOptions.memb) ? commandOptions.memb : (commandOptions.args) ? client.users.cache.get(commandOptions.args) : msg.author,
+      member  = (interaction.mention) ? interaction.mention : (interaction.params) ? client.users.cache.get(interaction.params) : msg.author,
       user    = member.data,
       avatar  = member.avatarURL({format: "png"}),
 
@@ -4471,7 +4178,7 @@ const commands = {
     msg.msg({title: new Discord.MessageAttachment(image, "level.png"), embed: true, delete: 1_000_000});
   }, {delete: true, dev: true}, "уровень rang rank ранг ранк lvl лвл"),
 
-  puzzle: new Command(async (msg, commandOptions) => {
+  puzzle: new Command(async (msg, interaction) => {
     return;
     let
       i = 9,
@@ -4570,19 +4277,19 @@ const commands = {
       message.delete();
       msg.msg({title: phrase, color: "#f2fafa", delete: 9000});
 
-  }, {delete: true, type: "delete" /*, cooldown: 3600, try: 1*/}, "пазл ёлка елка"),
+  }, {delete: true, type: "delete" /*, cooldown: 3600, cooldownTry: 1*/}, "пазл ёлка елка"),
 
-  variables: new Command(async (msg, commandOptions) => {
-    const isAdmin = !commandOptions.member.wastedPermissions(32)[0];
+  variables: new Command(async (msg, interaction) => {
+    const isAdmin = !interaction.mentioner.wastedPermissions(32)[0];
     const manager = new GuildVariablesManager(msg.guild.id);
     const targetName = (message) => target === "guild" ? "Сервера" : `Пользователя ${message.mentions.users.first().toString()}`;
 
-    let target = commandOptions.args.match(/^(?:<@!?\d{17,19}>|guild|сервер|server)/i);
+    let target = interaction.params.match(/^(?:<@!?\d{17,19}>|guild|сервер|server)/i);
     if (target) {
-      commandOptions.args = commandOptions.args.replace(target[0], "").replace(/\s{1,}/g, " ").trim();
+      interaction.params = interaction.params.replace(target[0], "").replace(/\s{1,}/g, " ").trim();
       target = target[0].startsWith("<") ? target[0].match(/\d{17,19}/)[0] : "guild";
 
-      if (!commandOptions.args){
+      if (!interaction.params){
         let fields = manager.variables[target] ?
           Object.entries(manager.variables[target]).map(([name, value]) => ({name, value}))
           :
@@ -4602,7 +4309,7 @@ const commands = {
         return;
       }
 
-      let [name, ...value] = commandOptions.args.replace(/\s{1,}/g, " ").split(" ");
+      let [name, ...value] = interaction.params.replace(/\s{1,}/g, " ").split(" ");
       value = value.join(" ");
 
       let output = manager[value ? "set" : "get"](target, name, value);
@@ -4766,8 +4473,8 @@ const commands = {
 
   }, {delete: true, dm: true, Permissions: 256, type: "guild"}, "variable вар var переменная переменные"),
 
-  guildcommand: new Command(async (msg, commandOptions) => {
-    let heAccpet = await Util.awaitUserAccept({name: "guildCommand", message:  {description: "Здравствуйте, эта команда очень универсальна и проста, если её не боятся конечно. Она поможет вам создать свои собсвенные команды основанные на \"[Шаблонных строках](https://discord.gg/7ATCf8jJF2)\".\nЕсли у вас возникнут сложности, обращайтесь :)", title: "Команда для создания команд 🤔"}, channel: msg.channel, user: commandOptions.user});
+  guildcommand: new Command(async (msg, interaction) => {
+    let heAccpet = await Util.awaitUserAccept({name: "guildCommand", message:  {description: "Здравствуйте, эта команда очень универсальна и проста, если её не боятся конечно. Она поможет вам создать свои собсвенные команды основанные на \"[Шаблонных строках](https://discord.gg/7ATCf8jJF2)\".\nЕсли у вас возникнут сложности, обращайтесь :)", title: "Команда для создания команд 🤔"}, channel: msg.channel, userData: interaction.userData});
     if (!heAccpet) return;
 
     let answer, react;
@@ -4851,8 +4558,8 @@ const commands = {
   msg.msg({title: "Готово!", description: `Вы создали команду \`!${cmd.name}\`. Самое время её опробовать 😋`});
   }, {Permissions: 8, delete: true, type: "guild"}, "guildcommands createcommand команда"),
 
-  role: new Command(async (msg, commandOptions) => {
-    let heAccpet = await Util.awaitUserAccept({name: "tieRoles", message: "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми", channel: msg.channel, user: commandOptions.user});
+  role: new Command(async (msg, interaction) => {
+    let heAccpet = await Util.awaitUserAccept({name: "tieRoles", message: "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми", channel: msg.channel, userData: interaction.userData});
     if (!heAccpet) {
       return;
     }
@@ -4871,10 +4578,10 @@ const commands = {
     }));
 
 
-    if (commandOptions.memb){
-      let memb = commandOptions.memb;
-      let myControled = commandOptions.member.roles.cache.filter(e => Object.keys(tieRoles).includes(e.id)).map(e => e.id);
-      let [mention, id] = commandOptions.args.split(" ");
+    if (interaction.mention){
+      let memb = interaction.mention;
+      let myControled = interaction.mentioner.roles.cache.filter(e => Object.keys(tieRoles).includes(e.id)).map(e => e.id);
+      let [mention, id] = interaction.params.split(" ");
 
       let controledRoles = new Set();
       Object.entries(tieRoles).filter(([control, roles]) => myControled.includes(control)).map(([control, roles]) => roles).forEach(e => controledRoles.add(e));
@@ -4909,7 +4616,7 @@ const commands = {
     let page = 0;
     let pages = [];
 
-    const isAdmin = !commandOptions.member.wastedPermissions(8)[0];
+    const isAdmin = !interaction.mentioner.wastedPermissions(8)[0];
     const reactions = [
       {emoji: "640449848050712587", filter: () => page != 0},
       {emoji: "640449832799961088", filter: () => pages[1] && page !== pages.length - 1},
@@ -5011,10 +4718,10 @@ const commands = {
       }
       message.msg(embed);
     }
-  }, {delete: true, cooldown: 3, try: 3, type: "guild"}, "роль roles роли"),
+  }, {delete: true, cooldown: 3, cooldownTry: 3, type: "guild"}, "роль roles роли"),
 
-  chilli: new Command(async (msg, commandOptions) => {
-    let memb = commandOptions.memb;
+  chilli: new Command(async (msg, interaction) => {
+    let memb = interaction.mention;
     let chilli = msg.channel.chilli && msg.channel.chilli.find(chilli => chilli.current === msg.author.id);
     setTimeout(() => msg.delete(), 30000);
 
@@ -5041,7 +4748,7 @@ const commands = {
     if (chilli){
       chilli.current = memb.id;
       chilli.players[msg.author.id] = ++chilli.players[msg.author.id] || 1;
-      removeName(commandOptions.member);
+      removeName(interaction.mentioner);
       addName(msg.guild.members.resolve(memb));
 
       msg.msg({title: ["Бросок!", "А говорят перцы не летают..."].random(), 
@@ -5087,7 +4794,7 @@ const commands = {
       let member = msg.guild.members.cache.get(chilli.current);
 
       Object.keys(chilli.players)
-        .forEach(id => client.users.cache.get(id).action("chilliBooh", {boohTarget: member, chilli, msg, commandOptions}));
+        .forEach(id => client.users.cache.get(id).action(Actions.chilliBooh, {boohTarget: member, chilli, msg, interaction}));
 
       msg.msg({title: "Бах! Перчик взорвался!", 
         description: `Перец бахнул прямо у ${ member }\nИгра окончена.\nБыло совершено отскоков: ${ chilli.rebounds }`,
@@ -5103,19 +4810,22 @@ const commands = {
       }
     }, ms);
 
-  }, {memb: true, cooldown: 3.5, try: 2, type: "other", hidden: true}, "перчик перец"),
+  }, {memb: true, cooldown: 3.5, cooldownTry: 2, type: "other", hidden: true}, "перчик перец"),
 
-  rob: new Command(async (msg, commandOptions) => {
-    let memb = commandOptions.memb;
+  rob: new Command(async (msg, interaction) => {
+    let memb = interaction.mention;
 
-    if (!commandOptions.user.thiefGloves)
+    if (!interaction.userData.thiefGloves)
       return msg.msg({title: "Для использования этой команды нужно купить перчатки", description: "Их, иногда, можно найти в !лавке, по цене 700 коинов", color: "#ff0000", delete: 7000});
 
 
-    let [count, combo] = commandOptions.user.thiefGloves.split("|");
+    let [count, combo] = interaction.userData.thiefGloves.split("|");
 
-    if (memb.id == msg.author.id)
-      return msg.msg({title: "Среди бела-дня вы напали на себя по непонятной причине", description: "Пока вы кричали \"Вор! Вор! Ловите вора!\", к вам уже подъежала лесная скорая", image: "https://images-ext-2.discordapp.net/external/a8GTXB_QWUkoGA0rnJjqcPdipF0WsvETvU1uJugcjqE/https/media.discordapp.net/attachments/605085718947299389/802061414512066580/a79334c48d5ec868f217cf2aa985e9ae5770c251r1-1520-720v2_00.png"});
+    if (memb.id == msg.author.id){
+      msg.msg({title: "Среди бела-дня вы напали на себя по непонятной причине", description: "Пока вы кричали \"Вор! Вор! Ловите вора!\", к вам уже подъежала лесная скорая", image: "https://media.discordapp.net/attachments/629546680840093696/1048500012360929330/rob.png"});
+      return;
+    }
+      
 
     if (!count || +count < 1)
       return msg.msg({title: "Вы потеряли все свои перчатки, сначала купите новые", color: "#ff0000", delete: 7000});
@@ -5145,15 +4855,15 @@ const commands = {
 
 
     memb.data.coins -= rand;
-    commandOptions.user.coins += rand;
-    commandOptions.user.CD_39 += 7200000;
+    interaction.userData.coins += rand;
+    interaction.userData.CD_39 += 7200000;
 
     msg.msg({title: "Ограблено и украдено, теперь бежать", description: `Вы успешно украли ${rand} <:coin:637533074879414272> у ${memb.username}, но это ещё не конец, если вас догонят, награбленное вернётся к владельцу.\nУ ${memb.username} есть минута, чтобы среагировать, в ином случае добыча останется с вами навсегда.`, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {text: "Серия ограблений: " + ++combo}, delete: 10000});
     let react = await message.awaitReact({user: memb, type: "none", time: 60000}, "❗");
 
 
     const
-      note         = commandOptions.args.slice(commandOptions.memb.toString().length + 1).trim(),
+      note         = interaction.params.slice(interaction.mention.toString().length + 1).trim(),
       monsterHelps = memb.data.voidMonster && !(memb.data.CD_39 > Date.now()),
       hurt         = memb.data.thiefWins < -5,
       detective    = hurt && Util.random(1 / (-memb.data.thiefWins * 2.87), {round: false}) <= 0.01;
@@ -5161,11 +4871,11 @@ const commands = {
 
     if (react || monsterHelps || detective) {
       memb.data.coins += rand;
-      commandOptions.user.coins -= rand;
+      interaction.userData.coins -= rand;
       let coinsReturn;
 
       if (react) {
-        commandOptions.user.thiefGloves = --count + "|" + 0;
+        interaction.userData.thiefGloves = --count + "|" + 0;
         let accusation  = "";
         let action      = "Вы вернули свои коины и хорошо с ним посмеялись";
         let explanation = `${memb.username} успел среагировать и вернул коины`;
@@ -5179,9 +4889,9 @@ const commands = {
             return;
           }
 
-          coinsReturn = Math.floor(commandOptions.user.coins / 3);
+          coinsReturn = Math.floor(interaction.userData.coins / 3);
           memb.data.coins += coinsReturn;
-          commandOptions.user.coins -= coinsReturn;
+          interaction.userData.coins -= coinsReturn;
           accusation = `Сейчас он обвиняется как миниум в ${-memb.data.thiefWins} грабежах и других серьёзных преступлениях, к его горю пострадавший не смог простить такого предательства. В качестве компенсации 30% коинов пользователя (${coinsReturn}) <:coin:637533074879414272> переданы их новому владельцу.`;
           action = `Однако вы не смогли простить предательства, будучи уверенными, что все ${ Util.ending(-memb.data.thiefWins, "раз", "", "а", "")} были ограблены именно им.`;
         }
@@ -5204,29 +4914,27 @@ const commands = {
       }
 
       if (detective){
-        coinsReturn = -memb.data.thiefWins * 50 * Math.round(combo / 2 + 2);
-        commandOptions.user.coins -= coinsReturn;
-        commandOptions.user.thiefGloves = "-2|0";
+        coinsReturn = -memb.data.thiefWins * 20 * Math.round(combo / 2 + 2);
+        interaction.userData.coins -= coinsReturn;
+        interaction.userData.thiefGloves = "-2|0";
         memb.data.thiefWins += 5;
 
         msg.author.msg({title: `Вас поймал на горячем местный детектив`, description: `Он давно заинтересовался ${memb} ввиду частых нападений. Теперь вам светит потеря перчаток с компенсацией ущерба.` , color: "#ff0000"});
-        msg.msg({title: "Вора на горячем поймал герой-детектив", description: `Известный следователь уже давно наблюдал за ${memb.username}, и не зря! Сегодня на него напал вор — ${msg.author}, он был пойман при попытке украсть коины. Как утверждает сам задержанный, эти коины ему нужны были, чтобы сделать подарок детишкам. Однако за серию в ${-memb.data.thiefWins} нападений, он обязан заплатить компенсацию в размере ${coinsReturn} <:coin:637533074879414272> коинов и сдать любые свои перчатки.\nЭтот детектив убеждён, пока он защищает этот лес — боятся нечего!`, color: "#ff0000", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {text: memb.username, iconURL: memb.avatarURL()}})
-        message.msg({title: "Вас снова попытались ограбить", description: `Местный детектив давно следил за вами ввиду того, что вас грабили ни один раз. Вам повезло, что сейчас он оказался рядом и смог поймать вора!`});
+        msg.msg({title: "Вора на горячем поймал герой-детектив", description: `Известный следователь уже давно наблюдал за ${memb.username}, и не зря! Сегодня на него напал вор — ${msg.author}  был пойман при попытке украсть коины. Как утверждает сам задержанный, эти коины ему нужны были, чтобы сделать подарок детишкам. Однако за серию в ${-memb.data.thiefWins} нападений, он обязан заплатить компенсацию в размере ${coinsReturn} <:coin:637533074879414272> коинов и сдать любые свои перчатки.\nЭтот детектив убеждён, пока он защищает этот лес — боятся нечего!`, color: "#ff0000", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {text: memb.username, iconURL: memb.avatarURL()}})
+        message.msg({title: "Вас снова попытались ограбить", description: `Местный детектив давно следил за вами ввиду того, что вас грабили не один раз. Вам повезло, что сейчас он оказался рядом и смог поймать вора!`});
         return;
       }
     }
 
     if (combo === 7)
-      msg.author.quest("thief");
+      msg.author.action(Actions.globalQuest, {name: "thief"});
 
     if (memb.data.thiefWins >= 9)
-      msg.author.quest("crazy");
+      msg.author.action(Actions.globalQuest, {name: "crazy"});
 
-    if (memb.data.thiefWins < -10)
-      memb.quest("hopeless");
 
-    if (commandOptions.user.voidThief)
-      commandOptions.user.chestBonus = (commandOptions.user.chestBonus ?? 0) + commandOptions.user.voidThief * 10;
+    if (interaction.userData.voidThief)
+      interaction.userData.chestBonus = (interaction.userData.chestBonus ?? 0) + interaction.userData.voidThief * 10;
 
 
 
@@ -5237,7 +4945,7 @@ const commands = {
     message.msg({title: "Вы слишком долго не могли прийти в себя — вор ушёл.", description: description, color: "#ff0000"});
 
 
-    commandOptions.user.thiefGloves = count + "|" + combo;
+    interaction.userData.thiefGloves = count + "|" + combo;
     msg.author.msg({title: `Всё прошло успешно — вы скрылись и вас не узнали!\nТекущее комбо: ${combo}`});
 
     message.reactions.cache.get("❗").users.remove();
@@ -5245,8 +4953,8 @@ const commands = {
 
   }, {delete: true, dm: true, memb: true, cooldown: 3, type: "user"}, "ограбить роб украсть"),
 
-  ball: new Command(async (msg, commandOptions) => {
-    if (!commandOptions.args.includes(" ")) {
+  ball: new Command(async (msg, interaction) => {
+    if (!interaction.params.includes(" ")) {
       return msg.msg({title: "Это не вопрос", delete: 4000, color: "#ff0000"});
     }
 
@@ -5256,27 +4964,116 @@ const commands = {
     client.api.channels(msg.channel.id).messages.post({data: {"content": `${answer}`, "message_reference": {message_id: msg.id}}});
     await Util.sleep(1500);
     msg.channel.stopTyping();
-  }, {cooldown: 3, try: 2, args: true, type: "other"}, "8ball шар"),
+  }, {cooldown: 3, cooldownTry: 2, args: true, type: "other"}, "8ball шар"),
 
-  avatar: new Command(async (msg, commandOptions) => {
-    const avatarURL = (commandOptions.memb || msg.author).avatarURL({dynamic : true});
+  avatar: new Command(async (msg, interaction) => {
+    const avatarURL = (interaction.mention || msg.author).avatarURL({dynamic : true});
     msg.msg({content: avatarURL});
-  }, {cooldown: 12, try: 2, delete: true, type: "other"}, "аватар"),
+  }, {cooldown: 12, cooldownTry: 2, delete: true, type: "other"}, "аватар"),
 
-  counter: new Command(async (msg, commandOptions) => {
-    if (CounterManager.counterData.filter(e => e.guild == msg.guild).length > 14) msg.msg({title: "Максимум 15 счётчиков", color: "#ff0000", delete: 7000});
+  counter: new Command(async (msg, interaction) => {
+    msg.msg({content: "123"});
+    if (CounterManager.data.filter(counter => counter.guildId === msg.guild.id).length >= 15){
+      msg.msg({title: "Максимум 15 счётчиков", color: "#ff0000", delete: 7000});
+    }
 
-    let isChannelQuestion = await msg.msg({title: "🪄 Выберите тип объекта для счётчика", description: "Счётчики работают с каналами и сообщениями\nвыберите тип\n❯ 🖊️Сообщение\n❯ 🪧 Канал\n❯ 🖌️ Отправка сообщения"});
-    let type = await isChannelQuestion.awaitReact({user: msg.author, type: "all"}, "🖊️", "🪧", "🖌️");
-    if (!type) return isChannelQuestion.delete();
-    isChannelQuestion.msg({title: "🪄 Отлично! Введите текст с использованием шаблонов", description: "Каждые 15 минут счётчик будет обрабатыватся изменяя своё значение за счёт шаблонов внутри него", edit: true});
-    let template = await msg.channel.awaitMessage(msg.author);
-    if (!template) return isChannelQuestion.delete();
-    template = template.content;
-    isChannelQuestion.delete();
+    const context = {
+      interaction,
+      questionMessage: null,
+      typeBase: null,
+      templateContent: null,
+      counter: {}
+    }
+    const counterTypes = [
+      {
+        emoji: "🖊️",
+        label: "🖊️Сообщение",
+        description: "Единожды отправляет сообщение и после, ненавязчиво, изменяет его содержимое",
+        id: "message",
+        change: async (context) => {
+          const counter = context.counter;
+          counter.channelId = interaction.channel.id;
+          counter.guildId   = interaction.guild.id;
+          counter.authorId  = interaction.user.id;
 
-    if (!template.match(/!\{.+?\}/)) return msg.msg({title: "В сообщении отсуствуют шаблоны.", color: "#ff0000", delete: 5000});
-    let counter;
+          context.questionMessage = await msg.msg({title: "Вашему сообщению нужен эмбед?", description: `Подразумивается эмбед-обёртка: цвет и заглавие`});
+          const react = await message.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+          context.questionMessage.delete();
+
+          if (!react){
+            return;
+          }
+
+          if (react === "685057435161198594"){
+
+          }
+
+          if (react === "763807890573885456"){
+
+          }
+        }
+      },
+      {
+        emoji: "🪧",
+        label: "🪧Имя канала",
+        description: "Меняет имя указаного канала",
+        id: "channel",
+        change: async (context) => {
+          const counter = context.counter;
+          counter.channelId = interaction.channel.id;
+          counter.guildId   = interaction.guild.id;
+          counter.authorId  = interaction.user.id;
+          
+        }
+      },
+      {
+        emoji: "🖌️",
+        label: "🖌️Отправка сообщения",
+        description: "Отправляет в указаный канал",
+        id: "poster",
+        change: async (context) => {
+          const counter = context.counter;
+          counter.channelId = interaction.channel.id;
+          counter.guildId   = interaction.guild.id;
+          counter.authorId  = interaction.user.id;
+          
+        }
+      }
+    ];
+
+
+    context.questionMessage = await msg.msg({title: "🪄 Выберите тип объекта для счётчика", description: `Счётчики работают с каналами и сообщениями\nвыберите тип ${ counterTypes.map(({label, description}) => `❯ ${ label }\n> ${ description }\n> `).join("\n") }\n `});
+    const takeCounterType = async (context) => {
+      const reactions = counterTypes.map(({emoji}) => emoji);
+      const reaction = await context.questionMessage.awaitReact({user: msg.author, type: "all"}, ...reactions);
+      return counterTypes.find(({emoji}) => emoji === reaction);
+    }
+    context.typeBase = await takeCounterType(context);
+    
+    if (!context.type){
+      context.questionMessage.delete();
+      return;
+    }
+    context.questionMessage.msg({title: "🪄 Отлично! Введите текст с использованием шаблонов", description: "Каждые 15 минут счётчик будет изменять своё значение на основе актуальных данных шаблона", edit: true});
+    context.templateContent = await msg.channel.awaitMessage(msg.author)?.content;
+
+    context.questionMessage.delete();
+    if (!context.templateContent){
+      return;
+    }
+
+    if (!context.templateContent.match(/\{(?:.|\n)+?\}/)){
+      msg.msg({title: "В сообщении отсуствуют шаблоны.", color: "#ff0000", delete: 5000});
+      return;
+    }
+
+    const counter = await context.typeBase.change(context.context);
+    if (!counter){
+      return;
+    }
+    CounterManager.create(counter);
+    msg.msg({title: "Успех", delete: 4_000});
+
     switch (type) {
       case "🖊️":
         let embed = {embed: true};
@@ -5286,11 +5083,11 @@ const commands = {
         message.delete();
         if (react == 685057435161198594){
           embed = {description: template}
-          answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите оглавление эмбеда", embed: {description: `Оглавление — голова эмбед сообщения...\nОна поддерживает шаблоны`, time: 1200000}});
+          answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите оглавление эмбеда", embed: {description: `Оглавление — голова эмбед сообщения...\nОна поддерживает шаблоны`, time: 1_200_000}});
           if (!answer) return false;
           textValue = answer.content || "";
 
-          answer = await msg.channel.awaitMessage(msg.author, {title: "Введите цвет в HEX формате", embed: {description: `HEX — #ff0000, где первые два числа в 16-значной системе (0,1,2,...,e,f) — красный, потом зеленый и синий`, time: 1200000}});
+          answer = await msg.channel.awaitMessage(msg.author, {title: "Введите цвет в HEX формате", embed: {description: `HEX — #ff0000, где первые два числа в 16-значной системе (0,1,2,...,e,f) — красный, за ним зеленый и синий`, time: 1_200_000}});
           if (!answer) return false;
           embed.color = answer.content.replace("#", "");
         }
@@ -5298,14 +5095,14 @@ const commands = {
         msg.msg({title: "Через секунду здесь появится сообщение", description: "Это и будет готовый счётчик", delete: 7000});
         await Util.sleep(1500);
         counter = await msg.msg({title: textValue, ...embed});
-        new CounterManager(msg.channel.id, msg.guild.id, "message", template, counter.id);
+        
       break;
       case "🪧":
         let channel = await msg.channel.awaitMessage(msg.author, {title: "Введите айди канала или упомяните его"});
         if (channel){
           channel = (channel.mentions.channels.first()) ? channel.mentions.channels.first() : msg.guild.channels.cache.get(channel.content);
           msg.msg({title: "Готово, название этого канала отображает введенную инфомацию.", description: "Чтобы удалить счётчик, воспользуйтесь командой `!counters`", delete: 7000});
-          new CounterManager(channel.id, msg.guild.id, "channel", template);
+          CounterManager.create({channelId: channel.id, guildId: msg.guild.id, type: "channel", template});
         }
         else msg.channel.msg({title: "Канал не существует", color: "#ff0000"});
       break;
@@ -5313,19 +5110,27 @@ const commands = {
         let interval = await msg.channel.awaitMessage(msg.author, {title: "Укажите кол-во минут между отправкой сообщения", description: "Минимум 15м"});
         interval = interval && +interval.content > 15 && +interval.content;
         if (!interval) return msg.msg({title: "Неверное значение", color: "#ff0000", delete: 4000});
-        new CounterManager(msg.channel.id, msg.guild.id, "poster", template, interval);
+        CounterManager.create({channelId: msg.channel.id, guildId: msg.guild.id, type: "poster", template, params: interval});
       break;
       default: return await Util.sleep(2000);
 
     }
   }, {delete: true, Permissions: 16, dm: true, type: "guild"}, "счётчик счетчик count"),
 
-  counters: new Command(async (msg, commandOptions) => {
-    const fromType = (e) => ({title: `🖊️ [Сообщение.](https://discord.com/channels/${e.guild}/${e.channel}/${e.args})`, channel: `🪧 \`#${msg.guild.channels.cache.get(e.channel).name}\``, poster: `🖌️ <#${e.channel}>`}[e.type]);
-    let counters = CounterManager.counterData.filter(e => e.guild == msg.guild.id).map((e, i) => ({name: `**${i + 1}.**`, value: fromType(e), inline: true, _original: e}));
+  counters: new Command(async (msg, interaction) => {
+    const counterContent = (counter) => ({
+      title: `🖊️ [Сообщение.](https://discord.com/channels/${ counter.guildId }/${ counter.channelId }/${ counter.messageId })`,
+      channel: `🪧 \`#${ msg.guild.channels.cache.get(counter.channel).name }\``,
+      poster: `🖌️ <#${ counter.channel }>`
+    })[counter.type];
+
+    const counters = CounterManager.data
+      .filter(counter => counter.guildId === msg.guild.id)
+      .map((counter, i) => ({name: `**${i + 1}.**`, value: counterContent(counter), inline: true, counter: counter}));
+
     let message  = await msg.msg({title: "Счётчики сервера", fields: counters[0] ? counters : {name: "Но тут — пусто.", value: "Чтобы добавить счётчики, используйте `!counter`"}});
 
-    const reactions = () => (counters[0] && !commandOptions.member.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
+    const reactions = () => (counters[0] && !interaction.mentioner.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
     let react, question, answer, counter;
     while (true){
       react = await message.awaitReact({user: msg.author, type: "all"}, ...reactions());
@@ -5364,9 +5169,9 @@ const commands = {
         default: return message.delete();
       }
     }
-  }, {cooldown: 10, try: 3, delete: true, dm: true, type: "guild"}, "счётчики счетчики"),
+  }, {cooldown: 10, cooldownTry: 3, delete: true, dm: true, type: "guild"}, "счётчики счетчики"),
 
-  remind: new Command(async (msg, commandOptions) => {
+  remind: new Command(async (msg, interaction) => {
     const parseParams = (params) => {
       params = params.split(" ");
 
@@ -5377,7 +5182,7 @@ const commands = {
       const phrase = params.join();
       return [stamps, phrase];
     }
-    const [stamps, phraseRaw] = parseParams(commandOptions.args);
+    const [stamps, phraseRaw] = parseParams(interaction.params);
   
     const phrase = (phraseRaw || "Без описания")
       .replace(/[a-zа-яъёь]/i, (letter) => letter.toUpperCase());
@@ -5475,9 +5280,9 @@ const commands = {
     userData.reminds ||= [];
     userData.reminds.push(event.timestamp);
     msg.msg({title: "Напомнинание создано", description: `— ${ phrase }`, timestamp: event.timestamp, footer: {iconURL: msg.author.avatarURL(), text: msg.author.username}});
-  }, {cooldown: 20, try: 3, delete: true, type: "other"}, "напомни напоминание напомнить"),
+  }, {cooldown: 20, cooldownTry: 3, delete: true, type: "other"}, "напомни напоминание напомнить"),
 
-  giveaway: new Command(async (msg, commandOptions) => {
+  giveaway: new Command(async (msg, interaction) => {
     let message = await msg.msg({title: "🌲 Создание раздачи", description: "Используйте реакции ниже, чтобы настроить раздачу!\n◖🪧  Текст 🚩\n◖⏰  Дата окончания 🚩\n◖🎉  Кол-во победителей\n◖🎁  Выдаваемые роли", color: "#4a7e31", footer: {text: "🚩 Обязательные пункты перед началом"}});
     let react, answer, timestamp, title, descr, winners = 1, role;
     do {
@@ -5507,7 +5312,7 @@ const commands = {
           }
           let [month = parse.getMonth() + 1, days = parse.getDate(), hours = parse.getHours(), minutes = 0] = finded;
           timestamp = new Date(parse.getFullYear(), month - 1, days, hours, minutes, 0);
-          if (timestamp.Date.now() - Date.now() < 0) {
+          if (timestamp.getTime() - Date.now() < 0) {
             let messageSetYear = await msg.msg({title: "Эта дата уже прошла, хотите установить на следующий год?"});
             react = await messageSetYear.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
             messageSetYear.delete();
@@ -5517,7 +5322,7 @@ const commands = {
               break;
             }
           }
-          timestamp = timestamp.Date.now();
+          timestamp = timestamp.getTime();
           const title = `Готово! Времени до окончания ~${Util.timestampToDate(timestamp - Date.now(), 3)}`;
           msg.msg({title, delete: 3000, timestamp});
           break;
@@ -5550,23 +5355,35 @@ const commands = {
     } while(react);
   }, {delete: true, Permissions: 32, type: "guild"}, "раздача розыгрыш"),
 
-  template: new Command(async (msg, commandOptions) => {
+  template: new Command(async (msg, interaction) => {
 
   }, {args: true, type: "dev"}, "шаблон"),
 
-  quests: new Command(async (msg, commandOptions) => {
-    let memb = ((commandOptions.memb) ? commandOptions.memb : (commandOptions.args) ? client.users.cache.get(commandOptions.args) : msg.author);
+  quests: new Command(async (msg, interaction) => {
+    let memb = ((interaction.mention) ? interaction.mention : (interaction.params) ? client.users.cache.get(interaction.params) : msg.author);
     let user = memb.data;
 
-    user.completedQuest = user.completedQuest || [];
-    let globalQuests = Object.entries(quests.names).map(([key, name]) => user.completedQuest.includes(key) ? "<a:yes:763371572073201714> " + "**" + name.split("&")[0] + "**": "<a:Yno:763371626908876830> " + name.split("&")[0]);
-    let secretAchievements = [user.voidIce, user.crown];
+    QuestManager.checkAvailable({user: msg.author});
 
-    let nextDaily = `До обновления: \`${+((new Date().setHours(23, 59, 50) - Date.now()) / 3600000).toFixed(1)}ч\``;
-    let fields = [
+    const userQuests = (user.questsGlobalCompleted ?? "").split(" ").filter(Boolean);
+    const globalQuestsList = QuestManager.questsBase.filter(quest => quest.isGlobal);
+
+    let globalQuestsContent = globalQuestsList
+      .map(({id, title}) => userQuests.includes(id) ? `<a:yes:763371572073201714> **${ title }**` : `<a:Yno:763371626908876830> ${ title }`)
+      .join("\n");
+
+    const secretAchievements = ["voidIce", "crown"];
+
+    const dailyQuest = {
+      nextContent: `До обновления: \`${ +((new Date().setHours(23, 59, 50) - Date.now()) / 3_600_000).toFixed(1) }ч\``,
+      questBase: QuestManager.questsBase.get(user.quest.id),
+      ...user.quest
+    }
+
+    const fields = [
       {
         name: "Прогресс достижений:",
-        value: `Достигнуто: \`${user.completedQuest.length}/${Object.values(quests.names).length + user.completedQuest.filter(e => !(e in quests.names)).length}\`\nСекретных: \`${secretAchievements.filter(e => e).length}/2\``
+        value: `Достигнуто: \`${ userQuests.length }/${ globalQuestsList.size }\`\nСекретных: \`${ secretAchievements.filter(keyword => keyword in user).length }/${ secretAchievements.length }\``
       },
       {
         name: "Дневные задачи:",
@@ -5574,22 +5391,22 @@ const commands = {
       },
       {
         name: "Сведения последнего квеста:",
-        value: `Множитель награды: \`X${user.questReward.toFixed(1)}\`\nПрогресс: \`${user.questProgress == user.questNeed ? "Выполнено" : user.questProgress + "/" + user.questNeed}\`\nНазвание: \`${user.quest || "Да фиг знает"}\`\n${nextDaily}`
+        value: `Множитель награды: \`X${ dailyQuest.questBase.reward.toFixed(1) }\`\nПрогресс: \`${ dailyQuest.isCompleted ? "Выполнено" : `${ dailyQuest.progress }/${ dailyQuest.goal }`}\`\nНазвание: \`${dailyQuest.id }\`\n${ dailyQuest.nextContent }`
       }
     ]
-    msg.msg({title: "Доска квестов", author: {name:  user.name, iconURL: memb.avatarURL()}, description: globalQuests.join("\n"), fields, image: "https://media.discordapp.net/attachments/549096893653975049/830749264928964608/5.png?width=300&height=88", thumbnail: "https://cdn.discordapp.com/emojis/830740711493861416.png?v=1"})
-  }, {delete: true, cooldown: 35, try: 3, type: "user"}, "quest квесты"),
+    msg.msg({title: "Доска квестов", author: {name:  user.name, iconURL: memb.avatarURL()}, description: globalQuestsContent, fields, image: "https://media.discordapp.net/attachments/549096893653975049/830749264928964608/5.png?width=300&height=88", thumbnail: "https://cdn.discordapp.com/emojis/830740711493861416.png?v=1"})
+  }, {delete: true, cooldown: 35, cooldownTry: 3, type: "user"}, "quest квесты"),
 
-  witch: new Command(async (msg, commandOptions) => {
+  witch: new Command(async (msg, interaction) => {
     // <a:void:768047066890895360> <a:placeForVoid:780051490357641226> <a:cotik:768047054772502538>
 
-    if (commandOptions.memb){
-      const data = commandOptions.memb.data;
-      msg.msg({title: "<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг", description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${ commandOptions.memb.username }, использовал котёл ${ data.voidRituals } раз.\nЕго бонус к опыту: ${ (100 * (1.02 ** data.voidRituals)).toFixed(2) }% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`, color: "#3d17a0"});
+    if (interaction.mention){
+      const data = interaction.mention.data;
+      msg.msg({title: "<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг", description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${ interaction.mention.username }, использовал котёл ${ data.voidRituals } раз.\nЕго бонус к опыту: ${ (100 * (1.02 ** data.voidRituals)).toFixed(2) }% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`, color: "#3d17a0"});
       return;
     }
 
-    let user = commandOptions.user;
+    let user = interaction.userData;
     let minusVoids = Math.floor(Math.min(2 + user.voidRituals, 20) * (1 - 0.10 * (user.voidPrise ?? 0)));
 
     const sendVoidOut = () => {
@@ -5783,7 +5600,7 @@ const commands = {
         add("...");
       break;
       case 19:
-        msg.author.quest("completeTheGame");
+        msg.author.action(Actions.globalQuest, {name: "completeTheGame"});
         add("Но должен ли я остановится? Вселенных, как известно, бесчисленное множество, бесконечность... Поглощая самого себя снова, и снова, мне, возможно, удастся получить ответ. А с приобретенной силой я создам идеальный мир..!")
         add("— Получается я убил их, уничтожил целые вселенные, миры.. Каждый раз я попадая в новую вселенную, заменял собою себя, уничтожая минувший мир. Неужели этого нельзя исправить.. Неужели это конец?");
       case 18:
@@ -5829,11 +5646,11 @@ const commands = {
 
   }, {delete: true, type: "user"}, "boiler котёл котел ведьма"),
 
-  charity: new Command(async (msg, commandOptions) => {
-    let heAccpet = await Util.awaitUserAccept({name: "charity", message: {title: "Благотворительность это хорошо, но используя эту команду вы потеряете коины!", description: "Ваши богатсва будут разданы людям с этого сервера."}, channel: msg.channel, user: commandOptions.user});
+  charity: new Command(async (msg, interaction) => {
+    let heAccpet = await Util.awaitUserAccept({name: "charity", message: {title: "Благотворительность это хорошо, но используя эту команду вы потеряете коины!", description: "Ваши богатсва будут разданы людям с этого сервера."}, channel: msg.channel, userData: interaction.userData});
     if (!heAccpet) return;
 
-    let cash = commandOptions.args.match(/\d+|\+/);
+    let cash = interaction.params.match(/\d+|\+/);
 
     if (!cash) {
       msg.msg({title: "Вы не указали кол-во коинов, которые хотите раздать", delete: 5000, color: "#ff0000"});
@@ -5841,10 +5658,10 @@ const commands = {
       return;
     }
     cash = cash[0];
-    commandOptions.args = commandOptions.args.replace(cash, "").trim();
+    interaction.params = interaction.params.replace(cash, "").trim();
 
     if (cash === "+"){
-      cash = commandOptions.user.coins;
+      cash = interaction.userData.coins;
     }
 
     cash = Number( cash );
@@ -5855,18 +5672,18 @@ const commands = {
       return;
     }
 
-    if (cash > commandOptions.user.coins) {
+    if (cash > interaction.userData.coins) {
       msg.msg({title: "Недостаточно коинов", delete: 5000, color: "#ff0000"});
       msg.react("❌");
       return;
     }
 
-    let countUsers = commandOptions.args.match(/\d+/);
+    let countUsers = interaction.params.match(/\d+/);
     let needCash;
     if (countUsers){
       countUsers = countUsers[0];
       needCash = 200 + Math.max(countUsers - 20, 0) * 250 * 2 ** Math.floor(countUsers / 10);
-      commandOptions.args = commandOptions.args.replace(countUsers, "").trim();
+      interaction.params = interaction.params.replace(countUsers, "").trim();
     }
 
     if (cash < needCash){
@@ -5875,7 +5692,7 @@ const commands = {
       return;
     }
 
-    let note = commandOptions.args;
+    let note = interaction.params;
 
     let
      count   = countUsers || Util.random(11, 22),
@@ -5883,7 +5700,7 @@ const commands = {
      sum     = Math.floor(cash / members.length);
 
     members.forEach(e => e.user.data.coins += sum);
-    commandOptions.user.coins -= cash;
+    interaction.userData.coins -= cash;
     msg.guild.data.coins = (msg.guild.data.coins ?? 0) + cash - sum * members.length;
 
     let embed = {
@@ -5908,19 +5725,19 @@ const commands = {
 
     let message = await msg.msg(embed);
     msg.react("💚");
-  }, {cooldown: 70, try: 2, args: true, type: "other"}, "благотворительность"),
+  }, {cooldown: 70, cooldownTry: 2, args: true, type: "other"}, "благотворительность"),
 
-  bank: new Command(async (msg, commandOptions) => {
-    let user = commandOptions.user, action, coins, cause;
+  bank: new Command(async (msg, interaction) => {
+    let user = interaction.userData, action, coins, cause;
     let server = msg.guild.data;
-    const isAdmin = !commandOptions.member.wastedPermissions(32)[0];
+    const isAdmin = !interaction.mentioner.wastedPermissions(32)[0];
 
 
     const cash = async (coins, isPut, cause) => {
       let heAccpet;
 
       if (coins === "+"){
-        coins = isPut ? commandOptions.user.coins : server.coins;
+        coins = isPut ? interaction.userData.coins : server.coins;
       }
       coins = Math.max(Math.floor(coins), 0);
 
@@ -5933,24 +5750,24 @@ const commands = {
       }
 
       if (isPut){
-        heAccpet = await Util.awaitUserAccept({name: "bank_put", message: {title: "Вы точно хотите это сделать?", description: "<a:message:794632668137652225> Отправленненные в общую казну коины более не будут предналежать вам, и вы не сможете ими свободно распоряжаться.\nПродолжить?"}, channel: msg.channel, user: commandOptions.user});
+        heAccpet = await Util.awaitUserAccept({name: "bank_put", message: {title: "Вы точно хотите это сделать?", description: "<a:message:794632668137652225> Отправленненные в общую казну коины более не будут предналежать вам, и вы не сможете ими свободно распоряжаться.\nПродолжить?"}, channel: msg.channel, userData: interaction.userData});
         if (!heAccpet) return;
 
-        if (commandOptions.user.coins < coins){
+        if (interaction.userData.coins < coins){
           msg.msg({title: "Образовались проблемки..", description: "Недостаточно коинов", color: "#ff0000", delete: 7000});
           return;
         }
 
-        commandOptions.user.coins -= coins;
+        interaction.userData.coins -= coins;
         server.coins += coins;
-        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${commandOptions.member.displayName} отнёс в казну ${Util.ending(coins, "коин", "ов", "а", "ов")}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
+        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${interaction.mentioner.displayName} отнёс в казну ${Util.ending(coins, "коин", "ов", "а", "ов")}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
         msg.react("👌");
         msg.msg({title: `Вы успешно вложили **${ Util.ending(coins, "коин", "ов", "а", "ов")}** на развитие сервера`, delete: 5000});
         return;
       }
 
       if (!isPut){
-        heAccpet = await Util.awaitUserAccept({name: "bank", message: {title: "Осторожно, ответственность!", description: "<a:message:794632668137652225> Не важно как сюда попадают коины, главное — они предналежат пользователям этого сервера\nРаспоряжайтесь ими с пользой, умом."}, channel: msg.channel, user: commandOptions.user});
+        heAccpet = await Util.awaitUserAccept({name: "bank", message: {title: "Осторожно, ответственность!", description: "<a:message:794632668137652225> Не важно как сюда попадают коины, главное — они предналежат пользователям этого сервера\nРаспоряжайтесь ими с пользой, умом."}, channel: msg.channel, userData: interaction.userData});
         if (!heAccpet) return;
         let problems = [];
 
@@ -5968,9 +5785,9 @@ const commands = {
           return;
         }
 
-        commandOptions.user.coins += coins;
+        interaction.userData.coins += coins;
         server.coins -= coins;
-        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${commandOptions.member.displayName} обналичил казну на сумму **${ Util.ending(coins, "коин", "ов", "а", "ов")}**\nПричина: ${cause}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
+        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${interaction.mentioner.displayName} обналичил казну на сумму **${ Util.ending(coins, "коин", "ов", "а", "ов")}**\nПричина: ${cause}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
         msg.react("👌");
         const title = `Вы успешно взяли **${ Util.ending(coins, "коин", "ов", "а", "ов")}** из казны сервера\nПо причине: ${cause}`;
         msg.msg({title, delete: 5000});
@@ -5979,10 +5796,10 @@ const commands = {
     }
 
 
-    if (commandOptions.args){
-      action = commandOptions.args.split(" ")[0];
-      coins  = commandOptions.args.split(" ")[1];
-      cause  = commandOptions.args.split(" ").slice(2).join(" ");
+    if (interaction.params){
+      action = interaction.params.split(" ")[0];
+      coins  = interaction.params.split(" ")[1];
+      cause  = interaction.params.split(" ").slice(2).join(" ");
 
       if (action == "положить" || action == "put"){
         await cash(coins, true, cause);
@@ -6111,9 +5928,9 @@ const commands = {
       }
       embed.description += `\n\nВ хранилище: ${ Util.ending(server.coins, "золот", "ых", "ая", "ых")}!\nКоличество коинов ${server.coins - coinInfo === 0 ? "не изменилось" : server.coins - coinInfo > 0 ? "увеличилось на " + (server.coins - coinInfo) : "уменьшилось на " + (coinInfo - server.coins) } <:coin:637533074879414272>`;
     }
-  }, {cooldown: 50, try: 3, type: "guild"}, "cash банк казна"),
+  }, {cooldown: 50, cooldownTry: 3, type: "guild"}, "cash банк казна"),
 
-  eval: new Command(async (msg, commandOptions) => {
+  eval: new Command(async (msg, interaction) => {
 
     const isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396", "921403577539387454", "711450675938197565"]
       .includes(msg.author.id);
@@ -6126,7 +5943,7 @@ const commands = {
         if (!blockQuote)
           return;
 
-        commandOptions.args = blockQuote[1];
+        interaction.params = blockQuote[1];
       }
 
       const messageId = msg.reference.messageId;
@@ -6139,25 +5956,25 @@ const commands = {
 
     }
 
-    const context = {
+    Object.assign(interaction, {
       launchTimestamp: Date.now(),
       leadTime: null,
       emojiByType: null
-    }
+    });
 
     const sandbox = {};
     const MAX_TIMEOUT = 50;
     const vm = new VM({sandbox, timeout: MAX_TIMEOUT});
 
     vm.freeze({
-      user: commandOptions.user,
-      options: JSON.parse(JSON.stringify(commandOptions)),
+      user: interaction.userData,
+      options: JSON.parse(JSON.stringify(interaction)),
       message: JSON.parse(JSON.stringify(msg))
 
-    }, "context");
+    }, "interaction");
 
     if (isDev){
-      const available = {Util, client, DataManager, commands, timeEvents};
+      const available = { Util, client, DataManager, TimeEventsManager, CommandsManager, FileSystem, BossManager, ActionManager, QuestManager };
 
       for (const key in available)
       Object.defineProperty(vm.sandbox, key, {
@@ -6168,15 +5985,15 @@ const commands = {
         get: () => msg
       });
 
-      Object.defineProperty(vm.sandbox, "commandOptions", {
-        get: () => commandOptions
+      Object.defineProperty(vm.sandbox, "interaction", {
+        get: () => interaction
       });
     }
 
     
     
 
-    let code = commandOptions.args;
+    let code = interaction.params;
     let output;
     try {
       // output = await vm.run(code);
@@ -6185,50 +6002,41 @@ const commands = {
     catch (error){
       output = error;
     }
-    context.leadTime = Date.now() - context.launchTimestamp;
+    interaction.leadTime = Date.now() - interaction.launchTimestamp;
 
 
     switch (true){
       case (output === undefined):
         output = "```{Пусто}```";
-        context.emojiByType = "753916360802959444";
+        interaction.emojiByType = "753916360802959444";
         break;
       case (output instanceof Error):
-        let stroke = output.stack.match(/(?<=\>:)\d+:\d+/);
+        let stroke = output.stack.match(/[a-zа-яъё<>]:\d+:\d+(?=\n|$)/i);
+        console.log(stroke);
+        console.log(output.stack);
         stroke = stroke ? stroke[0] : "1:0";
 
-        let lineOfCode = Discord.escapeMarkdown(  code.split("\n")[ stroke.split(":")[0] - 1 ]   );
-        lineOfCode = {
-          full: lineOfCode,
-          prev: lineOfCode.slice( 0, stroke.split(":")[1] - 1 ),
-          word: null,
-          next: null
-        }
-        lineOfCode.word = Util.match(lineOfCode.full.slice(lineOfCode.prev.length), /[a-zа-яьёъ$_]+/i);
-        lineOfCode.next = lineOfCode.full.slice(lineOfCode.word.length + lineOfCode.prev.length);
+        output = `Ошибка (${output.name}):\n${output.message}\nНа строке: #${ stroke }`;
 
-        let boldedLine = `${ lineOfCode.prev }**${ lineOfCode.word }**${ lineOfCode.next }`;
-        output = `Ошибка (${output.name}):\n${output.message}\nНа строке: #${stroke}\n${boldedLine}`;
-
-        context.emojiByType = "753916394135093289";
+        interaction.emojiByType = "753916394135093289";
         break;
       case (typeof output === "object"):
         output = `\`\`\`json\n${Discord.escapeCodeBlock(  JSON.stringify(output, null, 3)  )}\`\`\``;
-        context.emojiByType = "753916315755872266";
+        interaction.emojiByType = "753916315755872266";
         break;
       default:
-        context.emojiByType = "753916145177722941";
+        interaction.emojiByType = "753916145177722941";
         output = String(output);
     }
 
 
     if (process.env.DEVELOPMENT === "FALSE"){
       const hook = new Discord.WebhookClient("1006423793100664953", "dFUlXrQkpMu7Kb3ytBYzzfsHPDRucDonBwMGpqApi426J3OKuFEMttvw2ivlIcbrtAFJ");
-      context.messageForLogging = await hook.msg({author: {name: `${ msg.author.username }, в #${ msg.channel.id }`, iconURL: client.user.avatarURL()}, description: `\`\`\`js\n${ code }\`\`\``, color: "#1f2022", footer: {iconURL: client.emojis.cache.get(context.emojiByType).url, text: "Вызвана команда !eval"}});
+      interaction.messageForLogging = await hook.msg({author: {name: `${ msg.author.username }, в #${ msg.channel.id }`, iconURL: client.user.avatarURL()}, description: `\`\`\`js\n${ code }\`\`\``, color: "#1f2022", footer: {iconURL: client.emojis.cache.get(interaction.emojiByType).url, text: "Вызвана команда !eval"}});
     }
 
 
-    let react = await msg.awaitReact({user: msg.author, type: "one", time: 20000}, context.emojiByType);
+    let react = await msg.awaitReact({user: msg.author, type: "one", time: 20000}, interaction.emojiByType);
     if (!react){
       return;
     }
@@ -6238,7 +6046,7 @@ const commands = {
       author: {name: "Вывод консоли"},
       description: output,
       color: "#1f2022",
-      footer: {text: `Количество символов: ${output.length}\nВремя выполнения кода: ${ context.leadTime }мс`}
+      footer: {text: `Количество символов: ${output.length}\nВремя выполнения кода: ${ interaction.leadTime }мс`}
     }).catch(
       err => {
         msg.msg({title: "Лимит символов", color: "#1f2022", description: `Не удалось отправить сообщение, его длина равна ${ Util.ending(output.length, "символ", "ов", "у", "ам")}\nСодержимое ошибки:\n${err}`});
@@ -6248,7 +6056,7 @@ const commands = {
 
   }, {type: "other"}, "dev евал эвал vm worker"),
 
-  thing: new Command(async (msg, commandOptions) => {
+  thing: new Command(async (msg, interaction) => {
 
     const getColor = (element) => ["34cc49", "a3ecf1", "dd6400", "411f71"][element];
     const getEmoji = (element) => ["🍃", "☁️", "🔥", "👾"][element];
@@ -6261,14 +6069,14 @@ const commands = {
       return {COOLDOWN, COOLDOWN_TRY, cooldownThresholder};
     }
 
-    if (commandOptions.memb){
-      const element = commandOptions.memb.data.element || null;
+    if (interaction.mention){
+      const element = interaction.mention.data.element || null;
       if (element === null){
         msg.msg({description: "Упомянутый пользователь пока не открыл штуку.."});
         return;
       }
 
-      const username = commandOptions.memb.username;
+      const username = interaction.mention.username;
 
       const color = getColor(element);
       const emoji = getEmoji(element);
@@ -6277,9 +6085,9 @@ const commands = {
       const mentionContent = [username.toUpperCase(), username.toLowerCase(), username.toLowerCase()].join("-");
 
       const {cooldownThresholder} = getCooldownInfo();
-      const inCooldownContent = ["Нет.", "Да."][ +(commandOptions.memb.data.CD_52 > cooldownThresholder) ];
+      const inCooldownContent = ["Нет.", "Да."][ +(interaction.mention.data.CD_52 > cooldownThresholder) ];
 
-      const description = `${ mentionContent }...\nВыбранная стихия: ${ emoji }\nУровень штуки: ${ (commandOptions.memb.data.elementLevel || 0) + 1 }\n\nНа перезарядке: ${ inCooldownContent }`
+      const description = `${ mentionContent }...\nВыбранная стихия: ${ emoji }\nУровень штуки: ${ (interaction.mention.data.elementLevel || 0) + 1 }\n\nНа перезарядке: ${ inCooldownContent }`
       msg.msg({description, color});
       return;
     }
@@ -6294,7 +6102,7 @@ const commands = {
     }
     let react, answer;
 
-    if (match(commandOptions.args, /^(?:я|i'm|i)/i)){
+    if (match(interaction.params, /^(?:я|i'm|i)/i)){
       let elementSelect = await msg.msg({
         title: "Говорят, звёзды приносят удачу", 
         description: `Каждая из них имеет свои недостатки и особенности, просто выберите ту, которая вам по нраву.`,
@@ -6355,7 +6163,7 @@ const commands = {
     let embedColor = getColor(element);
     let level = elementLevel || 0;
 
-    if (match(commandOptions.args, /улучшить|up|level|уровень|ап/i)){
+    if (match(interaction.params, /улучшить|up|level|уровень|ап/i)){
 
       if (user.elementLevel == 4) {
         msg.msg({title: "Ваша штука итак очень сильная.\nПоэтому разработчик решил, что пятый уровень — максимальный.", delete: 7000});
@@ -6864,7 +6672,7 @@ const commands = {
             {
               action: async () => {
                 (async () => {
-                  let cloverMessage = await msg.channel.awaitMessage(false, {preventDelete: true});
+                  let cloverMessage = await msg.channel.awaitMessage({user: false});
                   let reaction;
                   let i = 0;
                   while ((!reaction || !reaction.me) && i < 100){
@@ -6878,7 +6686,7 @@ const commands = {
                     let author = cloverMessage.author;
                     author.data.void++;
                     cloverMessage.msg({title: "Нестабилити!", author: {name: author.username, iconURL: author.avatarURL()}, description: `**${author.username}!!!1!!!!111111!11111!!!!** Вот это да! Магияей клевера вы превратили небольшую горстку монет в камень нестабильности <a:void:768047066890895360>\nПо информации из математических источников это удавалось всего-лишь единицам из тысяч и вы теперь входите в их число!`, reactions: ["806176512159252512"]});
-                    author.quest("cloverInstability");
+                    author.action(Actions.globalQuest, {name: "cloverInstability"});
                   }
                 })();
               },
@@ -7282,10 +7090,10 @@ const commands = {
     });
   }, {type: "other"}, "шутка штука aught аугт нечто"),
 
-  commandinfo: new Command(async (msg, commandOptions) => {
+  commandinfo: new Command(async (msg, interaction) => {
     let __inServer = msg.channel.id === "753687864302108913";
-    commandOptions.args = commandOptions.args.toLowerCase().replace(/[^a-zа-яёьъ]/g, "").trim();
-    let cmd = commands[commandOptions.args];
+    interaction.params = interaction.params.toLowerCase().replace(/[^a-zа-яёьъ]/g, "").trim();
+    let cmd = commands[interaction.params];
 
     let typesList = {
       dev: "Команда в разработке или доступна только разработчику",
@@ -7297,7 +7105,7 @@ const commands = {
     };
 
     if (!cmd){
-      let helpMessage = await msg.msg({title: "Не удалось найти команду", description: `Не существует вызова \`!${commandOptions.args}\`\nВоспользуйтесь командой !хелп или нажмите реакцию ниже для получения списка команд.\nВы можете предложить новое слово для вызова одной из существующих команд.`});
+      let helpMessage = await msg.msg({title: "Не удалось найти команду", description: `Не существует вызова \`!${interaction.params}\`\nВоспользуйтесь командой !хелп или нажмите реакцию ниже для получения списка команд.\nВы можете предложить новое слово для вызова одной из существующих команд.`});
       //** Реакция-помощник
       let react = await helpMessage.awaitReact({user: msg.author, type: "all"}, "❓");
       if (!react){
@@ -7314,14 +7122,14 @@ const commands = {
     let guideDescription;
 
 
-    guideDescription = FileSystem.readFileSync("main/descriptions-commands.txt", "utf-8").split("---")[cmd.id - 1] || "Описание для этой команды пока отсуствует...";
+    guideDescription = FileSystem.readFileSync("resources/descriptions-commands.txt", "utf-8").split("---")[cmd.id - 1] || "Описание для этой команды пока отсуствует...";
     let gifURL = Util.match(guideDescription, /(?<=\n)http\S+/);
     if (gifURL){
       guideDescription = guideDescription.replace(gifURL, "").trim();
     }
 
     let used = DataManager.data.bot.commandsUsed[cmd.id] || 0;
-    let percentUsed = +(used / Object.values(data.bot.commandsUsed).reduce((acc, e) => acc + e, 0) * 100).toFixed(1) + "%";
+    let percentUsed = +(used / Object.values(DataManager.data.bot.commandsUsed).reduce((acc, e) => acc + e, 0) * 100).toFixed(1) + "%";
 
 
 
@@ -7338,7 +7146,7 @@ const commands = {
     return message;
   }, {args: true, cooldown: 5, delete: true, type: "bot"}, "command команда"),
 
-  seed: new Command(async (msg, commandOptions) => {
+  seed: new Command(async (msg, interaction) => {
     const thumbnailArray = [null, "https://cdn.discordapp.com/attachments/629546680840093696/875367772916445204/t1.png", "https://cdn.discordapp.com/attachments/629546680840093696/875367713411858492/t2.png", "https://cdn.discordapp.com/attachments/629546680840093696/875367267318247444/t3.png", "https://cdn.discordapp.com/attachments/629546680840093696/875366344642662510/t4_digital_art_x4.png", "https://cdn.discordapp.com/attachments/629546680840093696/875366096952246312/t9.png"];
 
     let server = msg.guild.data;
@@ -7511,7 +7319,7 @@ const commands = {
     collector.on("end", message.reactions.removeAll);
   }, {dm: true, type: "other"}, "tree livetree семечко berrystree дерево клубничноедерево живоедерево"),
 
-  youtube: new Command(async (msg, commandOptions) => {
+  youtube: new Command(async (msg, interaction) => {
     if (msg.member.voice.channel){
 
       const request = {
@@ -7544,9 +7352,9 @@ const commands = {
     msg.msg({title: "Необходимо находится в голосовом канале", color: "#ff0000", delete: 7000});
   }, {dm: true, type: "other", myPermissions: 1}, "ютуб ютубвместе youtubetogether"),
 
-  invites: new Command(async (msg, commandOptions) => {
-    if (commandOptions.memb){
-      const member = msg.guild.members.resolve(commandOptions.memb);
+  invites: new Command(async (msg, interaction) => {
+    if (interaction.mention){
+      const member = msg.guild.members.resolve(interaction.mention);
 
       const getGuildMemberInvites = async (member) => {
         const guild = member.guild;
@@ -7573,7 +7381,7 @@ const commands = {
       return;
     }
 
-    let answer = await Util.awaitUserAccept({name: "invites_command", message: {title: "Присвойте ссылкам их уникальную роль", description: "Как это работает?\nВы как администратор создаете роль, назовём её \"Фунтик\" и решаете, какие пользователи будут получать её при входе в систему. Есть несколько типов условий:\n\n1) В режиме постоянной ссылки: Всем зашедшим через эту ссылку будет выдана роль Фунтик.\n2) Выдаваемая роль будет определяться наличием у пригласившего другой роли, например, \"Хороший друг\". Любая ссылка созданная Хорошим другом предвкушает Фунтика \n3) По умолчанию — если не отработал ни один вариант выше.\n\nЗачем это?\nВы можете определить права участника в зависимости от того, кто его пригласил; ведение статистики, распределение людей которые пришли с партнёрки и по знакомству, тому подобное. Это то, что вы можете сделать с помощью этой команды"}, channel: msg.channel, user: commandOptions.user});
+    let answer = await Util.awaitUserAccept({name: "invites_command", message: {title: "Присвойте ссылкам их уникальную роль", description: "Как это работает?\nВы как администратор создаете роль, назовём её \"Фунтик\" и решаете, какие пользователи будут получать её при входе в систему. Есть несколько типов условий:\n\n1) В режиме постоянной ссылки: Всем зашедшим через эту ссылку будет выдана роль Фунтик.\n2) Выдаваемая роль будет определяться наличием у пригласившего другой роли, например, \"Хороший друг\". Любая ссылка созданная Хорошим другом предвкушает Фунтика \n3) По умолчанию — если не отработал ни один вариант выше.\n\nЗачем это?\nВы можете определить права участника в зависимости от того, кто его пригласил; ведение статистики, распределение людей которые пришли с партнёрки и по знакомству, тому подобное. Это то, что вы можете сделать с помощью этой команды"}, channel: msg.channel, userData: interaction.userData});
     if (!answer) return;
 
     const numericReactions = ["1️⃣", "2️⃣", "3️⃣"];
@@ -7622,11 +7430,11 @@ const commands = {
     
   }, {dm: true, type: "guild", permissions: 8}, "приглашения"),
 
-  casino: new Command(async (msg, commandOptions) => {
+  casino: new Command(async (msg, interaction) => {
     msg.msg({title: "Казино закрыто", description: "Казино закрыто. Боюсь что оно больше не откроется.\nЭтого не могло не случится, извините.\n\n — Прощайте. ©️Мэр-Миллиардер Букашка", delete: 20000});
     return;
 
-    let bet = commandOptions.args.match(/\d+|\+/);
+    let bet = interaction.params.match(/\d+|\+/);
 
     if (bet === null){
       msg.msg({title: "Укажите Ставку в числовом виде!", color: "#ff0000", delete: 3000});
@@ -7635,11 +7443,11 @@ const commands = {
     bet = bet[0];
 
     if (bet === "+")
-      bet = commandOptions.user.coins;
+      bet = interaction.userData.coins;
 
     bet = Math.max(0, Math.floor(bet));
 
-    if (commandOptions.user.coins < bet){
+    if (interaction.userData.coins < bet){
       msg.msg({title: "Недостаточно коинов", color: "#ff0000", delete: 3000});
       return;
     }
@@ -7659,18 +7467,18 @@ const commands = {
 ${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "коин", "ов", "", "а") } <:coin:637533074879414272>\\*` : "Чтобы выиграть дожно выпасть число, которое не делится на 2" }
     `;
 
-    commandOptions.user.coins -= (-1) ** isWon * bet;
+    interaction.userData.coins -= (-1) ** isWon * bet;
     msg.msg(options);
   }, {type: "other", delete: true, dev: true}, "казино bet ставка"),
 
-  bag: new Command(async (msg, commandOptions) => {
+  bag: new Command(async (msg, interaction) => {
 
-    if (commandOptions.memb){
+    if (interaction.mention){
       msg.msg({title: "Вы не можете просматривать содержимое сумки у других пользователей", color: "#ff0000", delete: 15_000});
       return;
     }
 
-    const user = commandOptions.user;
+    const user = interaction.userData;
 
 
     class ItemTaker {
@@ -7937,17 +7745,17 @@ ${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "к�
     }
 
 
-    let action = commandOptions.args.match(/взять|take|положить|put/);
+    let action = interaction.params.match(/взять|take|положить|put/);
     action = action && action[0];
 
-    let count = commandOptions.args.match(/\d+|\+/);
+    let count = interaction.params.match(/\d+|\+/);
     count = count && count[0];
     let item;
 
     if (action && count){
-      commandOptions.args = commandOptions.args.replace(action, "");
-      commandOptions.args = commandOptions.args.replace(count, "");
-      const itemName = commandOptions.args = commandOptions.args.trim().toLowerCase();
+      interaction.params = interaction.params.replace(action, "");
+      interaction.params = interaction.params.replace(count, "");
+      const itemName = interaction.params = interaction.params.trim().toLowerCase();
 
       item = ITEMS.find(item => item.names.includes(itemName));
       if (!item){
@@ -7975,23 +7783,22 @@ ${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "к�
     return;
   }, {type: "user", delete: true}, "сумка рюкзак"),
 
-  boss: new Command(async (msg, commandOptions) => {
-    const member = commandOptions.memb ?? msg.author;
-
-    msg.author.action("callBossCommand", {msg, commandOptions});
+  boss: new Command(async (msg, interaction) => {
+    const member = interaction.mention ?? msg.author;
 
     const guild = msg.guild;
     const boss = guild.data.boss;
 
-    if (boss === undefined){
-      msg.msg({description: "Момент появления босса пока неизвестен", color: "#000000"});
-      return
-    }
+    if (!boss.isArrived){
+      const description = boss.apparanceAtDay ? 
+        `Прибудет лишь ${ Util.toDayDate(boss.apparanceAtDay * 86_400_000) }` :
+        "Момент появления босса пока неизвестен";
 
-    if (boss.apparanceAtDay){
-      msg.msg({description: `Прибудет лишь ${ Util.toDayDate(boss.apparanceAtDay * 86_400_000) }`, color: "#000000"});
+      msg.msg({description, color: "#000000"});
       return;
     }
+
+    
 
     const currentHealthPointPercent = Math.ceil((1 - boss.damageTaken / boss.healthThresholder) * 100);
     const description = `Уровень: ${ boss.level }.\nУйдет ${ Util.toDayDate(boss.endingAtDay * 86_400_000) }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
@@ -8033,7 +7840,7 @@ ${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "к�
 
   }, {type: "other"}, "босс"),
 
-  dump: new Command(async (msg, commandOptions) => {
+  dump: new Command(async (msg, interaction) => {
     DataManager.file.write();
     const message = await msg.channel.send({
       files: [{
@@ -8046,47 +7853,9 @@ ${ isWon ? `\\*Вам достается куш — ${ Util.ending(bet * 2, "к�
   }, {type: "other", cooldown: 100}, "дамп")
 }
 
-const quests = {
-  scope: "onlyCoin&1&9&1.2 messagesFountain&30&1&1.5 messagesFountain&280&7&4 like&1&5 praiseMe&1&5 namebot&2&5 berryActive&2&2", //name progress chance complexity id
-  undefined: "Квесты выполнены.",
-  messagesFountain: "Отправьте сообщения",
-  like: "Поставьте лайк своему другу!",
-  praiseMe: "Дождитесь, пока вас похвалят",
-  namebot: "Назовите бота глупым",
-  setBirthday: "Установите дату своего дня рождения.",
-  birthdayParty: "Сегодня у одного из участников день рождения,\nпоздравьте его!🎉",
-  inviteFriend: "Пригласите друга на сервер!",
-  dailyChest: "Загляните в сегодняшний сундук,\nтам наверное что-то интересное", // dailyChest&1&2
-  beEaten: "Будьте съедены!",
-  thief: "Успешно совершите кражу 7 раз подряд.",
-  hopeless: "Это достижение дается всем, кого ограбили больше 10 раз подряд.",
-  crazy: "Украдите у пользователя, у которого никто не смог украсть.",
-  day100: "Выполните 100 ежедневных квестов!",
-  berryActive: "Купите или продайте клубнику",
-  firstChest: "Откройте сундук в знак наступающих весёлостей",
-  buyFromGrempen: "Купите любую вещь у гремпенса", //  buyFromGrempen&1&5&1.5
-  guildNewRecord: "Ваша гильдия должна побить\nрекорд по ежедневным сообщениям", //guildNewRecord&1&5&3
-  cleanShop: "Опустошите лавку всего за один день.",
-  bigHungredBonus: "Откройте сундук, в котором будет по меньшей мере 99 ключей.",
-  completeTheGame: "Пройдите призрака — познайте каждый кусочек его возможностей и достигните конца всей истории.",
-  cloverInstability: "Признайтесь, вы счастливчик \\✔",
-  onlyCoin: "Выбейте коин из сообщений",
+globalThis.commands = commands;
 
-  names: {
-    inviteFriend: "Первый друг&375",
-    setBirthday: "Операция тортик&500",
-    beEaten: "Быть съеденным&300",
-    thief: "Серия #7&377",
-    //hopeless: "Безнадёжный&1500",
-    crazy: "Разумно-безумен&900",
-    day100: "Квесто-выжималка&1175",
-    firstChest: "Новое приключение&200",
-    bigHungredBonus: "Большая стопка&1002",
-    cleanShop: "Снова пусто&961",
-    completeTheGame: "В конце-концов&0",
-    cloverInstability: "Нестабилити&900"
-  }
-}
+
 
 const timeEvents = {
   day_stats: function (isLost){
@@ -8140,7 +7909,6 @@ const timeEvents = {
       if (data.day_max < msgs) {
         data.day_max = msgs;
         description += `\nГильдия ${["<a:jeqery:768047102503944202>", "<a:jeqeryBlue:806176327223738409>", "<a:jeqeryPurple:806176181140848660>", "<a:jeqeryGreen:806176083757105162>", "<a:jeqeryRed:806175947447205958>", "<a:blockPink:794615199361400874>", "<a:blockAqua:794166748085223475>"].random()} установила свой рекорд по сообщениям!`;
-        // guild.members.cache.map(e => e.user).filter(e => !e.bot).forEach(e => e.quest("guildNewRecord"));
       }
 
 
@@ -8211,9 +7979,9 @@ const timeEvents = {
     }
     await Util.sleep(20000);
 
-    const today = Util.toDayDate( new Date() );
+    const today = Util.toDayDate( Date.now() );
     DataManager.data.bot.dayDate = today;
-    DataManager.data.bot.currentDay = Math.floor(Date.now() / 86_400_000);
+    DataManager.data.bot.currentDay = Util.timestampDay( Date.now() );
 
     DataManager.data.bot.grempen = "";
     let arr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e"]; //0123456789abcdef
@@ -8252,8 +8020,8 @@ const timeEvents = {
     
 
     DataManager.data.guilds.forEach(e => e.commandsLaunched = Object.values(e.commandsUsed).reduce((acc, e) => acc + e, 0));
-    let commandsLaunched = Object.values(data.bot.commandsUsed).reduce( ((acc, e) => acc + e), 0);
-    console.info(`\n\n\n      —— Ежедневная статистика\n\nСерверов: ${data.guilds.length}\nПользователей: ${data.users.length}\nКаналов: ${client.channels.cache.size}\n\nЦена клубники: ${data.bot.berrysPrise}\nВыполнено команд: ${commandsLaunched - DataManager.data.bot.commandsLaunched}\nВыполнено команд по серверам:\n${data.guilds.map(e => e.name + ":\nВыполнено команд: " + e.commandsLaunched + "\nРекорд сообщений: " + e.day_max).join("\n")}\n\n`);
+    let commandsLaunched = Object.values(DataManager.data.bot.commandsUsed).reduce( ((acc, e) => acc + e), 0);
+    console.info(`\n\n\n      —— Ежедневная статистика\n\nСерверов: ${DataManager.data.guilds.length}\nПользователей: ${DataManager.data.users.length}\nКаналов: ${client.channels.cache.size}\n\nЦена клубники: ${DataManager.data.bot.berrysPrise}\nВыполнено команд: ${commandsLaunched - DataManager.data.bot.commandsLaunched}\nВыполнено команд по серверам:\n${DataManager.data.guilds.map(e => e.name + ":\nВыполнено команд: " + e.commandsLaunched + "\nРекорд сообщений: " + e.day_max).join("\n")}\n\n`);
     DataManager.data.bot.commandsLaunched = commandsLaunched;
   },
 
@@ -8353,11 +8121,17 @@ const timeEvents = {
 (async () => {
   await DataManager.file.load();
   await TimeEventsManager.file.load();
-  await ReactionsManager.loadReactionsFromFile();
-  await CounterManager.loadCountersFromFile();
+  // await ReactionsManager.loadReactionsFromFile();
+  await CounterManager.file.load();
 
 
   DataManager.extendsGlobalPrototypes();
+  ActionManager.extendsGlobalPrototypes();
+
+  await CommandsManager.importCommands(Object.entries(commands));
+  CommandsManager.createCallMap();
+
+
 
   TimeEventsManager.emitter.on("event", (event) => {
     const params = event.params ?? [];
@@ -8403,4 +8177,14 @@ Have a nice day!
 */
 
 
-console.info(  Util.timestampToDate(    ((new Date().getHours() < 20) ? (new Date().setHours(20, 0, 0)) : (new Date(Date.now() + 14500000).setHours(20, 0, 0)))  - Date.now()  )  );
+console.info(Util.timestampToDate(
+  (new Date().getHours() < 20 ?
+    new Date().setHours(20, 0, 0) : 
+    new Date(Date.now() + 14500000).setHours(20, 0, 0)
+  )
+  - Date.now()
+));
+
+
+
+export { client };

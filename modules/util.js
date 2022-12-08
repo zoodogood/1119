@@ -27,12 +27,12 @@ function sleep(ms){
 }
 
 function random(...params){
-  let lastArgument = params.splice(-1).last;
+  let lastArgument = params.splice(-1).at(-1);
   let options = {round: true};
 
   if (typeof lastArgument === "object"){
     Object.assign(options, lastArgument);
-    lastArgument = params.splice(-1).last;
+    lastArgument = params.splice(-1).at(-1);
   }
 
   const max = lastArgument + Number(options.round);
@@ -154,6 +154,7 @@ function timestampToDate(ms, max){
 };
 
 function timestampDay(timestamp){
+  timestamp -= new Date().getTimezoneOffset() * 60_000;
   return Math.floor(timestamp / 86_400_000)
 }
 
