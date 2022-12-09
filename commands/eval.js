@@ -19,25 +19,25 @@ class Command {
       .includes(msg.author.id);
 
 
-    if (msg.reference){
+    const parseReferense = async (reference) => {
+      if (!reference){
+        return null;
+      }
+      const message = await msg.channel.messages.fetch(reference.messageId);
 
-      const changeParams = (message) => {
-        const blockQuote = message.content.match(/```js\n((?:.|\n)+?)```/);
-        if (!blockQuote)
-          return;
-
-        interaction.params = blockQuote[1];
+      if (!message){
+        return null;
       }
 
-      const messageId = msg.reference.messageId;
-      console.log(msg.reference);
-      const message = await msg.channel.messages.fetch(messageId);
+      const blockQuote = message.content.match(/```js\n((?:.|\n)+?)```/);
+      if (!blockQuote)
+        return null;
 
-      if (message){
-        changeParams(message);
-      }
-
+      return blockQuote[1];
     }
+
+    
+    const code = (await parseReferense(msg.reference)) ?? interaction.params;
 
     Object.assign(interaction, {
       launchTimestamp: Date.now(),
@@ -75,8 +75,6 @@ class Command {
 
     
     
-
-    let code = interaction.params;
     let output;
     try {
       // output = await vm.run(code);
