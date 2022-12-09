@@ -1,5 +1,4 @@
-import { CustomCollector } from '@zoodogood/utils/objectives';
-import { client } from '#src/index.js';
+
 import { exec } from 'child_process';
 
 
@@ -9,7 +8,7 @@ class Command {
 		const COMMAND = "git pull && pm2 restart --update-env blackghost";
 		
 		const embed = {
-			title: "Выполнение комманды <:emoji_50:753916145177722941>",
+			title: "<:emoji_50:753916145177722941>",
 			color: "#2c2f33",
 			description: `> ${ COMMAND }`
 		};
