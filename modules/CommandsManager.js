@@ -85,7 +85,7 @@ class CommandsManager {
 			problems.push("Эта команда находится в разработке и недоступна в публичной версии бота");
 		}
 
-		if (!options.inDM && interaction.channel.isDMBased()){
+		if (!options.allowDM && interaction.channel.isDMBased()){
 			problems.push("Эта команда может быть вызвана только на сервере");
 		}
 
