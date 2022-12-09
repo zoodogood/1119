@@ -40,7 +40,8 @@ class Command {
     const poster = command.options.media?.poster;
 
     const usedCount = DataManager.data.bot.commandsUsed[command.options.id] ?? 0;
-    const usedPercent = +(usedCount / Object.values(DataManager.data.bot.commandsUsed).reduce((acc, count) => acc + count) * 100).toFixed(1) + "%";
+    const usedPercent = +(usedCount / Object.values(DataManager.data.bot.commandsUsed).reduce((acc, count) => acc + count, 0) * 100)
+      .toFixed(1) + "%";
 
 
 
