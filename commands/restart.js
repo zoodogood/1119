@@ -6,12 +6,12 @@ import { exec } from 'child_process';
 class Command {
 
 	async onChatInput(msg, interaction){
-		const command = "pm2 restart blackghost";
+		const COMMAND = "pm2 restart --update-env blackghost";
 		
 		const embed = {
 			title: "Выполнение комманды <:emoji_50:753916145177722941>",
 			color: "#2c2f33",
-			description: `> ${ command }`
+			description: `> ${ COMMAND }`
 		};
 
 		const message = await msg.msg(embed);
@@ -22,10 +22,10 @@ class Command {
 			message.msg({...embed, description: `\`\`\`\n${ embed.description }\`\`\``});
 
 		}
-		const child = exec(command, (error, stdout) => console.log({error}) ?? console.log({stdout}));
+		const child = exec(COMMAND);	
 		
 		child.stdout.on("data", (data) => updateDescription(data));
-		child.stderr.on("data", (data) => updateDescription(data));
+		child.stderr.on("data", (data) => updateDescription(`Error:\n${ data }`));
 		child.on("error", console.log);
   	}
 
