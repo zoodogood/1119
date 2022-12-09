@@ -77,12 +77,12 @@ class CommandsManager {
 		const problems = [];
 		const options = command.options;
 
-		if (options.removed || options.type === "dev" && msg.author.id !== "921403577539387454"){
+		if (options.removed && interaction.user.id !== "921403577539387454"){
 			problems.push("Эта команда была удалена и не может быть использована");
 		}
 
-		if (options.type === "dev" && process.env.DEVELOPMENT !== "TRUE" && msg.author.id !== "921403577539387454"){
-			problems.push("Эта команда находится в разработке и недоступна в публичной версии бота");
+		if (options.type === "dev" && process.env.DEVELOPMENT !== "TRUE" && interaction.user.id !== "921403577539387454"){
+			problems.push("Эта команда находится в разработке и/или недоступна в публичной версии бота");
 		}
 
 		if (!options.allowDM && interaction.channel.isDMBased()){
