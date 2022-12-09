@@ -122,7 +122,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nНастройки сервера (бот) — Фильтр чата, канал логов, основной чат, описание и баннер для команды `!сервер` — способы управления сервером.\n\n:pencil2:\n```python\n!editserver #без аргументов\n```\n\n"
 	  },
-	  "allias": "настроитьсервер серватиус servatius"
+	  "allias": "настроитьсервер серватиус servatius",
+		"allowDM": true,
+		"type": "guild",
+		"Permissions": 32
 	};
 };
 

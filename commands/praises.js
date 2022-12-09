@@ -182,7 +182,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nОтображает список людей, которых вы похвалили и которые похвалили вас.\n\n:pencil2:\n```python\n!praises <memb>\n```\n\n"
 	  },
-	  "allias": "похвалы лайки likes"
+	  "allias": "похвалы лайки likes",
+		"allowDM": true,
+		"cooldown": 20000000,
+		"type": "user"
 	};
 };
 

@@ -49,7 +49,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nПоказывает интересную информацию о боте. Именно здесь находится ссылка для приглашения его на сервер.\n\n:pencil2:\n```python\n!bot #без аргументов\n```\n\n"
 	  },
-	  "allias": "бот stats статс ping пинг стата invite пригласить"
+	  "allias": "бот stats статс ping пинг стата invite пригласить",
+		"allowDM": true,
+		"cooldown": 10000000,
+		"type": "bot"
 	};
 };
 

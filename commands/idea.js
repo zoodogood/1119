@@ -35,7 +35,11 @@ class Command {
 	  "media": {
 	    "description": "\n\nЕсли у вас есть идеи как можно улучшить бота — с помощью этой команды отправьте её на сервер.\nНе забудьте позже обсудить её в чате, подробно расписывая особенности вы повышаете вероятность того, что она будет реализована.\n\n\n:pencil2:\n```python\n!idea {content}\n```\n\n"
 	  },
-	  "allias": "идея innovation новвоведение"
+	  "allias": "идея innovation новвоведение",
+		"allowDM": true,
+		"expectParams": true,
+		"cooldown": 1200000000,
+		"type": "bot"
 	};
 };
 

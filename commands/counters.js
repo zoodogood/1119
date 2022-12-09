@@ -65,7 +65,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nОтображает список существующих счётчиков на сервере. См. команду `!counter`\n\n:pencil2:\n```python\n!counters #без аргументов\n```\n\n"
 	  },
-	  "allias": "счётчики счетчики"
+	  "allias": "счётчики счетчики",
+		"allowDM": true,
+		"cooldown": 10000000,
+		"type": "guild"
 	};
 };
 

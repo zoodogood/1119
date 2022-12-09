@@ -75,7 +75,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nОтправляет список смайликов на сервере или подробную информацию об одном из них.\n\n:pencil2:\n```python\n!emojis <emoji|emojiID>\n```\n\n"
 	  },
-	  "allias": "emoji смайлики эмодзи эмоджи"
+	  "allias": "emoji смайлики эмодзи эмоджи",
+		"allowDM": true,
+		"cooldown": 7000000,
+		"type": "other"
 	};
 };
 

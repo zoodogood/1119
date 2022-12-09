@@ -68,7 +68,11 @@ class Command {
 	  "media": {
 	    "description": "\n\nПоказывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение\n\n\n:pencil2:\n```python\n!commandInfo {command}\n```\n\n"
 	  },
-	  "allias": "command команда"
+	  "allias": "command команда",
+		"allowDM": true,
+		"expectParams": true,
+		"cooldown": 5000000,
+		"type": "bot"
 	};
 };
 

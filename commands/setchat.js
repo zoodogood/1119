@@ -19,7 +19,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nУстанавливает для бота указанный канал, как чат, туда будет отправляться ежедневная статистика, а также не будут удалятся сообщения о повышении уровня.\n\n:pencil2:\n```python\n!setChat <channel>\n```\n\n"
 	  },
-	  "allias": "установитьчат"
+	  "allias": "установитьчат",
+		"allowDM": true,
+		"type": "guild",
+		"Permissions": 32
 	};
 };
 

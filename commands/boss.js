@@ -68,7 +68,9 @@ class Command {
 	  "media": {
 	    "description": "\n\nБосс страшен. Победите его вместе или проиграйте по-одиночке. Он появляется один раз месяц и уходит спустя три дня.\n\n:pencil2:\n```python\n!boss <member>\n```"
 	  },
-	  "allias": "босс"
+	  "allias": "босс",
+		"allowDM": true,
+		"type": "other"
 	};
 };
 

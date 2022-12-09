@@ -131,7 +131,11 @@ class Command {
 	  "media": {
 	    "description": "\n\nИспользуйте, чтобы передать коины другому пользователю в качестве доброго подарка или оплаты за помощь :wink:\n\n:pencil2:\n```python\n!pay {memb} {coinsCount | \"+\"} <message> #аргументы можно указывать в любом порядке. \"+\" обозначает \"Все коины, которые у вас есть\"\n```\n\n"
 	  },
-	  "allias": "give дать заплатить"
+	  "allias": "give дать заплатить",
+		"expectMention": true,
+		"allowDM": true,
+		"cooldown": 300000000,
+		"type": "user"
 	};
 };
 

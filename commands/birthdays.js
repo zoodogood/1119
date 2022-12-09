@@ -98,7 +98,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nОтображает список ближайших именинников! :tada:\nНе забудьте поздравить их с праздником.\n\n:pencil2:\n```python\n!birthdays #без аргументов\n```\n\n"
 	  },
-	  "allias": "parties праздники вечеринки днирождения др"
+	  "allias": "parties праздники вечеринки днирождения др",
+		"allowDM": true,
+		"cooldown": 15000000,
+		"type": "user"
 	};
 };
 

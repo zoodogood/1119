@@ -234,7 +234,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nОтображает профиль пользователя — ежедневный квест, количество коинов, уровень, содержимое инвентаря и тому подобное.\n\n:pencil2:\n```python\n!user <memb>\n```\n\n"
 	  },
-	  "allias": "юзер u ю profile профиль"
+	  "allias": "юзер u ю profile профиль",
+		"allowDM": true,
+		"cooldown": 20000000,
+		"type": "user"
 	};
 };
 

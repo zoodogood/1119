@@ -105,7 +105,12 @@ class Command {
 	    "description": "Заглушает пользователя во всех каналах сервера не давая ему отправлять сообщения. Необходимо её использовать, когда участники мешают беседе или нарушают правила.\n\n❓ Вы можете указать время, через которое пользователь автоматически снова сможет общаться.\n\n:pencil2:\n```python\n!mute {memb} <cause> <time> #Вы можете вводить аргументы в любом порядке, время в формате 1 день 3 с 15min\n```",
 	    "poster": "https://images-ext-2.discordapp.net/external/fBq1I0O3Tdhoi-DeVVm7nDadXN-uzdgKveyekp-Vm88/https/media.discordapp.net/attachments/769566192846635010/872776969341796382/mute.gif"
 	  },
-	  "allias": "мут мьют"
+	  "allias": "мут мьют",
+		"expectMention": true,
+		"allowDM": true,
+		"type": "guild",
+		"myPermissions": 268435456,
+		"Permissions": 4194304
 	};
 };
 

@@ -21,7 +21,10 @@ class Command {
 	  "media": {
 	    "description": ""
 	  },
-	  "allias": "дамп"
+	  "allias": "дамп",
+		"allowDM": true,
+		"cooldown": 100000000,
+		"type": "other"
 	};
 };
 

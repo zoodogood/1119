@@ -20,7 +20,9 @@ class Command {
 	  "media": {
 	    "description": "\n\nСтарые тестирования муз. команд.\n\n:pencil2:\n```python\n!voice #без аргументов\n```\n\n"
 	  },
-	  "allias": "войс"
+	  "allias": "войс",
+		"allowDM": true,
+		"type": "dev"
 	};
 };
 

@@ -31,7 +31,12 @@ class Command {
 	  "media": {
 	    "description": "\n\nОтправляет сообщение от вашего имени в указанное время;\nУдалено в связи с тем, что время пользователей может отличатся от времени бота\n\n:pencil2:\n```python\n!postpone {content} {time} #время в формате 15:30\n```\n\n"
 	  },
-	  "allias": "отложить отложи"
+	  "allias": "отложить отложи",
+		"allowDM": true,
+		"expectParams": true,
+		"cooldown": 1800000000,
+		"type": "delete",
+		"myChannelPermissions": 536870912
 	};
 };
 

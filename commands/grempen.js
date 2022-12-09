@@ -428,7 +428,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nЛавка бесполезных вещей, цены которых невероятно завышены, на удивление, заведение имеет хорошую репутацию и постоянных клиентов.\n\n:pencil2:\n```python\n!grempen #без аргументов\n```\n\n"
 	  },
-	  "allias": "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop"
+	  "allias": "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop",
+		"allowDM": true,
+		"cooldown": 10000000,
+		"type": "other"
 	};
 };
 

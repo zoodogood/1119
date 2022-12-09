@@ -56,7 +56,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nСтандартная команда отображающую основную информацию о возможностях бота. Она нужна чтобы помочь новым пользователям. Её так же можно вызвать отправив `/help`\n\n:pencil2:\n```python\n!help #без аргументов\n```\n\n"
 	  },
-	  "allias": "хелп помощь cmds commands команды х"
+	  "allias": "хелп помощь cmds commands команды х",
+		"allowDM": true,
+		"cooldown": 15000000,
+		"type": "other"
 	};
 };
 

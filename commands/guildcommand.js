@@ -95,7 +95,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nСоздание пользовательских команд на сервере — ещё один этап к многофункциональной системе шаблонов и переменных сервера, обязательно комбинируйте эти технологии\n_устарело*_\n\n:pencil2:\n```python\n!guildCommand #без аргументов\n```\n\n"
 	  },
-	  "allias": "guildcommands createcommand команда"
+	  "allias": "guildcommands createcommand команда",
+		"allowDM": true,
+		"type": "guild",
+		"Permissions": 8
 	};
 };
 

@@ -144,7 +144,9 @@ class Command {
 	  "media": {
 	    "description": "\n\nХотя это и команда разработчика, вы можете просмотреть ваши данные из базы данных в JSON формате, для этого просто не вводите никаких аргументов.\n\n:pencil2:\n```python\n!eval #без аргументов\n```\n\n"
 	  },
-	  "allias": "dev евал эвал vm worker"
+	  "allias": "dev евал эвал vm worker",
+		"allowDM": true,
+		"type": "other"
 	};
 };
 

@@ -203,7 +203,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nВы можете присваивать пользователям информацию, удобно изменять её и просматривать.\nЭто полезная и универсальная функция для РП серверов, хотя для большенства она может оказаться бесполезной.\n\n:pencil2:\n```python\n!variables <memb | \"сервер\"> <propertyName> <properyValue> # propery переводится как: \"свойство\"\n```\n\n"
 	  },
-	  "allias": "variable вар var переменная переменные"
+	  "allias": "variable вар var переменная переменные",
+		"allowDM": true,
+		"type": "guild",
+		"Permissions": 256
 	};
 };
 
