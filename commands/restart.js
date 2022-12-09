@@ -11,7 +11,7 @@ class Command {
 		const embed = {
 			title: "Выполнение комманды <:emoji_50:753916145177722941>",
 			color: "#2c2f33",
-			description: `> exec ${ command }`
+			description: `> ${ command }`
 		};
 
 		const message = await msg.msg(embed);
