@@ -135,6 +135,7 @@ class BossManager {
 		 title: "Сундук с наградами",
 		 description: `Получите бонусы за победу над боссом ур. ${ thatLevel }.\nВремя ограничено двумя часами с момента отправки этого сообщения.`,
 		 thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038767024643522600/1476613756146739089.png?width=593&height=593",
+		 footer: {text: "Внимание, вы можете получить награду не более чем из одного сундука за время пребывания босса"},
 		 color,
 		 reactions: ["637533074879414272"]
 	  };
@@ -145,10 +146,9 @@ class BossManager {
 	  const collector = message.createReactionCollector((reaction) => !reaction.me, {time: 3_600_000 * 2});
 	  collector.on("collect", (_reaction, user) => {
 		 const userStats = BossManager.getUserStats(boss, user.id);
-		 userStats.bonuses ||= {};
   
 		 if ("chestRewardAt" in userStats){
-			message.msg({title: `Вы уже взяли награду на ур. ${ userStats.chestReward }`, delete: 5000});
+			message.msg({title: `Вы уже взяли награду на ур. ${ userStats.chestRewardAt }`, delete: 5000});
 			return;
 		 };
  
