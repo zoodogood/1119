@@ -5,18 +5,19 @@ class Command {
 
 	async onChatInput(msg, interaction){
 
+
     if (interaction.params){
-      let id = Util.match(interaction.params, /\d{17,21}/);
-      if (!id){
-        msg.msg({title: "Не смайлик", description: `\`${interaction.params}\` — не эмодзи, и не айди.\nЧтобы получить список эмодзи на сервере введите команду без аргументов.\nВведя идентификатор смайлика, получите более подробную информацию о нём`, color: "#ff0000", delete: 5000});
-        return;
+      const id = Util.match(interaction.params, /\d{17,21}/);
+      const emoji = id ?
+        client.emojis.cache.get(id) :
+        interaction.guild.emojis.cache.find(emoji => emoji.name.toLowerCase() === interaction.params.toLowerCase());
+
+      if (!emoji){
+        msg.msg({title: "Попробуйте ещё раз", description: `Поиск по \`${ interaction.params }\` — был произведён безуспешный поиск по айди и имени.\nЧтобы получить список эмодзи на сервере введите команду без аргументов.\nВведя идентификатор смайлика, получите более подробную информацию о нём`, color: "#ff0000", delete: 8000});
+        return
       }
 
-      let emoji = client.emojis.cache.get(id);
-      if (!emoji){
-        msg.msg({title: "Этого смайлика у нас нет.", description: "Такого эмодзи нет ни на одном сервере, где есть бот. Невозможно получить о нём какие-либо данные", delete: 5000});
-        return;
-      }
+
 
       let author = await emoji.fetchAuthor();
       const fields = [{name: "Имя:", value: "`" + emoji.name + "`", inline: true}, {name: "Эмодзи добавил:", value: author.tag, inline: true}, {name: "Был добавлен на сервер: ", value: Util.timestampToDate(Date.now() - emoji.createdTimestamp, 4) + " назад."}];
