@@ -28,7 +28,7 @@ function parseInputCommandFromMessage(message){
 		return base.slice(PREFIX.length).toLowerCase();
 	};
 	const commandBase = spliceCommandBase(words);
-	const params = words.join("\n");
+	const params = words.join(" ");
 
 	const commandContext = {
 		command: CommandsManager.callMap.get(commandBase),
