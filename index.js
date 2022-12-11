@@ -1401,15 +1401,17 @@ const timeEvents = {
   TimeEventsManager.emitter.on("event", (event) => {
     const params = event.params ?? [];
     timeEvents[event.name].call(null, event.isLost, ...params);
-  })
+  });
 
-  let cleanTimestamp = Date.now();
+  TimeEventsManager.handle();
+
+  const now = Date.now();
   DataManager.data.users.forEach(user =>
-    Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < cleanTimestamp ? delete user[key] : false)
+    Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
   );
   DataManager.data.users = DataManager.data.users.sort((a, b) => b.level - a.level);
 
-  if (DataManager.data.bot.dayDate !== Util.toDayDate( Date.now() )){
+  if (DataManager.data.bot.dayDate !== Util.toDayDate( now )){
     timeEvents["new_day"].call(null, true);
   }
 
