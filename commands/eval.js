@@ -57,7 +57,7 @@ class Command {
     }, "interaction");
 
     if (isDev){
-      const available = { Util, client, DataManager, TimeEventsManager, CommandsManager, FileSystem, BossManager, ActionManager, QuestManager };
+      const available = { Util, client, DataManager, TimeEventsManager, CommandsManager, FileSystem, BossManager, ActionManager, QuestManager, process };
 
       for (const key in available)
       Object.defineProperty(vm.sandbox, key, {
