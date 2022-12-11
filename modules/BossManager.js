@@ -171,7 +171,7 @@ class BossManager {
  
  
 	  const isApparanceAtNextDay = () => {
-		 return data.boss.apparanceAtDay + 1 === DataManager.data.bot.currentDay;
+		 return data.boss.apparanceAtDay === DataManager.data.bot.currentDay + 1;
 	  }
  
 	  if (!isApparanceAtNextDay()){
