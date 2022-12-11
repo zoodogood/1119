@@ -180,6 +180,9 @@ class Command {
                 
                 const count = Util.ending(user.curses.length, "", `Текущие проклятия (их ${ user.curses.length })`, "Текущее проклятие", "Текущие два проклятия", {unite: (_quantity, word) => word});
                 const curse = user.curses.at(interaction.currentCurseView);
+                if (!curse){
+                  return "Проклятия отсуствуют.";
+                }
                 const description = CurseManager.intarface({user: target, curse}).toString();
                 return `>>> ${ count }:\n${ description }`
               }
