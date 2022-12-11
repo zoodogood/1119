@@ -467,10 +467,6 @@ async function eventHundler(msg){
     BossManager.onMessage.call(BossManager, msg);
   }
 
-  if (msg.mentions.members){
-    let mention = msg.mentions.members.first();
-    if (mention) happy_BDay(msg, mention);
-  }
 
   if (msg.content.toLowerCase().match(/((ухуель|глупый|тупой|дурной|бездарный) бот)|(бот (ухуель|глупый|тупой|дурной|бездарный))/i)) stupid_bot(user, msg);
   if (msg.content.toLowerCase().match(/((классный|умный|хороший|милый) бот)|(бот (классный|умный|хороший|милый))/i)) good_bot(user, msg);
