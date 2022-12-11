@@ -214,6 +214,12 @@ function getSimilar(arr, str) {
   return input || false;
 }
 
+function resolveGithubPath(relative, lineOfCode){
+  const GITHUB_REPO = `https://github.com/zoodogood/1119`;
+  const BRANCH = "version-2";
+  const BASE = `${ GITHUB_REPO }/blob/${ BRANCH }`;
+  return `${ BASE }/${ relative }${ lineOfCode ? `#L${ lineOfCode }` : "" }`
+}
 
 
 
@@ -232,5 +238,6 @@ export {
   awaitReactOrMessage,
   similarity,
   getSimilar,
-  match
+  match,
+  resolveGithubPath
 };
