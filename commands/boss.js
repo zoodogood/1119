@@ -8,9 +8,9 @@ class Command {
     const member = interaction.mention ?? msg.author;
 
     const guild = msg.guild;
-    const boss = guild.data.boss;
+    const boss = guild.data.boss ?? {};
 
-    if (!boss?.isArrived){
+    if (!boss.isArrived){
       const description = boss.apparanceAtDay ? 
         `Прибудет лишь ${ Util.toDayDate(boss.apparanceAtDay * 86_400_000) }` :
         "Момент появления босса пока неизвестен";
