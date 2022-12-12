@@ -18,10 +18,10 @@ BossManager.setClient(client);
 
 
 import FileSystem from "fs";
-import fetch from "node-fetch";
-import { VM } from "vm2";
 import { assert } from 'console';
 import { Actions } from '#src/modules/ActionManager.js';
+
+import '#server/start.js';
 
 
 

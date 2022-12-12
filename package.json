@@ -9,7 +9,8 @@
   },
   "imports": {
     "#src/*": "./*",
-    "#src/config": "./config.json.js"
+    "#src/config": "./config.json.js",
+    "#server/*": "./server/*"
   },
   "author": "zoodogood",
   "license": "ISC",
