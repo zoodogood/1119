@@ -80,7 +80,7 @@ class Command {
     await Util.sleep(3000);
 
     if (messages.length > 120){
-      msg.channel.startTyping();
+      msg.channel.sendTyping();
     }
 
     const byBulkDelete = [];
@@ -135,8 +135,6 @@ class Command {
         msg.msg({title: "Очистка была отменена", description, delete: 12000});
 
         sendLog();
-
-        msg.channel.stopTyping();
 
         return;
       }

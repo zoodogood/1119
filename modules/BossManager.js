@@ -551,9 +551,8 @@ class BossManager {
 			  footer: {iconURL: user.avatarURL(), text: "Вы можете проигнорировать это сообщение"}
 			}
  
-			channel.startTyping();
+			channel.sendTyping();
 			await Util.sleep(2000);
-			channel.stopTyping();
  
 			const message = await channel.msg(embed);
 			const collector = message.createReactionCollector(({emoji}, member) => user === member && reactions.includes(emoji.name), {time: 30_000, max: 1});
@@ -606,9 +605,8 @@ class BossManager {
 			  footer: {iconURL: user.avatarURL(), text: "Используйте три реакции для наилучшего эффекта"}
 			}
  
-			channel.startTyping();
+			channel.sendTyping();
 			await Util.sleep(2000);
-			channel.stopTyping();
  
 			const ingredients = [];
  

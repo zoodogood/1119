@@ -179,10 +179,9 @@ client.on("ready", async () => {
         return;
       }
 
-      channel.startTyping();
+      channel.sendTyping();
       await Util.sleep(3500);
       await channel.msg({title: "На сервере появился новый участник!", color: guild.data.hi.color, image: guild.data.hi.image, description: guild.data.hi.message, scope: {tag: e.user.toString(), name: e.user.username}});
-      channel.stopTyping();
       channel.msg({content: "👋", delete: 150000});
 
       if (guild.data.hi.rolesId && !leaveRoles){
@@ -535,7 +534,7 @@ async function stupid_bot(user, msg) {
     return;
   }
 
-  msg.channel.startTyping();
+  msg.channel.sendTyping();
   await Util.sleep(2000);
   switch (msg.guild.data.stupid_evil) {
     case 1: msg.msg({content: "Недостаточно прав!"});
@@ -569,7 +568,6 @@ async function stupid_bot(user, msg) {
     break;
     default: msg.msg({content: "..."})
   }
-  msg.channel.stopTyping();
   msg.guild.data.stupid_evil++;
 };
 

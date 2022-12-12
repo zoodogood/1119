@@ -362,9 +362,8 @@ class Command {
     }
 
     if (user.coins < 80) {
-      msg.channel.startTyping();
+      msg.channel.sendTyping();
       await Util.sleep(1700);
-      msg.channel.stopTyping();
       return msg.msg({title: "<:grempen:753287402101014649>", description: "Изыди бездомный попрошайка\nбез денег не возвращайся!", color: "#541213", delete: 3000});
     }
 
@@ -409,11 +408,10 @@ class Command {
 
 
       if (user.coins < 80) {
-        msg.channel.startTyping();
+        msg.channel.sendTyping();
         await Util.sleep(1200);
 
         shop.msg({title: "У вас ещё остались коины? Нет? Ну и проваливайте!", edit: true, delete: 3000});
-        msg.channel.stopTyping();
         return;
       }
       embed = {title: "<:grempen:753287402101014649> Зловещая лавка", edit: true, description: `У вас есть-остались коины? Отлично! **${user.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`, fields: productsToFields(), footer: {text: "Приходите ещё, акции каждый день!"}, color: "#400606"};
