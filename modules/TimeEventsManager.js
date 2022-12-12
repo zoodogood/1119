@@ -52,7 +52,7 @@ class TimeEventsManager {
 			event,
 			Util.omit(data, (key) => ["name", "timestamp", "params"].includes(key))
 		);
-		console.log(this.data);
+	
 	  	this.create(event.name, event.timestamp - Date.now(), event.params);
 	  	return event;
 	}
