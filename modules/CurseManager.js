@@ -412,7 +412,7 @@ class CurseManager {
 		 fields.push({
 			name: "Прогресс:",
 			value: Object.entries(curse.values)
-				 .map(([key, value]) => `${ key }: \`${ Util.toLocaleDelevoperString(value) }\``)
+				 .map(([key, value]) => `${ key }: \`${ Util.toLocaleDeveloperString(value) }\``)
 				 .join("\n")
  
 		 });
@@ -420,7 +420,7 @@ class CurseManager {
 		 fields.push({
 			name: "Основа:",
 			value: Object.entries(curseBase)
-				 .map(([key, value]) => `${ key }: \`${ Util.toLocaleDelevoperString(value) }\``)
+				 .map(([key, value]) => `${ key }: \`${ Util.toLocaleDeveloperString(value) }\``)
 				 .join("\n")
  
 		 });

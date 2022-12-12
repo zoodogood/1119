@@ -2,7 +2,7 @@ import { ending } from '@zoodogood/utils/primitives';
 import { omit, CustomCollector } from '@zoodogood/utils/objectives';
 
 
-function toLocaleDelevoperString(value){
+function toLocaleDeveloperString(value){
   if (!value){
     return String(value);
   }
@@ -225,7 +225,7 @@ function resolveGithubPath(relative, lineOfCode){
 
 
 export {
-  toLocaleDelevoperString,
+  toLocaleDeveloperString,
   CustomCollector,
   omit,
   sleep, 

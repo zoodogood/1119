@@ -28,7 +28,7 @@ class Command {
       {
         name: "Пользователь",
         value: Object.entries(BossManager.getUserStats(boss, member.id))
-          .map(([key, value]) => `${ key }: ${ Util.toLocaleDelevoperString(value) }`)
+          .map(([key, value]) => `${ key }: ${ Util.toLocaleDeveloperString(value) }`)
           .join("\n")
         
       }
