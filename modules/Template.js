@@ -3,7 +3,7 @@ import config from '#src/config';
 import { PermissionsBitField } from 'discord.js';
 
 import * as Util from '#src/modules/util.js';
-import { CommandsManager, EventsManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager } from '#src/modules/mod.js';
+import { CommandsManager, EventsManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager, GuildVariablesManager } from '#src/modules/mod.js';
 
 import { client } from '#src/index.js';
 import FileSystem from 'fs';
@@ -13,7 +13,7 @@ import Discord from 'discord.js';
 class Template {
 	constructor (source, context){
 		source.executer = context.client.users.resolve(source.executer);
-
+		
 	  	this.source = source;
 	  	this.context = context;
 	}
@@ -89,7 +89,9 @@ class Template {
 	}
  
 	createVM(){
-	  	const vm = new VM();
+		const MAX_TIMEOUT = 1_000;
+
+	  	const vm = new VM({timeout: MAX_TIMEOUT});
 		this.makeSandbox(vm);
 		return vm;
 	}
@@ -115,21 +117,32 @@ class Template {
 			isUser 			* permissionsEnum.USER;
 
 
-		this.constructor.getModulesScope()
-			.filter(({permissions}) => mask & permissions)
-			.forEach(({prototypePermissions = 0, configurablePermissions = 0, content, name}) => {
-				if (prototypePermissions && mask & prototypePermissions === 0){
+		const modules = this.constructor.getModulesScope(context);
+		
+		const availableModules = modules
+			.filter(({filter}) => !filter || filter(context))
+			.filter(({permissions}) => mask & permissions.scope);
+		
+		availableModules
+			.forEach(({permissions, content, name}) => {
+				if (permissions.investigate && mask & permissions.investigate === 0){
 					content = JSON.parse(JSON.stringify(content));
 				}
 
-				if (configurablePermissions && mask & configurablePermissions === 0){
+				if (permissions.configurate && mask & permissions.configurate === 0){
 					vm.freeze(content, name);
 					return;
 				}
 
 				vm.sandbox[name] = content;
 				return;
-			})
+			});
+
+		const availableList = Object.fromEntries(
+			modules.map((moduleBase) => availableModules.includes(moduleBase) ? [moduleBase.name, true] : [moduleBase.name, false])
+		);
+
+		vm.sandbox.availableList = availableList;
 
 		return;
 	}
@@ -137,59 +150,144 @@ class Template {
 	static getModulesScope(context){
 		return [
 			{
+				content: context,
+				name: "interaction",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: () => new GuildVariablesManager(context.guild),
+				name: "getGuildSpace",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER
+				},
+				filter: (context) => "guild" in context
+			},
+			{
+				get content(){
+					return context.guild.data
+				},
+				name: "guildData",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
+					configurate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				},
+				filter: (context) => "guild" in context
+			},
+			{
+				get content(){
+					return context.user.data
+				},
+				name: "userData",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
+					configurate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				},
+				filter: (context) => "user" in context
+			},
+			{
 				content: Util,
 				name: "Util",
-				permissions: this.PERMISSIONS_MASK_ENUM.USER,
-				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
 			},
 			{
 				content: CommandsManager,
 				name: "CommandsManager",
-				permissions: this.PERMISSIONS_MASK_ENUM.USER,
-				prototypePermissions: 0,
-				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-			},
-			{
-				content: DataManager,
-				name: "DataManager",
-				permissions: this.PERMISSIONS_MASK_ENUM.USER,
-				prototypePermissions: 0,
-				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-			},
-			{
-				content: TimeEventsManager,
-				name: "TimeEventsManager",
-				permissions: this.PERMISSIONS_MASK_ENUM.USER,
-				prototypePermissions: 0,
-				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-			},
-			{
-				content: ActionManager,
-				name: "ActionManager",
-				permissions: this.PERMISSIONS_MASK_ENUM.USER,
-				prototypePermissions: 0,
-				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-			},
-			{
-				content: BossManager,
-				name: "BossManager",
-				permissions: this.PERMISSIONS_MASK_ENUM.USER,
-				prototypePermissions: 0,
-				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
 			},
 			{
 				content: EventsManager,
 				name: "EventsManager",
-				permissions: this.PERMISSIONS_MASK_ENUM.USER,
-				prototypePermissions: 0,
-				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: BossManager,
+				name: "BossManager",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: DataManager,
+				name: "DataManager",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: TimeEventsManager,
+				name: "TimeEventsManager",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: ActionManager,
+				name: "ActionManager",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
 			},
 			{
 				content: QuestManager,
 				name: "QuestManager",
-				permissions: this.PERMISSIONS_MASK_ENUM.USER,
-				prototypePermissions: 0,
-				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: GuildVariablesManager,
+				name: "GuildVariablesManager",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: Discord,
+				name: "Discord",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: client,
+				name: "client",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.USER,
+					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: process,
+				name: "process",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
+			},
+			{
+				content: FileSystem,
+				name: "FileSystem",
+				permissions: {
+					scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+				}
 			}
 		];
 	};
@@ -268,175 +366,7 @@ class Template {
 		 return "[ошибка Шаблона]";
 	  }
 	}
- 
-	async openScope(regular){
-	  let
-		 base = regular.template.base,
-		 args = regular.args;
- 
-	  let object = {
-		  guild: {
-			  stats: {
-				 get msgs() {
-					return base.guild.data.day_msg;
-				 },
-				 get averageTotal(){
-					return Math.round(base.guild.data.msg_total / base.guild.data.days) || base.guild.data.day_msg;
-				 },
-				 get msgsTotal(){
-					return base.guild.data.msg_total;
-				 }
-			  },
-			  emojis: {
-				 get random() {
-					return base.guild.emojis.cache.random().toString();
-				 },
-				 get get(){
-					if (!args) return {false_func: "emojiId"};
-					let emoji = base.guild.emojis.cache.get(args[0]);
-					if (emoji) return emoji.toString();
-					else throw "Invalid EmojiId";
-				 }
-			  },
-			  variables: {
-				 get set(){
-					if (!args) return {false_func: "{userId} {variable} {value}"};
-					if (args[0] != "server" && !args[0].match(/\d{17,19}/g)) throw "Аругментом userId введено не айди пользователя";
-					if (base.guild.member(base.author).wastedPermissions(288)[1]) throw "Недостаточно прав для изменения переменных сервера";
-					let guild = getData(base.guild.id, "guilds");
-					let variables = guild.variables || (guild.variables = {});
- 
-					let name = variables[args[0]] || (variables[args[0]] = {});
-					let save = args[2].slice(1);
-					if (args[2][0] == "+") args[2] = +name[args[1]] + +args[2].slice(1);
-					if (args[2][0] == "-") args[2] = +name[args[1]] - +args[2].slice(1);
-					if (isNaN(args[2])) args[2] = save;
- 
-					name[args[1]] = args[2];
-					return args[2];
-				 },
-				 get read(){
-					if (!args) return {false_func: "{userId} {variable}"};
-					if (base.guild.member(base.author).wastedPermissions(288)[1]) throw "Недостаточно прав для изменения переменных сервера";
-					if (args != "server" && !args.match(/\d{6,9}/g)[0]) throw "Аругментом userId введено не айди пользователя";
-					let guild = getData(base.guild.id, "guilds");
-					let variables = guild.variables || (guild.variables = {});
- 
-					let name = variables[args[0]] || (variables[args[0]] = {});
-					return (name[args[1]] === undefined) ? "пустота" : name[args[1]];
-				 }
-			  }
-			},
-		  bot: {
-			  get api() {
-					if (!args) return {false_func: "{link} <options>"};
-					console.info("API " + args);
-					let options = {method: "GET"};
- 
-					if (args[2]) {
-					  try { options = JSON.parse(args.slice(1).join(",")); }
-					  catch (e) { throw new Error("Неверно указаны опции, они должы быть в JSON формате"); }
-					}
-					console.info(options);
-					let response = fetch(args[0], options).then(e => e.text().then(read => {
-					  try {
-						 res = {status: e.status, statusText: e.statusText};
-						 read = JSON.parse(read);
-					  }
-					  catch (e) {}
-					  finally {
-						 res.read = read;
-					  }
-					  return res;
-					}));
-					return response;
-			  },
-			  stats: {
-				 get averageAll(){
-					let guilds = DataManager.data.guilds.filter(e => e.days);
-					let size = guilds.length;
-					return Math.round(guilds.reduce((last, e) => last + e.msg_total / e.days, 0) / size);
-				 },
-				 get averageToday(){
-					let guilds = DataManager.data.guilds.filter(e => e.day_msg);
-					let size = guilds.length;
-					return Math.round(guilds.reduce((last, e) => last + e.day_msg, 0) / (size || 1));
-				 },
-				 get msgsTotal(){
-					let guilds = DataManager.data.guilds.filter(e => e.msg_total);
-					return guilds.reduce((last, e) => last + e.msg_total, 0);
-				 },
-				 get msgsToday(){
-					let guilds = DataManager.data.guilds.filter(e => e.day_msg);
-					return guilds.reduce((last, e) => last + e.day_msg, 0);
-				 },
-				 get commandsLaunched(){
-					let guilds = DataManager.data.guilds.filter(e => e.commandsLaunched);
-					return guilds.reduce((last, e) => last + e.commandsLaunched, 0);
-				 }
-			  },
-			  methods: {
-				 get random(){
-					if (!args) return {false_func: "{number or string}"};
-					if (args[1]) return args.random();
-					return Util.random(+args);
-				 },
-				 get ending(){
-					if (!args) return {false_func: "{num} {word} {0, 5-9} {1} {2-4}"};
-					return  Util.ending(...args)
-				 },
-				 get math(){
-					if (!args) return {false_func: "{math regular}"};
-					return Math.math(args.join());
-				 }
-			  },
-			  logical: {
-				 get IfEqual(){
-					  if (!args) return {false_func: "{oneValue} {twoValue}"};
-					  if (args[0] == args[1]) return 1;
-					  else return 0;
-				 },
-				 get IfLessZero(){
-					  if (!args) return {false_func: "{number}"};
-					  if (isNan(args[0])) throw "number is Not a Number";
-					  if (args[0] < 0) return 1;
-					  else return 0;
-				 }
-			  },
-			  other: {
-				 time: {
-					get hours(){
-					  return new Date().getHours();
-					},
-					get minutes(){
-					  return new Date().getMinutes();
-					},
-					get displayDate(){
-					  return DataManager.data.bot.dayDate;
-					},
-					get display(){
-					  let date = new Date();
-					  return `${("0" + date.getHours()).slice(-2)}:${("0" + date.getMinutes()).slice(-2)}`;
-					}
-				 }
-			  }
-			},
-		  get msg() {
-			 return base;
-		  },
-		  variables: regular.template.options,
-		  get trash(){
-			 // if (!args) return {false_func: "Введите аргументы для их удаления"}
-			 return "";
-		  },
-		  get var(){
-			 if (!args) return {false_func: "{variable} {value}"};
-			 if (args[1]) openScope.variables[args[0]] = args.slice(1).join(" ");
-			 return openScope.variables[args[0]];
-		  }
-	  };
-	  return object;
-	}
+
  }
 
  
