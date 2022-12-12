@@ -1,7 +1,7 @@
 import path from 'path';
 import FileSystem from 'fs';
 
-const ROOT = "client/public";
+const ROOT = "server/site/public";
 const root = path.join(process.cwd(), ROOT);
 
 const PREFIX = /\/static+?/;
