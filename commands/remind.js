@@ -108,6 +108,13 @@ class Command {
           break;
       }
     });
+
+    const LIMIT = 86_400_000 * 365 * 30;
+
+    if (timeTo > LIMIT){
+      msg.msg({color: "#ff0000", title: "Максимальный период — 30 лет", delete: 8_000, description: phrase});
+      return;
+    }
     
     const event = TimeEventsManager.create("remind", timeTo, [msg.author.id, msg.channel.id, phrase]);
     userData.reminds ||= [];
