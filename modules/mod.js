@@ -8,5 +8,6 @@ import QuestManager from "./QuestManager.js";
 import ActionManager from "./ActionManager.js";
 import CounterManager from "./CounterManager.js";
 import ErrorsHandler from "./ErrorsHandler.js";
+import EventsManager from './EventsManager.js';
 
-export { DataManager, Template, CurseManager, BossManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler };
+export { DataManager, Template, CurseManager, BossManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler, EventsManager };
