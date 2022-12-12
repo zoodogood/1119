@@ -53,6 +53,7 @@ class Command {
       image: poster || (__inServer ? null : "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg"),
       fields: __inServer ? null : [
         {name: "Другие способы вызова:", value: Discord.escapeMarkdown( namesList.map(name => `!${ name }`).join(" ") )},
+        // To-do
         {name: "Категория:", value: String(typesEnum[command.options.type])}, {name: "Необходимые права", value: "to-do"},
         {name: "Количество использований", value: `${ usedCount } (${ usedPercent })`}
       ],
