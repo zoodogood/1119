@@ -33,42 +33,40 @@ class Command {
     Object.assign(interaction, {
       launchTimestamp: Date.now(),
       leadTime: null,
-      emojiByType: null
+      emojiByType: null,
+      description: null
     });
 
     
-    let output;
-    try {
-      const source = {executer: interaction.user, type: Template.sourceTypes.call};
-      output = await new Template(source, interaction).createVM().run(code);
+    const getOutput = async (interaction) => {
+      try {
+        const source = {executer: interaction.user, type: Template.sourceTypes.call};
+        return await new Template(source, interaction).createVM().run(code);
+      }
+      catch (error){
+        return error;
+      }
     }
-    catch (error){
-      output = error;
-    }
+    const output = getOutput(interaction);
     interaction.leadTime = Date.now() - interaction.launchTimestamp;
 
 
     switch (true){
       case (output === undefined):
-        output = "```{Пусто}```";
+        interaction.description = "```{Пусто}```";
         interaction.emojiByType = "753916360802959444";
         break;
       case (output instanceof Error):
-        let stroke = output.stack.match(/[a-zа-яъё<>]:\d+:\d+(?=\n|$)/i);
-        console.log(output.stack);
-        stroke = stroke ? stroke[0] : "1:0";
-
-        output = `Ошибка (${output.name}):\n${output.message}\nНа строке: #${ stroke }`;
-
+        interaction.description = `Ошибка (${ output.name }):\n${ output.message }`;
         interaction.emojiByType = "753916394135093289";
         break;
       case (typeof output === "object"):
-        output = `\`\`\`json\n${Discord.escapeCodeBlock(  JSON.stringify(output, null, 3)  )}\`\`\``;
+        interaction.description = `\`\`\`json\n${ Discord.escapeCodeBlock(  JSON.stringify(output, null, 3)  ) }\`\`\``;
         interaction.emojiByType = "753916315755872266";
         break;
       default:
+        interaction.description = String(output);
         interaction.emojiByType = "753916145177722941";
-        output = String(output);
     }
 
 
@@ -86,12 +84,13 @@ class Command {
     msg.msg({
       title: "([**{**  <:emoji_48:753916414036803605> <:emoji_50:753916145177722941> <:emoji_47:753916394135093289> <:emoji_46:753916360802959444> <:emoji_44:753916315755872266> <:emoji_44:753916339051036736>  **}**])",
       author: {name: "Вывод консоли"},
-      description: output,
+      description: interaction.description,
       color: "#1f2022",
-      footer: {text: `Количество символов: ${output.length}\nВремя выполнения кода: ${ interaction.leadTime }мс`}
+      footer: {text: `Количество символов: ${ interaction.description.length }\nВремя выполнения кода: ${ interaction.leadTime }мс`}
     }).catch(
       err => {
-        msg.msg({title: "Лимит символов", color: "#1f2022", description: `Не удалось отправить сообщение, его длина равна ${ Util.ending(output.length, "символ", "ов", "у", "ам")}\nСодержимое ошибки:\n${err}`});
+        const lengthContent = Util.ending(interaction.description.length, "символ", "ов", "у", "ам");
+        msg.msg({title: "Лимит символов", color: "#1f2022", description: `Не удалось отправить сообщение, его длина равна ${ lengthContent }\nСодержимое ошибки:\n${ err }`});
       }
     );
 
