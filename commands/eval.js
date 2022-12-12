@@ -47,7 +47,7 @@ class Command {
         return error;
       }
     }
-    const output = getOutput(interaction);
+    const output = await getOutput(interaction);
     interaction.leadTime = Date.now() - interaction.launchTimestamp;
 
 
