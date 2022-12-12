@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "imports": {
-    "#src/*": "./*"
+    "#src/*": "./*",
+    "#src/config": "./config.json.js"
   },
   "author": "zoodogood",
   "license": "ISC",
