@@ -66,28 +66,29 @@ class CounterManager {
  
  
 	  try {
-		 const channel = client.guilds.cache.get(counter.guildId).channels.cache.get(counter.channelId);
-		 const templater = new Template();
-		 if ("message" in counter){
-			const messageOptions = counter.message;
-			if (messageOptions.title){
-			  messageOptions.title = await templater.replaceAll(messageOptions.title);
-			}
+			const channel = client.guilds.cache.get(counter.guildId).channels.cache.get(counter.channelId);
+		 	const context = {client: channel.client, counter, channel};
+		 	const templater = new Template({executer: counter.authorId, type: Template.sourceTypes.counter}, context);
+		 	if ("message" in counter){
+				const messageOptions = counter.message;
+				if (messageOptions.title){
+			  		messageOptions.title = await templater.replaceAll(messageOptions.title);
+				}
  
-			if (messageOptions.description){
-			  messageOptions.description = await templater.replaceAll(messageOptions.description);
-			}
+				if (messageOptions.description){
+			  		messageOptions.description = await templater.replaceAll(messageOptions.description);
+				}
 			
-			if (messageOptions.content){
-			  messageOptions.content = await templater.replaceAll(messageOptions.content);
-			}
-		 };
+				if (messageOptions.content){
+			  		messageOptions.content = await templater.replaceAll(messageOptions.content);
+				}
+		 	};
  
-		 await callbacks[counter.type].call(null, channel);
+		 	await callbacks[counter.type].call(null, channel);
 	  }
 	  catch (error) {
-		 console.error(error);
-		 this.delete(counter);
+			console.error(error);
+		 	this.delete(counter);
 	  }
 	  return;
 	}

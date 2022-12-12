@@ -3,10 +3,11 @@ import Template from '#src/modules/Template.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-    const content = await new Template().replaceAll(interaction.params);
-    await msg.msg({content: `**${ content }**`});
+		const source = {executer: interaction.user, type: Template.sourceTypes.call};
+    	const content = await new Template(source, interaction).replaceAll(interaction.params);
+    	await msg.msg({content: `**${ content }**`});
 
-    msg.guild?.logSend({title: `${ msg.author.username }:`, description: `\n!c ${ interaction.params }`});
+    	msg.guild?.logSend({title: `${ msg.author.username }:`, description: `\n!c ${ interaction.params }`});
   }
 
 

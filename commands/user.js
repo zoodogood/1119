@@ -85,7 +85,8 @@ class Command {
         
 
         if (user.profile_description){
-          const about = await new Template().replaceAll(user.profile_description, msg);
+		      const source = {executer: interaction.user, type: Template.sourceTypes.involuntarily};
+          const about = await new Template(source, interaction).replaceAll(user.profile_description, msg);
           embed.fields.push({name: "О пользователе: ᠌", value: about});
         }
           
