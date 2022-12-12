@@ -24,7 +24,7 @@ class Command {
 
     if (interaction.mention){
       let memb = interaction.mention;
-      let myControled = interaction.mentioner.roles.cache.filter(e => Object.keys(tieRoles).includes(e.id)).map(e => e.id);
+      let myControled = interaction.mention.roles.cache.filter(e => Object.keys(tieRoles).includes(e.id)).map(e => e.id);
       let [mention, id] = interaction.params.split(" ");
 
       let controledRoles = new Set();
@@ -60,7 +60,7 @@ class Command {
     let page = 0;
     let pages = [];
 
-    const isAdmin = !interaction.mentioner.wastedPermissions(8)[0];
+    const isAdmin = !interaction.mention.wastedPermissions(8)[0];
     const reactions = [
       {emoji: "640449848050712587", filter: () => page != 0},
       {emoji: "640449832799961088", filter: () => pages[1] && page !== pages.length - 1},

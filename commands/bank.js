@@ -5,7 +5,7 @@ class Command {
 	async onChatInput(msg, interaction){
     let user = interaction.userData, action, coins, cause;
     let server = msg.guild.data;
-    const isAdmin = !interaction.mentioner.wastedPermissions(32)[0];
+    const isAdmin = !interaction.mention.wastedPermissions(32)[0];
 
 
     const cash = async (coins, isPut, cause) => {
@@ -35,7 +35,7 @@ class Command {
 
         interaction.userData.coins -= coins;
         server.coins += coins;
-        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${interaction.mentioner.displayName} отнёс в казну ${Util.ending(coins, "коин", "ов", "а", "ов")}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
+        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${interaction.mention.displayName} отнёс в казну ${Util.ending(coins, "коин", "ов", "а", "ов")}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
         msg.react("👌");
         msg.msg({title: `Вы успешно вложили **${ Util.ending(coins, "коин", "ов", "а", "ов")}** на развитие сервера`, delete: 5000});
         return;
@@ -62,7 +62,7 @@ class Command {
 
         interaction.userData.coins += coins;
         server.coins -= coins;
-        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${interaction.mentioner.displayName} обналичил казну на сумму **${ Util.ending(coins, "коин", "ов", "а", "ов")}**\nПричина: ${cause}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
+        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${interaction.mention.displayName} обналичил казну на сумму **${ Util.ending(coins, "коин", "ов", "а", "ов")}**\nПричина: ${cause}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
         msg.react("👌");
         const title = `Вы успешно взяли **${ Util.ending(coins, "коин", "ов", "а", "ов")}** из казны сервера\nПо причине: ${cause}`;
         msg.msg({title, delete: 5000});

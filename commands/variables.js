@@ -3,7 +3,7 @@ import * as Util from '#src/modules/util.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-    const isAdmin = !interaction.mentioner.wastedPermissions(32)[0];
+    const isAdmin = !interaction.mention.wastedPermissions(32)[0];
     const manager = new GuildVariablesManager(msg.guild.id);
     const targetName = (message) => target === "guild" ? "Сервера" : `Пользователя ${message.mentions.users.first().toString()}`;
 

@@ -21,7 +21,7 @@ class Command {
     if (interaction.mention.bot)
       return msg.msg({title: "Если этот бот вам надоедает, то знайте — мне он тоже надоел", description: "Но замутить его я все-равно не могу.", delete: 12000});
 
-    if (guildMember.roles.highest.position > interaction.mentioner.roles.highest.position)
+    if (guildMember.roles.highest.position > interaction.mention.roles.highest.position)
       return msg.msg({title: "Вы не можете выдать мут участнику, роли которого выше ваших", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, delete: 12000});
 
     if (guildMember.permissions.has("ADMINISTRATOR"))

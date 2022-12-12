@@ -17,7 +17,7 @@ class Command {
 
     let message  = await msg.msg({title: "Счётчики сервера", fields: counters[0] ? counters : {name: "Но тут — пусто.", value: "Чтобы добавить счётчики, используйте `!counter`"}});
 
-    const reactions = () => (counters[0] && !interaction.mentioner.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
+    const reactions = () => (counters[0] && !interaction.mention.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
     let react, question, answer, counter;
     while (true){
       react = await message.awaitReact({user: msg.author, type: "all"}, ...reactions());

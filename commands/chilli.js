@@ -32,7 +32,7 @@ class Command {
     if (chilli){
       chilli.current = memb.id;
       chilli.players[msg.author.id] = ++chilli.players[msg.author.id] || 1;
-      removeName(interaction.mentioner);
+      removeName(interaction.mention);
       addName(msg.guild.members.resolve(memb));
 
       msg.msg({title: ["Бросок!", "А говорят перцы не летают..."].random(), 

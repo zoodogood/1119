@@ -18,7 +18,7 @@ class Command {
     if (interaction.mention.bot)
       return msg.msg({title: "Существует легенда о.. А впрочем не важно. Невозможно размутить другого бота", description: "Но замутить его я все-равно не могу.", delete: 12000});
 
-    if (guildMember.roles.highest.position > interaction.mentioner.roles.highest.position)
+    if (guildMember.roles.highest.position > interaction.mention.roles.highest.position)
       return msg.msg({title: "Вы не можете размутить участника, роли которого выше ваших", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, delete: 12000});
 
     if (guildMember.permissions.has("ADMINISTRATOR"))
