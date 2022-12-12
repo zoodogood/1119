@@ -1,21 +1,36 @@
 import { VM } from "vm2";
+import config from '#src/config';
+import { PermissionsBitField } from 'discord.js';
+
+import * as Util from '#src/modules/util.js';
+import { CommandsManager, EventsManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager } from '#src/modules/mod.js';
+
+import { client } from '#src/index.js';
+import FileSystem from 'fs';
+import Discord from 'discord.js';
+
 
 class Template {
 	constructor (source, context){
-	  this.source = source;
-	  this.context = context;
+		source.executer = context.client.users.resolve(source.executer);
+
+	  	this.source = source;
+	  	this.context = context;
 	}
  
 	async replaceAll(string){
 	  const LIMIT = 10;
  
 	  const context = {
-		 before: string
+		 before: string,
+		 currentIteration: 0
 	  };
 	  do {
 		 context.before = string;
 		 string = await this.replace(string);
-	  } while (string !== context.before);
+
+		 context.currentIteration++;
+	  } while (string !== context.before || context.currentIteration > LIMIT);
 	  
 	  return string;
 	}
@@ -74,8 +89,121 @@ class Template {
 	}
  
 	createVM(){
-	  return new VM();
+	  	const vm = new VM();
+		this.makeSandbox(vm);
+		return vm;
 	}
+
+	static PERMISSIONS_MASK_ENUM = {
+		USER: 1,
+		GUILD_MANAGER: 2,
+		DEVELOPER: 7
+	}
+
+	makeSandbox(vm){
+		const source = this.source;
+		const context = this.context;
+		const permissionsEnum = this.constructor.PERMISSIONS_MASK_ENUM;
+
+		const isUser = !!source.executer;
+		const isGuildManager = context.guild && context.guild.members.resolve(source.executer).permissions.has(PermissionsBitField.Flags.ManageGuild);
+		const isDelevoper = config.developers.includes(source.executer.id);
+
+		const mask =
+			isDelevoper 	* permissionsEnum.DEVELOPER |
+			isGuildManager * permissionsEnum.GUILD_MANAGER |
+			isUser 			* permissionsEnum.USER;
+
+
+		this.constructor.getModulesScope()
+			.filter(({permissions}) => mask & permissions)
+			.forEach(({prototypePermissions = 0, configurablePermissions = 0, content, name}) => {
+				if (prototypePermissions && mask & prototypePermissions === 0){
+					content = JSON.parse(JSON.stringify(content));
+				}
+
+				if (configurablePermissions && mask & configurablePermissions === 0){
+					vm.freeze(content, name);
+					return;
+				}
+
+				vm.sandbox[name] = content;
+				return;
+			})
+
+		return;
+	}
+
+	static getModulesScope(context){
+		return [
+			{
+				content: Util,
+				name: "Util",
+				permissions: this.PERMISSIONS_MASK_ENUM.USER,
+				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			{
+				content: CommandsManager,
+				name: "CommandsManager",
+				permissions: this.PERMISSIONS_MASK_ENUM.USER,
+				prototypePermissions: 0,
+				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			{
+				content: DataManager,
+				name: "DataManager",
+				permissions: this.PERMISSIONS_MASK_ENUM.USER,
+				prototypePermissions: 0,
+				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			{
+				content: TimeEventsManager,
+				name: "TimeEventsManager",
+				permissions: this.PERMISSIONS_MASK_ENUM.USER,
+				prototypePermissions: 0,
+				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			{
+				content: ActionManager,
+				name: "ActionManager",
+				permissions: this.PERMISSIONS_MASK_ENUM.USER,
+				prototypePermissions: 0,
+				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			{
+				content: BossManager,
+				name: "BossManager",
+				permissions: this.PERMISSIONS_MASK_ENUM.USER,
+				prototypePermissions: 0,
+				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			{
+				content: EventsManager,
+				name: "EventsManager",
+				permissions: this.PERMISSIONS_MASK_ENUM.USER,
+				prototypePermissions: 0,
+				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			{
+				content: QuestManager,
+				name: "QuestManager",
+				permissions: this.PERMISSIONS_MASK_ENUM.USER,
+				prototypePermissions: 0,
+				configurablePermissions: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		];
+	};
+
+	static sourceTypes = {
+		/** Can be called independently from executer */
+		involuntarily: "involuntarily",
+		/** user directly call */
+		call: "call",
+		/** From counter */
+		counter: "counter",
+		/** From guild command */
+		guildCommand: "guildCommand"
+	};
  
 	async getRegular(regular){
 	  const vm = this.vm ?? this.createVM();
