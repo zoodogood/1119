@@ -1,52 +1,99 @@
-import Discord from 'discord.js';
+import { ButtonStyle, ComponentType } from 'discord.js';
+import CommandsManager from '#src/modules/CommandsManager.js';
+
+class Guidances {
+  get selectOptions(){
+    return this.guidances.map(({id, label}) => ({label, value: id}));
+  }
+
+  guidances = [
+    {
+      id: "basics",
+      label: "Основы"
+    }
+  ]
+};
+
 
 class Command {
 
 	async onChatInput(msg, interaction){
-    let endingIndex = Object.values(commands).findIndex((e, i) => i != 0 && e.id === 1);
-    let guildCommands = [];
 
-    if (msg.guild.data.commands) {
+    const guildCommands = [];
+    const commands = CommandsManager.collection;
+    const isHidden = ({options}) => options.hidden || options.type === "dev" || options.removed;
+    const design   = (command) => `\`!${ command.options.name }\``;
+
+    if (interaction.guild.data.commands){
+      const list = interaction.guild.data.commands;
       guildCommands.push({
         name: "Кастомные команды <:cupS:806813704913682442>",
-        value: Object.keys(msg.guild.data.commands).map(e => `\`!${e}\``).join(" ")
+        value: list.map(design).join(" ")
       });
     }
 
-    let fields = [
+
+    const fields = [
       {
         name: "Управление сервером <a:diamond:725600667586134138>",
-        value: Object.entries(commands).filter(([k, v], i) => v.type === "guild" && i < endingIndex && !v.hidden).map(([k, v]) => `\`!${k}\``).join(" ")
+        value: commands
+          .filter(command => command.options.type === "guild" && !isHidden(command))
+          .map(design)
+          .join(" ")
       },
       {
         name: "Пользователи <:berry:756114492055617558>",
-        value: Object.entries(commands).filter(([k, v], i) => v.type === "user" && i < endingIndex && !v.hidden).map(([k, v]) => `\`!${k}\``).join(" ")
+        value: commands
+          .filter(command => command.options.type === "user" && !isHidden(command))
+          .map(design)
+          .join(" ")
       },
       {
         name: "Бот <:piggeorg:758711403027759106>",
-        value: Object.entries(commands).filter(([k, v], i) => v.type === "bot" && i < endingIndex && !v.hidden).map(([k, v]) => `\`!${k}\``).join(" ")
+        value: commands
+          .filter(command => command.options.type === "bot" && !isHidden(command))
+          .map(design)
+          .join(" ")
       },
       ...guildCommands,
       {
         name: "Другое <:coin:637533074879414272>",
-        value: Object.entries(commands).filter(([k, v], i) => v.type === "other" && i < endingIndex && !v.hidden).map(([k, v]) => `\`!${k}\``).join(" ")
+        value: commands
+          .filter(command => command.options.type === "other" && !isHidden(command))
+          .map(design)
+          .join(" ")
       }
     ];
+
 
     const embed = {
       title: "Команды, которые не сломают ваш сервер",
       description: `Знаете все-все мои возможности? Вы точно молодец!`,
       fields,
-      components: {
-        type: 2,
-        label: "Discord",
-        style: 5,
-        url: "https://discord.gg/76hCg2h7r8",
-        emoji: {id: "849587567564554281"}
-      }
+      components: [
+        {
+          type: ComponentType.Button,
+          label: "Discord",
+          style: ButtonStyle.Link,
+          url: "https://discord.gg/76hCg2h7r8",
+          emoji: {id: "849587567564554281"}
+        },
+        {
+          type: ComponentType.Button,
+          label: "Тишком-нишком",
+          customId: "@command/help/guidances-preview",
+          style: ButtonStyle.Primary,
+          emoji: "❄️"
+          // options: this.createGuidances().selectOptions
+        }
+      ]
     }
 
     msg.msg(embed);
+  }
+
+  createGuidances(){
+    return new Guidances();
   }
 
 
