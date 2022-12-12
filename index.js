@@ -21,8 +21,6 @@ import FileSystem from "fs";
 import { assert } from 'console';
 import { Actions } from '#src/modules/ActionManager.js';
 
-import '#server/start.js';
-
 
 
 
@@ -1421,6 +1419,7 @@ const timeEvents = {
     Util.omit(defaultData, (k) => k in DataManager.data.bot === false)
   );
 
+  await import('#server/start.js');
   setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
 })()
 
