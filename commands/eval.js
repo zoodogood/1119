@@ -1,11 +1,9 @@
 import * as Util from '#src/modules/util.js';
-import { CommandsManager, EventsManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager } from '#src/modules/mod.js';
 
 import { client } from '#src/index.js';
 import { VM } from 'vm2';
-import FileSystem from 'fs';
+import Template from '#src/modules/Template.js';
 import Discord from 'discord.js';
-import config from '#src/config';
 
 class Command {
 
@@ -31,7 +29,6 @@ class Command {
 
     
     const code = (await parseReferense(msg.reference)) ?? interaction.params;
-    const isDeveloper = config.developers.includes(msg.author.id);
 
     Object.assign(interaction, {
       launchTimestamp: Date.now(),
@@ -39,40 +36,11 @@ class Command {
       emojiByType: null
     });
 
-    const sandbox = {};
-    const MAX_TIMEOUT = 50;
-    const vm = new VM({sandbox, timeout: MAX_TIMEOUT});
-
-    vm.freeze({
-      user: interaction.userData,
-      options: JSON.parse(JSON.stringify(interaction)),
-      message: JSON.parse(JSON.stringify(msg))
-
-    }, "interaction");
-
-    if (isDeveloper){
-      const available = { Util, client, DataManager, TimeEventsManager, CommandsManager, FileSystem, BossManager, ActionManager, QuestManager, process, config };
-
-      for (const key in available)
-      Object.defineProperty(vm.sandbox, key, {
-        value: available[key]
-      });
-
-      Object.defineProperty(vm.sandbox, "msg", {
-        get: () => msg
-      });
-
-      Object.defineProperty(vm.sandbox, "interaction", {
-        get: () => interaction
-      });
-    }
-
-    
     
     let output;
     try {
-      // output = await vm.run(code);
-      output = await eval(`try{${code}}catch(err){err}`);
+      const source = {executer: interaction.user, type: Template.sourceTypes.call};
+      output = await new Template(source, interaction).createVM().run(code);
     }
     catch (error){
       output = error;
@@ -87,7 +55,6 @@ class Command {
         break;
       case (output instanceof Error):
         let stroke = output.stack.match(/[a-zа-яъё<>]:\d+:\d+(?=\n|$)/i);
-        console.log(stroke);
         console.log(output.stack);
         stroke = stroke ? stroke[0] : "1:0";
 
