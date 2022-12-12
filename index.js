@@ -699,9 +699,9 @@ Discord.BaseChannel.prototype.awaitMessage = async function(options){
   const user = options.user;
 
   const filter = message => (user === false && !message.author.bot) || message.author.id === user.id;
-  const collector = await this.awaitMessages({filter, max: 1, time: options.time || 100_000});
+  const collected = await this.awaitMessages({filter, max: 1, time: options.time || 100_000});
 
-  const input = collector.first();
+  const input = collected.first();
   if (input && options.remove){
     input.delete();
   }
