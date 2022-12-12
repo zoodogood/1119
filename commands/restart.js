@@ -25,7 +25,7 @@ class Command {
 		
 		child.stdout.on("data", (data) => updateDescription(data));
 		child.stderr.on("data", (data) => updateDescription(`Error:\n${ data }`));
-		child.on("error", console.log);
+		child.on("error", (error) => {throw error});
   	}
 
 
