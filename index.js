@@ -8374,7 +8374,7 @@ const commands = {
 
     let
      count   = countUsers || random(11, 22),
-     members = [...msg.guild.members.cache.filter( e => !e.user.bot && e.user.id != msg.author.id ).random( count ).filter( e => e )];
+     members = [...msg.guild.members.cache.filter( e => !e.user.bot && e.user.id != msg.author.id ).random( count ).filter( e => e )],
      sum     = Math.floor(cash / members.length);
 
     members.forEach(e => e.user.data.coins += sum);
