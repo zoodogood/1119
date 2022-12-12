@@ -1,22 +1,15 @@
 import * as Util from '#src/modules/util.js';
+import { CommandsManager, EventsManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager } from '#src/modules/mod.js';
+
 import { client } from '#src/index.js';
-import CommandsManager from '#src/modules/CommandsManager.js';
-import EventsManager from '#src/modules/EventsManager.js';
-import BossManager from '#src/modules/BossManager.js';
-import DataManager from '#src/modules/DataManager.js';
-import TimeEventsManager from '#src/modules/TimeEventsManager.js';
-import ActionManager from '#src/modules/ActionManager.js';
-import QuestManager from '#src/modules/QuestManager.js';
 import { VM } from 'vm2';
 import FileSystem from 'fs';
 import Discord from 'discord.js';
+import config from '#src/config';
 
 class Command {
 
 	async onChatInput(msg, interaction){
-
-    const isDev = ["416701743733145612", "469879141873745921", "500293566187307008", "535402224373989396", "921403577539387454", "711450675938197565"]
-      .includes(msg.author.id);
 
 
     const parseReferense = async (reference) => {
@@ -38,6 +31,7 @@ class Command {
 
     
     const code = (await parseReferense(msg.reference)) ?? interaction.params;
+    const isDeveloper = config.developers.includes(msg.author.id);
 
     Object.assign(interaction, {
       launchTimestamp: Date.now(),
@@ -56,8 +50,8 @@ class Command {
 
     }, "interaction");
 
-    if (isDev){
-      const available = { Util, client, DataManager, TimeEventsManager, CommandsManager, FileSystem, BossManager, ActionManager, QuestManager, process };
+    if (isDeveloper){
+      const available = { Util, client, DataManager, TimeEventsManager, CommandsManager, FileSystem, BossManager, ActionManager, QuestManager, process, config };
 
       for (const key in available)
       Object.defineProperty(vm.sandbox, key, {
