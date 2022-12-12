@@ -534,6 +534,7 @@ class BossManager {
 		 id: "improveDamageForAll",
 		 description: "Урон по боссу увеличен на 1%",
 		 callback: ({user, boss}) => {
+			boss.diceDamageMultiplayer ||= 1;
 			boss.diceDamageMultiplayer += 0.01;
 		 },
 		 filter: ({boss}) => boss.diceDamageMultiplayer 
