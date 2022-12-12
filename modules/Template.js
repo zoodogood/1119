@@ -9,6 +9,14 @@ import { client } from '#src/index.js';
 import FileSystem from 'fs';
 import Discord from 'discord.js';
 
+function isConstruct(fn){
+	try {
+		Reflect.construct(String, [], fn);
+	 } catch {
+		return false;
+	 }
+	 return true;
+}
 
 class Template {
 	constructor (source, context){
@@ -125,11 +133,16 @@ class Template {
 		
 		availableModules
 			.forEach(({permissions, content, name}) => {
-				if (permissions.investigate && mask & permissions.investigate === 0){
+
+				if (permissions.investigate && mask & permissions.investigate !== permissions.investigate){
+					if (isConstruct(content)){
+						const entries = Object.getOwnPropertyNames(content).map(key => [key, content[key]]);
+						content = Object.fromEntries(entries);
+					}
 					content = JSON.parse(JSON.stringify(content));
 				}
 
-				if (permissions.configurate && mask & permissions.configurate === 0){
+				if (permissions.configurate && mask & permissions.configurate !== permissions.configurate){
 					vm.freeze(content, name);
 					return;
 				}
