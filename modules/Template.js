@@ -171,7 +171,7 @@ class Template {
 				}
 			},
 			{
-				content: () => new GuildVariablesManager(context.guild),
+				content: () => new GuildVariablesManager(context.guild.data),
 				name: "getGuildSpace",
 				permissions: {
 					scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER
