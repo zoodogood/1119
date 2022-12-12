@@ -87,7 +87,7 @@ class Command {
       return;
     }
     context.questionMessage.msg({title: "🪄 Отлично! Введите текст с использованием шаблонов", description: "Каждые 15 минут счётчик будет изменять своё значение на основе актуальных данных шаблона", edit: true});
-    context.templateContent = await msg.channel.awaitMessage(msg.author)?.content;
+    context.templateContent = (await msg.channel.awaitMessage({user: msg.author}))?.content;
 
     context.questionMessage.delete();
     if (!context.templateContent){
