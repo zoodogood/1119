@@ -196,7 +196,7 @@ class Command {
       title,
       description: storyContent,
       image: user.data.voidRituals === 19 ? "https://media.discordapp.net/attachments/629546680840093696/843562906053640202/2.jpg?width=1214&height=683" : "https://media.discordapp.net/attachments/629546680840093696/836122708185317406/mid_250722_922018.jpg",
-      footer: {iconURL: interaction.user.avatarURL(), text: interaction.user.author.username},
+      footer: {iconURL: interaction.user.avatarURL(), text: interaction.user.username},
       color: "#000001"
     });
 
