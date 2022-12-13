@@ -85,7 +85,8 @@ client.on("ready", async () => {
   client.on("messageReactionAdd", async (reaction, user) => {
 
     if (reaction.emoji.name === "👍"){
-      const target = (await reaction.message.resolve())
+      console.log(reaction.message);
+      const target = (await reaction.message.fetch({force: false}))
         .author;
 
       user.action(Actions.likedTheUser, {target, likeType: "reaction", reaction});
