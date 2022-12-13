@@ -322,7 +322,8 @@ class CurseManager {
 				 const guilds = user.guilds.filter(guild => guild.data.boss?.isArrived);
 				 const guild = guilds.reduce((maximalize, guild) => maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay ? guild : maximalize);
 				 const timestamp = guild.data.boss.endingAtDay * 86_400_000;
-				 return timestamp - Date.now();
+				 const difference = timestamp - Date.now()
+				 return Math.max(difference, 3_600_000);
 			  }
 			},
 			callback: {
@@ -330,7 +331,8 @@ class CurseManager {
 				 CurseManager.intarface({user, curse}).incrementProgress(damage);
 			  }
 			},
-			reward: 15
+			reward: 15,
+			filter: (user) => user.guilds.filter(guild => guild.data.boss?.isArrived).length
 		 }
 	  ]
 	  .map(curse => [curse.id, curse])
