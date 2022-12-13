@@ -141,7 +141,7 @@ class CommandsManager {
 		const helpMessage = async () => {
 
     		const embed = {
-      		author: {iconURL: author.avatarURL(), name: author.username},
+      		author: {iconURL: interaction.user.avatarURL(), name: interaction.user.username},
       		color: "#ff0000",
      			delete: 20000
     		};
@@ -160,7 +160,7 @@ class CommandsManager {
 				return;
 			}
 
-			let react = await message.awaitReact({user: msg.author, type: "all"}, "❓");
+			let react = await message.awaitReact({user: interaction.user, type: "all"}, "❓");
 			if (!react){
 				return;
 			}
