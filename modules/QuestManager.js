@@ -318,11 +318,6 @@ import { Actions } from "#src/modules/ActionManager.js";
 		},
 	}));
 
-	static HandlersMap = new Map(
-		this.questsBase
-			.filter(questBase => !questBase.isGlobal)
-			.map(questBase => [questBase.handler, questBase.id])
-	);
  }
 
 export default QuestManager;

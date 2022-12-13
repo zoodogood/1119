@@ -39,13 +39,14 @@ class ActionManager {
 		Object.defineProperty(Discord.User.prototype, "action", {
 			value: function(actionName, data){
 
+
 				if (actionName === "globalQuest"){
 					const questId = actionName === data.name;
 					const questBase = QuestManager.questsBase.get(questId);
 					QuestManager.onAction({user: this, questBase, data});
 				}
 
-				if (this.data.quest && QuestManager.HandlersMap.get(actionName) === this.data.quest.id){
+				if (this.data.quest && QuestManager.questsBase.get(this.data.quest.id).handler === actionName){
 					const questId = this.data.quest.id;
 					const questBase = QuestManager.questsBase.get(questId);
 					QuestManager.onAction({user: this, questBase, data});
