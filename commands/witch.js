@@ -191,7 +191,7 @@ class Command {
         add("...");
 
     }
-    const title = `День ${ Math.round(user.voidRituals ** 2.093 / 1.3) }.`;
+    const title = `День ${ Math.round(user.data.voidRituals ** 2.093 / 1.3) }.`;
     interaction.channel.msg({
       title,
       description: storyContent,
