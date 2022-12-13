@@ -13,9 +13,8 @@ class Command {
         "Здесь пусто"
 
       interaction.message.msg({
-        title: `> Переменные ${ targetName }`, 
         color: this.constructor.MAIN_COLOR,
-        description: escapeMarkdown(listContent),
+        description: `> Переменные ${ targetName }\n${ escapeMarkdown(listContent) }`,
         footer: {text: `Создано (${ entries.length }/${ GuildVariablesManager.LIMIT })`}
       });
       return;
