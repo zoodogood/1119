@@ -41,7 +41,7 @@ class ActionManager {
 
 
 				if (actionName === "globalQuest"){
-					const questId = actionName === data.name;
+					const questId = data.name;
 					const questBase = QuestManager.questsBase.get(questId);
 					QuestManager.onAction({user: this, questBase, data});
 				}
