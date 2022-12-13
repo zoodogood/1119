@@ -145,7 +145,7 @@ class BossManager {
 	  const calculateReward = (level) => 120 + level * 10;
  
 	  const message = await guild.chatSend(embed);
-	  const collector = message.createReactionCollector((reaction) => !reaction.me, {time: 3_600_000 * 2});
+	  const collector = message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
 	  collector.on("collect", (_reaction, user) => {
 		 const userStats = BossManager.getUserStats(boss, user.id);
   
@@ -414,7 +414,7 @@ class BossManager {
 			  		boss.diceDamageMultiplayer += 0.01;
 				},
 		 	},
-		 	"🪦": {
+		 	"💥": {
 				emoji: "💥",
 				keyword: "meteor",
 				damage: 30,
@@ -479,7 +479,8 @@ class BossManager {
 	  	}
 	  
 	  	let message = await channel.msg( createEmbed({boss, user, edit: false}) );
-	  	const collector = message.createReactionCollector((reaction, member) => user.id === member.id, {time: 60_000});
+		const filter = (_reaction, member) => user.id === member.id;
+	  	const collector = message.createReactionCollector({filter, time: 60_000});
  
 	  	collector.on("collect", async (reaction, user) => {
 		 	reaction.users.remove(user);
@@ -575,7 +576,8 @@ class BossManager {
 			await Util.sleep(2000);
  
 			const message = await channel.msg(embed);
-			const collector = message.createReactionCollector(({emoji}, member) => user === member && reactions.includes(emoji.name), {time: 30_000, max: 1});
+			const filter = ({emoji}, member) => user === member && reactions.includes(emoji.name);
+			const collector = message.createReactionCollector({filter, time: 30_000, max: 1});
 			collector.on("collect", (reaction) => {
 			  const isLucky = Util.random(0, 1);
 			  const emoji = reaction.emoji.name;
@@ -636,7 +638,7 @@ class BossManager {
 					description: "Создаёт особый котёл, который уменьшает перезарядку атаки каждого, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
 					callback: async (message, _embed) => {
 					  await message.react("🧪");
-					  const collector = message.createReactionCollector(() => true, {time: 3_600_000});
+					  const collector = message.createReactionCollector({time: 3_600_000});
 					  const gotTable = {};
 					  collector.on("collect", (_reaction, user) => {
 						 if (user.id in gotTable){
@@ -665,7 +667,7 @@ class BossManager {
 					description: "Создаёт особый котёл, который дарует богатсва каждому, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
 					callback: async (message, _embed) => {
 					  await message.react("🍯");
-					  const collector = message.createReactionCollector(() => true, {time: 3_600_000});
+					  const collector = message.createReactionCollector({time: 3_600_000});
 					  const gotTable = {};
 					  collector.on("collect", (_reaction, user) => {
 						 if (user.id in gotTable){
@@ -767,7 +769,8 @@ class BossManager {
  
  
 			const message = await channel.msg(embed);
-			const collector = message.createReactionCollector(({emoji}, member) => user === member && reactions.includes(emoji.name), {time: 90_000});
+			const filter = ({emoji}, member) => user === member && reactions.includes(emoji.name);
+			const collector = message.createReactionCollector({filter, time: 90_000});
 			collector.on("collect", async (reaction, user) => {
 			  reaction.users.remove(user);
  
