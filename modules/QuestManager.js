@@ -39,7 +39,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 		const calculateReward = (goal) => {
 			const multiplayer = 1 + (user.voidQuests ?? 0) * 0.30;
 			const difference = goal / questBase.baseGoal;
-			return difference * questBase.complexity * multiplayer;
+			return difference * questBase.reward * multiplayer;
 		}
 
 	  	const quest = {
@@ -146,16 +146,16 @@ import { Actions } from "#src/modules/ActionManager.js";
 		const data = user.data;
 		const questBase = this.questsBase.get(quest.id);
 
-		const expReward = Math.round((user.level + 5) * multiplayer);
+		const expReward = Math.round((data.level + 5) * multiplayer);
 		data.exp += expReward;
-		user.chestBonus = (user.chestBonus ?? 0) + Math.round(multiplayer * DEFAULT_CHEST_REWARD);
+		data.chestBonus = (data.chestBonus ?? 0) + Math.round(multiplayer * DEFAULT_CHEST_REWARD);
 
 		const MEDIA_URL = "https://media.discordapp.net/attachments/629546680840093696/1047584339854118952/slide-5.jpg?width=793&height=594";
 		const target = channel ?? user;
 		target.msg({
 			title: "Вы выполнили сегодняшний квест и получили опыт!",
 			description: `Опыта получено: **${ expReward }**\nОписание квеста:\n${ questBase.description }\n\n[Я молодец.](${ MEDIA_URL })`,
-			author: {iconURL: this.avatarURL(), name: this.username}
+			author: {iconURL: user.avatarURL(), name: user.username}
 		}) 
 		
 		data.dayQuests = (data.dayQuests ?? 0) + 1;
@@ -163,12 +163,12 @@ import { Actions } from "#src/modules/ActionManager.js";
 			user.action(Actions.globalQuest, {name: "day100"});
 		}
 
-		if ( !(user.dayQuests % 50) ){
-			"seed" in user ?
-			  memb.msg({title: `Ваш ${user.dayQuests}-й квест — новые семечки`, description: `🌱`}) :
-			  memb.msg({title: "Ура, ваши первые семечки!", description: `Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера`});
+		if ( !(data.dayQuests % 50) ){
+			"seed" in data ?
+			  user.msg({title: `Ваш ${ daga.dayQuests }-й квест — новые семечки`, description: `🌱`}) :
+			  user.msg({title: "Ура, ваши первые семечки!", description: `Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера`});
 	
-			user.seed = (user.seed ?? 0) + 2;
+			data.seed = (data.seed ?? 0) + 2;
 		 }
 	}
 
@@ -290,6 +290,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 		},
 		"praiseMe": {
 			id: "praiseMe",
+			handler: "userPraiseMe",
 			description: "Дождитесь, пока вас похвалят",
 			_weight: 7,
 			isGlobal: false,
