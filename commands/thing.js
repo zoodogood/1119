@@ -53,7 +53,7 @@ class Command {
     }
     let react, answer;
 
-    if (match(interaction.params, /^(?:я|i'm|i)/i)){
+    if (Util.match(interaction.params, /^(?:я|i'm|i)/i)){
       let elementSelect = await msg.msg({
         title: "Говорят, звёзды приносят удачу", 
         description: `Каждая из них имеет свои недостатки и особенности, просто выберите ту, которая вам по нраву.`,
@@ -114,7 +114,7 @@ class Command {
     let embedColor = getColor(element);
     let level = elementLevel || 0;
 
-    if (match(interaction.params, /улучшить|up|level|уровень|ап/i)){
+    if (Util.match(interaction.params, /улучшить|up|level|уровень|ап/i)){
 
       if (user.elementLevel == 4) {
         msg.msg({title: "Ваша штука итак очень сильная.\nПоэтому разработчик решил, что пятый уровень — максимальный.", delete: 7000});
