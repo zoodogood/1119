@@ -1,5 +1,6 @@
 import { ending } from '@zoodogood/utils/primitives';
 import { omit, CustomCollector } from '@zoodogood/utils/objectives';
+import Discord from 'discord.js';
 
 
 function toLocaleDeveloperString(value){
@@ -51,59 +52,49 @@ function match(string = "", regular, flags){
   return find ? find[0] : null;
 }
 
-async function awaitUserAccept({name, message, channel, user}){
-  if (`first_${name}` in user) {
+async function awaitUserAccept({name, message, channel, userData}){
+  const prefix = "userAccept_";
+  if (`${ prefix }${name}` in userData) {
     return true;
   }
   const context = {};
   context.message = await channel.msg(message);
-  const react = await context.message.awaitReact({user: user, type: "all"}, "685057435161198594", "763807890573885456");
+  const react = await context.message.awaitReact({user: userData, type: "all"}, "685057435161198594", "763807890573885456");
   await context.message.delete();
 
-  if (react == "685057435161198594") {
-    user[`first_${name}`] = 1;
+  if (react === "685057435161198594") {
+    userData[`${ prefix }${ name }`] = 1;
     return true;
   }
   return false;
 };
 
-function awaitReactOrMessage(msg, user, ...reactions){
-  reactions = reactions.filter(Boolean);
-  const MAX_TIMEOUT = 900000;
-  const collectorOptions = {max: 1, time: MAX_TIMEOUT};
-  
+function awaitReactOrMessage({target, user, time, reactionOptions = {}, messageOptions = {}}){
+  const reactions = reactionOptions.reactions?.filter(Boolean);
+
+  const MAX_TIMEOUT = time ?? 900_000;
+
+  const filter = (some, adding) => some instanceof Discord.Message ? 
+    some.author.id === user.id :
+    adding.id === user.id && (!reactions.length || reactions.includes(some.emoji.id ?? some.emoji.name));
+
+  const collectorOptions = { max: 1, time: MAX_TIMEOUT, filter };
+
+  reactions.forEach(reaction => target.react(reaction));
 
   return new Promise(async (resolve) => {
-    let isFulfilled = false;
+    const collected = await Promise.race([
+      target.channel.awaitMessages({...collectorOptions, ...messageOptions}),
+      target.awaitReactions({...collectorOptions, ...reactionOptions})
+    ]);
 
-    reactions.forEach(reaction => msg.react(reaction));
-    msg.awaitReactions({filter: (reaction, member) => member.id === user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name), ...collectorOptions})
-    .then(reaction => {
-      if ((isFulfilled ^= 1) === 0) {
-        return;
-      }
-
-      const emoji = reaction.first().emoji;
-      resolve(emoji.id || emoji.name);
-    });
-
-    msg.channel.awaitMessages({filter: message => message.author.id === user.id, ...collectorOptions})
-    .then(messages => {
-      if ((isFulfilled ^= 1) === 0) {
-        return;
-      }
-  
-      const message = messages.first();
-      message.delete();
-      resolve(message);
-    });
-
-    await sleep(MAX_TIMEOUT);
-    msg.reactions.cache
-      .filter(reaction => reaction.me)
-      .each(reaction => reaction.remove());
-
-    resolve(false);
+    const some = collected.first();
+    if (some instanceof Discord.Message){
+      some.delete();
+    }
+    target.reactions.cache.each(reaction => reaction.users.remove(target.client.user));
+    console.log(some);
+    resolve(some);
   });
 };
 
