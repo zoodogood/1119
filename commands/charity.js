@@ -59,7 +59,7 @@ class Command {
 
     members.forEach(e => e.user.data.coins += sum);
     interaction.userData.coins -= cash;
-    msg.guild.data.coins = (msg.guild.data.coins ?? 0) + cash - sum * members.length;
+    msg.guild.data.coins = (msg.guild.data.coins || 0) + cash - sum * members.length;
 
     let embed = {
       title: "Вы сотворили Акт благотворительности",

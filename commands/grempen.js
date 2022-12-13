@@ -118,7 +118,7 @@ class Command {
       },
       {
         name: "🐲 Ручной монстр",
-        value: 1999 + 1000 * Math.ceil((user.monstersBought ?? 0) / 3),
+        value: 1999 + 1000 * Math.ceil((user.monstersBought || 0) / 3),
         inline: true,
         others: ["монстр", "монстра"],
         fn: () => {
@@ -335,7 +335,7 @@ class Command {
         return;
       }
 
-      if (user.coins < (product.value ?? 0)) {
+      if (user.coins < (product.value || 0)) {
         await msg.msg({title: "<:grempen:753287402101014649> Т-Вы что удумали?", description: `Недостаточно коинов, ${product.name} стоит на ${product.value - user.coins} дороже`, color: "#400606", delete: 5000});
         return;
       }

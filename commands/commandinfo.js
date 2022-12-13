@@ -39,7 +39,7 @@ class Command {
     const guideDescription = command.options.media?.description || "Описание для этой команды пока отсуствует...";
     const poster = command.options.media?.poster;
 
-    const usedCount = DataManager.data.bot.commandsUsed[command.options.id] ?? 0;
+    const usedCount = DataManager.data.bot.commandsUsed[command.options.id] || 0;
     const usedPercent = +(usedCount / Object.values(DataManager.data.bot.commandsUsed).reduce((acc, count) => acc + count, 0) * 100)
       .toFixed(1) + "%";
 

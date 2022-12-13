@@ -236,7 +236,7 @@ class Command {
       if (count === "+"){
 
         const value = item.getter({ target: targetFrom });
-        count = value ?? 0;
+        count = value || 0;
       }
       count = Math.max(Math.floor( count ), 0);
 

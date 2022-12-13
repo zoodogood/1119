@@ -24,7 +24,7 @@ class Command {
     if (user.BDay === DataManager.data.bot.dayDate) {
       treasures.cake = true;
       treasures.bonus = 10;
-      user.chestBonus = 30 + (user.chestBonus ?? 0);
+      user.chestBonus = 30 + (user.chestBonus || 0);
     }
 
 
@@ -139,7 +139,7 @@ class Command {
           break;
 
         case "chilli":
-          user.chilli = (user.chilli ?? 0) + count;
+          user.chilli = (user.chilli || 0) + count;
           itemsOutput.push( `${ Util.ending(count, "Пер", "цев", "ец", "ца")} 🌶️`);
           break;
 
