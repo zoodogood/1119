@@ -10,7 +10,7 @@ class Command {
     
 
     const
-      target = (interaction.params) ? interaction.mention || client.users.cache.get(interaction.params) || msg.author : msg.author,
+      target = (interaction.params) ? interaction.mention ?? client.users.cache.get(interaction.params) ?? msg.author : msg.author,
       member = (msg.guild) ? msg.guild.members.resolve(target) : null,
       user   = target.data,
       guild  = msg.guild;
@@ -63,7 +63,7 @@ class Command {
          interaction.status = `<:offline:637544283737686027> Не в сети ${ dateContent }`;
       }
 
-      QuestManager.checkAvailable({ user: msg.author });
+      QuestManager.checkAvailable({ user: target });
 
 
       const createEmbedAtFirstPage = async () => {
