@@ -107,7 +107,7 @@ class Template {
 	static PERMISSIONS_MASK_ENUM = {
 		USER: 1,
 		GUILD_MANAGER: 2,
-		DEVELOPER: 7
+		DEVELOPER: 7,
 	}
 
 	makeSandbox(vm){
@@ -120,10 +120,11 @@ class Template {
 		const isDelevoper = config.developers.includes(source.executer.id);
 
 		const mask =
-			isDelevoper 	* permissionsEnum.DEVELOPER |
-			isGuildManager * permissionsEnum.GUILD_MANAGER |
-			isUser 			* permissionsEnum.USER;
-
+			(
+				isDelevoper 	* permissionsEnum.DEVELOPER |
+				isGuildManager * permissionsEnum.GUILD_MANAGER |
+				isUser 			* permissionsEnum.USER
+			);
 
 		const modules = this.constructor.getModulesScope(context);
 		
