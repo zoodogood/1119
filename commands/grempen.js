@@ -189,7 +189,7 @@ class Command {
           const coefficient = 220 / 130;
           const bet = user.voidCasino ? user.coins * 0.3 : 130;
           const odds = user.voidCasino ? 22 : 21;
-          if (random(odds) > 8) {
+          if (Util.random(odds) > 8) {
             const victory = Math.ceil(bet * coefficient);
             user.coins += victory;
             return user.voidCasino ? `. Куш получен! — ${ victory }` : ", ведь с помощью неё вы выиграли 220 <:coin:637533074879414272>!";

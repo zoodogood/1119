@@ -91,8 +91,8 @@ class Command {
           sort = users.filter(e => e.data.voidRituals).sort((a, b) => (b.data.voidRituals) - (a.data.voidRituals));
           index = sort.indexOf(msg.author);
           rangs = sort.map((e, i) => {
-            let name = (i + 1) + ". " + ((e.id == msg.author.id) ? "?".repeat(e.username.length) : e.username) + ((i == 0) ? " <a:neonThumbnail:806176512159252512>" : "") + (random(9) ? "" : " <a:void:768047066890895360>");
-            let value = `Использований котла ${random(3) ? e.data.voidRituals : "???"}`;
+            let name = (i + 1) + ". " + ((e.id == msg.author.id) ? "?".repeat(e.username.length) : e.username) + ((i == 0) ? " <a:neonThumbnail:806176512159252512>" : "") + (Util.random(9) ? "" : " <a:void:768047066890895360>");
+            let value = `Использований котла ${Util.random(3) ? e.data.voidRituals : "???"}`;
             return {name, value};
           });
           break;

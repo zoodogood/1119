@@ -34,7 +34,7 @@ class Command {
     }
 
 
-    let rand = ~~(random(21, 49) * (combo / 10 + 1) * k) + memb.data.level;
+    let rand = ~~(Util.random(21, 49) * (combo / 10 + 1) * k) + memb.data.level;
 
     if (memb.presence.status == "offline")
       return msg.msg({title: "Вы не можете ограбить пользователя, который в оффлайн", color: "#ff0000", delete: 7000});

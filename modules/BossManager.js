@@ -1,5 +1,5 @@
 import { Collection } from "@discordjs/collection";
-import { DataManager } from "#src/modules/mod.js";
+import { DataManager, CurseManager } from "#src/modules/mod.js";
 import { Actions } from '#src/modules/ActionManager.js';
 import * as Util from '#src/modules/util.js';
 
@@ -419,15 +419,15 @@ class BossManager {
 				keyword: "meteor",
 				damage: 30,
 				damageMultiplayer: 4,
-				description: ({userStats}) => {
-					const bought = userStats.bought?.[this.keyword] ?? 0;
-					return `Мгновенно нанесите боссу ${ this.damage * this.damageMultiplayer ** bought }ед. урона`;
+				description: ({userStats, product}) => {
+					const bought = userStats.bought?.[product.keyword] ?? 0;
+					return `Мгновенно нанесите боссу ${ product.damage * product.damageMultiplayer ** bought }ед. урона`;
 				},
 				basePrice: 25,
 				priceMultiplayer: 5,
-				callback: ({boss, user, userStats}) => {
-					const bought = userStats.bought?.[this.keyword] ?? 0;
-					const damage = this.damage * this.damageMultiplayer ** bought;
+				callback: ({boss, user, userStats, product}) => {
+					const bought = userStats.bought?.[product.keyword] ?? 0;
+					const damage = product.damage * product.damageMultiplayer ** bought;
 					BossManager.makeDamage(boss, damage, {sourceUser: user});
 				}
 			},
@@ -452,10 +452,10 @@ class BossManager {
 	  	const createEmbed = ({boss, user, edit}) => {
 			const data = user.data;
 
-			const getDescription = (item) => typeof item.description === "function" ? item.description({userStats, boss, user}) : item.description;
+			const getDescription = (product) => typeof product.description === "function" ? product.description({userStats, boss, user, product}) : product.description;
  
 			const productsContent = ITEMS
-				.map((item) => `${ item.emoji } — ${ getDescription(item) }.\n${ calculatePrice(item, userStats.bought[item.keyword]) };`)
+				.map((product) => `${ product.emoji } — ${ getDescription(product) }.\n${ calculatePrice(product, userStats.bought[product.keyword]) };`)
 				.join("\n");
  
 			const description = `Приобретите эти товары! Ваши экономические возможности: ${  Util.ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> на руках\n\n${ productsContent }`;
@@ -494,7 +494,7 @@ class BossManager {
 				return;
 			}
  
-		 	product.callback({ user, userStats, boss });
+		 	product.callback({ user, userStats, boss, product });
 		 	userStats.bought[ product.keyword ] = currentBought + 1;
 		 	user.data.coins -= price;
 		 	message.msg({description: `${ product.emoji } +1`, delete: 7000});
@@ -790,7 +790,7 @@ class BossManager {
 			  if (ingredients.length === MAX_INGEDIENTS){
 				 collector.stop();
  
-				 if (!random(0, 15)){
+				 if (!Util.random(0, 15)){
 					const description = "Вы попросту перевели ресурсы, варево неудалось";
 					channel.msg({title: "Мухомор, пудра, утконос", description, footer: {iconURL: user.avatarURL(), text: user.tag}});
 					return;

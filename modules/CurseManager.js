@@ -1,5 +1,6 @@
 import { Collection } from "@discordjs/collection";
 import { Actions } from '#src/modules/ActionManager.js';
+import * as Util from '#src/modules/util.js';
 
 
 class CurseManager {
@@ -284,7 +285,7 @@ class CurseManager {
 			},
 			callback: {
 			  messageCreate: (user, curse, message) => {
-				 if (random(6)){
+				 if (Util.random(6)){
 					return;
 				 }
  

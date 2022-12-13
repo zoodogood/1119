@@ -184,7 +184,7 @@ class Command {
       {
         id: "day",
         _weight: 80,
-        description: ["Обычный день..", `${random(1) ? "Обычный" : "Будний"} ${["Зимний", "Весенний", "Летний", "Осенний"][Math.floor((new Date().getMonth() + 1) / 3) % 4]} день...`, "Ничего не происходит.", "Происходит самое скучное событие — ничего не происходит"].random(),
+        description: ["Обычный день..", `${Util.random(1) ? "Обычный" : "Будний"} ${["Зимний", "Весенний", "Летний", "Осенний"][Math.floor((new Date().getMonth() + 1) / 3) % 4]} день...`, "Ничего не происходит.", "Происходит самое скучное событие — ничего не происходит"].random(),
         variability: [
           [
             {
@@ -201,7 +201,7 @@ class Command {
           [
             {
               action: async () => {
-                if (user.chilli && !random(5)){
+                if (user.chilli && !Util.random(5)){
                   let sellingCount = Math.min(user.chilli, 3 + user.elementLevel) ?? 0;
                   let prise = Util.random(sellingCount * 160, sellingCount * 190);
                   user.chilli -= sellingCount;
@@ -482,7 +482,7 @@ class Command {
           [
             {
               action: async () => {
-                if (random(1)){
+                if (Util.random(1)){
                   user.coins += 3000;
                   scene.phrase = "Удача! Вы выиграли 3000 <:coin:637533074879414272> !";
                   return;

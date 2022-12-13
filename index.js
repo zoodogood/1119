@@ -598,7 +598,7 @@ async function mute(member, off = false){
 }
 
 function good_bot(user, msg){
-  if (random(1)) msg.react("🍪");
+  if (Util.random(1)) msg.react("🍪");
   msg.author.action(Actions.callBot, {msg, channel: msg.channel, type: "good"});
 }
 

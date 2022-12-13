@@ -31,10 +31,10 @@ class Command {
           input += rules[found];
           last = last.slice(found.length - 1);
           ctx.fillStyle = "#f2fafa";
-          ctx.fillRect(random(canv.width), Util.random(canv.height), 2, 2);
-          ctx.fillRect(random(canv.width), Util.random(canv.height), 1, 1);
+          ctx.fillRect(Util.random(canv.width), Util.random(canv.height), 2, 2);
+          ctx.fillRect(Util.random(canv.width), Util.random(canv.height), 1, 1);
           ctx.fillStyle = "rgba(242, 250, 250, 0.5)";
-          ctx.fillRect(random(canv.width), Util.random(canv.height), 3, 3)
+          ctx.fillRect(Util.random(canv.width), Util.random(canv.height), 3, 3)
         }
 
         last = input;

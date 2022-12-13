@@ -156,7 +156,7 @@ class Command {
             getCoinsFromMessage(user, message);
           });
         }
-        if (!random(0, 5)){
+        if (!Util.random(0, 5)){
           becomeCoinMessage(user);
         }
       }
