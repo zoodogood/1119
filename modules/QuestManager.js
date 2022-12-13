@@ -94,11 +94,11 @@ import { Actions } from "#src/modules/ActionManager.js";
 
 			if (quest.progress >= quest.goal && !quest.completed){
 				user.action(Actions.dailyQuestComplete, {quest});
-				this.completeQuest({user, questBase, context: {channel: data.channel}});
+				this.completeQuest({user, quest, context: {channel: data.channel}});
 			}
 		}
 
-		if (questBase.id in this.GLOBAL_QUESTS_MAP){
+		if (questBase.isGlobal){
 			this.completeGlobalQuest({user, questBase});
 		}
 	}
