@@ -255,7 +255,7 @@ class BossManager {
  
 	  const description = `${ contents.dice }\n\n${ contents.damageDealt }. ${ contents.usersCount }. ${ contents.parting }`;
 	  const embed = {
-		 title: "Среди ночи босс покинул этот сервер",
+		 title: "Среди ночи он покинул сервер",
 		 description,
 		 fields,
 		 footer
