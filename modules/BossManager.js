@@ -209,12 +209,15 @@ class BossManager {
 		 damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
 		 usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 		 parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
-		 rewards: "Награды:"
+		 rewards: "Награды:",
+		 voidCount: "Всего нестабильности:"
 	  }
 	  
 	  const getUsetsRewardTable = () => {
 		 const table = {};
 		 const rewardsCount = Math.floor(boss.level ** 1.2);
+		 getUsetsRewardTable.rewardsCount = rewardsCount;
+		 
 		 const usersOdds = Object.entries(boss.users)
 			.filter(([id]) => guild.members.cache.has(id))
 			.map(([id, {damageDealt: _weight}]) => ({id, _weight}))
@@ -245,13 +248,17 @@ class BossManager {
 		 return {name: user.username, value, inline: true};
 	  });
 		 
-	  
+	  const footer = {
+	    text: `${ contents.voidCount } ${ getUsetsRewardTable.voidCount }`
+	    iconURL: guild.iconURL()
+	  };
  
 	  const description = `${ contents.dice }\n\n${ contents.damageDealt }. ${ contents.usersCount }. ${ contents.parting }`;
 	  const embed = {
 		 title: "Среди ночи босс покинул этот сервер",
 		 description,
-		 fields
+		 fields,
+		 footer
 	  };
 	  guild.chatSend(embed);
 	}
