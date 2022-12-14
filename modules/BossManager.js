@@ -244,7 +244,7 @@ class BossManager {
 	  const fields = Object.entries(usersTable).map(([id, voidCount]) => {
 		 const user = client.users.cache.get(id);
 		 const damage = boss.users[id].damageDealt;
-		 const value = `Нестабильности: ${ voidCount };\nУрона: ${ damage }ед.`;
+		 const value = `Нестабильности: \`${ voidCount }\`;\nУрона: ${ damage }ед.`;
 		 return {name: user.username, value, inline: true};
 	  });
 		 
