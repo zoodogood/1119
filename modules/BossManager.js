@@ -249,7 +249,7 @@ class BossManager {
 	  });
 		 
 	  const footer = {
-	    text: `${ contents.voidCount } ${ getUsetsRewardTable.voidCount }`
+	    text: `${ contents.voidCount } ${ getUsetsRewardTable.voidCount }`,
 	    iconURL: guild.iconURL()
 	  };
  
