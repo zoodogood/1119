@@ -16,15 +16,15 @@ class Command {
 
 
 	options = {
-	  "name": "dump",
-	  "id": 60,
-	  "media": {
-	    "description": ""
-	  },
-	  "allias": "дамп",
+	  	"name": "dump",
+	  	"id": 60,
+	  	"media": {
+	   	"description": ""
+	  	},
+	  	"allias": "дамп",
 		"allowDM": true,
 		"cooldown": 100000000,
-		"type": "other"
+		"type": "dev"
 	};
 };
 
