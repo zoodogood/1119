@@ -209,12 +209,15 @@ class BossManager {
 		 damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
 		 usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 		 parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
-		 rewards: "Награды:"
+		 rewards: "Награды:",
+		 voidCount: "Всего нестабильности:"
 	  }
 	  
 	  const getUsetsRewardTable = () => {
 		 const table = {};
 		 const rewardsCount = Math.floor(boss.level ** 1.2);
+		 getUsetsRewardTable.rewardsCount = rewardsCount;
+		 
 		 const usersOdds = Object.entries(boss.users)
 			.filter(([id]) => guild.members.cache.has(id))
 			.map(([id, {damageDealt: _weight}]) => ({id, _weight}))
@@ -241,17 +244,21 @@ class BossManager {
 	  const fields = Object.entries(usersTable).map(([id, voidCount]) => {
 		 const user = client.users.cache.get(id);
 		 const damage = boss.users[id].damageDealt;
-		 const value = `Нестабильности: ${ voidCount };\nУрона: ${ damage }ед.`;
+		 const value = `Нестабильности: \`${ voidCount }\`;\nУрона: ${ damage }ед.`;
 		 return {name: user.username, value, inline: true};
 	  });
 		 
-	  
+	  const footer = {
+	    text: `${ contents.voidCount } ${ getUsetsRewardTable.voidCount }`
+	    iconURL: guild.iconURL()
+	  };
  
 	  const description = `${ contents.dice }\n\n${ contents.damageDealt }. ${ contents.usersCount }. ${ contents.parting }`;
 	  const embed = {
-		 title: "Среди ночи босс покинул этот сервер",
+		 title: "Среди ночи он покинул сервер",
 		 description,
-		 fields
+		 fields,
+		 footer
 	  };
 	  guild.chatSend(embed);
 	}
