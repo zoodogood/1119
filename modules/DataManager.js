@@ -50,7 +50,7 @@ class DataManager {
 	  }});
 	}
 
-	#client
+	static #client;
 	static setClient(client){
 		this.#client = client;
 	}
