@@ -135,7 +135,7 @@ class Template {
 		availableModules
 			.forEach(({permissions, content, name}) => {
 
-				if (permissions.investigate && mask & permissions.investigate !== permissions.investigate){
+				if (permissions.investigate && (mask & permissions.investigate) !== permissions.investigate){
 					if (isConstruct(content)){
 						const entries = Object.getOwnPropertyNames(content).map(key => [key, content[key]]);
 						content = Object.fromEntries(entries);
@@ -143,7 +143,7 @@ class Template {
 					content = JSON.parse(JSON.stringify(content));
 				}
 
-				if (permissions.configurate && mask & permissions.configurate !== permissions.configurate){
+				if (permissions.configurate && (mask & permissions.configurate) !== permissions.configurate){
 					vm.freeze(content, name);
 					return;
 				}
