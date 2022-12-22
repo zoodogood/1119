@@ -5,7 +5,7 @@ class DataManager {
 
 	static getUser(id){
 	  const createUser = (id) => {
-		 const user = this.client.users.cache.get(id);
+		 const user = this.#client.users.cache.get(id);
 		 const data = {"id": id, name: user?.username ?? null, coins: 50, level: 1, exp: 0, berrys: 1, chestLevel: 0, void: 0, keys: 0, voidRituals: 0, voidCoins: 0};
 		 this.data.users.push(data);
 		 return data;
@@ -15,7 +15,7 @@ class DataManager {
 	}
 	static getGuild(id){
 	  const createGuild = (id) => {
-		 const guild = this.client.guilds.cache.get(id);
+		 const guild = this.#client.guilds.cache.get(id);
 		 const data = {"id": id, name: guild?.name ?? null, day_msg: 0, msg_total: 0, days: 0, commandsLaunched: 0, coins: 0, commandsUsed: {}};
 		 this.data.guilds.push(data);
 		 return data;
@@ -50,8 +50,9 @@ class DataManager {
 	  }});
 	}
 
+	#client
 	static setClient(client){
-		this.client = client;
+		this.#client = client;
 	}
  
 	static file = {
