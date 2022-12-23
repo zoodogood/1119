@@ -19,6 +19,19 @@ function isConstruct(fn){
 	 return true;
 }
 
+/** Util class */
+class CircularProtocol {
+	collection = new Map();
+	pass(element){1
+		if (this.collection.has(element)){
+			return false;
+		}
+
+		this.collection.set(element, true);
+	}
+};
+
+
 class Template {
 	constructor (source, context){
 		source.executer = context.client.users.resolve(source.executer);
@@ -187,13 +200,37 @@ class Template {
 
 	restrictContent(content, permissions){
 		const mask = this.getPermissionsMask();
+		
+		const circular = new CircularProtocol();
 
 		if (permissions.investigate && (mask & permissions.investigate) !== permissions.investigate){
-			if (isConstruct(content)){
-				const entries = Object.getOwnPropertyNames(content).map(key => [key, content[key]]);
-				content = Object.fromEntries(entries);
+			const replacer = (_key, value) => {
+
+				if (typeof value === "function"){
+					return isConstruct(value) ? Object.getOwnPropertyNames(value) : value.toString();
+				}
+
+				if (typeof value === "object"){
+					if (circular.pass(value) === false){
+						return "[Circular*]";
+					}
+					
+					const entries = Object.entries(Object.getOwnPropertyDescriptors(value))
+						.map(([key, {value: current, get, set}]) => {
+							const output = current ?? { getter: get.toString(), setter: set.toString() };
+							return [key, output];
+						});
+
+					return Object.fromEntries(entries);
+				}
+
+				return value;
 			}
-			content = JSON.parse(JSON.stringify(content));
+			// if (){
+			// 	const entries = Object.getOwnPropertyNames(content).map(key => [key, content[key]]);
+			// 	content = Object.fromEntries(entries);
+			// }
+			content = JSON.parse(JSON.stringify(content, replacer));
 		}
 		return content;
 	}
