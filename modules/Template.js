@@ -1,6 +1,7 @@
 import { VM } from "vm2";
 import config from '#src/config';
 import { PermissionsBitField } from 'discord.js';
+import { Collection } from '@discordjs/collection';
 
 import * as Util from '#src/modules/util.js';
 import { CommandsManager, EventsManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager, GuildVariablesManager } from '#src/modules/mod.js';
@@ -104,20 +105,19 @@ class Template {
 		return vm;
 	}
 
-	static PERMISSIONS_MASK_ENUM = {
-		USER: 1,
-		GUILD_MANAGER: 2,
-		DEVELOPER: 7,
-	}
+	getPermissionsMask(){
+		if (this.mask){
+			return this.mask;
+		}
 
-	makeSandbox(vm){
+
 		const source = this.source;
 		const context = this.context;
 		const permissionsEnum = this.constructor.PERMISSIONS_MASK_ENUM;
 
 		const isUser = !!source.executer;
-		const isGuildManager = context.guild && context.guild.members.resolve(source.executer).permissions.has(PermissionsBitField.Flags.ManageGuild);
-		const isDelevoper = config.developers.includes(source.executer.id);
+		const isGuildManager = false && context.guild && context.guild.members.resolve(source.executer).permissions.has(PermissionsBitField.Flags.ManageGuild);
+		const isDelevoper = false && config.developers.includes(source.executer.id);
 
 		const mask =
 			(
@@ -125,186 +125,219 @@ class Template {
 				isGuildManager * permissionsEnum.GUILD_MANAGER |
 				isUser 			* permissionsEnum.USER
 			);
-
-		const modules = this.constructor.getModulesScope(context);
 		
-		const availableModules = modules
+
+		this.mask = mask;
+		return mask;
+	}
+
+	static PERMISSIONS_MASK_ENUM = {
+		USER: 1,
+		GUILD_MANAGER: 2,
+		DEVELOPER: 7,
+	}
+
+	makeSandbox(vm){
+		
+		const context = this.context;
+
+		const modules = this.constructor.ModulesScope;
+		const mask = this.getPermissionsMask()
+		
+		this.availableModulesList = modules
 			.filter(({filter}) => !filter || filter(context))
 			.filter(({permissions}) => mask & permissions.scope);
 		
-		availableModules
-			.forEach(({permissions, content, name}) => {
-
-				if (permissions.investigate && (mask & permissions.investigate) !== permissions.investigate){
-					if (isConstruct(content)){
-						const entries = Object.getOwnPropertyNames(content).map(key => [key, content[key]]);
-						content = Object.fromEntries(entries);
-					}
-					content = JSON.parse(JSON.stringify(content));
-				}
-
-				if (permissions.configurate && (mask & permissions.configurate) !== permissions.configurate){
-					vm.freeze(content, name);
-					return;
-				}
-
-				vm.sandbox[name] = content;
-				return;
-			});
 
 		const availableList = Object.fromEntries(
-			modules.map((moduleBase) => availableModules.includes(moduleBase) ? [moduleBase.name, true] : [moduleBase.name, false])
+			modules.map(({name}) => this.availableModulesList.has(name) ? [name, true] : [name, false])
 		);
 
 		vm.sandbox.availableList = availableList;
+		vm.sandbox.module = this.addModuleToSandbox.bind(this, vm);
 
 		return;
 	}
 
-	static getModulesScope(context){
-		return [
-			{
-				content: context,
-				name: "interaction",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: () => new GuildVariablesManager(context.guild.data),
-				name: "getGuildSpace",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER
-				},
-				filter: (context) => "guild" in context
-			},
-			{
-				get content(){
-					return context.guild.data
-				},
-				name: "guildData",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
-					configurate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				},
-				filter: (context) => "guild" in context
-			},
-			{
-				get content(){
-					return context.user.data
-				},
-				name: "userData",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
-					configurate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				},
-				filter: (context) => "user" in context
-			},
-			{
-				content: Util,
-				name: "Util",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: CommandsManager,
-				name: "CommandsManager",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: EventsManager,
-				name: "EventsManager",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: BossManager,
-				name: "BossManager",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: DataManager,
-				name: "DataManager",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: TimeEventsManager,
-				name: "TimeEventsManager",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: ActionManager,
-				name: "ActionManager",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: QuestManager,
-				name: "QuestManager",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: GuildVariablesManager,
-				name: "GuildVariablesManager",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: Discord,
-				name: "Discord",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: client,
-				name: "client",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.USER,
-					investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: process,
-				name: "process",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
-			},
-			{
-				content: FileSystem,
-				name: "FileSystem",
-				permissions: {
-					scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-				}
+	addModuleToSandbox(vm, moduleName){
+		const moduleEntity = this.constructor.ModulesScope.get(moduleName);
+		const { permissions } = moduleEntity;
+
+		if (moduleName in vm.sandbox.availableList === false){
+			throw new Error(`Does not exist next module: ${ moduleName }`);
+		}
+
+		if (vm.sandbox.availableList[ moduleName ] === false){
+			const mask = this.getPermissionsMask();
+			const missing = Object.entries(this.constructor.PERMISSIONS_MASK_ENUM)
+				.filter(([_key, bit]) => (permissions.scope & bit) && (mask & bit))
+				.map(([key]) => key)
+				.join(", ");
+
+			throw new Error(`Missing permissions: ${ missing } for taking a module ${ moduleName }`);
+		}
+
+		
+		const content = moduleEntity.getContent(this.context);
+
+		vm.sandbox[moduleName] = this.restrictContent(content, permissions);
+		return vm.sandbox[moduleName];
+
+	}
+
+	restrictContent(content, permissions){
+		const mask = this.getPermissionsMask();
+
+		if (permissions.investigate && (mask & permissions.investigate) !== permissions.investigate){
+			if (isConstruct(content)){
+				const entries = Object.getOwnPropertyNames(content).map(key => [key, content[key]]);
+				content = Object.fromEntries(entries);
 			}
-		];
-	};
+			content = JSON.parse(JSON.stringify(content));
+		}
+		return content;
+	}
+
+	static ModulesScope = new Collection(Object.entries({
+	
+		"interaction": {
+			getContent: (context) => context,
+			name: "interaction",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"CurrentGuildSpace": {
+			getContent: (context) => new GuildVariablesManager(context.guild.data),
+			name: "CurrentGuildSpace",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER
+			},
+			filter: (context) => "guild" in context
+		},
+		"guildData": {
+			getContent: (context) => context.guild.data,
+			name: "guildData",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			filter: (context) => "guild" in context
+		},
+		"userData": {
+			getContent: (context) => context.user.data,
+			name: "userData",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			},
+			filter: (context) => "user" in context
+		},
+		"Util": {
+			getContent: (context) => Util,
+			name: "Util",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"CommandsManager": {
+			getContent: (context) => CommandsManager,
+			name: "CommandsManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"EventsManager": {
+			getContent: (context) => EventsManager,
+			name: "EventsManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"BossManager": {
+			getContent: (context) => BossManager,
+			name: "BossManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"DataManager": {
+			getContent: (context) => DataManager,
+			name: "DataManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"TimeEventsManager": {
+			getContent: (context) => TimeEventsManager,
+			name: "TimeEventsManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"ActionManager": {
+			getContent: (context) => ActionManager,
+			name: "ActionManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"QuestManager": {
+			getContent: (context) => QuestManager,
+			name: "QuestManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"GuildVariablesManager": {
+			getContent: (context) => GuildVariablesManager,
+			name: "GuildVariablesManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"Discord": {
+			getContent: (context) => Discord,
+			name: "Discord",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"client": {
+			getContent: (context) => client,
+			name: "client",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"process": {
+			getContent: (context) => process,
+			name: "process",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"FileSystem": {
+			getContent: (context) => FileSystem,
+			name: "FileSystem",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		}
+		
+	}));
 
 	static sourceTypes = {
 		/** Can be called independently from executer */
