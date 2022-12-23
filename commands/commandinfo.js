@@ -1,6 +1,7 @@
 import * as Util from '#src/modules/util.js';
 import DataManager from '#src/modules/DataManager.js';
-import FileSystem from 'fs';
+import Path from 'path';
+
 import Discord from 'discord.js';
 import CommandsManager from '#src/modules/CommandsManager.js';
 
@@ -44,7 +45,7 @@ class Command {
       .toFixed(1) + "%";
 
 
-
+    const githubURL = Util.resolveGithubPath(`./commands/${ originalName }.js`);
 
     const embed = {
       title: `— ${ originalName.toUpperCase() }`,
@@ -52,9 +53,10 @@ class Command {
       color: __inServer ? null : "#1f2022",
       image: poster || (__inServer ? null : "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg"),
       fields: __inServer ? null : [
-        {name: "Другие способы вызова:", value: Discord.escapeMarkdown( namesList.map(name => `!${ name }`).join(" ") )},
+        {name: "Другие способы вызова:", value: Discord.escapeMarkdown( namesList.map(name => `!${ name }`).join(" ") ) },
         // To-do
-        {name: "Категория:", value: String(typesEnum[command.options.type])}, {name: "Необходимые права", value: "to-do"},
+        {name: "Категория:", value: `${ typesEnum[command.options.type]}${ githubURL ? `\n[Просмотреть на Github ~](${ githubURL })` : "" }`},
+        {name: "Необходимые права", value: "to-do"},
         {name: "Количество использований", value: `${ usedCount } (${ usedPercent })`}
       ],
       footer: __inServer ? null : {text: `Уникальный идентификатор команды: ${ command.options.id }`}
