@@ -22,7 +22,7 @@ function isConstruct(fn){
 /** Util class */
 class CircularProtocol {
 	collection = new Map();
-	pass(element){1
+	pass(element){
 		if (this.collection.has(element)){
 			return false;
 		}
