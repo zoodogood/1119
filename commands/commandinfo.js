@@ -70,7 +70,7 @@ class Command {
 	  "name": "commandinfo",
 	  "id": 53,
 	  "media": {
-	    "description": "\n\nПоказывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение\n\n\n:pencil2:\n```python\n!commandInfo {command}\n```\n\n"
+	    "description": "Показывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение\n\n:pencil2:\n```python\n!commandInfo {command}\n```\n\n"
 	  },
 	  "allias": "command команда",
 		"allowDM": true,
