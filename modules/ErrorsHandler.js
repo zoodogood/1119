@@ -3,6 +3,23 @@ import { resolveGithubPath } from '#src/modules/util.js';
 import Path from 'path';
 import { Collection } from '@discordjs/collection';
 
+class ErrorsAudit {
+	collection = new Collection();
+
+	listOf(key){
+		return this.collection.has(key) ?
+			this.collection.get(key) :
+			this.collection.set(key, []);
+	}
+
+	push(error, context){
+		const list = this.listOf(error.message);
+		context &&= JSON.parse(JSON.stringify(context));
+		list.push({error, context, timestamp: Date.now()});
+	}
+};
+
+
 class ErrorsHandler {
 	static Audit = new ErrorsAudit();
 
@@ -59,22 +76,6 @@ class ErrorsHandler {
 		return {...groups};
 	}
 }
-
-class ErrorsAudit {
-	collection = new Collection();
-
-	listOf(key){
-		return this.collection.has(key) ?
-			this.collection.get(key) :
-			this.collection.set(key, []);
-	}
-
-	push(error, context){
-		const list = this.listOf(error.message);
-		context &&= JSON.parse(JSON.stringify(context));
-		list.push({error, context, timestamp: Date.now()});
-	}
-};
 
  
 export default ErrorsHandler;
