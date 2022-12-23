@@ -7,9 +7,10 @@ class ErrorsAudit {
 	collection = new Collection();
 
 	listOf(key){
-		return this.collection.has(key) ?
-			this.collection.get(key) :
+		if (!this.collection.has(key)){
 			this.collection.set(key, []);
+		}
+		return this.collection.get(key);
 	}
 
 	push(error, context){
