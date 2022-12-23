@@ -6,9 +6,10 @@ import * as Util from '#src/modules/util.js';
 class CurseManager {
 
 	static generate({hard = null, user}){
-		if (hard > 2){
-		  throw new RangeError("Maximal of curse hard is 2");
-		 }
+		const MAXIMAL_HARD = 2;
+		if (hard > MAXIMAL_HARD){
+		  hard = MAXIMAL_HARD;
+		}
  
 	  const curseBase = [...CurseManager.cursesBase.values()]
 		 .filter(curseBase => hard === null || curseBase.hard === hard)
