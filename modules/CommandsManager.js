@@ -205,8 +205,8 @@ class CommandsManager {
 			// To-do, придумать где хранить статистику для ведения статистики
 		}
 		catch (error){
-			
-			ErrorsHandler.sendAuditMessage({channel: interaction.channel, error, interaction});
+			ErrorsHandler.Audit.push(error, interaction);
+			ErrorsHandler.sendErrorInfo({channel: interaction.channel, error, interaction});
 		}
 		
 	}
