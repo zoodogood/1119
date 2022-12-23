@@ -143,8 +143,8 @@ class Template {
 		const permissionsEnum = this.constructor.PERMISSIONS_MASK_ENUM;
 
 		const isUser = !!source.executer;
-		const isGuildManager = false && context.guild && context.guild.members.resolve(source.executer).permissions.has(PermissionsBitField.Flags.ManageGuild);
-		const isDelevoper = false && config.developers.includes(source.executer.id);
+		const isGuildManager = context.guild && context.guild.members.resolve(source.executer).permissions.has(PermissionsBitField.Flags.ManageGuild);
+		const isDelevoper = config.developers.includes(source.executer.id);
 
 		const mask =
 			(
