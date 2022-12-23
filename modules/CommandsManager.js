@@ -228,6 +228,16 @@ class CommandsManager {
 				botData.commandsUsed[commandOptions.id] ||= 0;
 				botData.commandsUsed[commandOptions.id]++;
 			}
+		},
+
+		getUsesCount: (id, guildData) => {
+			if (guildData){
+				guildData.commandsUsed ||= {};
+				return guildData.commandsUsed[id] || 0;
+			}
+
+			const botData = DataManager.data.bot;
+			return botData.commandsUsed[id] || 0;
 		}
 	}
 
