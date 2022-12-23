@@ -226,10 +226,7 @@ class Template {
 
 				return value;
 			}
-			// if (){
-			// 	const entries = Object.getOwnPropertyNames(content).map(key => [key, content[key]]);
-			// 	content = Object.fromEntries(entries);
-			// }
+
 			content = JSON.parse(JSON.stringify(content, replacer));
 		}
 		return content;
