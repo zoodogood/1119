@@ -49,13 +49,13 @@ class Command {
 
     const embed = {
       title: `— ${ originalName.toUpperCase() }`,
-      description: guideDescription.trim() + (__inServer ? `\nДругие названия:\n${allNamesList.map(e => `!${e}`).join(" ")}` : ""),
+      description: guideDescription.trim() + (__inServer ? `\nДругие названия:\n${ namesList.map(name => `!${ name }`).join(" ") }` : ""),
       color: __inServer ? null : "#1f2022",
       image: poster || (__inServer ? null : "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg"),
       fields: __inServer ? null : [
         {name: "Другие способы вызова:", value: Discord.escapeMarkdown( namesList.map(name => `!${ name }`).join(" ") ) },
         // To-do
-        {name: "Категория:", value: `${ typesEnum[command.options.type]}${ githubURL ? `\n[Просмотреть на Github ~](${ githubURL })` : "" }`},
+        {name: "Категория:", value: `${ typesEnum[command.options.type]}${ githubURL ? `\n[Просмотреть в Github ~](${ githubURL })` : "" }`},
         {name: "Необходимые права", value: "to-do"},
         {name: "Количество использований", value: `${ usedCount } (${ usedPercent })`}
       ],
