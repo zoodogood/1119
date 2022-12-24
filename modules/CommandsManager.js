@@ -1,4 +1,5 @@
 import { Collection, CommandInteraction } from 'discord.js';
+import * as Util from '#src/modules/util.js';
 import EventsEmitter from 'events';
 import DataManager from '#src/modules/DataManager.js';
 import ErrorsHandler from '#src/modules/ErrorsHandler.js';
@@ -152,7 +153,7 @@ class CommandsManager {
      			embed.title = "Упс, образовалось немного проблемок:";
       		embed.description = problems.map(problem => `• ${ problem }`).join("\n");
     		}
-    		const message = await msg.msg(embed);
+    		const message = await interaction.message.msg(embed);
 
 
 			const isHelpedNeeds = problems.includes("Вы не указали аргументов") || problems.includes("Вы не упомянули пользователя");
@@ -165,7 +166,7 @@ class CommandsManager {
 				return;
 			}
 
-			let helper = await commands.commandinfo.code(msg, {args: command});
+			let helper = await CommandsManager.collection.get("commandinfo").onChatInput(interaction.message, {...interaction, params: options.name});
 			await Util.sleep(20000);
 			helper.delete();
 		}
@@ -244,7 +245,7 @@ class CommandsManager {
 	static createCallMap(){
 		const map = new Map();
 		const setToMap = (list, command) => list.forEach(item => map.set(item, command));
-		const createList = (command) => [command.options.name, ...command.options.allias.split(" "), command.options.slash?.name, command.options.id]
+		const createList = (command) => [command.options.name, ...command.options.allias.split(" "), command.options.slash?.name, String(command.options.id)]
 			.filter(Boolean);
 
 		this.collection.each(command => setToMap(createList(command), command));

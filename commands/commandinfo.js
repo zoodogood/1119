@@ -9,7 +9,7 @@ class Command {
 
 	async onChatInput(msg, interaction){
     let __inServer = msg.channel.id === "753687864302108913";
-    const params = interaction.params.toLowerCase().replace(/[^a-zа-яёьъ]/g, "").trim();
+    const params = interaction.params.toLowerCase().replace(/[^a-zа-яёьъ0-9]/g, "").trim();
     const command = CommandsManager.callMap.get(params);
 
     const typesEnum = {
