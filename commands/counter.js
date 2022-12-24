@@ -4,7 +4,7 @@ import CounterManager from '#src/modules/CounterManager.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-    msg.msg({content: "123"});
+ 
     if (CounterManager.data.filter(counter => counter.guildId === msg.guild.id).length >= 15){
       msg.msg({title: "Максимум 15 счётчиков", color: "#ff0000", delete: 7000});
     }
@@ -74,7 +74,7 @@ class Command {
     ];
 
 
-    context.questionMessage = await msg.msg({title: "🪄 Выберите тип объекта для счётчика", description: `Счётчики работают с каналами и сообщениями\nвыберите тип ${ counterTypes.map(({label, description}) => `❯ ${ label }\n> ${ description }\n> `).join("\n") }\n `});
+    context.questionMessage = await msg.msg({title: "🪄 Выберите тип объекта для счётчика", description: `Счётчики работают с каналами и сообщениями\nвыберите тип\n\n${ counterTypes.map(({label, description}) => `❯ ${ label }\n> ${ description }\n> ​`).join("\n") }\n `});
     const takeCounterType = async (context) => {
       const reactions = counterTypes.map(({emoji}) => emoji);
       const reaction = await context.questionMessage.awaitReact({user: msg.author, type: "all"}, ...reactions);
