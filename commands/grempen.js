@@ -297,7 +297,7 @@ class Command {
             return " как ничто. Ведь вы уже были прокляты!";
           }
 
-          const curse = CurseManager.generate({hard: null, user: msg.author});
+          const curse = CurseManager.generate({hard: null, user: interaction.user, guild: interaction.guild});
           const curseBase = CurseManager.cursesBase.get(curse.id);
           CurseManager.init({user: msg.author, curse});
 
