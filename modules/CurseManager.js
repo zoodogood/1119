@@ -333,7 +333,7 @@ class CurseManager {
 			  }
 			},
 			reward: 15,
-			filter: (user) => user.guilds.filter(guild => guild.data.boss?.isArrived).length
+			filter: (_user, guild) => guild && guild.data.boss?.isArrived
 		 }
 	  ]
 	  .map(curse => [curse.id, curse])
