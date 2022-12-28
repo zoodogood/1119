@@ -491,7 +491,7 @@ async function getCoinsFromMessage(user, msg){
     k += multiplier;
     msg.guild.data.cloverEffect.coins++;
   }
-  
+
   const coins = Math.round((35 + (user.coinsPerMessage ?? 0)) * k);
   user.coins += coins;
   user.chestBonus = (user.chestBonus ?? 0) + 5;
@@ -507,15 +507,21 @@ async function getCoinsFromMessage(user, msg){
 };
 
 async function levelUp(user, msg){
-  let level = user.level;
-  while (user.exp >= user.level * 45){
-    user.exp -= user.level * 45;
+  const level = user.level;
+  const PER_LEVEL = 45;
+  while (user.exp >= user.level * PER_LEVEL){
+    const expSummary = user.level * PER_LEVEL;
+    user.exp -= Math.ceil(expSummary * (0.97716 ** user.voidRituals));
     user.level++;
-    user.exp += user.level * 45 - Math.ceil(user.level * 45 * (0.97716 ** user.voidRituals));
   }
-  let textContent = user.level - level > 2 ? `**${msg.author.username} повышает уровень с ${ level } до ${ user.level }!**` : `**${ msg.author.username } получает ${user.level} уровень!**`;
-  let message = await msg.msg({content: textContent});
-  if (msg.channel.id != msg.guild.data.chatChannel) {
+
+  const textContent = user.level - level > 2 ?
+    `**${msg.author.username} повышает уровень с ${ level } до ${ user.level }!**` :
+    `**${ msg.author.username } получает ${user.level} уровень!**`;
+
+  const message = await msg.msg({content: textContent});
+
+  if (msg.channel.id !== msg.guild.data.chatChannel) {
     message.delete({timeout: 5000});
   }
 };
