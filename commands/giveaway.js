@@ -8,7 +8,7 @@ class Command {
     let message = await msg.msg({title: "🌲 Создание раздачи", description: "Используйте реакции ниже, чтобы настроить раздачу!\n◖🪧  Текст 🚩\n◖⏰  Дата окончания 🚩\n◖🎉  Кол-во победителей\n◖🎁  Выдаваемые роли", color: "#4a7e31", footer: {text: "🚩 Обязательные пункты перед началом"}});
     let react, answer, timestamp, title, descr, winners = 1, role;
     do {
-      react = await message.awaitReact({user: msg.author, type: "one"}, "🪧", "⏰", "🎉", "🎁", (timestamp && descr) ? "640449832799961088" : null);
+      react = await message.awaitReact({user: msg.author, removeType: "one"}, "🪧", "⏰", "🎉", "🎁", (timestamp && descr) ? "640449832799961088" : null);
       switch (react) {
         case "🪧":
           answer = await msg.channel.awaitMessage(msg.author, {title: `Укажите заглавие`});
@@ -36,7 +36,7 @@ class Command {
           timestamp = new Date(parse.getFullYear(), month - 1, days, hours, minutes, 0);
           if (timestamp.getTime() - Date.now() < 0) {
             let messageSetYear = await msg.msg({title: "Эта дата уже прошла, хотите установить на следующий год?"});
-            react = await messageSetYear.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+            react = await messageSetYear.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
             messageSetYear.delete();
             if (react == "685057435161198594") timestamp += 31536000000;
             else {

@@ -51,7 +51,7 @@ class Command {
       const message = await msg.msg({title: "Вы не указали время, через какое нужно напомнить..",  color: "#ff0000", delete: 50000, description });
       if (userRemindEvents.length){
         const createRemoveRemindInterface = async () => {
-          const react = await message.awaitReact({user: msg.author, type: "one"}, "🗑️");
+          const react = await message.awaitReact({user: msg.author, removeType: "one"}, "🗑️");
           if (!react){
             return;
           }

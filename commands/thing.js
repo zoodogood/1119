@@ -83,7 +83,7 @@ class Command {
           text: `Вы всегда сможете изменить выбор — "!штука я"\nТакже не забывайте улучшать её способности командой "!штука улучшить"`
         }
       });
-      react = await elementSelect.awaitReact({user: msg.author, type: "all"}, "🍃", "☁️", "🔥", "👾");
+      react = await elementSelect.awaitReact({user: msg.author, removeType: "all"}, "🍃", "☁️", "🔥", "👾");
       elementSelect.delete();
       switch (react){
         case "🍃":
@@ -140,7 +140,7 @@ class Command {
       let resourcesInfo = checkResources();
       if (!(resourcesInfo instanceof Array)){
         let confirmation = await msg.msg({title: "Подтвердите", description: `Улучшение стоит целых ${ Util.ending(resourcesInfo.coins, ...endingKeys.coins)} и ${ Util.ending(resourcesInfo.berrys, ...endingKeys.berrys)}\nВы хотите продолжить?`, color: embedColor});
-        let react = await confirmation.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763804850508136478");
+        let react = await confirmation.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763804850508136478");
         confirmation.delete();
         if (react != "685057435161198594"){
           return;

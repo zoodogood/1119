@@ -100,7 +100,7 @@ class Command {
 
     while (true) {
       message = await message.msg(embed);
-      react = await message.awaitReact({user: msg.author, type: "all"}, ...reactions);
+      react = await message.awaitReact({user: msg.author, removeType: "all"}, ...reactions);
       switch (react) {
         case "637290387655884800":
           answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите сумму коинов, которую хотите внести в казну"});
@@ -153,7 +153,7 @@ class Command {
             footer: {text: "Используйте реакции, чтобы создать, удалить профессию или закрыть это окно."}
           })
           while (true){
-            react = await professionManager.awaitReact({user: msg.author, type: "all"}, isAdmin ? "✅" : null, isAdmin ? "❎" : null, "❌");
+            react = await professionManager.awaitReact({user: msg.author, removeType: "all"}, isAdmin ? "✅" : null, isAdmin ? "❎" : null, "❌");
             embed.description = `<a:message:794632668137652225> Без изменений`;
             if (react == "✅"){
               if (Object.keys(professions).length >= 20){

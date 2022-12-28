@@ -422,13 +422,13 @@ async function commandHundler(msg){
   //   if (error.name == "DiscordAPIError") return;
   //   let quote,
   //     message   = await msg.msg({title: "Произошла ошибка 🙄", color: "#f0cc50", delete: 180000}),
-  //     react     = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
+  //     react     = await message.awaitReact({user: "any", removeType: "full", time: 180000}, "〽️");
 
   //   while (react){
   //     quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
   //     message.msg({title: "Упс... Мы кажется накосячили 😶", color: "#f0cc50", description: `**Сведения об ошибке:**\n• **Имя:** ${error.name}\n• **Номер строки:** #${err.stroke}\n• **Текст:** \n\`\`\`\n${error.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${err.timeFromStart}`, footer: {text: quote}, delete: 12000});
   //     await Util.sleep(10000);
-  //     react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
+  //     react = await message.awaitReact({user: "any", removeType: "full", time: 180000}, "〽️");
   //   }
   //   message.delete();
   // }
@@ -495,7 +495,7 @@ async function getCoinsFromMessage(user, msg){
   user.coins += coins;
   user.chestBonus = (user.chestBonus ?? 0) + 5;
 
-  let react = await msg.awaitReact({user: msg.author, type: "full", time: 20000}, reaction);
+  let react = await msg.awaitReact({user: msg.author, removeType: "full", time: 20000}, reaction);
 
   if (!react) {
     return;
@@ -951,14 +951,14 @@ class Command {
       console.error(e);
       let timestamp = Date.now();
       let message = await msg.msg({title: "Произошла ошибка 🙄", color: "#f0cc50", delete: 180000});
-      let react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
+      let react = await message.awaitReact({user: "any", removeType: "full", time: 180000}, "〽️");
       let quote;
       while (react){
         quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
         let errorContext = `**Сведения об ошибке:**\n• **Имя:** ${e.name}\n• **Номер строки:** #${e.stack.match(/js:(\d+)/)[1]}\n	• **Текст:** \n\`\`\`\n${e.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${Util.timestampToDate(timestamp - msg.createdTimestamp) || "0с"}`
         message.msg({title: "Эта команда вызвала ошибку .-.", color: "#f0cc50", description: errorContext, footer: {text: quote}, delete: 12000});
         await Util.sleep(10000);
-        react = await message.awaitReact({user: "any", type: "full", time: 180000}, "〽️");
+        react = await message.awaitReact({user: "any", removeType: "full", time: 180000}, "〽️");
       }
       message.delete();
     }

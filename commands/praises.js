@@ -54,19 +54,19 @@ class Command {
     }
 
     let message = await msg.channel.msg({title: isAuthor ? "Похвалы" : "Похвалил", description: iPraise, color: "#00ffaf", author: {name: memb.tag, iconURL: memb.avatarURL()}, footer: {text: isAuthor ? "Если вы хотите отменить,\nпохвалу кликните на *галочку* ниже." : ""}});
-    let react = await message.awaitReact({user: msg.author, type: "all"}, "640449832799961088", (isAuthor && user.praise[0]) ? "685057435161198594" : null);
+    let react = await message.awaitReact({user: msg.author, removeType: "all"}, "640449832799961088", (isAuthor && user.praise[0]) ? "685057435161198594" : null);
 
     while (true) {
       switch (react){
         case "640449832799961088":
           await message.msg({title: isAuthor ? "Вас похвалили" : "Был похвален", color: "#00ffaf", description: mePraise, author: {name: memb.tag, iconURL: memb.avatarURL()}, edit: true});
-          react = await message.awaitReact({user: msg.author, type: "all"}, "640449848050712587");
+          react = await message.awaitReact({user: msg.author, removeType: "all"}, "640449848050712587");
           break;
 
 
         case "640449848050712587":
           await message.msg({title: isAuthor ? "Похвалы" : "Похвалил", color: "#00ffaf", description: iPraise, author: {name: memb.tag, iconURL: memb.avatarURL()}, footer: {text: isAuthor ? `Если вы хотите отменить,\nпохвалу кликните на *галочку* ниже.` : "Have a good goose"}, edit: true});
-          react = await message.awaitReact({user: msg.author, type: "all"}, "640449832799961088", (isAuthor && user.praise[0]) ? "685057435161198594" : null);
+          react = await message.awaitReact({user: msg.author, removeType: "all"}, "640449832799961088", (isAuthor && user.praise[0]) ? "685057435161198594" : null);
           break;
 
 

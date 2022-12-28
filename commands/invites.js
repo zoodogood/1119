@@ -60,7 +60,7 @@ class Command {
     embed.edit = true;
     
     let reactions = [...numericReactions, rulesList.length ? "🔧" : null];
-    let react = await message.awaitReact({ user: msg.author, type: "all" }, ...reactions);
+    let react = await message.awaitReact({ user: msg.author, removeType: "all" }, ...reactions);
 
     if (!react){
       message.delete();

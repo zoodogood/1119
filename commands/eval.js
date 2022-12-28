@@ -76,7 +76,7 @@ class Command {
     }
 
 
-    let react = await msg.awaitReact({user: msg.author, type: "one", time: 20000}, interaction.emojiByType);
+    let react = await msg.awaitReact({user: msg.author, removeType: "one", time: 20000}, interaction.emojiByType);
     if (!react){
       return;
     }

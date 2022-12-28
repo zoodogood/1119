@@ -74,7 +74,7 @@ class Command {
       reward = reward - (reward % 5);
 
       let message = await msg.msg({title: "Новогодняя ёлочка", description: `Решите головоломку и получите награду!\nЗамените "???", в конце ёлочки, на число, чтобы ответить правильно, обязательно используйте голову.\nДля ввода ответ, нажмите реакцию ниже*. Удачи.\nТекущая награда: **${reward}** <:coin:637533074879414272>`, image: "attachment://pazzle.png", files: image, color: "#f2fafa", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}});
-      let react = await message.awaitReact({user: msg.author, type: "all"}, "✅");
+      let react = await message.awaitReact({user: msg.author, removeType: "all"}, "✅");
 
       if (!react) return message.delete();
 

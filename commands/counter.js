@@ -29,7 +29,7 @@ class Command {
           counter.authorId  = interaction.user.id;
 
           context.questionMessage = await msg.msg({title: "Вашему сообщению нужен эмбед?", description: `Подразумивается эмбед-обёртка: цвет и заглавие`});
-          const react = await message.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+          const react = await message.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
           context.questionMessage.delete();
 
           if (!react){
@@ -77,7 +77,7 @@ class Command {
     context.questionMessage = await msg.msg({title: "🪄 Выберите тип объекта для счётчика", description: `Счётчики работают с каналами и сообщениями\nвыберите тип\n\n${ counterTypes.map(({label, description}) => `❯ ${ label }\n> ${ description }\n> ​`).join("\n") }\n `});
     const takeCounterType = async (context) => {
       const reactions = counterTypes.map(({emoji}) => emoji);
-      const reaction = await context.questionMessage.awaitReact({user: msg.author, type: "all"}, ...reactions);
+      const reaction = await context.questionMessage.awaitReact({user: msg.author, removeType: "all"}, ...reactions);
       return counterTypes.find(({emoji}) => emoji === reaction);
     }
     context.typeBase = await takeCounterType(context);
@@ -111,7 +111,7 @@ class Command {
         let embed = {embed: true};
         let textValue = template;
         let message = await msg.msg({title: "Вашему сообщению нужен эмбед?", description: `Подразумивается эмбед-обёртка, цвет и заглавие`});
-        react = await message.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+        react = await message.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
         message.delete();
         if (react == 685057435161198594){
           embed = {description: template}

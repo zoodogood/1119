@@ -51,9 +51,9 @@ class Command {
 
     while (true) {
       if (typeof react != "object")
-        react = await context.previewMessage.awaitReact({user: author, type: "one"}, "📌", "🎨", "🎬", "👤", "🎏", "📥", "😆", "640449832799961088");
+        react = await context.previewMessage.awaitReact({user: author, removeType: "one"}, "📌", "🎨", "🎬", "👤", "🎏", "📥", "😆", "640449832799961088");
       else
-        react = await context.previewMessage.awaitReact({user: author, type: "one"}, ...react);
+        react = await context.previewMessage.awaitReact({user: author, removeType: "one"}, ...react);
 
       switch (react) {
         case "📌":
@@ -140,7 +140,7 @@ class Command {
         case "😆":
           await context.previewMessage.reactions.removeAll();
           let collector = await msg.msg({title: "Установите реакции прямо под этим сообщением!\nА затем жмякните реакцию\"Готово\"<:mark:685057435161198594>", color: embed.color});
-          react = await context.previewMessage.awaitReact({user: author, type: "one"}, "685057435161198594");
+          react = await context.previewMessage.awaitReact({user: author, removeType: "one"}, "685057435161198594");
           reactions = Array.from(collector.reactions.cache.keys());
           collector.delete();
           await context.previewMessage.reactions.removeAll();

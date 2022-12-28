@@ -45,7 +45,7 @@ class Command {
 
     let react;
     do {
-      react = await bot_msg.awaitReact({user: msg.author, type: "one", time: 60000}, "754777124413505577", "754780992023167007", "756212089911247021");
+      react = await bot_msg.awaitReact({user: msg.author, removeType: "one", time: 60000}, "754777124413505577", "754780992023167007", "756212089911247021");
       switch (react) {
         case "754777124413505577":
           answer = await msg.channel.awaitMessage(msg.author, {title: "Введите индекс элемента для получения его в JSON виде", embed: {color: "#99ffff"}});

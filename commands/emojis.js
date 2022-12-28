@@ -44,7 +44,7 @@ class Command {
     let message = await msg.msg(embed);
 
 
-    let react = await message.awaitReact({user: msg.author, type: "all"}, (pages[1]) ? "640449832799961088" : null);
+    let react = await message.awaitReact({user: msg.author, removeType: "all"}, (pages[1]) ? "640449832799961088" : null);
     embed.edit = true;
 
     while (true){
@@ -63,7 +63,7 @@ class Command {
 
       embed.thumbnail = msg.guild.emojis.cache.random().url;
       message = await message.msg(embed);
-      react = await message.awaitReact({user: msg.author, type: "all"}, (page != 0 ? "640449848050712587" : null), (page + 1 != pages.length ? "640449832799961088" : null));
+      react = await message.awaitReact({user: msg.author, removeType: "all"}, (page != 0 ? "640449848050712587" : null), (page + 1 != pages.length ? "640449832799961088" : null));
     }
 
 

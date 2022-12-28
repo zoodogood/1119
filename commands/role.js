@@ -39,7 +39,7 @@ class Command {
       if (!id) {
         numberReactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"].slice(0, controledRoles.length);
         let message = await msg.msg({title: "Вы не указали айди роли", description: `Выберите доступную вам роль, чтобы снять или выдать её пользователю ${memb}\n${controledRoles.map((id, i) => `${numberReactions[i]} ${guildRoles[id]}`).join("\n")}`, color: "#00ff00"});
-        let react = await message.awaitReact({user: msg.author, type: "all"}, ...numberReactions);
+        let react = await message.awaitReact({user: msg.author, removeType: "all"}, ...numberReactions);
         message.delete();
         if (react) id = controledRoles[numberReactions.indexOf(react)];
       }
@@ -94,7 +94,7 @@ class Command {
 
     let react;
     while (true) {
-      react = await message.awaitReact({user: msg.author, type: "all"}, ...reactions.filter( r => r.filter() ).map( r => r.emoji ));
+      react = await message.awaitReact({user: msg.author, removeType: "all"}, ...reactions.filter( r => r.filter() ).map( r => r.emoji ));
       switch (react) {
         case "640449832799961088": page++;
         break;
@@ -138,7 +138,7 @@ class Command {
         case "❌":
         let id = Object.keys(tieRoles)[page];
         let deleteRolesMessage = await msg.msg({title: `Вы уверены, что хотите удалить..?`, description: `Вы очистите все связи с ролью ${guildRoles[id]}`});
-        react = await deleted.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+        react = await deleted.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
         deleted.delete();
 
         if (react == "685057435161198594"){

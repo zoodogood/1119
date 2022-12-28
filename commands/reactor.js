@@ -38,7 +38,7 @@ class Command {
     if (!reactions.length) {
       let whatReactions = await msg.msg({title: "Вы не установили ни одной реакции под сообщением, сделайте это сейчас.\nКогда будете готовы, нажмите галочку ниже."});
       while (true){
-        let react = await whatReactions.awaitReact({user: msg.author, type: "all"}, "685057435161198594");
+        let react = await whatReactions.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594");
         if (!react) {
           return;
         }
@@ -75,7 +75,7 @@ class Command {
 
     if (roles.length < reactions) {
       answer = await msg.msg({title: "Ролей указано меньше, чем стоит реакций под сообщением, вы хотите продолжить?"});
-      let react = await answer.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "❌");
+      let react = await answer.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "❌");
 
       if (react != "685057435161198594") {
         msg.msg({title: "Действие отменено ❌", delete: 4500});

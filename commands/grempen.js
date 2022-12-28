@@ -393,7 +393,7 @@ class Command {
       if (reactions.length === 0)
         reactions = ["❌"];
 
-      react = await shop.awaitReact({user: msg.author, type: "all"}, ...reactions);
+      react = await shop.awaitReact({user: msg.author, removeType: "all"}, ...reactions);
 
       if (!react || react === "❌") {
         await shop.reactions.removeAll();

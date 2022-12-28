@@ -231,7 +231,7 @@ class Command {
     });
 
     const react = 
-      (await boiler.awaitReact({user: interaction.user, type: "all"}, ...bonuses.map(bonus => bonus.emoji))) || 
+      (await boiler.awaitReact({user: interaction.user, removeType: "all"}, ...bonuses.map(bonus => bonus.emoji))) || 
       bonuses.random().emoji;
 
 
@@ -272,7 +272,7 @@ class Command {
     }
 
     const boilerMessage = await msg.msg({title: "<a:placeForVoid:780051490357641226> Готовы ли вы отдать свои уровни за вечные усиления..?", description: `Потратьте ${ interaction.minusVoids } ур. нестабильности, чтобы стать быстрее, сильнее и хитрее.\n~ Повышает заработок опыта на 2%\nПроведено ритуалов: ${ userData.voidRituals }\nБонус к опыту: ${ (100 * (1.02 ** userData.voidRituals)).toFixed(2) }%\n\nКроме того, вы сможете выбрать одно из трёх сокровищ, дарующих вам неймоверную мощь!\n<a:cotik:768047054772502538>`, color: "#3d17a0"});
-    const isHePay = await boilerMessage.awaitReact({user: interaction.user, type: "all"}, "768047066890895360");
+    const isHePay = await boilerMessage.awaitReact({user: interaction.user, removeType: "all"}, "768047066890895360");
 
     if (!isHePay) {
       boilerMessage.msg({title: "Возвращайтесь, когда будете готовы.", description: "Проведение ритуала было отменено", edit: true, color: "#3d17a0"});

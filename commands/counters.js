@@ -20,7 +20,7 @@ class Command {
     const reactions = () => (counters[0] && !interaction.mention.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
     let react, question, answer, counter;
     while (true){
-      react = await message.awaitReact({user: msg.author, type: "all"}, ...reactions());
+      react = await message.awaitReact({user: msg.author, removeType: "all"}, ...reactions());
       switch (react) {
         case "🗑️":
           question = await msg.msg({title: "Введите номер счётчика, для его удаления"});

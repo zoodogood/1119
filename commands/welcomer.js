@@ -8,7 +8,7 @@ class Command {
 
     if (guild.data.hi) {
         let early = await msg.msg({title: "Ранее установленное приветствие:", color: guild.data.hi.color, image: guild.data.hi.image, description: guild.data.hi.message, scope: {tag: msg.author.toString(), name: msg.author.username}, footer: {text: "Нажмите реакцию, чтобы продолжить редактирование"}});
-        let react = await early.awaitReact({user: msg.author, type: "all", time: 20000}, "✏️");
+        let react = await early.awaitReact({user: msg.author, removeType: "all", time: 20000}, "✏️");
         early.delete();
         if (!react) return;
     }

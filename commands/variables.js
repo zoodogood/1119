@@ -352,7 +352,7 @@ export default Command;
 
 //     let output;
 //     while (true) {
-//       react = await manager.interface.awaitReact({user: msg.author, type: "one"}, ...baseReactions, (page != 0 ? "640449848050712587" : null), ((pages[1] && page != pages.length - 1) ? "640449832799961088" : null));
+//       react = await manager.interface.awaitReact({user: msg.author, removeType: "one"}, ...baseReactions, (page != 0 ? "640449848050712587" : null), ((pages[1] && page != pages.length - 1) ? "640449832799961088" : null));
 //       switch (react) {
 //         case "🐵":
 //           answer = await msg.channel.awaitMessage(msg.author, {title: "Для установки...", embed: {description: "Упомяните пользователя, укажите имя переменной и её значение, в указанном порядке.\nВместо упоминания можете использовать слово \"сервер\"\nНазвание переменной должно состоять из одного слова."}});

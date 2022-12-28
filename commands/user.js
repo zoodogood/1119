@@ -214,7 +214,7 @@ class Command {
       while (true) {
         Util.sleep(8500);
 
-        const react = await controller.message.awaitReact({user: "any", type: "all", time: 20000}, ...controller.reactions);
+        const react = await controller.message.awaitReact({user: "any", removeType: "all", time: 20000}, ...controller.reactions);
         switch (react) {
           case "640449848050712587":
             interaction.currentCurseView = interaction.currentCurseView + 1 % user.curses?.length || 1;

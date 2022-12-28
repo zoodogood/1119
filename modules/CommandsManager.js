@@ -161,7 +161,7 @@ class CommandsManager {
 				return;
 			}
 
-			let react = await message.awaitReact({user: interaction.user, type: "all"}, "❓");
+			let react = await message.awaitReact({user: interaction.user, removeType: "all"}, "❓");
 			if (!react){
 				return;
 			}

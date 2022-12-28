@@ -18,7 +18,7 @@ class Command {
     let cmd;
     if (commands[answer.content]) {
       let oldCommand = await msg.msg({title: "Команда с таким названием уже существует, вы хотите перезаписать её?", description: "✏️ — Хочу просто изменить текст этой команды\n🗑️ — Просто удалите это!"});
-      react = await oldCommand.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456", "✏️", "🗑️");
+      react = await oldCommand.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456", "✏️", "🗑️");
       oldCommand.delete();
       if (react == 763807890573885456) return msg.msg({title: "Создание команды отменено", delete: 4500}), false;
       else cmd = commands[answer.content] = {name: answer.content, author: msg.author.id};
@@ -44,7 +44,7 @@ class Command {
 
       if (!answer.content.match(/!\{.+?\}/g)) {
         let notTemplate = await msg.msg({title: "В сообщении отсуствуют шаблоны, вы уверены, что хотите продолжить без них?"});
-        react = await notTemplate.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+        react = await notTemplate.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
         notTemplate.delete();
         if (react == 685057435161198594) break;
       }
@@ -52,7 +52,7 @@ class Command {
     }
 
     let message = await msg.msg({title: "Шаг 3. Вашему сообщению нужен эмбед?", description: `Подразумивается эмбед-обёртка, цвет и заглавие`});
-    react = await message.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+    react = await message.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
     message.delete();
     if (react == 685057435161198594){
       answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите оглавление эмбеда", embed: {description: `Оглавление — голова эмбед сообщения...\nК слову, она также поддерживает шаблоны`, time: 1200000}});
@@ -81,7 +81,7 @@ class Command {
   message.delete();
 
   message = await msg.msg({title: "Шаг 5. Последний.", description: "Нужно ли удалять сообщения вызова команды?"});
-  react = await message.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+  react = await message.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
   if (react == "685057435161198594") cmd.delete = true;
   message.delete();
 

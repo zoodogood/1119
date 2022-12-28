@@ -14,7 +14,7 @@ class Command {
         let problemsMessage = await msg.msg({title: "<a:who:638649997415677973> Вы не указали то, что вы хотите изменить\nПовторите попытку", delete: 10000, description: "Поддерживаемые значения:\n`• осебе/description`\n`• цвет/color`\n`• др/birthday`\n`• конфиденциальность/confidentiality`"});
 
         //** Реакция-помощник
-        let react = await problemsMessage.awaitReact({user: msg.author, type: "all"}, "❓");
+        let react = await problemsMessage.awaitReact({user: msg.author, removeType: "all"}, "❓");
         if (!react){
           return;
         }
@@ -95,7 +95,7 @@ class Command {
           if (user.BDay){
             let prise = [1200, 3000, 12000][user.chestLevel];
             let message = await msg.msg({title: `Вы уже устанавливали дату своего дня рождения, повторная смена будет стоить вам ${prise} коинов\nПродолжить?`});
-            let react = await message.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+            let react = await message.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
 
             if (react != "685057435161198594"){
               return msg.msg({title: "Действие отменено", color: "#ff0000", delete: 4000});
@@ -125,7 +125,7 @@ class Command {
         case "confidentiality":
         case "конфиденциальность":
           let message = await msg.msg({title: `Реж. конфиденциальности ${user.profile_confidentiality ? "включен, отлючить?" : "выключен, включить?"}`});
-          let react = await message.awaitReact({user: msg.author, type: "all"}, "685057435161198594", "763807890573885456");
+          let react = await message.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
           if (react != "685057435161198594") {
             return msg.msg({title: "Действие отменено", color: "#ff0000", delete: 4000});
           }

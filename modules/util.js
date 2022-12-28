@@ -59,7 +59,7 @@ async function awaitUserAccept({name, message, channel, userData}){
   }
   const context = {};
   context.message = await channel.msg(message);
-  const react = await context.message.awaitReact({user: userData, type: "all"}, "685057435161198594", "763807890573885456");
+  const react = await context.message.awaitReact({user: userData, removeType: "all"}, "685057435161198594", "763807890573885456");
   await context.message.delete();
 
   if (react === "685057435161198594") {

@@ -94,7 +94,7 @@ class Command {
     if (action == "sell" || action == "продать") store(quantity, -1);
 
     let message = await msg.msg({description: `У вас клубничек — **${ myBerrys }** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(marketPrise) }** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${ getPrice(myBerrys, -1) } (с учётом налога ${ TAX * 100 }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`, author: {name: msg.author.tag, iconURL: msg.author.avatarURL()}})
-    let react = await message.awaitReact({user: msg.author, type: "all"}, "📥", "📤");
+    let react = await message.awaitReact({user: msg.author, removeType: "all"}, "📥", "📤");
     let answer;
 
     while (true) {
@@ -139,7 +139,7 @@ class Command {
         default: return message.delete();
       }
       message = await message.msg({edit: true, description: `У вас клубничек — **${myBerrys}** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(marketPrise) }** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${getPrice(myBerrys)} (с учётом налога ${ TAX * 100 }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`, author: {name: msg.author.tag, iconURL: msg.author.avatarURL()}});
-      react = await message.awaitReact({user: msg.author, type: "all"}, "📥", "📤");
+      react = await message.awaitReact({user: msg.author, removeType: "all"}, "📥", "📤");
     }
   }
 
