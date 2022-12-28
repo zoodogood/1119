@@ -659,39 +659,47 @@ Discord.BaseInteraction.prototype.msg = msg;
 
 
 Discord.Message.prototype.awaitReact = async function(options, ...reactions){
-  if (!options.user) throw new Error("without user");
-  reactions = reactions.filter(e => e);
+  if (!options.user){
+    throw new Error("without user");
+  }
+  reactions = reactions.filter(reaction => reaction);
 
   if (!reactions.length){
     return false;
   }
 
-  let filter = (reaction, member) => member.id === options.user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name);
-  if (options.user == "any") filter = (reaction, member) => member.id != client.user.id && reactions.includes(reaction.emoji.id || reaction.emoji.name);
+  const filter = (reaction, member) => {
+    const allowReaction = reactions.includes(reaction.emoji.id ?? reaction.emoji.name);
+    const allowUser = options.user === "any" ? member.id !== client.user.id : member.id === options.user.id;
+    return allowUser && allowReaction;
+  }
 
-  let collected = this.awaitReactions({ filter, max: 1, time: options.time || 300000 })
+  let collected = this.awaitReactions({ filter, max: 1, time: options.time ?? 300_000 })
     .then(reaction => collected = reaction);
 
-  for (let i = 0; i < reactions.length; i++) {
-    if (collected instanceof Promise == false){
-      if (options.type != "all") reactions.slice(i).forEach(this.react);
-      break;
+  for (let i = 0; i < reactions.length; i++){
+    if (collected instanceof Promise === false){
+      if (options.removeType === "all"){
+        break;
+      }
+      
     }
     this.react(reactions[i]);
   }
 
   collected = await collected;
-  let reaction = collected.first();
+  const reaction = collected.first();
 
-  if (!reaction) {
-    return this.reactions.cache.filter(e => e.me).each(e => e.remove()), false;
+  if (!reaction){
+    this.reactions.cache.filter(reaction => reaction.me).each(reaction => reaction.remove());
+    return false;
   }
 
-  if (options.type == "all")    this.reactions.removeAll();
-  if (options.type == "one")    reaction.users.remove(options.user);
-  if (options.type == "full")   reaction.remove();
+  if (options.removeType === "all")    this.reactions.removeAll();
+  if (options.removeType === "one")    reaction.users.remove(options.user);
+  if (options.removeType === "full")   reaction.remove();
 
-  return reaction.emoji.id || reaction.emoji.name;
+  return reaction.emoji.id ?? reaction.emoji.name;
 }
 
 Discord.BaseChannel.prototype.awaitMessage = async function(options){
