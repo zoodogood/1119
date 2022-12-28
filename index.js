@@ -387,53 +387,6 @@ async function msg(options, ..._devFixParams){
 
 
 
-async function commandHundler(msg){
-  
-
-
-  // if (!cmd && msg.guild){
-  //   if (!(cmd = msg.guild.data.commands) || !cmd[command]) return false;
-  //   return Command.CustomCommand(msg, command, args);
-  // }
-
-
-  // if (cmd.cooldown) {
-  //   user["CD_" + cmd.id] = Math.max(user["CD_" + cmd.id] || 0, Date.now()) + cmd.cooldown;
-  // }
-  // try {
-
-  //   if (channelType !== "dm") {
-  //     msg.guild.data.commandsUsed[cmd.id] = (msg.guild.data.commandsUsed[cmd.id] ?? 0) + 1;
-  //   }
-  //   DataManager.data.bot.commandsUsed[cmd.id] = (DataManager.data.bot.commandsUsed[cmd.id] ?? 0) + 1;
-  // }
-  // catch (error) {
-  //   const timestamp = Date.now();
-  //   let err = {
-  //     name: error.name,
-  //     stroke: error.stack.match(/js:(\d+)/)[1],
-  //     command,
-  //     message: error.message,
-  //     timeFromStart: timestamp - msg.createdTimestamp < 1000 ? "менее 1с" : Util.timestampToDate(timestamp - msg.createdTimestamp)
-  //   };
-  //   console.error(error);
-  //   console.error(err);
-
-  //   if (error.name == "DiscordAPIError") return;
-  //   let quote,
-  //     message   = await msg.msg({title: "Произошла ошибка 🙄", color: "#f0cc50", delete: 180000}),
-  //     react     = await message.awaitReact({user: "any", removeType: "full", time: 180000}, "〽️");
-
-  //   while (react){
-  //     quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
-  //     message.msg({title: "Упс... Мы кажется накосячили 😶", color: "#f0cc50", description: `**Сведения об ошибке:**\n• **Имя:** ${error.name}\n• **Номер строки:** #${err.stroke}\n• **Текст:** \n\`\`\`\n${error.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${err.timeFromStart}`, footer: {text: quote}, delete: 12000});
-  //     await Util.sleep(10000);
-  //     react = await message.awaitReact({user: "any", removeType: "full", time: 180000}, "〽️");
-  //   }
-  //   message.delete();
-  // }
-}
-
 async function eventHundler(msg){
   let
     author = msg.author,
