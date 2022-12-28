@@ -479,7 +479,7 @@ async function getCoinsFromMessage(user, msg){
   let reaction = "637533074879414272";
   let k = 1;
 
-  if (DataManager.data.bot.dayDate == "31.12"){
+  if (DataManager.data.bot.dayDate === "31.12"){
     reaction = "❄️";
     k += 0.2;
   }
@@ -491,11 +491,12 @@ async function getCoinsFromMessage(user, msg){
     k += multiplier;
     msg.guild.data.cloverEffect.coins++;
   }
-  let coins = Math.round((35 + (user.coinsPerMessage ?? 0)) * k);
+  
+  const coins = Math.round((35 + (user.coinsPerMessage ?? 0)) * k);
   user.coins += coins;
   user.chestBonus = (user.chestBonus ?? 0) + 5;
 
-  let react = await msg.awaitReact({user: msg.author, removeType: "full", time: 20000}, reaction);
+  const react = await msg.awaitReact({user: msg.author, removeType: "full", time: 20000}, reaction);
 
   if (!react) {
     return;
