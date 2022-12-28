@@ -5,7 +5,7 @@ import * as Util from '#src/modules/util.js';
 
 class CurseManager {
 
-	static generate({hard = null, user}){
+	static generate({hard = null, user, guild = null}){
 		const MAXIMAL_HARD = 2;
 		if (hard > MAXIMAL_HARD){
 		  hard = MAXIMAL_HARD;
@@ -13,7 +13,7 @@ class CurseManager {
  
 	  const curseBase = [...CurseManager.cursesBase.values()]
 		 .filter(curseBase => hard === null || curseBase.hard === hard)
-		 .filter(curseBase => !curseBase.filter || curseBase.filter(user))
+		 .filter(curseBase => !curseBase.filter || curseBase.filter(user, guild))
 		 .random({weights: true});
  
  
