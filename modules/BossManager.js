@@ -215,7 +215,7 @@ class BossManager {
 	  
 	  const getUsetsRewardTable = () => {
 		 const table = {};
-		 const rewardsCount = Math.floor(boss.level ** 1.2);
+		 const rewardsCount = Math.floor(boss.level ** 1.25);
 		 getUsetsRewardTable.rewardsCount = rewardsCount;
 		 
 		 const usersOdds = Object.entries(boss.users)
