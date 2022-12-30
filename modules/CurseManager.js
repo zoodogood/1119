@@ -318,7 +318,7 @@ class CurseManager {
 			description: "Нанесите боссу вот столько-вот урона",
 			hard: 2,
 			values: {
-			  goal: (user) => 100_000,
+			  goal: (user) => 80_000,
 			  timer: (user) => {
 				 const guilds = user.guilds.filter(guild => guild.data.boss?.isArrived);
 				 const guild = guilds.reduce((maximalize, guild) => maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay ? guild : maximalize);
