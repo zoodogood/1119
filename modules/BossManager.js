@@ -19,10 +19,16 @@ class BossShop {
 			const getDescription = (product) => typeof product.description === "function" ? product.description({userStats, boss, user, product}) : product.description;
  
 			const productsContent = this.PRODUCTS
-				.map((product) => `${ product.emoji } — ${ getDescription(product) }.\n${ this.calculatePrice({product, boughtCount: this.getBoughtCount({userStats, product})}) };`)
+				.map((product) => ({
+					label: `${ product.emoji } — ${ getDescription(product) }.`,
+					price: this.calculatePrice({ product, boughtCount: this.getBoughtCount({userStats, product}) }),
+					product
+				}))
+				.map(({label, price, product}) => `${ label }\n${ price } ${ ResourcesEnum.endingOf(product.resource, price) };`)
 				.join("\n");
- 
-			const description = `Приобретите эти товары! Ваши экономические возможности:\n${  Util.ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> и ${ Util.ending(data.keys, "ключ", "ей", "", "а") } 🔩 на руках\n\n${ productsContent }`;
+
+			const descriptionContent = `Приобретите эти товары! Ваши экономические возможности:\n${  Util.ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> и ${ Util.ending(data.keys, "ключ", "ей", "", "а") } 🔩 на руках`;
+			const description = `${ descriptionContent }\n\n${ productsContent }`;
  
 		 	return {
 				title: "Тайная лавка Гремпенса",
@@ -58,7 +64,7 @@ class BossShop {
  
 		 	product.callback({ user, userStats, boss, product });
 		 	boughtMap[ product.keyword ] = currentBought + 1;
-		 	user.data[resource] -= price;
+		 	user.data[ product.resource ] -= price;
 		 	message.msg({description: `${ product.emoji } +1`, delete: 7000});
 		 	message = await message.msg( createEmbed({boss, user, edit: true}) );
 	  	});
@@ -81,7 +87,7 @@ class BossShop {
 
 	static calculatePrice({product, boughtCount}){
 		const grossPrice = product.basePrice * product.priceMultiplayer ** (boughtCount ?? 0);
-		const price = Math.floor(grossPrice - (grossPrice % 5));
+		const price = grossPrice > 30 ? Math.floor(grossPrice - (grossPrice % 5)) : grossPrice;
 		return price;
 	}
 
