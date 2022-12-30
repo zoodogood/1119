@@ -1,7 +1,6 @@
 import * as Util from '#src/modules/util.js';
 
 import { client } from '#src/index.js';
-import { VM } from 'vm2';
 import Template from '#src/modules/Template.js';
 import Discord from 'discord.js';
 
