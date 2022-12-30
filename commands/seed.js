@@ -64,7 +64,7 @@ class Command {
 
 
 
-    if (level !== 20){
+    if (level < 20){
       await message.react("🌱");
     }
 
