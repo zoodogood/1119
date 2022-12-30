@@ -38,7 +38,7 @@ class Command {
       description,
       reactions,
       fields,
-      thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038714401861161000/pngegg_1.png?width=595&height=593",
+      thumbnail: boss.avatarURL,
       footer: {text: member.tag, iconURL: member.avatarURL()}
     }
     const message = await msg.msg(embed);
