@@ -35,9 +35,9 @@ class Command {
 
         interaction.userData.coins -= coins;
         server.coins += coins;
-        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${interaction.mention.displayName} отнёс в казну ${Util.ending(coins, "коин", "ов", "а", "ов")}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
+        msg.guild.logSend({title: "Содержимое банка изменено:", description: `${interaction.mention.displayName} отнёс в казну ${Util.ending(coins, "коин", "ов", "", "а")}`, footer: {iconURL: msg.author.avatarURL(), text: msg.author.tag}});
         msg.react("👌");
-        msg.msg({title: `Вы успешно вложили **${ Util.ending(coins, "коин", "ов", "а", "ов")}** на развитие сервера`, delete: 5000});
+        msg.msg({title: `Вы успешно вложили **${ Util.ending(coins, "коин", "ов", "", "а")}** на развитие сервера`, delete: 5000});
         return;
       }
 
