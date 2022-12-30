@@ -53,7 +53,7 @@ class Command {
       }
 
       if (reaction.emoji.name === "🕋"){
-        BossManager.createShop({channel: message.channel, user, guild: message.guild});
+        BossManager.BossShop.createShop({channel: message.channel, user, guild: message.guild});
       }
     });
 
