@@ -258,25 +258,34 @@ class BossManager {
 
 	  return damage;
 	}
- 
+	
+	static calculateKillReward(level){
+		return 500 + 500 * level;
+	}
+
 	static kill({boss, sourceUser}){
-	  const expReward = 500 + 500 * boss.level;
-		 const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон";
-		 if (sourceUser){
+	  	const expReward = this.calculateKillReward(boss.level);
+
+		const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон";
+		if (sourceUser){
 			sourceUser.data.exp += expReward;
-		 }
+		}
 		 
-		 const guild = this.client.guilds.cache.get(boss.guildId);
-		 const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
-		 guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
-		 BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
-		 boss.level++;
-		 boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
- 
-		 Object.values(boss.users)
+		const guild = this.client.guilds.cache.get(boss.guildId);
+		const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
+		guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
+		BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
+		boss.level++;
+		boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
+
+		Object.values(boss.users)
 			.forEach(userStats => delete userStats.attack_CD);
 	}
- 
+	
+	static calculateChestBonuses(level){
+		return 120 + level * 10;
+	}
+
 	static async createBonusesChest({guild, boss, thatLevel}){
 	  const color = "ffda73";
 	  const embed = {
@@ -288,7 +297,7 @@ class BossManager {
 		 reactions: ["637533074879414272"]
 	  };
  
-	  const calculateReward = (level) => 120 + level * 10;
+	  const calculateReward = this.calculateChestBonuses;
  
 	  const message = await guild.chatSend(embed);
 	  const collector = message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
@@ -348,65 +357,84 @@ class BossManager {
 		 guild.chatSend({content: "Босс покинул сервер в страхе..."});
 		 return;
 	  }
+
+	  const VOID_REWARD = 1.25;
+	  const KEYS_FOR_DAMAGE = 0.0002;
 	  
  
 	  const contents = {
-		 dice: `Максимальный бонус к урону от кубика: Х${ +((boss.diceDamageMultiplayer ?? 1) - 1).toFixed(2) };`,
+		 dice: `Максимальный множитель урона от кубика: Х${ +(boss.diceDamageMultiplayer ?? 1).toFixed(2) };`,
+		 bossLevel: `Достигнутый уровень: ${ boss.level } (${ [...new Array(boss.level - 1)].map((_, i) => this.calculateKillReward(i + 1)).reduce((acc, exp) => acc + exp) } опыта)`,
 		 damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
 		 usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 		 parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
-		 rewards: "Награды:",
+		 rewards: `Пользователи получают ключи в количестве равном ${ KEYS_FOR_DAMAGE * 100 }% от нанесенного урона и случайно распределенную нестабильность, общее количество которой равно \`boss.level ** ${ VOID_REWARD }\``,
 		 voidCount: "Всего нестабильности:"
 	  }
 	  
 	  const getUsetsRewardTable = () => {
-		 const table = {};
-		 const rewardsCount = Math.floor(boss.level ** 1.25);
-		 getUsetsRewardTable.rewardsCount = rewardsCount;
-		 
-		 const usersOdds = Object.entries(boss.users)
-			.filter(([id]) => guild.members.cache.has(id))
-			.map(([id, {damageDealt: _weight}]) => ({id, _weight}))
-			.filter(({_weight}) => _weight);
 			
-		 for (let i = 0; i < rewardsCount; i++){
-			const id = usersOdds.random({_weights: true})
-			  .id;
+		 	const table = Object.fromEntries(
+				Object.keys(boss.users).map(id => [id, {}])
+			);
+
 			
-			table[id] ||= 0;
-			table[id] += 1;
-		 }
+			const rewardsCount = Math.floor(boss.level ** VOID_REWARD);
+			getUsetsRewardTable.rewardsCount = rewardsCount;
 		 
-		 return table;
-	  }
+			const usersOdds = Object.entries(boss.users)
+				.filter(([id]) => guild.members.cache.has(id))
+				.map(([id, {damageDealt: _weight}]) => ({id, _weight}))
+				.filter(({_weight}) => _weight);
+			
+			for (let i = 0; i < rewardsCount; i++){
+				const id = usersOdds.random({_weights: true})
+					.id;
+				
+				table[id].void ||= 0;
+				table[id].void += 1;
+			}
+
+			
+			for (const id in table){
+				table[id].keys = Math.floor(boss.users[id].damageDealt * KEYS_FOR_DAMAGE);
+			}
+			
+			return table;
+	  	}
 	 
-	  const usersTable = getUsetsRewardTable();
-	  
-	  Object.entries(usersTable).forEach(([id, voidCount]) => {
-		 const user = client.users.cache.get(id);
-		 user.data.void += voidCount;
-	  })
+		const usersTable = getUsetsRewardTable();
+		
+		Object.entries(usersTable).forEach(([id, {void: voidCount, keys}]) => {
+			const user = client.users.cache.get(id);
+			user.data.void += voidCount;
+			user.data.keys += keys;
+	  	})
  
-	  const fields = Object.entries(usersTable).map(([id, voidCount]) => {
-		 const user = client.users.cache.get(id);
-		 const damage = boss.users[id].damageDealt;
-		 const value = `Нестабильности: \`${ voidCount }\`;\nУрона: ${ damage }ед.`;
-		 return {name: user.username, value, inline: true};
-	  });
+	  	const fields = Object.entries(usersTable)
+			.filter(([id, {void: voidCount}]) => voidCount)
+			.map(([id, {void: voidCount}]) => {
+				const userStats = BossManager.getUserStats(boss, id);
+				const user = client.users.cache.get(id);
+				const damage = userStats.damageDealt;
+				const chestBonuses = userStats.chestRewardAt ? calculateChestBonuses(userStats.chestRewardAt) : 0;
+				const value = `Нестабильности: \`${ voidCount }\`;\nУрона: ${ damage }ед.${ chestBonuses ? `\nБонусов из сундка: ${ chestBonuses };` : "" }`;
+				return {name: user.tag, value, inline: true};
+			});
 		 
-	  const footer = {
-	    text: `${ contents.voidCount } ${ getUsetsRewardTable.voidCount }`,
-	    iconURL: guild.iconURL()
-	  };
- 
-	  const description = `${ contents.dice }\n\n${ contents.damageDealt }. ${ contents.usersCount }. ${ contents.parting }`;
-	  const embed = {
-		 title: "Среди ночи он покинул сервер",
-		 description,
-		 fields,
-		 footer
-	  };
-	  guild.chatSend(embed);
+		const footer = {
+			text: `${ contents.voidCount } ${ getUsetsRewardTable.rewardsCount }`,
+			iconURL: guild.iconURL()
+		};
+	
+		const description = `${ contents.dice }\n${ contents.bossLevel }\n\n${ contents.damageDealt }. 🩸\n${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.`;
+		const embed = {
+			title: "Среди ночи он покинул сервер",
+			description,
+			fields,
+			footer
+		};
+		guild.chatSend(embed);
 	}
  
 	static initBossData(boss, guild){
