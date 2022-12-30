@@ -202,8 +202,10 @@ class Command {
 
   }
 
-  calculateRitualPrice(userData){
-    const basic = Math.min(2 + userData.voidRituals, 20);
+  calculateRitualPrice(userData, guildData){
+    const treeLevelBonus = Math.floor((guildData?.treeLevel ?? 0) / 10);
+
+    const basic = Math.min(2 + userData.voidRituals, 20) - treeLevelBonus;
     const multiplayer = (1 - 0.10 * (userData.voidPrise || 0));
     return Math.floor(basic * multiplayer);
   }
