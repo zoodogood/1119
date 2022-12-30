@@ -346,116 +346,8 @@ class BossManager {
  
 	static async createShop({guild, channel, user}){
 		const boss = guild.data.boss;
-	  	const ITEMS = new Collection(Object.entries({
-			"🧩": {
-				emoji: "🧩",
-				keyword: "puzzle",
-				description: "Множитель атаки: 1.25",
-				basePrice: 100,
-				priceMultiplayer: 2,
-				callback: ({userStats}) => {
-			  		const multiplier = 1.25;
-			  		userStats.attacksDamageMultiplayer = +(
-				 		(userStats.attacksDamageMultiplayer ?? 1) *
-				 		multiplier
-			  		).toFixed(3);
-				}
-		 	},
-		 	"🐺": {
-				emoji: "🐺",
-				keyword: "wolf",
-				description: "Перезарядка атаки в 2 раза меньше",
-				basePrice: 50,
-				priceMultiplayer: 1.75,
-				callback: ({userStats}) => {
-			  		userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
-			  		userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
-		
-			  		userStats.attack_CD -= userStats.attackCooldown;
-				}
-		 	},
-		 	"🥛": {
-				emoji: "🥛",
-				keyword: "milk",
-				description: "Снимает негативные и нейтральные эффекты",
-				basePrice: 200,
-				priceMultiplayer: 3,
-				callback: ({userStats}) => {
-			 		if (!userStats.effects){
-				 		return false;
-			  		}
-			  		const toRemove = userStats.effects
-						.filter(effect => {
-							const base = BossManager.effectBases.get(effect.id);
-							return base.influence === "negative" || base.influence === "neutral";
-						});
- 
-			  		while (toRemove.length){
-				 		const effect = toRemove.pop();
-				 		const index = userStats.effects.indexOf(effect);
-				 		if (~index){
-							userStats.effects.splice(index, 1);
-				 		}
-			  		};
-				}
-		 	},
-		 	"📡": {
-				emoji: "📡",
-				keyword: "anntena",
-				description: "На 2 больше урона за сообщение",
-				basePrice: 1000,
-				priceMultiplayer: 1.25,
-				callback: ({userStats}) => {
-			  		userStats.damagePerMessage ||= 1;
-			  		userStats.damagePerMessage += 1;
-				},
-		 	},
-		 	"🎲": {
-				emoji: "🎲",
-				keyword: "dice",
-				description: "Урон участников сервера на 1% эффективнее",
-				basePrice: 10,
-				priceMultiplayer: 5,
-				callback: ({boss}) => {
-			  		boss.diceDamageMultiplayer ||= 1;
-			  		boss.diceDamageMultiplayer += 0.01;
-				},
-		 	},
-		 	"💥": {
-				emoji: "💥",
-				keyword: "meteor",
-				damage: 30,
-				damageMultiplayer: 4,
-				description: ({userStats, product}) => {
-					const bought = userStats.bought?.[product.keyword] ?? 0;
-					return `Мгновенно нанесите боссу ${ product.damage * product.damageMultiplayer ** bought }ед. урона`;
-				},
-				basePrice: 25,
-				priceMultiplayer: 5,
-				callback: ({boss, user, userStats, product}) => {
-					const bought = userStats.bought?.[product.keyword] ?? 0;
-					const damage = product.damage * product.damageMultiplayer ** bought;
-					BossManager.makeDamage(boss, damage, {sourceUser: user});
-				}
-			},
-		 	"🪦": {
-				emoji: "🪦",
-				keyword: "headstone",
-				description: "Полностью сбрасывает персонажа",
-				basePrice: 300,
-				priceMultiplayer: 10,
-				callback: ({boss, user, userStats}) => {
-			  		const keyword = "headstone";
-			  		const currentBought = userStats.bought?.[keyword] ?? 0;
- 
-			  		delete boss.users[user.id];
-			  		message.delete();
- 
-			  		userStats = BossManager.getUserStats(boss, user.id);
-			  		userStats.bought = {[keyword]: currentBought};
-				}
-		 	}
-	  	}));
+	  	const ITEMS = this.SHOP_ITEMS;
+
 	  	const createEmbed = ({boss, user, edit}) => {
 			const data = user.data;
 
@@ -510,6 +402,117 @@ class BossManager {
 	  
 	  	collector.on("end", () => message.reactions.removeAll());
 	}
+
+	static SHOP_ITEMS = new Collection(Object.entries({
+		"🧩": {
+			emoji: "🧩",
+			keyword: "puzzle",
+			description: "Множитель атаки: 1.25",
+			basePrice: 100,
+			priceMultiplayer: 2,
+			callback: ({userStats}) => {
+				  const multiplier = 1.25;
+				  userStats.attacksDamageMultiplayer = +(
+					 (userStats.attacksDamageMultiplayer ?? 1) *
+					 multiplier
+				  ).toFixed(3);
+			}
+		 },
+		 "🐺": {
+			emoji: "🐺",
+			keyword: "wolf",
+			description: "Перезарядка атаки в 2 раза меньше",
+			basePrice: 50,
+			priceMultiplayer: 1.75,
+			callback: ({userStats}) => {
+				  userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+				  userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
+	
+				  userStats.attack_CD -= userStats.attackCooldown;
+			}
+		 },
+		 "🥛": {
+			emoji: "🥛",
+			keyword: "milk",
+			description: "Снимает негативные и нейтральные эффекты",
+			basePrice: 200,
+			priceMultiplayer: 3,
+			callback: ({userStats}) => {
+				 if (!userStats.effects){
+					 return false;
+				  }
+				  const toRemove = userStats.effects
+					.filter(effect => {
+						const base = BossManager.effectBases.get(effect.id);
+						return base.influence === "negative" || base.influence === "neutral";
+					});
+
+				  while (toRemove.length){
+					 const effect = toRemove.pop();
+					 const index = userStats.effects.indexOf(effect);
+					 if (~index){
+						userStats.effects.splice(index, 1);
+					 }
+				  };
+			}
+		 },
+		 "📡": {
+			emoji: "📡",
+			keyword: "anntena",
+			description: "На 2 больше урона за сообщение",
+			basePrice: 1000,
+			priceMultiplayer: 1.25,
+			callback: ({userStats}) => {
+				  userStats.damagePerMessage ||= 1;
+				  userStats.damagePerMessage += 1;
+			},
+		 },
+		 "🎲": {
+			emoji: "🎲",
+			keyword: "dice",
+			description: "Урон участников сервера на 1% эффективнее",
+			basePrice: 10,
+			priceMultiplayer: 5,
+			callback: ({boss}) => {
+				  boss.diceDamageMultiplayer ||= 1;
+				  boss.diceDamageMultiplayer += 0.01;
+			},
+		 },
+		 "💥": {
+			emoji: "💥",
+			keyword: "meteor",
+			damage: 30,
+			damageMultiplayer: 4,
+			description: ({userStats, product}) => {
+				const bought = userStats.bought?.[product.keyword] ?? 0;
+				return `Мгновенно нанесите боссу ${ product.damage * product.damageMultiplayer ** bought }ед. урона`;
+			},
+			basePrice: 25,
+			priceMultiplayer: 5,
+			callback: ({boss, user, userStats, product}) => {
+				const bought = userStats.bought?.[product.keyword] ?? 0;
+				const damage = product.damage * product.damageMultiplayer ** bought;
+				BossManager.makeDamage(boss, damage, {sourceUser: user});
+			}
+		},
+		 "🪦": {
+			emoji: "🪦",
+			keyword: "headstone",
+			description: "Полностью сбрасывает персонажа",
+			basePrice: 300,
+			priceMultiplayer: 10,
+			callback: ({boss, user, userStats}) => {
+				  const keyword = "headstone";
+				  const currentBought = userStats.bought?.[keyword] ?? 0;
+
+				  delete boss.users[user.id];
+				  message.delete();
+
+				  userStats = BossManager.getUserStats(boss, user.id);
+				  userStats.bought = {[keyword]: currentBought};
+			}
+		 }
+	  }));
  
 	static eventBases = new Collection(Object.entries({
 	  increaseAttackCooldown: {
