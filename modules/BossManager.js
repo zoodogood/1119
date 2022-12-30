@@ -1,5 +1,5 @@
 import { Collection } from "@discordjs/collection";
-import { DataManager, CurseManager } from "#src/modules/mod.js";
+import { DataManager, CurseManager, ResourcesEnum } from "#src/modules/mod.js";
 import { Actions } from '#src/modules/ActionManager.js';
 import * as Util from '#src/modules/util.js';
 
@@ -22,7 +22,7 @@ class BossShop {
 				.map((product) => `${ product.emoji } — ${ getDescription(product) }.\n${ this.calculatePrice({product, boughtCount: this.getBoughtCount({userStats, product})}) };`)
 				.join("\n");
  
-			const description = `Приобретите эти товары! Ваши экономические возможности: ${  Util.ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> и ${ Util.ending(data.keys, "ключ", "ей", "", "а") } на руках\n\n${ productsContent }`;
+			const description = `Приобретите эти товары! Ваши экономические возможности:\n${  Util.ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> и ${ Util.ending(data.keys, "ключ", "ей", "", "а") } 🔩 на руках\n\n${ productsContent }`;
  
 		 	return {
 				title: "Тайная лавка Гремпенса",
@@ -92,12 +92,13 @@ class BossShop {
 			description: "Множитель атаки: 1.25",
 			basePrice: 100,
 			priceMultiplayer: 2,
+			resource: "coins",
 			callback: ({userStats}) => {
-				  const multiplier = 1.25;
-				  userStats.attacksDamageMultiplayer = +(
-					 (userStats.attacksDamageMultiplayer ?? 1) *
-					 multiplier
-				  ).toFixed(3);
+				const multiplier = 1.25;
+				userStats.attacksDamageMultiplayer = +(
+					(userStats.attacksDamageMultiplayer ?? 1) *
+					multiplier
+				).toFixed(3);
 			}
 		 },
 		 "🐺": {
@@ -106,47 +107,24 @@ class BossShop {
 			description: "Перезарядка атаки в 2 раза меньше",
 			basePrice: 50,
 			priceMultiplayer: 1.75,
+			resource: "coins",
 			callback: ({userStats}) => {
-				  userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
-				  userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
-	
-				  userStats.attack_CD -= userStats.attackCooldown;
-			}
-		 },
-		 "🥛": {
-			emoji: "🥛",
-			keyword: "milk",
-			description: "Снимает негативные и нейтральные эффекты",
-			basePrice: 200,
-			priceMultiplayer: 3,
-			callback: ({userStats}) => {
-				 if (!userStats.effects){
-					 return false;
-				  }
-				  const toRemove = userStats.effects
-					.filter(effect => {
-						const base = BossManager.effectBases.get(effect.id);
-						return base.influence === "negative" || base.influence === "neutral";
-					});
+				userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+				userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
 
-				  while (toRemove.length){
-					 const effect = toRemove.pop();
-					 const index = userStats.effects.indexOf(effect);
-					 if (~index){
-						userStats.effects.splice(index, 1);
-					 }
-				  };
+				userStats.attack_CD -= userStats.attackCooldown;
 			}
 		 },
 		 "📡": {
 			emoji: "📡",
 			keyword: "anntena",
-			description: "На 2 больше урона за сообщение",
-			basePrice: 1000,
-			priceMultiplayer: 1.25,
+			description: "На 1 больше урона за сообщение",
+			basePrice: 1,
+			priceMultiplayer: 2,
+			resource: "keys",
 			callback: ({userStats}) => {
-				  userStats.damagePerMessage ||= 1;
-				  userStats.damagePerMessage += 1;
+				userStats.damagePerMessage ||= 1;
+				userStats.damagePerMessage += 1;
 			},
 		 },
 		 "🎲": {
@@ -155,44 +133,11 @@ class BossShop {
 			description: "Урон участников сервера на 1% эффективнее",
 			basePrice: 10,
 			priceMultiplayer: 5,
+			resource: "coins",
 			callback: ({boss}) => {
-				  boss.diceDamageMultiplayer ||= 1;
-				  boss.diceDamageMultiplayer += 0.01;
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
 			},
-		 },
-		 "💥": {
-			emoji: "💥",
-			keyword: "meteor",
-			damage: 30,
-			damageMultiplayer: 4,
-			description: ({userStats, product}) => {
-				const bought = userStats.bought?.[product.keyword] ?? 0;
-				return `Мгновенно нанесите боссу ${ product.damage * product.damageMultiplayer ** bought }ед. урона`;
-			},
-			basePrice: 25,
-			priceMultiplayer: 5,
-			callback: ({boss, user, userStats, product}) => {
-				const bought = userStats.bought?.[product.keyword] ?? 0;
-				const damage = product.damage * product.damageMultiplayer ** bought;
-				BossManager.makeDamage(boss, damage, {sourceUser: user});
-			}
-		},
-		 "🪦": {
-			emoji: "🪦",
-			keyword: "headstone",
-			description: "Полностью сбрасывает персонажа",
-			basePrice: 300,
-			priceMultiplayer: 10,
-			callback: ({boss, user, userStats}) => {
-				  const keyword = "headstone";
-				  const currentBought = userStats.bought?.[keyword] ?? 0;
-
-				  delete boss.users[user.id];
-				  message.delete();
-
-				  userStats = BossManager.getUserStats(boss, user.id);
-				  userStats.bought = {[keyword]: currentBought};
-			}
 		 }
 	}));
 }
@@ -467,6 +412,15 @@ class BossManager {
  
 	  boss.guildId = guild.id;
 	  boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
+
+	  boss.avatarURL = this.getMediaAvatars().random();
+	}
+
+	static getMediaAvatars(){
+		return [
+			"https://media.discordapp.net/attachments/629546680840093696/1047587012665933884/batman-gif.gif",
+			"https://media.discordapp.net/attachments/629546680840093696/1051424759537225748/stan.png"
+		];
 	}
  
 	static userAttack({boss, user, channel}){
