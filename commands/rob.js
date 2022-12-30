@@ -11,7 +11,8 @@ class Command {
       return msg.msg({title: "Для использования этой команды нужно купить перчатки", description: "Их, иногда, можно найти в !лавке, по цене 700 коинов", color: "#ff0000", delete: 7000});
 
 
-    let [count, combo] = interaction.userData.thiefGloves.split("|");
+    let count = interaction.userData.thiefGloves;
+    let combo = interaction.userData.thiefCombo || 0;
 
     if (memb.id == msg.author.id){
       msg.msg({title: "Среди бела-дня вы напали на себя по непонятной причине", description: "Пока вы кричали \"Вор! Вор! Ловите вора!\", к вам уже подъежала лесная скорая", image: "https://media.discordapp.net/attachments/629546680840093696/1048500012360929330/rob.png"});
@@ -67,7 +68,8 @@ class Command {
       let coinsReturn;
 
       if (react) {
-        interaction.userData.thiefGloves = --count + "|" + 0;
+        interaction.userData.thiefGloves = --count;
+        interaction.userData.thiefCombo = 0;
         let accusation  = "";
         let action      = "Вы вернули свои коины и хорошо с ним посмеялись";
         let explanation = `${memb.username} успел среагировать и вернул коины`;
@@ -108,7 +110,8 @@ class Command {
       if (detective){
         coinsReturn = -memb.data.thiefWins * 20 * Math.round(combo / 2 + 2);
         interaction.userData.coins -= coinsReturn;
-        interaction.userData.thiefGloves = "-2|0";
+        interaction.userData.thiefGloves = -2;
+        interaction.userData.thiefCombo = 0;
         memb.data.thiefWins += 5;
 
         msg.author.msg({title: `Вас поймал на горячем местный детектив`, description: `Он давно заинтересовался ${memb} ввиду частых нападений. Теперь вам светит потеря перчаток с компенсацией ущерба.` , color: "#ff0000"});
@@ -137,7 +140,8 @@ class Command {
     message.msg({title: "Вы слишком долго не могли прийти в себя — вор ушёл.", description: description, color: "#ff0000"});
 
 
-    interaction.userData.thiefGloves = count + "|" + combo;
+    interaction.userData.thiefGloves = count;
+    interaction.userData.thiefCombo = combo;
     msg.author.msg({title: `Всё прошло успешно — вы скрылись и вас не узнали!\nТекущее комбо: ${combo}`});
 
     message.reactions.cache.get("❗").users.remove();

@@ -71,36 +71,6 @@ class Command {
         names: ["перчатки", "перчатку", "перчатка", "перчаток", "glove", "gloves"],
         ending: () => `🧤 ${ Util.ending(count, "Перчат", "ки", "у", "ки") }`,
         display: (count) => `🧤 Перчатки ${ count }шт.`,
-        getter: ({target}) => {
-          const isUser = "id" in target;
-
-          if (isUser){
-            const thiefGloves = (target.thiefGloves || "0|0")
-              .split("|");
-
-            const [gloves, ...rest] = thiefGloves;
-            return +gloves;
-          }
-
-          if (!isUser){
-            return target.thiefGloves;
-          }
-        },
-        setter: ({target, count}) => {
-          const isUser = "id" in target;
-
-          if (isUser){
-            const thiefGloves = (target.thiefGloves || "0|0")
-              .split("|");
-
-            thiefGloves[0] = count;
-            return target.thiefGloves = thiefGloves.join("|");
-          }
-
-          if (!isUser){
-            return target.thiefGloves = count;
-          }
-        }
       },
       {
         key: "keys",

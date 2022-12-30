@@ -131,7 +131,7 @@ class Command {
         const inventory = [
           `🔩${user.keys}`,
           `<a:void:768047066890895360>${user.void}`,
-          `🧤${ user.thiefGloves || 0 }|${ (user.thiefWins && String(user.thiefWins).replace("-", "!")) || 0 }`,
+          `🧤${ user.thiefGloves ? `${ user.thiefGloves }|${ user.thiefCombo || 0 }` : 0 }|${ user.thiefWins ? String(user.thiefWins).replace("-", "!") : "0" }`,
           `${ user.chilli  ? "🌶️" + user.chilli  : "" }`,
           `${ user.monster ? "🐲" + user.monster : "" }`,
           `${ user.seed    ? "🌱" + user.seed    : "" }`,

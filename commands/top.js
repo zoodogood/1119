@@ -66,11 +66,11 @@ class Command {
 
         case "🧤":
           // thief
-          sort = users.sort((a, b) => ((b.data.thiefGloves ? +b.data.thiefGloves.split("|")[1] : 0) + ~~b.data.thiefWins / 5) - ((a.data.thiefGloves ? +a.data.thiefGloves.split("|")[1] : 0) + ~~a.data.thiefWins / 5));
+          sort = users.sort((a, b) => (b.data.thiefGloves + (~~b.data.thiefWins / 5)) - (a.data.thiefGloves + (~~a.data.thiefWins / 5)));
           index = sort.indexOf(msg.author);
           rangs = sort.map((e, i) => {
             let name = (i + 1) + ". " + e.username;
-            let value = `Состояние перчаток: \`${e.data.thiefGloves || "0|0"}\` > Отбито атак: ${e.data.thiefWins | 0}`.replace(/-/g, "!");
+            let value = `Состояние перчаток: \`${e.data.thiefGloves}|${ e.data.thiefCombo || 0 }\` > Отбито атак: ${e.data.thiefWins | 0}`.replace(/-/g, "!");
             return {name, value};
           });
           break;

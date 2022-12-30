@@ -129,11 +129,8 @@ class Command {
           break;
 
         case "gloves":
-          const currentGloves = (user.thiefGloves || "0|0")
-            .split("|");
-
-          currentGloves[0] = +currentGloves[0] + count;
-          user.thiefGloves = currentGloves.join("|");
+          
+          user.thiefGloves = (user.thiefGloves || 0) + count;
 
           itemsOutput.push( `${ Util.ending(count, "Перчат", "ок", "ка", "ки")} 🧤`);
           break;
