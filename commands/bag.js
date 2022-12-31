@@ -80,7 +80,12 @@ class Command {
       {
         key: "seed",
         names: ["семечко", "семечек", "семян", "семечка", "семячек", "seed"],
-        ending: (count) => `🌱 ${ Util.ending(count, "Сем", "ян", "ечко", "ечка", {unite: (_quantity, word) => word}) }`
+        ending: (count) => `🌱 ${ Util.ending(count, "Сем", "ян", "ечко", "ечка") }`
+      },
+      {
+        key: "cheese",
+        names: ["сыр", "сыра", "сыров", "cheese", "cheses"],
+        ending: (count) => `🧀 ${ Util.ending(count, "Сыр", "ов", "", "а") }`
       },
       {
         key: "iq",
