@@ -1,5 +1,6 @@
 import * as Util from '#src/modules/util.js';
 import DataManager from '#src/modules/DataManager.js';
+import CurseManager from '#src/modules/CurseManager.js';
 import { Actions } from '#src/modules/ActionManager.js';
 
 class Command {
@@ -171,6 +172,11 @@ class Command {
       embed.description += itemsOutput.splice(0, 1).map(e => `\n${e}`).join("");
       embed.thumbnail = itemsOutput.length ? null : chest.icon;
       await message.msg(embed);
+    }
+
+    if (itemsOutput.length === 0 && Util.random(2) === 0){
+      const curse = CurseManager.generate({hard: null, user: interaction.user, guild: interaction.guild});
+      CurseManager.init({user: interaction.user, curse});
     }
   }
 
