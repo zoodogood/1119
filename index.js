@@ -2982,7 +2982,7 @@ class CurseManager {
         reward: 7
       },
       {
-        _weight: 5,
+        _weight: 0,
         id: "bossWannaDamage",
         description: "Нанесите боссу вот столько-вот урона",
         hard: 2,
@@ -3688,6 +3688,7 @@ class BossManager {
       id: "improveDamageForAll",
       description: "Урон по боссу увеличен на 1%",
       callback: ({user, boss}) => {
+	boss.diceDamageMultiplayer ||= 1;
         boss.diceDamageMultiplayer += 0.01;
       },
       filter: ({boss}) => boss.diceDamageMultiplayer 
