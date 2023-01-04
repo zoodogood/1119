@@ -140,7 +140,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 
 	static completeQuest({user, quest, context: {channel}}){
 		const DEFAULT_REWARD_MULTIPLAYER = 1.4;
-		const DEFAULT_CHEST_REWARD = 2;
+		const DEFAULT_CHEST_REWARD = 4;
 		const multiplayer = DEFAULT_REWARD_MULTIPLAYER * quest.reward;
 
 		const data = user.data;
@@ -148,7 +148,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 
 		const expReward = Math.round((data.level + 5) * multiplayer);
 		data.exp += expReward;
-		data.chestBonus = (data.chestBonus ?? 0) + Math.round(multiplayer * DEFAULT_CHEST_REWARD);
+		data.chestBonus = (data.chestBonus ?? 0) + Math.ceil(multiplayer * DEFAULT_CHEST_REWARD);
 
 		const MEDIA_URL = "https://media.discordapp.net/attachments/629546680840093696/1047584339854118952/slide-5.jpg?width=793&height=594";
 		const target = channel ?? user;
