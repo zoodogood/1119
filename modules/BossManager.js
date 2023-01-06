@@ -53,8 +53,9 @@ class BossShop {
 			
 		 	const price = this.calculatePrice({
 				product,
-				currentBought
+				boughtCount: currentBought
 			});
+
  
 		 	if (!this.isUserCanBuyProduct({user, product, userStats})){
 				message.msg({title: "Недостаточно средств!", delete: 3000});
@@ -235,28 +236,48 @@ class BossManager {
  
 	  return BossManager.calculateHealthPoint(level) + totalOfPrevious;
 	}
- 
- 
-	static makeDamage(boss, damage, {sourceUser} = {}){
-	  damage *= (boss.diceDamageMultiplayer ?? 1);
-	  damage = Math.floor(damage);
- 
- 
-	  boss.damageTaken += damage;
- 
-	  if (sourceUser){
-		 const stats = BossManager.getUserStats(boss, sourceUser.id);
-		 stats.damageDealt ||= 0;
-		 stats.damageDealt += damage;
- 
-		 sourceUser.action(Actions.bossMakeDamage, {boss, damage});
-	  }
- 
-	  while (boss.damageTaken >= boss.healthThresholder){
-		 BossManager.kill({boss, sourceUser});
-	  }
+	
+	static calculateBossDamageMultiplayer(boss, {context = {}, sourceUser = {}} = {}){
+		let multiplier = 1;
+		multiplier *= (boss.diceDamageMultiplayer ?? 1);
+		multiplier *= (boss.legendaryWearonDamageMultiplayer ?? 1);
 
-	  return damage;
+		if (context.restoreHealthByDamage){
+			multiplier *= -context.restoreHealthByDamage;
+		}
+
+		return multiplier;
+	}
+ 
+	static makeDamage(boss, damage, {sourceUser, damageSourceType} = {}){
+	  	damage *= this.calculateBossDamageMultiplayer(boss, {sourceUser, context: {
+			restoreHealthByDamage: sourceUser.effects?.damageRestoreHealht ?? false
+		}});
+		damage = Math.floor(damage);
+	
+	
+		boss.damageTaken += damage;
+	
+		if (sourceUser){
+			const stats = BossManager.getUserStats(boss, sourceUser.id);
+			stats.damageDealt ||= 0;
+			stats.damageDealt += damage;
+	
+			sourceUser.action(Actions.bossMakeDamage, {boss, damage});
+		}
+
+		if (damageSourceType){
+			const damageStats = boss.stats.damage;
+			damageStats[damageSourceType] ??= 0;
+			damageStats[damageSourceType] += damage;
+		}
+		
+	
+		while (boss.damageTaken >= boss.healthThresholder){
+			BossManager.kill({boss, sourceUser});
+		}
+
+		return damage;
 	}
 	
 	static calculateKillReward(level){
@@ -363,7 +384,7 @@ class BossManager {
 	  
  
 	  const contents = {
-		 dice: `Максимальный множитель урона от кубика: Х${ +(boss.diceDamageMultiplayer ?? 1).toFixed(2) };`,
+		 dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
 		 bossLevel: `Достигнутый уровень: ${ boss.level } (${ [...new Array(boss.level - 1)].map((_, i) => this.calculateKillReward(i + 1)).reduce((acc, exp) => acc + exp) } опыта)`,
 		 damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
 		 usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
@@ -438,16 +459,20 @@ class BossManager {
 	}
  
 	static initBossData(boss, guild){
-	  boss.level = 1;
-	  boss.users = {};
-	  boss.isArrived = true;
-	  boss.damageTaken = 0;
-	  boss.type = this.BOSS_TYPES.random();
- 
-	  boss.guildId = guild.id;
-	  boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
+		boss.level = 1;
+		boss.users = {};
+		boss.isArrived = true;
+		boss.damageTaken = 0;
+		boss.type = this.BOSS_TYPES.random();
 
-	  boss.avatarURL = this.getMediaAvatars().random();
+		boss.stats = {
+			damage: {}
+		}
+	
+		boss.guildId = guild.id;
+		boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
+
+		boss.avatarURL = this.getMediaAvatars().random();
 	}
 
 	static getMediaAvatars(){
@@ -515,13 +540,13 @@ class BossManager {
 	  }
  
 	  const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
-	  attackContext.defaultDamageDealt = attackContext.damageDealt = damage;
-	  BossManager.makeDamage(boss, damage, {sourceUser: user});
+	  attackContext.defaultDamage = attackContext.damageDealt = damage;
+	  const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
  
 	  
  
 	  const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
-	  const description = `Нанесено урона с прямой атаки: ${ damage }ед.\n\n${ eventsContent }`;
+	  const description = `Нанесено урона с прямой атаки: ${ dealt }ед.\n\n${ eventsContent }`;
 	  const embed = {
 		 title: `⚔️ За сервер ${ channel.guild.name }!`,
 		 description,
@@ -642,14 +667,14 @@ class BossManager {
 			}
 		},
 		selectLegendaryWearon: {
-			_weight: 1,
+			_weight: Infinity,
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats}) => {
 				const reactions = [...this.legendaryWearonList.values()].map(({emoji}) => emoji);
+				const getLabel = ({description, emoji}) => `${ emoji } ${ description }.`;
 				const embed = {
-					author: {name: user.username, iconURL: user.avatarURL()},
-					description: "**Выберите инструмент с привлекательным для Вас эффектом:**",
+					description: `**Выберите инструмент с привлекательным для Вас эпическим эффектом:**\n${ this.legendaryWearonList.map(getLabel).join("\n") }`,
 					color: "#3d17a0",
 					reactions,
 					footer: {iconURL: user.avatarURL(), text: "Это событие появляется единожды"}
@@ -675,196 +700,196 @@ class BossManager {
 			id: "choiseCreatePotion",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, attackContext}) => {
-			const reactions = ["🧪", "🍯", "🩸"];
-			const embed = {
-				author: {name: user.username, iconURL: user.avatarURL()},
-				description: "Сварите правильный эликсир\n— 🧪 Добавить больше порошка\n— 🍯 Подсыпать пудры\n— 🩸 Средство для усиления эффекта",
-				reactions,
-				footer: {iconURL: user.avatarURL(), text: "Используйте три реакции для наилучшего эффекта"}
-			}
+				const reactions = ["🧪", "🍯", "🩸"];
+				const embed = {
+					author: {name: user.username, iconURL: user.avatarURL()},
+					description: "Сварите правильный эликсир\n— 🧪 Добавить больше порошка\n— 🍯 Подсыпать пудры\n— 🩸 Средство для усиления эффекта",
+					reactions,
+					footer: {iconURL: user.avatarURL(), text: "Используйте три реакции для наилучшего эффекта"}
+				}
 
-			channel.sendTyping();
-			await Util.sleep(2000);
+				channel.sendTyping();
+				await Util.sleep(2000);
 
-			const ingredients = [];
+				const ingredients = [];
 
-			const createSpell = (ingredients) => {
-				const spellsTable = {
-					"🧪🧪🧪": {
-					description: "Создаёт особый котёл, который уменьшает перезарядку атаки каждого, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
-					callback: async (message, _embed) => {
-						await message.react("🧪");
-						const collector = message.createReactionCollector({time: 3_600_000});
-						const gotTable = {};
-						collector.on("collect", (_reaction, user) => {
-							if (user.id in gotTable){
-							message.msg({title: "Вы уже воспользовались котлом", color: "ff0000", delete: 3000});
-							return;
-							}
+				const createSpell = (ingredients) => {
+					const spellsTable = {
+						"🧪🧪🧪": {
+						description: "Создаёт особый котёл, который уменьшает перезарядку атаки каждого, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
+						callback: async (message, _embed) => {
+							await message.react("🧪");
+							const collector = message.createReactionCollector({time: 3_600_000});
+							const gotTable = {};
+							collector.on("collect", (_reaction, user) => {
+								if (user.id in gotTable){
+								message.msg({title: "Вы уже воспользовались котлом", color: "ff0000", delete: 3000});
+								return;
+								}
 
-							if (Object.keys(gotTable) >= 5){
-							collector.stop();
-							}
+								if (Object.keys(gotTable) >= 5){
+								collector.stop();
+								}
 
-							gotTable[user.id] = true;
-							const userStats = BossManager.getUserStats(boss, user.id);
-							const current = userStats.attackCooldown;
-							userStats.attackCooldown = Math.floor(userStats.attackCooldown * 0.80);
+								gotTable[user.id] = true;
+								const userStats = BossManager.getUserStats(boss, user.id);
+								const current = userStats.attackCooldown;
+								userStats.attackCooldown = Math.floor(userStats.attackCooldown * 0.80);
 
-							const description = `Кулдаун снизился на ${ Util.timestampToDate(current - userStats.attackCooldown) }`;
-			
-							message.msg({description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
-						});
+								const description = `Кулдаун снизился на ${ Util.timestampToDate(current - userStats.attackCooldown) }`;
+				
+								message.msg({description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
+							});
 
-						collector.on("end", () => message.reactions.removeAll());
-					}
-					},
-					"🧪🧪🍯": {
-					description: "Создаёт особый котёл, который дарует богатсва каждому, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
-					callback: async (message, _embed) => {
-						await message.react("🍯");
-						const collector = message.createReactionCollector({time: 3_600_000});
-						const gotTable = {};
-						collector.on("collect", (_reaction, user) => {
-							if (user.id in gotTable){
-							message.msg({title: "Вы уже воспользовались котлом", color: "ff0000", delete: 3000});
-							return;
-							}
+							collector.on("end", () => message.reactions.removeAll());
+						}
+						},
+						"🧪🧪🍯": {
+						description: "Создаёт особый котёл, который дарует богатсва каждому, кто использует его. Однако его длительность ограничена одним часом или пятью использованиями!",
+						callback: async (message, _embed) => {
+							await message.react("🍯");
+							const collector = message.createReactionCollector({time: 3_600_000});
+							const gotTable = {};
+							collector.on("collect", (_reaction, user) => {
+								if (user.id in gotTable){
+								message.msg({title: "Вы уже воспользовались котлом", color: "ff0000", delete: 3000});
+								return;
+								}
 
-							if (Object.keys(gotTable) >= 5){
-							collector.stop();
-							}
+								if (Object.keys(gotTable) >= 5){
+								collector.stop();
+								}
 
-							gotTable[user.id] = true;
+								gotTable[user.id] = true;
 
+								user.data.chestBonus ||= 0;
+								user.data.chestBonus += 7;
+								const description = `Получено 7 бонусов сундука`;
+				
+								message.msg({description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
+							});
+
+							collector.on("end", () => message.reactions.removeAll());
+						}
+						},
+						"🧪🧪🩸": {
+						description: "Сбрасывает перезарядку на атаку и уменьшает постоянный кулдаун в полтора раза",
+						callback: (_message, _embed) => {
+							delete userStats.attack_CD;
+							userStats.attackCooldown = Math.floor(userStats.attackCooldown / 1.5);
+						}
+						},
+						"🧪🍯🍯": {
+						description: "Значительно уменьшает цену на волка из лавки босса",
+						callback: (_message, _embed) => {
+							userStats.bought ||= {};
+							userStats.bought.wolf ||= 0;
+							userStats.bought.wolf -= 2;
+						}
+						},
+						"🧪🩸🩸": {
+						description: "Значительно уменьшает цену на пазл из лавки босса",
+						callback: (_message, _embed) => {
+							userStats.bought ||= {};
+							userStats.bought.puzzle ||= 0;
+							userStats.bought.puzzle -= 2;
+						}
+						},
+						"🍯🍯🍯": {
+						description: "Вы мгновенно получаете 35 бонусов сундука!",
+						callback: (_message, _embed) => {
 							user.data.chestBonus ||= 0;
-							user.data.chestBonus += 7;
-							const description = `Получено 7 бонусов сундука`;
-			
-							message.msg({description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
-						});
+							user.data.chestBonus += 35;
+						}
+						},
+						"🩸🩸🩸": {
+						description: "Босс теряет 7% от своего текущего здоровья",
+						callback: (message, embed) => {
+							const thresholder = BossManager.calculateHealthPointThresholder(boss.level);
+							const currentHealth = thresholder - boss.damageTaken;
+							const damage = Math.floor(currentHealth * 0.07);
+							BossManager.makeDamage(boss, damage, {sourceUser: user});
 
-						collector.on("end", () => message.reactions.removeAll());
-					}
-					},
-					"🧪🧪🩸": {
-					description: "Сбрасывает перезарядку на атаку и уменьшает постоянный кулдаун в полтора раза",
-					callback: (_message, _embed) => {
-						delete userStats.attack_CD;
-						userStats.attackCooldown = Math.floor(userStats.attackCooldown / 1.5);
-					}
-					},
-					"🧪🍯🍯": {
-					description: "Значительно уменьшает цену на волка из лавки босса",
-					callback: (_message, _embed) => {
-						userStats.bought ||= {};
-						userStats.bought.wolf ||= 0;
-						userStats.bought.wolf -= 2;
-					}
-					},
-					"🧪🩸🩸": {
-					description: "Значительно уменьшает цену на пазл из лавки босса",
-					callback: (_message, _embed) => {
-						userStats.bought ||= {};
-						userStats.bought.puzzle ||= 0;
-						userStats.bought.puzzle -= 2;
-					}
-					},
-					"🍯🍯🍯": {
-					description: "Вы мгновенно получаете 35 бонусов сундука!",
-					callback: (_message, _embed) => {
-						user.data.chestBonus ||= 0;
-						user.data.chestBonus += 35;
-					}
-					},
-					"🩸🩸🩸": {
-					description: "Босс теряет 10% от своего текущего здоровья",
-					callback: (message, embed) => {
-						const thresholder = BossManager.calculateHealthPointThresholder(boss.level);
-						const currentHealth = thresholder - boss.damageTaken;
-						const damage = Math.floor(currentHealth * 0.10);
-						BossManager.makeDamage(boss, damage, {sourceUser: user});
+							embed.edit = true;
+							embed.author = {name: `Нанесено ${ damage }ед. урона`};
+							message.msg(embed);
+						}
+						},
+						"🧪🍯🩸": {
+						description: "Вы попросту перевели продукты..",
+						callback: (_message, _embed) => {
 
-						embed.edit = true;
-						embed.author = {name: `Нанесено ${ damage }ед. урона`};
-						message.msg(embed);
-					}
-					},
-					"🧪🍯🩸": {
-					description: "Вы попросту перевели продукты..",
-					callback: (_message, _embed) => {
+						}
+						},
+						"🍯🍯🩸": {
+						description: "Вы попросту перевели продукты..",
+						callback: (_message, _embed) => {
 
-					}
-					},
-					"🍯🍯🩸": {
-					description: "Вы попросту перевели продукты..",
-					callback: (_message, _embed) => {
+						}
+						},
+						"🍯🩸🩸": {
+						description: "Наносит ещё одну атаку с увеличенным уроном. Множитель урона Х4",
+						callback: (message, embed) => {
+							const previousDamage = attackContext.damageDealt;
+							const damage = previousDamage * 4;
+							BossManager.makeDamage(boss, damage, {sourceUser: user});
 
+							embed.edit = true;
+							embed.author = {name: `Нанесено ${ damage }ед. урона`};
+							message.msg(embed);
+						}
+						}
 					}
-					},
-					"🍯🩸🩸": {
-					description: "Наносит ещё одну атаку с увеличенным уроном. Множитель урона Х4",
-					callback: (message, embed) => {
-						const previousDamage = attackContext.damageDealt;
-						const damage = previousDamage * 4;
-						BossManager.makeDamage(boss, damage, {sourceUser: user});
 
-						embed.edit = true;
-						embed.author = {name: `Нанесено ${ damage }ед. урона`};
-						message.msg(embed);
-					}
-					}
+					const sort = (a, b) => reactions.indexOf(a) > reactions.indexOf(b) ? 1 : -1;
+
+					const key = ingredients.sort(sort).join("");
+					const {callback, description} = spellsTable[key];
+					return {callback, description};
 				}
 
-				const sort = (a, b) => reactions.indexOf(a) > reactions.indexOf(b) ? 1 : -1;
 
-				const key = ingredients.sort(sort).join("");
-				const {callback, description} = spellsTable[key];
-				return {callback, description};
-			}
+				const message = await channel.msg(embed);
+				const filter = ({emoji}, member) => user === member && reactions.includes(emoji.name);
+				const collector = message.createReactionCollector({filter, time: 90_000});
+				collector.on("collect", async (reaction, user) => {
+					reaction.users.remove(user);
 
+					const emoji = reaction.emoji.name;
 
-			const message = await channel.msg(embed);
-			const filter = ({emoji}, member) => user === member && reactions.includes(emoji.name);
-			const collector = message.createReactionCollector({filter, time: 90_000});
-			collector.on("collect", async (reaction, user) => {
-				reaction.users.remove(user);
+					
 
-				const emoji = reaction.emoji.name;
+					ingredients.push(emoji);
+					const MAX_INGEDIENTS = 3;
 
-				
+					const ingredientsContent = `[__${ ingredients.join("") }__] + ${ ingredients.length }/${ MAX_INGEDIENTS }`;
+					await channel.msg({description: ingredientsContent, delete: 3000});
 
-				ingredients.push(emoji);
-				const MAX_INGEDIENTS = 3;
-
-				const ingredientsContent = `[__${ ingredients.join("") }__] + ${ ingredients.length }/${ MAX_INGEDIENTS }`;
-				await channel.msg({description: ingredientsContent, delete: 3000});
-
-				
+					
 
 
-				if (ingredients.length === MAX_INGEDIENTS){
-					collector.stop();
+					if (ingredients.length === MAX_INGEDIENTS){
+						collector.stop();
 
-					if (!Util.random(0, 15)){
-					const description = "Вы попросту перевели ресурсы, варево неудалось";
-					channel.msg({title: "Мухомор, пудра, утконос", description, footer: {iconURL: user.avatarURL(), text: user.tag}});
-					return;
+						if (!Util.random(0, 15)){
+						const description = "Вы попросту перевели ресурсы, варево неудалось";
+						channel.msg({title: "Мухомор, пудра, утконос", description, footer: {iconURL: user.avatarURL(), text: user.tag}});
+						return;
+						}
+
+						const {callback, description} = createSpell(ingredients);
+						const embed = {
+						title: "Трепещи, босс, я изобрёл нечто!",
+						description,
+						footer: {iconURL: user.avatarURL(), text: user.tag}
+						}
+						const message = await channel.msg(embed);
+						callback.call(null, message, embed);
 					}
 
-					const {callback, description} = createSpell(ingredients);
-					const embed = {
-					title: "Трепещи, босс, я изобрёл нечто!",
-					description,
-					footer: {iconURL: user.avatarURL(), text: user.tag}
-					}
-					const message = await channel.msg(embed);
-					callback.call(null, message, embed);
-				}
+				});
 
-			});
-
-			collector.on("end", () => message.delete());
+				collector.on("end", () => message.delete());
 			}
 		}
 	  // ______e4example: {
@@ -892,16 +917,16 @@ class BossManager {
 			effect: "increaseDamageByAfkTime",
 			emoji: "❄️",
 			values: {
-				power: () => 1 / (60_000 * 15)
+				power: () => 1 / (60_000 * 10)
 			}
 		},
 		percentDamage:
 		{
-			description: "Базовый урон атак равен 0.2% от максимального здоровья босса",
-			effect: "increaseDamageByBossHealthPoints",
+			description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
+			effect: "increaseDamageByBossCurrentHealthPoints",
 			emoji: "🩸",
 			values: {
-				power: () => 0.002
+				power: () => 0.0005
 			}
 		},
 		manyEvent:
@@ -915,11 +940,11 @@ class BossManager {
 		},
 		togetherWeAre: 
 		{
-			description: "Каждая ваша атака увеличивает урон по боссу раздельно от кубика",
+			description: "Каждая ваша атака увеличивает урон по боссу независимо от кубика",
 			effect: "increaseDamageForBoss",
 			emoji: "💧",
 			values: {
-				power: () => 0.001
+				power: () => 0.0005
 			}
 		},
 	}));
@@ -927,6 +952,29 @@ class BossManager {
 	static BOSS_TYPES = new Collection(Object.entries({
 		
 	}));
+
+	static DAMAGE_SOURCES = {
+		message: 0,
+		attack: 1,
+		thing: 2,
+		other: 3,
+		"0": {
+			label: "Сообщения",
+			key: "message"
+		},
+		"1": {
+			label: "Прямые атаки",
+			key: "attack"
+		},
+		"2": {
+			label: "Штука",
+			key: "thing"
+		},
+		"3": {
+			label: "Другое",
+			key: "other"
+		}
+	}
  
 	static USER_DEFAULT_ATTACK_COOLDOWN = 3_600_000 * 2;
 	static USER_DEFAULT_ATTACK_DAMAGE = 10;
