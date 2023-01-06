@@ -906,7 +906,8 @@ class Command {
   
     await actionBase.action(context);
     console.log(scene);
-    const output = actionBase.textOutput.replace(/\{.+?\}/g, eval);
+    console.log(actionBase);
+    const output = actionBase.textOutput.replace(/(?<=\{).+?(?=\})/g, eval);
 
     const
       income = Math.round( elementBase.incomeCoefficient * (context.level + 2.5) * (k + 5) ),
@@ -1003,6 +1004,8 @@ class Command {
     const user = interaction.user;
     const userData = user.data;
 
+    const elementBase = this.constructor.elementTypes.at(userData.element);
+
     if (userData.elementLevel >= this.constructor.MAX_LEVEL) {
       interaction.channel.msg({title: "Ваша штука итак очень сильная.\nПоэтому пятый уровень — максимальный.", delete: 7000});
       return;
@@ -1045,7 +1048,7 @@ class Command {
     }
 
 
-    interaction.channel.msg({title: "Как это вообще работает..?", color: embedColor, description: `Не хватает ${Util.joinWithAndSeparator(resourcesInfo)}, чтобы улучшить эту клятую штуку.`, author: {iconURL: "https://media.discordapp.net/attachments/629546680840093696/855129807750299698/original.gif", name: "Упс.."}});
+    interaction.channel.msg({title: "Как это вообще работает..?", color: elementBase.color, description: `Не хватает ${Util.joinWithAndSeparator(resourcesInfo)}, чтобы улучшить эту клятую штуку.`, author: {iconURL: "https://media.discordapp.net/attachments/629546680840093696/855129807750299698/original.gif", name: "Упс.."}});
     return;
   }
 
