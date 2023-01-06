@@ -905,6 +905,7 @@ class Command {
     eventBase.fastFunc && eventBase.fastFunc(context);
   
     await actionBase.action(context);
+    console.log(scene);
     const output = actionBase.textOutput.replace(/\{.+?\}/g, eval);
 
     const
@@ -917,7 +918,7 @@ class Command {
       title: phrase, 
       description: `Вы помогли серверу — он получил ${Util.ending(income, "коин", "ов", "", "а")}${eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"}`,
       color: elementBase.color,
-      author: {iconURL: userData.avatarURL(), name: userData.username},
+      author: {iconURL: user.avatarURL(), name: user.username},
       fields: [{name: `Если коротко..`, value: `**${eventBase.description}**\n⠀`}, {name: `${elementBase.emoji} ${context.level + 1} ур.`, value: output}],
       footer: {text: `Скажем так: эта вещь чем-то похожа на ${footerPhrase}..`}
     });
@@ -1099,10 +1100,8 @@ class Command {
     }
 
     
-    this.run({user: interaction.user, channel: interaction.channel, elementBase, level: userData.elementLevel ?? 0});
+    await this.run({user: interaction.user, channel: interaction.channel, elementBase, level: userData.elementLevel ?? 0});
     userData.CD_52 = Math.max(userData.CD_52 ?? 0, Date.now()) + COOLDOWN;
-
-    
   }
 
 
