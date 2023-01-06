@@ -878,6 +878,61 @@ class Command {
         ],
       ],
       filterFunc: ({userData, level, scene}) => userData.curse
+    },
+    {
+      id: "starsInWindow",
+      _weight: 2,
+      description: "Когда звёзды встанут в ряд, ты прими это как знак, что всё будет впорядке...",
+      variability: [
+        [
+          {
+            action: async ({userData, level, scene}) => {
+              userData.chestBonus = (userData.chestBonus || 0) + 30;
+            },
+            textOutput: "30 бонусов сундука получено"
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async ({userData, level, scene}) => {
+              userData.chestBonus = (userData.chestBonus || 0) + 30;
+            },
+            textOutput: "30 бонусов сундука получено"
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async ({userData, level, scene}) => {
+              userData.chestBonus = (userData.chestBonus || 0) + 30;
+            },
+            textOutput: "30 бонусов сундука получено"
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async ({userData, level, scene}) => {
+              userData.chestBonus = (userData.chestBonus || 0) + 30;
+            },
+            textOutput: "30 бонусов сундука получено"
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+      ]
     }
   ];
 
