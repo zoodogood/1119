@@ -1154,6 +1154,22 @@ class Command {
     userData.CD_52 = Math.max(userData.CD_52 ?? 0, Date.now()) + COOLDOWN;
   }
 
+  boss = {
+    manager: import("#src/modules/BossManager.js"),
+    isAvailable: (guild) => {
+      return this.boss.manager.isArrivedIn(guild);
+    },
+    makeDamage: (guild, user) => {
+      const boss = guild.data.boss;
+      const DAMAGE_SOURCE_TYPE = this.boss.manager.DAMAGE_SOURCES.thing;
+
+      const damage = 100;
+
+      const dealt = this.boss.manager.makeDamage(boss, damage, {sourceUser: user, damageSourceType: DAMAGE_SOURCE_TYPE});
+      return dealt;
+    }
+  }
+
 
 	options = {
 	  "name": "thing",
