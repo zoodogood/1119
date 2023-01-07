@@ -973,14 +973,14 @@ class Command {
 
     const contents = {
       guildTakeCoins: `Вы помогли серверу — он получил ${ Util.ending(income, "коин", "ов", "", "а") }`,
-      bossDealt: boss.isAvailable ? `Нанесено урона по боссу: ${ bossDamageDealt } ед. ${ boss.element === elementBase.index ? `X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
+      bossDealt: boss.isAvailable ? `\nНанесено урона по боссу: ${ bossDamageDealt } ед. ${ boss.element === elementBase.index ? `X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
       event: eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"
     };
 
     channel.guild.data.coins += income;
     channel.msg({
       title: phrase, 
-      description: `${ contents.bossDealt }`,
+      description: `${ contents.guildTakeCoins }${ contents.bossDealt }${ contents.event }`,
       color: elementBase.color,
       author: {iconURL: user.avatarURL(), name: user.username},
       fields: [{name: `Если коротко..`, value: `**${eventBase.description}**\n⠀`}, {name: `${elementBase.emoji} ${context.level + 1} ур.`, value: output}],
