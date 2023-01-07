@@ -1010,6 +1010,14 @@ class Command {
     return;
   }
 
+  async displayThingIsInCooldown({interaction, cooldownThresholder, elementBase}){
+    const title = `${ elementBase.emoji } Штука перезаряжается!`;
+    const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${ Util.timestampToDate(userData.CD_52 - cooldownThresholder) }`;
+
+    interaction.channel.msg({title, description, color: elementBase.color});
+    return;
+  }
+
   async displaySelectElementInterface(interaction){
     const elementTypes = this.constructor.elementTypes;
     const userData = interaction.user.data;
@@ -1140,12 +1148,8 @@ class Command {
     const {cooldownThresholder, COOLDOWN} = this.getCooldownInfo();
 
     if (userData.CD_52 > cooldownThresholder){
-      const title = `${ elementBase.emoji } Штука перезаряжается!`;
-      const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${ Util.timestampToDate(userData.CD_52 - cooldownThresholder) }`;
-
+      this.displayThingIsInCooldown({interaction, cooldownThresholder, elementBase});
       msg.delete();
-
-      interaction.channel.msg({title, description, color: elementBase.color});
       return;
     }
 
