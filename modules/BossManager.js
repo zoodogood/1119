@@ -472,7 +472,7 @@ class BossManager {
 		boss.users = {};
 		boss.isArrived = true;
 		boss.damageTaken = 0;
-		boss.elementType = this.BOSS_TYPES.random();
+		boss.elementType = this.BOSS_TYPES.random().index;
 
 		boss.stats = {
 			damage: {}
