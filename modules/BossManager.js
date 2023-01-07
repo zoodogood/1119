@@ -959,7 +959,22 @@ class BossManager {
 	}));
  
 	static BOSS_TYPES = new Collection(Object.entries({
-		
+		earth: {
+			key: "earth",
+			index: 0		
+		},
+		wind: {
+			key: "wind",
+			index: 1		
+		},
+		fire: {
+			key: "fire",
+			index: 2
+		},
+		darkness: {
+			key: "darkness",
+			index: 3
+		}
 	}));
 
 	static DAMAGE_SOURCES = {
