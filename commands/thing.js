@@ -961,10 +961,26 @@ class Command {
       phrase = ["Это птица? Это самолёт! Нет, это штука!", "Вдумайтесь..", "Ученье – свет, а неученье – штука.", "Игрушка!", "Случайности случайны.", "**ШТУКОВИНА**", "Используйте !штука я, чтобы поменять стихию", "Используйте !штука улучшить, чтобы открыть новые события"].random(),
       footerPhrase = ["кубик рубика", "сапог", "звёзду", "снеговика", "зайца", "большой город", "огненную обезьяну", "ананас", "кефир"].random();
 
+    const boss = {
+      isAvailable: this.boss.isAvailable(interaction.guild),
+      damageDealt: null,
+      element: null
+    };
+    if (boss.isAvailable){
+      boss.element = guild.data.boss.elementType;
+      boss.damageDealt = this.boss.makeDamage(interaction.guild, interaction.user, {element: boss.element});
+    };
+
+    const contents = {
+      guildTakeCoins: `Вы помогли серверу — он получил ${ Util.ending(income, "коин", "ов", "", "а") }`,
+      bossDealt: boss.isAvailable ? `Нанесено урона по боссу: ${ bossDamageDealt } ед. ${ boss.element === elementBase.index ? `X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
+      event: eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"
+    };
+
     channel.guild.data.coins += income;
     channel.msg({
       title: phrase, 
-      description: `Вы помогли серверу — он получил ${Util.ending(income, "коин", "ов", "", "а")}${eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"}`,
+      description: `${ contents.bossDealt }`,
       color: elementBase.color,
       author: {iconURL: user.avatarURL(), name: user.username},
       fields: [{name: `Если коротко..`, value: `**${eventBase.description}**\n⠀`}, {name: `${elementBase.emoji} ${context.level + 1} ур.`, value: output}],
@@ -1160,14 +1176,17 @@ class Command {
 
   boss = {
     manager: import("#src/modules/BossManager.js"),
+    ELEMENT_DAMAGE_MULTIPLAYER: 2,
     isAvailable: (guild) => {
       return this.boss.manager.isArrivedIn(guild);
     },
-    makeDamage: (guild, user) => {
+    makeDamage: (guild, user, {elementType}) => {
       const boss = guild.data.boss;
       const DAMAGE_SOURCE_TYPE = this.boss.manager.DAMAGE_SOURCES.thing;
 
-      const damage = 100;
+      const multiplayer = boss.elementType === elementType ? this.boss.ELEMENT_DAMAGE_MULTIPLAYER : 1;
+      const damage = 100 * multiplayer;
+
 
       const dealt = this.boss.manager.makeDamage(boss, damage, {sourceUser: user, damageSourceType: DAMAGE_SOURCE_TYPE});
       return dealt;
