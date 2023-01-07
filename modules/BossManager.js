@@ -200,6 +200,15 @@ class BossManager {
 	  	}
  
 	}
+
+	static isArrivedIn(guild){
+		const boss = guild.data.boss;
+		if (!boss){
+			return false;
+		}
+
+		return !!boss.isArrived;
+	}
  
 	static getUserStats(boss, id){
 	  if (typeof id !== "string"){
