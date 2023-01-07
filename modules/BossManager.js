@@ -482,6 +482,7 @@ class BossManager {
 		boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
 
 		boss.avatarURL = this.getMediaAvatars().random();
+		return boss;
 	}
 
 	static getMediaAvatars(){
