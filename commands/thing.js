@@ -113,8 +113,7 @@ class Command {
           false,
           false
         ],
-      ],
-      filterFunc: ({userData, level, scene}) => true
+      ]
     },
     {
       id: "weekdays",
@@ -255,8 +254,7 @@ class Command {
             textOutput: "За дерзость вы убили торговца, забрали его товар и наглумились, подзаработав эдак коинов {scene.coins}"
           }
         ],
-      ],
-      filterFunc: ({userData, level, scene}) => true
+      ]
     },
     {
       id: "berrys",
@@ -407,8 +405,7 @@ class Command {
             textOutput: "Что может быть лучше, чем два камня нестабильности добытых из сердец слуг.. <a:void:768047066890895360>"
           },
         ],
-      ],
-      filterFunc: ({userData, level, scene}) => true
+      ]
     },
     {
       id: "fireMonkey",
@@ -601,8 +598,7 @@ class Command {
             textOutput: "Вы преподаете студентам курс высшей Астраномии.\nНеплохое занятие для того, кто хочет разрушить мир. Сегодня вы заработали 782 коина <:coin:637533074879414272>"
           }
         ],
-      ],
-      filterFunc: ({userData, level, scene}) => true
+      ]
     },
     {
       id: "aBeautifulFox",
@@ -649,8 +645,7 @@ class Command {
           false,
           false
         ],
-      ],
-      filterFunc: ({userData, level, scene}) => true
+      ]
     },
     {
       id: "curseOfWealth",
@@ -818,8 +813,7 @@ class Command {
           },
           false
         ]
-      ],
-      filterFunc: ({userData, level, scene}) => true
+      ]
     },
     {
       id: "curse",
@@ -889,10 +883,10 @@ class Command {
     const context = {user, elementBase, channel, scene, level, userData: user.data};
 
     const _transformWeightOf = (event) => typeof event._weight === "function" ? {...event, _weight: event._weight(context)} : event;
-  
+    const needSkip = event => "filterFunc" in event === false || event.filterFunc(context);
 
     const eventBase = this.constructor.EVENTS_LIST
-      .filter(event => event.filterFunc(context))
+      .filter(needSkip)
       .map(_transformWeightOf)
       .random({weights: true});
 
@@ -905,7 +899,6 @@ class Command {
     eventBase.fastFunc && eventBase.fastFunc(context);
   
     await actionBase.action(context);
-    console.log(scene);
     const output = actionBase.textOutput.replace(/\{.+?\}/g, eval);
 
     const
