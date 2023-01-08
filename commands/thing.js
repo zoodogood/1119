@@ -957,7 +957,6 @@ class Command {
     eventBase.fastFunc && eventBase.fastFunc(context);
   
     await actionBase.action(context);
-    console.log(actionBase);
     const output = actionBase.textOutput.replace(/\{.+?\}/g, (raw) => eval(raw.slice(1, -1)));
 
     const
