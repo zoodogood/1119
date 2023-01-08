@@ -6,49 +6,53 @@ import TimeEventsManager from '#src/modules/TimeEventsManager.js';
 import { Actions } from '#src/modules/ActionManager.js';
 import { Collection } from '@discordjs/collection';
 
+const Elements = new Collection(Object.entries({
+  earth: {
+    key: "earth",
+    color: "34cc49",
+    emoji: "🍃",
+    name: "Земля",
+    label: "Создает нечто из ничего",
+    description: "Стабильность — медленно, но верно доведёт вас до вершин. Большой шанс получить ключи, коины, перцы и т.д., без рисков на неудачу.",
+    index: 0,
+    incomeCoefficient: 1
+  },
+  wind: {
+    key: "wind",
+    color: "a3ecf1",
+    emoji: "☁️",
+    name: "Воздух",
+    label: "В естественном потоке меняет одно другим",
+    description: "Никогда не знаешь что произойдет — скучно не будет.\nВозможно, вы получите большую сумму коинов, а на следующий день потеряете пару клубник.",
+    index: 1,
+    incomeCoefficient: 1.7
+  },
+  fire: {
+    key: "fire",
+    color: "dd6400",
+    emoji: "🔥",
+    name: "Огонь",
+    label: "Берёт старое и награждает новым",
+    description: "Его отличительной чертой является стабильная многаждая вероятность навсегда увеличить награду коин-сообщения, которая никогда не сгасает.",
+    index: 2,
+    incomeCoefficient: 0.8
+  },
+  darkness: {
+    key: "darkness",
+    color: "411f71",
+    emoji: "👾",
+    name: "Тьма",
+    label: "Не оставляет ничего существующего",
+    description: "Вы поступаете правильно, выбирая эту стихию, и в последствии получите свою честную нестабильность..",
+    index: 3,
+    incomeCoefficient: 0.2
+  }
+}));
+const elementsEnum = Object.fromEntries(Elements).map(({key, index}) => [key, index]);
+
+
 class Command {
-  static elementTypes = new Collection(Object.entries({
-    earth: {
-      key: "earth",
-      color: "34cc49",
-      emoji: "🍃",
-      name: "Земля",
-      label: "Создает нечто из ничего",
-      description: "Стабильность — медленно, но верно доведёт вас до вершин. Большой шанс получить ключи, коины, перцы и т.д., без рисков на неудачу.",
-      index: 0,
-      incomeCoefficient: 1
-    },
-    wind: {
-      key: "wind",
-      color: "a3ecf1",
-      emoji: "☁️",
-      name: "Воздух",
-      label: "В естественном потоке меняет одно другим",
-      description: "Никогда не знаешь что произойдет — скучно не будет.\nВозможно, вы получите большую сумму коинов, а на следующий день потеряете пару клубник.",
-      index: 1,
-      incomeCoefficient: 1.7
-    },
-    fire: {
-      key: "fire",
-      color: "dd6400",
-      emoji: "🔥",
-      name: "Огонь",
-      label: "Берёт старое и награждает новым",
-      description: "Его отличительной чертой является стабильная многаждая вероятность навсегда увеличить награду коин-сообщения, которая никогда не сгасает.",
-      index: 2,
-      incomeCoefficient: 0.8
-    },
-    darkness: {
-      key: "darkness",
-      color: "411f71",
-      emoji: "👾",
-      name: "Тьма",
-      label: "Не оставляет ничего существующего",
-      description: "Вы поступаете правильно, выбирая эту стихию, и в последствии получите свою честную нестабильность..",
-      index: 3,
-      incomeCoefficient: 0.2
-    }
-  }));
+  static Elements = Elements;
 
   static EVENTS_LIST = [
     {
@@ -976,7 +980,7 @@ class Command {
 
     const contents = {
       guildTakeCoins: `Вы помогли серверу — он получил ${ Util.ending(income, "коин", "ов", "", "а") }`,
-      bossDealt: boss.isAvailable ? `\nНанесено урона по боссу: ${ boss.damageDealt } ед. ${ boss.element === elementBase.index ? `X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
+      bossDealt: boss.isAvailable ? `\nНанесено урона по боссу: ${ boss.damageDealt } ед. ${ boss.element === elementBase.index ? `, под эффектом X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
       event: eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"
     };
 
@@ -1040,7 +1044,7 @@ class Command {
   }
 
   async displaySelectElementInterface(interaction){
-    const elementTypes = this.constructor.elementTypes;
+    const Elements = this.constructor.Elements;
     const userData = interaction.user.data;
 
     const embed = {
@@ -1053,11 +1057,11 @@ class Command {
       footer: {
         text: `Вы всегда сможете изменить выбор — "!штука я"\nТакже не забывайте улучшать её способности командой "!штука улучшить"`
       },
-      fields: elementTypes.map(elementBase => ({name: `**${ elementBase.emoji } ${ elementBase.name }**`, value: `${ elementBase.label }.`}))
+      fields: Elements.map(elementBase => ({name: `**${ elementBase.emoji } ${ elementBase.name }**`, value: `${ elementBase.label }.`}))
     }
 
     const message = await interaction.channel.msg(embed);
-    const reactions = elementTypes.map(elementBase => elementBase.emoji);
+    const reactions = Elements.map(elementBase => elementBase.emoji);
     const react = await message.awaitReact({user: interaction.user, removeType: "all"}, ...reactions);
     message.delete();
 
@@ -1067,7 +1071,7 @@ class Command {
     }
 
     userData.element = index;
-    const elementBase = elementTypes.at(index);
+    const elementBase = Elements.at(index);
     interaction.channel.msg({
       title: `${ elementBase.name } ${ elementBase.emoji } — Вы выбрали элемент`,
       description: elementBase.description
@@ -1080,7 +1084,7 @@ class Command {
     const user = interaction.user;
     const userData = user.data;
 
-    const elementBase = this.constructor.elementTypes.at(userData.element);
+    const elementBase = this.constructor.Elements.at(userData.element);
 
     if (userData.elementLevel >= this.constructor.MAX_LEVEL) {
       interaction.channel.msg({title: "Ваша штука итак очень сильная.\nПоэтому пятый уровень — максимальный.", delete: 7000});
@@ -1137,7 +1141,7 @@ class Command {
       const elementIndex = userData.element ?? null;
       
 
-      const element = (elementIndex) ? this.constructor.elementTypes.get(elementIndex) : null;
+      const element = (elementIndex) ? this.constructor.Elements.get(elementIndex) : null;
       return this.displayUserInfo({element, interaction});
     }
 
@@ -1165,7 +1169,7 @@ class Command {
       return;
     }
 
-    const elementBase = this.constructor.elementTypes.at(element);
+    const elementBase = this.constructor.Elements.at(element);
     const {cooldownThresholder, COOLDOWN} = this.getCooldownInfo();
 
     if (userData.CD_52 > cooldownThresholder){
@@ -1216,3 +1220,4 @@ class Command {
 };
 
 export default Command;
+export {Elements, elementsEnum};
