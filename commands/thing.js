@@ -1028,6 +1028,8 @@ class Command {
   }
 
   async displayThingIsInCooldown({interaction, cooldownThresholder, elementBase}){
+    const userData = interaction.user.data;
+    
     const title = `${ elementBase.emoji } Штука перезаряжается!`;
     const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${ Util.timestampToDate(userData.CD_52 - cooldownThresholder) }`;
 
