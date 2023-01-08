@@ -954,7 +954,8 @@ class Command {
     eventBase.fastFunc && eventBase.fastFunc(context);
   
     await actionBase.action(context);
-    const output = actionBase.textOutput.replace(/(?<=\{).+?(?=\})/g, eval);
+    console.log(actionBase);
+    const output = actionBase.textOutput.replace(/\{.+?\}/g, (raw) => eval(raw.slice(1, -1)));
 
     const
       income = Math.round( elementBase.incomeCoefficient * (context.level + 2.5) * (k + 5) ),
@@ -962,13 +963,13 @@ class Command {
       footerPhrase = ["кубик рубика", "сапог", "звёзду", "снеговика", "зайца", "большой город", "огненную обезьяну", "ананас", "кефир"].random();
 
     const boss = {
-      isAvailable: this.boss.isAvailable(interaction.guild),
+      isAvailable: this.boss.isAvailable(channel.guild),
       damageDealt: null,
       element: null
     };
     if (boss.isAvailable){
       boss.element = guild.data.boss.elementType;
-      boss.damageDealt = this.boss.makeDamage(interaction.guild, interaction.user, {element: boss.element});
+      boss.damageDealt = this.boss.makeDamage(channel.guild, user, {element: boss.element});
     };
 
     const contents = {
@@ -1174,8 +1175,12 @@ class Command {
     userData.CD_52 = Math.max(userData.CD_52 ?? 0, Date.now()) + COOLDOWN;
   }
 
+  
+
   boss = {
-    manager: import("#src/modules/BossManager.js"),
+    manager: import("#src/modules/BossManager.js")
+      .then((module) => this.boss.manager = module.BossManager),
+
     ELEMENT_DAMAGE_MULTIPLAYER: 2,
     isAvailable: (guild) => {
       return this.boss.manager.isArrivedIn(guild);
