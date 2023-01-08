@@ -234,13 +234,13 @@ class Command {
         ],
         [
           {
-            action: async ({userData, level, scene}) => {
+            action: async ({userData, level, scene, coefficient}) => {
               if ( Util.random((level + 1) / 2) ){
-                userData.coins += scene.coins = Math.floor(k);
+                userData.coins += scene.coins = Math.floor(coefficient);
                 scene.phrase = `Считай, заработали ${ Util.ending(scene.coins, "коин", "ов", "", "а")}`;
               }
               else {
-                userData.coins -= scene.coins = Math.floor(k);
+                userData.coins -= scene.coins = Math.floor(coefficient);
                 scene.phrase = `Однако, к вашему огромною удивлению дедуля отбил вашу атаку и справедливо отобрал ваши ${Util.ending(scene.coins, "коин", "ов", "", "а")}`;
               }
             },
@@ -250,7 +250,7 @@ class Command {
           false,
           false,
           {
-            action: async ({userData, level, scene}) => userData.coins += scene.coins = Math.floor(k),
+            action: async ({userData, level, scene, coefficient}) => userData.coins += scene.coins = Math.floor(coefficient),
             textOutput: "За дерзость вы убили торговца, забрали его товар и наглумились, подзаработав эдак коинов {scene.coins}"
           }
         ],
@@ -936,9 +936,9 @@ class Command {
     const guild = channel.guild;
     const userData = user.data;
 
-    const k = Util.random(this.constructor.BASIC_COINS_COEFFICIENT, {round: false});
+    const coefficient = Util.random(this.constructor.BASIC_COINS_COEFFICIENT, {round: false});
     const scene = {};
-    const context = {user, elementBase, channel, scene, level, guild, userData};
+    const context = {user, elementBase, channel, scene, level, guild, userData, coefficient};
 
     const _transformWeightOf = (event) => typeof event._weight === "function" ? {...event, _weight: event._weight(context)} : event;
     const needSkip = event => "filterFunc" in event === false || event.filterFunc(context);
@@ -960,7 +960,7 @@ class Command {
     const output = actionBase.textOutput.replace(/\{.+?\}/g, (raw) => eval(raw.slice(1, -1)));
 
     const
-      income = Math.round( elementBase.incomeCoefficient * (context.level + 2.5) * (k + 5) ),
+      income = Math.round( elementBase.incomeCoefficient * (context.level + 2.5) * (coefficient + 5) ),
       phrase = ["Это птица? Это самолёт! Нет, это штука!", "Вдумайтесь..", "Ученье – свет, а неученье – штука.", "Игрушка!", "Случайности случайны.", "**ШТУКОВИНА**", "Используйте !штука я, чтобы поменять стихию", "Используйте !штука улучшить, чтобы открыть новые события"].random(),
       footerPhrase = ["кубик рубика", "сапог", "звёзду", "снеговика", "зайца", "большой город", "огненную обезьяну", "ананас", "кефир"].random();
 
@@ -976,7 +976,7 @@ class Command {
 
     const contents = {
       guildTakeCoins: `Вы помогли серверу — он получил ${ Util.ending(income, "коин", "ов", "", "а") }`,
-      bossDealt: boss.isAvailable ? `\nНанесено урона по боссу: ${ bossDamageDealt } ед. ${ boss.element === elementBase.index ? `X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
+      bossDealt: boss.isAvailable ? `\nНанесено урона по боссу: ${ boss.damageDealt } ед. ${ boss.element === elementBase.index ? `X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
       event: eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"
     };
 
@@ -1097,7 +1097,7 @@ class Command {
       const level = userData.elementLevel || 0;
       const table = [{berrys: 5, coins: 500, voidRituals: 2}, {berrys: 15, coins: 1500, voidRituals: 3}, {berrys: 38, coins: 3337, voidRituals: 5}, {berrys: 200, coins: 30000, voidRituals: 10}][level];
 
-      const noEnought = Object.entries(table).filter(([k, v]) => v > userData[k]).map(([k, v]) =>  Util.ending(v - (userData[k] ?? 0), ...endingSuffics[k]));
+      const noEnought = Object.entries(table).filter(([key, value]) => value > userData[key]).map(([key, value]) =>  Util.ending(value - (userData[key] ?? 0), ...endingSuffics[key]));
       // Если ресурсов хватает, вернуть объект, иначе массив недостающих елементов.
       return noEnought.at(-1) ? noEnought : table;
     };
