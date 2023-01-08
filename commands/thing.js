@@ -933,9 +933,12 @@ class Command {
   static BASIC_COINS_COEFFICIENT = 20;
 
   async run({user, elementBase, channel, level}){
+    const guild = channel.guild;
+    const userData = user.data;
+
     const k = Util.random(this.constructor.BASIC_COINS_COEFFICIENT, {round: false});
     const scene = {};
-    const context = {user, elementBase, channel, scene, level, userData: user.data};
+    const context = {user, elementBase, channel, scene, level, guild, userData};
 
     const _transformWeightOf = (event) => typeof event._weight === "function" ? {...event, _weight: event._weight(context)} : event;
     const needSkip = event => "filterFunc" in event === false || event.filterFunc(context);
@@ -1029,7 +1032,7 @@ class Command {
 
   async displayThingIsInCooldown({interaction, cooldownThresholder, elementBase}){
     const userData = interaction.user.data;
-    
+
     const title = `${ elementBase.emoji } Штука перезаряжается!`;
     const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${ Util.timestampToDate(userData.CD_52 - cooldownThresholder) }`;
 
