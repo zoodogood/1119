@@ -1,5 +1,6 @@
 import { Collection } from "@discordjs/collection";
 import { DataManager, CurseManager, ResourcesEnum } from "#src/modules/mod.js";
+import { elementsEnum } from "#src/commands/thing.js";
 import { Actions } from '#src/modules/ActionManager.js';
 import * as Util from '#src/modules/util.js';
 
@@ -199,6 +200,15 @@ class BossManager {
 		 	BossManager.initBossData(guildData.boss, guild);
 	  	}
  
+	}
+
+	static isArrivedIn(guild){
+		const boss = guild.data.boss;
+		if (!boss){
+			return false;
+		}
+
+		return !!boss.isArrived;
 	}
  
 	static getUserStats(boss, id){
@@ -463,7 +473,7 @@ class BossManager {
 		boss.users = {};
 		boss.isArrived = true;
 		boss.damageTaken = 0;
-		boss.type = this.BOSS_TYPES.random();
+		boss.elementType = this.BOSS_TYPES.random().type;
 
 		boss.stats = {
 			damage: {}
@@ -473,6 +483,7 @@ class BossManager {
 		boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
 
 		boss.avatarURL = this.getMediaAvatars().random();
+		return boss;
 	}
 
 	static getMediaAvatars(){
@@ -558,7 +569,7 @@ class BossManager {
  
 	static eventBases = new Collection(Object.entries({
 		increaseAttackCooldown: {
-			_weight: 5,
+			_weight: 15,
 			id: "increaseAttackCooldown",
 			description: "Перезарядка атаки больше на 20 минут",
 			callback: ({userStats}) => {
@@ -571,7 +582,7 @@ class BossManager {
 				!attackContext.listOfEvents.some(({id}) => ["reduceAttackDamage"].includes(id))      
 		},
 		increaseCurrentAttackDamage: {
-			_weight: 15,
+			_weight: 45,
 			repeats: true,
 			id: "increaseAttackCooldown",
 			description: "Урон текущей атаки был увеличен",
@@ -580,7 +591,7 @@ class BossManager {
 			}     
 		},
 		giveChestBonus: {
-			_weight: 4,
+			_weight: 12,
 			id: "giveChestBonus",
 			description: "Выбито 4 бонуса сундука",
 			callback: ({user}) => {
@@ -588,7 +599,7 @@ class BossManager {
 			}     
 		},
 		applyCurse: {
-			_weight: 3,
+			_weight: 9,
 			id: "applyCurse",
 			description: "Вас прокляли",
 			callback: ({user, boss, channel}) => {
@@ -602,7 +613,7 @@ class BossManager {
 			filter: ({user}) => !user.data.curses?.length || user.data.voidFreedomCurse     
 		},
 		improveDamageForAll: {
-			_weight: 1,
+			_weight: 3,
 			id: "improveDamageForAll",
 			description: "Кубик — урон по боссу увеличен на 1%",
 			callback: ({user, boss}) => {
@@ -612,7 +623,7 @@ class BossManager {
 			filter: ({boss}) => boss.diceDamageMultiplayer 
 		},
 		choiseAttackDefense: {
-			_weight: 2,
+			_weight: 7,
 			id: "choiseAttackDefense",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats}) => {
@@ -667,7 +678,7 @@ class BossManager {
 			}
 		},
 		selectLegendaryWearon: {
-			_weight: Infinity,
+			_weight: 1,
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats}) => {
@@ -696,7 +707,7 @@ class BossManager {
 			}
 		},
 		choiseCreatePotion: {
-			_weight: 1,
+			_weight: 3,
 			id: "choiseCreatePotion",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, attackContext}) => {
@@ -891,14 +902,94 @@ class BossManager {
 
 				collector.on("end", () => message.delete());
 			}
+		},
+		powerOfEarth: {
+			_weight: 15,
+			id: "powerOfEarth",
+			description: "Вознаграждение за терпение",
+			callback: ({user, boss}) => {
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
+			},
+			filter: ({boss}) => boss.elementType === elementsEnum.earth
+		},
+		powerOfWind: {
+			_weight: 15,
+			id: "powerOfWind",
+			description: "Уменьшает перезарядку на случайное значение",
+			callback: ({user, boss}) => {
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
+			},
+			filter: ({boss}) => boss.elementType === elementsEnum.wind
+		},
+		powerOfFire: {
+			_weight: 15,
+			id: "powerOfFire",
+			description: "",
+			callback: ({user, boss}) => {
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
+			},
+			filter: ({boss}) => boss.elementType === elementsEnum.fire
+		},
+		powerOfDarkness: {
+			_weight: 15,
+			id: "powerOfDarkness",
+			description: "Вознагражение за настойчивость",
+			callback: ({user, boss}) => {
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
+			},
+			filter: ({boss}) => boss.elementType === elementsEnum.darkness
+		},
+		powerOfEarthRare: {
+			_weight: 1,
+			id: "powerOfEarthRare",
+			description: "",
+			callback: ({user, boss}) => {
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
+			},
+			filter: ({boss}) => boss.elementType === elementsEnum.earth
+		},
+		powerOfWindRare: {
+			_weight: 1,
+			id: "powerOfWindRare",
+			description: "",
+			callback: ({user, boss}) => {
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
+			},
+			filter: ({boss}) => boss.elementType === elementsEnum.wind
+		},
+		powerOfFireRare: {
+			_weight: 1,
+			id: "powerOfFireRare",
+			description: "Ваши прямые атаки наносят гораздо больше урона по боссу",
+			callback: ({user, boss}) => {
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
+			},
+			filter: ({boss}) => boss.elementType === elementsEnum.fire
+		},
+		powerOfDarknessRare: {
+			_weight: 1,
+			id: "powerOfDarknessRare",
+			description: "Получена нестабильность. Перезарядка атаки свыше 48ч!",
+			callback: ({user, boss}) => {
+				boss.diceDamageMultiplayer ||= 1;
+				boss.diceDamageMultiplayer += 0.01;
+			},
+			filter: ({boss}) => boss.elementType === elementsEnum.darkness
 		}
-	  // ______e4example: {
-	  //   _weight: 2,
-	  //   id: "______e4example",
-	  //   description: "Требуется совершить выбор",
-	  //   callback: async ({user, boss, channel, userStats}) => {
-	  //   }
-	  // }
+		// ______e4example: {
+		//   _weight: 2,
+		//   id: "______e4example",
+		//   description: "Требуется совершить выбор",
+		//   callback: async ({user, boss, channel, userStats}) => {
+		//   }
+		// }
  
 	}));
 
@@ -952,19 +1043,19 @@ class BossManager {
 	static BOSS_TYPES = new Collection(Object.entries({
 		earth: {
 			key: "earth",
-			index: 0
+			type: elementsEnum.earth
 		},
-		wimd: {
+		wind: {
 			key: "wind",
-			index: 1
+			type: elementsEnum.wind		
 		},
 		fire: {
 			key: "fire",
-			index: 2
+			type: elementsEnum.fire
 		},
 		darkness: {
 			key: "darkness",
-			index: 3
+			type: elementsEnum.darkness
 		}
 	}));
 

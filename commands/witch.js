@@ -112,8 +112,8 @@ class Command {
       description: (_user, interaction) => `Получите случайное количество нестабильности: 1–${ interaction.minusVoids * 2 }; Снижает уровень котла на 2.\nЕсли Ваш уровень кратен четырем, Вы получите одну дополнительную нестабильность.`,
       _weight: 2,
       filter: (user, _interaction) => user.data.voidRituals > 4,
-      action: (user, _interaction) => {
-        const voids = Util.random(1, minusVoids * 2) + !(user.data.level % 4);
+      action: (user, interaction) => {
+        const voids = Util.random(1, interaction.minusVoids * 2) + !(user.data.level % 4);
         user.data.void += voids;
         user.data.voidRituals -= 3;
       }
