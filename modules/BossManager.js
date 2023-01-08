@@ -153,7 +153,7 @@ class BossShop {
 class BossManager {
 	static async bossApparance(guild){
  
-		const TWO_MONTH = 5259600000;
+		const TWO_MONTH = 5_259_600_000;
  
 	  	if ( guild.members.me.joinedTimestamp > Date.now() + TWO_MONTH )
 			return;
@@ -910,7 +910,7 @@ class BossManager {
 
 	}))
 
-	static legendaryWearonList = new Collection(Object.entries({
+	static  legendaryWearonList = new Collection(Object.entries({
 		afkPower:
 		{
 			description: "Урон ваших атак будет расти за время простоя",
@@ -950,7 +950,22 @@ class BossManager {
 	}));
  
 	static BOSS_TYPES = new Collection(Object.entries({
-		
+		earth: {
+			key: "earth",
+			index: 0
+		},
+		wimd: {
+			key: "wind",
+			index: 1
+		},
+		fire: {
+			key: "fire",
+			index: 2
+		},
+		darkness: {
+			key: "darkness",
+			index: 3
+		}
 	}));
 
 	static DAMAGE_SOURCES = {
