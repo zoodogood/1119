@@ -971,7 +971,7 @@ class Command {
     };
     if (boss.isAvailable){
       boss.element = guild.data.boss.elementType;
-      boss.damageDealt = this.boss.makeDamage(channel.guild, user, {element: boss.element});
+      boss.damageDealt = this.boss.makeDamage(channel.guild, user, {elementType: boss.element});
     };
 
     const contents = {
