@@ -42,7 +42,7 @@ class Command {
         display: userEffects && userEffects.length
       }
     ]
-    .filter((field) => "display" in field === false || display);
+    .filter((field) => "display" in field === false || field.display);
 
     const embed = {
       description,
