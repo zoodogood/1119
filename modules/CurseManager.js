@@ -43,6 +43,9 @@ class CurseManager {
 	  }
  
 	  user.data.curses.push(curse);
+	  const curseBase = this.cursesBase.get(curse.id);
+	  const callbackMap = (user.data.cursesCallbackMap ||= {});
+	  Object.keys(curseBase.callback).map(key => callbackMap[key] = true);
  
  
 	  if (curse.values.timer){
@@ -481,7 +484,13 @@ class CurseManager {
  
 		 const image = "https://media.discordapp.net/attachments/629546680840093696/1014076170364534805/penguinwalk.gif";
  
-		 user.msg({title: "Проклятие снято 🔆", description, fields, color: "000000", image});
+		 user.msg({title: "Проклятие снято 🔆", description, fields, color: "#000000", image});
+
+		 const needRemove = (callbackKey) => !user.data.curses.some(({id}) => callbackKey in this.cursesBase.get(id).callback);
+		 const callbackMap = user.data.cursesCallbackMap;
+		 Object.keys(callbackMap).filter(needRemove)
+		 	.forEach(key => delete callbackMap[key]);
+
 		 return;
 	  }
 	}
