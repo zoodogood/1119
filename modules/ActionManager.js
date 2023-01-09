@@ -22,6 +22,8 @@ const ActionsMap = {
 	// Boss
 	bossBeforeAttack: "bossBeforeAttack",
 	bossMakeDamage: "bossMakeDamage",
+	bossEffectInit: "bossEffectInit",
+	bossEffectTimeoutEnd: "bossEffectTimeoutEnd",
 	// Curse
 	curseInit: "curseInit",
 	curseTimeEnd: "curseTimeEnd",
