@@ -1,6 +1,6 @@
 
 import Discord from 'discord.js';
-import { CurseManager, QuestManager } from '#src/modules/mod.js';
+import { CurseManager, QuestManager, BossManager } from '#src/modules/mod.js';
 
 const ActionsMap = {
 	// Client
@@ -39,6 +39,7 @@ class ActionManager {
 
 		Object.defineProperty(Discord.User.prototype, "action", {
 			value: function(actionName, data){
+				const userData = this.data;
 
 
 				if (actionName === "globalQuest"){
@@ -47,10 +48,26 @@ class ActionManager {
 					QuestManager.onAction({user: this, questBase, data});
 				}
 
-				if (this.data.quest && QuestManager.questsBase.get(this.data.quest.id).handler === actionName){
-					const questId = this.data.quest.id;
+				if (userData.quest && QuestManager.questsBase.get(userData.quest.id).handler === actionName){
+					const questId = userData.quest.id;
 					const questBase = QuestManager.questsBase.get(questId);
 					QuestManager.onAction({user: this, questBase, data});
+				}
+
+				if (actionName in (guildData.bossEffectsCallbackMap ?? {}) && data.guild)
+				for (const effect of [...userData.bossEffects]){
+					if (effect.guildId !== data.guild.id){
+						continue;
+					};
+
+					const effectBase = BossManager.effectBases.get(effect.id);
+					try {
+						if (actionName in effectBase.callback)
+							effectBase.callback[actionName].call(null, this, effect, data);
+						
+					} catch (error) {
+						console.error(error);
+					}
 				}
 
 				// if (data.msg && data.msg.guild.data.boss){
@@ -58,16 +75,16 @@ class ActionManager {
 				// }
 			
 				/** Curse */
-				if (this.data.curses)
-				for (const curse of [...this.data.curses]){
-				const curseBase = CurseManager.cursesBase.get(curse.id);
-				try {
-					if (actionName in curseBase.callback)
-						curseBase.callback[actionName].call(null, this, curse, data);
-			
-				} catch (err) {
-					console.error(err);
-				}
+				if (actionName in (userData.cursesCallbackMap ?? {}))
+				for (const curse of [...userData.curses]){
+					const curseBase = CurseManager.cursesBase.get(curse.id);
+					try {
+						if (actionName in curseBase.callback)
+							curseBase.callback[actionName].call(null, this, curse, data);
+					
+					} catch (err) {
+						console.error(err);
+					}
 				}
 				
 			
