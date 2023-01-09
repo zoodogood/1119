@@ -19,6 +19,7 @@ class Command {
       return;
     }
 
+    const userEffects = member.data.bossEffects?.filter(({guildId}) => guildId === guild.id);
     
 
     const currentHealthPointPercent = Math.ceil((1 - boss.damageTaken / boss.healthThresholder) * 100);
@@ -31,8 +32,17 @@ class Command {
           .map(([key, value]) => `${ key }: ${ Util.toLocaleDeveloperString(value) }`)
           .join("\n")
         
+      },
+      {
+        name: "Эффекты:",
+        value: userEffects
+          .map(({id}) => `${ id }: true`)
+          .join("\n"),
+
+        display: userEffects && userEffects.length
       }
-    ];
+    ]
+    .filter((field) => "display" in field === false || display);
 
     const embed = {
       description,
