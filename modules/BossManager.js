@@ -739,7 +739,7 @@ class BossManager {
 								}
 
 								if (Object.keys(gotTable) >= 5){
-								collector.stop();
+									collector.stop();
 								}
 
 								gotTable[user.id] = true;
@@ -763,12 +763,12 @@ class BossManager {
 							const gotTable = {};
 							collector.on("collect", (_reaction, user) => {
 								if (user.id in gotTable){
-								message.msg({title: "Вы уже воспользовались котлом", color: "ff0000", delete: 3000});
-								return;
+									message.msg({title: "Вы уже воспользовались котлом", color: "ff0000", delete: 3000});
+									return;
 								}
 
 								if (Object.keys(gotTable) >= 5){
-								collector.stop();
+									collector.stop();
 								}
 
 								gotTable[user.id] = true;
@@ -993,8 +993,30 @@ class BossManager {
  
 	}));
 
-	static applyEffect({effectBase, user, data}){
+	static applyEffect({effectBase, guild, user, values = {}}){
+		const effects = (user.data.bossEffects ||= []);
+		const callbackMap = (user.data.bossEffectsCallbackMap ||= {});
+		Object.keys(effectBase.callback).forEach(callbackKey => {
+			callbackMap[callbackKey] = true;
+		});
 
+		const effect = {
+			id: effectBase.id,
+			guildId: guild.id,
+			values,
+			timestamp: Date.now()
+		};
+
+		Object.entries(effectBase.values)
+			.forEach(([key, fn]) => effect.values[key] = fn(user, effect, guild));
+
+		if (curse.values.timer){
+			const args = [user.id, effect.timestamp];
+			new TimeEvent("bossEffectTimeoutEnd", effect.values.timer, ...args);
+		}
+
+		effects.push(effect);
+		return effect;
 	}
 
 	static effectBases = new Collection(Object.entries({
