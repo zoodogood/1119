@@ -70,9 +70,6 @@ class ActionManager {
 					}
 				}
 
-				// if (data.msg && data.msg.guild.data.boss){
-				//   BossManager.effectBases[id].onAction.call(null, data);
-				// }
 			
 				/** Curse */
 				if (actionName in (userData.cursesCallbackMap ?? {}))
