@@ -129,7 +129,7 @@ class Command {
 
 
     if (interaction.userData.voidThief)
-      interaction.userData.chestBonus = (interaction.userData.chestBonus || 0) + interaction.userData.voidThief * 10;
+      interaction.userData.chestBonus = (interaction.userData.chestBonus || 0) + interaction.userData.voidThief * 15;
 
 
 
