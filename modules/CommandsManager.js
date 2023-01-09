@@ -161,12 +161,12 @@ class CommandsManager {
 				return;
 			}
 
-			let react = await message.awaitReact({user: interaction.user, removeType: "all"}, "❓");
+			const react = await message.awaitReact({user: interaction.user, removeType: "all"}, "❓");
 			if (!react){
 				return;
 			}
 
-			let helper = await CommandsManager.collection.get("commandinfo").onChatInput(interaction.message, {...interaction, params: options.name});
+			const helper = await CommandsManager.collection.get("commandinfo").onChatInput(interaction.message, {...interaction, params: options.name});
 			await Util.sleep(20000);
 			helper.delete();
 		}
@@ -203,7 +203,6 @@ class CommandsManager {
 			await typeBase.call(command, interaction);
 			this.emitter.emit("command", interaction);
 			this.statistics.increase(interaction);
-			// To-do, придумать где хранить статистику для ведения статистики
 		}
 		catch (error){
 			ErrorsHandler.Audit.push(error, interaction);
