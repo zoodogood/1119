@@ -1019,11 +1019,26 @@ class BossManager {
 		return effect;
 	}
 
+	static removeEffect({effect, user}){
+ 
+		const index = user.data.bossEffects.indexOf(effect);
+		if (index === -1){
+			return null;
+		}
+	
+		user.data.bossEffects.splice(index, 1);
+
+		const needRemove = (callbackKey) => !user.data.bossEffects.some(({id}) => callbackKey in this.effectBases.get(id).callback);
+		const callbackMap = user.data.bossEffectsCallbackMap;
+		Object.keys(callbackMap).filter(needRemove)
+			.forEach(key => delete callbackMap[key]);
+	}
+
 	static effectBases = new Collection(Object.entries({
 
 	}))
 
-	static  legendaryWearonList = new Collection(Object.entries({
+	static legendaryWearonList = new Collection(Object.entries({
 		afkPower:
 		{
 			description: "Урон ваших атак будет расти за время простоя",
