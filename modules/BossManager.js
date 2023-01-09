@@ -569,7 +569,7 @@ class BossManager {
  
 	static eventBases = new Collection(Object.entries({
 		increaseAttackCooldown: {
-			_weight: 15,
+			_weight: 1500,
 			id: "increaseAttackCooldown",
 			description: "Перезарядка атаки больше на 20 минут",
 			callback: ({userStats}) => {
@@ -582,7 +582,7 @@ class BossManager {
 				!attackContext.listOfEvents.some(({id}) => ["reduceAttackDamage"].includes(id))      
 		},
 		increaseCurrentAttackDamage: {
-			_weight: 45,
+			_weight: 4500,
 			repeats: true,
 			id: "increaseAttackCooldown",
 			description: "Урон текущей атаки был увеличен",
@@ -591,7 +591,7 @@ class BossManager {
 			}     
 		},
 		giveChestBonus: {
-			_weight: 12,
+			_weight: 1200,
 			id: "giveChestBonus",
 			description: "Выбито 4 бонуса сундука",
 			callback: ({user}) => {
@@ -599,7 +599,7 @@ class BossManager {
 			}     
 		},
 		applyCurse: {
-			_weight: 9,
+			_weight: 900,
 			id: "applyCurse",
 			description: "Вас прокляли",
 			callback: ({user, boss, channel}) => {
@@ -613,7 +613,7 @@ class BossManager {
 			filter: ({user}) => !user.data.curses?.length || user.data.voidFreedomCurse     
 		},
 		improveDamageForAll: {
-			_weight: 3,
+			_weight: 300,
 			id: "improveDamageForAll",
 			description: "Кубик — урон по боссу увеличен на 1%",
 			callback: ({user, boss}) => {
@@ -623,7 +623,7 @@ class BossManager {
 			filter: ({boss}) => boss.diceDamageMultiplayer 
 		},
 		choiseAttackDefense: {
-			_weight: 7,
+			_weight: 700,
 			id: "choiseAttackDefense",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats}) => {
@@ -678,7 +678,7 @@ class BossManager {
 			}
 		},
 		selectLegendaryWearon: {
-			_weight: 1,
+			_weight: 100,
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats}) => {
@@ -707,7 +707,7 @@ class BossManager {
 			}
 		},
 		choiseCreatePotion: {
-			_weight: 3,
+			_weight: 300,
 			id: "choiseCreatePotion",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, attackContext}) => {
@@ -904,7 +904,7 @@ class BossManager {
 			}
 		},
 		powerOfEarth: {
-			_weight: 15,
+			_weight: 1500,
 			id: "powerOfEarth",
 			description: "Вознаграждение за терпение",
 			callback: ({user, boss}) => {
@@ -914,7 +914,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
 		powerOfWind: {
-			_weight: 15,
+			_weight: 1500,
 			id: "powerOfWind",
 			description: "Уменьшает перезарядку на случайное значение",
 			callback: ({user, boss}) => {
@@ -924,7 +924,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.wind
 		},
 		powerOfFire: {
-			_weight: 15,
+			_weight: 1500,
 			id: "powerOfFire",
 			description: "",
 			callback: ({user, boss}) => {
@@ -934,7 +934,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.fire
 		},
 		powerOfDarkness: {
-			_weight: 15,
+			_weight: 1500,
 			id: "powerOfDarkness",
 			description: "Вознагражение за настойчивость",
 			callback: ({user, boss}) => {
@@ -944,7 +944,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.darkness
 		},
 		powerOfEarthRare: {
-			_weight: 1,
+			_weight: 100,
 			id: "powerOfEarthRare",
 			description: "",
 			callback: ({user, boss}) => {
@@ -954,7 +954,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
 		powerOfWindRare: {
-			_weight: 1,
+			_weight: 100,
 			id: "powerOfWindRare",
 			description: "",
 			callback: ({user, boss}) => {
@@ -964,7 +964,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.wind
 		},
 		powerOfFireRare: {
-			_weight: 1,
+			_weight: 100,
 			id: "powerOfFireRare",
 			description: "Ваши прямые атаки наносят гораздо больше урона по боссу",
 			callback: ({user, boss}) => {
@@ -974,7 +974,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.fire
 		},
 		powerOfDarknessRare: {
-			_weight: 1,
+			_weight: 100,
 			id: "powerOfDarknessRare",
 			description: "Получена нестабильность. Перезарядка атаки свыше 48ч!",
 			callback: ({user, boss}) => {
