@@ -19,7 +19,7 @@ class Command {
       return;
     }
 
-    const userEffects = member.data.bossEffects?.filter(({guildId}) => guildId === guild.id);
+    const userEffects = member.data.bossEffects?.filter(({guildId}) => guildId === guild.id) ?? [];
     
 
     const currentHealthPointPercent = Math.ceil((1 - boss.damageTaken / boss.healthThresholder) * 100);
