@@ -1024,7 +1024,6 @@ class BossManager {
 		Object.entries({...effectBase.values, ...values})
 			.forEach(([key, fn]) => effect.values[key] = fn(user, effect, guild));
 
-		const userStats = this.getUserStats(guild.data.boss, user.id);
 
 		if (effect.values.timer){
 			const args = [user.id, effect.timestamp];
