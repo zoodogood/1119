@@ -36,8 +36,8 @@ class Command {
       {
         name: "Эффекты:",
         value: userEffects
-          .map(({id}) => `${ id }: true`)
-          .join("\n"),
+          .map(({id}) => id)
+          .join(",\n"),
 
         display: userEffects && userEffects.length
       }
