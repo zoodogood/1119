@@ -48,7 +48,7 @@ const Elements = new Collection(Object.entries({
     incomeCoefficient: 0.2
   }
 }));
-const elementsEnum = Object.fromEntries(Elements).map(({key, index}) => [key, index]);
+const elementsEnum = Object.entries(Elements).map(({key, index}) => [key, index]);
 
 
 class Command {
@@ -58,7 +58,7 @@ class Command {
     {
       id: "day",
       _weight: 80,
-      description: ["Обычный день..", `${Util.random(1) ? "Обычный" : "Будний"} ${["Зимний", "Весенний", "Летний", "Осенний"][Math.floor((new Date().getMonth() + 1) / 3) % 4]} день...`, "Ничего не происходит.", "Происходит самое скучное событие — ничего не происходит"].random(),
+      description: () => ["Обычный день..", `${Util.random(1) ? "Обычный" : "Будний"} ${["Зимний", "Весенний", "Летний", "Осенний"][Math.floor((new Date().getMonth() + 1) / 3) % 4]} день...`, "Ничего не происходит.", "Происходит самое скучное событие — ничего не происходит"].random(),
       variability: [
         [
           {
@@ -981,7 +981,8 @@ class Command {
     const contents = {
       guildTakeCoins: `Вы помогли серверу — он получил ${ Util.ending(income, "коин", "ов", "", "а") }`,
       bossDealt: boss.isAvailable ? `\nНанесено урона по боссу: ${ boss.damageDealt } ед. ${ boss.element === elementBase.index ? `, под эффектом X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
-      event: eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:"
+      event: eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:",
+      description: typeof eventBase.description === "function" ? eventBase.description(context) : eventBase.description
     };
 
     channel.guild.data.coins += income;
@@ -990,7 +991,7 @@ class Command {
       description: `${ contents.guildTakeCoins }${ contents.bossDealt }${ contents.event }`,
       color: elementBase.color,
       author: {iconURL: user.avatarURL(), name: user.username},
-      fields: [{name: `Если коротко..`, value: `**${eventBase.description}**\n⠀`}, {name: `${elementBase.emoji} ${context.level + 1} ур.`, value: output}],
+      fields: [{name: `Если коротко..`, value: `**${ contents.description }**\n⠀`}, {name: `${elementBase.emoji} ${context.level + 1} ур.`, value: output}],
       footer: {text: `Скажем так: эта вещь чем-то похожа на ${footerPhrase}..`}
     });
   }
