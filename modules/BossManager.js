@@ -517,7 +517,7 @@ class BossManager {
 		 eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
 	  };
 	  const pull = [...BossManager.eventBases.values()];
-	  const data = {user, userStats, boss, channel, attackContext};
+	  const data = {user, userStats, boss, channel, attackContext, guild: channel.guild};
 
 	  user.action(Actions.bossBeforeAttack, data);
 	  
@@ -681,7 +681,7 @@ class BossManager {
 			_weight: 100,
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
-			callback: async ({user, boss, channel, userStats}) => {
+			callback: async ({user, boss, channel, userStats, guild}) => {
 				const reactions = [...this.legendaryWearonList.values()].map(({emoji}) => emoji);
 				const getLabel = ({description, emoji}) => `${ emoji } ${ description }.`;
 				const embed = {
@@ -697,14 +697,27 @@ class BossManager {
 				const message = await channel.msg(embed);
 				const filter = ({emoji}, member) => user === member && reactions.includes(emoji.name);
 				const collector = message.createReactionCollector({filter, time: 120_000, max: 1});
-				collector.on("collect", (reaction) => {
+				collector.on("collect", async (reaction) => {
 					const emoji = reaction.emoji.name;
-
+					const wearon = this.legendaryWearonList.find(wearon => wearon.emoji === emoji);
+					if (!wearon){
+						throw new Error("Unexpected Exception");
+					}
 					
+					const effectBase = this.effectBases.get(wearon.effect);
+					const values = wearon.values;
+					this.applyEffect({guild, user, effectBase, values});
+					userStats.haveLegendaryWearon = true;
+
+					message.channel.msg({color: "#000000", description: `Выбрано: ${ wearon.description }`, delete: 10_000});
+					await Util.sleep(10_000);
+					collector.stop();
 				});
 
 				collector.on("end", () => message.delete());
-			}
+			},
+
+			filter: ({userStats}) => !userStats.haveLegendaryWearon
 		},
 		choiseCreatePotion: {
 			_weight: 300,
@@ -976,7 +989,7 @@ class BossManager {
 		powerOfDarknessRare: {
 			_weight: 100,
 			id: "powerOfDarknessRare",
-			description: "Получена нестабильность. Перезарядка атаки свыше 48ч!",
+			description: "Получена нестабильность. Перезарядка атаки свыше 48 ч.",
 			callback: ({user, boss}) => {
 				boss.diceDamageMultiplayer ||= 1;
 				boss.diceDamageMultiplayer += 0.01;
@@ -1000,17 +1013,20 @@ class BossManager {
 			callbackMap[callbackKey] = true;
 		});
 
+		 
 		const effect = {
 			id: effectBase.id,
 			guildId: guild.id,
-			values,
-			timestamp: Date.now()
+			timestamp: Date.now(),
+			values: {}
 		};
 
-		Object.entries(effectBase.values)
+		Object.entries({...effectBase.values, ...values})
 			.forEach(([key, fn]) => effect.values[key] = fn(user, effect, guild));
 
-		if (curse.values.timer){
+		const userStats = this.getUserStats(guild.data.boss, user.id);
+
+		if (effect.values.timer){
 			const args = [user.id, effect.timestamp];
 			new TimeEvent("bossEffectTimeoutEnd", effect.values.timer, ...args);
 		}
@@ -1035,7 +1051,17 @@ class BossManager {
 	}
 
 	static effectBases = new Collection(Object.entries({
-
+		increaseDamageByAfkTime: {
+			id: "increaseDamageByAfkTime",
+			callback: {
+				bossBeforeAttack: (user, effect, guild) => {
+					console.log(effect);
+				}
+			},
+			values: {
+				power: () => 1 / 100_000
+			}
+		}
 	}))
 
 	static legendaryWearonList = new Collection(Object.entries({
@@ -1075,6 +1101,16 @@ class BossManager {
 				power: () => 0.0005
 			}
 		},
+		complexWork:
+		{
+			description: "Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону",
+			effect: "increaseDamageWhenStrictlyMessageChallenge",
+			emoji: "🎈",
+			values: {
+				power: () => 1.2,
+				basic: () => 5
+			}
+		}
 	}));
  
 	static BOSS_TYPES = new Collection(Object.entries({
