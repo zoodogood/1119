@@ -1,20 +1,32 @@
 import * as Util from '#src/modules/util.js';
 import { client } from '#src/index.js';
+import config from '#src/config';
 import DataManager from '#src/modules/DataManager.js';
+import CommandsManager from '#src/modules/CommandsManager.js';
 
 class Command {
 
 	async onChatInput(msg, interaction){
 
 
-    let {rss, heapTotal} = process.memoryUsage();
-    let season = ["Зима", "Весна", "Лето", "Осень"][Math.floor((new Date().getMonth() + 1) / 3) % 4];
-    const VERSION = "V6.0 BETA";
+    const {rss, heapTotal} = process.memoryUsage();
+    const season = ["Зима", "Весна", "Лето", "Осень"][Math.floor((new Date().getMonth() + 1) / 3) % 4];
+    const version = config.version;
+
+    const contents = {
+      ping: `<:online:637544335037956096> Пинг: ${ client.ws.ping }`,
+      version: `V${ version }`,
+      season: `[#${season}](https://hytale.com/supersecretpage)`,
+      guilds: `Серваков...**${ client.guilds.cache.size }**`,
+      commands: `Команд: ${ CommandsManager.collection.size }`,
+      time: `Время сервера: ${ new Intl.DateTimeFormat("ru-ru", {hour: "2-digit", minute: "2-digit"}).format() }`,
+      performance: `\`${( heapTotal/1024/1024 ).toFixed(2)} мб / ${( rss/1024/1024 ).toFixed(2)} МБ\``
+    };
 
     const embed = {
       title: "ну типа.. ай, да, я живой, да",
-      description: `<:online:637544335037956096> Пинг: ${client.ws.ping} ${VERSION} [#${season}](https://hytale.com/supersecretpage), что сюда ещё запихнуть?\nСерваков...**${client.guilds.cache.size}** (?) Команд: ${Command.cmds}\nСимволов в скрипте: примерно **#**Почему-то это никому не понравилось и было удалено;\n\`${(heapTotal/1024/1024).toFixed(2)} мб / ${(rss/1024/1024).toFixed(2)} МБ\``,
-      footer: {text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${ Util.timestampToDate(Date.now() - DataManager.data.bot.newGuildTimestamp, 2) }`},
+      description: `${ contents.ping } ${ contents.version } ${ contents.season }, что сюда ещё запихнуть?\n${ contents.guilds }(?) ${ contents.commands }\n${ contents.time }\n${ contents.performance }`,
+      footer: {text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${ Util.timestampToDate(Date.now() - (DataManager.data.bot.newGuildTimestamp ?? null), 2) }`},
       components: [
         {
           type: 2,
@@ -26,7 +38,7 @@ class Command {
           type: 2,
           label: "Сервер",
           style: 5,
-          url: "https://discord.gg/76hCg2h7r8",
+          url: config.guild.url,
           emoji: {name: "grempen", id: "753287402101014649"}
         },
         {
