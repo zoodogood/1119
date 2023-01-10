@@ -117,7 +117,7 @@ class BossShop {
 			priceMultiplayer: 1.75,
 			resource: "coins",
 			callback: ({userStats}) => {
-				userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+				userStats.attackCooldown ||= BossManager.USER_DEFAULT_ATTACK_COOLDOWN;
 				userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
 
 				userStats.attack_CD -= userStats.attackCooldown;
@@ -318,7 +318,7 @@ class BossManager {
 	}
 
 	static async createBonusesChest({guild, boss, thatLevel}){
-	  const color = "ffda73";
+	  const color = "#ffda73";
 	  const embed = {
 		 title: "Сундук с наградами",
 		 description: `Получите бонусы за победу над боссом ур. ${ thatLevel }.\nВремя ограничено двумя часами с момента отправки этого сообщения.`,
@@ -373,7 +373,7 @@ class BossManager {
 	  const description = `${ descriptionImage }\n\n${ descriptionFacts }`;
  
 	  const embed = {
-		 color: "210052",
+		 color: "#210052",
 		 description
 	  }
   
@@ -502,7 +502,7 @@ class BossManager {
 	  const footer = {iconURL: user.avatarURL(), text: user.tag};
 	  if (userStats.attack_CD > Date.now()){
 		 const description = `**${ Util.timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
-		 channel.msg({title: "⚔️ Перезарядка..!", color: "ff0000", description, delete: 7000, footer});
+		 channel.msg({title: "⚔️ Перезарядка..!", color: "#ff0000", description, delete: 7000, footer});
 		 return;
 	  }
  
@@ -678,7 +678,7 @@ class BossManager {
 			}
 		},
 		selectLegendaryWearon: {
-			_weight: 100,
+			_weight: 10000000000,
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, guild}) => {
@@ -747,7 +747,7 @@ class BossManager {
 							const gotTable = {};
 							collector.on("collect", (_reaction, user) => {
 								if (user.id in gotTable){
-								message.msg({title: "Вы уже воспользовались котлом", color: "ff0000", delete: 3000});
+								message.msg({title: "Вы уже воспользовались котлом", color: "#ff0000", delete: 3000});
 								return;
 								}
 
@@ -776,7 +776,7 @@ class BossManager {
 							const gotTable = {};
 							collector.on("collect", (_reaction, user) => {
 								if (user.id in gotTable){
-									message.msg({title: "Вы уже воспользовались котлом", color: "ff0000", delete: 3000});
+									message.msg({title: "Вы уже воспользовались котлом", color: "#ff0000", delete: 3000});
 									return;
 								}
 
@@ -1053,12 +1053,15 @@ class BossManager {
 		increaseDamageByAfkTime: {
 			id: "increaseDamageByAfkTime",
 			callback: {
-				bossBeforeAttack: (user, effect, guild) => {
-					console.log(effect);
+				bossBeforeAttack: (user, effect, data) => {
+					const {attackContext} = data;
+					const {power, lastAttackTimestamp} = effect.values;
+					attackContext.damageMultiplayer += (Date.now() - lastAttackTimestamp) * power;
 				}
 			},
 			values: {
-				power: () => 1 / 100_000
+				power: () => 1 / 100_000,
+				lastAttackTimestamp: () => Date.now()
 			}
 		}
 	}))
