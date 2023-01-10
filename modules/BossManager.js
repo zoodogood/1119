@@ -1136,7 +1136,7 @@ class BossManager {
 
 							userStats.damagePerMessage = Math.ceil(
 								(userStats.damagePerMessage || 1)
-								** values.power + values.basic
+								* values.power + values.basic
 							);
 							
 						}
@@ -1144,7 +1144,7 @@ class BossManager {
 					
 					hoursMap[currentHour]++;
 					if (hoursMap[currentHour] === values.goal){
-						message.react("😊");
+						message.react("998886124380487761");
 					}
 				}
 			},
@@ -1200,8 +1200,8 @@ class BossManager {
 			effect: "increaseDamageWhenStrictlyMessageChallenge",
 			emoji: "🎈",
 			values: {
-				power: () => 1.2,
-				basic: () => 5
+				power: () => 1.1,
+				basic: () => 20
 			}
 		}
 	}));
