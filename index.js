@@ -5,7 +5,7 @@ import 'dotenv/config';
 import Discord, { BaseInteraction } from 'discord.js';
 
 import * as Util from '#src/modules/util.js';
-import { Template, DataManager, BossManager, CurseManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager } from '#src/modules/mod.js';
+import { Template, DataManager, BossManager, CurseManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler } from '#src/modules/mod.js';
 import { CreateMessage } from '@zoodogood/utils/discordjs';
 
 import { Partials } from 'discord.js';
@@ -277,6 +277,7 @@ client.on("ready", async () => {
       if (error.message == "Cannot execute action on a DM channel") return console.error("Cannot in DM: " + error.method);
       if (error.message == "Unknown Message") return;
       console.info("Обработчик 1");
+      ErrorsHandler.Audit.push(error, interaction);
 	    console.error(error);
   });
 
