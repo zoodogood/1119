@@ -1063,6 +1063,90 @@ class BossManager {
 				power: () => 1 / 100_000,
 				lastAttackTimestamp: () => Date.now()
 			}
+		},
+		increaseDamageByBossCurrentHealthPoints: {
+			id: "increaseDamageByBossCurrentHealthPoints",
+			callback: {
+				bossBeforeAttack: (user, effect, data) => {
+					const {attackContext, boss} = data;
+					const {power} = effect.values;
+
+					const thresholder = BossManager.calculateHealthPointThresholder(boss.level);
+					const currentHealth = thresholder - boss.damageTaken;
+					const damage = Math.floor(currentHealth * power);
+					attackContext.baseDamage += damage;
+				}
+			},
+			values: {
+				power: () => 0.001
+			}
+		},
+		increaseAttackEventsCount: {
+			id: "increaseAttackEventsCount",
+			callback: {
+				bossBeforeAttack: (user, effect, data) => {
+					const {attackContext} = data;
+					const {power} = effect.values;
+					attackContext.eventsCount += power;
+				}
+			},
+			values: {
+				power: () => 1
+			}
+		},
+		increaseDamageForBoss: {
+			id: "increaseDamageForBoss",
+			callback: {
+				bossBeforeAttack: (user, effect, data) => {
+					const {boss} = data;
+					const {power} = effect.values;
+					boss.legendaryWearonDamageMultiplayer ||= 0;
+					boss.legendaryWearonDamageMultiplayer += power;
+				}
+			},
+			values: {
+				power: () => 1 / 100_000
+			}
+		},
+		increaseDamageWhenStrictlyMessageChallenge: {
+			id: "increaseDamageWhenStrictlyMessageChallenge",
+			callback: {
+				messageCreate: (user, effect, message) => {
+					const values = effect.values;
+					const userStats = BossManager.getUserStats(message.guild.data.boss, message.author.id);
+
+					const currentHour = Math.floor(Date.now() / 36_000_000);
+
+					const hoursMap = values.hoursMap;
+
+					if (currentHour in hoursMap === false){
+						hoursMap[currentHour] = 0;
+						const previousHourMessages = Object.entries(hoursMap)
+							.reduce((acc, entrie) => acc.at(1) > entrie.at(1) ? acc : entrie, {})
+							.at(1);
+
+						if (previousHourMessages === values.goal){
+
+							userStats.damagePerMessage = Math.ceil(
+								(userStats.damagePerMessage || 1)
+								** values.power + values.basic
+							);
+							
+						}
+					}
+					
+					hoursMap[currentHour]++;
+					if (hoursMap[currentHour] === values.goal){
+						message.react("😊");
+					}
+				}
+			},
+			values: {
+				power: () => 1.5,
+				basic: 2,
+				goal: 30,
+				hours: {}
+			}
 		}
 	}))
 
