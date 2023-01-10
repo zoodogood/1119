@@ -696,7 +696,7 @@ class BossManager {
 
 				const message = await channel.msg(embed);
 				const filter = ({emoji}, member) => user === member && reactions.includes(emoji.name);
-				const collector = message.createReactionCollector({filter, time: 120_000, max: 1});
+				const collector = message.createReactionCollector({filter, time: 300_000, max: 1});
 				collector.on("collect", async (reaction) => {
 					const emoji = reaction.emoji.name;
 					const wearon = this.legendaryWearonList.find(wearon => wearon.emoji === emoji);
@@ -1107,7 +1107,7 @@ class BossManager {
 				bossBeforeAttack: (user, effect, data) => {
 					const {boss} = data;
 					const {power} = effect.values;
-					boss.legendaryWearonDamageMultiplayer ||= 0;
+					boss.legendaryWearonDamageMultiplayer ||= 1;
 					boss.legendaryWearonDamageMultiplayer += power;
 				}
 			},
