@@ -35,12 +35,10 @@ function parseInputCommandFromMessage(message){
 		command: CommandsManager.callMap.get(commandBase),
 		client: message.client,
 		params,
-		message,
+		message
 	}
 
-	if (!commandContext.command){
-		return null;
-	}
+	
 
 	Object.assign(commandContext, {
 		user: 	 	message.author,
@@ -50,7 +48,13 @@ function parseInputCommandFromMessage(message){
 		member:   	message.guild ? message.guild.members.resolve(message.author) : null,
 		mention: 	message.mentions.users.first() ?? null
 
-	})
+	});
+
+	commandContext.user.action(Action.inputCommandParsed, commandContext);
+
+	if (!commandContext.command){
+		return null;
+	};
 	return commandContext;
 }
 

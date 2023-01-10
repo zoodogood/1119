@@ -29,6 +29,7 @@ const ActionsMap = {
 	curseTimeEnd: "curseTimeEnd",
 	// Other
 	callCommand: "callCommand",
+	inputCommandParsed: "inputCommandParsed",
 	any: "_any"
 }
 
