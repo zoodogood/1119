@@ -3,9 +3,6 @@ import Discord from 'discord.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-    if (msg.author.id != 921403577539387454){
-      return msg.msg({delete: 4000, content: "Эта команда была удалена"});
-    }
     let
       channel      = msg.channel,
       sum_messages = [],
