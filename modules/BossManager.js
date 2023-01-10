@@ -15,11 +15,11 @@ class BossShop {
 		const boughtMap = (userStats.bought ||= {});
 		
 
-	  	const createEmbed = ({boss, user, edit}) => {
+		const createEmbed = ({boss, user, edit}) => {
 			const data = user.data;
 
 			const getDescription = (product) => typeof product.description === "function" ? product.description({userStats, boss, user, product}) : product.description;
- 
+
 			const productsContent = this.PRODUCTS
 				.map((product) => ({
 					label: `${ product.emoji } — ${ getDescription(product) }.`,
@@ -31,48 +31,48 @@ class BossShop {
 
 			const descriptionContent = `Приобретите эти товары! Ваши экономические возможности:\n${  Util.ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> и ${ Util.ending(data.keys, "ключ", "ей", "", "а") } 🔩 на руках`;
 			const description = `${ descriptionContent }\n\n${ productsContent }`;
- 
-		 	return {
+
+			return {
 				title: "Тайная лавка Гремпенса",
 				author: {name: user.username, iconURL: user.avatarURL()},
 				description,
 				edit,
 				reactions: edit ? [] : [...this.PRODUCTS.filter(product => this.isUserCanBuyProduct({user, product, userStats})).map(({emoji}) => emoji)]
 			};
-	  	}
- 
+		}
+
 		
-	  	
-	  
-	  	let message = await channel.msg( createEmbed({boss, user, edit: false}) );
+		
+	
+		let message = await channel.msg( createEmbed({boss, user, edit: false}) );
 		const filter = (_reaction, member) => user.id === member.id;
-	  	const collector = message.createReactionCollector({filter, time: 60_000});
- 
-	  	collector.on("collect", async (reaction, user) => {
-		 	reaction.users.remove(user);
-		 	const product = this.PRODUCTS.get(reaction.emoji.name);
-		 	const currentBought = this.getBoughtCount({userStats, product});
+		const collector = message.createReactionCollector({filter, time: 60_000});
+
+		collector.on("collect", async (reaction, user) => {
+			reaction.users.remove(user);
+			const product = this.PRODUCTS.get(reaction.emoji.name);
+			const currentBought = this.getBoughtCount({userStats, product});
 			
-		 	const price = this.calculatePrice({
+			const price = this.calculatePrice({
 				product,
 				boughtCount: currentBought
 			});
 
- 
-		 	if (!this.isUserCanBuyProduct({user, product, userStats})){
+
+			if (!this.isUserCanBuyProduct({user, product, userStats})){
 				message.msg({title: "Недостаточно средств!", delete: 3000});
 				reaction.remove();
 				return;
 			}
- 
-		 	product.callback({ user, userStats, boss, product });
-		 	boughtMap[ product.keyword ] = currentBought + 1;
-		 	user.data[ product.resource ] -= price;
-		 	message.msg({description: `${ product.emoji } +1`, delete: 7000});
-		 	message = await message.msg( createEmbed({boss, user, edit: true}) );
-	  	});
-	  
-	  	collector.on("end", () => message.reactions.removeAll());
+
+			product.callback({ user, userStats, boss, product });
+			boughtMap[ product.keyword ] = currentBought + 1;
+			user.data[ product.resource ] -= price;
+			message.msg({description: `${ product.emoji } +1`, delete: 7000});
+			message = await message.msg( createEmbed({boss, user, edit: true}) );
+		});
+	
+		collector.on("end", () => message.reactions.removeAll());
 	}
 
 	static isUserCanBuyProduct({user, product, userStats}){
@@ -109,8 +109,8 @@ class BossShop {
 					multiplier
 				).toFixed(3);
 			}
-		 },
-		 "🐺": {
+		},
+		"🐺": {
 			emoji: "🐺",
 			keyword: "wolf",
 			description: "Перезарядка атаки в 2 раза меньше",
@@ -123,8 +123,8 @@ class BossShop {
 
 				userStats.attack_CD -= userStats.attackCooldown;
 			}
-		 },
-		 "📡": {
+		},
+		"📡": {
 			emoji: "📡",
 			keyword: "anntena",
 			description: "На 1 больше урона за сообщение",
@@ -135,8 +135,8 @@ class BossShop {
 				userStats.damagePerMessage ||= 1;
 				userStats.damagePerMessage += 1;
 			},
-		 },
-		 "🎲": {
+		},
+		"🎲": {
 			emoji: "🎲",
 			keyword: "dice",
 			description: "Урон участников сервера на 1% эффективнее",
@@ -147,60 +147,60 @@ class BossShop {
 				boss.diceDamageMultiplayer ||= 1;
 				boss.diceDamageMultiplayer += 0.01;
 			},
-		 }
+		}
 	}));
 }
 
 
 class BossManager {
 	static async bossApparance(guild){
- 
+
 		const TWO_MONTH = 5_259_600_000;
- 
-	  	if ( guild.members.me.joinedTimestamp > Date.now() + TWO_MONTH )
+
+		if ( guild.members.me.joinedTimestamp > Date.now() + TWO_MONTH )
 			return;
 
 		
- 
-	  	const guildData = guild.data;
-	  	const now = new Date();
- 
-	  	const generateEndDate = () => {
+
+		const guildData = guild.data;
+		const now = new Date();
+
+		const generateEndDate = () => {
 			const days = DataManager.data.bot.currentDay;
-		 	guildData.boss.endingAtDay = days + 3;
-	  	}
- 
-	  	const generateNextApparance = () => {
- 
-		 	// the boss cannot spawn on other days
-		 	const MIN = 1;
-		 	const MAX = 28;
-		 	const date = new Date(now.getFullYear(), now.getMonth() + 1, Util.random(MIN, MAX));
-		 	const days =  Math.floor(date.getTime() / 86_400_000);
-		 	guildData.boss.apparanceAtDay = days;
-	  	}
- 
- 
- 
-	  	if (!guildData.boss || !guildData.boss.isArrived && !guildData.boss.apparanceAtDay){
- 
-		 	guildData.boss = {};
-		 	generateNextApparance();
-	  	}
- 
-	  	if (guildData.boss.endingAtDay <= DataManager.data.bot.currentDay){
-		 	await BossManager.beforeEnd(guild);
-		 	delete guildData.boss;
-		 	return;
-	  	}
- 
-	  	if (guildData.boss.apparanceAtDay  <= DataManager.data.bot.currentDay){
-		 	generateEndDate();
-		 	delete guildData.boss.apparanceAtDay;
- 
-		 	BossManager.initBossData(guildData.boss, guild);
-	  	}
- 
+			guildData.boss.endingAtDay = days + 3;
+		}
+
+		const generateNextApparance = () => {
+
+			// the boss cannot spawn on other days
+			const MIN = 1;
+			const MAX = 28;
+			const date = new Date(now.getFullYear(), now.getMonth() + 1, Util.random(MIN, MAX));
+			const days =  Math.floor(date.getTime() / 86_400_000);
+			guildData.boss.apparanceAtDay = days;
+		}
+
+
+
+		if (!guildData.boss || !guildData.boss.isArrived && !guildData.boss.apparanceAtDay){
+
+			guildData.boss = {};
+			generateNextApparance();
+		}
+
+		if (guildData.boss.endingAtDay <= DataManager.data.bot.currentDay){
+			await BossManager.beforeEnd(guild);
+			delete guildData.boss;
+			return;
+		}
+
+		if (guildData.boss.apparanceAtDay  <= DataManager.data.bot.currentDay){
+			generateEndDate();
+			delete guildData.boss.apparanceAtDay;
+
+			BossManager.initBossData(guildData.boss, guild);
+		}
+
 	}
 
 	static isArrivedIn(guild){
@@ -211,41 +211,41 @@ class BossManager {
 
 		return !!boss.isArrived;
 	}
- 
+
 	static getUserStats(boss, id){
-	  if (typeof id !== "string"){
-		 throw new TypeError("Expected id");
-	  }
- 
-	  const bossUsers = boss.users;
-	  if (id in bossUsers === false)
-		 bossUsers[id] = { messages: 0 };
- 
-	  return bossUsers[id];
+	if (typeof id !== "string"){
+		throw new TypeError("Expected id");
 	}
- 
+
+	const bossUsers = boss.users;
+	if (id in bossUsers === false)
+		bossUsers[id] = { messages: 0 };
+
+	return bossUsers[id];
+	}
+
 	static onMessage(message){
-	  const boss = message.guild.data.boss;
-	  const authorId = message.author.id;
- 
-	  const userStats = this.getUserStats(boss, authorId);
-	  userStats.messages++;
- 
-	  const DEFAULT_DAMAGE = 1;
-	  const damage = userStats.damagePerMessage ?? DEFAULT_DAMAGE;
-	  BossManager.makeDamage(boss, damage, {sourceUser: message.author});
+	const boss = message.guild.data.boss;
+	const authorId = message.author.id;
+
+	const userStats = this.getUserStats(boss, authorId);
+	userStats.messages++;
+
+	const DEFAULT_DAMAGE = 1;
+	const damage = userStats.damagePerMessage ?? DEFAULT_DAMAGE;
+	BossManager.makeDamage(boss, damage, {sourceUser: message.author});
 	}
- 
+
 	static calculateHealthPoint(level){
-	  return 7_000 + Math.floor(level * 500 * 1.2 ** level);
+	return 7_000 + Math.floor(level * 500 * 1.2 ** level);
 	}
- 
+
 	static calculateHealthPointThresholder(level){
-	  const totalOfPrevious = [...new Array(level - 1)]
-		 .map((_, level) => BossManager.calculateHealthPoint(level))
-		 .reduce((acc, points) => acc + points, 0);
- 
-	  return BossManager.calculateHealthPoint(level) + totalOfPrevious;
+	const totalOfPrevious = [...new Array(level - 1)]
+		.map((_, level) => BossManager.calculateHealthPoint(level))
+		.reduce((acc, points) => acc + points, 0);
+
+	return BossManager.calculateHealthPoint(level) + totalOfPrevious;
 	}
 	
 	static calculateBossDamageMultiplayer(boss, {context = {}, sourceUser = {}} = {}){
@@ -259,9 +259,9 @@ class BossManager {
 
 		return multiplier;
 	}
- 
+
 	static makeDamage(boss, damage, {sourceUser, damageSourceType} = {}){
-	  	damage *= this.calculateBossDamageMultiplayer(boss, {sourceUser, context: {
+		damage *= this.calculateBossDamageMultiplayer(boss, {sourceUser, context: {
 			restoreHealthByDamage: sourceUser.effects?.damageRestoreHealht ?? false
 		}});
 		damage = Math.floor(damage);
@@ -296,13 +296,13 @@ class BossManager {
 	}
 
 	static kill({boss, sourceUser}){
-	  	const expReward = this.calculateKillReward(boss.level);
+		const expReward = this.calculateKillReward(boss.level);
 
 		const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон";
 		if (sourceUser){
 			sourceUser.data.exp += expReward;
 		}
-		 
+		
 		const guild = this.client.guilds.cache.get(boss.guildId);
 		const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
 		guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
@@ -319,101 +319,104 @@ class BossManager {
 	}
 
 	static async createBonusesChest({guild, boss, thatLevel}){
-	  const color = "#ffda73";
-	  const embed = {
-		 title: "Сундук с наградами",
-		 description: `Получите бонусы за победу над боссом ур. ${ thatLevel }.\nВремя ограничено двумя часами с момента отправки этого сообщения.`,
-		 thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038767024643522600/1476613756146739089.png?width=593&height=593",
-		 footer: {text: "Внимание, вы можете получить награду не более чем из одного сундука за время пребывания босса"},
-		 color,
-		 reactions: ["637533074879414272"]
-	  };
- 
-	  const calculateReward = this.calculateChestBonuses;
- 
-	  const message = await guild.chatSend(embed);
-	  const collector = message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
-	  collector.on("collect", (_reaction, user) => {
-		 const userStats = BossManager.getUserStats(boss, user.id);
-  
-		 if ("chestRewardAt" in userStats){
+	const color = "#ffda73";
+	const embed = {
+		title: "Сундук с наградами",
+		description: `Получите бонусы за победу над боссом ур. ${ thatLevel }.\nВремя ограничено двумя часами с момента отправки этого сообщения.`,
+		thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038767024643522600/1476613756146739089.png?width=593&height=593",
+		footer: {text: "Внимание, вы можете получить награду не более чем из одного сундука за время пребывания босса"},
+		color,
+		reactions: ["637533074879414272"]
+	};
+
+	const calculateReward = this.calculateChestBonuses;
+
+	const message = await guild.chatSend(embed);
+	if (!message){
+		return;
+	}
+	const collector = message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
+	collector.on("collect", (_reaction, user) => {
+		const userStats = BossManager.getUserStats(boss, user.id);
+
+		if ("chestRewardAt" in userStats){
 			message.msg({title: `Вы уже взяли награду на ур. ${ userStats.chestRewardAt }`, delete: 5000});
 			return;
-		 };
- 
-		 const reward = calculateReward(thatLevel);
-		 userStats.chestRewardAt = thatLevel;
-		 user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
-		 message.msg({description: `Получено ${  Util.ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color, delete: 7000});
-	  })
- 
-	  collector.on("end", () => message.delete());
-	}
- 
-	static async beforeApparance(guild){
- 
-	  const data = guild.data;
- 
-	  if (!data.boss){
-		 return;
-	  }
- 
- 
-	  const isApparanceAtNextDay = () => {
-		 return data.boss.apparanceAtDay === DataManager.data.bot.currentDay + 1;
-	  }
- 
-	  if (!isApparanceAtNextDay()){
-		 return;
-	  }
- 
-	  await Util.sleep(3000);
- 
-	  const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
-	  const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по-завершению участники получат небольшую награду`;
-	  const description = `${ descriptionImage }\n\n${ descriptionFacts }`;
- 
-	  const embed = {
-		 color: "#210052",
-		 description
-	  }
-  
-	  await guild.chatSend(embed);
-	}
- 
-	static async beforeEnd(guild){
-	  const boss = guild.data.boss;
-	  const client = guild.client;
- 
-	  if (boss.level > 1 === false){
-		 guild.chatSend({content: "Босс покинул сервер в страхе..."});
-		 return;
-	  }
+		};
 
-	  const VOID_REWARD = 1.25;
-	  const KEYS_FOR_DAMAGE = 0.0002;
-	  
- 
-	  const contents = {
-		 dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
-		 bossLevel: `Достигнутый уровень: ${ boss.level } (${ [...new Array(boss.level - 1)].map((_, i) => this.calculateKillReward(i + 1)).reduce((acc, exp) => acc + exp) } опыта)`,
-		 damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
-		 usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
-		 parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
-		 rewards: `Пользователи получают ключи в количестве равном ${ KEYS_FOR_DAMAGE * 100 }% от нанесенного урона и случайно распределенную нестабильность, общее количество которой равно \`boss.level ** ${ VOID_REWARD }\``,
-		 voidCount: "Всего нестабильности:"
-	  }
-	  
-	  const getUsetsRewardTable = () => {
+		const reward = calculateReward(thatLevel);
+		userStats.chestRewardAt = thatLevel;
+		user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
+		message.msg({description: `Получено ${  Util.ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color, delete: 7000});
+	})
+
+	collector.on("end", () => message.delete());
+	}
+
+	static async beforeApparance(guild){
+
+	const data = guild.data;
+
+	if (!data.boss){
+		return;
+	}
+
+
+	const isApparanceAtNextDay = () => {
+		return data.boss.apparanceAtDay === DataManager.data.bot.currentDay + 1;
+	}
+
+	if (!isApparanceAtNextDay()){
+		return;
+	}
+
+	await Util.sleep(3000);
+
+	const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
+	const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по-завершению участники получат небольшую награду`;
+	const description = `${ descriptionImage }\n\n${ descriptionFacts }`;
+
+	const embed = {
+		color: "#210052",
+		description
+	}
+
+	await guild.chatSend(embed);
+	}
+
+	static async beforeEnd(guild){
+	const boss = guild.data.boss;
+	const client = guild.client;
+
+	if (boss.level > 1 === false){
+		guild.chatSend({content: "Босс покинул сервер в страхе..."});
+		return;
+	}
+
+	const VOID_REWARD = 1.25;
+	const KEYS_FOR_DAMAGE = 0.0002;
+	
+
+	const contents = {
+		dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
+		bossLevel: `Достигнутый уровень: ${ boss.level } (${ [...new Array(boss.level - 1)].map((_, i) => this.calculateKillReward(i + 1)).reduce((acc, exp) => acc + exp) } опыта)`,
+		damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
+		usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
+		parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
+		rewards: `Пользователи получают ключи в количестве равном ${ KEYS_FOR_DAMAGE * 100 }% от нанесенного урона и случайно распределенную нестабильность, общее количество которой равно \`boss.level ** ${ VOID_REWARD }\``,
+		voidCount: "Всего нестабильности:"
+	}
+	
+	const getUsetsRewardTable = () => {
 			
-		 	const table = Object.fromEntries(
+			const table = Object.fromEntries(
 				Object.keys(boss.users).map(id => [id, {}])
 			);
 
 			
 			const rewardsCount = Math.floor(boss.level ** VOID_REWARD);
 			getUsetsRewardTable.rewardsCount = rewardsCount;
-		 
+		
 			const usersOdds = Object.entries(boss.users)
 				.filter(([id]) => guild.members.cache.has(id))
 				.map(([id, {damageDealt: _weight}]) => ({id, _weight}))
@@ -433,17 +436,17 @@ class BossManager {
 			}
 			
 			return table;
-	  	}
-	 
+		}
+	
 		const usersTable = getUsetsRewardTable();
 		
 		Object.entries(usersTable).forEach(([id, {void: voidCount, keys}]) => {
 			const user = client.users.cache.get(id);
 			user.data.void += voidCount;
 			user.data.keys += keys;
-	  	})
- 
-	  	const fields = Object.entries(usersTable)
+		})
+
+		const fields = Object.entries(usersTable)
 			.filter(([id, {void: voidCount}]) => voidCount)
 			.map(([id, {void: voidCount}]) => {
 				const userStats = BossManager.getUserStats(boss, id);
@@ -453,7 +456,7 @@ class BossManager {
 				const value = `Нестабильности: \`${ voidCount }\`;\nУрона: ${ damage }ед.${ chestBonuses ? `\nБонусов из сундка: ${ chestBonuses };` : "" }`;
 				return {name: user.tag, value, inline: true};
 			});
-		 
+		
 		const footer = {
 			text: `${ contents.voidCount } ${ getUsetsRewardTable.rewardsCount }`,
 			iconURL: guild.iconURL()
@@ -468,7 +471,7 @@ class BossManager {
 		};
 		guild.chatSend(embed);
 	}
- 
+
 	static initBossData(boss, guild){
 		boss.level = 1;
 		boss.users = {};
@@ -493,81 +496,81 @@ class BossManager {
 			"https://media.discordapp.net/attachments/629546680840093696/1051424759537225748/stan.png"
 		];
 	}
- 
-	static userAttack({boss, user, channel}){
-	  const userStats = BossManager.getUserStats(boss, user.id);
-	  
-	  userStats.attack_CD ||= 0;
-	  userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
- 
-	  const footer = {iconURL: user.avatarURL(), text: user.tag};
-	  if (userStats.attack_CD > Date.now()){
-		 const description = `**${ Util.timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
-		 channel.msg({title: "⚔️ Перезарядка..!", color: "#ff0000", description, delete: 7000, footer});
-		 return;
-	  }
- 
-	  
-	  userStats.attack_CD = Date.now() + userStats.attackCooldown;
- 
-	  
-	  const attackContext = {
-		 damageMultiplayer: 1,
-		 listOfEvents: [],
-		 defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
-		 eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
-	  };
-	  const pull = [...BossManager.eventBases.values()];
-	  const data = {user, userStats, boss, channel, attackContext, guild: channel.guild};
 
-	  user.action(Actions.bossBeforeAttack, data);
-	  
-	  for (let i = 0; i < attackContext.eventsCount; i++){
-		 for (const event of pull){
+	static userAttack({boss, user, channel}){
+	const userStats = BossManager.getUserStats(boss, user.id);
+	
+	userStats.attack_CD ||= 0;
+	userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+
+	const footer = {iconURL: user.avatarURL(), text: user.tag};
+	if (userStats.attack_CD > Date.now()){
+		const description = `**${ Util.timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
+		channel.msg({title: "⚔️ Перезарядка..!", color: "#ff0000", description, delete: 7000, footer});
+		return;
+	}
+
+	
+	userStats.attack_CD = Date.now() + userStats.attackCooldown;
+
+	
+	const attackContext = {
+		damageMultiplayer: 1,
+		listOfEvents: [],
+		defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
+		eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
+	};
+	const pull = [...BossManager.eventBases.values()];
+	const data = {user, userStats, boss, channel, attackContext, guild: channel.guild};
+
+	user.action(Actions.bossBeforeAttack, data);
+	
+	for (let i = 0; i < attackContext.eventsCount; i++){
+		for (const event of pull){
 			const needSkip = event.filter && !event.filter(data);
 			
 			if (needSkip){
-			  const index = pull.indexOf(event);
-			  (~index) ? pull.splice(index, 1) : null;
+			const index = pull.indexOf(event);
+			(~index) ? pull.splice(index, 1) : null;
 			}
-		 };
- 
-		 const event = pull.random({weights: true});
-		 if (!event){
+		};
+
+		const event = pull.random({weights: true});
+		if (!event){
 			break;
-		 }
-		 if (!event.repeats){
+		}
+		if (!event.repeats){
 			const index = pull.indexOf(event);
 			~index ? pull.splice(index, 1) : null;
-		 }
- 
-		 try {
+		}
+
+		try {
 			event.callback(data);
-		 }
-		 catch (error){
+		}
+		catch (error){
 			channel.msg({title: `Источник исключения: ${ event.id }. Он был убран из списка возможных событий на неопределенный срок`, description: `**${ error.message }:**\n${ error.stack }`});
 			BossManager.eventBases.delete(event.id);
-		 }
-		 attackContext.listOfEvents.push(event);
-	  }
- 
-	  const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
-	  attackContext.defaultDamage = attackContext.damageDealt = damage;
-	  const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
- 
-	  
- 
-	  const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
-	  const description = `Нанесено урона с прямой атаки: ${ dealt }ед.\n\n${ eventsContent }`;
-	  const embed = {
-		 title: `⚔️ За сервер ${ channel.guild.name }!`,
-		 description,
-		 footer
-	  }
-	  channel.msg(embed);
+		}
+		attackContext.listOfEvents.push(event);
 	}
- 
- 
+
+	const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
+	attackContext.defaultDamage = attackContext.damageDealt = damage;
+	const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
+
+	
+
+	const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
+	const description = `Нанесено урона с прямой атаки: ${ dealt }ед.\n\n${ eventsContent }`;
+	const embed = {
+		title: `⚔️ За сервер ${ channel.guild.name }!`,
+		description,
+		footer
+	}
+	channel.msg(embed);
+	}
+
+
 	static eventBases = new Collection(Object.entries({
 		increaseAttackCooldown: {
 			_weight: 1500,
@@ -997,7 +1000,7 @@ class BossManager {
 			id: "powerOfDarknessRare",
 			description: "Получена нестабильность. Перезарядка атаки свыше 48 ч.",
 			callback: ({user, boss, userStats}) => {
-				const adding = 36_000_000 * 48;
+				const adding = 3_600_000 * 48;
 				userStats.attackCooldown += adding;
 				userStats.attack_CD += adding;
 				user.data.void++;
@@ -1011,7 +1014,7 @@ class BossManager {
 		//   callback: async ({user, boss, channel, userStats}) => {
 		//   }
 		// }
- 
+
 	}));
 
 	static applyEffect({effectBase, guild, user, values = {}}){
@@ -1021,7 +1024,7 @@ class BossManager {
 			callbackMap[callbackKey] = true;
 		});
 
-		 
+		
 		const effect = {
 			id: effectBase.id,
 			guildId: guild.id,
@@ -1043,7 +1046,7 @@ class BossManager {
 	}
 
 	static removeEffect({effect, user}){
- 
+
 		const index = user.data.bossEffects.indexOf(effect);
 		if (index === -1){
 			return null;
@@ -1123,7 +1126,7 @@ class BossManager {
 					const values = effect.values;
 					const userStats = BossManager.getUserStats(message.guild.data.boss, message.author.id);
 
-					const currentHour = Math.floor(Date.now() / 36_000_000);
+					const currentHour = Math.floor(Date.now() / 3_600_000);
 
 					const hoursMap = values.hoursMap;
 
@@ -1206,7 +1209,7 @@ class BossManager {
 			}
 		}
 	}));
- 
+
 	static BOSS_TYPES = new Collection(Object.entries({
 		earth: {
 			key: "earth",
@@ -1248,7 +1251,7 @@ class BossManager {
 			key: "other"
 		}
 	}
- 
+
 	static USER_DEFAULT_ATTACK_COOLDOWN = 3_600_000 * 2;
 	static USER_DEFAULT_ATTACK_DAMAGE = 10;
 
