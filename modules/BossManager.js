@@ -921,8 +921,8 @@ class BossManager {
 			id: "powerOfEarth",
 			description: "Вознаграждение за терпение",
 			callback: ({user, boss}) => {
-				boss.diceDamageMultiplayer ||= 1;
-				boss.diceDamageMultiplayer += 0.01;
+				const berry = 3 + boss.level;
+				user.data.berry += berry;
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
@@ -930,9 +930,10 @@ class BossManager {
 			_weight: 1500,
 			id: "powerOfWind",
 			description: "Уменьшает перезарядку на случайное значение",
-			callback: ({user, boss}) => {
-				boss.diceDamageMultiplayer ||= 1;
-				boss.diceDamageMultiplayer += 0.01;
+			callback: ({userStats}) => {
+				const piece = Math.random() * userStats.attackCooldown;
+				userStats.attack_CD = Date.now() + piece;
+				userStats.attackCooldown = piece;
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.wind
 		},
@@ -941,6 +942,7 @@ class BossManager {
 			id: "powerOfFire",
 			description: "",
 			callback: ({user, boss}) => {
+				// to-do: need idea
 				boss.diceDamageMultiplayer ||= 1;
 				boss.diceDamageMultiplayer += 0.01;
 			},
@@ -951,8 +953,10 @@ class BossManager {
 			id: "powerOfDarkness",
 			description: "Вознагражение за настойчивость",
 			callback: ({user, boss}) => {
-				boss.diceDamageMultiplayer ||= 1;
-				boss.diceDamageMultiplayer += 0.01;
+				const userData = user.data;
+				userData.keys += 5 + boss.level * 2;
+				userData.chestBonus = (userData.chestBonus || 0) + 2 + boss.level;
+				userData.coins += 20 + 15 * boss.level;
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.darkness
 		},
@@ -961,8 +965,7 @@ class BossManager {
 			id: "powerOfEarthRare",
 			description: "",
 			callback: ({user, boss}) => {
-				boss.diceDamageMultiplayer ||= 1;
-				boss.diceDamageMultiplayer += 0.01;
+				// to-do: need idea
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
@@ -971,8 +974,7 @@ class BossManager {
 			id: "powerOfWindRare",
 			description: "",
 			callback: ({user, boss}) => {
-				boss.diceDamageMultiplayer ||= 1;
-				boss.diceDamageMultiplayer += 0.01;
+				// to-do: need idea
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.wind
 		},
@@ -980,9 +982,12 @@ class BossManager {
 			_weight: 100,
 			id: "powerOfFireRare",
 			description: "Ваши прямые атаки наносят гораздо больше урона по боссу",
-			callback: ({user, boss}) => {
-				boss.diceDamageMultiplayer ||= 1;
-				boss.diceDamageMultiplayer += 0.01;
+			callback: ({user, boss, userStats}) => {
+				const multiplier = 1.2;
+				userStats.attacksDamageMultiplayer = +(
+					(userStats.attacksDamageMultiplayer ?? 1) *
+					multiplier
+				).toFixed(3);
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.fire
 		},
@@ -990,9 +995,11 @@ class BossManager {
 			_weight: 100,
 			id: "powerOfDarknessRare",
 			description: "Получена нестабильность. Перезарядка атаки свыше 48 ч.",
-			callback: ({user, boss}) => {
-				boss.diceDamageMultiplayer ||= 1;
-				boss.diceDamageMultiplayer += 0.01;
+			callback: ({user, boss, userStats}) => {
+				const adding = 36_000_000 * 48;
+				userStats.attackCooldown += adding;
+				userStats.attack_CD += adding;
+				user.data.void++;
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.darkness
 		}
