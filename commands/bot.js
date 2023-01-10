@@ -25,7 +25,7 @@ class Command {
 
     const embed = {
       title: "ну типа.. ай, да, я живой, да",
-      description: `${ contents.ping } ${ contents.version } ${ contents.season }, что сюда ещё запихнуть?\n${ contents.guilds }(?) ${ contents.commands }\n${ contents.time }\n${ contents.performance }`,
+      description: `${ contents.ping } ${ contents.version } ${ contents.season }, что сюда ещё запихнуть?\n${ contents.guilds }(?) ${ contents.commands }\n${ contents.perfomance }\n${ contents.time }`,
       footer: {text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${ Util.timestampToDate(Date.now() - (DataManager.data.bot.newGuildTimestamp ?? null), 2) }`},
       components: [
         {
