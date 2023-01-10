@@ -216,7 +216,7 @@ client.on("ready", async () => {
       {content: `Участник был ${banInfo.action == "MEMBER_KICK" ? "кикнут" : "забанен"}`, description: `${ name }\nВыгнавший с сервера: ${e.guild.members.resolve(banInfo.executor).displayName} ${ JSON.stringify(reason()).slice(0, 1000) }`} :
       {content: "Участник покинул сервер", description: `${ name }\nНадеемся, он скоро вернётся`};
 
-    e.guild.logSend({title: message.content, description: message.description, color: banInfo ? "ff0000" : "00ff00"});
+    e.guild.logSend({title: message.content, description: message.description, color: banInfo ? "#ff0000" : "#00ff00"});
   });
 
   client.on("guildMemberUpdate", async (old, memb) => {

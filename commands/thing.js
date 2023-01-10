@@ -9,7 +9,7 @@ import { Collection } from '@discordjs/collection';
 const Elements = new Collection(Object.entries({
   earth: {
     key: "earth",
-    color: "34cc49",
+    color: "#34cc49",
     emoji: "🍃",
     name: "Земля",
     label: "Создает нечто из ничего",
@@ -19,7 +19,7 @@ const Elements = new Collection(Object.entries({
   },
   wind: {
     key: "wind",
-    color: "a3ecf1",
+    color: "#a3ecf1",
     emoji: "☁️",
     name: "Воздух",
     label: "В естественном потоке меняет одно другим",
@@ -29,7 +29,7 @@ const Elements = new Collection(Object.entries({
   },
   fire: {
     key: "fire",
-    color: "dd6400",
+    color: "#dd6400",
     emoji: "🔥",
     name: "Огонь",
     label: "Берёт старое и награждает новым",
@@ -39,7 +39,7 @@ const Elements = new Collection(Object.entries({
   },
   darkness: {
     key: "darkness",
-    color: "411f71",
+    color: "#411f71",
     emoji: "👾",
     name: "Тьма",
     label: "Не оставляет ничего существующего",
