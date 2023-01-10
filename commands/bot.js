@@ -32,6 +32,7 @@ class Command {
           type: 2,
           label: "Удалить!",
           style: 1,
+          // to-do: @command/bot/removeТабло
           customId: "bot_hi"
         },
         {
