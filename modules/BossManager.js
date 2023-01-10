@@ -1,5 +1,6 @@
 import { Collection } from "@discordjs/collection";
 import { DataManager, CurseManager, ResourcesEnum } from "#src/modules/mod.js";
+import TimeEventsManager from '#src/modules/TimeEventsManager.js';
 import { elementsEnum } from "#src/commands/thing.js";
 import { Actions } from '#src/modules/ActionManager.js';
 import * as Util from '#src/modules/util.js';
@@ -1034,7 +1035,7 @@ class BossManager {
 
 		if (effect.values.timer){
 			const args = [user.id, effect.timestamp];
-			new TimeEvent("bossEffectTimeoutEnd", effect.values.timer, ...args);
+			TimeEventsManager.create("bossEffectTimeoutEnd", effect.values.timer, args);
 		}
 
 		effects.push(effect);
