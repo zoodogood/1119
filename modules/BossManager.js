@@ -1,5 +1,5 @@
 import { Collection } from "@discordjs/collection";
-import { DataManager, CurseManager, ResourcesEnum } from "#src/modules/mod.js";
+import { DataManager, CurseManager, Properties } from "#src/modules/mod.js";
 import TimeEventsManager from '#src/modules/TimeEventsManager.js';
 import { elementsEnum } from "#src/commands/thing.js";
 import { Actions } from '#src/modules/ActionManager.js';
@@ -26,7 +26,7 @@ class BossShop {
 					price: this.calculatePrice({ product, boughtCount: this.getBoughtCount({userStats, product}) }),
 					product
 				}))
-				.map(({label, price, product}) => `${ label }\n${ price } ${ ResourcesEnum.endingOf(product.resource, price) };`)
+				.map(({label, price, product}) => `${ label }\n${ price } ${ Properties.endingOf(product.resource, price) };`)
 				.join("\n");
 
 			const descriptionContent = `Приобретите эти товары! Ваши экономические возможности:\n${  Util.ending(data.coins, "монет", "", "а", "ы") } <:coin:637533074879414272> и ${ Util.ending(data.keys, "ключ", "ей", "", "а") } 🔩 на руках`;
