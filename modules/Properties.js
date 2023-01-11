@@ -89,8 +89,8 @@ const ProperiesEnum = {
 };
 
 class Properties {
-	static endingOf(resource, quantity){
-		const item = ProperiesEnum[resource];
+	static endingOf(resource, quantity, from = "User"){
+		const item = ProperiesEnum[from][resource];
 		if (!item){
 			return undefined;
 		}
@@ -98,8 +98,8 @@ class Properties {
 		return Util.ending(quantity, item.base, ...item.suffixes, {unite: (_, word) => word});
 	}
 
-	static emojiOf(resource){
-		const item = ProperiesEnum[resource];
+	static emojiOf(resource, from = "User"){
+		const item = ProperiesEnum[from][resource];
 		if (!item){
 			return undefined;
 		}
