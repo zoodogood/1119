@@ -493,7 +493,8 @@ class BossManager {
 	static getMediaAvatars(){
 		return [
 			"https://media.discordapp.net/attachments/629546680840093696/1047587012665933884/batman-gif.gif",
-			"https://media.discordapp.net/attachments/629546680840093696/1051424759537225748/stan.png"
+			"https://media.discordapp.net/attachments/629546680840093696/1051424759537225748/stan.png",
+			"https://cdn.discordapp.com/attachments/629546680840093696/1062620914321211432/DeepTown.png"
 		];
 	}
 
