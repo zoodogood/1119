@@ -6,7 +6,7 @@ class Command {
     DataManager.file.write();
     const message = await msg.channel.send({
       files: [{
-        attachment: "main/data.json",
+        attachment: "data/main.json",
         name: new Intl.DateTimeFormat("ru-ru", {year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric"}).format()
       }]
     });
