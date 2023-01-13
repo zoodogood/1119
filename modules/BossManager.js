@@ -212,6 +212,10 @@ class BossManager {
 		return !!boss.isArrived;
 	}
 
+	static isElite(boss){
+		return boss.level >= 10;
+	}
+
 	static getUserStats(boss, id){
 	if (typeof id !== "string"){
 		throw new TypeError("Expected id");
@@ -521,7 +525,7 @@ class BossManager {
 		defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
 		eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
 	};
-	const pull = [...BossManager.eventBases.values()];
+	const pull = [...BossManager.eventBases.values().map(event => ({...event}))];
 	const data = {user, userStats, boss, channel, attackContext, guild: channel.guild};
 
 	user.action(Actions.bossBeforeAttack, data);
@@ -529,10 +533,11 @@ class BossManager {
 	for (let i = 0; i < attackContext.eventsCount; i++){
 		for (const event of pull){
 			const needSkip = event.filter && !event.filter(data);
+			event._weight = typeof event.weight === "function" ? event.weight(data) : event.weight;
 			
 			if (needSkip){
-			const index = pull.indexOf(event);
-			(~index) ? pull.splice(index, 1) : null;
+				const index = pull.indexOf(event);
+				(~index) ? pull.splice(index, 1) : null;
 			}
 		};
 
@@ -574,7 +579,7 @@ class BossManager {
 
 	static eventBases = new Collection(Object.entries({
 		increaseAttackCooldown: {
-			_weight: 1500,
+			weight: 1500,
 			id: "increaseAttackCooldown",
 			description: "Перезарядка атаки больше на 20 минут",
 			callback: ({userStats}) => {
@@ -587,7 +592,7 @@ class BossManager {
 				!attackContext.listOfEvents.some(({id}) => ["reduceAttackDamage"].includes(id))      
 		},
 		increaseCurrentAttackDamage: {
-			_weight: 4500,
+			weight: 4500,
 			repeats: true,
 			id: "increaseAttackCooldown",
 			description: "Урон текущей атаки был увеличен",
@@ -595,8 +600,17 @@ class BossManager {
 				attackContext.damageMultiplayer *= 5;
 			}     
 		},
+		increaseNextTwoAttacksDamage: {
+			weight: 1000,
+			repeats: true,
+			id: "increaseAttackCooldown",
+			description: "Урон следующих двух атак был увеличен",
+			callback: ({attackContext}) => {
+				attackContext.damageMultiplayer *= 5;
+			}     
+		},
 		giveChestBonus: {
-			_weight: 1200,
+			weight: 1200,
 			id: "giveChestBonus",
 			description: "Выбито 4 бонуса сундука",
 			callback: ({user}) => {
@@ -604,7 +618,7 @@ class BossManager {
 			}     
 		},
 		applyCurse: {
-			_weight: 900,
+			weight: 900,
 			id: "applyCurse",
 			description: "Вас прокляли",
 			callback: ({user, boss, channel}) => {
@@ -618,7 +632,7 @@ class BossManager {
 			filter: ({user}) => !user.data.curses?.length || user.data.voidFreedomCurse     
 		},
 		improveDamageForAll: {
-			_weight: 300,
+			weight: 300,
 			id: "improveDamageForAll",
 			description: "Кубик — урон по боссу увеличен на 1%",
 			callback: ({user, boss}) => {
@@ -628,7 +642,7 @@ class BossManager {
 			filter: ({boss}) => boss.diceDamageMultiplayer 
 		},
 		choiseAttackDefense: {
-			_weight: 700,
+			weight: 700,
 			id: "choiseAttackDefense",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats}) => {
@@ -683,7 +697,7 @@ class BossManager {
 			}
 		},
 		selectLegendaryWearon: {
-			_weight: 10000000000,
+			weight: 10000000000,
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, guild}) => {
@@ -725,7 +739,7 @@ class BossManager {
 			filter: ({userStats}) => !userStats.haveLegendaryWearon
 		},
 		choiseCreatePotion: {
-			_weight: 300,
+			weight: 300,
 			id: "choiseCreatePotion",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, attackContext}) => {
@@ -922,7 +936,7 @@ class BossManager {
 			}
 		},
 		powerOfEarth: {
-			_weight: 1500,
+			weight: 1500,
 			id: "powerOfEarth",
 			description: "Вознаграждение за терпение",
 			callback: ({user, boss}) => {
@@ -932,7 +946,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
 		powerOfWind: {
-			_weight: 1500,
+			weight: 1500,
 			id: "powerOfWind",
 			description: "Уменьшает перезарядку на случайное значение",
 			callback: ({userStats}) => {
@@ -943,7 +957,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.wind
 		},
 		powerOfFire: {
-			_weight: 1500,
+			weight: 1500,
 			id: "powerOfFire",
 			description: "",
 			callback: ({user, boss}) => {
@@ -954,7 +968,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.fire
 		},
 		powerOfDarkness: {
-			_weight: 1500,
+			weight: 1500,
 			id: "powerOfDarkness",
 			description: "Вознагражение за настойчивость",
 			callback: ({user, boss}) => {
@@ -966,7 +980,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.darkness
 		},
 		powerOfEarthRare: {
-			_weight: 100,
+			weight: 100,
 			id: "powerOfEarthRare",
 			description: "",
 			callback: ({user, boss}) => {
@@ -975,7 +989,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
 		powerOfWindRare: {
-			_weight: 100,
+			weight: 100,
 			id: "powerOfWindRare",
 			description: "",
 			callback: ({user, boss}) => {
@@ -984,7 +998,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.wind
 		},
 		powerOfFireRare: {
-			_weight: 100,
+			weight: 100,
 			id: "powerOfFireRare",
 			description: "Ваши прямые атаки наносят гораздо больше урона по боссу",
 			callback: ({user, boss, userStats}) => {
@@ -997,16 +1011,58 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.fire
 		},
 		powerOfDarknessRare: {
-			_weight: 100,
+			weight: 100,
 			id: "powerOfDarknessRare",
-			description: "Получена нестабильность. Перезарядка атаки свыше 48 ч.",
+			description: "Получена нестабильность. Перезарядка атаки свыше 8 ч.",
 			callback: ({user, boss, userStats}) => {
-				const adding = 3_600_000 * 48;
+				const adding = 3_600_000 * 8;
 				userStats.attackCooldown += adding;
 				userStats.attack_CD += adding;
 				user.data.void++;
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.darkness
+		},
+		pests: {
+			weight: 400 * 1.2 ** (boss.level - 10),
+			id: "pests",
+			description: "Клопы",
+			callback: ({user, boss, userStats}) => {
+				const addingCooldowm = 60_000;
+				userStats.attackCooldown += addingCooldowm;
+				userStats.attack_CD += addingCooldowm;
+
+				const decreaseMultiplayer = 0.005;
+				userStats.attacksDamageMultiplayer -= decreaseMultiplayer;
+			},
+			repeats: true,
+			filter: ({boss}) => boss.level >= 10
+		},
+		death: {
+			weight: 100,
+			id: "death",
+			description: "Смэрть",
+			callback: ({user, boss, userStats}) => {
+				userStats.heroIsDeath = true;
+			},
+			repeats: true,
+			filter: ({boss}) => boss.level >= 3
+		},
+		theRarestEvent: {
+			weight: 1,
+			id: "theRarestEvent",
+			description: "Вы получили один ключ ~",
+			callback: ({user, boss, userStats}) => {
+				user.data.keys += 1;
+			}
+		},
+		takeRelicsShard: {
+			weight: 20,
+			id: "relics",
+			description: "Получен осколок случайной реликвии",
+			callback: ({user, boss, userStats}) => {
+				user.data.keys += 1;
+			},
+			filter: ({user}) => user.data.bossRelicsContainer
 		}
 		// ______e4example: {
 		//   _weight: 2,
