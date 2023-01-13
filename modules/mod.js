@@ -11,9 +11,11 @@ import ErrorsHandler from "./ErrorsHandler.js";
 import EventsManager from './EventsManager.js';
 import GuildVariablesManager from './GuildVariablesManager.js';
 import ResourcesEnum from './ResourcesEnum.js';
+import * as Util from './util.js';
 
 export {
 	DataManager, Template, CurseManager, BossManager, TimeEventsManager,
 	CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler,
-	EventsManager, GuildVariablesManager, ResourcesEnum
+	EventsManager, GuildVariablesManager, ResourcesEnum,
+	Util
 };
