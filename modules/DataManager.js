@@ -71,6 +71,6 @@ class DataManager {
 	}
  
 	static data = {};
- }
+}
 
  export default DataManager;
