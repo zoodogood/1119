@@ -81,7 +81,7 @@ class EventsManager {
 	static listenAll(){
 		for (const [_name, event] of this.collection){
 			try {
-				event.handle();
+				event.handle?.();
 			} catch (error) {
 				if (error.message !== "Listening now"){
 					throw error;
