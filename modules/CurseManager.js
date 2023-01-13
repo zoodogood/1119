@@ -412,7 +412,8 @@ class CurseManager {
 	  if (index === -1){
 		 return null;
 	  }
- 
+	  
+	  user.action(Actions.curseEnd, curse);
 	  user.data.curses.splice(index, 1);
  
 	  const getDefaultFields = () => {
