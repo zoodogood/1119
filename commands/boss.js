@@ -1,6 +1,7 @@
 import * as Util from '#src/modules/util.js';
 import { client } from '#src/index.js';
 import BossManager from '#src/modules/BossManager.js';
+import { ButtonStyle, ComponentType } from 'discord.js';
 
 class Command {
 
@@ -17,9 +18,17 @@ class Command {
 
       msg.msg({description, color: "#000000"});
       return;
+    };
+
+    const userStats   = BossManager.getUserStats(boss, member.id);
+    const userEffects = BossManager.effectsOf({boss, user: member});
+
+    if (!userStats.heroIsDead){
+      this.displayHeadstone({interaction, member, boss});
+      return;
     }
 
-    const userEffects = member.data.bossEffects?.filter(({guildId}) => guildId === guild.id) ?? [];
+    
     
 
     const currentHealthPointPercent = Math.ceil((1 - boss.damageTaken / boss.healthThresholder) * 100);
@@ -28,7 +37,7 @@ class Command {
     const fields = [
       {
         name: "Пользователь",
-        value: Object.entries(BossManager.getUserStats(boss, member.id))
+        value: Object.entries(userStats)
           .map(([key, value]) => `${ key }: ${ Util.toLocaleDeveloperString(value) }`)
           .join("\n")
         
@@ -69,6 +78,41 @@ class Command {
 
     collector.on("end", () => message.reactions.removeAll());
 
+  }
+
+  async displayHeadstone({interaction, member, boss}){
+    const guild = interaction.guild;
+    const contents = {
+      level: `Уровень: ${ member.data.level }.`,
+      joined: `Появился: ${ new Intl.DateTimeFormat("ru-ru", {year: "numeric", month: "2-digit", day: "2-digit"}).format(guild.members.resolve(member).joinedTimestamp) }`,
+      heroStatus: "Выдуманный персонаж был искалечен и умертвлён, или просто умер. В таком состоянии методы атаки и использование реликвий заблокированны.\n",
+      save: ""
+    }
+    const embed = {
+      description: `${ contents.level }\n${ contents.joined }\n\n${ contents.heroStatus }`,
+      thumbnail: "https://cdn.discordapp.com/attachments/629546680840093696/1063465085235900436/stone.png",
+      components: {type: ComponentType.Button, style: ButtonStyle.Danger, customId: "KeepAlive", label: "Показать характер. Дать воскреснуть."},
+      footer: {iconURL: member.avatarURL(), text: member.tag}
+    };
+    const message = await interaction.channel.msg(embed);
+    const collector = message.createMessageComponentCollector({time: 120_000});
+    collector.on("collect", (interaction) => {
+      const user = interaction.user;
+      const userStats = BossManager.getUserStats(boss, user.id);
+      if (userStats.heroIsDead){
+        interaction.msg({ephemeral: true, content: "Ввысь и вниз; В окно, и там будет снег. Забудь об этом — ты мертвец."});
+        return;
+      }
+
+      const effectBase = BossManager.effectBases.get("deadlyCurse");
+      BossManager.applyEffect({guild, user, effectBase});
+      interaction.msg({
+        description: `Примите и избавьтесь от быстродействующего проклятия. Провалите — та же участь под камнем.\n**Предостережение:** его не всегда возможно снять в срок.`,
+        footer: {text: user.tag, iconURL: user.avatarURL()}
+      });
+      collector.stop();
+    });
+    collector.on("end", () => message.msg({edit: true, components: []}));
   }
 
 
