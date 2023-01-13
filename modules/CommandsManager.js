@@ -4,6 +4,8 @@ import EventsEmitter from 'events';
 import DataManager from '#src/modules/DataManager.js';
 import ErrorsHandler from '#src/modules/ErrorsHandler.js';
 
+import { Actions } from '#src/modules/ActionManager.js';
+
 import { ImportDirectory } from '@zoodogood/import-directory';
 
 const COMMANDS_PATH = "./commands";
@@ -50,7 +52,7 @@ function parseInputCommandFromMessage(message){
 
 	});
 
-	commandContext.user.action(Action.inputCommandParsed, commandContext);
+	commandContext.user.action(Actions.inputCommandParsed, commandContext);
 
 	if (!commandContext.command){
 		return null;

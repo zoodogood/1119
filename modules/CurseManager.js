@@ -1,5 +1,6 @@
 import { Collection } from "@discordjs/collection";
 import { Actions } from '#src/modules/ActionManager.js';
+import TimeEventsManager from '#src/modules/TimeEventsManager.js';
 import * as Util from '#src/modules/util.js';
 
 
@@ -50,7 +51,7 @@ class CurseManager {
  
 	  if (curse.values.timer){
 		 const args = [user.id, curse.timestamp];
-		 new TimeEvent("curseTimeoutEnd", curse.values.timer, ...args);
+		 TimeEventsManager.create("curseTimeoutEnd", curse.values.timer, args);
 	  }
  
 	  user.action(Actions.curseInit, {curse});
