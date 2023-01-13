@@ -2,6 +2,7 @@ import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import { resolveGithubPath } from '#src/modules/util.js';
 import Path from 'path';
 import { Collection } from '@discordjs/collection';
+import { inspect } from 'util';
 
 class ErrorsAudit {
 	collection = new Collection();
@@ -15,7 +16,7 @@ class ErrorsAudit {
 
 	push(error, context){
 		const list = this.listOf(error.message);
-		context &&= JSON.parse(JSON.stringify(context));
+		context &&= inspect(context);
 		list.push({error, context, timestamp: Date.now()});
 	}
 };
