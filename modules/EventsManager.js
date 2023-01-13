@@ -1,6 +1,5 @@
 import { Collection } from '@discordjs/collection';
-import * as Util from '#src/modules/util.js';
-import DataManager from '#src/modules/DataManager.js';
+
 import ErrorsHandler from '#src/modules/ErrorsHandler.js';
 import EventsEmitter from 'events';
 
@@ -80,7 +79,15 @@ class EventsManager {
 	}
 
 	static listenAll(){
-		this.collection.each(event => event.handle());
+		for (const [_name, event] of this.collection){
+			try {
+				event.handle();
+			} catch (error) {
+				if (error.message !== "Listening now"){
+					throw error;
+				}
+			}
+		}
 	}
 }
 
