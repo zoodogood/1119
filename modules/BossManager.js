@@ -1117,6 +1117,10 @@ class BossManager {
 			.forEach(key => delete callbackMap[key]);
 	}
 
+	static effectsOf({boss, user}){
+		return user.data.bossEffects?.filter(({guildId}) => guildId === boss.guildId) ?? [];
+	}
+
 	static effectBases = new Collection(Object.entries({
 		increaseDamageByAfkTime: {
 			id: "increaseDamageByAfkTime",
