@@ -12,16 +12,18 @@ class CurseManager {
 		  hard = MAXIMAL_HARD;
 		}
  
-	  const curseBase = [...CurseManager.cursesBase.values()]
+	  const curseBase = this.getGeneratePull(user, guild)
 		 .filter(curseBase => hard === null || curseBase.hard === hard)
-		 .filter(curseBase => !curseBase.filter || curseBase.filter(user, guild))
 		 .random({weights: true});
  
  
 	  const curse = this.generateOfBase({user, curseBase});
- 
- 
 	  return curse;
+	}
+
+	static getGeneratePull(user, guild = null){
+		return [...CurseManager.cursesBase.values()]
+			.filter(curseBase => !curseBase.filter || curseBase.filter(user, guild));
 	}
  
 	static generateOfBase({curseBase, user}){
