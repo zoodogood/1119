@@ -5,7 +5,7 @@ import 'dotenv/config';
 import Discord, { BaseInteraction } from 'discord.js';
 
 import * as Util from '#src/modules/util.js';
-import { Template, DataManager, BossManager, CurseManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler } from '#src/modules/mod.js';
+import { Template, DataManager, BossManager, CurseManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler,EventsManager } from '#src/modules/mod.js';
 import { CreateMessage } from '@zoodogood/utils/discordjs';
 
 import { Partials } from 'discord.js';
