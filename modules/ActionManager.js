@@ -58,9 +58,9 @@ class ActionManager {
 					QuestManager.onAction({user: this, questBase, data});
 				}
 
-				if (actionName in (userData.bossEffectsCallbackMap ?? {}) && data.guild)
+				if (actionName in (userData.bossEffectsCallbackMap ?? {}))
 				for (const effect of [...userData.bossEffects]){
-					if (effect.guildId !== data.guild.id){
+					if (data.guild.id && effect.guildId !== data.guild.id){
 						continue;
 					};
 
