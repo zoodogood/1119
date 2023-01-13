@@ -604,8 +604,8 @@ class BossManager {
 			description: "Вас прокляли",
 			callback: ({user, boss, channel}) => {
 				const hard = Math.min(
-				Math.floor(boss.level / 3),
-				2
+					Math.floor(boss.level / 5),
+					2
 				);
 				const curse = CurseManager.generate({user, hard, guild: channel.guild});
 				CurseManager.init({user, curse});
