@@ -204,6 +204,33 @@ class Command {
       embed.description += `\n\nВ хранилище: ${ Util.ending(server.coins, "золот", "ых", "ая", "ых")}!\nКоличество коинов ${server.coins - coinInfo === 0 ? "не изменилось" : server.coins - coinInfo > 0 ? "увеличилось на " + (server.coins - coinInfo) : "уменьшилось на " + (coinInfo - server.coins) } <:coin:637533074879414272>`;
     }
   }
+  
+  onDayStats(guild, context){
+    let workers = new Set();
+    let costs = 0;
+    let entries = Object.entries(guild.data.professions);
+    if (!entries.length){
+      delete guild.data.professions;
+      return;
+    }
+
+
+    entries = entries.filter(([id]) => guild.roles.cache.get(id) ? true : delete guild.data.professions[id]);
+
+    guild.members.cache.each(memb => {
+      entries.forEach(([id, cost]) => memb.roles.cache.has(id) ? workers.add(memb) && (costs += +cost) : false);
+    });
+    if (guild.data.coins < costs){
+      guild.logSend({title: `Сегодня не были выданы зарплаты`, description: `В казне сервера слишком мало коинов, лишь ${guild.data.coins}, в то время как на выплаты требуется ${costs} <:coin:637533074879414272>`, color: "#ffff00"});
+      return;
+    }
+
+    [...workers].forEach(memb => {
+      entries.forEach(([id, cost]) => memb.roles.cache.has(id) ? memb.user.data.coins += +cost : false);
+    });
+    guild.data.coins -= costs;
+    guild.logSend({title: `Были выданы зарплаты`, description: `С казны было автоматически списано ${Util.ending(costs, "коин", "ов", "", "а")} на заработные платы пользователям\nИх список вы можете просмотреть в команде \`!банк\`\nУчастников получило коины: ${workers.size}`});
+  }
 
 
 	options = {
