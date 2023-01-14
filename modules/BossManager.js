@@ -1099,6 +1099,7 @@ class BossManager {
 		}
 
 		effects.push(effect);
+		user.action(Actions.bossEffectInit, effect);
 		return effect;
 	}
 
@@ -1219,7 +1220,50 @@ class BossManager {
 				goal: 30,
 				hours: {}
 			}
-		}
+		},
+		deadlyCurse: {
+			id: "deadlyCurse",
+			callback: {
+				curseTimeEnd: (user, effect, {curse}) => {
+					if (effect.timestamp !== curse.timestamp){
+						return;
+					}
+					const guild = this.client.guilds.cache.get(effect.guildId);
+					
+					if (!BossManager.isArrivedIn(guild)){
+						return;
+					}
+					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
+					userStats.heroIsDeath = true;
+					// Завалил
+				},
+				curseEnd: (user, effect, curse) => {
+					if (effect.timestamp !== curse.timestamp){
+						return;
+					}
+
+					BossManager.removeEffect({effect, user});
+				},
+				bossEffectInit: (user, effect, initedEffect) => {
+					if (initedEffect.timestamp !== effect.timestamp){
+						return;
+					}
+
+					const isShort = curseBase => curseBase.interactionIsShort;
+					const curseBase = CurseManager.getGeneratePull(user)
+						.filter(isShort)
+						.random({_weights: true});
+
+					const curse = CurseManager.generateOfBase({curseBase, user});
+					curse.values.timer = effect.values.time;
+					effect.values.targetTimestamp = curse.timestamp;
+					CurseManager.init({curse, user});
+				}
+			},
+			values: {
+				time: () => 60_000 * 5
+			}
+		},
 	}))
 
 	static legendaryWearonList = new Collection(Object.entries({
