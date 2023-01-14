@@ -276,7 +276,7 @@ client.on("ready", async () => {
       if (error.message == "Cannot execute action on a DM channel") return console.error("Cannot in DM: " + error.method);
       if (error.message == "Unknown Message") return;
       console.info("Обработчик 1");
-      ErrorsHandler.Audit.push(error, interaction);
+      ErrorsHandler.Audit.push(error);
 	    console.error(error);
   });
 
