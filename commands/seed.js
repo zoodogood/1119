@@ -29,7 +29,7 @@ class Command {
       let entrySeeds = server.treeSeedEntry || 0;
       fields.push({name: "Дерево", value: `Уровень деревца ${ level } ${level === 20 ? "(Максимальный)" : `\nДо повышения нужно ${costsUp - entrySeeds > 5 ? costsUp - entrySeeds : ["ноль", "одно", "два", "три", "четыре", "пять"][costsUp - entrySeeds]} ${Util.ending(costsUp - entrySeeds, "сем", "ян", "ечко", "ечка", {unite: (_quantity, word) => word})}` }`});
 
-      let messagesNeed = (  [0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700, 3200, 3700, 4500, 5400, 7400, 12000][level] + (msg.guild.memberCount * 3) + ((server.day_average || 0) / 5)  ) * ("treeMisstakes" in server ? 1 - 0.1 * server.treeMisstakes : 1);
+      let messagesNeed = (  this.messagesNeedMap.at(level) + (msg.guild.memberCount * 3) + ((server.day_average || 0) / 5)  ) * ("treeMisstakes" in server ? 1 - 0.1 * server.treeMisstakes : 1);
       messagesNeed = Math.floor(messagesNeed / 3);
 
       let statusName = server.treeMisstakes ?
@@ -177,6 +177,34 @@ class Command {
     collector.on("end", message.reactions.removeAll);
   }
 
+  messagesNeedMap = [0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700, 3200, 3700, 4500, 5400, 7400, 12000];
+
+  onDayStats(guild, context){
+    const guildData = guild.data;
+    let messagesNeed = (  messagesNeedMap[guildData.treeLevel] + (guild.memberCount * 3) + ((guildData.day_average || 0) / 5)  ) * ("treeMisstakes" in guildData ? 1 - 0.1 * guildData.treeMisstakes : 1);
+			// Сезонное снижение
+			messagesNeed = Math.floor(messagesNeed / 3);
+
+			if (guildData.day_msg < messagesNeed){
+				guildData.treeMisstakes = (guildData.treeMisstakes ?? 0) + 0.2 + Number( (1 - guildData.day_msg / messagesNeed).toFixed(1) );
+				context.guilds[guild.id] ||= {};
+        context.guilds[guild.id].messagesNeed = messagesNeed;
+
+				if (guildData.treeMisstakes >= 4){
+					delete guildData.treeMisstakes;
+					guildData.treeLevel--;
+				}
+
+				return;
+			}
+
+			guildData.treeMisstakes = (guildData.treeMisstakes ?? 0) - 0.2;
+
+			if (guildData.treeMisstakes <= 0)
+				delete guildData.treeMisstakes;
+
+
+  }
 
 	options = {
 	  "name": "seed",
