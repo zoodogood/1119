@@ -1,3 +1,5 @@
+import * as Util from '#src/modules/util.js';
+
 const ProperiesEnum = {
 	"Bot": {
 		berrysPrise: {},
