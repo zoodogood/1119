@@ -1,7 +1,42 @@
 import * as Util from '#src/modules/util.js';
 import DataManager from '#src/modules/DataManager.js';
+import { ButtonStyle, ComponentType } from 'discord.js';
 
 class Command {
+  createComponents(context){
+    return [
+      [
+        {
+          type: ComponentType.Button,
+          label: "",
+          emoji: "640449848050712587",
+          customId: "previous",
+          style: ButtonStyle.Secondary,
+          filter: context.page !== 0
+        },
+        {
+          type: ComponentType.Button,
+          label: "",
+          emoji: "640449832799961088",
+          customId: "next",
+          style: ButtonStyle.Secondary,
+          filter: context.pages.length > 1 && context.page !== context.pages.length - 1
+        },
+        {
+          type: ComponentType.Button,
+          label: "Выбрать",
+          customId: "selectPage",
+          style: ButtonStyle.Secondary,
+          filter: context.pages.length > 1
+        }
+      ],
+      [{
+        type: ComponentType.StringSelect,
+        options: this.x,
+        customId: "selectFilter"
+      }]
+    ]
+  };
 
 	async onChatInput(msg, interaction){
     let guild = msg.guild;
@@ -13,7 +48,11 @@ class Command {
     let pages = [];
 
     let page = 0;
-    let embed = {fields: pages[0], author: {name: `Топ на сервере ${ guild.name }`, iconURL: guild.iconURL()}, title: "Загрузка Топа.."};
+    let embed = {
+      fields: pages[0],
+      author: {name: `Топ на сервере ${ guild.name }`, iconURL: guild.iconURL()}, title: "Загрузка Топа..",
+      components: this.createComponents()
+    };
     if (pages[1]) embed.footer = {text: `Страница: ${page + 1} / ${pages.length}`};
     let message = await msg.msg(embed);
     let react = "763767958559391795";
