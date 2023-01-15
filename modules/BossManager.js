@@ -550,7 +550,7 @@ class BossManager {
 		defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
 		eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
 		};
-		const pull = [...BossManager.eventBases.values().map(event => ({...event}))];
+		const pull = [...BossManager.eventBases.values()].map(event => ({...event}));
 		const data = {user, userStats, boss, channel, attackContext, guild: channel.guild};
 
 		user.action(Actions.bossBeforeAttack, data);
