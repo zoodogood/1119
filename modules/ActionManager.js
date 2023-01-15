@@ -60,7 +60,7 @@ class ActionManager {
 
 				if (actionName in (userData.bossEffectsCallbackMap ?? {}))
 				for (const effect of [...userData.bossEffects]){
-					if (data.guild.id && effect.guildId !== data.guild.id){
+					if (data.guild && effect.guildId !== data.guild.id){
 						continue;
 					};
 
