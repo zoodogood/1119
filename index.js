@@ -1015,7 +1015,6 @@ const timeEvents = {
 
     if (DataManager.data.bot.clearParty) {
       delete DataManager.data.bot.clearParty
-      quests.scope = quests.scope.replace(/birthdayParty(\.+?)(?:\s|$)/g, "");
     }
     await Util.sleep(20000);
 
@@ -1046,7 +1045,6 @@ const timeEvents = {
 
     client.users.cache.filter(memb => !memb.bot && memb.data.BDay === today).forEach(memb => {
         birthdaysToday++;
-        memb.guilds.forEach(guild => quests.scope += " birthdayParty&1&2&3&" + guild.id);
     });
 
     if (birthdaysToday){
