@@ -363,10 +363,14 @@ async function msg(options, ..._devFixParams){
   
   const message = target instanceof BaseInteraction ? 
     await (
-      options.edit ? target.editReply(messagePayload) : target.reply(messagePayload)
+      options.edit ?
+          (target.replied ? target.editReply(messagePayload) : target.update(messagePayload))
+        : (target.reply(messagePayload))
     ) :
     await (
-      options.edit ? target.edit(messagePayload) : target.send(messagePayload)
+      options.edit ?
+          target.edit(messagePayload)
+        : target.send(messagePayload)
     );
 
 
