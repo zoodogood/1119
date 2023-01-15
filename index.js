@@ -3292,7 +3292,7 @@ class BossManager {
       reactions: ["637533074879414272"]
     };
 
-    const calculateReward = (level) => 120 + level * 10;
+    const calculateReward = (level) => 50 + level * 10;
 
     const message = await guild.chatSend(embed);
     const collector = message.createReactionCollector((reaction) => !reaction.me, {time: 3_600_000 * 2});
