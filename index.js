@@ -8135,9 +8135,9 @@ const commands = {
       },
       {
         emoji: "🔅",
-        description: `Мгновенно получите бонус сундука в размере \`${ Math.min(user.voidRituals * 18 + nonNaN(user.chestBonus * 2) + 38, 9000) }\``,
+        description: `Мгновенно получите бонус сундука в размере \`${ Math.min(user.voidRituals * 18 + nonNaN(user.chestBonus * 2) + 38, 1000) }\``,
         _weight: 50,
-        action: () => user.chestBonus = nonNaN(user.chestBonus) + Math.min(nonNaN(user.chestBonus * 2) + user.voidRituals * 18 + 38, 9000)
+        action: () => user.chestBonus = nonNaN(user.chestBonus) + Math.min(nonNaN(user.chestBonus * 2) + user.voidRituals * 18 + 38, 1000)
       },
       {
         emoji: "⚜️",
