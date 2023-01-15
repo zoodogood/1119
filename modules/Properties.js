@@ -97,6 +97,9 @@ class Properties {
 			return undefined;
 		}
 
+		// delevop crutch
+		return undefined;
+
 		return Util.ending(quantity, item.base, ...item.suffixes, {unite: (_, word) => word});
 	}
 
