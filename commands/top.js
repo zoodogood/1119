@@ -1,20 +1,23 @@
+'use strict';
+
 import * as Util from '#src/modules/util.js';
 import DataManager from '#src/modules/DataManager.js';
 import { ButtonStyle, ComponentType } from 'discord.js';
 import { Collection } from '@discordjs/collection';
+import BossManager from '#src/modules/BossManager.js';
+
 
 class Command {
 
   PAGE_SIZE = 15;
-  // to-do: rename
-  x = new Collection(Object.entries({
+
+  leaderboardTypes = new Collection(Object.entries({
     level: {
       key: "level",
       component: {
         value: "level",
         label: "Уровень",
-        emoji: "763767958559391795",
-        default: true
+        emoji: "763767958559391795"
       },
       value: (element, _context) => {
         return (element.data.level - 1) * 22.5 * element.data.level + element.data.exp;
@@ -173,9 +176,13 @@ class Command {
       ],
       [{
         type: ComponentType.StringSelect,
-        options: this.x.map(x => x.component),
+        options: this.leaderboardTypes
+          .filter((leaderboard) => !leaderboard.filter || leaderboard.filter(context))
+          .map(leaderboard => leaderboard.component)
+          ,
+
         customId: "selectFilter",
-        placeholder: "Выбрать..."
+        placeholder: "Сменить"
       }]
     ]
   };
@@ -198,20 +205,24 @@ class Command {
       fields,
       edit,
       author: {name: `Топ на сервере ${ context.guild.name }`, iconURL: context.guild.iconURL()},
-      components: this.createComponents(context),
+      components: edit ? null : this.createComponents(context),
       footer: pages > 1 ? {text: `Страница: ${ page + 1 } / ${ pages }`} : null
     };
   }
 
   createValuesMap(context){
-    const valuesMap = context.values ?? context.users.map(user => [user]);
+    const pull = context.sortedPull = 
+      context.sortedPull ?? context.users.map(user => [user]);
 
-    for (const entrie of valuesMap){
+    
+    for (const entrie of pull){
       entrie[1] = context.selected.value(entrie[0], context);
     }
 
-    return valuesMap
+    pull
       .sort((a, b) => b.at(1) - a.at(1));
+
+    return pull.filter(([_user, value]) => value);
   }
 
   async onCollect(interaction, context){
@@ -235,7 +246,7 @@ class Command {
     },
     selectFilter: (interaction, context) => {
       const value = interaction.values.at(0);
-      context.selected = this.x.find(x => x.component.value === value);
+      context.selected = this.leaderboardTypes.find(leaderboard => leaderboard.component.value === value);
       context.values = this.createValuesMap(context);
 
       
@@ -249,16 +260,18 @@ class Command {
 
     const context = {
       interaction,
+      sortedPull: null,
       users,
       pages: null,
       page: 0,
       guild: interaction.guild,
       boss: interaction.guild.data.boss ?? {},
-      selected: this.x.find(x => x.component.default),
+      selected: this.leaderboardTypes.at(0),
       values: null
     };
 
     context.values = this.createValuesMap(context);
+    context.pages = this.calculatePages(context.values.length);
 
     const embed = this.createEmbed({interaction, context, edit: false});
 
