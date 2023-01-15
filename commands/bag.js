@@ -107,9 +107,9 @@ class Command {
       {
         key: "voidPrise",
         names: ["скидок на котёл", "скидок на котел", "voidprise"],
-        limit: 5,
+        limit: 3,
         ending: (count) => `⚜️ ${ Util.ending(count, "Бонус", "ов", "", "а") }`,
-        display: (count) => `⚜️ Бонус "Скидок на котёл" ${ count }/5`
+        display: (count) => `⚜️ Бонус "Скидок на котёл" ${ count }/3`
       },
       {
         key: "voidDouble",

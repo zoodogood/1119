@@ -19,9 +19,9 @@ class Command {
     },
     {
       emoji: "⚜️",
-      description: "Уменьшает цену нестабильности для розжыга котла. (Макс. на 50%)",
+      description: "Уменьшает цену нестабильности для розжыга котла. (Макс. на 30%)",
       _weight: 5,
-      filter: (user, _interaction) => !(user.data.voidPrise >= 5),
+      filter: (user, _interaction) => !(user.data.voidPrise >= 3),
       action: (user, _interaction) => user.data.voidPrise = ++user.data.voidPrise || 1
     },
     {
