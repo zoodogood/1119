@@ -4,6 +4,8 @@ import { ButtonStyle, ComponentType } from 'discord.js';
 import { Collection } from '@discordjs/collection';
 
 class Command {
+
+  PAGE_SIZE = 15;
   // to-do: rename
   x = new Collection(Object.entries({
     level: {
@@ -98,8 +100,8 @@ class Command {
       value: (element, _context) => {
         return element.data.voidRituals;
       },
-      display: (element, output, index, _context) => {
-        const username = element.id === interaction.user.id ? "?".repeat(element.username.length) : element.username;
+      display: (element, output, index, context) => {
+        const username = element.id === context.interaction.user.id ? "?".repeat(element.username.length) : element.username;
         const addingName = (index === 0 ? " <a:neonThumbnail:806176512159252512>" : "") + (Util.random(9) ? "" : " <a:void:768047066890895360>");
         const name = `${ index + 1 }. ${ username }${ addingName }`;
         const value = `Использований котла ${ Util.random(3) ? element.data.voidRituals : "???" }`;
@@ -118,7 +120,7 @@ class Command {
         return BossManager.getUserStats(context.boss, element.id).dealtDamage;
       },
       display: (element, output, index, context) => {
-        const name = `${ index + 1 }. ${ user.username }`;
+        const name = `${ index + 1 }. ${ element.username }`;
         const value = `Великий воин нанёс ${ output } (${ (output * 100 / context.boss.damageTaken).toFixed(1) }%) урона`;
         return {name, value};
       }
@@ -134,7 +136,7 @@ class Command {
         return element.data.chestBonus;
       },
       display: (element, output, index, context) => {
-        const name = `${ index + 1 }. ${ user.username }`;
+        const name = `${ index + 1 }. ${ element.username }`;
         const value = output.toString(2);
         return {name, value};
       }
@@ -149,82 +151,128 @@ class Command {
           type: ComponentType.Button,
           label: "",
           emoji: "640449848050712587",
-          customId: "previous",
+          customId: "previousPage",
           style: ButtonStyle.Secondary,
-          filter: context.page !== 0
+          disabled: context.page === 0
         },
         {
           type: ComponentType.Button,
           label: "",
           emoji: "640449832799961088",
-          customId: "next",
+          customId: "nextPage",
           style: ButtonStyle.Secondary,
-          filter: context.pages.length > 1 && context.page !== context.pages.length - 1
+          disabled: context.pages <= 1 || context.page === context.pages - 1
         },
         {
           type: ComponentType.Button,
-          label: "Выбрать",
+          label: `Страница #${ context.page + 1 }`,
           customId: "selectPage",
           style: ButtonStyle.Secondary,
-          filter: context.pages.length > 1
+          disabled: context.pages <= 1
         }
       ],
       [{
         type: ComponentType.StringSelect,
         options: this.x.map(x => x.component),
-        customId: "selectFilter"
+        customId: "selectFilter",
+        placeholder: "Выбрать..."
       }]
     ]
   };
 
-	async onChatInput(msg, interaction){
-    let guild = msg.guild;
-    let others = ["637533074879414272", "763767958559391795", "630463177314009115", "🧤", "📜", "⚜️", (guild.data.boss?.isArrived ? "⚔️" : null)];
+  createEmbed({interaction, context, edit = false}){
+    const { pages, page, selected, values } = context;
+    const fields = values
+      .slice(page * this.PAGE_SIZE, page * this.PAGE_SIZE + this.PAGE_SIZE)
+      .map(([user, output], index) => selected.display(user, output, index, context));
 
-    let users = guild.members.cache.map(element => element.user).filter(el => !el.bot && !el.data.profile_confidentiality).sort((b, a) => ( (a.data.level - 1) * 22.5 * a.data.level + a.data.exp) - ( (b.data.level - 1) * 22.5 * b.data.level + b.data.exp));
-    let rangs, sort;
+    const executorIndex = values.findIndex(([user]) => user === interaction.user);
 
-    let pages = [];
-
-    let page = 0;
-    let embed = {
-      fields: pages[0],
-      author: {name: `Топ на сервере ${ guild.name }`, iconURL: guild.iconURL()}, title: "Загрузка Топа..",
-      components: this.createComponents({pages: []})
-    };
-    if (pages[1]) embed.footer = {text: `Страница: ${page + 1} / ${pages.length}`};
-    let message = await msg.msg(embed);
-    let react = "763767958559391795";
-    let index = -1;
-
-
-    embed.edit = true;
-
-    while (true){
-      switch (react) {
-        case "640449832799961088": page++;
-        break;
-        case "640449848050712587": page--;
-        break;
-
-
-
-        default: return;
-      }
-
-      if (react != "640449848050712587" && react != "640449832799961088"){
-        page = 0;
-        pages = [];
-        while (rangs.length) pages.push(rangs.splice(0, 15));
-      }
-      embed.message = index !== -1 ? `Вы находитесь на ${ index + 1 } месте, ${ msg.author.username }` : `Вы не числитесь в этом топе, ${ msg.author.username }`
-      embed.footer = (pages[1]) ? {text: `Страница: ${page + 1} / ${pages.length}`} : null;
-      embed.fields = (pages[0]) ? pages[page] : [{name: "Ещё никто не попал в топ", value: "Значит вы лёгко можете стать первым(-ой)"}];
-
-      message = await message.msg(embed);
-      react = await message.awaitReact({user: msg.author, removeType: "all"}, (page != 0 ? "640449848050712587" : null), ((pages[1] && page != pages.length - 1) ? "640449832799961088" : null), ...others.filter(element => element != react));
+    if (!fields.length){
+      fields.push({name: "Ещё никто не попал в топ", value: "Значит вы лёгко можете стать первым(-ой)"});
     }
 
+    
+    return {
+      title: executorIndex !== -1 ? `Вы находитесь на ${ executorIndex + 1 } месте, ${ interaction.user.username }` : `Вы не числитесь в этом топе, ${ interaction.user.username }`,
+      fields,
+      edit,
+      author: {name: `Топ на сервере ${ context.guild.name }`, iconURL: context.guild.iconURL()},
+      components: this.createComponents(context),
+      footer: pages > 1 ? {text: `Страница: ${ page + 1 } / ${ pages }`} : null
+    };
+  }
+
+  createValuesMap(context){
+    const valuesMap = context.values ?? context.users.map(user => [user]);
+
+    for (const entrie of valuesMap){
+      entrie[1] = context.selected.value(entrie[0], context);
+    }
+
+    return valuesMap
+      .sort((a, b) => b.at(1) - a.at(1));
+  }
+
+  async onCollect(interaction, context){
+    await this.componentsCallbacks[interaction.customId](interaction, context);
+
+    context.pages = this.calculatePages(context.values);
+
+    const embed = this.createEmbed({interaction: context.interaction, context, edit: true});
+    interaction.msg(embed);
+  }
+
+  componentsCallbacks = {
+    previousPage: (interaction, context) => {
+      context.page--;
+    },
+    nextPage: (interaction, context) => {
+      context.page++;
+    },
+    selectPage: (interaction, context) => {
+      interaction.msg(embed);
+    },
+    selectFilter: (interaction, context) => {
+      const value = interaction.values.at(0);
+      context.selected = this.x.find(x => x.component.value === value);
+      context.values = this.createValuesMap(context);
+
+      
+    }
+  }
+
+	async onChatInput(msg, interaction){
+
+    const users = interaction.guild.members.cache.map(element => element.user)
+      .filter(element => !element.bot && !element.data.profile_confidentiality);
+
+    const context = {
+      interaction,
+      users,
+      pages: null,
+      page: 0,
+      guild: interaction.guild,
+      boss: interaction.guild.data.boss ?? {},
+      selected: this.x.find(x => x.component.default),
+      values: null
+    };
+
+    context.values = this.createValuesMap(context);
+
+    const embed = this.createEmbed({interaction, context, edit: false});
+
+    context.message = await interaction.channel.msg(embed);
+    const filter = interaction => interaction.user === context.interaction.user;
+    const collector = context.message.createMessageComponentCollector({filter, time: 180_000});
+    collector.on("collect", (interaction) => this.onCollect(interaction, context));
+    collector.on("end", () => {
+      context.message.msg({components: [], edit: true});
+    })
+  }
+
+  calculatePages(elementsCount){
+    return Math.ceil(elementsCount / this.PAGE_SIZE);
   }
 
 
