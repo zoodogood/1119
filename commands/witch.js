@@ -13,9 +13,9 @@ class Command {
     },
     {
       emoji: "🔅",
-      description: (user, _interaction) => `Мгновенно получите бонус сундука в размере \`${ Math.min(user.data.voidRituals * 18 + (user.data.chestBonus * 2 || 0) + 38, 9000) }\``,
+      description: (user, _interaction) => `Мгновенно получите бонус сундука в размере \`${ Math.min((user.data.chestBonus * 2 || 0) + user.data.voidRituals * 18 + 38, 1000) }\``,
       _weight: 50,
-      action: (user, _interaction) => user.data.chestBonus = (user.data.chestBonus || 0) + Math.min((user.data.chestBonus * 2 || 0) + user.data.voidRituals * 18 + 38, 9000)
+      action: (user, _interaction) => user.data.chestBonus = (user.data.chestBonus || 0) + Math.min((user.data.chestBonus * 2 || 0) + user.data.voidRituals * 18 + 38, 1000)
     },
     {
       emoji: "⚜️",
