@@ -59,7 +59,7 @@ class Command {
     {
       emoji: "🍵",
       description: `Удваивает для вас всякий бонус клевера\nНесколько бонусов складываются`,
-      _weight: 5,
+      _weight: 2,
       action: (user, _interaction) => user.data.voidMysticClover = ++user.data.voidMysticClover || 1
     },
     {
