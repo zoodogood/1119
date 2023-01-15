@@ -1,8 +1,147 @@
 import * as Util from '#src/modules/util.js';
 import DataManager from '#src/modules/DataManager.js';
 import { ButtonStyle, ComponentType } from 'discord.js';
+import { Collection } from '@discordjs/collection';
 
 class Command {
+  // to-do: rename
+  x = new Collection(Object.entries({
+    level: {
+      key: "level",
+      component: {
+        value: "level",
+        label: "Уровень",
+        emoji: "763767958559391795",
+        default: true
+      },
+      value: (element, _context) => {
+        return (element.data.level - 1) * 22.5 * element.data.level + element.data.exp;
+      },
+      display: (element, output, index, _context) => {
+        const name = `${ index + 1 }. ${ element.username }`;
+        const value = `Уровень: **${ element.data.level }** | Опыта: ${ output }`;
+        return {name, value};
+      }
+    },
+    coins: {
+      key: "coins",
+      component: {
+        value: "coins",
+        label: "По богатству",
+        emoji: "637533074879414272"
+      },
+      value: (element, _context) => {
+        return element.data.coins + element.data.berrys * DataManager.data.bot.berrysPrise;
+      },
+      display: (element, output, index, _context) => {
+        const name = `${ index + 1 }. ${ element.username }`;
+        const value = `— ${ element.data.coins } (${ output }) <:coin:637533074879414272>`;
+        return {name, value};
+      }
+    },
+    praises: {
+      key: "praises",
+      component: {
+        value: "praises",
+        label: "Количество полученных похвал",
+        emoji: "630463177314009115"
+      },
+      value: (element, _context) => {
+        return element.data.praiseMe?.length;
+      },
+      display: (element, output, index, _context) => {
+        const name = `${ index + 1 }. ${ element.username }`;
+        const value = `— Был похвален ${ Util.ending(output, "раз", "", "", "а") }  <:wellplayed:630463177314009115>`;
+        return {name, value};
+      }
+    },
+    thief: {
+      key: "thief",
+      component: {
+        value: "thief",
+        label: "По грабежам",
+        emoji: "🧤"
+      },
+      value: (element, _context) => {
+        return element.data.thiefCombo + (~~element.data.thiefWins / 5);
+      },
+      display: (element, output, index, _context) => {
+        const name = `${ index + 1 }. ${ element.username }`;
+        const value = `Состояние перчаток: \`${ element.data.thiefGloves }|${ element.data.thiefCombo || 0 }\` > Отбито атак: ${ element.data.thiefWins | 0 }`.replace(/-/g, "!");
+        return {name, value};
+      }
+    },
+    quests: {
+      key: "quests",
+      component: {
+        value: "quests",
+        label: "Достижения",
+        emoji: "📜"
+      },
+      value: (element, _context) => {
+        return element.data.dayQuests;
+      },
+      display: (element, output, index, _context) => {
+        const cup = (index == 0) ? "<a:cupZ:806813908241350696> " : (index == 1) ? "<a:cupY:806813850745176114> " : (index == 2) ? "<a:cupX:806813757832953876> " : "";
+        const name =  `${ cup } ${ index + 1 }. ${ element.username }`;
+        const value = `Выполнено ежедневных квестов: ${ output } | Глобальных: ${(element.data.completedQuest || []).length}/${Object.values(quests.names).length}`;
+        return {name, value};
+      }
+    },
+    witch: {
+      key: "witch",
+      component: {
+        value: "witch",
+        label: "Использования",
+        emoji: "⚜️"
+      },
+      value: (element, _context) => {
+        return element.data.voidRituals;
+      },
+      display: (element, output, index, _context) => {
+        const username = element.id === interaction.user.id ? "?".repeat(element.username.length) : element.username;
+        const addingName = (index === 0 ? " <a:neonThumbnail:806176512159252512>" : "") + (Util.random(9) ? "" : " <a:void:768047066890895360>");
+        const name = `${ index + 1 }. ${ username }${ addingName }`;
+        const value = `Использований котла ${ Util.random(3) ? element.data.voidRituals : "???" }`;
+        return {name, value};
+      }
+    },
+    boss: {
+      key: "boss",
+      component: {
+        value: "boss",
+        label: "Смотреть на урон по боссу",
+        emoji: "⚔️"
+      },
+      filter: (context) => context.boss.isArrived,
+      value: (element, context) => {
+        return BossManager.getUserStats(context.boss, element.id).dealtDamage;
+      },
+      display: (element, output, index, context) => {
+        const name = `${ index + 1 }. ${ user.username }`;
+        const value = `Великий воин нанёс ${ output } (${ (output * 100 / context.boss.damageTaken).toFixed(1) }%) урона`;
+        return {name, value};
+      }
+    },
+    chest: {
+      key: "chest",
+      component: {
+        value: "chest",
+        label: "Количество бонусов сундука",
+        emoji: "805405279326961684"
+      },
+      value: (element, context) => {
+        return element.data.chestBonus;
+      },
+      display: (element, output, index, context) => {
+        const name = `${ index + 1 }. ${ user.username }`;
+        const value = output.toString(2);
+        return {name, value};
+      }
+    }
+  }));
+
+
   createComponents(context){
     return [
       [
@@ -32,7 +171,7 @@ class Command {
       ],
       [{
         type: ComponentType.StringSelect,
-        options: this.x,
+        options: this.x.map(x => x.component),
         customId: "selectFilter"
       }]
     ]
@@ -42,7 +181,7 @@ class Command {
     let guild = msg.guild;
     let others = ["637533074879414272", "763767958559391795", "630463177314009115", "🧤", "📜", "⚜️", (guild.data.boss?.isArrived ? "⚔️" : null)];
 
-    let users = guild.members.cache.map(e => e.user).filter(el => !el.bot && !el.data.profile_confidentiality).sort((b, a) => ( (a.data.level - 1) * 22.5 * a.data.level + a.data.exp) - ( (b.data.level - 1) * 22.5 * b.data.level + b.data.exp));
+    let users = guild.members.cache.map(element => element.user).filter(el => !el.bot && !el.data.profile_confidentiality).sort((b, a) => ( (a.data.level - 1) * 22.5 * a.data.level + a.data.exp) - ( (b.data.level - 1) * 22.5 * b.data.level + b.data.exp));
     let rangs, sort;
 
     let pages = [];
@@ -51,7 +190,7 @@ class Command {
     let embed = {
       fields: pages[0],
       author: {name: `Топ на сервере ${ guild.name }`, iconURL: guild.iconURL()}, title: "Загрузка Топа..",
-      components: this.createComponents()
+      components: this.createComponents({pages: []})
     };
     if (pages[1]) embed.footer = {text: `Страница: ${page + 1} / ${pages.length}`};
     let message = await msg.msg(embed);
@@ -69,82 +208,6 @@ class Command {
         break;
 
 
-        case "637533074879414272":
-          // coins
-          sort = users.sort((a, b) => (b.data.coins + b.data.berrys * DataManager.data.bot.berrysPrise) - (a.data.coins + a.data.berrys * DataManager.data.bot.berrysPrise));
-          index = sort.indexOf(msg.author);
-          rangs = sort.map((e, i) => {
-            let name = (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
-            let value = `— ${e.data.coins} (${ Math.floor( e.data.coins + e.data.berrys * DataManager.data.bot.berrysPrise ) }) <:coin:637533074879414272>`;
-            return {name, value};
-          });
-          break;
-
-        case "763767958559391795":
-          // level
-          sort = users.sort((b, a) => ( (a.data.level - 1) * 22.5 * a.data.level + a.data.exp) - ( (b.data.level - 1) * 22.5 * b.data.level + b.data.exp));
-          index = sort.indexOf(msg.author);
-          rangs = sort.map((e, i) => {
-            let name = ((i == 0) ? "<a:crystal:637290417360076822> " : (i == 1) ? "<:crys3:763767653571231804> " : (i == 2) ? "<:crys2:763767958559391795>" : "<:crys:637290406958202880> ") + (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
-            let value = `Уровень: **${ e.data.level }** | Опыта: ${(e.data.level - 1) * 22.5 * e.data.level + e.data.exp}`;
-            return {name, value};
-          });
-          break;
-
-        case "630463177314009115":
-          // praises
-          sort = users.filter(e => e.data.praiseMe).sort((a, b) => (b.data.praiseMe.length) - (a.data.praiseMe.length));
-          index = sort.indexOf(msg.author);
-          if (!msg.author.data.praiseMe) msg.author.data.praiseMe = [];
-          rangs = sort.map((e, i) => {
-            let name = (i + 1) + ". " + ((e.id == msg.author.id) ? (e.username) : e.username);
-            let value = "— Был похвален " + Util.ending(e.data.praiseMe.length, "раз", "", "", "а") + " <:wellplayed:630463177314009115>";
-            return {name, value};
-          });
-          break;
-
-        case "🧤":
-          // thief
-          sort = users.sort((a, b) => (b.data.thiefGloves + (~~b.data.thiefWins / 5)) - (a.data.thiefGloves + (~~a.data.thiefWins / 5)));
-          index = sort.indexOf(msg.author);
-          rangs = sort.map((e, i) => {
-            let name = (i + 1) + ". " + e.username;
-            let value = `Состояние перчаток: \`${e.data.thiefGloves}|${ e.data.thiefCombo || 0 }\` > Отбито атак: ${e.data.thiefWins | 0}`.replace(/-/g, "!");
-            return {name, value};
-          });
-          break;
-
-        case "📜":
-          // quests
-          sort = users.filter(e => e.data.dayQuests).sort((a, b) => (b.data.dayQuests) - (a.data.dayQuests));
-          index = sort.indexOf(msg.author);
-          rangs = sort.map((e, i) => {
-            let name = ((i == 0) ? "<a:cupZ:806813908241350696> " : (i == 1) ? "<a:cupY:806813850745176114> " : (i == 2) ? "<a:cupX:806813757832953876> " : "") + (i + 1) + ". " + e.username;
-            let value = `Выполнено ежедневных квестов: ${e.data.dayQuests || 0} | Глобальных: ${(e.data.completedQuest || []).length}/${Object.values(quests.names).length}`;
-            return {name, value};
-          });
-          break;
-
-        case "⚜️":
-          // void
-          sort = users.filter(e => e.data.voidRituals).sort((a, b) => (b.data.voidRituals) - (a.data.voidRituals));
-          index = sort.indexOf(msg.author);
-          rangs = sort.map((e, i) => {
-            let name = (i + 1) + ". " + ((e.id == msg.author.id) ? "?".repeat(e.username.length) : e.username) + ((i == 0) ? " <a:neonThumbnail:806176512159252512>" : "") + (Util.random(9) ? "" : " <a:void:768047066890895360>");
-            let value = `Использований котла ${Util.random(3) ? e.data.voidRituals : "???"}`;
-            return {name, value};
-          });
-          break;
-
-        case "⚔️":
-          sort = users.filter(user => guild.data.boss.users[user.id]?.damageDealt).sort((a, b) => guild.data.boss.users[b.id].damageDealt - guild.data.boss.users[a.id].damageDealt);
-          index = sort.indexOf(msg.author);
-          rangs = sort.map((user, i) => {
-            const name = `${ i + 1 }. ${ user.username }`;
-            const value = `Великий воин нанёс ${ guild.data.boss.users[user.id].damageDealt }ед. урона`;
-            return {name, value};
-          });
-          break;
 
         default: return;
       }
@@ -159,7 +222,7 @@ class Command {
       embed.fields = (pages[0]) ? pages[page] : [{name: "Ещё никто не попал в топ", value: "Значит вы лёгко можете стать первым(-ой)"}];
 
       message = await message.msg(embed);
-      react = await message.awaitReact({user: msg.author, removeType: "all"}, (page != 0 ? "640449848050712587" : null), ((pages[1] && page != pages.length - 1) ? "640449832799961088" : null), ...others.filter(e => e != react));
+      react = await message.awaitReact({user: msg.author, removeType: "all"}, (page != 0 ? "640449848050712587" : null), ((pages[1] && page != pages.length - 1) ? "640449832799961088" : null), ...others.filter(element => element != react));
     }
 
   }
