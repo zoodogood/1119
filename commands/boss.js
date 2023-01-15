@@ -23,7 +23,7 @@ class Command {
     const userStats   = BossManager.getUserStats(boss, member.id);
     const userEffects = BossManager.effectsOf({boss, user: member});
 
-    if (!userStats.heroIsDead){
+    if (userStats.heroIsDead){
       this.displayHeadstone({interaction, member, boss});
       return;
     }
