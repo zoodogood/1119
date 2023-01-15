@@ -310,7 +310,7 @@ class BossManager {
 		const guild = this.client.guilds.cache.get(boss.guildId);
 		const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
 		guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
-		BossManager.createBonusesChest({guild, boss, thatLevel: boss.level});
+		BossManager.BonusesChest.createCollector({guild, boss, level: boss.level});
 		boss.level++;
 		boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
 
@@ -318,151 +318,176 @@ class BossManager {
 			.forEach(userStats => delete userStats.attack_CD);
 	}
 	
-	static calculateChestBonuses(level){
-		return 120 + level * 10;
-	}
 
-	static async createBonusesChest({guild, boss, thatLevel}){
-	const color = "#ffda73";
-	const embed = {
-		title: "Сундук с наградами",
-		description: `Получите бонусы за победу над боссом ур. ${ thatLevel }.\nВремя ограничено двумя часами с момента отправки этого сообщения.`,
-		thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038767024643522600/1476613756146739089.png?width=593&height=593",
-		footer: {text: "Внимание, вы можете получить награду не более чем из одного сундука за время пребывания босса"},
-		color,
-		reactions: ["637533074879414272"]
+	static BonusesChest = {
+		BASE_BONUSES: 50,
+		BONUSES_PER_LEVEL: 10,
+		RECEIVE_LIMIT: 20,
+		BONUS_VOID_PULL: 3,
+		DAMAGE_FOR_VOID: 15_000,
+		GUARANTEE_DAMAGE_PART_FOR_VOID: 0.2,
+		VOID_REWARD_DENOMINATOR: 0.8,
+		DAMAGE_FOR_KEY: 200,
+		createRewardPull: ({userStats, level, bonuses = true}) => {
+			const BossChest = BossManager.BonusesChest;
+
+			// chestBonus
+			const bonusesReward = BossChest.BASE_BONUSES + level * BossChest.BONUSES_PER_LEVEL;
+
+			// void
+			const numerator = Math.random() * userStats.damageDealt + userStats.damageDealt * GUARANTEE_DAMAGE_PART;
+
+			const byDamage = (numerator / BossChest.DAMAGE_FOR_VOID) ** BossChest.VOID_REWARD_DENOMINATOR;
+
+			const bonus = Number(Util.random(BossChest.BONUS_VOID_PULL) === 1);
+
+			const voidReward = Math.floor(byDamage + bonus);
+
+			// keys
+			const keysReward = Math.floor(userStats.damageDealt * BossChest.DAMAGE_FOR_KEY);
+
+			const rewards = {
+				"chestBonus": bonuses ? bonusesReward : 0,
+				"void": voidReward,
+				"keys": keysReward
+			}
+			return rewards;
+		},
+		createEmbed: ({level, taking}) => {
+			const contents = {
+				rewardPer: `Получите бонусы за победу над боссом ур. ${ level }.`,
+				timeLimit: `Время ограничено двумя часами с момента отправки этого сообщения`,
+				receiveLimit: `${ taking ? `\nСобрано: ${ taking }/${ BossManager.BonusesChest.RECEIVE_LIMIT }` : "" }`
+			}
+			return {
+				title: "Сундук с наградами",
+				description: `${ contents.rewardPer }\n${ contents.timeLimit }.${ contents.receiveLimit }`,
+				thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038767024643522600/1476613756146739089.png?width=593&height=593",
+				footer: {text: "Внимание, вы можете получить награду не более чем из одного сундука за время пребывания босса"},
+				color: "#ffda73",
+				reactions: ["637533074879414272"]
+			};
+		},
+		createCollector: async ({guild, level}) => {
+			const BossChest = BossManager.BonusesChest;
+	
+			const embed = BossChest.createEmbed({level, taking: 0});
+			const context = {
+				taking: 0,
+				level,
+				message: null
+			}
+	
+			context.message = await guild.chatSend(embed);
+			if (!context.message){
+				return;
+			};
+
+			const collector = message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
+			collector.on("collect", (_reaction, user) => {
+				const result = BossChest.onCollect(user, context);
+				if (!result){
+					return;
+				}
+				context.taking++;
+				if (taking >= BossChest.RECEIVE_LIMIT){
+					collector.stop();
+				}
+				context.message.msg({...BossChest.createEmbed(context), edit: true});
+			});
+	
+			collector.on("end", () => message.delete());
+		},
+		onCollect: (user, {level, message}) => {
+			const userStats = BossManager.getUserStats(boss, user.id);
+			const userData = user.data;
+	
+			if ("chestRewardAt" in userStats){
+				message.msg({title: `Вы уже взяли награду на ур. ${ userStats.chestRewardAt }`, delete: 5000});
+				return;
+			};
+
+			const rewardPull = BossManager.BonusesChest.createRewardPull({level, userStats, bonuses: true});
+			userStats.chestRewardAt = level;
+			Object.entries(rewardPull).forEach(([key, count]) => 
+				userData[key] = (userData[key] ?? 0) + count
+			)
+			message.msg({description: `Получено ${  Util.ending(rewardPull.chestBonus, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>, ${ rewardPull.keys } 🔩 и ${ rewardPull.void } <a:void:768047066890895360>`, color, delete: 7000});
+
+			return true;
+		}
 	};
-
-	const calculateReward = this.calculateChestBonuses;
-
-	const message = await guild.chatSend(embed);
-	if (!message){
-		return;
-	}
-	const collector = message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
-	collector.on("collect", (_reaction, user) => {
-		const userStats = BossManager.getUserStats(boss, user.id);
-
-		if ("chestRewardAt" in userStats){
-			message.msg({title: `Вы уже взяли награду на ур. ${ userStats.chestRewardAt }`, delete: 5000});
-			return;
-		};
-
-		const reward = calculateReward(thatLevel);
-		userStats.chestRewardAt = thatLevel;
-		user.data.chestBonus = (user.data.chestBonus ?? 0) + reward;
-		message.msg({description: `Получено ${  Util.ending(reward, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>`, color, delete: 7000});
-	})
-
-	collector.on("end", () => message.delete());
-	}
+ 
 
 	static async beforeApparance(guild){
 
-	const data = guild.data;
+		const data = guild.data;
 
-	if (!data.boss){
-		return;
-	}
+		if (!data.boss){
+			return;
+		}
 
 
-	const isApparanceAtNextDay = () => {
-		return data.boss.apparanceAtDay === DataManager.data.bot.currentDay + 1;
-	}
+		const isApparanceAtNextDay = () => {
+			return data.boss.apparanceAtDay === DataManager.data.bot.currentDay + 1;
+		}
 
-	if (!isApparanceAtNextDay()){
-		return;
-	}
+		if (!isApparanceAtNextDay()){
+			return;
+		}
 
-	await Util.sleep(3000);
+		await Util.sleep(3000);
 
-	const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
-	const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по-завершению участники получат небольшую награду`;
-	const description = `${ descriptionImage }\n\n${ descriptionFacts }`;
+		const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
+		const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по-завершению участники получат небольшую награду`;
+		const description = `${ descriptionImage }\n\n${ descriptionFacts }`;
 
-	const embed = {
-		color: "#210052",
-		description
-	}
+		const embed = {
+			color: "#210052",
+			description
+		}
 
-	await guild.chatSend(embed);
+		await guild.chatSend(embed);
 	}
 
 	static async beforeEnd(guild){
-	const boss = guild.data.boss;
-	const client = guild.client;
+		const boss = guild.data.boss;
+		const usersCache = guild.client.users.cache;
 
-	if (boss.level > 1 === false){
-		guild.chatSend({content: "Босс покинул сервер в страхе..."});
-		return;
-	}
+		if (boss.level > 1 === false){
+			guild.chatSend({content: "Босс покинул сервер в страхе..."});
+			return;
+		}
+		const DAMAGE_THRESHOLDER_FOR_REWARD = 10_000;
+		const createRewardPull = BossManager.BonusesChest.createRewardPull;
 
-	const VOID_REWARD = 1.25;
-	const KEYS_FOR_DAMAGE = 0.0002;
-	
+		const sendReward = ([id, userStats]) => {
+			const userData = usersCache.get(id).data;
+			const reward = createRewardPull({bonuses: false, userStats, level: boss.level});
+			Object.entries(reward).forEach(([key, count]) => 
+				userData[key] = (userData[key] ?? 0) + count
+			)
+		};
 
-	const contents = {
-		dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
-		bossLevel: `Достигнутый уровень: ${ boss.level } (${ [...new Array(boss.level - 1)].map((_, i) => this.calculateKillReward(i + 1)).reduce((acc, exp) => acc + exp) } опыта)`,
-		damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
-		usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
-		parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
-		rewards: `Пользователи получают ключи в количестве равном ${ KEYS_FOR_DAMAGE * 100 }% от нанесенного урона и случайно распределенную нестабильность, общее количество которой равно \`boss.level ** ${ VOID_REWARD }\``,
-		voidCount: "Всего нестабильности:"
-	}
-	
-	const getUsetsRewardTable = () => {
-			
-			const table = Object.fromEntries(
-				Object.keys(boss.users).map(id => [id, {}])
-			);
-
-			
-			const rewardsCount = Math.floor(boss.level ** VOID_REWARD);
-			getUsetsRewardTable.rewardsCount = rewardsCount;
+		Object.entries(boss.users)
+			.filter(([_id, {damageDealt}]) => damageDealt > DAMAGE_THRESHOLDER_FOR_REWARD)
+			.forEach(sendReward);
 		
-			const usersOdds = Object.entries(boss.users)
-				.filter(([id]) => guild.members.cache.has(id))
-				.map(([id, {damageDealt: _weight}]) => ({id, _weight}))
-				.filter(({_weight}) => _weight);
-			
-			for (let i = 0; i < rewardsCount; i++){
-				const id = usersOdds.random({_weights: true})
-					.id;
-				
-				table[id].void ||= 0;
-				table[id].void += 1;
-			}
 
-			
-			for (const id in table){
-				table[id].keys = Math.floor(boss.users[id].damageDealt * KEYS_FOR_DAMAGE);
-			}
-			
-			return table;
+		const contents = {
+			dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
+			bossLevel: `Достигнутый уровень: ${ boss.level } (${ [...new Array(boss.level - 1)].map((_, i) => this.calculateKillReward(i + 1)).reduce((acc, exp) => acc + exp) } опыта)`,
+			damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
+			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
+			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
+			rewards: `Пользователи получают ключи в количестве равном ${ 100 / BossManager.BonusesChest.DAMAGE_FOR_KEY }% от нанесенного урона и примерно случайное количество нестабильности в зависимости от нанесенного урона`,
 		}
 	
-		const usersTable = getUsetsRewardTable();
 		
-		Object.entries(usersTable).forEach(([id, {void: voidCount, keys}]) => {
-			const user = client.users.cache.get(id);
-			user.data.void += voidCount;
-			user.data.keys += keys;
-		})
-
-		const fields = Object.entries(usersTable)
-			.filter(([id, {void: voidCount}]) => voidCount)
-			.map(([id, {void: voidCount}]) => {
-				const userStats = BossManager.getUserStats(boss, id);
-				const user = client.users.cache.get(id);
-				const damage = userStats.damageDealt;
-				const chestBonuses = userStats.chestRewardAt ? calculateChestBonuses(userStats.chestRewardAt) : 0;
-				const value = `Нестабильности: \`${ voidCount }\`;\nУрона: ${ damage }ед.${ chestBonuses ? `\nБонусов из сундка: ${ chestBonuses };` : "" }`;
-				return {name: user.tag, value, inline: true};
-			});
+			
 		
 		const footer = {
-			text: `${ contents.voidCount } ${ getUsetsRewardTable.rewardsCount }`,
+			text: `Пробыл здесь 3 дня`,
 			iconURL: guild.iconURL()
 		};
 	
@@ -503,34 +528,34 @@ class BossManager {
 	}
 
 	static userAttack({boss, user, channel}){
-	const userStats = BossManager.getUserStats(boss, user.id);
-	
-	userStats.attack_CD ||= 0;
-	userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+		const userStats = BossManager.getUserStats(boss, user.id);
 
-	const footer = {iconURL: user.avatarURL(), text: user.tag};
-	if (userStats.attack_CD > Date.now()){
+		userStats.attack_CD ||= 0;
+		userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+
+		const footer = {iconURL: user.avatarURL(), text: user.tag};
+		if (userStats.attack_CD > Date.now()){
 		const description = `**${ Util.timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
 		channel.msg({title: "⚔️ Перезарядка..!", color: "#ff0000", description, delete: 7000, footer});
 		return;
-	}
+		}
 
-	
-	userStats.attack_CD = Date.now() + userStats.attackCooldown;
 
-	
-	const attackContext = {
+		userStats.attack_CD = Date.now() + userStats.attackCooldown;
+
+
+		const attackContext = {
 		damageMultiplayer: 1,
 		listOfEvents: [],
 		defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
 		eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
-	};
-	const pull = [...BossManager.eventBases.values().map(event => ({...event}))];
-	const data = {user, userStats, boss, channel, attackContext, guild: channel.guild};
+		};
+		const pull = [...BossManager.eventBases.values().map(event => ({...event}))];
+		const data = {user, userStats, boss, channel, attackContext, guild: channel.guild};
 
-	user.action(Actions.bossBeforeAttack, data);
-	
-	for (let i = 0; i < attackContext.eventsCount; i++){
+		user.action(Actions.bossBeforeAttack, data);
+
+		for (let i = 0; i < attackContext.eventsCount; i++){
 		for (const event of pull){
 			const needSkip = event.filter && !event.filter(data);
 			event._weight = typeof event.weight === "function" ? event.weight(data) : event.weight;
@@ -558,22 +583,22 @@ class BossManager {
 			BossManager.eventBases.delete(event.id);
 		}
 		attackContext.listOfEvents.push(event);
-	}
+		}
 
-	const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
-	attackContext.defaultDamage = attackContext.damageDealt = damage;
-	const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
+		const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
+		attackContext.defaultDamage = attackContext.damageDealt = damage;
+		const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
 
-	
 
-	const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
-	const description = `Нанесено урона с прямой атаки: ${ dealt }ед.\n\n${ eventsContent }`;
-	const embed = {
+
+		const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
+		const description = `Нанесено урона с прямой атаки: ${ dealt }ед.\n\n${ eventsContent }`;
+		const embed = {
 		title: `⚔️ За сервер ${ channel.guild.name }!`,
 		description,
 		footer
-	}
-	channel.msg(embed);
+		}
+		channel.msg(embed);
 	}
 
 
