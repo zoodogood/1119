@@ -120,6 +120,66 @@ class Command {
       ]
     },
     {
+      id: "bossDamage",
+      _weight: 40,
+      description: () => ["Вы видите босса", "Босс Вас приветствует", "Посмотрите туда, там Босс"].random(),
+      variability: [
+        [
+          {
+            action: async () => {},
+            textOutput: "{scene.phrase}"
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async () => {},
+            textOutput: "{scene.phrase}"
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async () => {},
+            textOutput: "{scene.phrase}"
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async () => {},
+            textOutput: "{scene.phrase}"
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+      ],
+      filter: ({guild}) => this.boss.isAvailable(guild),
+      fastFunc: ({guild, elementBase, user}) => {
+        const bossElement = guild.data.boss.elementType;
+        const damageDealt = this.boss.makeDamage(guild, user, {elementType: elementBase.index});
+        const isSame = bossElement === elementBase.index;
+
+        const contents = {
+          dealt: `Нанесено урона по боссу ${ damageDealt } ед.`,
+          multiplayer: isSame ? `, под эффектом Х${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : ""
+        }
+        
+        scene.phrase = `${ contents.dealt }${ contents.multiplayer }`;
+      }
+    },
+    {
       id: "weekdays",
       _weight: 20,
       description: "Во время прогулки в лесу на вас напал одинокий разбойник",
@@ -931,6 +991,70 @@ class Command {
           false
         ],
       ]
+    },
+    {
+      id: "peoplesBecomeARich",
+      _weight: 100,
+      description: "На улице фантастические цены на клубнику\nЛюди продают её пока могут и обретают богатсва.",
+      variability: [
+        [
+          {
+            action: async () => {
+              DataManager.data.bot.berrysPrise -= 125;
+            },
+            textOutput: "За последние 2с цена клубники упала на 125ед."
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async ({scene}) => {
+              const value = random(55, 110);
+              DataManager.data.bot.berrysPrise -= value;
+              scene.value = value;
+            },
+            textOutput: `За последние 2с цена клубники упала на ${ scene.value }ед.`
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async ({userData, level, scene}) => {
+              DataManager.data.bot.berrysPrise -= 50;
+            },
+            textOutput: `За последние 2с цена клубники упала на 50ед.`
+          },
+          false,
+          false,
+          false,
+          false
+        ],
+        [
+          {
+            action: async ({userData}) => {
+              DataManager.data.bot.berrysPrise -= 50;
+              userData.berrys -= Math.min(userData.berrys, 5);
+            },
+            textOutput: "За последние 2с цена клубники упала на 50ед.\nУ вас отбирают клубнику"
+          },
+          false,
+          false,
+          false,
+          {
+            action: async () => {
+              DataManager.data.bot.berrysPrise -= 200;
+            },
+            textOutput: "Вы снизили её цену на 200ед."
+          },
+        ],
+      ],
+      filter: () => DataManager.data.bot.berrysPrise >= 1_000
     }
   ];
 
@@ -968,19 +1092,10 @@ class Command {
       phrase = ["Это птица? Это самолёт! Нет, это штука!", "Вдумайтесь..", "Ученье – свет, а неученье – штука.", "Игрушка!", "Случайности случайны.", "**ШТУКОВИНА**", "Используйте !штука я, чтобы поменять стихию", "Используйте !штука улучшить, чтобы открыть новые события"].random(),
       footerPhrase = ["кубик рубика", "сапог", "звёзду", "снеговика", "зайца", "большой город", "огненную обезьяну", "ананас", "кефир"].random();
 
-    const boss = {
-      isAvailable: this.boss.isAvailable(channel.guild),
-      damageDealt: null,
-      element: null
-    };
-    if (boss.isAvailable){
-      boss.element = guild.data.boss.elementType;
-      boss.damageDealt = this.boss.makeDamage(channel.guild, user, {elementType: boss.element});
-    };
+    
 
     const contents = {
       guildTakeCoins: `Вы помогли серверу — он получил ${ Util.ending(income, "коин", "ов", "", "а") }`,
-      bossDealt: boss.isAvailable ? `\nНанесено урона по боссу: ${ boss.damageDealt } ед. ${ boss.element === elementBase.index ? `, под эффектом X${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : "" }` : "",
       event: eventBase.id === "day" ? "" : "\nЗа это время также произошло интересное событие:",
       description: typeof eventBase.description === "function" ? eventBase.description(context) : eventBase.description
     };
@@ -988,7 +1103,7 @@ class Command {
     channel.guild.data.coins += income;
     channel.msg({
       title: phrase, 
-      description: `${ contents.guildTakeCoins }${ contents.bossDealt }${ contents.event }`,
+      description: `${ contents.guildTakeCoins }${ contents.event }`,
       color: elementBase.color,
       author: {iconURL: user.avatarURL(), name: user.username},
       fields: [{name: `Если коротко..`, value: `**${ contents.description }**\n⠀`}, {name: `${elementBase.emoji} ${context.level + 1} ур.`, value: output}],
@@ -1196,10 +1311,11 @@ class Command {
     },
     makeDamage: (guild, user, {elementType}) => {
       const boss = guild.data.boss;
+      const BASE_DAMAGE = 400;
       const DAMAGE_SOURCE_TYPE = this.boss.manager.DAMAGE_SOURCES.thing;
 
       const multiplayer = boss.elementType === elementType ? this.boss.ELEMENT_DAMAGE_MULTIPLAYER : 1;
-      const damage = 100 * multiplayer;
+      const damage = BASE_DAMAGE * multiplayer;
 
 
       const dealt = this.boss.manager.makeDamage(boss, damage, {sourceUser: user, damageSourceType: DAMAGE_SOURCE_TYPE});
