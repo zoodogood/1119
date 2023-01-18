@@ -29,10 +29,20 @@ class Command {
     }
 
     
+    const currentHealthPointPercent = 1 - boss.damageTaken / boss.healthThresholder;
     
 
-    const currentHealthPointPercent = Math.ceil((1 - boss.damageTaken / boss.healthThresholder) * 100);
-    const description = `Уровень: ${ boss.level }.\nУйдет ${ Util.toDayDate(boss.endingAtDay * 86_400_000) }\n\nПроцент здоровья: ${ currentHealthPointPercent }%`;
+    const contents = {
+      currentHealth: BossManager.isElite(boss) ?
+        Math.max(currentHealthPointPercent * 100, 0.1).toFixed(1) :
+        Math.ceil(currentHealthPointPercent * 100),
+
+      leaveDay: `Уйдет ${ Util.toDayDate(boss.endingAtDay * 86_400_000) }`,
+      level: `Уровень: ${ boss.level }.`
+    };
+
+    
+    const description = `${ contents.level }\n${ contents.leaveDay }\n\nПроцент здоровья: ${ contents.currentHealth }%`;
     const reactions = ["⚔️", "🕋"];
     const fields = [
       {
@@ -96,6 +106,7 @@ class Command {
     };
     const message = await interaction.channel.msg(embed);
     const collector = message.createMessageComponentCollector({time: 120_000});
+
     collector.on("collect", (interaction) => {
       const user = interaction.user;
       const userStats = BossManager.getUserStats(boss, user.id);
@@ -112,6 +123,7 @@ class Command {
       });
       collector.stop();
     });
+    
     collector.on("end", () => message.msg({edit: true, components: []}));
   }
 
