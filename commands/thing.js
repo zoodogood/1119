@@ -1016,7 +1016,7 @@ class Command {
               DataManager.data.bot.berrysPrise -= value;
               scene.value = value;
             },
-            textOutput: `За последние 2с цена клубники упала на ${ scene.value }ед.`
+            textOutput: `За последние 2с цена клубники упала на { scene.value }ед.`
           },
           false,
           false,
