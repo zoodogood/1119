@@ -1025,7 +1025,7 @@ class Command {
         ],
         [
           {
-            action: async ({userData, level, scene}) => {
+            action: async () => {
               DataManager.data.bot.berrysPrise -= 50;
             },
             textOutput: `За последние 2с цена клубники упала на 50ед.`
