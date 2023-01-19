@@ -6,18 +6,18 @@ class Command {
 
 	async onChatInput(msg, interaction){
     const counterContent = (counter) => ({
-      title: `🖊️ [Сообщение.](https://discord.com/channels/${ counter.guildId }/${ counter.channelId }/${ counter.messageId })`,
-      channel: `🪧 \`#${ msg.guild.channels.cache.get(counter.channel).name }\``,
-      poster: `🖌️ <#${ counter.channel }>`
+      message: `🖊️ [Сообщение.](https://discord.com/channels/${ counter.guildId }/${ counter.channelId }/${ counter.messageId })`,
+      channel: `🪧 \`#${ interaction.guild.channels.cache.get(counter.channelId).name }\``,
+      poster: `🖌️ <#${ counter.channelId }>`
     })[counter.type];
 
     const counters = CounterManager.data
       .filter(counter => counter.guildId === msg.guild.id)
       .map((counter, i) => ({name: `**${i + 1}.**`, value: counterContent(counter), inline: true, counter: counter}));
 
-    let message  = await msg.msg({title: "Счётчики сервера", fields: counters[0] ? counters : {name: "Но тут — пусто.", value: "Чтобы добавить счётчики, используйте `!counter`"}});
+    let message = await msg.msg({title: "Счётчики сервера", fields: counters[0] ? counters : {name: "Но тут — пусто.", value: "Чтобы добавить счётчики, используйте `!counter`"}});
 
-    const reactions = () => (counters[0] && !interaction.mention.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
+    const reactions = () => (counters[0] && !interaction.user.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
     let react, question, answer, counter;
     while (true){
       react = await message.awaitReact({user: msg.author, removeType: "all"}, ...reactions());
