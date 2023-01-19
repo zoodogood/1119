@@ -122,7 +122,7 @@ class Command {
       emoji: "🪸",
       description: `Позволяет иметь более более одного проклятия`,
       _weight: 40,
-      filter: (user, _interaction) => !(user.data.cursesEnded > 4) && !user.data.voidFreedomCurse,
+      filter: (user, _interaction) => user.data.cursesEnded > 4 && !user.data.voidFreedomCurse,
       action: (user, _interaction) => user.data.voidFreedomCurse = 1
     },
     {
