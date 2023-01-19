@@ -7,21 +7,34 @@ class Command {
     {
       emoji: "🌀",
       description: "Уменьшает кулдаун получения опыта за сообщение на 0.2с",
-      _weight: (user, _interaction) => 100 - (user.data.voidCooldown * 5 || 0),
-      filter: (user, _interaction) => user.data.voidCooldown < 20,
+      MAX_LEVEL: 20,
+      MAX_WEIGHT: 100,
+      _weight: (user, _interaction) => this.MAX_WEIGHT - (user.data.voidCooldown * (this.MAX_WEIGHT / this.MAX_LEVEL) || 0),
+      filter: (user, _interaction) => user.data.voidCooldown < this.MAX_LEVEL,
       action: (user, _interaction) => user.data.voidCooldown = ++user.data.voidCooldown || 1
     },
     {
       emoji: "🔅",
-      description: (user, _interaction) => `Мгновенно получите бонус сундука в размере \`${ Math.min((user.data.chestBonus * 2 || 0) + user.data.voidRituals * 18 + 38, 1000) }\``,
+      LIMIT: 1000,
+      BONUSES_PER_RITUAL: 18,
+      BASIC: 38,
+      MULTIPLAYER: 1.5,
+      calculate(user){
+        return Math.min(
+          (user.data.chestBonus * this.MULTIPLAYER || 0) + user.data.voidRituals * this.BONUSES_PER_RITUAL + this.BASIC, 
+          this.LIMIT
+        );
+      },
+      description: (user, _interaction) => `Мгновенно получите бонус сундука в размере \`${ this.calculate(user) }\``,
       _weight: 50,
-      action: (user, _interaction) => user.data.chestBonus = (user.data.chestBonus || 0) + Math.min((user.data.chestBonus * 2 || 0) + user.data.voidRituals * 18 + 38, 1000)
+      action: (user, _interaction) => user.data.chestBonus = (user.data.chestBonus || 0) + this.calculate(user)
     },
     {
       emoji: "⚜️",
-      description: "Уменьшает цену нестабильности для розжыга котла. (Макс. на 30%)",
+      MAX_LEVEL: 3,
+      description: (user) => `Уменьшает цену нестабильности для розжыга котла. (Макс. на ${ this.MAX_LEVEL * 10 }%)`,
       _weight: 5,
-      filter: (user, _interaction) => user.data.voidPrise < 3,
+      filter: (user, _interaction) => user.data.voidPrise < this.MAX_LEVEL,
       action: (user, _interaction) => user.data.voidPrise = ++user.data.voidPrise || 1
     },
     {
@@ -33,18 +46,19 @@ class Command {
     },
     {
       emoji: "🔱",
+      MAX_LEVEL: 5,
       description: "Делает ежедневные квесты на 15% сложнее, однако также увеличивает их награду на 30%",
       _weight: 10,
-      filter: (user, _interaction) => user.data.voidQuests < 5,
+      filter: (user, _interaction) => user.data.voidQuests < this.MAX_LEVEL,
       action: (user, _interaction) => user.data.voidQuests = ++user.data.voidQuests || 1
     },
     {
       emoji: "✨",
       BASIC: 20,
-      BONUS_PER_RITUAL: 5,
-      description: (user, _interaction) => `Увеличивает награду коин-сообщений на ${20 + user.data.voidRituals * 7} ед.`,
+      BONUS_PER_RITUAL: 7,
+      description: (user, _interaction) => `Увеличивает награду коин-сообщений на ${ this.BASIC + user.data.voidRituals * this.BONUS_PER_RITUAL } ед.`,
       _weight: 35,
-      action: (user, _interaction) => user.data.coinsPerMessage = (user.data.coinsPerMessage || 0) + 20 + user.data.voidRituals * 7
+      action: (user, _interaction) => user.data.coinsPerMessage = (user.data.coinsPerMessage || 0) + this.BASIC + user.data.voidRituals * this.BONUS_PER_RITUAL
     },
     {
       emoji: "💠",
@@ -54,9 +68,14 @@ class Command {
     },
     {
       emoji: "😈",
-      description: (user, _interaction) => `Создайте экономических хаос, изменив стоимость клубники на рынке! ${ 7 + Math.floor(5 * Math.sqrt(user.data.voidRituals)) } коинов в случайную сторону.`,
+      BASIC: 7,
+      PER_RITUAL: 5,
+      calculate(){
+        return this.BASIC + Math.floor(this.PER_RITUAL * user.data.voidRituals ** 0.5);
+      },
+      description: (user, _interaction) => `Создайте экономических хаос, изменив стоимость клубники на рынке! ${ this.calculate(user) } коинов в случайную сторону.`,
       _weight: 10,
-      action: (user, _interaction) => DataManager.data.bot.berrysPrise += 7 + Math.floor(5 * Math.sqrt(user.data.voidRituals)) * (-1) ** Util.random(1)
+      action: (user, _interaction) => DataManager.data.bot.berrysPrise += this.calculate(user) * (-1) ** Util.random(1)
     },
     {
       emoji: "🍵",
@@ -66,27 +85,32 @@ class Command {
     },
     {
       emoji: "📿",
-      description: (user, _interaction) => `Получите ${ Math.floor(user.data.keys / 100) } ур. нестабильности взамен ${user.data.keys - (user.data.keys % 100)} ключей.`,
+      KEYS_PER_VOID: 100,
+      description: (user, _interaction) => `Получите ${ Math.floor(user.data.keys / this.KEYS_PER_VOID) } ур. нестабильности взамен ${user.data.keys - (user.data.keys % this.KEYS_PER_VOID)} ключей.`,
       _weight: 30,
-      filter: (user, _interaction) => user.data.keys >= 100 && user.data.chestLevel,
+      filter: (user, _interaction) => user.data.keys >= this.KEYS_PER_VOID && user.data.chestLevel,
       action: (user, _interaction) => {
-        user.data.void += Math.floor(user.data.keys / 100);
-        user.data.keys = user.data.keys % 100;
+        user.data.void += Math.floor(user.data.keys / this.KEYS_PER_VOID);
+        user.data.keys = user.data.keys % this.KEYS_PER_VOID;
       }
     },
     {
       emoji: "♦️",
+      MAX_LEVEL: 7,
       description: `Увеличивает вероятность коин-сообщения на 10%!`,
       _weight: 15,
-      filter: (user, _interaction) => !(user.data.voidCoins >= 7),
+      filter: (user, _interaction) => user.data.voidCoins < this.MAX_LEVEL,
       action: (user, _interaction) => user.data.voidCoins = ~~user.data.voidCoins + 1
     },
     {
       emoji: "🏵️",
-      description: (user, _interaction) => `Улучшает сундук до ${ user.data.chestLevel + 2 } уровня. Требует ${ user.data.chestLevel ? 500 : 150 } ключей.`,
+      KEYS_FOR_FIRST_UPGRADE: 150,
+      KEYS_FOR_SECOND_UPGRADE: 500,
+      DESCRIPTION_OFFSET: 2,
+      description: (user, _interaction) => `Улучшает сундук до ${ user.data.chestLevel + this.DESCRIPTION_OFFSET } уровня. Требует ${ user.data.chestLevel ? this.KEYS_FOR_SECOND_UPGRADE : this.KEYS_FOR_FIRST_UPGRADE } ключей.`,
       _weight: Infinity,
-      filter: (user, _interaction) => user.data.chestLevel != 2 && user.data.keys >= (user.data.chestLevel ? 500 : 150),
-      action: (user, _interaction) => user.data.keys -= user.data.chestLevel++ ? 500 : 150
+      filter: (user, _interaction) => user.data.chestLevel != 2 && user.data.keys >= (user.data.chestLevel ? this.KEYS_FOR_SECOND_UPGRADE : this.KEYS_FOR_FIRST_UPGRADE),
+      action: (user, _interaction) => user.data.keys -= user.data.chestLevel++ ? this.KEYS_FOR_SECOND_UPGRADE : this.KEYS_FOR_FIRST_UPGRADE
     },
     {
       emoji: "💖",
@@ -205,7 +229,7 @@ class Command {
   }
 
   calculateRitualPrice(userData, guildData){
-    const treeLevelBonus = Math.floor((guildData?.treeLevel ?? 0) / 10);
+    const treeLevelBonus = Math.floor((guildData.treeLevel ?? 0) / 10);
 
     const basic = Math.min(2 + userData.voidRituals, 20) - treeLevelBonus;
     const multiplayer = (1 - 0.10 * (userData.voidPrise || 0));
@@ -238,6 +262,11 @@ class Command {
       (await boiler.awaitReact({user: interaction.user, removeType: "all"}, ...bonuses.map(bonus => bonus.emoji))) || 
       bonuses.random().emoji;
 
+    if (interaction.minusVoids > userData.void){
+      this.displayVoidNotEnought({userData, interaction, reference: boiler.id});
+      return;
+    }
+
 
     bonuses.find(bonus => bonus.emoji === react).action(user, interaction);
 
@@ -251,6 +280,12 @@ class Command {
     return;
   }
 
+  displayVoidNotEnought({interaction, userData, reference = null}){
+    const description = `Добудьте ещё ${ Util.ending(interaction.minusVoids - userData.void, "уров", "ней", "ень", "ня") } нестабильности <a:placeForVoid:780051490357641226>\nЧтобы провести ритуал нужно ${  Util.ending(interaction.minusVoids, "камн", "ей", "ь", "я") }, а у вас лишь ${ userData.void };\nИх можно получить, с низким шансом, открывая ежедневный сундук.\nПроведено ритуалов: ${userData.voidRituals}\nКотёл даёт полезные бонусы, а также увеличивает количество опыта.`;
+    const footer = {text: ["Интересно, куда делись все ведьмы?", "Правило по использованию номер 5:\nНИКОГДА не используйте это.*", "Неприятности — лучшие друзья странных светящихся котов.", "Берегитесь мяукающих созданий."].random()};
+    interaction.channel.msg({title: "<a:void:768047066890895360> Не хватает ресурса", description, color: "#3d17a0", footer, reference});
+  }
+
 
 	async onChatInput(msg, interaction){
     // <a:void:768047066890895360> <a:placeForVoid:780051490357641226> <a:cotik:768047054772502538>
@@ -262,16 +297,11 @@ class Command {
     }
 
     const userData = interaction.userData;
-    interaction.minusVoids = this.calculateRitualPrice(userData);
+    interaction.minusVoids = this.calculateRitualPrice(userData, interaction.guild.data);
 
-    const sendVoidOut = () => {
-      const description = `Добудьте ещё ${ Util.ending(interaction.minusVoids - userData.void, "уров", "ней", "ень", "ня") } нестабильности <a:placeForVoid:780051490357641226>\nЧтобы провести ритуал нужно ${  Util.ending(interaction.minusVoids, "камн", "ей", "ь", "я") }, а у вас лишь ${ userData.void };\nИх можно получить, с низким шансом, открывая ежедневный сундук.\nПроведено ритуалов: ${userData.voidRituals}\nКотёл даёт полезные бонусы, а также увеличивает количество опыта.`;
-      const footer = {text: ["Интересно, куда делись все ведьмы?", "Правило по использованию номер 5:\nНИКОГДА не используйте это.*", "Неприятности — лучшие друзья странных светящихся котов.", "Берегитесь мяукающих созданий."].random()};
-      msg.msg({title: "<a:void:768047066890895360> Не хватает ресурса", description, color: "#3d17a0", footer});
-    }
 
     if (userData.void < interaction.minusVoids){
-      sendVoidOut();
+      this.displayVoidNotEnought({userData, interaction});
       return;
     }
 
@@ -284,7 +314,7 @@ class Command {
     }
 
     if (userData.void < interaction.minusVoids){
-      sendVoidOut();
+      this.displayVoidNotEnought({userData, interaction, reference: boilerMessage.id});
       boilerMessage.delete();
       return;
     }
