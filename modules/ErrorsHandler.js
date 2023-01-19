@@ -25,7 +25,7 @@ class ErrorsAudit {
 class ErrorsHandler {
 	static Audit = new ErrorsAudit();
 
-	static async sendErrorInfo({channel, error}){
+	static async sendErrorInfo({channel, error, interaction = {}, description = ""}){
 		const { fileOfError, strokeOfError } = this.parseErrorStack(error.stack, {node_modules: false}) ?? {};
 
 		const components = [
@@ -47,7 +47,7 @@ class ErrorsHandler {
 				disabled: !fileOfError
 			}
 	  	];
-		const embed = {title: `— Данные об исключении 🙄\n >>> ${ error.message }`, color: "#f0cc50", components, reference: interaction.message?.id ?? null};
+		const embed = {title: `— Данные об исключении 🙄\n >>> ${ error.message }`, description, color: "#f0cc50", components, reference: interaction.message?.id ?? null};
 		const message = await channel.msg(embed);
 	  
 		const collector = message.createMessageComponentCollector({time: 3_600_000});
