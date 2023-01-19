@@ -15,7 +15,7 @@ class Command {
     },
     {
       emoji: "🔅",
-      LIMIT: 1000,
+      LIMIT: 2_000,
       BONUSES_PER_RITUAL: 18,
       BASIC: 38,
       MULTIPLAYER: 1.5,
