@@ -7,8 +7,8 @@ class Command {
     {
       emoji: "🌀",
       description: "Уменьшает кулдаун получения опыта за сообщение на 0.2с",
-      _weight: (user, _interaction) => 100 - ((user.data.voidCooldown * 5) || 0),
-      filter: (user, _interaction) => !(user.data.voidCooldown >= 20),
+      _weight: (user, _interaction) => 100 - (user.data.voidCooldown * 5 || 0),
+      filter: (user, _interaction) => user.data.voidCooldown < 20,
       action: (user, _interaction) => user.data.voidCooldown = ++user.data.voidCooldown || 1
     },
     {
@@ -21,12 +21,12 @@ class Command {
       emoji: "⚜️",
       description: "Уменьшает цену нестабильности для розжыга котла. (Макс. на 30%)",
       _weight: 5,
-      filter: (user, _interaction) => !(user.data.voidPrise >= 3),
+      filter: (user, _interaction) => user.data.voidPrise < 3,
       action: (user, _interaction) => user.data.voidPrise = ++user.data.voidPrise || 1
     },
     {
       emoji: "🃏",
-      description: "Даёт 9%-ный шанс не потерять уровни нестабильности во время ритуала.",
+      description: "Даёт 9%-й шанс не потерять уровни нестабильности во время ритуала.",
       _weight: 3,
       filter: (user, _interaction) => !user.data.voidDouble,
       action: (user, _interaction) => user.data.voidDouble = 1
@@ -35,14 +35,16 @@ class Command {
       emoji: "🔱",
       description: "Делает ежедневные квесты на 15% сложнее, однако также увеличивает их награду на 30%",
       _weight: 10,
-      filter: (user, _interaction) => !(user.data.voidQuests >= 5),
+      filter: (user, _interaction) => user.data.voidQuests < 5,
       action: (user, _interaction) => user.data.voidQuests = ++user.data.voidQuests || 1
     },
     {
       emoji: "✨",
-      description: (user, _interaction) => `Увеличивает награду коин-сообщений на ${7 + user.data.voidRituals} ед.`,
+      BASIC: 20,
+      BONUS_PER_RITUAL: 5,
+      description: (user, _interaction) => `Увеличивает награду коин-сообщений на ${20 + user.data.voidRituals * 7} ед.`,
       _weight: 35,
-      action: (user, _interaction) => user.data.coinsPerMessage = (user.data.coinsPerMessage || 0) + 7 + user.data.voidRituals
+      action: (user, _interaction) => user.data.coinsPerMessage = (user.data.coinsPerMessage || 0) + 20 + user.data.voidRituals * 7
     },
     {
       emoji: "💠",
@@ -109,11 +111,11 @@ class Command {
     },
     {
       emoji: "🧵",
-      description: (_user, interaction) => `Получите случайное количество нестабильности: 1–${ interaction.minusVoids * 1.5 }; Снижает уровень котла на 2.\nЕсли Ваш уровень кратен четырем, Вы получите одну дополнительную нестабильность.`,
-      _weight: 2,
-      filter: (user, _interaction) => user.data.voidRituals > 4,
+      description: (_user, interaction) => `Получите случайное количество нестабильности: 1–${ interaction.minusVoids * 2 }; Снижает уровень котла на 2.\nЕсли Ваш уровень кратен двум, Вы получите одну дополнительную нестабильность.`,
+      _weight: 15,
+      filter: (user, _interaction) => user.data.voidRituals > 4 && user.data.voidRituals < 20,
       action: (user, interaction) => {
-        const voids = Util.random(1, interaction.minusVoids * 1.5) + !(user.data.level % 4);
+        const voids = Util.random(1, interaction.minusVoids * 2) + !(user.data.level % 2);
         user.data.void += voids;
         user.data.voidRituals -= 3;
       }
