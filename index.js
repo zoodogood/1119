@@ -15,6 +15,7 @@ const client = new Discord.Client({ messageCacheMaxSize: 110, intents: [3276799]
 
 DataManager.setClient(client);
 BossManager.setClient(client);
+CounterManager.setClient(client);
 
 
 import FileSystem from "fs";
