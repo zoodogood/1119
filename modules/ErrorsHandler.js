@@ -25,7 +25,7 @@ class ErrorsAudit {
 class ErrorsHandler {
 	static Audit = new ErrorsAudit();
 
-	static async sendErrorInfo({channel, error, interaction}){
+	static async sendErrorInfo({channel, error}){
 		const { fileOfError, strokeOfError } = this.parseErrorStack(error.stack, {node_modules: false}) ?? {};
 
 		const components = [
