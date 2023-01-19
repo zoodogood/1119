@@ -18,26 +18,6 @@ class Event extends BaseEvent {
 		await CounterManager.file.load();
 
 		
-
-
-		await CommandsManager.importCommands();
-		CommandsManager.createCallMap();
-
-
-
-		TimeEventsManager.handle();
-
-		const now = Date.now();
-		DataManager.data.users.forEach(user =>
-			Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
-		);
-		DataManager.data.users = DataManager.data.users.sort((a, b) => b.level - a.level);
-
-		if (DataManager.data.bot.dayDate !== Util.toDayDate( now )){
-			EventsManager.collection.get("TimeEvent/day-stats")
-				.run(true);
-		}
-
 		assert(DataManager.data.users);
 		assert(DataManager.data.guilds);
 		assert(DataManager.data.bot);
@@ -49,6 +29,31 @@ class Event extends BaseEvent {
 			DataManager.data.bot, 
 			Util.omit(defaultData, (k) => k in DataManager.data.bot === false)
 		);
+
+		const now = Date.now();
+		DataManager.data.users.forEach(user =>
+			Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
+		);
+		DataManager.data.users = DataManager.data.users.sort((a, b) => b.level - a.level);
+
+		
+
+
+		await CommandsManager.importCommands();
+		CommandsManager.createCallMap();
+
+
+
+		TimeEventsManager.handle();
+
+		
+
+		if (DataManager.data.bot.dayDate !== Util.toDayDate( now )){
+			EventsManager.collection.get("TimeEvent/day-stats")
+				.run(true);
+		}
+
+		
 
 		await import('#server/start.js');
 		setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
