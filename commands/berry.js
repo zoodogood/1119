@@ -2,11 +2,14 @@ import DataManager from '#src/modules/DataManager.js';
 import { Actions } from '#src/modules/ActionManager.js';
 
 class Command {
+  static INFLATION = 0.2;
+  static BERRYS_LIMIT = 35000;
+  static TAX = 0.02;
 
 	async onChatInput(msg, interaction){
-    const MAX_LIMIT = 35000;
-    const INFLATION = 0.2;
-    const TAX = 0.02;
+    const MAX_LIMIT = this.constructor.BERRYS_LIMIT;
+    const INFLATION = this.constructor.INFLATION;
+    const TAX = this.constructor.TAX;
 
     let
       user        = interaction.userData,
