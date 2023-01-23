@@ -11,7 +11,7 @@ import { CustomCollector } from '@zoodogood/utils/objectives';
 
 class Command {
 
-  PAGE_SIZE = 3;
+  PAGE_SIZE = 15;
 
   leaderboardTypes = new Collection(Object.entries({
     level: {
@@ -251,8 +251,14 @@ class Command {
     selectPage: async (interaction, context, responceTo) => {
       const user = interaction.user;
       const title = "Перейти к странице";
-      const customId = "@command/top/onPageSelect";
-      const components = {type: ComponentType.TextInput, style: TextInputStyle.Short, label: "Укажите число", placeholder: "От 1 до 3", customId: "pageNumber"};
+      const customId = "pageSelectValue";
+      const components = {
+        type: ComponentType.TextInput,
+        style: TextInputStyle.Short,
+        label: "Укажите число",
+        placeholder: `От 1 до ${ context.pages }`,
+        customId
+      };
       const modal = CreateModal({customId, title, components});
       await interaction.showModal(modal);
 
@@ -260,6 +266,9 @@ class Command {
       const collector = new CustomCollector({target: interaction.client, event: "interactionCreate", filter, time: 300_000});
       collector.setCallback((interaction) => {
         collector.end();
+        
+        const value = (+interaction.fields.getField("pageSelectValue").value - 1) || context.page;
+        context.page = Math.max(Math.min(context.pages, value), 1);
         responceTo(interaction);
         return;
       });
