@@ -5,30 +5,7 @@ import { ButtonStyle, ComponentType } from 'discord.js';
 
 class Command {
 
-	async onChatInput(msg, interaction){
-    const member = interaction.mention ?? msg.author;
-
-    const guild = msg.guild;
-    const boss = guild.data.boss ?? {};
-    
-    if (!boss.isArrived){
-      const description = boss.apparanceAtDay ? 
-        `Прибудет лишь ${ Util.toDayDate(boss.apparanceAtDay * 86_400_000) }` :
-        "Момент появления босса пока неизвестен";
-
-      msg.msg({description, color: "#000000"});
-      return;
-    };
-
-    const userStats   = BossManager.getUserStats(boss, member.id);
-    const userEffects = BossManager.effectsOf({boss, user: member});
-
-    if (userStats.heroIsDead){
-      this.displayHeadstone({interaction, member, boss});
-      return;
-    }
-
-    
+  createEmbed({userEffects, userStats, member, boss}){
     const currentHealthPointPercent = 1 - boss.damageTaken / boss.healthThresholder;
     
 
@@ -43,7 +20,6 @@ class Command {
 
     
     const description = `${ contents.level }\n${ contents.leaveDay }\n\nПроцент здоровья: ${ contents.currentHealth }%`;
-    const reactions = ["⚔️", "🕋"];
     const fields = [
       {
         name: "Пользователь",
@@ -65,12 +41,49 @@ class Command {
 
     const embed = {
       description,
-      reactions,
       fields,
       thumbnail: boss.avatarURL,
       footer: {text: member.tag, iconURL: member.avatarURL()}
     }
-    const message = await msg.msg(embed);
+
+    return embed;
+  }
+
+	async onChatInput(msg, interaction){
+    const member = interaction.mention ?? msg.author;
+
+    const guild = msg.guild;
+    const boss = guild.data.boss ?? {};
+    
+    if (!boss.isArrived){
+      const description = boss.apparanceAtDay ? 
+        `Прибудет лишь ${ Util.toDayDate(boss.apparanceAtDay * 86_400_000) }` :
+        "Момент появления босса пока неизвестен";
+
+      msg.msg({description, color: "#000000"});
+      return;
+    };
+
+    const userStats   = BossManager.getUserStats(boss, member.id);
+    const userEffects = BossManager.effectsOf({boss, user: member});
+
+    const context = {
+      interaction,
+      member,
+      boss,
+      userStats,
+      userEffects
+    }
+
+    if (userStats.heroIsDead){
+      this.displayHeadstone(context);
+      return;
+    }
+
+    
+    const embed = this.createEmbed(context);
+    const reactions = ["⚔️", "🕋"];
+    const message = await msg.msg({...embed, reactions});
     
     const filter = (reaction, user) => user.id !== client.user.id && reactions.includes(reaction.emoji.name);
     const collector = message.createReactionCollector({filter, time: 60_000});
@@ -84,10 +97,12 @@ class Command {
       if (reaction.emoji.name === "🕋"){
         BossManager.BossShop.createShop({channel: message.channel, user, guild: message.guild});
       }
+
+      const embed = this.createEmbed(context);
+      message.msg({...embed, edit: true});
     });
 
     collector.on("end", () => message.reactions.removeAll());
-
   }
 
   async displayHeadstone({interaction, member, boss}){
