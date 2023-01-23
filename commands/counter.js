@@ -9,6 +9,7 @@ class Command {
  
     if (CounterManager.data.filter(counter => counter.guildId === interaction.guild.id).length >= 15){
       interaction.channel.msg({title: "Максимум 15 счётчиков", color: "#ff0000", delete: 12_000});
+      return;
     }
 
     const context = {
@@ -21,7 +22,10 @@ class Command {
     
     const counterTypes = [...CounterManager.countersTypes.values()];
 
-    context.questionMessage = await msg.msg({title: "🪄 Выберите тип объекта для счётчика", description: `Счётчики работают с каналами и сообщениями.\nВыберите основу для дальнельшей настройки.\n\n${ counterTypes.map(({label, description}) => `❯ ${ label.toUpperCase() }\n> ${ description }.\n> ​`).join("\n") }\n `});
+    context.questionMessage = await msg.msg({
+      title: "🪄 Выберите тип объекта для счётчика",
+      description: `Счётчики работают с каналами и сообщениями.\nВыберите основу для дальнельшей настройки.\n\n${ counterTypes.map(({label, description}) => `❯ ${ label.toUpperCase() }\n> ${ description }.\n> ​`).join("\n") }`
+    });
     const takeCounterType = async (context) => {
       const reactions = counterTypes.map(({emoji}) => emoji);
       const reaction = await context.questionMessage.awaitReact({user: msg.author, removeType: "all"}, ...reactions);
