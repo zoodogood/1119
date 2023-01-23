@@ -17,26 +17,8 @@ class Event extends BaseEvent {
 		// await ReactionsManager.loadReactionsFromFile();
 		await CounterManager.file.load();
 
-		
-		assert(DataManager.data.users);
-		assert(DataManager.data.guilds);
-		assert(DataManager.data.bot);
-		const defaultData = {
-			commandsUsed: {}
-		}
-
-		Object.assign(
-			DataManager.data.bot, 
-			Util.omit(defaultData, (k) => k in DataManager.data.bot === false)
-		);
-
+		this.checkDataManagerFullset();
 		const now = Date.now();
-		DataManager.data.users.forEach(user =>
-			Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
-		);
-		DataManager.data.users = DataManager.data.users.sort((a, b) => b.level - a.level);
-
-		
 
 
 		await CommandsManager.importCommands();
@@ -57,6 +39,31 @@ class Event extends BaseEvent {
 
 		await import('#server/start.js');
 		setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
+	}
+
+	checkDataManagerFullset(){
+		const data = DataManager.data;
+
+		assert(data.users);
+		assert(data.guilds);
+		assert(data.bot);
+		const defaultData = {
+			commandsUsed: {}
+		}
+
+		Object.assign(
+			data.bot, 
+			Util.omit(defaultData, (k) => k in data.bot === false)
+		);
+
+		const now = Date.now();
+		data.users.forEach(user =>
+			Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
+		);
+		data.users = data.users.sort((a, b) => b.level - a.level);
+
+		data.bot.berrysPrise ||= 200;
+		data.bot.grempen ||= "123456";
 	}
 
 	options = {
