@@ -2,14 +2,16 @@
 
 import * as Util from '#src/modules/util.js';
 import DataManager from '#src/modules/DataManager.js';
-import { ButtonStyle, ComponentType } from 'discord.js';
+import { ButtonStyle, ComponentType, TextInputStyle } from 'discord.js';
 import { Collection } from '@discordjs/collection';
 import BossManager from '#src/modules/BossManager.js';
+import { CreateModal } from '@zoodogood/utils/discordjs';
+import { CustomCollector } from '@zoodogood/utils/objectives';
 
 
 class Command {
 
-  PAGE_SIZE = 15;
+  PAGE_SIZE = 3;
 
   leaderboardTypes = new Collection(Object.entries({
     level: {
@@ -147,6 +149,10 @@ class Command {
   }));
 
 
+  onComponent(params){
+    
+  }
+
   createComponents(context){
     return [
       [
@@ -191,7 +197,7 @@ class Command {
     const { pages, page, selected, values } = context;
     const fields = values
       .slice(page * this.PAGE_SIZE, page * this.PAGE_SIZE + this.PAGE_SIZE)
-      .map(([user, output], index) => selected.display(user, output, index, context));
+      .map(([user, output], index) => selected.display(user, output, (index + page * this.PAGE_SIZE), context));
 
     const executorIndex = values.findIndex(([user]) => user === interaction.user);
 
@@ -199,13 +205,12 @@ class Command {
       fields.push({name: "Ещё никто не попал в топ", value: "Значит вы лёгко можете стать первым(-ой)"});
     }
 
-    
     return {
       title: executorIndex !== -1 ? `Вы находитесь на ${ executorIndex + 1 } месте, ${ interaction.user.username }` : `Вы не числитесь в этом топе, ${ interaction.user.username }`,
       fields,
       edit,
       author: {name: `Топ на сервере ${ context.guild.name }`, iconURL: context.guild.iconURL()},
-      components: edit ? null : this.createComponents(context),
+      components: this.createComponents(context),
       footer: pages > 1 ? {text: `Страница: ${ page + 1 } / ${ pages }`} : null
     };
   }
@@ -226,30 +231,45 @@ class Command {
   }
 
   async onCollect(interaction, context){
-    await this.componentsCallbacks[interaction.customId](interaction, context);
-
-    context.pages = this.calculatePages(context.values);
-
-    const embed = this.createEmbed({interaction: context.interaction, context, edit: true});
-    interaction.msg(embed);
+    const responceTo = (replitableInteraction = interaction) => {
+      context.pages = this.calculatePages(context.values.length);
+      const embed = this.createEmbed({interaction: context.interaction, context, edit: true});
+      replitableInteraction.msg(embed);
+    }
+    await this.componentsCallbacks[interaction.customId](interaction, context, responceTo);
   }
 
   componentsCallbacks = {
-    previousPage: (interaction, context) => {
+    previousPage: (interaction, context, responceTo) => {
       context.page--;
+      responceTo();
     },
-    nextPage: (interaction, context) => {
+    nextPage: (interaction, context, responceTo) => {
       context.page++;
+      responceTo();
     },
-    selectPage: (interaction, context) => {
-      interaction.msg(embed);
+    selectPage: async (interaction, context, responceTo) => {
+      const user = interaction.user;
+      const title = "Перейти к странице";
+      const customId = "@command/top/onPageSelect";
+      const components = {type: ComponentType.TextInput, style: TextInputStyle.Short, label: "Укажите число", placeholder: "От 1 до 3", customId: "pageNumber"};
+      const modal = CreateModal({customId, title, components});
+      await interaction.showModal(modal);
+
+      const filter = ([interaction]) => customId === interaction.customId && user === interaction.user;
+      const collector = new CustomCollector({target: interaction.client, event: "interactionCreate", filter, time: 300_000});
+      collector.setCallback((interaction) => {
+        collector.end();
+        responceTo(interaction);
+        return;
+      });
     },
-    selectFilter: (interaction, context) => {
+    selectFilter: (interaction, context, responceTo) => {
       const value = interaction.values.at(0);
       context.selected = this.leaderboardTypes.find(leaderboard => leaderboard.component.value === value);
       context.values = this.createValuesMap(context);
 
-      
+      responceTo();
     }
   }
 
