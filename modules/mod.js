@@ -11,11 +11,12 @@ import ErrorsHandler from "./ErrorsHandler.js";
 import EventsManager from './EventsManager.js';
 import GuildVariablesManager from './GuildVariablesManager.js';
 import Properties from "./Properties.js";
+import Executer from "./Executer.js";
 import * as Util from './util.js';
 
 export {
 	DataManager, Template, CurseManager, BossManager, TimeEventsManager,
 	CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler,
-	EventsManager, GuildVariablesManager, Properties,
+	EventsManager, GuildVariablesManager, Properties, Executer,
 	Util
 };
