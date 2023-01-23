@@ -14,7 +14,8 @@ class Executer {
 	}
 
 	static emit(key, target, parameters){
-		this.#constructors[key](target, parameters);
+		const callback = this.#constructors[key];
+		return callback.call(null, target, parameters);
 	}
 
 	static bind(key, callback){
