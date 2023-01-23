@@ -1,6 +1,6 @@
 import EventsEmitter from 'events';
 
-class Executer {
+class Executor {
 	static emitter = new EventsEmitter();
 
 	static parseCustomId(customId){
@@ -26,5 +26,5 @@ class Executer {
 	static #constructors = {};
 }
 
-export { Executer };
-export default Executer;
+export { Executor };
+export default Executor;

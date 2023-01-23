@@ -1,5 +1,5 @@
 import { BaseEvent } from "#src/modules/EventsManager.js";
-import { CommandsManager, Executer } from '#src/modules/mod.js';
+import { CommandsManager, Executor } from '#src/modules/mod.js';
 import { client } from '#src/index.js';
 
 class Event extends BaseEvent {
@@ -21,8 +21,8 @@ class Event extends BaseEvent {
 			return;
 		}
 		if (customId.startsWith("@")){
-			const [type, target, params] = Executer.parseCustomId(customId) ?? [];
-			type && Executer.emit(type, target, {params, interaction});
+			const [type, target, params] = Executor.parseCustomId(customId) ?? [];
+			type && Executor.emit(type, target, {params, interaction});
 			return;
 		}
 

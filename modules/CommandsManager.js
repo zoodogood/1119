@@ -3,7 +3,7 @@ import * as Util from '#src/modules/util.js';
 import EventsEmitter from 'events';
 import DataManager from '#src/modules/DataManager.js';
 import ErrorsHandler from '#src/modules/ErrorsHandler.js';
-import Executer from '#src/modules/Executer.js';
+import Executor from '#src/modules/Executor.js';
 
 import { Actions } from '#src/modules/ActionManager.js';
 
@@ -261,7 +261,7 @@ class CommandsManager {
 
 }
 
-Executer.bind(
+Executor.bind(
 	"command",
 	(target, params) => CommandsManager.callMap.get(target).onComponent(params)
 );
