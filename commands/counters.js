@@ -4,20 +4,28 @@ import CounterManager from '#src/modules/CounterManager.js';
 
 class Command {
 
+  fetchCountersInGuild(guild){
+    return CounterManager.data
+      .filter(counter => counter.guildId === guild.id);
+  }
+
 	async onChatInput(msg, interaction){
-    const counterContent = (counter) => ({
+    const toValue = (counter) => ({
       message: `🖊️ [Сообщение.](https://discord.com/channels/${ counter.guildId }/${ counter.channelId }/${ counter.messageId })`,
       channel: `🪧 \`#${ interaction.guild.channels.cache.get(counter.channelId).name }\``,
       poster: `🖌️ <#${ counter.channelId }>`
     })[counter.type];
 
-    const counters = CounterManager.data
-      .filter(counter => counter.guildId === msg.guild.id)
-      .map((counter, i) => ({name: `**${i + 1}.**`, value: counterContent(counter), inline: true, counter: counter}));
+    const toField = (counter, i) => ({name: `**${i + 1}.**`, value: toValue(counter), inline: true}); 
 
-    let message = await msg.msg({title: "Счётчики сервера", fields: counters[0] ? counters : {name: "Но тут — пусто.", value: "Чтобы добавить счётчики, используйте `!counter`"}});
+    const counters = this.fetchCountersInGuild(interaction.guild);
 
-    const reactions = () => (counters[0] && !interaction.user.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
+    const fields = 
+      counters.map(toField);
+
+    let message = await msg.msg({title: "Счётчики сервера", fields: fields.length ? fields : {name: "Но тут — пусто.", value: "Чтобы добавить счётчики, используйте `!counter`"}});
+
+    const reactions = () => (counters.length && !interaction.user.wastedPermissions(16)[0]) ? ["✏️", "🗑️"] : ["❌"];
     let react, question, answer, counter;
     while (true){
       react = await message.awaitReact({user: msg.author, removeType: "all"}, ...reactions());
@@ -66,8 +74,8 @@ class Command {
 	    "description": "\n\nОтображает список существующих счётчиков на сервере. См. команду `!counter`\n\n:pencil2:\n```python\n!counters #без аргументов\n```\n\n"
 	  },
 	  "allias": "счётчики счетчики",
-		"allowDM": true,
-		"cooldown": 10000000,
+		"allowDM": false,
+		"cooldown": 10_000_000,
 		"type": "guild"
 	};
 };
