@@ -20,9 +20,9 @@ class Event extends BaseEvent {
 			CommandsManager.execute(command, interaction);
 			return;
 		}
-		if (!customId.startsWith("@")){
-			const [type, target, params] = Executer.parse(customId);
-			Executer.emit(type, target, {params, interaction});
+		if (customId.startsWith("@")){
+			const [type, target, params] = Executer.parseCustomId(customId) ?? [];
+			type && Executer.emit(type, target, {params, interaction});
 			return;
 		}
 
