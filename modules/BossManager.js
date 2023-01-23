@@ -919,7 +919,7 @@ class BossManager {
 
 				const message = await channel.msg(embed);
 				const filter = ({emoji}, member) => user === member && reactions.includes(emoji.name);
-				const collector = message.createReactionCollector({filter, time: 90_000});
+				const collector = message.createReactionCollector({filter, time: 90_000, max: 3});
 				collector.on("collect", async (reaction, user) => {
 					reaction.users.remove(user);
 
