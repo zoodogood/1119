@@ -19,6 +19,7 @@ class Command {
 
     interaction.costsUp = this.getCosts(interaction);
     
+    const embed = this.createEmbed(interaction);
     const message = interaction.interfaceMessage = await msg.msg(embed);
 
 
@@ -54,8 +55,8 @@ class Command {
   }
 
   createEmbed(interaction){
-    const { level, costsUp } = interaction;
-    updateBerrysCount(interaction);
+    const { level, costsUp, guildData } = interaction;
+    this.updateBerrysCount(interaction);
 
     const speedGrowth = this.getSpeedGrowth({level});
     const createFields = () => {
@@ -92,7 +93,7 @@ class Command {
               level: `Уровень деревца ${ level }`
             };
             const name = "Дерево";
-            const value = ` ${level === 20 ? "(Максимальный)" : `\nДо повышения нужно ${ contents.forIncreaseNeed }` }`;
+            const value = `${ contents.level } ${level === 20 ? "(Максимальный)" : `\nДо повышения нужно ${ contents.forIncreaseNeed }` }`;
             return {name, value};
           },
           filter: () => level !== 0
@@ -109,7 +110,7 @@ class Command {
               "Необходимое количество сообщений уже собрано!" :
               `Сообщений собрано: ${guildData.day_msg}/${messagesNeed} ${  guildData.treeMisstakes ? `\nРискует завянуть через ${+(4 - guildData.treeMisstakes).toFixed(1)}д` : ""}`;
 
-            fields.push({name: `💧 ${ status }`, value});
+            return {name: `💧 ${ status }`, value};
           },
           filter: () => level !== 0
         },
@@ -158,7 +159,8 @@ class Command {
 
     const treeMistakesMultiplayer = "treeMisstakes" in guildData ? 1 - 0.1 * guildData.treeMisstakes : 1;
     const globalMultiplayer = this.GLOBAL_MESSAGES_NEED_MULTIPLAYER;
-    return (  basic + byMembersCount + byDayAverage  ) * globalMultiplayer * treeMistakesMultiplayer;
+    const count = (  basic + byMembersCount + byDayAverage  ) * globalMultiplayer * treeMistakesMultiplayer;
+    return Math.floor(count);
   }
 
   getCosts({level}){
@@ -173,12 +175,12 @@ class Command {
     const {guildData, message} = interaction;
     guildData.treeSeedEntry = 0;
     interaction.level = guildData.treeLevel = (guildData.treeLevel ?? 0) + 1;
-    interaction.costsUp = COSTS_TABLE[interaction.level];
+    interaction.costsUp = this.COSTS_TABLE[interaction.level];
     guildData.berrys = Math.round(1.5 ** (interaction.level + 3) + guildData.berrys) + this.getSpeedGrowth(interaction) * 5;
 
     await message.react("756114492055617558");
 
-    msg.msg({title: "Дерево немного подросло", description: `После очередного семечка 🌱, дерево стало больше и достигло уровня ${ interaction.level }!`});
+    interaction.channel.msg({title: "Дерево немного подросло", description: `После очередного семечка 🌱, дерево стало больше и достигло уровня ${ interaction.level }!`});
     delete guildData.treeMisstakes;
   }
 
@@ -221,7 +223,7 @@ class Command {
         return;
       }
 
-      const berrys = this.calculateBerrysTake({guildData, userData});
+      const berrys = this.calculateBerrysTake({guildData, userData, level: interaction.level});
 
       userData.berrys += berrys;
       guildData.berrys -= berrys;
@@ -245,8 +247,8 @@ class Command {
     await interaction.interfaceMessage.msg({...embed, edit: true});
   }
 
-  calculateBerrysTake({guildData, userData}){
-    const isBerryMany = guildData.berrys > this.getSpeedGrowth(interaction.level) * 3;
+  calculateBerrysTake({guildData, level, userData}){
+    const isBerryMany = guildData.berrys > this.getSpeedGrowth({level}) * 3;
 
     const farmerBonus = userData.voidTreeFarm ?? 0;
 
