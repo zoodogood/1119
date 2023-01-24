@@ -153,11 +153,11 @@ class BossShop {
 
 class BossEvents {
 	static onBossDeath(boss, context){
-		if (boss.level % 5 === 0){
+		if (context.level % 5 === 0){
 			this.events.get("bossNowHeals").callback(boss, context);
 		}
 
-		if (boss.level - 1 === 10){
+		if (context.level - 1 === 10){
 			this.events.get("notifyLevel10").callback(boss, context);
 		}
 	}
@@ -191,6 +191,54 @@ class BossEvents {
 	}));
 }
 
+const LegendaryWearonList = new Collection(Object.entries({
+	afkPower:
+	{
+		description: "Урон ваших атак будет расти за время простоя",
+		effect: "increaseDamageByAfkTime",
+		emoji: "❄️",
+		values: {
+			power: () => 1 / (60_000 * 10)
+		}
+	},
+	percentDamage:
+	{
+		description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
+		effect: "increaseDamageByBossCurrentHealthPoints",
+		emoji: "🩸",
+		values: {
+			power: () => 0.0005
+		}
+	},
+	manyEvent:
+	{
+		description: "Увеличивает количество событий атаки на 3",
+		effect: "increaseAttackEventsCount",
+		emoji: "✨",
+		values: {
+			power: () => 3
+		}
+	},
+	togetherWeAre: 
+	{
+		description: "Каждая ваша атака увеличивает урон по боссу независимо от кубика",
+		effect: "increaseDamageForBoss",
+		emoji: "💧",
+		values: {
+			power: () => 0.0005
+		}
+	},
+	complexWork:
+	{
+		description: "Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону",
+		effect: "increaseDamageWhenStrictlyMessageChallenge",
+		emoji: "🎈",
+		values: {
+			power: () => 1.1,
+			basic: () => 20
+		}
+	}
+}));
 
 class BossManager {
 	static MAIN_COLOR = "";
@@ -355,9 +403,13 @@ class BossManager {
 		if (sourceUser){
 			sourceUser.data.exp += expReward;
 		}
+
+		BossEvents.onBossDeath(boss, {level: boss.level, sourceUser})
 		
 		const guild = this.client.guilds.cache.get(boss.guildId);
 		const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
+
+
 		guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
 		BossManager.BonusesChest.createCollector({guild, boss, level: boss.level});
 		boss.level++;
@@ -792,7 +844,56 @@ class BossManager {
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, guild}) => {
-				const reactions = [...this.legendaryWearonList.values()].map(({emoji}) => emoji);
+				legendaryWearonList = new Collection(Object.entries({
+					afkPower:
+					{
+						description: "Урон ваших атак будет расти за время простоя",
+						effect: "increaseDamageByAfkTime",
+						emoji: "❄️",
+						values: {
+							power: () => 1 / (60_000 * 10)
+						}
+					},
+					percentDamage:
+					{
+						description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
+						effect: "increaseDamageByBossCurrentHealthPoints",
+						emoji: "🩸",
+						values: {
+							power: () => 0.0005
+						}
+					},
+					manyEvent:
+					{
+						description: "Увеличивает количество событий атаки на 3",
+						effect: "increaseAttackEventsCount",
+						emoji: "✨",
+						values: {
+							power: () => 3
+						}
+					},
+					togetherWeAre: 
+					{
+						description: "Каждая ваша атака увеличивает урон по боссу независимо от кубика",
+						effect: "increaseDamageForBoss",
+						emoji: "💧",
+						values: {
+							power: () => 0.0005
+						}
+					},
+					complexWork:
+					{
+						description: "Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону",
+						effect: "increaseDamageWhenStrictlyMessageChallenge",
+						emoji: "🎈",
+						values: {
+							power: () => 1.1,
+							basic: () => 20
+						}
+					}
+				}));
+				
+				const reactions = [...LegendaryWearonList.values()].map(({emoji}) => emoji);
 				const getLabel = ({description, emoji}) => `${ emoji } ${ description }.`;
 				const embed = {
 					description: `**Выберите инструмент с привлекательным для Вас эпическим эффектом:**\n${ this.legendaryWearonList.map(getLabel).join("\n") }`,
@@ -1355,55 +1456,6 @@ class BossManager {
 				time: () => 60_000 * 5
 			}
 		},
-	}))
-
-	static legendaryWearonList = new Collection(Object.entries({
-		afkPower:
-		{
-			description: "Урон ваших атак будет расти за время простоя",
-			effect: "increaseDamageByAfkTime",
-			emoji: "❄️",
-			values: {
-				power: () => 1 / (60_000 * 10)
-			}
-		},
-		percentDamage:
-		{
-			description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
-			effect: "increaseDamageByBossCurrentHealthPoints",
-			emoji: "🩸",
-			values: {
-				power: () => 0.0005
-			}
-		},
-		manyEvent:
-		{
-			description: "Увеличивает количество событий атаки на 3",
-			effect: "increaseAttackEventsCount",
-			emoji: "✨",
-			values: {
-				power: () => 3
-			}
-		},
-		togetherWeAre: 
-		{
-			description: "Каждая ваша атака увеличивает урон по боссу независимо от кубика",
-			effect: "increaseDamageForBoss",
-			emoji: "💧",
-			values: {
-				power: () => 0.0005
-			}
-		},
-		complexWork:
-		{
-			description: "Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону",
-			effect: "increaseDamageWhenStrictlyMessageChallenge",
-			emoji: "🎈",
-			values: {
-				power: () => 1.1,
-				basic: () => 20
-			}
-		}
 	}));
 
 	static BOSS_TYPES = new Collection(Object.entries({
@@ -1463,5 +1515,7 @@ class BossManager {
 
 
 
-export { BossManager, BossShop };
+
+
+export { BossManager, BossShop, BossEvents, LegendaryWearonList };
 export default BossManager;
