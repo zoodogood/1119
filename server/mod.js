@@ -37,6 +37,7 @@ export default async () => {
 	
 	
 	logger(server);
+	return server;
 }
 
 
