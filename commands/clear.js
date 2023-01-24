@@ -26,7 +26,7 @@ class Command {
     const foundLimit =
       referenceId ? 500 :
       Math.min(
-        limit !== false ? limit : 75,
+        limit !== null ? limit : 75,
         900
       );
 
@@ -177,8 +177,8 @@ class Command {
 		"allowDM": true,
 		"cooldown": 15000000,
 		"type": "guild",
-		"myChannelPermissions": 8192,
-		"ChannelPermissions": 8192
+		"myChannelPermissions": 8192n,
+		"ChannelPermissions": 8192n
 	};
 };
 
