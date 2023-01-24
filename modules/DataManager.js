@@ -57,13 +57,13 @@ class DataManager {
  
 	static file = {
 	  path: `${ process.cwd() }/data/main.json`,
-	  load: async () => {
+	  load: () => {
 		 const path = this.file.path;
 		 const content = FileSystem.readFileSync(path, "utf-8");
 		 const data = JSON.parse(content);
 		 this.data = data;
 	  },
-	  write: async () => {
+	  write: () => {
 		 const path = this.file.path;
 		 const data = JSON.stringify(this.data);
 		 FileSystem.writeFileSync(path, data);
