@@ -6,6 +6,25 @@ import CommandsManager from '#src/modules/CommandsManager.js';
 
 class Command {
 
+  onComponent(target, interaction){
+    this.componentsCallbacks[target](interaction);
+  }
+
+  componentsCallbacks = {
+    removeMessage(interaction){
+      interaction.message.delete();
+      
+      interaction.msg({
+        title: "Сообщение удалено",
+        description: "Зачем удалено, почему удалено, что было бы если бы вы не удалили это сообщение, имело ли это какой-нибудь скрытый смысл...?",
+        author: {
+          name: interaction.member.user.username,
+          iconURL: interaction.user.avatarURL()
+        }
+      });
+    }
+  }
+
 	async onChatInput(msg, interaction){
 
 
@@ -20,7 +39,7 @@ class Command {
       guilds: `Серваков...**${ client.guilds.cache.size }**`,
       commands: `Команд: ${ CommandsManager.collection.size }`,
       time: `Время сервера: ${ new Intl.DateTimeFormat("ru-ru", {hour: "2-digit", minute: "2-digit"}).format() }`,
-      performance: `\`${( heapTotal/1024/1024 ).toFixed(2)} мб / ${( rss/1024/1024 ).toFixed(2)} МБ\``
+      performance: `\`${ ( heapTotal/1024/1024 ).toFixed(2) } мб / ${( rss/1024/1024 ).toFixed(2)} МБ\``
     };
 
     const embed = {
