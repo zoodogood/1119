@@ -8,7 +8,7 @@ import { inspect } from 'util';
 class ErrorsAudit {
 	collection = new Collection();
 
-static file = {
+	static file = {
 		directory: `${ process.cwd() }/folder/errors`,
 		write(data){
 			const now = new Date();
@@ -35,7 +35,9 @@ static file = {
 	}
 
 	createLog(){
-		this.constructor.file.write(this.collection);
+		this.constructor.file.write(
+			[...this.collection.entries()]
+		);
 	}
 };
 
