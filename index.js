@@ -279,12 +279,6 @@ client.on("ready", async () => {
 	    console.error(error);
   });
 
-  process.on("uncaughtException", (error) => {
-    ErrorsHandler.Audit.push(error);
-    console.error(error);
-    process.exit(1);
-  })
-
   console.info(`\n\n\n     Ready...\n\n`);
 });
 
