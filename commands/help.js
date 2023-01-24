@@ -17,8 +17,7 @@ class Guidances {
 
 class Command {
 
-	async onChatInput(msg, interaction){
-
+  run(interaction){
     const guildCommands = [];
     const commands = CommandsManager.collection;
     const isHidden = ({options}) => options.hidden || options.type === "dev" || options.removed;
@@ -89,7 +88,15 @@ class Command {
       ]
     }
 
-    msg.msg(embed);
+    interaction.channel.msg(embed);
+  }
+
+	async onChatInput(msg, interaction){
+    this.run(interaction);
+  }
+
+  async onSlashCommand(interaction){
+    this.run(interaction);
   }
 
   createGuidances(){
@@ -100,6 +107,9 @@ class Command {
 	options = {
 	  "name": "help",
 	  "id": 4,
+    "slash": {
+      "name": "help"
+    },
 	  "media": {
 	    "description": "\n\nСтандартная команда отображающую основную информацию о возможностях бота. Она нужна чтобы помочь новым пользователям. Её так же можно вызвать отправив `/help`\n\n:pencil2:\n```python\n!help #без аргументов\n```\n\n"
 	  },
