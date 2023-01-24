@@ -134,7 +134,8 @@ class Command {
       BossManager.applyEffect({guild, user, effectBase});
       interaction.msg({
         description: `Примите и избавьтесь от быстродействующего проклятия. Провалите — та же участь под камнем.\n**Предостережение:** его не всегда возможно снять в срок.`,
-        footer: {text: user.tag, iconURL: user.avatarURL()}
+        footer: {text: user.tag, iconURL: user.avatarURL()},
+        reference: interaction.message.id
       });
       collector.stop();
     });
