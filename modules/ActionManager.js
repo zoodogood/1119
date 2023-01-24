@@ -20,6 +20,7 @@ const ActionsMap = {
 	dailyQuestComplete: "dailyQuestComplete",
 	globalQuest: "globalQuest",
 	// Boss
+	bossAfterAttack: "bossAfterAttack",
 	bossBeforeAttack: "bossBeforeAttack",
 	bossMakeDamage: "bossMakeDamage",
 	bossEffectInit: "bossEffectInit",
