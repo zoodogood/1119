@@ -151,8 +151,52 @@ class BossShop {
 	}));
 }
 
+class BossEvents {
+	static onBossDeath(boss, context){
+		if (boss.level % 5 === 0){
+			this.events.get("bossNowHeals").callback(boss, context);
+		}
+
+		if (boss.level - 1 === 10){
+			this.events.get("notifyLevel10").callback(boss, context);
+		}
+	}
+
+	static onTakeDamage(boss, context){
+
+	}
+
+	static beforeAttacked(){
+
+	}
+
+	static afterAttacked(){
+
+	}
+
+	static events = new Collection(Object.entries({
+		notifyLevel10: {
+			callback(boss, context){
+				const now = Date.now();
+				const contents = {
+					time: Util.timestampToDate(now - (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) * 86_400_000)
+				};
+				const description = `**10-й уровень за ${ contents.time }**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий.`;
+				context.channel.msg({
+					description,
+					color: BossManager.MAIN_COLOR
+				});
+			}
+		}
+	}));
+}
+
 
 class BossManager {
+	static MAIN_COLOR = "";
+	static ELITE_MAIN_COLOR = "";
+	static BOSS_DURATION_IN_DAYS = 3;
+
 	static async bossApparance(guild){
 
 		const TWO_MONTH = 5_259_600_000;
@@ -167,7 +211,7 @@ class BossManager {
 
 		const generateEndDate = () => {
 			const days = DataManager.data.bot.currentDay;
-			guildData.boss.endingAtDay = days + 3;
+			guildData.boss.endingAtDay = days + this.BOSS_DURATION_IN_DAYS;
 		}
 
 		const generateNextApparance = () => {
@@ -176,7 +220,7 @@ class BossManager {
 			const MIN = 1;
 			const MAX = 28;
 			const date = new Date(now.getFullYear(), now.getMonth() + 1, Util.random(MIN, MAX));
-			const days =  Math.floor(date.getTime() / 86_400_000);
+			const days = Math.floor(date.getTime() / 86_400_000);
 			guildData.boss.apparanceAtDay = days;
 		}
 
@@ -194,7 +238,7 @@ class BossManager {
 			return;
 		}
 
-		if (guildData.boss.apparanceAtDay  <= DataManager.data.bot.currentDay){
+		if (guildData.boss.apparanceAtDay <= DataManager.data.bot.currentDay){
 			generateEndDate();
 			delete guildData.boss.apparanceAtDay;
 
@@ -271,6 +315,7 @@ class BossManager {
 		damage = Math.floor(damage);
 	
 	
+		const context = {boss, damage, damageSourceType};
 		boss.damageTaken += damage;
 	
 		if (sourceUser){
@@ -278,7 +323,7 @@ class BossManager {
 			stats.damageDealt ||= 0;
 			stats.damageDealt += damage;
 	
-			sourceUser.action(Actions.bossMakeDamage, {boss, damage});
+			sourceUser.action(Actions.bossMakeDamage, context);
 		}
 
 		if (damageSourceType){
@@ -286,6 +331,10 @@ class BossManager {
 			damageStats[damageSourceType] ??= 0;
 			damageStats[damageSourceType] += damage;
 		}
+
+		BossEvents.onTakeDamage(boss, context);
+
+
 		
 	
 		while (boss.damageTaken >= boss.healthThresholder){
@@ -535,9 +584,9 @@ class BossManager {
 
 		const footer = {iconURL: user.avatarURL(), text: user.tag};
 		if (userStats.attack_CD > Date.now()){
-		const description = `**${ Util.timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
-		channel.msg({title: "⚔️ Перезарядка..!", color: "#ff0000", description, delete: 7000, footer});
-		return;
+			const description = `**${ Util.timestampToDate(userStats.attack_CD - Date.now()) }**. Дождитесь подготовки перед атакой.`;
+			channel.msg({title: "⚔️ Перезарядка..!", color: "#ff0000", description, delete: 7000, footer});
+			return;
 		}
 
 
@@ -545,58 +594,75 @@ class BossManager {
 
 
 		const attackContext = {
-		damageMultiplayer: 1,
-		listOfEvents: [],
-		defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
-		eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
+			damageMultiplayer: 1,
+			listOfEvents: [],
+			defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
+			eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
 		};
 		const pull = [...BossManager.eventBases.values()].map(event => ({...event}));
-		const data = {user, userStats, boss, channel, attackContext, guild: channel.guild};
 
-		user.action(Actions.bossBeforeAttack, data);
-
-		for (let i = 0; i < attackContext.eventsCount; i++){
-		for (const event of pull){
-			const needSkip = event.filter && !event.filter(data);
-			event._weight = typeof event.weight === "function" ? event.weight(data) : event.weight;
-			
-			if (needSkip){
-				const index = pull.indexOf(event);
-				(~index) ? pull.splice(index, 1) : null;
+		const data = {
+			user,
+			userStats,
+			boss,
+			channel,
+			attackContext,
+			guild: channel.guild,
+			preventDefault(){
+				this.defaultPrevented = true;
 			}
 		};
 
-		const event = pull.random({weights: true});
-		if (!event){
-			break;
-		}
-		if (!event.repeats){
-			const index = pull.indexOf(event);
-			~index ? pull.splice(index, 1) : null;
+		user.action(Actions.bossBeforeAttack, data);
+		BossEvents.beforeAttacked(boss, data);
+
+		if (data.defaultPrevented){
+			return;
 		}
 
-		try {
-			event.callback(data);
-		}
-		catch (error){
-			channel.msg({title: `Источник исключения: ${ event.id }. Он был убран из списка возможных событий на неопределенный срок`, description: `**${ error.message }:**\n${ error.stack }`});
-			BossManager.eventBases.delete(event.id);
-		}
-		attackContext.listOfEvents.push(event);
+		for (let i = 0; i < attackContext.eventsCount; i++){
+			for (const event of pull){
+				const needSkip = event.filter && !event.filter(data);
+				event._weight = typeof event.weight === "function" ? event.weight(data) : event.weight;
+				
+				if (needSkip){
+					const index = pull.indexOf(event);
+					(~index) ? pull.splice(index, 1) : null;
+				}
+			};
+
+			const event = pull.random({weights: true});
+			if (!event){
+				break;
+			}
+			if (!event.repeats){
+				const index = pull.indexOf(event);
+				~index ? pull.splice(index, 1) : null;
+			}
+
+			try {
+				event.callback(data);
+			}
+			catch (error){
+				channel.msg({title: `Источник исключения: ${ event.id }. Он был убран из списка возможных событий на неопределенный срок`, description: `**${ error.message }:**\n${ error.stack }`});
+				BossManager.eventBases.delete(event.id);
+			}
+			attackContext.listOfEvents.push(event);
 		}
 
 		const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
 		attackContext.defaultDamage = attackContext.damageDealt = damage;
 		const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
 
-
+		user.action(Actions.bossAfterAttack, data);
+		BossEvents.afterAttacked(boss, data);
 
 		const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
 		const description = `Нанесено урона с прямой атаки: ${ dealt }ед.\n\n${ eventsContent }`;
 		const embed = {
-		title: `⚔️ За сервер ${ channel.guild.name }!`,
-		description,
-		footer
+			title: `⚔️ За сервер ${ channel.guild.name }!`,
+			description,
+			footer
 		}
 		channel.msg(embed);
 	}
@@ -1391,6 +1457,7 @@ class BossManager {
 	}
 
 	static BossShop = BossShop;
+	static BossEvents = BossEvents;
 }
 
 
