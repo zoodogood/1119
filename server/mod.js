@@ -3,6 +3,7 @@ import 'dotenv/config';
 import config from '#src/config';
 import express from './express.js';
 import Router from './router.js';
+import cors from 'cors';
 
 import { checkPort } from './util.js';
 
@@ -29,6 +30,7 @@ function logger(server){
 
 export default async () => {
 	const router = await new Router().fetch();
+	express.use( cors({origin: "*"}) );
 	router.bind(express);
 
 
