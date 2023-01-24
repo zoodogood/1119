@@ -3,6 +3,7 @@ import { client } from '#src/index.js';
 import config from '#src/config';
 import DataManager from '#src/modules/DataManager.js';
 import CommandsManager from '#src/modules/CommandsManager.js';
+import app from '#src/modules/app.js';
 
 class Command {
 
@@ -29,6 +30,8 @@ class Command {
 
 
     const {rss, heapTotal} = process.memoryUsage();
+    const { address, port } = app.server?.address() || {};
+
     const season = ["Зима", "Весна", "Лето", "Осень"][Math.floor((new Date().getMonth() + 1) / 3) % 4];
     const version = config.version;
 
@@ -39,12 +42,13 @@ class Command {
       guilds: `Серваков...**${ client.guilds.cache.size }**`,
       commands: `Команд: ${ CommandsManager.collection.size }`,
       time: `Время сервера: ${ new Intl.DateTimeFormat("ru-ru", {hour: "2-digit", minute: "2-digit"}).format() }`,
+      address: address ? `; Доступен по адрессу: http://${ address.replace("::", "localhost") }:${ port }` : "",
       performance: `\`${ ( heapTotal/1024/1024 ).toFixed(2) } мб / ${( rss/1024/1024 ).toFixed(2)} МБ\``
     };
 
     const embed = {
       title: "ну типа.. ай, да, я живой, да",
-      description: `${ contents.ping } ${ contents.version } ${ contents.season }, что сюда ещё запихнуть?\n${ contents.guilds }(?) ${ contents.commands }\n${ contents.performance }\n${ contents.time }`,
+      description: `${ contents.ping } ${ contents.version } ${ contents.season }, что сюда ещё запихнуть?\n${ contents.guilds }(?) ${ contents.commands }\n${ contents.performance }\n${ contents.time }${ contents.address }`,
       footer: {text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${ Util.timestampToDate(Date.now() - (DataManager.data.bot.newGuildTimestamp ?? null), 2) }`},
       components: [
         {
