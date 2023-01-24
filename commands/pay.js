@@ -93,7 +93,7 @@ class Command {
     }
     num = Math.floor(num);
 
-    if (num < 0) {
+    if (num < 0){
       msg.msg({title: "Введено отрицательное значение.\n<:grempen:753287402101014649> — Укушу."});
       return;
     }
@@ -118,7 +118,7 @@ class Command {
 
 
 
-    interaction.userData[ resource ]   -= num;
+    interaction.userData[ resource ] -= num;
     memb.data[ resource ] += num;
 
     msg.msg({description: `${msg.author.username} отправил ${ resourceData.gives(num) } для ${ memb.toString() }` + (message ? `\nС сообщением:\n${ message }` : ""), author: {name: "Передача", iconURL: msg.author.avatarURL()}});
