@@ -1316,7 +1316,8 @@ async function levelUp(user, msg){
   while (user.exp >= user.level * 45){
     user.exp -= user.level * 45;
     user.level++;
-    user.exp += user.level * 45 - Math.ceil(user.level * 45 * (0.97716 ** user.voidRituals));
+    const coefficient = Math.max(0.97716 ** user.voidRituals, 0.01);
+    user.exp += user.level * 45 - Math.ceil(user.level * 45 * coefficient);
   }
   let textContent = user.level - level > 2 ? `**${msg.author.username} повышает уровень с ${ level } до ${ user.level }!**` : `**${ msg.author.username } получает ${user.level} уровень!**`;
   let message = await msg.msg(textContent, {embed: true});
