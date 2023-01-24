@@ -17,6 +17,13 @@ class ErrorsAudit {
 			
 		  	data = JSON.stringify(data);
 		  	FileSystem.writeFileSync(path, data);
+		},
+		async readFile(fileName){
+			const path = `${ this.directory }/${ fileName }`;
+			return await FileSystem.promises.readFile(path);
+		},
+		async getFilesList(){
+			return await FileSystem.promises.readdir(this.directory);
 		}
 	 }
   
@@ -31,13 +38,23 @@ class ErrorsAudit {
 	push(error, context){
 		const list = this.listOf(error.message);
 		context &&= inspect(context);
-		list.push({error, context, timestamp: Date.now()});
+		const stack = error.stack;
+		list.push({stack, context, timestamp: Date.now()});
 	}
 
 	createLog(){
 		this.constructor.file.write(
 			[...this.collection.entries()]
 		);
+	}
+
+	async fetchLogs(){
+		return (await this.constructor.file.getFilesList())
+			.filter(name => name.endsWith(".json"));
+	}
+
+	async readFile(name){
+		return this.constructor.file.readFile(name);
 	}
 };
 
