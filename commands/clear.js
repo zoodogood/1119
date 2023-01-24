@@ -9,7 +9,8 @@ class Command {
 
     const
       channel      = msg.channel,
-      args         = interaction.params;
+      args         = interaction.params,
+      _isDMBased   = interaction.channel.isDMBased();
 
     const referenceId = msg.reference ? msg.reference.messageId : null;
 
@@ -61,7 +62,7 @@ class Command {
 
     messages = messages.filter(message => !message.pinned);
 
-    if (msg.channel.type === "dm")
+    if (_isDMBased)
       messages = messages.filter(message => message.author === client.user);
 
 
@@ -87,7 +88,7 @@ class Command {
     const byOneDelete  = [];
 
     messages.forEach(msg => {
-      if (msg.channel.type === "dm")
+      if (_isDMBased)
         return byOneDelete.push(msg);
 
       if (msg.createdTimestamp - twoWeekAgo < 0)
@@ -132,7 +133,7 @@ class Command {
 
         const current = toDelete - byOneDelete.length - byBulkDelete.length;
         const description = `Было очищено ${  Util.ending(current, "сообщени", "й", "е", "я") } до отмены`;
-        msg.msg({title: "Очистка была отменена", description, delete: 12000});
+        msg.msg({title: "Очистка была отменена", description, delete: 12_000});
 
         sendLog();
 
