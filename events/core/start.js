@@ -2,6 +2,7 @@ import { BaseEvent } from "#src/modules/EventsManager.js";
 import { assert } from 'console';
 import { DataManager, TimeEventsManager, CommandsManager, CounterManager, Util, EventsManager } from '#src/modules/mod.js';
 import { client } from '#src/index.js';
+import app from '#src/modules/app.js';
 
 class Event extends BaseEvent {
 	constructor(){
@@ -37,7 +38,9 @@ class Event extends BaseEvent {
 
 		
 
-		await import('#server/start.js');
+		const {default: server} = await import('#server/start.js');
+
+		app.server = server;
 		setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
 	}
 
