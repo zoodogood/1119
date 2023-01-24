@@ -4,18 +4,18 @@ import { client } from '#src/index.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-    await msg.delete()
+    await interaction.message.delete()
       .catch(() => {});
 
     const
       channel      = msg.channel,
-      args         = interaction.params,
+      params       = interaction.params,
       _isDMBased   = interaction.channel.isDMBased();
 
     const referenceId = msg.reference ? msg.reference.messageId : null;
 
-    const userId  = Util.match(args, /\d{17,19}/);
-    const limit   = Util.match(args, /(?:\s|^)\d{1,16}(?:\s|$)/);
+    const userId  = Util.match(params, /\d{17,19}/);
+    const limit   = Util.match(params, /(?:\s|^)\d{1,16}(?:\s|$)/);
 
 
     const
@@ -39,7 +39,7 @@ class Command {
       foundedMessages.push(...messages.values());
 
       if (referenceId){
-        const founded = messages.find(msg => msg.id === referenceId);
+        const founded = messages.find(message => message.id === referenceId);
 
         if (founded){
           foundedMessages.splice(foundedMessages.indexOf(founded));
@@ -47,7 +47,7 @@ class Command {
         }
 
         if (messages.size !== 50 || foundedMessages.length === 350){
-          msg.msg({title: "Не удалось найти сообщение", color: "#ff0000", delete: 3000, description: args});
+          msg.msg({title: "Не удалось найти сообщение", color: "#ff0000", delete: 3000, description: params});
           return;
         }
       }
