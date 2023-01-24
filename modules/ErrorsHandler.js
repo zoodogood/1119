@@ -1,11 +1,25 @@
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import { resolveGithubPath } from '#src/modules/util.js';
 import Path from 'path';
+import FileSystem from 'fs';
 import { Collection } from '@discordjs/collection';
 import { inspect } from 'util';
 
 class ErrorsAudit {
 	collection = new Collection();
+
+static file = {
+		directory: `${ process.cwd() }/folder/errors`,
+		write(data){
+			const now = new Date();
+			const date = `${ now.getDate() }-${ now.getMonth() + 1 }-${ now.getHours() }-${ now.getMinutes() }`;
+		  	const path = `${ this.directory }/${ date }.json`;
+			
+		  	data = JSON.stringify(data);
+		  	FileSystem.writeFileSync(path, data);
+		}
+	 }
+  
 
 	listOf(key){
 		if (!this.collection.has(key)){
@@ -18,6 +32,10 @@ class ErrorsAudit {
 		const list = this.listOf(error.message);
 		context &&= inspect(context);
 		list.push({error, context, timestamp: Date.now()});
+	}
+
+	createLog(){
+		this.constructor.file.write(this.collection);
 	}
 };
 
