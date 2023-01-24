@@ -10,7 +10,7 @@ const directory = path.join(process.cwd(), ROOT);
 
 class Router {
 	async fetch(){
-		const modules = await new ImportDirectory()
+		const modules = await new ImportDirectory({subfolders: true})
 			.import(directory);
 
 
