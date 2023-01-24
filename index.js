@@ -485,7 +485,7 @@ async function levelUp(user, msg){
 };
 
 async function stupid_bot(user, msg) {
-  if (msg.channel.type == "dm")
+  if (msg.channel.isDMBased())
     return;
 
   msg.author.action(Actions.callBot, {msg, channel: msg.channel, type: "stupid"});
