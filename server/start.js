@@ -1,2 +1,2 @@
 import launch from './mod.js';
-await launch();
+export default await launch();
