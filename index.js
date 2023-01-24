@@ -274,25 +274,18 @@ client.on("ready", async () => {
   });
 
   process.on("unhandledRejection", error => {
-      if (error.message == "Cannot execute action on a DM channel") return console.error("Cannot in DM: " + error.method);
-      if (error.message == "Unknown Message") return;
       console.info("Обработчик 1");
       ErrorsHandler.Audit.push(error);
 	    console.error(error);
   });
 
-  process.on("SIGINT", e => {
-    console.info("\n   ЗАВЕРШЕНИЕ...\n");
-    DataManager.file.write();
-    TimeEventsManager.file.write();
+  process.on("uncaughtException", (error) => {
+    ErrorsHandler.Audit.push(error);
+    console.error(error);
     process.exit(1);
   })
 
-
   console.info(`\n\n\n     Ready...\n\n`);
-
-
-  TimeEventsManager.handle();
 });
 
 
