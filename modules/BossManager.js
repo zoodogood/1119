@@ -1283,6 +1283,18 @@ class BossManager {
 		Object.entries({...effectBase.values, ...values})
 			.forEach(([key, fn]) => effect.values[key] = fn(user, effect, guild));
 
+		const context = {
+			effect,
+			defaultPrevented: false,
+			preventDefault(){
+				this.defaultPrevented = true;
+			}
+		};
+		user.action(Actions.bossBeforeEffectInit, context);
+
+		if (context.defaultPrevented){
+			return;
+		};
 
 		if (effect.values.timer){
 			const args = [user.id, effect.timestamp];
@@ -1326,7 +1338,8 @@ class BossManager {
 			values: {
 				power: () => 1 / 100_000,
 				lastAttackTimestamp: () => Date.now()
-			}
+			},
+			influence: "positive"
 		},
 		increaseDamageByBossCurrentHealthPoints: {
 			id: "increaseDamageByBossCurrentHealthPoints",
@@ -1343,7 +1356,8 @@ class BossManager {
 			},
 			values: {
 				power: () => 0.001
-			}
+			},
+			influence: "positive"
 		},
 		increaseAttackEventsCount: {
 			id: "increaseAttackEventsCount",
@@ -1356,7 +1370,8 @@ class BossManager {
 			},
 			values: {
 				power: () => 1
-			}
+			},
+			influence: "positive"
 		},
 		increaseDamageForBoss: {
 			id: "increaseDamageForBoss",
@@ -1370,7 +1385,8 @@ class BossManager {
 			},
 			values: {
 				power: () => 1 / 100_000
-			}
+			},
+			influence: "positive"
 		},
 		increaseDamageWhenStrictlyMessageChallenge: {
 			id: "increaseDamageWhenStrictlyMessageChallenge",
@@ -1410,7 +1426,8 @@ class BossManager {
 				basic: 2,
 				goal: 30,
 				hours: {}
-			}
+			},
+			influence: "positive"
 		},
 		deadlyCurse: {
 			id: "deadlyCurse",
@@ -1453,8 +1470,36 @@ class BossManager {
 			},
 			values: {
 				time: () => 60_000 * 5
-			}
+			},
+			influence: "negative",
+			canPrevented: false
 		},
+		preventNegativeEffects: {
+			id: "preventNegativeEffects",
+			callback: {
+				bossBeforeEffectInit: (user, effect, context) => {
+					const target = context.effect;
+					const effectBase = CurseManager.curseBase.get(target.id);
+					if (effectBase.influence !== "negative" && effectBase.influence !== "neutral"){
+						return;
+					}
+
+					if (effectBase.canPrevented){
+						return;
+					}
+
+					effect.values.count--;
+					context.preventDefault();
+					if (!effect.values.count){
+						BossManager.removeEffect({user, effect});
+					}
+				}
+			},
+			values: {
+				count: () => 1
+			},
+			influence: "positive"
+		}
 	}));
 
 	static BOSS_TYPES = new Collection(Object.entries({
