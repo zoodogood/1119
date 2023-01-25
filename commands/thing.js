@@ -1120,7 +1120,7 @@ class Command {
   }
 
   displayUserInfo({interaction, element}){
-    if (element === null){
+    if (!element){
       interaction.channel.msg({description: "Упомянутый пользователь пока не открыл штуку.."});
       return;
     };
@@ -1136,7 +1136,7 @@ class Command {
     const {cooldownThresholder} = this.getCooldownInfo();
     const inCooldownContent = ["Нет.", "Да."][ +(interaction.mention.data.CD_52 > cooldownThresholder) ];
 
-    const description = `${ mentionContent }...\nВыбранная стихия: ${ emoji }\nУровень штуки: ${ (interaction.mention.data.elementLevel || 0) + 1 }\n\nНа перезарядке: ${ inCooldownContent }`
+    const description = `${ mentionContent }...\nВыбранная стихия: ${ emoji }\nУровень штуки: ${ (interaction.mention.data.elementLevel || 0) + 1 }\n\n${ element.description }\nНа перезарядке: ${ inCooldownContent }`
     interaction.channel.msg({description, color});
     return;
   }
@@ -1257,7 +1257,7 @@ class Command {
       const elementIndex = userData.element ?? null;
       
 
-      const element = (elementIndex) ? this.constructor.Elements.get(elementIndex) : null;
+      const element = elementIndex !== undefined ? this.constructor.Elements.at(elementIndex) : null;
       return this.displayUserInfo({element, interaction});
     }
 
