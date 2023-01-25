@@ -403,7 +403,8 @@ async function levelUp(user, msg){
   const PER_LEVEL = 45;
   while (user.exp >= user.level * PER_LEVEL){
     const expSummary = user.level * PER_LEVEL;
-    user.exp -= Math.ceil(expSummary * (0.97716 ** user.voidRituals));
+    const coefficient = Math.max(0.97716 ** user.voidRituals, 0.01);
+    user.exp -= Math.ceil(expSummary * coefficient);
     user.level++;
   }
 

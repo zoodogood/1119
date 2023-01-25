@@ -361,13 +361,17 @@ class Command {
     interaction.channel.msg({title: "<a:void:768047066890895360> Не хватает ресурса", description, color: "#3d17a0", footer, reference});
   }
 
+  calculateExperienceBonus(userData){
+    return Math.max(0.97716 ** userData.voidRituals, 0.01);
+  }
+
 
 	async onChatInput(msg, interaction){
     // <a:void:768047066890895360> <a:placeForVoid:780051490357641226> <a:cotik:768047054772502538>
 
     if (interaction.mention){
-      const data = interaction.mention.data;
-      msg.msg({title: "<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг", description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${ interaction.mention.userDataname }, использовал котёл ${ data.voidRituals } раз.\nЕго бонус к опыту: ${ (100 * (1.02 ** data.voidRituals)).toFixed(2) }% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`, color: "#3d17a0"});
+      const userData = interaction.mention.data;
+      msg.msg({title: "<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг", description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${ userData.name }, использовал котёл ${ userData.voidRituals } раз.\nЕго бонус к опыту: ${ (100 * (1 - this.calculateExperienceBonus(userData) + 1)).toFixed(2) }% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`, color: "#3d17a0"});
       return;
     }
 
@@ -380,7 +384,7 @@ class Command {
       return;
     }
 
-    const boilerMessage = await msg.msg({title: "<a:placeForVoid:780051490357641226> Готовы ли вы отдать свои уровни за вечные усиления..?", description: `Потратьте ${ interaction.minusVoids } ур. нестабильности, чтобы стать быстрее, сильнее и хитрее.\n~ Повышает заработок опыта на 2%\nПроведено ритуалов: ${ userData.voidRituals }\nБонус к опыту: ${ (100 * (1.02 ** userData.voidRituals)).toFixed(2) }%\n\nКроме того, вы сможете выбрать одно из трёх сокровищ, дарующих вам неймоверную мощь!\n<a:cotik:768047054772502538>`, color: "#3d17a0"});
+    const boilerMessage = await msg.msg({title: "<a:placeForVoid:780051490357641226> Готовы ли вы отдать свои уровни за вечные усиления..?", description: `Потратьте ${ interaction.minusVoids } ур. нестабильности, чтобы стать быстрее, сильнее и хитрее.\n~ Повышает заработок опыта на 2%\nПроведено ритуалов: ${ userData.voidRituals }\nБонус к опыту: ${ (100 * (1 - this.calculateExperienceBonus(userData) + 1)).toFixed(2) }%\n\nКроме того, вы сможете выбрать одно из трёх сокровищ, дарующих вам неймоверную мощь!\n<a:cotik:768047054772502538>`, color: "#3d17a0"});
     const isHePay = await boilerMessage.awaitReact({user: interaction.user, removeType: "all"}, "768047066890895360");
 
     if (!isHePay) {
