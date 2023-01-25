@@ -75,6 +75,7 @@ class CurseManager {
 			  callUserCommand: (user, curse) => CurseManager.intarface({user, curse})
 				 .incrementProgress(1)
 			},
+			interactionIsShort: true,
 			reward: 4
 		 },
 		 {
@@ -93,6 +94,7 @@ class CurseManager {
 					CurseManager.intarface({user, curse}).fail();
 			  }
 			},
+			interactionIsShort: true,
 			reward: 12
 		 },
 		 {
@@ -118,6 +120,7 @@ class CurseManager {
 			  dailyQuestCompete: (user, curse) => CurseManager.intarface({user, curse}).incrementProgress(1),
 			  dailyQuestSkiped:  (user, curse) => CurseManager.intarface({user, curse}).fail()
 			},
+			interactionIsLong: true,
 			reward: 16
 		 },
 		 {
@@ -137,7 +140,8 @@ class CurseManager {
 			  dailyQuestCompete: (user, curse) => CurseManager.intarface({user, curse}).incrementProgress(1),
 			  callBot:		      (user, curse, {type}) => type !== "stupid" && CurseManager.intarface({user, curse}).fail()
 			},
-			filter: (user) => user.data.quest === "namebot",
+			filter: (user) => user.data.quest?.id === "namebot",
+			interactionIsShort: true,
 			reward: 4
 		 },
 		 {
@@ -154,6 +158,7 @@ class CurseManager {
 				 CurseManager.intarface({user, curse}).incrementProgress(1) :
 				 null,
 			},
+			interactionIsShort: true,
 			reward: 4
 		 },
 		 {
@@ -174,6 +179,7 @@ class CurseManager {
 				 CurseManager.intarface({user, curse}).incrementProgress(1) :
 				 CurseManager.intarface({user, curse}).fail(),
 			},
+			interactionIsShort: true,
 			reward: 7
 		 },
 		 {
@@ -191,6 +197,7 @@ class CurseManager {
 				 null,
  
 			},
+			interactionIsLong: true,
 			reward: 15
 		 },
 		 {
@@ -220,6 +227,7 @@ class CurseManager {
 				 CurseManager.intarface({user, curse}).setProgress(messages.length);
 			  }
 			},
+			interactionIsShort: true,
 			reward: 4
 		 },
 		 {
@@ -279,6 +287,7 @@ class CurseManager {
 				 CurseManager.intarface({user, curse}).incrementProgress(1);
 			  }
 			},
+			interactionIsShort: true,
 			reward: 1
 		 },
 		 {
@@ -338,8 +347,9 @@ class CurseManager {
 				 CurseManager.intarface({user, curse}).incrementProgress(damage);
 			  }
 			},
-			reward: 15,
-			filter: (_user, guild) => guild && guild.data.boss?.isArrived
+			filter: (_user, guild) => guild && guild.data.boss?.isArrived,
+			interactionIsLong: true,
+			reward: 15
 		 }
 	  ]
 	  .map(curse => [curse.id, curse])
