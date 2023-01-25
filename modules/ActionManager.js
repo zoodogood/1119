@@ -23,6 +23,7 @@ const ActionsMap = {
 	bossAfterAttack: "bossAfterAttack",
 	bossBeforeAttack: "bossBeforeAttack",
 	bossMakeDamage: "bossMakeDamage",
+	bossBeforeEffectInit: "bossBeforeEffectInit",
 	bossEffectInit: "bossEffectInit",
 	bossEffectTimeoutEnd: "bossEffectTimeoutEnd",
 	// Curse
