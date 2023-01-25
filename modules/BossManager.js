@@ -321,27 +321,27 @@ class BossManager {
 	}
 
 	static onMessage(message){
-	const boss = message.guild.data.boss;
-	const authorId = message.author.id;
+		const boss = message.guild.data.boss;
+		const authorId = message.author.id;
 
-	const userStats = this.getUserStats(boss, authorId);
-	userStats.messages++;
+		const userStats = this.getUserStats(boss, authorId);
+		userStats.messages++;
 
-	const DEFAULT_DAMAGE = 1;
-	const damage = userStats.damagePerMessage ?? DEFAULT_DAMAGE;
-	BossManager.makeDamage(boss, damage, {sourceUser: message.author});
-	}
+		const DEFAULT_DAMAGE = 1;
+		const damage = userStats.damagePerMessage ?? DEFAULT_DAMAGE;
+		BossManager.makeDamage(boss, damage, {sourceUser: message.author});
+		}
 
-	static calculateHealthPoint(level){
-	return 7_000 + Math.floor(level * 500 * 1.2 ** level);
+		static calculateHealthPoint(level){
+		return 7_000 + Math.floor(level * 500 * 1.2 ** level);
 	}
 
 	static calculateHealthPointThresholder(level){
-	const totalOfPrevious = [...new Array(level - 1)]
-		.map((_, level) => BossManager.calculateHealthPoint(level))
-		.reduce((acc, points) => acc + points, 0);
+		const totalOfPrevious = [...new Array(level - 1)]
+			.map((_, level) => BossManager.calculateHealthPoint(level))
+			.reduce((acc, points) => acc + points, 0);
 
-	return BossManager.calculateHealthPoint(level) + totalOfPrevious;
+		return BossManager.calculateHealthPoint(level) + totalOfPrevious;
 	}
 	
 	static calculateBossDamageMultiplayer(boss, {context = {}, sourceUser = {}} = {}){
@@ -1142,7 +1142,8 @@ class BossManager {
 			id: "powerOfWind",
 			description: "Уменьшает перезарядку на случайное значение",
 			callback: ({userStats}) => {
-				const piece = Math.random() * userStats.attackCooldown;
+				const maximum = 0.2;
+				const piece = Math.random() * userStats.attackCooldown * maximum + userStats.attackCooldown * (1 - maximum);
 				userStats.attack_CD = Date.now() + piece;
 				userStats.attackCooldown = piece;
 			},
@@ -1151,11 +1152,9 @@ class BossManager {
 		powerOfFire: {
 			weight: 1500,
 			id: "powerOfFire",
-			description: "",
-			callback: ({user, boss}) => {
-				// to-do: need idea
-				boss.diceDamageMultiplayer ||= 1;
-				boss.diceDamageMultiplayer += 0.01;
+			description: "На что вы надеятесь?",
+			callback: ({boss}) => {
+				boss.damageTaken -= 15 * boss.level;
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.fire
 		},
@@ -1174,9 +1173,9 @@ class BossManager {
 		powerOfEarthRare: {
 			weight: 100,
 			id: "powerOfEarthRare",
-			description: "",
+			description: "Вы получаете защиту от двух следующих негативных или нейтальных эффектов",
 			callback: ({user, boss}) => {
-				// to-do: need idea
+				// to-do: need realese
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
