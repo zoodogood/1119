@@ -363,14 +363,14 @@ class Command {
           false,
           {
             action: async ({userData, level, scene}) => {
-              const count = userData.berrys;
+              const count = Math.min(userData.berrys, 10);
               userData.berrys -= count;
 
               const bonuses = Math.ceil(count * Util.random(1.2, 1.4));
               userData.chestBonus = (userData.chestBonus ?? 0) + scene.random;
               scene.bonuses = bonuses;
             },
-            textOutput: `"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор превратив все свои клубники в {Util.ending(scene.bonuses, "бонус", "ов", "", "а")} сундука`
+            textOutput: `"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор, превратив часть своей клубники в {Util.ending(scene.bonuses, "бонус", "ов", "", "а")} сундука`
           },
           false
         ],
