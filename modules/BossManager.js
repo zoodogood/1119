@@ -181,7 +181,7 @@ class BossEvents {
 				const contents = {
 					time: Util.timestampToDate(now - (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) * 86_400_000)
 				};
-				const description = `**10-й уровень за ${ contents.time }**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий.`;
+				const description = `**10-й уровень за ${ contents.time }**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий. Соберите 5 штук, чтобы получить случайную из них`;
 				context.channel.msg({
 					description,
 					color: BossManager.MAIN_COLOR
@@ -189,6 +189,18 @@ class BossEvents {
 			}
 		}
 	}));
+}
+
+class BossRelics {
+	static collection = new Collection(Object.entries({
+		"to-do: rename1": {
+			id: "to-do: rename1"
+		}
+	}));
+
+	static isUserHasRelic({relic, userData}){
+		return !!userData.bossRelics?.includes(relic.id);
+	}
 }
 
 const LegendaryWearonList = new Collection(Object.entries({
@@ -330,9 +342,9 @@ class BossManager {
 		const DEFAULT_DAMAGE = 1;
 		const damage = userStats.damagePerMessage ?? DEFAULT_DAMAGE;
 		BossManager.makeDamage(boss, damage, {sourceUser: message.author});
-		}
+	}
 
-		static calculateHealthPoint(level){
+	static calculateHealthPoint(level){
 		return 7_000 + Math.floor(level * 500 * 1.2 ** level);
 	}
 
@@ -1232,7 +1244,7 @@ class BossManager {
 			weight: 100,
 			id: "death",
 			description: "Смэрть",
-			callback: ({user, boss, userStats}) => {
+			callback: ({userStats}) => {
 				userStats.heroIsDeath = true;
 			},
 			repeats: true,
@@ -1250,10 +1262,27 @@ class BossManager {
 			weight: 20,
 			id: "relics",
 			description: "Получен осколок случайной реликвии",
-			callback: ({user, boss, userStats}) => {
-				user.data.keys += 1;
+			callback: ({userStats, userData}) => {
+				userStats.relicsShards ||= 0;
+				userStats.relicsShards++;
+				const NEED_SHARDS_TO_GROUP = 5;
+
+				if (userStats.relicsShards <= NEED_SHARDS_TO_GROUP){
+					userStats.relicIsTaked = true;
+					delete userStats.relicIsTaked;
+					
+					userData.bossRelics ||= [];
+					
+					const relicKey = BossRelics.collection
+						.filter(relic => BossManager.isUserHasRelic({userData, relic}) && relic.inPull)
+						.randomKey();
+
+					relicKey && userData.bossRelics.push(relicKey);
+				}
 			},
-			filter: ({user}) => user.data.bossRelicsContainer
+			filter: ({boss, userStats}) => {
+				return BossManager.isElite(boss) && userStats.relicIsTaked;
+			}
 		}
 		// ______e4example: {
 		//   _weight: 2,
@@ -1554,6 +1583,7 @@ class BossManager {
 
 	static BossShop = BossShop;
 	static BossEvents = BossEvents;
+	static BossRelics = BossRelics;
 }
 
 
