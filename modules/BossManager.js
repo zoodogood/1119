@@ -1,5 +1,5 @@
 import { Collection } from "@discordjs/collection";
-import { DataManager, CurseManager, Properties } from "#src/modules/mod.js";
+import { DataManager, CurseManager, Properties, ErrorsHandler } from "#src/modules/mod.js";
 import TimeEventsManager from '#src/modules/TimeEventsManager.js';
 import { elementsEnum } from "#src/commands/thing.js";
 import { Actions } from '#src/modules/ActionManager.js';
@@ -767,32 +767,35 @@ class BossManager {
 		for (let i = 0; i < attackContext.eventsCount; i++){
 			for (const event of pull){
 				const needSkip = event.filter && !event.filter(data);
-				event._weight = typeof event.weight === "function" ? event.weight(data) : event.weight;
-				
 				if (needSkip){
 					const index = pull.indexOf(event);
-					(~index) ? pull.splice(index, 1) : null;
+					(~index) && pull.splice(index, 1);
+					continue;
 				}
+				event._weight = typeof event.weight === "function" ? event.weight(data) : event.weight;
 			};
-
+			
 			const event = pull.random({weights: true});
 			if (!event){
-				break;
+				continue;
 			}
 			if (!event.repeats){
 				const index = pull.indexOf(event);
-				~index ? pull.splice(index, 1) : null;
+				(~index) && pull.splice(index, 1);
 			}
 
 			try {
 				event.callback(data);
 			}
 			catch (error){
+				ErrorsHandler.Audit.push(error);
 				channel.msg({title: `Источник исключения: ${ event.id }. Он был убран из списка возможных событий на неопределенный срок`, description: `**${ error.message }:**\n${ error.stack }`});
 				BossManager.eventBases.delete(event.id);
 			}
 			attackContext.listOfEvents.push(event);
 		}
+
+		console.dir(data, {showHidden: true, depth: 1});
 
 		const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
 		attackContext.defaultDamage = attackContext.damageDealt = damage;
@@ -936,54 +939,6 @@ class BossManager {
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, guild}) => {
-				legendaryWearonList = new Collection(Object.entries({
-					afkPower:
-					{
-						description: "Урон ваших атак будет расти за время простоя",
-						effect: "increaseDamageByAfkTime",
-						emoji: "❄️",
-						values: {
-							power: () => 1 / (60_000 * 10)
-						}
-					},
-					percentDamage:
-					{
-						description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
-						effect: "increaseDamageByBossCurrentHealthPoints",
-						emoji: "🩸",
-						values: {
-							power: () => 0.0005
-						}
-					},
-					manyEvent:
-					{
-						description: "Увеличивает количество событий атаки на 3",
-						effect: "increaseAttackEventsCount",
-						emoji: "✨",
-						values: {
-							power: () => 3
-						}
-					},
-					togetherWeAre: 
-					{
-						description: "Каждая ваша атака увеличивает урон по боссу независимо от кубика",
-						effect: "increaseDamageForBoss",
-						emoji: "💧",
-						values: {
-							power: () => 0.0005
-						}
-					},
-					complexWork:
-					{
-						description: "Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону",
-						effect: "increaseDamageWhenStrictlyMessageChallenge",
-						emoji: "🎈",
-						values: {
-							power: () => 1.1,
-							basic: () => 20
-						}
-					}
-				}));
 				
 				const reactions = [...LegendaryWearonList.values()].map(({emoji}) => emoji);
 				const getLabel = ({description, emoji}) => `${ emoji } ${ description }.`;
