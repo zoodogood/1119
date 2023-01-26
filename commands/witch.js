@@ -337,11 +337,6 @@ class Command {
       (await boiler.awaitReact({user: interaction.user, removeType: "all"}, ...bonuses.map(bonus => bonus.emoji))) || 
       bonuses.random().emoji;
 
-    if (interaction.minusVoids > userData.void){
-      this.displayVoidNotEnought({userData, interaction, reference: boiler.id});
-      return;
-    }
-
 
     bonuses.find(bonus => bonus.emoji === react).action(user, interaction);
 
