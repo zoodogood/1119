@@ -957,7 +957,7 @@ class BossManager {
 				const collector = message.createReactionCollector({filter, time: 300_000, max: 1});
 				collector.on("collect", async (reaction) => {
 					const emoji = reaction.emoji.name;
-					const wearon = this.legendaryWearonList.find(wearon => wearon.emoji === emoji);
+					const wearon = LegendaryWearonList.find(wearon => wearon.emoji === emoji);
 					if (!wearon){
 						throw new Error("Unexpected Exception");
 					}
