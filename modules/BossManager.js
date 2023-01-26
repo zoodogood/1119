@@ -256,6 +256,7 @@ class BossManager {
 	static MAIN_COLOR = "";
 	static ELITE_MAIN_COLOR = "";
 	static BOSS_DURATION_IN_DAYS = 3;
+	static MAXIMUM_LEVEL = 100;
 
 	static async bossApparance(guild){
 
@@ -318,6 +319,10 @@ class BossManager {
 
 	static isElite(boss){
 		return boss.level >= 10;
+	}
+
+	static isDefeated(boss){
+		return boss.isDefeated;
 	}
 
 	static getUserStats(boss, id){
@@ -419,16 +424,34 @@ class BossManager {
 		BossEvents.onBossDeath(boss, {level: boss.level, sourceUser})
 		
 		const guild = this.client.guilds.cache.get(boss.guildId);
-		const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
-
-
-		guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
-		BossManager.BonusesChest.createCollector({guild, boss, level: boss.level});
+		
 		boss.level++;
 		boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
 
 		Object.values(boss.users)
 			.forEach(userStats => delete userStats.attack_CD);
+
+		if (boss.level >= this.MAXIMUM_LEVEL){
+			this.victory(guild);
+		}
+
+
+		const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
+		guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
+		BossManager.BonusesChest.createCollector({guild, boss, level: boss.level - 1});
+	}
+
+	static victory(guild){
+		const boss = guild.data.boss;
+		if (boss.isDefeated){
+			return;
+		}
+
+		guild.chatSend({
+			title: "Вы сильные.",
+			description: "Босс побеждён и прямые атаки по нему больше не проходят. Вы можете использовать реликвии и другие способы нанесения урона, чтобы продвинуться в топ'е"
+		});
+		boss.level = this.MAXIMUM_LEVEL;
 	}
 	
 

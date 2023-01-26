@@ -80,9 +80,22 @@ class Command {
       return;
     }
 
+    const REACTIONS = [
+      {
+        emoji: "⚔️",
+        filter: ({boss}) => !BossManager.isDefeated(boss)
+      },
+      {
+        emoji: "🕋",
+        filter: () => true
+      }
+    ];
     
     const embed = this.createEmbed(context);
-    const reactions = ["⚔️", "🕋"];
+    const reactions = REACTIONS
+      .filter(reaction => reaction.filter(context))
+      .map(({emoji}) => emoji);
+
     const message = await msg.msg({...embed, reactions});
     
     const filter = (reaction, user) => user.id !== client.user.id && reactions.includes(reaction.emoji.name);
