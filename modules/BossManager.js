@@ -1487,9 +1487,9 @@ class BossManager {
 			},
 			values: {
 				power: () => 1.5,
-				basic: 2,
-				goal: 30,
-				hours: {}
+				basic: () => 2,
+				goal: () => 30,
+				hours: () => {}
 			},
 			influence: "positive"
 		},
