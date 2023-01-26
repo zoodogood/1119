@@ -1,6 +1,7 @@
 
 import Discord from 'discord.js';
-import { CurseManager, QuestManager, BossManager } from '#src/modules/mod.js';
+import { CurseManager, QuestManager } from '#src/modules/mod.js';
+import { BossEffects } from '#src/modules/BossManager.js';
 
 const ActionsMap = {
 	// Client
@@ -66,7 +67,7 @@ class ActionManager {
 						continue;
 					};
 
-					const effectBase = BossManager.effectBases.get(effect.id);
+					const effectBase = BossEffects.effectBases.get(effect.id);
 					try {
 						if (actionName in effectBase.callback)
 							effectBase.callback[actionName].call(null, this, effect, data);

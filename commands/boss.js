@@ -1,6 +1,6 @@
 import * as Util from '#src/modules/util.js';
 import { client } from '#src/index.js';
-import BossManager from '#src/modules/BossManager.js';
+import {BossManager, BossEffects} from '#src/modules/BossManager.js';
 import { ButtonStyle, ComponentType } from 'discord.js';
 
 class Command {
@@ -65,7 +65,7 @@ class Command {
     };
 
     const userStats   = BossManager.getUserStats(boss, member.id);
-    const userEffects = BossManager.effectsOf({boss, user: member});
+    const userEffects = BossEffects.effectsOf({boss, user: member});
 
     const context = {
       interaction,
@@ -143,8 +143,8 @@ class Command {
         return;
       }
 
-      const effectBase = BossManager.effectBases.get("deadlyCurse");
-      BossManager.applyEffect({guild, user, effectBase});
+      const effectBase = BossEffects.effectBases.get("deadlyCurse");
+      BossEffects.applyEffect({guild, user, effectBase});
       interaction.msg({
         description: `Примите и избавьтесь от быстродействующего проклятия. Провалите — та же участь под камнем.\n**Предостережение:** его не всегда возможно снять в срок.`,
         footer: {text: user.tag, iconURL: user.avatarURL()},

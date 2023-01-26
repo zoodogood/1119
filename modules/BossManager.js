@@ -207,6 +207,244 @@ class BossEvents {
 	}));
 }
 
+class BossEffects {
+	static applyEffect({effectBase, guild, user, values = {}}){
+		const effects = (user.data.bossEffects ||= []);
+		const callbackMap = (user.data.bossEffectsCallbackMap ||= {});
+		Object.keys(effectBase.callback).forEach(callbackKey => {
+			callbackMap[callbackKey] = true;
+		});
+
+		
+		const effect = {
+			id: effectBase.id,
+			guildId: guild.id,
+			timestamp: Date.now(),
+			values: {}
+		};
+
+		Object.entries({...effectBase.values, ...values})
+			.forEach(([key, fn]) => effect.values[key] = fn(user, effect, guild));
+
+		const context = {
+			effect,
+			defaultPrevented: false,
+			preventDefault(){
+				this.defaultPrevented = true;
+			}
+		};
+		user.action(Actions.bossBeforeEffectInit, context);
+
+		if (context.defaultPrevented){
+			return;
+		};
+
+		if (effect.values.timer){
+			const args = [user.id, effect.timestamp];
+			TimeEventsManager.create("bossEffectTimeoutEnd", effect.values.timer, args);
+		}
+
+		effects.push(effect);
+		user.action(Actions.bossEffectInit, effect);
+		return effect;
+	}
+
+	static removeEffect({effect, user}){
+
+		const index = user.data.bossEffects.indexOf(effect);
+		if (index === -1){
+			return null;
+		}
+	
+		user.data.bossEffects.splice(index, 1);
+
+		const needRemove = (callbackKey) => !user.data.bossEffects.some(({id}) => callbackKey in this.effectBases.get(id).callback);
+		const callbackMap = user.data.bossEffectsCallbackMap;
+		Object.keys(callbackMap).filter(needRemove)
+			.forEach(key => delete callbackMap[key]);
+	}
+
+	static effectsOf({boss, user}){
+		return user.data.bossEffects?.filter(({guildId}) => guildId === boss.guildId) ?? [];
+	}
+
+	static effectBases = new Collection(Object.entries({
+		increaseDamageByAfkTime: {
+			id: "increaseDamageByAfkTime",
+			callback: {
+				bossBeforeAttack: (user, effect, data) => {
+					const {attackContext} = data;
+					const {power, lastAttackTimestamp} = effect.values;
+					attackContext.damageMultiplayer += (Date.now() - lastAttackTimestamp) * power;
+				}
+			},
+			values: {
+				power: () => 1 / 100_000,
+				lastAttackTimestamp: () => Date.now()
+			},
+			influence: "positive"
+		},
+		increaseDamageByBossCurrentHealthPoints: {
+			id: "increaseDamageByBossCurrentHealthPoints",
+			callback: {
+				bossBeforeAttack: (user, effect, data) => {
+					const {attackContext, boss} = data;
+					const {power} = effect.values;
+
+					const thresholder = BossManager.calculateHealthPointThresholder(boss.level);
+					const currentHealth = thresholder - boss.damageTaken;
+					const damage = Math.floor(currentHealth * power);
+					attackContext.baseDamage += damage;
+				}
+			},
+			values: {
+				power: () => 0.001
+			},
+			influence: "positive"
+		},
+		increaseAttackEventsCount: {
+			id: "increaseAttackEventsCount",
+			callback: {
+				bossBeforeAttack: (user, effect, data) => {
+					const {attackContext} = data;
+					const {power} = effect.values;
+					attackContext.eventsCount += power;
+				}
+			},
+			values: {
+				power: () => 1
+			},
+			influence: "positive"
+		},
+		increaseDamageForBoss: {
+			id: "increaseDamageForBoss",
+			callback: {
+				bossBeforeAttack: (user, effect, data) => {
+					const {boss} = data;
+					const {power} = effect.values;
+					boss.legendaryWearonDamageMultiplayer ||= 1;
+					boss.legendaryWearonDamageMultiplayer += power;
+				}
+			},
+			values: {
+				power: () => 1 / 100_000
+			},
+			influence: "positive"
+		},
+		increaseDamageWhenStrictlyMessageChallenge: {
+			id: "increaseDamageWhenStrictlyMessageChallenge",
+			callback: {
+				messageCreate: (user, effect, message) => {
+					const values = effect.values;
+					const userStats = BossManager.getUserStats(message.guild.data.boss, message.author.id);
+
+					const currentHour = Math.floor(Date.now() / 3_600_000);
+
+					const hoursMap = (values.hoursMap ||= {});
+
+					if (currentHour in hoursMap === false){
+						hoursMap[currentHour] = 0;
+						const previousHourMessages = Object.entries(hoursMap)
+							.reduce((acc, entrie) => acc.at(1) > entrie.at(1) ? acc : entrie, [])
+							.at(1);
+
+						if (previousHourMessages === values.goal){
+							userStats.damagePerMessage = Math.ceil(
+								(userStats.damagePerMessage || 1)
+								* values.power + values.basic
+							);
+							message.react("685057435161198594");
+						}
+					}
+					
+					hoursMap[currentHour]++;
+					if (hoursMap[currentHour] === values.goal){
+						message.react("998886124380487761");
+					}
+				}
+			},
+			values: {
+				power: () => 1.5,
+				basic: () => 2,
+				goal: () => 30,
+				hours: () => {}
+			},
+			influence: "positive"
+		},
+		deadlyCurse: {
+			id: "deadlyCurse",
+			callback: {
+				curseTimeEnd: (user, effect, {curse}) => {
+					if (effect.timestamp !== curse.timestamp){
+						return;
+					}
+					const guild = BossManager.client.guilds.cache.get(effect.guildId);
+					
+					if (!BossManager.isArrivedIn(guild)){
+						return;
+					}
+					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
+					userStats.heroIsDeath = true;
+					// Завалил
+				},
+				curseEnd: (user, effect, curse) => {
+					if (effect.timestamp !== curse.timestamp){
+						return;
+					}
+
+					BossEffects.removeEffect({effect, user});
+				},
+				bossEffectInit: (user, effect, initedEffect) => {
+					if (initedEffect.timestamp !== effect.timestamp){
+						return;
+					}
+
+					const isShort = curseBase => curseBase.interactionIsShort;
+					const curseBase = CurseManager.getGeneratePull(user)
+						.filter(isShort)
+						.random({_weights: true});
+
+					const curse = CurseManager.generateOfBase({curseBase, user});
+					curse.values.timer = effect.values.time;
+					effect.values.targetTimestamp = curse.timestamp;
+					CurseManager.init({curse, user});
+				}
+			},
+			values: {
+				time: () => 60_000 * 5
+			},
+			influence: "negative",
+			canPrevented: false
+		},
+		preventNegativeEffects: {
+			id: "preventNegativeEffects",
+			callback: {
+				bossBeforeEffectInit: (user, effect, context) => {
+					const target = context.effect;
+					const effectBase = CurseManager.curseBase.get(target.id);
+					if (effectBase.influence !== "negative" && effectBase.influence !== "neutral"){
+						return;
+					}
+
+					if (effectBase.canPrevented){
+						return;
+					}
+
+					effect.values.count--;
+					context.preventDefault();
+					if (!effect.values.count){
+						BossEffects.removeEffect({user, effect});
+					}
+				}
+			},
+			values: {
+				count: () => 1
+			},
+			influence: "positive"
+		}
+	}));
+}
+
 class BossRelics {
 	static collection = new Collection(Object.entries({
 		"to-do: rename1": {
@@ -503,10 +741,9 @@ class BossManager {
 		}
 
 		guild.chatSend({
-			title: "Вы сильные.",
-			description: "Босс побеждён и прямые атаки по нему больше не проходят. Вы можете использовать реликвии и другие способы нанесения урона, чтобы продвинуться в топ'е"
+			description: "Вы сильные. Спасибо Вам за то, что вы рядом.\nБосс побеждён и прямые атаки по нему больше не проходят. Вы можете использовать реликвии и другие способы нанесения урона, чтобы продвинуться в топ'е"
 		});
-		boss.level = this.MAXIMUM_LEVEL;
+		boss.isDefeated = true;
 	}
 	
 
@@ -962,9 +1199,9 @@ class BossManager {
 						throw new Error("Unexpected Exception");
 					}
 					
-					const effectBase = this.effectBases.get(wearon.effect);
+					const effectBase = BossEffects.effectBases.get(wearon.effect);
 					const values = wearon.values;
-					this.applyEffect({guild, user, effectBase, values});
+					BossEffects.applyEffect({guild, user, effectBase, values});
 					userStats.haveLegendaryWearon = true;
 
 					message.channel.msg({color: "#000000", description: `Выбрано: ${ wearon.description }`, delete: 10_000});
@@ -1329,243 +1566,6 @@ class BossManager {
 
 	}));
 
-	static applyEffect({effectBase, guild, user, values = {}}){
-		const effects = (user.data.bossEffects ||= []);
-		const callbackMap = (user.data.bossEffectsCallbackMap ||= {});
-		Object.keys(effectBase.callback).forEach(callbackKey => {
-			callbackMap[callbackKey] = true;
-		});
-
-		
-		const effect = {
-			id: effectBase.id,
-			guildId: guild.id,
-			timestamp: Date.now(),
-			values: {}
-		};
-
-		Object.entries({...effectBase.values, ...values})
-			.forEach(([key, fn]) => effect.values[key] = fn(user, effect, guild));
-
-		const context = {
-			effect,
-			defaultPrevented: false,
-			preventDefault(){
-				this.defaultPrevented = true;
-			}
-		};
-		user.action(Actions.bossBeforeEffectInit, context);
-
-		if (context.defaultPrevented){
-			return;
-		};
-
-		if (effect.values.timer){
-			const args = [user.id, effect.timestamp];
-			TimeEventsManager.create("bossEffectTimeoutEnd", effect.values.timer, args);
-		}
-
-		effects.push(effect);
-		user.action(Actions.bossEffectInit, effect);
-		return effect;
-	}
-
-	static removeEffect({effect, user}){
-
-		const index = user.data.bossEffects.indexOf(effect);
-		if (index === -1){
-			return null;
-		}
-	
-		user.data.bossEffects.splice(index, 1);
-
-		const needRemove = (callbackKey) => !user.data.bossEffects.some(({id}) => callbackKey in this.effectBases.get(id).callback);
-		const callbackMap = user.data.bossEffectsCallbackMap;
-		Object.keys(callbackMap).filter(needRemove)
-			.forEach(key => delete callbackMap[key]);
-	}
-
-	static effectsOf({boss, user}){
-		return user.data.bossEffects?.filter(({guildId}) => guildId === boss.guildId) ?? [];
-	}
-
-	static effectBases = new Collection(Object.entries({
-		increaseDamageByAfkTime: {
-			id: "increaseDamageByAfkTime",
-			callback: {
-				bossBeforeAttack: (user, effect, data) => {
-					const {attackContext} = data;
-					const {power, lastAttackTimestamp} = effect.values;
-					attackContext.damageMultiplayer += (Date.now() - lastAttackTimestamp) * power;
-				}
-			},
-			values: {
-				power: () => 1 / 100_000,
-				lastAttackTimestamp: () => Date.now()
-			},
-			influence: "positive"
-		},
-		increaseDamageByBossCurrentHealthPoints: {
-			id: "increaseDamageByBossCurrentHealthPoints",
-			callback: {
-				bossBeforeAttack: (user, effect, data) => {
-					const {attackContext, boss} = data;
-					const {power} = effect.values;
-
-					const thresholder = BossManager.calculateHealthPointThresholder(boss.level);
-					const currentHealth = thresholder - boss.damageTaken;
-					const damage = Math.floor(currentHealth * power);
-					attackContext.baseDamage += damage;
-				}
-			},
-			values: {
-				power: () => 0.001
-			},
-			influence: "positive"
-		},
-		increaseAttackEventsCount: {
-			id: "increaseAttackEventsCount",
-			callback: {
-				bossBeforeAttack: (user, effect, data) => {
-					const {attackContext} = data;
-					const {power} = effect.values;
-					attackContext.eventsCount += power;
-				}
-			},
-			values: {
-				power: () => 1
-			},
-			influence: "positive"
-		},
-		increaseDamageForBoss: {
-			id: "increaseDamageForBoss",
-			callback: {
-				bossBeforeAttack: (user, effect, data) => {
-					const {boss} = data;
-					const {power} = effect.values;
-					boss.legendaryWearonDamageMultiplayer ||= 1;
-					boss.legendaryWearonDamageMultiplayer += power;
-				}
-			},
-			values: {
-				power: () => 1 / 100_000
-			},
-			influence: "positive"
-		},
-		increaseDamageWhenStrictlyMessageChallenge: {
-			id: "increaseDamageWhenStrictlyMessageChallenge",
-			callback: {
-				messageCreate: (user, effect, message) => {
-					const values = effect.values;
-					const userStats = BossManager.getUserStats(message.guild.data.boss, message.author.id);
-
-					const currentHour = Math.floor(Date.now() / 3_600_000);
-
-					const hoursMap = values.hoursMap;
-
-					if (currentHour in hoursMap === false){
-						hoursMap[currentHour] = 0;
-						const previousHourMessages = Object.entries(hoursMap)
-							.reduce((acc, entrie) => acc.at(1) > entrie.at(1) ? acc : entrie, {})
-							.at(1);
-
-						if (previousHourMessages === values.goal){
-
-							userStats.damagePerMessage = Math.ceil(
-								(userStats.damagePerMessage || 1)
-								* values.power + values.basic
-							);
-							
-						}
-					}
-					
-					hoursMap[currentHour]++;
-					if (hoursMap[currentHour] === values.goal){
-						message.react("998886124380487761");
-					}
-				}
-			},
-			values: {
-				power: () => 1.5,
-				basic: () => 2,
-				goal: () => 30,
-				hours: () => {}
-			},
-			influence: "positive"
-		},
-		deadlyCurse: {
-			id: "deadlyCurse",
-			callback: {
-				curseTimeEnd: (user, effect, {curse}) => {
-					if (effect.timestamp !== curse.timestamp){
-						return;
-					}
-					const guild = this.client.guilds.cache.get(effect.guildId);
-					
-					if (!BossManager.isArrivedIn(guild)){
-						return;
-					}
-					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
-					userStats.heroIsDeath = true;
-					// Завалил
-				},
-				curseEnd: (user, effect, curse) => {
-					if (effect.timestamp !== curse.timestamp){
-						return;
-					}
-
-					BossManager.removeEffect({effect, user});
-				},
-				bossEffectInit: (user, effect, initedEffect) => {
-					if (initedEffect.timestamp !== effect.timestamp){
-						return;
-					}
-
-					const isShort = curseBase => curseBase.interactionIsShort;
-					const curseBase = CurseManager.getGeneratePull(user)
-						.filter(isShort)
-						.random({_weights: true});
-
-					const curse = CurseManager.generateOfBase({curseBase, user});
-					curse.values.timer = effect.values.time;
-					effect.values.targetTimestamp = curse.timestamp;
-					CurseManager.init({curse, user});
-				}
-			},
-			values: {
-				time: () => 60_000 * 5
-			},
-			influence: "negative",
-			canPrevented: false
-		},
-		preventNegativeEffects: {
-			id: "preventNegativeEffects",
-			callback: {
-				bossBeforeEffectInit: (user, effect, context) => {
-					const target = context.effect;
-					const effectBase = CurseManager.curseBase.get(target.id);
-					if (effectBase.influence !== "negative" && effectBase.influence !== "neutral"){
-						return;
-					}
-
-					if (effectBase.canPrevented){
-						return;
-					}
-
-					effect.values.count--;
-					context.preventDefault();
-					if (!effect.values.count){
-						BossManager.removeEffect({user, effect});
-					}
-				}
-			},
-			values: {
-				count: () => 1
-			},
-			influence: "positive"
-		}
-	}));
-
 	static BOSS_TYPES = new Collection(Object.entries({
 		earth: {
 			key: "earth",
@@ -1619,10 +1619,11 @@ class BossManager {
 	static BossShop = BossShop;
 	static BossEvents = BossEvents;
 	static BossRelics = BossRelics;
+	static BossEffects = BossEffects;
 }
 
 
 
 
-export { BossManager, BossShop, BossEvents, LegendaryWearonList };
+export { BossManager, BossShop, BossEvents, BossEffects, LegendaryWearonList };
 export default BossManager;
