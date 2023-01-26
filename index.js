@@ -662,11 +662,18 @@ Discord.Guild.prototype.Audit = async function(find = false, {limit = 3, before 
 Array.prototype.random = function({pop, weights} = {}){
   let index;
   if (weights) {
-    let last = 0;
-    let limites = this.map((e, i) => last = e._weight + last);
+    let previousLimit = 0;
+    const thresholds = this.map((element, i) => {
+      if (isNaN(element._weight)){
+        throw new Error(`Element at index ${ i } returns NaN _weigth. Value: ${ element._weight }`);
+      }
+      return previousLimit = element._weight + previousLimit;
+    });
+    
+    
 
-    let rand = Math.random() * limites.at(-1);
-    index = limites.findIndex(e => e >= rand);
+    const line = Math.random() * thresholds.at(-1);
+    index = thresholds.findIndex(threshold => threshold >= line);
   }
   else index = Math.floor(Math.random() * this.length);
 
