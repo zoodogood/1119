@@ -166,7 +166,7 @@ class Command {
         ],
       ],
       filter: ({guild}) => this.boss.isAvailable(guild),
-      fastFunc: ({guild, elementBase, user, scene}) => {
+      onInit: ({guild, elementBase, user, scene}) => {
         const bossElement = guild.data.boss.elementType;
         const damageDealt = this.boss.makeDamage(guild, user, {elementType: elementBase.index});
         const isSame = bossElement === elementBase.index;
@@ -225,7 +225,7 @@ class Command {
           false
         ],
       ],
-      filterFunc: ({userData, level, scene}) => level < 2
+      filter: ({userData, level, scene}) => level < 2
     },
     {
       id: "huckster",
@@ -391,7 +391,7 @@ class Command {
           false
         ],
       ],
-      filterFunc: ({userData, level, scene}) => userData.berrys > 2
+      filter: ({userData, level, scene}) => userData.berrys > 2
     },
     {
       id: "unrealCreatures",
@@ -475,7 +475,7 @@ class Command {
       id: "fireMonkey",
       _weight: 15,
       description: "Огненная обезьяна утащила стопку ваших ключей!",
-      fastFunc: ({userData, scene}) => {
+      onInit: ({userData, scene}) => {
         scene.stolenKeys = Util.random(3, 7);
         userData.keys -= scene.stolenKeys;
       },
@@ -527,7 +527,7 @@ class Command {
           false
         ],
       ],
-      filterFunc: ({userData, level, scene}) => level > 1 && userData.keys > 30
+      filter: ({userData, level, scene}) => level > 1 && userData.keys > 30
     },
     {
       id: "clover",
@@ -606,7 +606,7 @@ class Command {
           false
         ],
       ],
-      filterFunc: ({userData, level, scene, channel}) => "cloverEffect" in channel.guild.data && level > 2
+      filter: ({userData, level, scene, channel}) => "cloverEffect" in channel.guild.data && level > 2
     },
     {
       id: "school",
@@ -757,7 +757,7 @@ class Command {
           false
         ],
       ],
-      filterFunc: ({userData, level, scene}) => userData.coins > 100_000_000
+      filter: ({userData, level, scene}) => userData.coins > 100_000_000
     },
     {
       id: "thingNotFound",
@@ -805,7 +805,7 @@ class Command {
           false
         ],
       ],
-      filterFunc: ({userData, level, scene}) => userData.voidRituals > 100
+      filter: ({userData, level, scene}) => userData.voidRituals > 100
     },
     {
       id: "letsMourn",
@@ -935,7 +935,7 @@ class Command {
           false
         ],
       ],
-      filterFunc: ({userData, level, scene}) => userData.curse
+      filter: ({userData, level, scene}) => userData.curse
     },
     {
       id: "starsInWindow",
@@ -1069,7 +1069,7 @@ class Command {
     const context = {user, elementBase, channel, scene, level, guild, userData, coefficient};
 
     const _transformWeightOf = (event) => typeof event._weight === "function" ? {...event, _weight: event._weight(context)} : event;
-    const needSkip = event => "filterFunc" in event === false || event.filterFunc(context);
+    const needSkip = event => "filter" in event === false || event.filter(context);
 
     const eventBase = this.constructor.EVENTS_LIST
       .filter(needSkip)
@@ -1082,7 +1082,7 @@ class Command {
       .random();
 
 
-    eventBase.fastFunc && eventBase.fastFunc(context);
+    eventBase.onInit && eventBase.onInit(context);
   
     await actionBase.action(context);
     const output = actionBase.textOutput.replace(/\{.+?\}/g, (raw) => eval(raw.slice(1, -1)));
