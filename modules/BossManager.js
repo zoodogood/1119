@@ -174,8 +174,13 @@ class BossEvents {
 
 	}
 
-	static beforeDeath(){
-
+	static beforeDeath(boss, context){
+		const MAXIMUM_LEVEL = BossManager.MAXIMUM_LEVEL;
+		const transition = context.fromLevel < MAXIMUM_LEVEL && context.toLevel > MAXIMUM_LEVEL;
+		if (transition){
+			context.possibleLevels = MAXIMUM_LEVEL;
+		}
+		return;
 	}
 
 	static events = new Collection(Object.entries({
