@@ -100,7 +100,7 @@ class Command {
       emoji: "😈",
       BASIC: 7,
       PER_RITUAL: 5,
-      calculate(){
+      calculate(user){
         return this.BASIC + Math.floor(this.PER_RITUAL * user.data.voidRituals ** 0.5);
       },
       description(user, _interaction){
