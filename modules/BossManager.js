@@ -743,8 +743,8 @@ class BossManager {
 			defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
 			eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
 		};
-		const pull = [...BossManager.eventBases.values()].map(event => ({...event}));
-
+	
+		
 		const data = {
 			user,
 			userStats,
@@ -757,6 +757,7 @@ class BossManager {
 			}
 		};
 
+
 		user.action(Actions.bossBeforeAttack, data);
 		BossEvents.beforeAttacked(boss, data);
 
@@ -764,18 +765,18 @@ class BossManager {
 			return;
 		}
 
+		const pull = [...BossManager.eventBases.values()]
+			.filter(event => !event.filter || event.filter(data))
+			.map(event => ({
+				...event,
+				_weight: typeof event.weight === "function" ? event.weight(data) : event.weight
+			}));
+
+
 		for (let i = 0; i < attackContext.eventsCount; i++){
-			for (const event of pull){
-				const needSkip = event.filter && !event.filter(data);
-				if (needSkip){
-					const index = pull.indexOf(event);
-					(~index) && pull.splice(index, 1);
-					continue;
-				}
-				event._weight = typeof event.weight === "function" ? event.weight(data) : event.weight;
-			};
 			
 			const event = pull.random({weights: true});
+			
 			if (!event){
 				continue;
 			}
@@ -795,7 +796,6 @@ class BossManager {
 			attackContext.listOfEvents.push(event);
 		}
 
-		console.dir(data, {showHidden: true, depth: 1});
 
 		const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
 		attackContext.defaultDamage = attackContext.damageDealt = damage;
@@ -943,7 +943,7 @@ class BossManager {
 				const reactions = [...LegendaryWearonList.values()].map(({emoji}) => emoji);
 				const getLabel = ({description, emoji}) => `${ emoji } ${ description }.`;
 				const embed = {
-					description: `**Выберите инструмент с привлекательным для Вас эпическим эффектом:**\n${ this.legendaryWearonList.map(getLabel).join("\n") }`,
+					description: `**Выберите инструмент с привлекательным для Вас эпическим эффектом:**\n${ LegendaryWearonList.map(getLabel).join("\n") }`,
 					color: "#3d17a0",
 					reactions,
 					footer: {iconURL: user.avatarURL(), text: "Это событие появляется единожды"}
