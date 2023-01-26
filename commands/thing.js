@@ -168,7 +168,6 @@ class Command {
       filter: ({guild}) => this.boss.isAvailable(guild),
       fastFunc: ({guild, elementBase, user}) => {
         const bossElement = guild.data.boss.elementType;
-        console.log(this);
         const damageDealt = this.boss.makeDamage(guild, user, {elementType: elementBase.index});
         const isSame = bossElement === elementBase.index;
 
