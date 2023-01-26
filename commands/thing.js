@@ -367,7 +367,7 @@ class Command {
               userData.berrys -= count;
 
               const bonuses = Math.ceil(count * Util.random(1.2, 1.4));
-              userData.chestBonus = (userData.chestBonus ?? 0) + scene.random;
+              userData.chestBonus = (userData.chestBonus ?? 0) + bonuses;
               scene.bonuses = bonuses;
             },
             textOutput: `"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор, превратив часть своей клубники в {Util.ending(scene.bonuses, "бонус", "ов", "", "а")} сундука`
