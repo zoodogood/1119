@@ -121,7 +121,7 @@ class Command {
     },
     {
       id: "bossDamage",
-      _weight: 40,
+      _weight: 4000,
       description: () => ["Вы видите босса", "Босс Вас приветствует", "Посмотрите туда, там Босс"].random(),
       variability: [
         [
@@ -168,6 +168,7 @@ class Command {
       filter: ({guild}) => this.boss.isAvailable(guild),
       fastFunc: ({guild, elementBase, user}) => {
         const bossElement = guild.data.boss.elementType;
+        console.log(this);
         const damageDealt = this.boss.makeDamage(guild, user, {elementType: elementBase.index});
         const isSame = bossElement === elementBase.index;
 
@@ -1301,7 +1302,7 @@ class Command {
 
   
 
-  boss = {
+  static boss = {
     manager: import("#src/modules/BossManager.js")
       .then((module) => this.boss.manager = module.BossManager),
 
