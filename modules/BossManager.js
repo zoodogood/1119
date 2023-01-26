@@ -174,8 +174,19 @@ class BossEvents {
 
 	}
 
+	static beforeDeath(){
+
+	}
+
 	static events = new Collection(Object.entries({
+		bossNowHeals: {
+			id: "bossNowHeals",
+			callback(){
+
+			}
+		},
 		notifyLevel10: {
+			id: "notifyLevel10",
 			callback(boss, context){
 				const now = Date.now();
 				const contents = {
@@ -374,13 +385,14 @@ class BossManager {
 	}
 
 	static makeDamage(boss, damage, {sourceUser, damageSourceType} = {}){
+		const baseDamage = damage;
 		damage *= this.calculateBossDamageMultiplayer(boss, {sourceUser, context: {
 			restoreHealthByDamage: sourceUser.effects?.damageRestoreHealht ?? false
 		}});
 		damage = Math.floor(damage);
 	
 	
-		const context = {boss, damage, damageSourceType};
+		const context = {boss, damage, damageSourceType, sourceUser, baseDamage};
 		boss.damageTaken += damage;
 	
 		if (sourceUser){
@@ -402,21 +414,51 @@ class BossManager {
 
 		
 	
-		while (boss.damageTaken >= boss.healthThresholder){
-			BossManager.kill({boss, sourceUser});
+		if (boss.damageTaken >= boss.healthThresholder){
+			BossManager.fatalDamage(context);
 		}
 
 		return damage;
 	}
-	
-	static calculateKillReward(level){
-		return 500 + 500 * level;
+
+	static fatalDamage(context){
+		const calculatePossibleLevels = (boss) => {
+			let currentLevel = boss.level - 1;
+			let healthThresholder;
+			do {
+				currentLevel++;
+				healthThresholder = BossManager.calculateHealthPointThresholder(currentLevel);
+			} while (boss.damageTaken >= healthThresholder);
+
+			return currentLevel;
+		};
+		const {boss} = context;
+		Object.assign(context, {
+			possibleLevels: calculatePossibleLevels(boss),
+			preventDefault(){
+				this.defaultPrevented = true;
+			},
+			defaultPrevented: false
+		})
+
+		BossEvents.beforeDeath(boss, context);
+		if (context.defaultPrevented){
+			return;
+		}
+
+		BossManager.kill({...context, fromLevel: boss.level, toLevel: context.possibleLevels});
 	}
 
-	static kill({boss, sourceUser}){
-		const expReward = this.calculateKillReward(boss.level);
+	
+	static calculateKillReward({fromLevel, toLevel}){
+		const perLevel = 500 + (toLevel - fromLevel + 1) * 250;
+		return perLevel * (toLevel - fromLevel);	
+	}
 
-		const mainContent = sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон";
+	static kill(context){
+		const {boss, sourceUser, fromLevel, toLevel} = context;
+		const expReward = this.calculateKillReward({fromLevel, toLevel});
+
 		if (sourceUser){
 			sourceUser.data.exp += expReward;
 		}
@@ -425,8 +467,8 @@ class BossManager {
 		
 		const guild = this.client.guilds.cache.get(boss.guildId);
 		
-		boss.level++;
-		boss.healthThresholder = BossManager.calculateHealthPointThresholder(boss.level);
+		boss.level = toLevel;
+		boss.healthThresholder = BossManager.calculateHealthPointThresholder(toLevel);
 
 		Object.values(boss.users)
 			.forEach(userStats => delete userStats.attack_CD);
@@ -435,10 +477,18 @@ class BossManager {
 			this.victory(guild);
 		}
 
-
-		const footer = {text: "Образ переходит в новую стадию", iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
-		guild.chatSend({description: `Слишком просто! Следующий!\n${ mainContent }`, footer});
-		BossManager.BonusesChest.createCollector({guild, boss, level: boss.level - 1});
+		const contents = {
+			footerText: "Образ переходит в новую стадию",
+			title: "Слишком просто! Следующий!",
+			main: sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон",
+			isImagine: toLevel - 1 !== fromLevel ? "<:tan:1068072988492189726>" : ""
+		}
+		const footer = {text: contents.footerText, iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
+		guild.chatSend({
+			description: `${ contents.title }\n${ contents.main }\n${ contents.isImagine }`,
+			footer
+		});
+		BossManager.BonusesChest.createCollector({guild, boss, fromLevel, toLevel});
 	}
 
 	static victory(guild){
@@ -489,9 +539,10 @@ class BossManager {
 			}
 			return rewards;
 		},
-		createEmbed: ({level, taking}) => {
+		createEmbed: ({fromLevel, toLevel, taking}) => {
+			const levelsDiff = toLevel - fromLevel;
 			const contents = {
-				rewardPer: `Получите бонусы за победу над боссом ур. ${ level }.`,
+				rewardPer: `Получите бонусы за победу над боссом ${ levelsDiff === 1 ? `ур. ${ toLevel }` : `уровней ${ fromLevel }–${ toLevel }` }.`,
 				timeLimit: `Время ограничено двумя часами с момента отправки этого сообщения`,
 				receiveLimit: `${ taking ? `\nСобрано: ${ taking }/${ BossManager.BonusesChest.RECEIVE_LIMIT }` : "" }`
 			}
@@ -504,13 +555,14 @@ class BossManager {
 				reactions: ["637533074879414272"]
 			};
 		},
-		createCollector: async ({guild, level}) => {
+		createCollector: async ({guild, toLevel, fromLevel}) => {
 			const BossChest = BossManager.BonusesChest;
 	
-			const embed = BossChest.createEmbed({level, taking: 0});
+			const embed = BossChest.createEmbed({toLevel, fromLevel, taking: 0});
 			const context = {
 				taking: 0,
-				level,
+				toLevel,
+				fromLevel,
 				message: null
 			}
 	
@@ -519,7 +571,7 @@ class BossManager {
 				return;
 			};
 
-			const collector = message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
+			const collector = context.message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
 			collector.on("collect", (_reaction, user) => {
 				const result = BossChest.onCollect(user, context);
 				if (!result){
@@ -532,9 +584,9 @@ class BossManager {
 				context.message.msg({...BossChest.createEmbed(context), edit: true});
 			});
 	
-			collector.on("end", () => message.delete());
+			collector.on("end", () => context.message.delete());
 		},
-		onCollect: (user, {level, message}) => {
+		onCollect: (user, {fromLevel, toLevel, message}) => {
 			const userStats = BossManager.getUserStats(boss, user.id);
 			const userData = user.data;
 	
@@ -543,8 +595,8 @@ class BossManager {
 				return;
 			};
 
-			const rewardPull = BossManager.BonusesChest.createRewardPull({level, userStats, bonuses: true});
-			userStats.chestRewardAt = level;
+			const rewardPull = BossManager.BonusesChest.createRewardPull({level: toLevel, userStats, bonuses: true});
+			userStats.chestRewardAt = toLevel;
 			Object.entries(rewardPull).forEach(([key, count]) => 
 				userData[key] = (userData[key] ?? 0) + count
 			)
@@ -1608,8 +1660,6 @@ class BossManager {
 	static BossEvents = BossEvents;
 	static BossRelics = BossRelics;
 }
-
-
 
 
 
