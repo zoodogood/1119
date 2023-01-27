@@ -1,6 +1,7 @@
 import * as Util from '#src/modules/util.js';
 import EventsManager from '#src/modules/EventsManager.js';
 import TimeEventsManager from '#src/modules/TimeEventsManager.js';
+import { ChannelType } from 'discord.js';
 
 class Command {
 
@@ -18,13 +19,13 @@ class Command {
       },
       members: {
         count:         `Всего: ${guild.memberCount}`,
-        online:        `Онлайн: ${guild.members.cache.filter(e => e.presence.status != "offline").size}`,
-        offline:       `Оффлайн: ${guild.members.cache.filter(e => e.presence.status == "offline").size}`
+        online:        `Онлайн: ${ guild.members.cache.filter(e => e.presence?.status !== "offline").size }`,
+        offline:       `Оффлайн: ${ guild.members.cache.filter(e => e.presence?.status === "offline").size }`
       },
       channels: {
-        categories:    `Категорий: ${guild.channels.cache.filter(e => e.type == "category").size}`,
-        texted:        `Текстовых: ${guild.channels.cache.filter(e => e.type == "text").size}`,
-        voices:        `Голосовых: ${guild.channels.cache.filter(e => e.type == "voice").size}`
+        categories:    `Категорий: ${guild.channels.cache.filter(e => e.type === ChannelType.GuildCategory).size}`,
+        texted:        `Текстовых: ${guild.channels.cache.filter(e => e.isTextBased()).size}`,
+        voices:        `Голосовых: ${guild.channels.cache.filter(e => e.isVoiceBased()).size}`
       }
     }
 
@@ -32,15 +33,15 @@ class Command {
     let members  = Object.values( values.members ).join("\n");
     let channels = Object.values( values.channels ).join("\n");
 
-    let verification = {
-      "NONE": "Отсуствует",
-      "LOW": "Низкий",
-      "MEDIUM": "Средний",
-      "HIGH": "Высокий",
-      "VERY_HIGH": "Слишком высокий"
-    }
+    let verification = [
+      "Отсуствует",
+      "Низкий",
+      "Средний",
+      "Высокий",
+      "Слишком высокий"
+    ]
 
-    let fields = [{name: "Участники:", value: members, inline: true}, {name: "Каналы:", value: channels, inline: true}, {name: "**Статистика сообщений:**", value: stats}, {name: `**Владелец:**`, value: await guild.fetchOwner(), inline: true}, {name: `**Ур. Верификации:**`, value: verification[guild.verificationLevel], inline: true}];
+    let fields = [{name: "Участники:", value: members, inline: true}, {name: "Каналы:", value: channels, inline: true}, {name: "**Статистика сообщений:**", value: stats}, {name: `**Владелец:**`, value: String(await guild.fetchOwner()), inline: true}, {name: `**Ур. Верификации:**`, value: String(verification[guild.verificationLevel]), inline: true}];
     //* CLOVER
     if (guild.data.cloverEffect){
 
