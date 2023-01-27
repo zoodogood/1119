@@ -361,6 +361,10 @@ class BossEffects {
 					if (hoursMap[currentHour] === values.goal){
 						message.react("998886124380487761");
 					}
+
+					if (hours[currentHour] === values.goal + 1){
+						message.react("🫵");
+					}
 				}
 			},
 			values: {
@@ -1204,7 +1208,7 @@ class BossManager {
 					BossEffects.applyEffect({guild, user, effectBase, values});
 					userStats.haveLegendaryWearon = true;
 
-					message.channel.msg({color: "#000000", description: `Выбрано: ${ wearon.description }`, delete: 10_000});
+					message.channel.msg({color: "#000000", description: `Выбрано: ${ wearon.description }`, reference: message.id});
 					await Util.sleep(10_000);
 					collector.stop();
 				});
