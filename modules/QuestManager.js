@@ -73,7 +73,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 		
 		const currentDay = DataManager.data.bot.currentDay;
 		if (quest.day !== currentDay){
-			if (!quest.completed){
+			if (!quest.isCompleted){
 				user.action(Actions.dailyQuestSkiped, {quest});
 			}
 				
@@ -92,7 +92,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 			quest.progress += data.count ?? 1;
 			this.checkAvailable({user});
 
-			if (quest.progress >= quest.goal && !quest.completed){
+			if (quest.progress >= quest.goal && !quest.isCompleted){
 				user.action(Actions.dailyQuestComplete, {quest});
 				this.completeQuest({user, quest, context: {channel: data.channel}});
 			}
@@ -150,7 +150,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 		const chestBonusReward = Math.ceil(multiplayer * DEFAULT_CHEST_REWARD) + 1;
 		data.exp += expReward;
 		data.chestBonus = (data.chestBonus ?? 0) + chestBonusReward;
-		quest.completed = true;
+		quest.isCompleted = true;
 
 		const MEDIA_URL = "https://media.discordapp.net/attachments/629546680840093696/1047584339854118952/slide-5.jpg?width=793&height=594";
 		const target = channel ?? user;
