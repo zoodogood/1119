@@ -1176,7 +1176,7 @@ class BossManager {
 			}
 		},
 		selectLegendaryWearon: {
-			weight: 10000000000,
+			weight: 100,
 			id: "selectLegendaryWearon",
 			description: "Требуется совершить выбор",
 			callback: async ({user, boss, channel, userStats, guild}) => {
@@ -1216,7 +1216,7 @@ class BossManager {
 				collector.on("end", () => message.delete());
 			},
 
-			filter: ({userStats}) => !userStats.haveLegendaryWearon
+			filter: ({userStats, boss}) => !userStats.haveLegendaryWearon && boss.level >= 5
 		},
 		choiseCreatePotion: {
 			weight: 300,
@@ -1625,7 +1625,6 @@ class BossManager {
 	static BossRelics = BossRelics;
 	static BossEffects = BossEffects;
 }
-
 
 
 
