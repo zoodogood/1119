@@ -212,7 +212,11 @@ class CommandsManager {
 			this.statistics.increase(interaction);
 		}
 		catch (error){
-			ErrorsHandler.Audit.push(error, interaction);
+			ErrorsHandler.Audit.push(error, {
+				userId: interaction.user.id,
+				type: typeBase.type,
+				command: command.options.name
+			});
 			ErrorsHandler.sendErrorInfo({channel: interaction.channel, error, interaction});
 		}
 		

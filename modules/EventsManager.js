@@ -49,7 +49,7 @@ class BaseEvent {
 			await this.run(...args);
 		} catch (error){
 			console.error(error);
-			ErrorsHandler.Audit.push(error, {event: this, target: this.eventTarget});
+			ErrorsHandler.Audit.push(error, {event: this.options.name});
 		}
 	}
  
