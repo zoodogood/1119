@@ -48,7 +48,9 @@ const Elements = new Collection(Object.entries({
     incomeCoefficient: 0.2
   }
 }));
-const elementsEnum = [...Elements.entries()].map(([key, index]) => [key, index]);
+const elementsEnum = Object.fromEntries(
+  [...Elements.entries()].map(([key, index]) => [key, index])
+);
 
 
 class Command {
