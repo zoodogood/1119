@@ -452,6 +452,24 @@ class BossEffects {
 				count: () => 1
 			},
 			influence: "positive"
+		},
+		increaseAttackDamage: {
+			id: "increaseAttackDamage",
+			callback: {
+				bossBeforeAttack: (user, effect, {attackContext}) => {
+					attackContext.damageMultiplayer *= effect.values.power;
+
+					effect.values.duration--;
+					if (!effect.values.duration){
+						BossEffects.removeEffect({user, effect});
+					}
+				}
+			},
+			values: {
+				power: 2,
+				duration: 1
+			},
+			influence: "positive"
 		}
 	}));
 }
@@ -1091,8 +1109,10 @@ class BossManager {
 			repeats: true,
 			id: "increaseAttackCooldown",
 			description: "Урон следующих двух атак был увеличен",
-			callback: ({attackContext}) => {
-				attackContext.damageMultiplayer *= 5;
+			callback: ({guild, user}) => {
+				const effectBase = BossEffects.effectBases.get("increaseAttackDamage");
+				const values = {duration: 2, power: 3};
+				BossEffects.applyEffect({values, guild, user, effectBase});
 			}     
 		},
 		giveChestBonus: {
