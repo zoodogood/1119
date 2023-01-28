@@ -14,7 +14,7 @@ class Command {
         Math.max(currentHealthPointPercent * 100, 0.1).toFixed(1) :
         Math.ceil(currentHealthPointPercent * 100),
 
-      leaveDay: `Уйдет ${ Util.toDayDate(boss.endingAtDay * 86_400_000) }`,
+      leaveDay: `Уйдет ${ boss.endingAtDay ? Util.toDayDate(boss.endingAtDay * 86_400_000) : "Никогда" }`,
       level: `Уровень: ${ boss.level }.`
     };
 
