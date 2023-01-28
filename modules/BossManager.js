@@ -758,7 +758,7 @@ class BossManager {
 		}
 		const footer = {text: contents.footerText, iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
 		guild.chatSend({
-			description: `${ contents.title }\n${ contents.main } ${ levels }\n${ contents.isImagine }`,
+			description: `${ contents.title }\n${ contents.main } ${ contents.levels }\n${ contents.isImagine }`,
 			footer
 		});
 		BossManager.BonusesChest.createCollector({guild, boss, fromLevel, toLevel});
