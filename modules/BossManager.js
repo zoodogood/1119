@@ -229,7 +229,7 @@ class BossEffects {
 		};
 
 		Object.entries({...effectBase.values, ...values})
-			.forEach(([key, fn]) => effect.values[key] = fn(user, effect, guild));
+			.forEach(([key, fn]) => effect.values[key] = typeof fn === "function" ? fn(user, effect, guild) : fn);
 
 		const context = {
 			effect,
