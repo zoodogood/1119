@@ -153,11 +153,16 @@ class BossShop {
 
 class BossEvents {
 	static onBossDeath(boss, context){
-		if (context.level % 5 === 0){
+		const {fromLevel, toLevel} = context;
+		const levels = [...new Array(toLevel - fromLevel)].map((_, i) => i + fromLevel);
+
+		const modFive = levels.find(level => level % 5 === 0);
+		if (modFive){
 			this.events.get("bossNowHeals").callback(boss, context);
 		}
 
-		if (context.level - 1 === 10){
+		const precedesTen = levels.find(level => level - 1 === 10);
+		if (precedesTen){
 			this.events.get("notifyLevel10").callback(boss, context);
 		}
 	}
@@ -276,7 +281,7 @@ class BossEffects {
 					const {attackContext} = data;
 					const {power, lastAttackTimestamp} = effect.values;
 					attackContext.damageMultiplayer += (Date.now() - lastAttackTimestamp) * power;
-					
+
 					effect.values.lastAttackTimestamp = Date.now();
 				}
 			},
@@ -712,7 +717,7 @@ class BossManager {
 			sourceUser.data.exp += expReward;
 		}
 
-		BossEvents.onBossDeath(boss, {level: boss.level, sourceUser})
+		BossEvents.onBossDeath(boss, {fromLevel, toLevel, sourceUser})
 		
 		const guild = this.client.guilds.cache.get(boss.guildId);
 		
