@@ -3,7 +3,7 @@ import { Util } from '#src/modules/mod.js';
 
 
 class Event {
-	async run(isLost, channelId, messageId, winners, roleId){
+	async run(isLost, channelId, messageId, winnersCount, roleId){
 		const channel = client.channels.cache.get(channelId);
 		if (!channel) {
 			return;
@@ -16,7 +16,7 @@ class Event {
 			.filter(user => !user.bot);
 
 		const winners = users
-			.random(+winners)
+			.random(+winnersCount)
 			.filter(Boolean);
 
 		const embed = giveaway.embeds.at(0);
