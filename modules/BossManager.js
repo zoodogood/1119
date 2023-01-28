@@ -276,6 +276,8 @@ class BossEffects {
 					const {attackContext} = data;
 					const {power, lastAttackTimestamp} = effect.values;
 					attackContext.damageMultiplayer += (Date.now() - lastAttackTimestamp) * power;
+					
+					effect.values.lastAttackTimestamp = Date.now();
 				}
 			},
 			values: {
