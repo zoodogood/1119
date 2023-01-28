@@ -753,11 +753,12 @@ class BossManager {
 			footerText: "Образ переходит в новую стадию",
 			title: "Слишком просто! Следующий!",
 			main: sourceUser ? `${ sourceUser.username } наносит пронзающий удар и получает ${ expReward } <:crys2:763767958559391795>` : "Пронзительный удар из ни откуда нанёс критический для босса урон",
-			isImagine: toLevel - 1 !== fromLevel ? "<:tan:1068072988492189726>" : ""
+			isImagine: toLevel - 1 !== fromLevel ? "<:tan:1068072988492189726>" : "",
+			levels: `${ fromLevel }...${ toLevel }`
 		}
 		const footer = {text: contents.footerText, iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
 		guild.chatSend({
-			description: `${ contents.title }\n${ contents.main }\n${ contents.isImagine }`,
+			description: `${ contents.title }\n${ contents.main } ${ levels }\n${ contents.isImagine }`,
 			footer
 		});
 		BossManager.BonusesChest.createCollector({guild, boss, fromLevel, toLevel});
@@ -813,7 +814,7 @@ class BossManager {
 		createEmbed: ({fromLevel, toLevel, taking}) => {
 			const levelsDiff = toLevel - fromLevel;
 			const contents = {
-				rewardPer: `Получите бонусы за победу над боссом ${ levelsDiff === 1 ? `ур. ${ toLevel }` : `уровней ${ fromLevel }–${ toLevel }` }.`,
+				rewardPer: `Получите бонусы за победу над боссом ур. ${ toLevel }`,
 				timeLimit: `Время ограничено двумя часами с момента отправки этого сообщения`,
 				receiveLimit: `${ taking ? `\nСобрано: ${ taking }/${ BossManager.BonusesChest.RECEIVE_LIMIT }` : "" }`
 			}
