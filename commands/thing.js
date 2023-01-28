@@ -49,7 +49,7 @@ const Elements = new Collection(Object.entries({
   }
 }));
 const elementsEnum = Object.fromEntries(
-  [...Elements.entries()].map(([key, index]) => [key, index])
+  [...Elements.entries()].map(([key, {index}]) => [key, index])
 );
 
 
