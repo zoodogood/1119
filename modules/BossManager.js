@@ -1,3 +1,4 @@
+
 import { Collection } from "@discordjs/collection";
 import { DataManager, CurseManager, Properties, ErrorsHandler } from "#src/modules/mod.js";
 import TimeEventsManager from '#src/modules/TimeEventsManager.js';
@@ -369,7 +370,7 @@ class BossEffects {
 						message.react("998886124380487761");
 					}
 
-					if (hours[currentHour] === values.goal + 1){
+					if (hoursMap[currentHour] === values.goal + 1){
 						message.react("🫵");
 					}
 				}
@@ -432,7 +433,7 @@ class BossEffects {
 			callback: {
 				bossBeforeEffectInit: (user, effect, context) => {
 					const target = context.effect;
-					const effectBase = CurseManager.curseBase.get(target.id);
+					const effectBase = CurseManager.cursesBase.get(target.id);
 					if (effectBase.influence !== "negative" && effectBase.influence !== "neutral"){
 						return;
 					}
@@ -940,7 +941,7 @@ class BossManager {
 
 		const contents = {
 			dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
-			bossLevel: `Достигнутый уровень: ${ boss.level } (${ [...new Array(boss.level - 1)].map((_, i) => this.calculateKillReward(i + 1)).reduce((acc, exp) => acc + exp) } опыта)`,
+			bossLevel: `Достигнутый уровень: ${ boss.level } (${ this.calculateKillReward({fromLevel: 1, toLevel: boss.level}) } опыта)`,
 			damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
 			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
@@ -1176,9 +1177,10 @@ class BossManager {
 				const emoji = reaction.emoji.name;
 	
 				if (emoji === "⚔️" && isLucky){
-					const content = "Успех! Нанесено 125 урона";
+					const DAMAGE = 125;
+					const content = `Успех! Нанесено ${ DAMAGE } урона`;
 					message.msg({description: content});
-					BossManager.makeDamage(boss, 125, {sourceUser: user});
+					BossManager.makeDamage(boss, DAMAGE, {sourceUser: user});
 					return;
 				}
 	
@@ -1282,7 +1284,7 @@ class BossManager {
 								return;
 								}
 
-								if (Object.keys(gotTable) >= 5){
+								if (Object.keys(gotTable).length >= 5){
 									collector.stop();
 								}
 
@@ -1311,7 +1313,7 @@ class BossManager {
 									return;
 								}
 
-								if (Object.keys(gotTable) >= 5){
+								if (Object.keys(gotTable).length >= 5){
 									collector.stop();
 								}
 
@@ -1582,7 +1584,7 @@ class BossManager {
 					userData.bossRelics ||= [];
 					
 					const relicKey = BossRelics.collection
-						.filter(relic => BossManager.isUserHasRelic({userData, relic}) && relic.inPull)
+						.filter(relic => BossRelics.isUserHasRelic({userData, relic}) && relic.inPull)
 						.randomKey();
 
 					relicKey && userData.bossRelics.push(relicKey);
