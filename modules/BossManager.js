@@ -758,7 +758,7 @@ class BossManager {
 		}
 		const footer = {text: contents.footerText, iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL()};
 		guild.chatSend({
-			description: `${ contents.title }\n${ contents.main } ${ contents.levels }\n${ contents.isImagine }`,
+			description: `${ contents.title } (${ contents.levels })\n${ contents.main }\n${ contents.isImagine }`,
 			footer
 		});
 		BossManager.BonusesChest.createCollector({guild, boss, fromLevel, toLevel});
@@ -786,6 +786,8 @@ class BossManager {
 		GUARANTEE_DAMAGE_PART_FOR_VOID: 0.2,
 		VOID_REWARD_DENOMINATOR: 0.8,
 		DAMAGE_FOR_KEY: 200,
+		MAIN_COLOR: "#ffda73",
+
 		createRewardPull: ({userStats, level, bonuses = true}) => {
 			const BossChest = BossManager.BonusesChest;
 
@@ -793,7 +795,7 @@ class BossManager {
 			const bonusesReward = BossChest.BASE_BONUSES + level * BossChest.BONUSES_PER_LEVEL;
 
 			// void
-			const numerator = Math.random() * userStats.damageDealt + userStats.damageDealt * GUARANTEE_DAMAGE_PART;
+			const numerator = Math.random() * userStats.damageDealt + userStats.damageDealt * BossChest.GUARANTEE_DAMAGE_PART_FOR_VOID;
 
 			const byDamage = (numerator / BossChest.DAMAGE_FOR_VOID) ** BossChest.VOID_REWARD_DENOMINATOR;
 
@@ -823,7 +825,7 @@ class BossManager {
 				description: `${ contents.rewardPer }\n${ contents.timeLimit }.${ contents.receiveLimit }`,
 				thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1038767024643522600/1476613756146739089.png?width=593&height=593",
 				footer: {text: "Внимание, вы можете получить награду не более чем из одного сундука за время пребывания босса"},
-				color: "#ffda73",
+				color: BossManager.BonusesChest.MAIN_COLOR,
 				reactions: ["637533074879414272"]
 			};
 		},
@@ -835,7 +837,8 @@ class BossManager {
 				taking: 0,
 				toLevel,
 				fromLevel,
-				message: null
+				message: null,
+				guild
 			}
 	
 			context.message = await guild.chatSend(embed);
@@ -843,14 +846,14 @@ class BossManager {
 				return;
 			};
 
-			const collector = context.message.createReactionCollector({filter: (reaction) => !reaction.me, time: 3_600_000 * 2});
+			const collector = context.message.createReactionCollector({filter: (_, user) => !user.bot, time: 3_600_000 * 2});
 			collector.on("collect", (_reaction, user) => {
 				const result = BossChest.onCollect(user, context);
 				if (!result){
 					return;
 				}
 				context.taking++;
-				if (taking >= BossChest.RECEIVE_LIMIT){
+				if (context.taking >= BossChest.RECEIVE_LIMIT){
 					collector.stop();
 				}
 				context.message.msg({...BossChest.createEmbed(context), edit: true});
@@ -858,7 +861,8 @@ class BossManager {
 	
 			collector.on("end", () => context.message.delete());
 		},
-		onCollect: (user, {fromLevel, toLevel, message}) => {
+		onCollect: (user, {toLevel, message, guild}) => {
+			const boss = guild.data.boss;
 			const userStats = BossManager.getUserStats(boss, user.id);
 			const userData = user.data;
 	
@@ -872,7 +876,7 @@ class BossManager {
 			Object.entries(rewardPull).forEach(([key, count]) => 
 				userData[key] = (userData[key] ?? 0) + count
 			)
-			message.msg({description: `Получено ${  Util.ending(rewardPull.chestBonus, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>, ${ rewardPull.keys } 🔩 и ${ rewardPull.void } <a:void:768047066890895360>`, color, delete: 7000});
+			message.msg({description: `Получено ${  Util.ending(rewardPull.chestBonus, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>, ${ rewardPull.keys } 🔩 и ${ rewardPull.void } <a:void:768047066890895360>`, color: BossManager.BonusesChest.MAIN_COLOR, delete: 7000});
 
 			return true;
 		}
