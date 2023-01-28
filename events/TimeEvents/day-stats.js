@@ -1,5 +1,4 @@
-import TimeEventsManager from '#src/modules/TimeEventsManager.js';
-import BossManager from '#src/modules/BossManager.js';
+import {TimeEventsManager, BossManager, Util} from '#src/modules/mod.js';
 import { client } from '#src/index.js';
 
 import TreeCommand from '#src/commands/seed.js';
