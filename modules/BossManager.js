@@ -268,6 +268,8 @@ class BossEffects {
 		const callbackMap = user.data.bossEffectsCallbackMap;
 		Object.keys(callbackMap).filter(needRemove)
 			.forEach(key => delete callbackMap[key]);
+
+		user.action(Actions.bossEffectEnd, effect);
 	}
 
 	static effectsOf({boss, user}){
@@ -432,7 +434,7 @@ class BossEffects {
 					if (effect.timestamp !== target.timestamp){
 						return;
 					}
-					
+
 					const guild = BossManager.client.guilds.cache.get(effect.guildId);
 					if (!BossManager.isArrivedIn(guild)){
 						return;
