@@ -1214,37 +1214,40 @@ class BossManager {
 				const filter = ({emoji}, member) => user === member && reactions.includes(emoji.name);
 				const collector = message.createReactionCollector({filter, time: 30_000, max: 1});
 				collector.on("collect", (reaction) => {
-				const isLucky = Util.random(0, 1);
-				const emoji = reaction.emoji.name;
-	
-				if (emoji === "⚔️" && isLucky){
-					const DAMAGE = 125;
-					const content = `Успех! Нанесено ${ DAMAGE } урона`;
-					message.msg({description: content});
-					BossManager.makeDamage(boss, DAMAGE, {sourceUser: user});
-					return;
-				}
-	
-				if (emoji === "⚔️" && !isLucky){
-					const content = "После неудачной контратаки ваше оружие ушло на дополнительную перезарядку";
-					message.msg({description: content});
-					userStats.attack_CD += 3_600_000;
-					return;
-				}
-	
-				if (emoji === "🛡️" && isLucky){
-					const content = "Успех! Получено 1000 золота";
-					message.msg({description: content});
-					user.data.coins += 1000;
-					return;
-				}
-	
-				if (emoji === "🛡️" && !isLucky){
-					const content = "После неудачной защиты ваше оружие ушло на дополнительную перезарядку";
-					message.msg({description: content});
-					userStats.attack_CD += 3_600_000;
-					return;
-				}
+					const isLucky = Util.random(0, 1);
+					const emoji = reaction.emoji.name;
+		
+					if (emoji === "⚔️" && isLucky){
+						const BASE_DAMAGE = 125;
+						const DAMAGE_PER_LEVEL = 15;
+						const damage = BASE_DAMAGE + DAMAGE_PER_LEVEL * boss.level;
+						
+						message.msg({description: content});
+						const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
+						const content = `Успех! Нанесено ${ dealt }ед. урона`;
+						return;
+					}
+		
+					if (emoji === "⚔️" && !isLucky){
+						const content = "После неудачной контратаки ваше оружие ушло на дополнительную перезарядку";
+						message.msg({description: content});
+						userStats.attack_CD += 3_600_000;
+						return;
+					}
+		
+					if (emoji === "🛡️" && isLucky){
+						const content = "Успех! Получено 1000 золота";
+						message.msg({description: content});
+						user.data.coins += 1000;
+						return;
+					}
+		
+					if (emoji === "🛡️" && !isLucky){
+						const content = "После неудачной защиты ваше оружие ушло на дополнительную перезарядку";
+						message.msg({description: content});
+						userStats.attack_CD += 3_600_000;
+						return;
+					}
 				});
 	
 				collector.on("end", () => message.delete());
