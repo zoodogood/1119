@@ -1427,9 +1427,10 @@ class BossManager {
 						}
 						},
 						"🍯🍯🩸": {
-						description: "Вы попросту перевели продукты..",
+						description: "Эффект кубика. Урон по боссу увеличен",
 						callback: (_message, _embed) => {
-
+							boss.diceDamageMultiplayer ||= 1;
+							boss.diceDamageMultiplayer += 0.01;
 						}
 						},
 						"🍯🩸🩸": {
