@@ -1,5 +1,4 @@
-import {TimeEventsManager, DataManager} from '#src/modules/mod.js';
-
+import { client } from '#src/index.js';
 
 class Event {
 
