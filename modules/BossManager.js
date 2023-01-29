@@ -1577,7 +1577,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.darkness
 		},
 		pests: {
-			weight: ({boss}) => 400 * 1.2 ** (boss.level - 10),
+			weight: ({boss}) => 400 * 1.05 ** (boss.level - 10),
 			id: "pests",
 			description: "Клопы",
 			callback: ({user, boss, userStats}) => {
