@@ -75,7 +75,7 @@ class Command {
       userEffects
     }
 
-    if (userStats.heroIsDeath){
+    if (userStats.heroIsDead){
       this.displayHeadstone(context);
       return;
     }
@@ -138,7 +138,7 @@ class Command {
     collector.on("collect", (interaction) => {
       const user = interaction.user;
       const userStats = BossManager.getUserStats(boss, user.id);
-      if (userStats.heroIsDeath){
+      if (userStats.heroIsDead){
         interaction.msg({ephemeral: true, content: "Ввысь и вниз; В окно, и там будет снег. Забудь об этом — ты мертвец."});
         return;
       }

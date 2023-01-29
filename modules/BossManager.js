@@ -396,7 +396,7 @@ class BossEffects {
 						return;
 					}
 					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
-					userStats.heroIsDeath = true;
+					userStats.heroIsDead = true;
 				},
 				curseEnd: (user, effect, curse) => {
 					const effectValues = effect.values;
@@ -412,7 +412,7 @@ class BossEffects {
 						return;
 					}
 					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
-					if (userStats.heroIsDeath){
+					if (userStats.heroIsDead){
 						return;
 					}
 
@@ -1009,7 +1009,7 @@ class BossManager {
 	static userAttack({boss, user, channel}){
 		const userStats = BossManager.getUserStats(boss, user.id);
 
-		if (userStats.heroIsDeath){
+		if (userStats.heroIsDead){
 			channel.message({
 				description: "Недоступно до воскрешения",
 				color: "#ff0000",
@@ -1579,7 +1579,7 @@ class BossManager {
 			id: "death",
 			description: "Смэрть",
 			callback: ({userStats}) => {
-				userStats.heroIsDeath = true;
+				userStats.heroIsDead = true;
 			},
 			repeats: true,
 			filter: ({boss}) => boss.level >= 3
