@@ -118,24 +118,37 @@ class Command {
     collector.on("end", () => message.reactions.removeAll());
   }
 
-  async displayHeadstone({interaction, member, boss}){
+  async displayHeadstone({interaction, member, boss, userStats}){
     const guild = interaction.guild;
     const contents = {
       level: `Уровень: ${ member.data.level }.`,
       joined: `Появился: ${ new Intl.DateTimeFormat("ru-ru", {year: "numeric", month: "2-digit", day: "2-digit"}).format(guild.members.resolve(member).joinedTimestamp) }`,
-      heroStatus: "Выдуманный персонаж был искалечен и умертвлён, или просто умер. В таком состоянии методы атаки и использование реликвий заблокированны.\n",
-      save: ""
-    }
+      heroStatus: "Выдуманный персонаж был искалечен и умертвлён, или просто умер. В таком состоянии методы атаки и использование реликвий заблокированны.\n"
+    };
+
+    
+    const ritualAlreadyStartedBy = guild.members.cache.get(userStats.alreadyKeepAliveRitualBy) ?? null;
     const embed = {
       description: `${ contents.level }\n${ contents.joined }\n\n${ contents.heroStatus }`,
       thumbnail: "https://cdn.discordapp.com/attachments/629546680840093696/1063465085235900436/stone.png",
-      components: {type: ComponentType.Button, style: ButtonStyle.Danger, customId: "KeepAlive", label: "Продлить жизнь"},
+      components: ritualAlreadyStartedBy ? 
+        {type: ComponentType.Button, style: ButtonStyle.Danger, customId: "KeepAlive", label: "Продлить жизнь"} :
+        {type: ComponentType.Button, style: ButtonStyle.Secondary, customId: "KeepAlive", label: `Продлить жизнь (Уже — ${ ritualAlreadyStartedBy.displayName })`, disabled: true},
+
       footer: {iconURL: member.avatarURL(), text: member.tag}
     };
     const message = await interaction.channel.msg(embed);
     const collector = message.createMessageComponentCollector({time: 120_000});
 
     collector.on("collect", (interaction) => {
+
+      const isAlready = BossManager.getUserStats(boss, member.id).alreadyKeepAliveRitualBy;
+
+      if (isAlready){
+        interaction.msg({ephemeral: true, content: "Действие занято другим пользователем"})
+        return;
+      }
+
       const user = interaction.user;
       const userStats = BossManager.getUserStats(boss, user.id);
       if (userStats.heroIsDead){

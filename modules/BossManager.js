@@ -419,6 +419,7 @@ class BossEffects {
 					if (effectValues.keepAliveUserId){
 						const userStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
 						delete userStats.isHeroDeath;
+						delete userStats.alreadyKeepAliveRitualBy;
 					}
 				},
 				bossEffectInit: (user, effect, initedEffect) => {
@@ -436,6 +437,11 @@ class BossEffects {
 					CurseManager.init({curse, user});
 
 					effect.values.targetTimestamp = curse.timestamp;
+
+					if (effectValues.keepAliveUserId){
+						const userStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
+						userStats.alreadyKeepAliveRitualBy = user.id;
+					}
 				}
 			},
 			values: {
