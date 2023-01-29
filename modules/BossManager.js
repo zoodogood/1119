@@ -1556,7 +1556,7 @@ class BossManager {
 			id: "powerOfFireRare",
 			description: "Ваши прямые атаки наносят гораздо больше урона по боссу",
 			callback: ({user, boss, userStats}) => {
-				const multiplier = 1.2;
+				const multiplier = 1.1;
 				userStats.attacksDamageMultiplayer = +(
 					(userStats.attacksDamageMultiplayer ?? 1) *
 					multiplier
