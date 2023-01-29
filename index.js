@@ -749,46 +749,7 @@ Object.defineProperty(Discord.User.prototype, "guilds", {get(){
 
 
 class Command {
-  constructor(code, opt, allias){
-
-    this.code = code;
-    this.id   = Command.cmds = (++Command.cmds || 1);
-
-    this.removeCallMessage    = opt.delete                || false;
-    this.expectMention        = opt.memb                  || false;
-    this.inDM                 = !opt.dm                   || true;
-    this.expectParams         = opt.args                  || false;
-    this.hidden               = opt.hidden                || false;
-    this.cooldown             = opt.cooldown * 1000       || 0;
-    this.cooldownTry          = opt.cooldownTry           || 1;
-    // >                      = opt >-<                   ||
-    this.type                 = opt.type
-    this.myPermissions        = opt.myPermissions
-    this.myChannelPermissions = opt.myChannelPermissions
-    this.Permissions          = opt.Permissions
-    this.ChannelPermissions   = opt.ChannelPermissions
-
-    
-
-    this.allias =  allias;
-
-    this.options = Util.omit(this, (k) => !["code", ""].includes(k));
-
-    if (allias) setTimeout(() => this.allias.split(" ").forEach(item => commands[item] = this), 50);
-    return this;
-  }
-
-  onChatInput(message, context){
-    this.code(message, context);
-  }
-
-  get name(){
-    return Object.entries(commands).find(([k, v]) => v.id === this.id)[0];
-  }
-
-  static get(id){
-    return Object.values(commands).find(command => command.id == id);
-  }
+  
 
   static permissions = {
     "SPEAK": "Говорить",
