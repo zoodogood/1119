@@ -5,10 +5,9 @@ class Event {
 	async run(isLost){
 		let next = new Date(Date.now() + 14500000).setHours(23, 59, 50) - Date.now();
 		TimeEventsManager.create("new_day", next);
-
 		
 
-		await Util.sleep(20000);
+		!isLost && await Util.sleep(20000);
 
 		const today = Util.toDayDate( Date.now() );
 		DataManager.data.bot.dayDate = today;
