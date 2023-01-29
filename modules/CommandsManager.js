@@ -207,7 +207,9 @@ class CommandsManager {
 			.find(({condition}) => condition(interaction));
 
 		try {
+			interaction.user.action(Actions.callCommand, {command, interaction});
 			await typeBase.call(command, interaction);
+			
 			this.emitter.emit("command", interaction);
 			this.statistics.increase(interaction);
 		}
