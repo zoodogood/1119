@@ -138,7 +138,7 @@ class Command {
     collector.on("collect", (interaction) => {
       const user = interaction.user;
       const userStats = BossManager.getUserStats(boss, user.id);
-      if (userStats.heroIsDead){
+      if (userStats.heroIsDeath){
         interaction.msg({ephemeral: true, content: "Ввысь и вниз; В окно, и там будет снег. Забудь об этом — ты мертвец."});
         return;
       }
@@ -147,8 +147,7 @@ class Command {
       BossEffects.applyEffect({guild, user, effectBase});
       interaction.msg({
         description: `Примите и избавьтесь от быстродействующего проклятия. Провалите — та же участь под камнем.\n**Предостережение:** его не всегда возможно снять в срок.`,
-        footer: {text: user.tag, iconURL: user.avatarURL()},
-        reference: interaction.message.id
+        footer: {text: user.tag, iconURL: user.avatarURL()}
       });
       collector.stop();
     });
