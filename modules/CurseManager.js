@@ -1,4 +1,3 @@
-//@ts-check
 
 import { Collection } from "@discordjs/collection";
 import { Actions } from '#src/modules/ActionManager.js';
