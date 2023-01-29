@@ -1201,10 +1201,10 @@ class BossManager {
 			callback: async ({user, boss, channel, userStats}) => {
 				const reactions = ["⚔️", "🛡️"];
 				const embed = {
-				author: {name: user.username, iconURL: user.avatarURL()},
-				description: "Вас атакуют!\n— Пытаться контратаковать\n— Защитная поза",
-				reactions,
-				footer: {iconURL: user.avatarURL(), text: "Вы можете проигнорировать это сообщение"}
+					author: {name: user.username, iconURL: user.avatarURL()},
+					description: "Вас атакуют!\n— Пытаться контратаковать\n— Защитная поза",
+					reactions,
+					footer: {iconURL: user.avatarURL(), text: "Вы можете проигнорировать это сообщение"}
 				}
 	
 				channel.sendTyping();
@@ -1236,9 +1236,13 @@ class BossManager {
 					}
 		
 					if (emoji === "🛡️" && isLucky){
-						const content = "Успех! Получено 1000 золота";
+						const BASE_COINS = 1000;
+						const COINS_PER_LEVEL = 100;
+						const coins = BASE_COINS + COINS_PER_LEVEL * boss.level;
+
+						const content = `Успех! Получено ${ coins }ед. золота`;
 						message.msg({description: content});
-						user.data.coins += 1000;
+						user.data.coins += coins;
 						return;
 					}
 		
