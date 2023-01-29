@@ -131,9 +131,9 @@ class Command {
     const embed = {
       description: `${ contents.level }\n${ contents.joined }\n\n${ contents.heroStatus }`,
       thumbnail: "https://cdn.discordapp.com/attachments/629546680840093696/1063465085235900436/stone.png",
-      components: ritualAlreadyStartedBy ? 
+      components: !ritualAlreadyStartedBy ? 
         {type: ComponentType.Button, style: ButtonStyle.Danger, customId: "KeepAlive", label: "Продлить жизнь"} :
-        {type: ComponentType.Button, style: ButtonStyle.Secondary, customId: "KeepAlive", label: `Продлить жизнь (Уже — ${ ritualAlreadyStartedBy?.displayName })`, disabled: true},
+        {type: ComponentType.Button, style: ButtonStyle.Secondary, customId: "KeepAlive", label: `Продлить жизнь (Уже — ${ ritualAlreadyStartedBy.displayName })`, disabled: true},
 
       footer: {iconURL: member.avatarURL(), text: member.tag}
     };
