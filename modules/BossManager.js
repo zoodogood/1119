@@ -679,6 +679,10 @@ class BossManager {
 			restoreHealthByDamage: sourceUser.effects?.damageRestoreHealht ?? false
 		}});
 		damage = Math.floor(damage);
+
+		if (isNaN(damage)){
+			throw new TypeError("Damage not a Number");
+		}
 	
 	
 		const context = {boss, damage, damageSourceType, sourceUser, baseDamage};
@@ -1569,6 +1573,7 @@ class BossManager {
 				userStats.attack_CD += addingCooldowm;
 
 				const decreaseMultiplayer = 0.005;
+				userStats.attacksDamageMultiplayer ||= 1;
 				userStats.attacksDamageMultiplayer -= decreaseMultiplayer;
 			},
 			repeats: true,
