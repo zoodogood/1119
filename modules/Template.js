@@ -188,6 +188,9 @@ class Template {
 
 	addModuleToSandbox(vm, moduleName){
 		const moduleEntity = this.constructor.ModulesScope.get(moduleName);
+		if (!moduleEntity){
+			throw new TypeError(`Unknow: ${ moduleName }`);
+		}
 		const { permissions } = moduleEntity;
 
 		if (moduleName in vm.sandbox.availableList === false){
