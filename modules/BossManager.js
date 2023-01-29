@@ -399,7 +399,9 @@ class BossEffects {
 					userStats.heroIsDeath = true;
 				},
 				curseEnd: (user, effect, curse) => {
-					if (effect.values.targetTimestamp !== curse.timestamp){
+					const effectValues = effect.values;
+
+					if (effectValues.targetTimestamp !== curse.timestamp){
 						return;
 					}
 
@@ -414,7 +416,10 @@ class BossEffects {
 						return;
 					}
 
-
+					if (effectValues.keepAliveUserId){
+						const userStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
+						delete userStats.isHeroDeath;
+					}
 				},
 				bossEffectInit: (user, effect, initedEffect) => {
 					if (initedEffect.timestamp !== effect.timestamp){
@@ -428,8 +433,9 @@ class BossEffects {
 
 					const curse = CurseManager.generateOfBase({curseBase, user});
 					curse.values.timer = effect.values.time;
-					effect.values.targetTimestamp = curse.timestamp;
 					CurseManager.init({curse, user});
+
+					effect.values.targetTimestamp = curse.timestamp;
 				}
 			},
 			values: {
