@@ -27,6 +27,7 @@ const ActionsMap = {
 	bossBeforeEffectInit: "bossBeforeEffectInit",
 	bossEffectInit: "bossEffectInit",
 	bossEffectTimeoutEnd: "bossEffectTimeoutEnd",
+	bossEffectEnd: "bossEffectEnd",
 	// Curse
 	curseInit: "curseInit",
 	curseEnd: "curseEnd",
