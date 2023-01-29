@@ -4,7 +4,7 @@ import { PermissionsBitField } from 'discord.js';
 import { Collection } from '@discordjs/collection';
 
 import * as Util from '#src/modules/util.js';
-import { CommandsManager, EventsManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager, GuildVariablesManager } from '#src/modules/mod.js';
+import { CommandsManager, EventsManager, CurseManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager, GuildVariablesManager } from '#src/modules/mod.js';
 
 import { client } from '#src/index.js';
 import FileSystem from 'fs';
@@ -312,6 +312,14 @@ class Template {
 		"BossManager": {
 			getContent: (context) => BossManager,
 			name: "BossManager",
+			permissions: {
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
+			}
+		},
+		"CurseManager": {
+			getContent: (context) => CurseManager,
+			name: "CurseManager",
 			permissions: {
 				scope: this.PERMISSIONS_MASK_ENUM.USER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
