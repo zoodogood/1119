@@ -79,7 +79,7 @@ class Command {
 
 
     if (timeToEnd){
-      TimeEventsManager.create("offMuteAutomatic", timeToEnd, [msg.guild.id, guildMember.id]);
+      TimeEventsManager.create("mute-end", timeToEnd, [msg.guild.id, guildMember.id]);
       timeToEnd = new Intl.DateTimeFormat("ru-ru", {day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit"}).format(Date.now() + timeToEnd);
     }
 

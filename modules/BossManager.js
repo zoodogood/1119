@@ -247,7 +247,7 @@ class BossEffects {
 
 		if (effect.values.timer){
 			const args = [user.id, effect.timestamp];
-			TimeEventsManager.create("bossEffectTimeoutEnd", effect.values.timer, args);
+			TimeEventsManager.create("boss-effect-timeout-end", effect.values.timer, args);
 		}
 
 		effects.push(effect);

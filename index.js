@@ -427,7 +427,7 @@ async function stupid_bot(user, msg) {
 
   if (!msg.guild.data.stupid_evil) {
     msg.guild.data.stupid_evil = 1;
-    TimeEventsManager.create("cooledBot", 900000, [msg.guild.id]);
+    TimeEventsManager.create("cooled-bot", 900000, [msg.guild.id]);
   }
   if (msg.guild.data.stupid_evil > 37) {
     return;

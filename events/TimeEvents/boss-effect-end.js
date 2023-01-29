@@ -20,7 +20,7 @@ class Event {
 
 
 	options = {
-		name: "TimeEvent/boss-effect-end"
+		name: "TimeEvent/boss-effect-timeout-end"
 	}
 }
 

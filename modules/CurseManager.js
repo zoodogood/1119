@@ -53,7 +53,7 @@ class CurseManager {
  
 	  if (curse.values.timer){
 		 const args = [user.id, curse.timestamp];
-		 TimeEventsManager.create("curseTimeoutEnd", curse.values.timer, args);
+		 TimeEventsManager.create("curse-timeout-end", curse.values.timer, args);
 	  }
  
 	  user.action(Actions.curseInit, {curse});

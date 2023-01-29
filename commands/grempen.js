@@ -234,7 +234,7 @@ class Command {
               timestamp: Date.now(),
               uses: 1
             };
-            TimeEventsManager.create("cloverEnd", 14400000, [guild.id, msg.channel.id]);
+            TimeEventsManager.create("clover-end", 14400000, [guild.id, msg.channel.id]);
             return phrase;
           }
 

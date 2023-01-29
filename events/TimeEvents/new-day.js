@@ -4,7 +4,7 @@ import {TimeEventsManager, BossManager, Util, DataManager} from '#src/modules/mo
 class Event {
 	async run(isLost){
 		let next = new Date(Date.now() + 14500000).setHours(23, 59, 50) - Date.now();
-		TimeEventsManager.create("new_day", next);
+		TimeEventsManager.create("new-day", next);
 		
 
 		!isLost && await Util.sleep(20000);
