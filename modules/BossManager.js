@@ -992,6 +992,16 @@ class BossManager {
 	static userAttack({boss, user, channel}){
 		const userStats = BossManager.getUserStats(boss, user.id);
 
+		if (userStats.heroIsDeath){
+			channel.message({
+				description: "Недоступно до воскрешения",
+				color: "#ff0000",
+				footer: {text: user.username, iconURL: user.avatarURL()},
+				delete: 30_000
+			})
+			return;
+		}
+
 		userStats.attack_CD ||= 0;
 		userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
 
