@@ -1,7 +1,11 @@
+//@ts-check
+
 import { Collection } from "@discordjs/collection";
 import { Actions } from '#src/modules/ActionManager.js';
 import TimeEventsManager from '#src/modules/TimeEventsManager.js';
 import * as Util from '#src/modules/util.js';
+import Discord from 'discord.js';
+
 
 
 class CurseManager {
@@ -243,7 +247,7 @@ class CurseManager {
 			callback: {
 			  messageCreate: (user, curse, message) => {
 				 const content = message.content;
-				 const mentions = content.matchAll(Discord.MessageMentions.USERS_PATTERN)
+				 const mentions = content.matchAll(Discord.MessageMentions.UsersPattern)
 					.next()
 					.value;
  
@@ -251,7 +255,7 @@ class CurseManager {
 				 if (!mentions){
 					return;
 				 }
- 
+				 
 				 const target = message.client.users.cache.get(mentions[1]);
 				 if (target.id === user.id || target.bot){
 					return;
