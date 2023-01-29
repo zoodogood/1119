@@ -1,3 +1,4 @@
+import { client } from '#src/index.js';
 import {CurseManager} from '#src/modules/mod.js';
 
 
