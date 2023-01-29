@@ -5,17 +5,18 @@ import { Actions } from '#src/modules/ActionManager.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-    let memb = interaction.mention;
-    let chilli = msg.channel.chilli && msg.channel.chilli.find(chilli => chilli.current === msg.author.id);
-    setTimeout(() => msg.delete(), 30000);
+    const memb = interaction.mention;
+    const chilli = msg.channel.chilli && msg.channel.chilli.find(chilli => chilli.current === msg.author.id);
+    setTimeout(() => msg.delete(), 30_000);
 
-    const addName = (memb) => {
-      let newName = memb.displayName + "(🌶)";
-      memb.setNickname(newName).catch(() => {});
+    const guildMembers = guild.members;
+    const addName = (member) => {
+      const newName = member.displayName + "(🌶)";
+      member.setNickname(newName).catch(() => {});
     }
-    const removeName = (memb) => {
-      let newName = memb.displayName.replace(/\(🌶\)/g, "").trim();
-      memb.setNickname(newName).catch(() => {});
+    const removeName = (member) => {
+      const newName = member.displayName.replace(/\(🌶\)/g, "").trim();
+      member.setNickname(newName).catch(() => {});
     }
 
 
@@ -32,8 +33,8 @@ class Command {
     if (chilli){
       chilli.current = memb.id;
       chilli.players[msg.author.id] = ++chilli.players[msg.author.id] || 1;
-      removeName(interaction.mention);
-      addName(msg.guild.members.resolve(memb));
+      removeName(guildMembers.resolve(interaction.mention));
+      addName(guildMembers.resolve(memb));
 
       msg.msg({title: ["Бросок!", "А говорят перцы не летают..."].random(), 
         description: `Вы бросили перчиком в ${ memb }`,
@@ -65,7 +66,7 @@ class Command {
     msg.channel.chilli = msg.channel.chilli || [];
 
     msg.msg({title: `Перец падает! Перец падает!!`, description: `\*перец упал в руки ${memb.toString()}\*\nЧтобы кинуть обратно используйте \`!chilli @memb\``, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"}});
-    addName(msg.guild.members.resolve(memb));
+    addName(guildMembers.resolve(memb));
     let ms = Util.random(30, 37) * 1000;
 
     chilli = { timestamp: Date.now() + ms, players: {}, current: memb.id, rebounds: 0, author: msg.author.id };
@@ -75,14 +76,14 @@ class Command {
     msg.channel.chilli.push(chilli);
 
     chilli.timeout = setTimeout(() => {
-      let member = msg.guild.members.cache.get(chilli.current);
+      const member = guildMembers.cache.get(chilli.current);
 
       Object.keys(chilli.players)
         .forEach(id => client.users.cache.get(id).action(Actions.chilliBooh, {boohTarget: member, chilli, msg, interaction}));
 
       msg.msg({title: "Бах! Перчик взорвался!", 
         description: `Перец бахнул прямо у ${ member }\nИгра окончена.\nБыло совершено отскоков: ${ chilli.rebounds }`,
-        fields: Object.entries(chilli.players).sortBy("1", true).map(([id, score]) => ({name: msg.guild.members.cache.get(id).user.username, value: `Счёт: ${ score }`})).slice(0, 20),
+        fields: Object.entries(chilli.players).sortBy("1", true).map(([id, score]) => ({name: guildMembers.cache.get(id).user.username, value: `Счёт: ${ score }`})).slice(0, 20),
         footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"}
       });
       removeName(member);
