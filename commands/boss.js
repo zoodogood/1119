@@ -144,7 +144,9 @@ class Command {
       }
 
       const effectBase = BossEffects.effectBases.get("deadlyCurse");
-      BossEffects.applyEffect({guild, user, effectBase});
+      const values = {keepAliveUserId: member.id};
+
+      BossEffects.applyEffect({guild, user, effectBase, values});
       interaction.msg({
         description: `Примите и избавьтесь от быстродействующего проклятия. Провалите — та же участь под камнем.\n**Предостережение:** его не всегда возможно снять в срок.`,
         footer: {text: user.tag, iconURL: user.avatarURL()}
