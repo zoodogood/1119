@@ -75,7 +75,7 @@ class Command {
       userEffects
     }
 
-    if (userStats.heroIsDead){
+    if (userStats.heroIsDeath){
       this.displayHeadstone(context);
       return;
     }
