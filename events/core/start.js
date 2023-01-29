@@ -30,10 +30,11 @@ class Event extends BaseEvent {
 		TimeEventsManager.handle();
 
 		
-
-		if (DataManager.data.bot.dayDate !== Util.toDayDate( now )){
-			EventsManager.collection.get("TimeEvent/day-stats")
+		const needUpdate = DataManager.data.bot.currentDay !== Util.timestampDay( Date.now() );
+		if (needUpdate){
+			await EventsManager.collection.get("TimeEvent/new-day")
 				.run(true);
+
 		}
 
 		
