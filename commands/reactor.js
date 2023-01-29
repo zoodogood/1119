@@ -1,38 +1,76 @@
+//@ts-check
+
 import * as Util from '#src/modules/util.js';
 import { client } from '#src/index.js';
-import Discord from 'discord.js';
+
+
+
+
 
 class Command {
-  async askData(interaction){
+  async askChannel(interaction){
     
     let answer = await Util.awaitUserAccept({name: "reactor", message: {title: "С помощью этой команды вы можете создавать реакции выдающее роли. \nРеакции должны быть установлены заранее\nВы уже установили реакциии?)"}, channel: interaction.channel, userData: interaction.userData});
-    if (!answer) return;
+    if (!answer){
+      return;
+    }
 
     interaction.questionMessage = await interaction.channel.msg({title: "Укажите айди или упомяните канал в котором находится сообщение.\nЕсли оно находится в этом канале, нажмите реакцию ниже"});
     answer = await Util.awaitReactOrMessage({target: interaction.questionMessage, user: interaction.user, reactionOptions: {reactions: ["640449832799961088"]}});
     interaction.questionMessage.delete();
 
     const channel = interaction.guild.channels.cache.get(
-      answer === "640449832799961088" ? interaction.channel.id : answer.content.match(/\d{17,19}/)?.[0]
+      answer === "640449832799961088" ? interaction.channel.id : answer.content.match(/\d{17,19}/)?.[1]
     );
 
     if (!channel) {
       interaction.channel.msg({title: "Канал не найден", delete: 3000, color: "#ff0000"});
       return null;
     }
+
+    return channel;
+  }
+
+  async askMessage(interaction){
+    const channel = interaction.reactor.channel;
+    const questionMessage = await channel.msg({title: "Укажите айди сообщения или ответьте на него"});
+    const answer = await channel.awaitMessage({user: interaction.user});
+    questionMessage.delete();
+
+    const id = answer.content.match(/\d{17,20}/)?.[1] ?? answer.reference.messageId;
+
+    const message = await channel.messages.fetch({message: id});
+    if (!message){
+      channel.msg({title: "Не удалось найти сообщение", delete: 3000, color: "#ff0000"});
+      return null;
+    }
+
+    return message;
+  }
+
+  async askType(interaction){
+
   }
 
 	async onChatInput(msg, interaction){
     
-    await this.askData(interaction);
+    const reactor = {
+      channel: null,
+      message: null
+    };
+    interaction.reactor = reactor;
 
-    
+    const channel = await this.askChannel(interaction);
+    reactor.channel = channel;
+
+    const message = await this.askMessage(interaction);
+    reactor.message = message;
+
+    const type = await this.askType(interaction);
+    reactor.type = type;
    
 
-    let whatMessage = await msg.msg({title: "Укажите айди сообщения или ответьте на него"});
-    answer = await msg.channel.awaitMessage({user: msg.author});
-    whatMessage.delete();
-    let message = await channel.messages.fetch(answer.content).catch( e => {msg.msg({title: "Не удалось найти сообщение", delete: 3000, color: "#ff0000"}); throw e} );
+    
 
     let reactions = [...message.reactions.cache.keys()];
     if (!reactions.length) {
