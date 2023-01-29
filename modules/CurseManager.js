@@ -262,6 +262,7 @@ class CurseManager {
 				 }
 				 const haveCurse = user.data.curses.length;
 				 if (haveCurse && user.data.voidFreedomCurse){
+					message.react("❌");
 					return;
 				 }
  
