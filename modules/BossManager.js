@@ -1010,7 +1010,7 @@ class BossManager {
 		const userStats = BossManager.getUserStats(boss, user.id);
 
 		if (userStats.heroIsDead){
-			channel.message({
+			channel.msg({
 				description: "Недоступно до воскрешения",
 				color: "#ff0000",
 				footer: {text: user.username, iconURL: user.avatarURL()},
