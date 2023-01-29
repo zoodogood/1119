@@ -11,7 +11,11 @@ class Event {
 		if (target !== author)
 			target.msg({content: author.toString(), mentions: [author.id]});
 			
-		target.msg({title: "Напоминание:", description: phrase, footer: isLost ? null : "Ваше напоминание не могло быть доставлено вовремя."});
+		target.msg({
+			title: "Напоминание:",
+			description: phrase,
+			footer: isLost ? {text: "Ваше напоминание не могло быть доставлено вовремя."} : null
+		});
 	}
 
 
