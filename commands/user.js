@@ -63,7 +63,7 @@ class Command {
          interaction.status = `<:offline:637544283737686027> Не в сети ${ dateContent }`;
       }
 
-      QuestManager.checkAvailable({ user: target });
+      QuestManager.checkAvailableAll(target);
 
 
       const createEmbedAtFirstPage = async () => {
