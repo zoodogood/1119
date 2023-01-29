@@ -4,6 +4,7 @@ import { Actions } from '#src/modules/ActionManager.js';
 import TimeEventsManager from '#src/modules/TimeEventsManager.js';
 import * as Util from '#src/modules/util.js';
 import Discord from 'discord.js';
+import CommandsManager from "#src/modules/CommandsManager.js";
 
 
 
@@ -75,8 +76,13 @@ class CurseManager {
 			  timer: () => Util.random(1, 3) * 86_400_000
 			},
 			callback: {
-			  callUserCommand: (user, curse) => CurseManager.intarface({user, curse})
-				 .incrementProgress(1)
+				callCommand: (user, curse, {command}) => {
+					const compare = CommandsManager.callMap.get("user").options.name === command.options.name;
+					compare && CurseManager.intarface({user, curse})
+						.incrementProgress(1)
+
+					return;
+				}
 			},
 			interactionIsShort: true,
 			reward: 4
