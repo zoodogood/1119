@@ -410,6 +410,8 @@ class BossEffects {
 					BossEffects.removeEffect({effect, user});
 				},
 				bossEffectInit: (user, effect, initedEffect) => {
+					const effectValues = effect.values;
+					
 					if (initedEffect.timestamp !== effect.timestamp){
 						return;
 					}
