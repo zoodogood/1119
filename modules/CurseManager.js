@@ -246,16 +246,15 @@ class CurseManager {
 			callback: {
 			  messageCreate: (user, curse, message) => {
 				 const content = message.content;
-				 const mentions = content.matchAll(Discord.MessageMentions.UsersPattern)
-					.next()
-					.value;
+				 const mentionId = content.match(Discord.MessageMentions.UsersPattern)
+				 	?.[1];
  
  
-				 if (!mentions){
+				 if (!mentionId){
 					return;
 				 }
 				 
-				 const target = message.client.users.cache.get(mentions[1]);
+				 const target = message.client.users.cache.get(mentionId);
 				 if (target.id === user.id || target.bot){
 					return;
 				 }
