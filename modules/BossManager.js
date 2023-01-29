@@ -411,10 +411,11 @@ class BossEffects {
 				},
 				bossEffectInit: (user, effect, initedEffect) => {
 					const effectValues = effect.values;
-					
+
 					if (initedEffect.timestamp !== effect.timestamp){
 						return;
 					}
+					const guild = BossManager.client.guilds.cache.get(effect.guildId);
 
 					const isShort = curseBase => curseBase.interactionIsShort;
 					const curseBase = CurseManager.getGeneratePull(user)
