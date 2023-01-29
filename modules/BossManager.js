@@ -742,8 +742,6 @@ class BossManager {
 		boss.level = toLevel;
 		boss.healthThresholder = BossManager.calculateHealthPointThresholder(toLevel);
 
-		Object.values(boss.users)
-			.forEach(userStats => delete userStats.attack_CD);
 
 		if (boss.level >= this.MAXIMUM_LEVEL){
 			this.victory(guild);
