@@ -353,7 +353,7 @@ class BossEffects {
 					if (currentHour in hoursMap === false){
 						hoursMap[currentHour] = 0;
 						const previousHourMessages = Object.entries(hoursMap)
-							.reduce((acc, entrie) => acc.at(1) > entrie.at(1) ? acc : entrie, [])
+							.reduce((acc, entrie) => +acc.at(0) > +entrie.at(0) ? acc : entrie, [])
 							.at(1);
 
 						if (previousHourMessages === values.goal){
