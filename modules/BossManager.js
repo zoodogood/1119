@@ -406,21 +406,6 @@ class BossEffects {
 					}
 
 					BossEffects.removeEffect({effect, user});
-
-					const guild = BossManager.client.guilds.cache.get(effect.guildId);
-					if (!BossManager.isArrivedIn(guild)){
-						return;
-					}
-					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
-					if (userStats.heroIsDead){
-						return;
-					}
-
-					if (effectValues.keepAliveUserId){
-						const userStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
-						delete userStats.isHeroDeath;
-						delete userStats.alreadyKeepAliveRitualBy;
-					}
 				},
 				bossEffectInit: (user, effect, initedEffect) => {
 					if (initedEffect.timestamp !== effect.timestamp){
@@ -441,6 +426,26 @@ class BossEffects {
 					if (effectValues.keepAliveUserId){
 						const userStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
 						userStats.alreadyKeepAliveRitualBy = user.id;
+					}
+				},
+				bossEffectEnd: (user, effect, target) => {
+					if (effect.timestamp !== target.timestamp){
+						return;
+					}
+					
+					const guild = BossManager.client.guilds.cache.get(effect.guildId);
+					if (!BossManager.isArrivedIn(guild)){
+						return;
+					}
+					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
+					if (userStats.heroIsDead){
+						return;
+					}
+
+					if (effectValues.keepAliveUserId){
+						const userStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
+						delete userStats.isHeroDeath;
+						delete userStats.alreadyKeepAliveRitualBy;
 					}
 				}
 			},
