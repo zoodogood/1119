@@ -401,6 +401,7 @@ class BossEffects {
 					userStats.heroIsDead = true;
 				},
 				curseEnd: (user, effect, curse) => {
+					console.log({curse, effect});
 					const effectValues = effect.values;
 
 					if (effectValues.targetTimestamp !== curse.timestamp){
@@ -434,6 +435,7 @@ class BossEffects {
 					}
 				},
 				bossEffectEnd: (user, effect, target) => {
+					console.log({target, effect});
 					if (effect.timestamp !== target.timestamp){
 						return;
 					}
