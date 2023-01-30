@@ -5,6 +5,10 @@ import { MessageMentions } from 'discord.js';
 
 class Command {
 
+  getTieRoles(guild){
+    return (guild.data.tieRoles ||= {});
+  }
+
   removeNotAvailableRoles({guild, tieRoles}){
     for (const controllerId in tieRoles){
       const role = guild.roles.cache.get(controllerId);
@@ -112,35 +116,11 @@ class Command {
     return;
   }
 
-
-	async onChatInput(msg, interaction){
-    let heAccpet = await Util.awaitUserAccept({
-      name: "tieRoles",
-      message: {title: "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми"},
-      channel: interaction.channel,
-      userData: interaction.userData
-    });
-    if (!heAccpet) {
-      return;
+  async displayRolesListInterface(interaction){
+    const context = {
+      page: 0,
+      interaction
     }
-
-    const tieRoles = interaction.guild.data.tieRoles || (interaction.guild.data.tieRoles = {});
-    const guildRoles = {};
-
-    
-    this.removeNotAvailableRoles({guild: interaction.guild, tieRoles});
-    
-
-
-    if (interaction.mention){
-      const user = interaction.mention;
-      this.displayUserRolesInterface({user, interaction});
-      return;
-    }
-
-
-    let page = 0;
-    let pages = [];
 
     const isAdmin = !interaction.member.wastedPermissions(8n)[0];
     const reactions = [
@@ -150,25 +130,19 @@ class Command {
       {emoji: "❌", filter: () => isAdmin && Object.keys(tieRoles).length !== 0}
     ]
 
+    context.message = await interaction.channel.msg(
+      this.rolesListCreateEmbed(context)
+    );
+
+    context.edit = true;
 
     const createPages = () => pages = Object.entries(tieRoles).map(([control, roles]) => `[${guildRoles[control]}]\n${roles.map(e => `• ${guildRoles[e]}`).join("\n")}`);
     createPages();
 
-    if (pages.length === 0) {
-      pages.push("На сервер нет ни одной связи — список пуст.");
-    }
-
-    const embed = {
-      title: "Связанные роли",
-      description: pages[0],
-      footer: {
-        text: `Чтобы выдать пользователю роль, используйте !роль @упоминание\n${isAdmin ? "С помощью реакций ниже создайте новую связь или удалите старые." : ""}${pages[1] ? `\nСтраница: ${page + 1} / ${pages.length}` : ""}`
-      }
-    };
+    
 
 
-    let message = await msg.msg(embed);
-    embed.edit = true;
+  
 
     let react;
     while (true) {
@@ -240,6 +214,53 @@ class Command {
       }
       message.msg(embed);
     }
+  }
+
+  rolesListOnReact(context, reaction, user){
+
+  }
+
+  rolesListCreateEmbed({interaction, page, edi = false}){
+    if (pages.length === 0) {
+      pages.push("На сервер нет ни одной связи — список пуст.");
+    }
+
+    const embed = {
+      title: "Связанные роли",
+      description: pages[0],
+      footer: {
+        text: `Чтобы выдать пользователю роль, используйте !роль @упоминание\n${isAdmin ? "С помощью реакций ниже создайте новую связь или удалите старые." : ""}${pages[1] ? `\nСтраница: ${page + 1} / ${pages.length}` : ""}`
+      }
+    };
+  }
+
+
+	async onChatInput(msg, interaction){
+    let heAccpet = await Util.awaitUserAccept({
+      name: "tieRoles",
+      message: {title: "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми"},
+      channel: interaction.channel,
+      userData: interaction.userData
+    });
+    if (!heAccpet) {
+      return;
+    }
+
+    const tieRoles = this.getTieRoles(interaction.guild);
+
+    
+    this.removeNotAvailableRoles({guild: interaction.guild, tieRoles});
+    
+
+
+    if (interaction.mention){
+      const user = interaction.mention;
+      this.displayUserRolesInterface({user, interaction});
+      return;
+    }
+
+
+    this.displayRolesListInterface(interaction);
   }
 
 
