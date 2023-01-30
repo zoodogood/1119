@@ -261,7 +261,8 @@ class BossEffects {
 		if (index === -1){
 			return null;
 		}
-	
+		
+		user.action(Actions.bossEffectEnd, effect);
 		user.data.bossEffects.splice(index, 1);
 
 		const needRemove = (callbackKey) => !user.data.bossEffects.some(({id}) => callbackKey in this.effectBases.get(id).callback);
@@ -269,7 +270,6 @@ class BossEffects {
 		Object.keys(callbackMap).filter(needRemove)
 			.forEach(key => delete callbackMap[key]);
 
-		user.action(Actions.bossEffectEnd, effect);
 	}
 
 	static effectsOf({boss, user}){
@@ -387,7 +387,7 @@ class BossEffects {
 		},
 		deadlyCurse: {
 			id: "deadlyCurse",
-			callback: {
+			callback: { 	
 				curseTimeEnd: (user, effect, {curse}) => {
 					if (effect.values.targetTimestamp !== curse.timestamp){
 						return;
@@ -401,7 +401,6 @@ class BossEffects {
 					userStats.heroIsDead = true;
 				},
 				curseEnd: (user, effect, curse) => {
-					console.log({curse, effect});
 					const effectValues = effect.values;
 
 					if (effectValues.targetTimestamp !== curse.timestamp){
@@ -435,25 +434,23 @@ class BossEffects {
 					}
 				},
 				bossEffectEnd: (user, effect, target) => {
-					console.log({target, effect});
 					if (effect.timestamp !== target.timestamp){
 						return;
 					}
+
 
 					const guild = BossManager.client.guilds.cache.get(effect.guildId);
 					if (!BossManager.isArrivedIn(guild)){
 						return;
 					}
 					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
-					if (userStats.heroIsDead){
-						return;
-					}
 
 					if (effectValues.keepAliveUserId){
-						const userStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
-						delete userStats.heroIsDead;
+						const targetUserStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
 						delete userStats.alreadyKeepAliveRitualBy;
+						!userStats.heroIsDead && (delete targetUserStats.heroIsDead);
 					}
+					
 				}
 			},
 			values: {
@@ -644,15 +641,15 @@ class BossManager {
 	}
 
 	static getUserStats(boss, id){
-	if (typeof id !== "string"){
-		throw new TypeError("Expected id");
-	}
+		if (typeof id !== "string"){
+			throw new TypeError("Expected id");
+		}
 
-	const bossUsers = boss.users;
-	if (id in bossUsers === false)
-		bossUsers[id] = { messages: 0 };
+		const bossUsers = boss.users;
+		if (id in bossUsers === false)
+			bossUsers[id] = { messages: 0 };
 
-	return bossUsers[id];
+		return bossUsers[id];
 	}
 
 	static onMessage(message){
