@@ -104,7 +104,12 @@ class Command {
 
 
 	async onChatInput(msg, interaction){
-    let heAccpet = await Util.awaitUserAccept({name: "tieRoles", message: "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми", channel: msg.channel, userData: interaction.userData});
+    let heAccpet = await Util.awaitUserAccept({
+      name: "tieRoles",
+      message: {title: "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми"},
+      channel: msg.channel,
+      userData: interaction.userData
+    });
     if (!heAccpet) {
       return;
     }
