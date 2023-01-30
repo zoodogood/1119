@@ -467,6 +467,11 @@ class CurseManager {
  
 		 return fields;
 	  }
+
+	  const needRemove = (callbackKey) => !user.data.curses.some(({id}) => callbackKey in this.cursesBase.get(id).callback);
+	  const callbackMap = user.data.cursesCallbackMap;
+	  Object.keys(callbackMap).filter(needRemove)
+		  .forEach(key => delete callbackMap[key]);
  
 	  if (lost){
 		 user.data.level = Math.max(1, user.data.level - 1);
@@ -509,10 +514,6 @@ class CurseManager {
  
 		 user.msg({title: "Проклятие снято 🔆", description, fields, color: "#000000", image});
 
-		 const needRemove = (callbackKey) => !user.data.curses.some(({id}) => callbackKey in this.cursesBase.get(id).callback);
-		 const callbackMap = user.data.cursesCallbackMap;
-		 Object.keys(callbackMap).filter(needRemove)
-		 	.forEach(key => delete callbackMap[key]);
 
 		 return;
 	  }
