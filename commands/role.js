@@ -53,7 +53,7 @@ class Command {
       interaction.channel.msg({
         title: "На этом сервере нет ролей, которыми вы могли бы управлять",
         color: "#ff0000",
-        delete: 5000,
+        delete: 5_000,
         footer: {text: interaction.user.username, iconURL: interaction.user.avatarURL()}
       });
       return;
@@ -63,7 +63,17 @@ class Command {
       const numberReactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
         .slice(0, controledRoles.length);
 
-      const message = await interaction.channel.msg({title: "Вы не указали айди роли", description: `Выберите доступную вам роль, чтобы снять или выдать её пользователю ${ user.toString() }\n${controledRoles.map((id, i) => `${numberReactions[i]} ${guildRoles[id]}`).join("\n")}`, color: "#00ff00"});
+      const contents = {
+        list: controledRoles.slice(0, numberReactions.length)
+          .map((id, i) => `${ numberReactions[i] } ${ interaction.guild.roles.cache.get(id)?.toString() }`)
+          .join("\n")
+      }
+
+      const message = await interaction.channel.msg({
+        title: "Вы не указали айди роли",
+        description: `Выберите доступную вам роль, чтобы снять или выдать её пользователю ${ user.toString() }\n${ contents.list }`,
+        color: "#00ff00"
+      });
       const react = await message.awaitReact({user: interaction.user, removeType: "all"}, ...numberReactions);
       message.delete();
       react && (roleId = controledRoles.at( numberReactions.indexOf(react) ));
@@ -107,14 +117,14 @@ class Command {
     let heAccpet = await Util.awaitUserAccept({
       name: "tieRoles",
       message: {title: "С помощью этой команды администраторы серверов могут дать своим модераторам возможность выдавать или снимать определенные роли, не давая создавать новые или управлять старыми"},
-      channel: msg.channel,
+      channel: interaction.channel,
       userData: interaction.userData
     });
     if (!heAccpet) {
       return;
     }
 
-    const tieRoles = msg.guild.data.tieRoles || (msg.guild.data.tieRoles = {});
+    const tieRoles = interaction.guild.data.tieRoles || (interaction.guild.data.tieRoles = {});
     const guildRoles = {};
 
     
@@ -132,7 +142,7 @@ class Command {
     let page = 0;
     let pages = [];
 
-    const isAdmin = !interaction.mention.wastedPermissions(8)[0];
+    const isAdmin = !interaction.member.wastedPermissions(8n)[0];
     const reactions = [
       {emoji: "640449848050712587", filter: () => page != 0},
       {emoji: "640449832799961088", filter: () => pages[1] && page !== pages.length - 1},
@@ -155,10 +165,6 @@ class Command {
         text: `Чтобы выдать пользователю роль, используйте !роль @упоминание\n${isAdmin ? "С помощью реакций ниже создайте новую связь или удалите старые." : ""}${pages[1] ? `\nСтраница: ${page + 1} / ${pages.length}` : ""}`
       }
     };
-
-
-
-
 
 
     let message = await msg.msg(embed);
@@ -210,8 +216,8 @@ class Command {
         case "❌":
         let id = Object.keys(tieRoles)[page];
         let deleteRolesMessage = await msg.msg({title: `Вы уверены, что хотите удалить..?`, description: `Вы очистите все связи с ролью ${guildRoles[id]}`});
-        react = await deleted.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
-        deleted.delete();
+        react = await deleteRolesMessage.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
+        deleteRolesMessage.delete();
 
         if (react == "685057435161198594"){
           delete tieRoles[id];
