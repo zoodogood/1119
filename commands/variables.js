@@ -78,10 +78,6 @@ class Command {
 
       if (params.name && params.value){
         
-        if (!isAdmin){
-          // to-do
-          return;
-        }
 
         const needIncrease = params.value.startsWith("+") || params.value.startsWith("-");
         
@@ -250,7 +246,7 @@ class Command {
       id: "random",
       emoji: "🐣",
       description: "Просто дайте мне случайную переменную.",
-      checkPermission: true,
+      checkPermission: false,
       callback: async function(interaction, manager){
         const targetId = manager.interface.keys().random();
         const entries = manager.interface.entriesOf(targetId);

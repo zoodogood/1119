@@ -16,7 +16,7 @@ class Command {
       `Участник ${msg.author.username} выдал предупреждение ${memb.username}\n**Причина:** ${interaction.params}` :
       `${msg.author.username} выдал предупреждение ${memb.username} без объяснения причин.`;
 
-    msg.msg({title: "Выдан пред", description: `${message}`, color: "#ff0000", author: {name: `Выдал: ${msg.author.username}`, iconURL: msg.author.avatarURL()}, footer: {text: "Призрачный бан...", iconURL: memb.avatarURL()}});
+    msg.msg({title: "Выдан пред", description: `${message}`, color: "#ff0000", author: {name: `Выдал: ${msg.author.username}`, iconURL: msg.author.avatarURL()}, footer: {text: "to-do: replace to invisible symbol", iconURL: memb.avatarURL()}});
 
     memb.msg({title: `Вам выдано предупреждение \nПричина: ${interaction.params || "не указана"}`, color: "#ff0000", footer: {text: "Выдал: " + msg.author.tag}});
     msg.guild.logSend({title: `Одному из участников выдано предупреждение`, description: message, color: "#ff0000"});

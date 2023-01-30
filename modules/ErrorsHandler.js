@@ -44,8 +44,12 @@ class ErrorsAudit {
 
 	createLog(){
 		this.constructor.file.write(
-			[...this.collection.entries()]
+			this.toJSON()
 		);
+	}
+
+	toJSON(){
+		return [...this.collection.entries()];
 	}
 
 	async fetchLogs(){

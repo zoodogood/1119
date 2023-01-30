@@ -5,7 +5,9 @@
 			"#src/*": ["./*"],
 			"#src/config": ["./config.json.js"],
 			"#server/*": ["./server/*"]
-		}
+		},
+		"target": "ESNext",
+		"moduleResolution": "node"
 	},
 	"exclude": ["node_modules", "**/node_modules", "dist"]
 }
