@@ -37,7 +37,7 @@ class Command {
 
     let rand = ~~(Util.random(21, 49) * (combo / 10 + 1) * k) + memb.data.level;
 
-    if (memb.presence.status == "offline")
+    if (!memb.presence || memb.presence.status === "offline")
       return msg.msg({title: "Вы не можете ограбить пользователя, который в оффлайн", color: "#ff0000", delete: 7000});
 
     let message = await memb.msg({title: "❕ Вы были ограблены", description: `Ловкий вор средь бело-дня украл у вас ${rand} <:coin:637533074879414272>\nУ вас есть минута, нажмите реакцию ниже, чтобы среагировать, догнать преступника и вернуть коины`, color: "#ff0000"}).catch(e => {});
