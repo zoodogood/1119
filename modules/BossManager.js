@@ -438,13 +438,16 @@ class BossEffects {
 						return;
 					}
 
+					const effectValues = effect.values;
+
+					
 					const guild = BossManager.client.guilds.cache.get(effect.guildId);
 					if (!BossManager.isArrivedIn(guild)){
 						return;
 					}
 					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
 
-					if (effect.values.keepAliveUserId){
+					if (effectValues.keepAliveUserId){
 						const targetUserStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
 						delete userStats.alreadyKeepAliveRitualBy;
 						!userStats.heroIsDead && (delete targetUserStats.heroIsDead);
