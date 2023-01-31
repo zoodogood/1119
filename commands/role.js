@@ -122,15 +122,9 @@ class Command {
       interaction,
       userIsAdmin: !interaction.member.wastedPermissions(8n)[0],
       edit: false,
-      reactions: []
+      reactions: [],
+      rolesCache: interaction.guild.roles.cache
     }
-
-    const reactions = [
-      {emoji: "640449848050712587", filter: () => page != 0},
-      {emoji: "640449832799961088", filter: () => pages[1] && page !== pages.length - 1},
-      {emoji: "⭐", filter: () => isAdmin},
-      {emoji: "❌", filter: () => isAdmin && Object.keys(tieRoles).length !== 0}
-    ]
 
     context.message = await interaction.channel.msg(
       this.rolesListCreateEmbed(context)
@@ -149,9 +143,9 @@ class Command {
 
   rolesListOnReact(context, reaction, user){
     switch (react) {
-      case "640449832799961088": page++;
+      case "640449832799961088": context.page++;
       break;
-      case "640449848050712587": page--;
+      case "640449848050712587": context.page--;
       break;
 
       case "⭐":
@@ -159,7 +153,7 @@ class Command {
         if (!controller){
           continue;
         }
-        controller = interaction.guild.roles.cache.get(controller.content);
+        controller = rolesCache.get(controller.content);
         if (!controller){
           interaction.channel.msg({title: `Неудалось найти на сервере роль с айди ${controller.content}`, delete: 8000});
           continue;
@@ -208,21 +202,26 @@ class Command {
     }
   }
 
-  rolesListCreateEmbed({interaction, page, edi = false}){
-    if (pages.length === 0) {
-      pages.push("На сервер нет ни одной связи — список пуст.");
-    }
+  rolesListCreateEmbed({interaction, page, pagesCount, edit = false, rolesCache, userIsAdmin}){
     
-    const createPages = () => pages = Object.entries(tieRoles).map(([control, roles]) => `[${guildRoles[control]}]\n${roles.map(e => `• ${guildRoles[e]}`).join("\n")}`);
-    createPages();
+    const tieToPage = ([controlId, roles]) =>
+      `[${ String(rolesCache.get(controlId)) }]\n${
+        roles.map(id => `• ${ String(rolesCache.get(id)) }`).join("\n") 
+      }`;
+
+    const description = pagesCount ? tieToPage() : "На сервер нет ни одной связи — список пуст.";
+
 
     const embed = {
       title: "Связанные роли",
-      description: pages[0],
+      description,
       footer: {
-        text: `Чтобы выдать пользователю роль, используйте !роль @упоминание\n${isAdmin ? "С помощью реакций ниже создайте новую связь или удалите старые." : ""}${pages[1] ? `\nСтраница: ${page + 1} / ${pages.length}` : ""}`
-      }
+        text: `Чтобы выдать пользователю роль, используйте !роль @упоминание\n${ userIsAdmin ? "С помощью реакций ниже создайте новую связь или удалите старые." : "" }${ pagesCount > 1 ? `\nСтраница: ${ page + 1 } / ${ pagesCount }` : "" }`
+      },
+      edit
     };
+
+    return embed;
   }
 
 
@@ -252,6 +251,19 @@ class Command {
 
 
     this.displayRolesListInterface(interaction);
+  }
+
+  rolesListCreateReactions({page, userIsAdmin, pagesCount}){
+    const reactionsBases = [
+      {emoji: "640449848050712587", filter: () => page != 0},
+      {emoji: "640449832799961088", filter: () => pagesCount > 1 && page !== pagesCount - 1},
+      {emoji: "⭐", filter: () => userIsAdmin},
+      {emoji: "❌", filter: () => userIsAdmin && pagesCount > 1}
+    ];
+
+    return reactionsBases
+      .filter(({filter}) => filter())
+      .map(({emoji}) => emoji);
   }
 
 
