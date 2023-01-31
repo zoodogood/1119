@@ -123,7 +123,7 @@ class Command {
           let maxCount = getMaxCount(interaction.userData.coins, marketPrise);
 
           maxCount = Math.min(maxCount, MAX_LIMIT - myBerrys);
-          _questionMessage = msg.msg({title: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(2)}) ед. <:berry:756114492055617558>`, description: "[Посмотреть способ расчёта](https://pastebin.com/t7DerPQm)"})
+          _questionMessage = await msg.msg({title: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(2)}) ед. <:berry:756114492055617558>`, description: "[Посмотреть способ расчёта](https://pastebin.com/t7DerPQm)"})
           answer = await msg.channel.awaitMessage({user: msg.author});
           _questionMessage.delete();
 
