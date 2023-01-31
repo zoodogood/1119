@@ -218,7 +218,7 @@ class Command {
         const react = await controller.message.awaitReact({user: "any", removeType: "all", time: 20000}, ...controller.reactions);
         switch (react) {
           case "640449848050712587":
-            interaction.currentCurseView = interaction.currentCurseView + 1 % user.curses?.length || 1;
+            interaction.currentCurseView = interaction.currentCurseView + 1 % (user.curses?.length || 1);
             await controller.message.msg( await createEmbedAtFirstPage() );
             controller.reactions = ["640449832799961088"];
             break;
