@@ -68,7 +68,7 @@ class Command {
 
 
       const createEmbedAtFirstPage = async () => {
-        const description = `Коинов: **${ Math.letters(user.coins) }**<:coin:637533074879414272> \n <a:crystal:637290417360076822>Уровень: **${user.level || 1}** \n <:crys:637290406958202880>Опыт: **${user.exp || 0}/${(user.level || 1) * 45}**\n\n ${interaction.status}\n`
+        const description = `Коинов: **${ Util.NumberFormatLetterize(user.coins) }**<:coin:637533074879414272> \n <a:crystal:637290417360076822>Уровень: **${user.level || 1}** \n <:crys:637290406958202880>Опыт: **${user.exp || 0}/${(user.level || 1) * 45}**\n\n ${interaction.status}\n`
 
         const embed = {
           title: "Профиль пользователя",

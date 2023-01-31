@@ -974,7 +974,7 @@ class BossManager {
 		const contents = {
 			dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
 			bossLevel: `Достигнутый уровень: ${ boss.level } (${ this.calculateKillReward({fromLevel: 1, toLevel: boss.level}) } опыта)`,
-			damageDealt: `Совместными усилиями участники сервера нанесли ${ boss.damageTaken } единиц урона`,
+			damageDealt: `Совместными усилиями участники сервера нанесли ${ Util.NumberFormatLetterize(boss.damageTaken) } единиц урона`,
 			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
 			rewards: `Пользователи получают ключи в количестве равном ${ 100 / BossManager.BonusesChest.DAMAGE_FOR_KEY }% от нанесенного урона и примерно случайное количество нестабильности в зависимости от нанесенного урона`,
@@ -1119,7 +1119,7 @@ class BossManager {
 		BossEvents.afterAttacked(boss, data);
 
 		const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
-		const description = `Нанесено урона с прямой атаки: ${ dealt }ед.\n\n${ eventsContent }`;
+		const description = `Нанесено урона с прямой атаки: ${ Util.NumberFormatLetterize(dealt) }ед.\n\n${ eventsContent }`;
 		const embed = {
 			title: `⚔️ За сервер ${ channel.guild.name }!`,
 			description,
