@@ -44,14 +44,13 @@ class Command {
       .match(/\d{17,19}/)
       ?.[1];
 
-    const authorRoles = interaction.member.roles;
+    const authorRolesCache = interaction.member.roles.cache;
     const controledRoles = [...new Set(
       Object.entries(tieRoles)
-        .filter(authorRoles.cache.has)
-        .map((id, roles) => roles)
+        .filter(([id]) => authorRolesCache.has(id))
+        .map(([id, roles]) => roles)
         .flat()
     )];
-    
 
     if (!controledRoles.length){
       interaction.channel.msg({
@@ -110,7 +109,7 @@ class Command {
     member.roles[heAlreadyHas ? "remove" : "add"](roleId);
     interaction.channel.msg({
       title: "Роли участника успешно изменены",
-      description: `${heAlreadyHas ? `У ${ member.toString() } отняли` : `${ member.toString() } получил`} роль ${ role.toString() }`,
+      description: `${heAlreadyHas ? `У ${ member.toString() } снята` : `${ member.toString() } получил`} роль ${ role.toString() }`,
       delete: 5_000
     });
     return;
@@ -119,10 +118,11 @@ class Command {
   async displayRolesListInterface(interaction){
     const context = {
       page: 0,
+      pagesCount: Object.keys(this.getTieRoles(interaction.guild)).length,
       interaction,
       userIsAdmin: !interaction.member.wastedPermissions(8n)[0],
       edit: false,
-      reactions: [],
+      reactions: null,
       rolesCache: interaction.guild.roles.cache
     }
 
@@ -137,79 +137,36 @@ class Command {
       this.rolesListOnReact(context, reaction, user);
     });
     collector.on("end", () => {
-      context.messsage.delete();
+      context.message.delete();
     })
   }
 
-  rolesListOnReact(context, reaction, user){
-    switch (react) {
-      case "640449832799961088": context.page++;
-      break;
-      case "640449848050712587": context.page--;
-      break;
+  async rolesListOnReact(context, reaction, user){
+    const react = reaction.emoji.id || reaction.emoji.name;
+    const { message, interaction } = context;
+    message.reactions.removeAll();
 
-      case "⭐":
-        let controller = await interaction.channel.awaitMessage(msg.author, {title: "Укажите айди роли", embed: {description: "Она сможет выдавать или снимать участникам позже указанные роли"}});
-        if (!controller){
-          continue;
-        }
-        controller = rolesCache.get(controller.content);
-        if (!controller){
-          interaction.channel.msg({title: `Неудалось найти на сервере роль с айди ${controller.content}`, delete: 8000});
-          continue;
-        }
+    await this.rolesListReactionsCallbacks[react](context);
+    context.pagesCount = Object.keys(this.getTieRoles(interaction.guild)).length;
 
-        let rolesList = await interaction.channel.awaitMessage(msg.author, {title: "С чём связать..?", embed: {description: `Через пробел укажите айди всех ролей, которыми будет управлять ${controller.name}`}});
-        if (!rolesList){
-          continue;
-        }
-        rolesList = rolesList.content.split(" ").map(e => interaction.guild.roles.cache.get(e)).filter(e => e);
-        if (rolesList.length === 0){
-          interaction.channel.msg({title: `Неудалось найти ни одну из указанных ролей`, delete: 8000});
-          continue;
-        }
-
-        tieRoles[controller.id] = tieRoles[controller.id] || [];
-        rolesList.forEach(e => {
-          guildRoles[e.id] = e;
-          if (e.id in tieRoles[controller.id]){
-            return;
-          }
-          tieRoles[controller.id].push(e.id);
-        });
-        guildRoles[controller.id] = controller;
-        interaction.channel.msg({title: `Успешно добавлено ${Util.ending(rolesList.length, "связ", "ей", "ь", "и")}`, footer: {text: "Связь установлена, а главное никакой мистики!"}, description: rolesList.map(role => `• ${role}`).join("\n"), delete: 12000});
-        createPages();
-      break;
-
-      case "❌":
-      let id = Object.keys(tieRoles)[page];
-      let deleteRolesMessage = await interaction.channel.msg({title: `Вы уверены, что хотите удалить..?`, description: `Вы очистите все связи с ролью ${guildRoles[id]}`});
-      react = await deleteRolesMessage.awaitReact({user: interaction.user, removeType: "all"}, "685057435161198594", "763807890573885456");
-      deleteRolesMessage.delete();
-
-      if (react == "685057435161198594"){
-        delete tieRoles[id];
-        if (pages[0]){
-          pages = ["На сервер нет ни одной связи, вы удалили последнюю — список пуст."];
-        }
-        interaction.channel.msg({title: `Связь #${page + 1} успешно удалена.`, delete: 5000});
-        pages = pages.splice(page, 1);
-        page = Math.max(page - 1, 0);
-        createPages();
-      }
-      break;
-    }
+    const embed = this.rolesListCreateEmbed(context);
+    context.message.msg(embed);
   }
 
-  rolesListCreateEmbed({interaction, page, pagesCount, edit = false, rolesCache, userIsAdmin}){
+  rolesListCreateEmbed(context){
+    const {interaction, page, pagesCount, edit = false, rolesCache, userIsAdmin} = context;
+
+    const tieRoles = this.getTieRoles(interaction.guild);
     
     const tieToPage = ([controlId, roles]) =>
       `[${ String(rolesCache.get(controlId)) }]\n${
         roles.map(id => `• ${ String(rolesCache.get(id)) }`).join("\n") 
       }`;
 
-    const description = pagesCount ? tieToPage() : "На сервер нет ни одной связи — список пуст.";
+    const description = pagesCount ?
+      tieToPage( Object.entries(tieRoles).at(page) ) :
+      "На сервер нет ни одной связи — список пуст.";
+
 
 
     const embed = {
@@ -218,7 +175,8 @@ class Command {
       footer: {
         text: `Чтобы выдать пользователю роль, используйте !роль @упоминание\n${ userIsAdmin ? "С помощью реакций ниже создайте новую связь или удалите старые." : "" }${ pagesCount > 1 ? `\nСтраница: ${ page + 1 } / ${ pagesCount }` : "" }`
       },
-      edit
+      edit,
+      reactions: this.rolesListCreateReactions(context)
     };
 
     return embed;
@@ -258,12 +216,86 @@ class Command {
       {emoji: "640449848050712587", filter: () => page != 0},
       {emoji: "640449832799961088", filter: () => pagesCount > 1 && page !== pagesCount - 1},
       {emoji: "⭐", filter: () => userIsAdmin},
-      {emoji: "❌", filter: () => userIsAdmin && pagesCount > 1}
+      {emoji: "❌", filter: () => userIsAdmin && pagesCount}
     ];
 
     return reactionsBases
       .filter(({filter}) => filter())
       .map(({emoji}) => emoji);
+  }
+
+  rolesListReactionsCallbacks = {
+    "640449832799961088": (context) => context.page++,
+
+    "640449848050712587": (context) => context.page--,
+
+    "⭐": async (context) => {
+      const {interaction, rolesCache} = context;
+      let _questionMessage;
+      
+      _questionMessage = await interaction.channel.msg({title: "Укажите айди роли", description: "Она сможет выдавать или снимать участникам далее указанные роли"});
+      const controllerId = (await interaction.channel.awaitMessage({user: interaction.user, remove: true}))?.content;
+
+      if (!controllerId){
+        return;
+      }
+      const controllerRole = rolesCache.get(controllerId);
+      if (!controllerRole){
+        interaction.channel.msg({title: `Неудалось найти на сервере роль с айди ${ controllerId }`, delete: 12_000});
+        return;
+      }
+
+      _questionMessage = await interaction.channel.msg({title: "С чём связать..?", description: `Через пробел укажите айди всех ролей, которыми будет управлять ${ controllerRole.name }`});
+      const rolesIds = (await interaction.channel.awaitMessage({user: interaction.user, remove: true}))?.content;
+      if (!rolesIds){
+        return;
+      }
+
+      const rolesList = rolesIds
+        .split(" ")
+        .map(id => rolesCache.get(id))
+        .filter(Boolean);
+
+      if (rolesList.length === 0){
+        interaction.channel.msg({title: `Неудалось найти ни одну из указанных ролей`, delete: 12_000});
+        return;
+      }
+
+      const tieRoles = this.getTieRoles(interaction.guild);
+      const previousRoles = tieRoles[controllerId] || [];
+      tieRoles[controllerId] = [...new Set(
+        previousRoles.concat( rolesList.map(role => role.id) )
+      )];
+
+      interaction.channel.msg({
+        title: `Успешно добавлено: ${ Util.ending(tieRoles[controllerId].length - previousRoles.length, "связ", "ей", "ь", "и") }`,
+        footer: {text: "Связь установлена, а главное никакой мистики!"},
+        description: rolesList.map(role => `• ${ role }`).join("\n"),
+        delete: 20_000
+      });
+      return;
+    },
+
+    "❌": async (context) => {
+      const {interaction, rolesCache} = context;
+
+      const tieRoles = this.getTieRoles(interaction.guild);
+      const controllerId = Object.keys(tieRoles)[context.page];
+
+      const _questionMessage = await interaction.channel.msg({title: `Вы уверены, что хотите удалить..?`, description: `Вы очистите все связи с ролью ${ rolesCache.get(controllerId) }`});
+      const react = await _questionMessage.awaitReact({user: interaction.user, removeType: "all"}, "685057435161198594", "763807890573885456");
+      _questionMessage.delete();
+
+      if (react !== "685057435161198594"){
+        return;
+      }
+
+      delete tieRoles[controllerId];
+      context.pagesCount = Object.keys(tieRoles).length;
+
+      interaction.channel.msg({title: `Связь #${ context.page + 1 } успешно удалена.`, delete: 12_000});
+      context.page = Math.max(context.page - 1, 0);
+    }
   }
 
 
