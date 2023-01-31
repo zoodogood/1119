@@ -693,49 +693,6 @@ Array.prototype.sortBy = function(property, reverse){
 
 
 
-
-Math.letters = function(numb){
-
-  let
-    missing = "",
-    small_i = 0,
-    i = 0,
-    a = 99999,
-    words = "K M B T q Q s S O N d U D z Z x X c C v V ! @ # $ / % ^ & *".split(" ");
-
-    if (numb < a) return String(numb);
-
-  while (numb > 99999999999999999999 ) {
-    small_i++;
-    numb = Math.floor(numb / 10);
-  }
-
-  numb = String(numb);
-
-  while (numb > a){
-    a = a * Math.pow(10, 3) + 999;
-    i++;
-  }
-
-  if (small_i % 3 == 1) missing += numb[3];
-  else if (small_i % 3 == 2) missing += numb[3] + numb[4];
-
-  if (i != 0) numb = numb.slice(0, -(i * 3));
-
-  i += Math.floor(small_i / 3);
-
-  numb += missing;
-  while (numb.length > 5) {
-    numb = numb.slice(0, -3);
-    i++;
-  }
-
-  if (words[i]) if (i != 0) numb += words[i - 1];
-  else numb += `e+${i*3}`;
-  return numb;
-}
-
-
 Object.defineProperty(Discord.User.prototype, "guilds", {get(){
   let guilds = client.guilds.cache.filter(guild => guild.members.cache.get(this.id));
   return [...guilds.values()];
