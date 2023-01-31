@@ -7,21 +7,30 @@ class Command {
 	async onChatInput(msg, interaction){
     let message = await msg.msg({title: "🌲 Создание раздачи", description: "Используйте реакции ниже, чтобы настроить раздачу!\n◖🪧  Текст 🚩\n◖⏰  Дата окончания 🚩\n◖🎉  Кол-во победителей\n◖🎁  Выдаваемые роли", color: "#4a7e31", footer: {text: "🚩 Обязательные пункты перед началом"}});
     let react, answer, timestamp, title, descr, winners = 1, role;
+    let _questionMessage;
     do {
       react = await message.awaitReact({user: msg.author, removeType: "one"}, "🪧", "⏰", "🎉", "🎁", (timestamp && descr) ? "640449832799961088" : null);
       switch (react) {
         case "🪧":
-          answer = await msg.channel.awaitMessage(msg.author, {title: `Укажите заглавие`});
+          _questionMessage = await msg.msg({title: `Укажите заглавие`});
+          answer = await msg.channel.awaitMessage({user: msg.author});
+          _questionMessage.delete();
           if (!answer) return;
           title = answer.content;
 
-          answer = await msg.channel.awaitMessage(msg.author, {title: `Укажите ${descr ? "новое " : ""}описание этой раздачи`, embed: {description: descr ? "Старое: " + descr : ""}, time: 1800000});
+          _questionMessage = await msg.msg({title: `Укажите ${descr ? "новое " : ""}описание этой раздачи`, description: descr ? "Старое: " + descr : ""});
+          answer = await msg.channel.awaitMessage({user: msg.author, time: 1_800_000});
+          _questionMessage.delete();
+
           if (!answer) return;
           descr = answer.content;
           break;
         case "⏰":
           let parse = new Date();
-          answer = await msg.channel.awaitMessage(msg.author, {title: `Установите дату и время конца ивента`, embed: {description: `Вы можете указать что-то одно, числа разделенные точкой будут считаться датой, двоеточием — время\n**Вот несколько примеров:**\n22:00 — только время\n31.12 — только дата\n11:11 01.01 — дата и время\nОбратите внимание! Время сервера (${new Intl.DateTimeFormat("ru-ru", {weekday: "short", hour: "2-digit", minute: "2-digit"}).format(parse)}) может отличается от вашего`}});
+          _questionMessage = await msg.msg({title: `Установите дату и время конца ивента`, description: `Вы можете указать что-то одно, числа разделенные точкой будут считаться датой, двоеточием — время\n**Вот несколько примеров:**\n22:00 — только время\n31.12 — только дата\n11:11 01.01 — дата и время\nОбратите внимание! Время сервера (${new Intl.DateTimeFormat("ru-ru", {weekday: "short", hour: "2-digit", minute: "2-digit"}).format(parse)}) может отличается от вашего`});
+          answer = await msg.channel.awaitMessage({user: msg.author});
+          _questionMessage.delete();
+
           if (!answer) {
             return;
           }
@@ -49,7 +58,9 @@ class Command {
           msg.msg({title, delete: 3000, timestamp});
           break;
         case "🎉":
-          answer = await msg.channel.awaitMessage(msg.author, {title: `Введите количество возможных победителей`});
+          _questionMessage = await msg.msg({title: `Введите количество возможных победителей`});
+          answer = await msg.channel.awaitMessage({user: msg.author});
+          _questionMessage.delete();
           if (!answer) {
             return;
           }
@@ -60,7 +71,10 @@ class Command {
           winners = Number(answer.content);
           break;
         case "🎁":
-          answer = await msg.channel.awaitMessage(msg.author, {title: `Упомяните роль или введите её айди`});
+          _questionMessage = await msg.msg({title: `Упомяните роль или введите её айди`})
+          answer = await msg.channel.awaitMessage({user: msg.author});
+          _questionMessage.delete();
+          
           if (!answer) return;
           role = answer.content.match(/(?:<@&)?(\d+)>?/)[1];
           break;
