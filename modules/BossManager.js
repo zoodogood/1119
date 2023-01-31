@@ -1505,7 +1505,7 @@ class BossManager {
 			description: "Вознаграждение за терпение",
 			callback: ({user, boss}) => {
 				const berry = 3 + boss.level;
-				user.data.berry += berry;
+				user.data.berrys += berry;
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
