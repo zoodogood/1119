@@ -1645,7 +1645,7 @@ class BossManager {
 				}
 			},
 			filter: ({boss, userStats}) => {
-				return BossManager.isElite(boss) && userStats.relicIsTaked;
+				return BossManager.isElite(boss) && !userStats.relicIsTaked;
 			}
 		}
 		// ______e4example: {
