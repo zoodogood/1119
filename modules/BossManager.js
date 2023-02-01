@@ -691,7 +691,7 @@ class BossManager {
 		return multiplier;
 	}
 
-	static makeDamage(boss, damage, {sourceUser, damageSourceType} = {}){
+	static makeDamage(boss, damage, {sourceUser, damageSourceType = BossManager.DAMAGE_SOURCES.other} = {}){
 		const baseDamage = damage;
 		damage *= this.calculateBossDamageMultiplayer(boss, {sourceUser, context: {
 			restoreHealthByDamage: sourceUser.effects?.damageRestoreHealht ?? false
