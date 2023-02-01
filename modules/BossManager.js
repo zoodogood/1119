@@ -991,7 +991,7 @@ class BossManager {
 			bossLevel: `Достигнутый уровень: ${ boss.level } (${ this.calculateKillReward({fromLevel: 1, toLevel: boss.level}) } опыта)`,
 			damageDealt: `Совместными усилиями участники сервера нанесли **${ Util.NumberFormatLetterize(boss.damageTaken) }** ед. урона`,
 			mainDamageType: `Основной источник: **${ BossManager.DAMAGE_SOURCES[mainDamage.at(0)].label } ${ (mainDamage.at(1) / boss.damageTaken * 100).toFixed(1) }%**`,
-			weakestDamageType: `Худший источник: ${ BossManager.DAMAGE_SOURCES[weakestDamage.at(0)].label } ${ (weakestDamage.at(1) / boss.damageTaken * 100).toFixed(2) }%`,
+			weakestDamageType: `Худший источник: ${ BossManager.DAMAGE_SOURCES[weakestDamage.at(0)].label } — ${ (weakestDamage.at(1) / boss.damageTaken * 100).toFixed(2) }% (${ weakestDamage.at(1)} ед.)`,
 			attacksCount: `Совершено прямых атак: ${ boss.stats.userAttacksCount }`,
 			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
