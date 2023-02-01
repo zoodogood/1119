@@ -1122,7 +1122,7 @@ class BossManager {
 		BossEvents.afterAttacked(boss, data);
 
 		const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
-		const description = `Нанесено урона с прямой атаки: ${ Util.NumberFormatLetterize(dealt) }ед.\n\n${ eventsContent }`;
+		const description = `Нанесено урона с прямой атаки: ${ Util.NumberFormatLetterize(dealt) } ед.\n\n${ eventsContent }`;
 		const embed = {
 			title: `⚔️ За сервер ${ channel.guild.name }!`,
 			description,
