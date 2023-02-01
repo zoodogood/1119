@@ -973,12 +973,19 @@ class BossManager {
 		Object.entries(boss.users)
 			.filter(([_id, {damageDealt}]) => damageDealt > DAMAGE_THRESHOLDER_FOR_REWARD)
 			.forEach(sendReward);
+
+		const mainDamage = Object.entries(boss.stats.damage).reduce(
+			(acc, current) => acc.at(1) > current.at(1) ? acc : current,
+			[BossManager.DAMAGE_SOURCES.other, 0]
+		);
 		
 
 		const contents = {
 			dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
 			bossLevel: `Достигнутый уровень: ${ boss.level } (${ this.calculateKillReward({fromLevel: 1, toLevel: boss.level}) } опыта)`,
 			damageDealt: `Совместными усилиями участники сервера нанесли ${ Util.NumberFormatLetterize(boss.damageTaken) } единиц урона`,
+			mainDamageType: `Основной источник урона: **${ BossManager.DAMAGE_SOURCES[mainDamage.at(0)] } ${ (mainDamage.at(1) / boss.damageTaken * 100).toFixed(1) }%**`,
+			attacksCount: `Совершено прямых атак: ${ boss.stats.userAttacksCount } ⚔️`,
 			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
 			rewards: `Пользователи получают ключи в количестве равном ${ 100 / BossManager.BonusesChest.DAMAGE_FOR_KEY }% от нанесенного урона и примерно случайное количество нестабильности в зависимости от нанесенного урона`,
@@ -992,7 +999,7 @@ class BossManager {
 			iconURL: guild.iconURL()
 		};
 	
-		const description = `${ contents.dice }\n${ contents.bossLevel }\n\n${ contents.damageDealt }. 🩸\n${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.`;
+		const description = `${ contents.dice }\n${ contents.bossLevel }\n\n${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸\n${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.`;
 		const embed = {
 			title: "Среди ночи он покинул сервер",
 			description,
@@ -1010,7 +1017,8 @@ class BossManager {
 		boss.elementType = this.BOSS_TYPES.random().type;
 
 		boss.stats = {
-			damage: {}
+			damage: {},
+			userAttacksCount: 0
 		}
 	
 		boss.guildId = guild.id;
@@ -1123,6 +1131,8 @@ class BossManager {
 
 		user.action(Actions.bossAfterAttack, data);
 		BossEvents.afterAttacked(boss, data);
+
+		boss.stats.userAttacksCount++;
 
 		const eventsContent = attackContext.listOfEvents.map(event => `・ ${ event.description }.`).join("\n");
 		const description = `Нанесено урона с прямой атаки: ${ Util.NumberFormatLetterize(dealt) } ед.\n\n${ eventsContent }`;
