@@ -1,5 +1,7 @@
+//@ts-check
 import * as Util from '#src/modules/util.js';
 import { client } from '#src/index.js';
+import { EmbedBuilder } from 'discord.js';
 
 class Command {
 
@@ -8,7 +10,7 @@ class Command {
     const context = {
       questionMessage: null,
       embed: new EmbedBuilder(),
-      previewMessage,
+      previewMessage: null,
       updatePreviewMessage: () => {
         context.previewMessage({edit: true, ...context.embed});
       }
@@ -105,7 +107,7 @@ class Command {
           }
           let user = answer.mentions.users.first();
           if (user){
-            context.embed.setAuthor(user.username, user.avatarURL());
+            context.embed.setAuthor({name: user.username, iconURL: user.avatarURL()});
             break;
           }
 
@@ -115,7 +117,7 @@ class Command {
           }
 
           image = image ? image[0] : null;
-          context.embed.setAuthor(answer.content, image);
+          context.embed.setAuthor({name: answer.content, iconURL: image});
           break;
 
         case "🎏":
@@ -181,7 +183,7 @@ class Command {
           if (!value){
             continue;
           }
-          context.embed.addField(name, value, true);
+          context.embed.addFields([{name, value, inline: true}]);
           react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
           break;
 
