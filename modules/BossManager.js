@@ -985,7 +985,7 @@ class BossManager {
 			bossLevel: `Достигнутый уровень: ${ boss.level } (${ this.calculateKillReward({fromLevel: 1, toLevel: boss.level}) } опыта)`,
 			damageDealt: `Совместными усилиями участники сервера нанесли ${ Util.NumberFormatLetterize(boss.damageTaken) } единиц урона`,
 			mainDamageType: `Основной источник урона: **${ BossManager.DAMAGE_SOURCES[mainDamage.at(0)].label } ${ (mainDamage.at(1) / boss.damageTaken * 100).toFixed(1) }%**`,
-			attacksCount: `Совершено прямых атак: ${ boss.stats.userAttacksCount } ⚔️`,
+			attacksCount: `Совершено прямых атак: ${ boss.stats.userAttacksCount }`,
 			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
 			rewards: `Пользователи получают ключи в количестве равном ${ 100 / BossManager.BonusesChest.DAMAGE_FOR_KEY }% от нанесенного урона и примерно случайное количество нестабильности в зависимости от нанесенного урона`,
@@ -999,7 +999,7 @@ class BossManager {
 			iconURL: guild.iconURL()
 		};
 	
-		const description = `${ contents.dice }\n${ contents.bossLevel }\n\n${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸 ${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.`;
+		const description = `🧩 ${ contents.dice }\n${ contents.bossLevel }\n\n⚔️ ${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸 ${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.`;
 		const embed = {
 			title: "Среди ночи он покинул сервер",
 			description,
