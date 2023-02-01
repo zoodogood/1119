@@ -1003,7 +1003,6 @@ class BossManager {
 		const embed = {
 			title: "Среди ночи он покинул сервер",
 			description,
-			fields,
 			footer
 		};
 		guild.chatSend(embed);
