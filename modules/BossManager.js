@@ -5,6 +5,7 @@ import TimeEventsManager from '#src/modules/TimeEventsManager.js';
 import { elementsEnum } from "#src/commands/thing.js";
 import { Actions } from '#src/modules/ActionManager.js';
 import * as Util from '#src/modules/util.js';
+import { ButtonStyle, ComponentType } from "discord.js";
 
 
 class BossShop {
@@ -989,21 +990,33 @@ class BossManager {
 			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
 			rewards: `Пользователи получают ключи в количестве равном ${ 100 / BossManager.BonusesChest.DAMAGE_FOR_KEY }% от нанесенного урона и примерно случайное количество нестабильности в зависимости от нанесенного урона`,
+			invisibleSpace: "⠀"
 		}
 	
 		
 			
 		
 		const footer = {
-			text: `Пробыл здесь 3 дня`,
+			text: `Пробыл здесь ${ BossManager.BOSS_DURATION_IN_DAYS } дня и просто ушёл`,
 			iconURL: guild.iconURL()
 		};
+
+		
+
+		const components = {
+			type: ComponentType.Button,
+			style: ButtonStyle.Secondary,
+			label: "Событие с боссом завершилось",
+			customId: "bye-bye",
+			disabled: true
+		}
 	
-		const description = `🧩 ${ contents.dice }\n${ contents.bossLevel }\n\n⚔️ ${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸 ${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.`;
+		const description = `🧩 ${ contents.dice }\n${ contents.bossLevel }\n\n⚔️ ${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸 ${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.\n\n${ contents.invisible }`;
 		const embed = {
 			title: "Среди ночи он покинул сервер",
 			description,
-			footer
+			footer,
+			components
 		};
 		guild.chatSend(embed);
 	}
