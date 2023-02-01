@@ -663,7 +663,8 @@ class BossManager {
 
 		const DEFAULT_DAMAGE = 1;
 		const damage = userStats.damagePerMessage ?? DEFAULT_DAMAGE;
-		BossManager.makeDamage(boss, damage, {sourceUser: message.author});
+		const damageSourceType = BossManager.DAMAGE_SOURCES.message;
+		BossManager.makeDamage(boss, damage, {sourceUser: message.author, damageSourceType});
 	}
 
 	static calculateHealthPoint(level){
@@ -1116,7 +1117,9 @@ class BossManager {
 
 		const damage = Math.ceil((userStats.attacksDamageMultiplayer ?? 1) * attackContext.defaultDamage * attackContext.damageMultiplayer);
 		attackContext.defaultDamage = attackContext.damageDealt = damage;
-		const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
+
+		const damageSourceType = BossManager.DAMAGE_SOURCES.attack;
+		const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user, damageSourceType});
 
 		user.action(Actions.bossAfterAttack, data);
 		BossEvents.afterAttacked(boss, data);
