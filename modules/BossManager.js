@@ -979,13 +979,19 @@ class BossManager {
 			(acc, current) => acc.at(1) > current.at(1) ? acc : current,
 			[BossManager.DAMAGE_SOURCES.other, 0]
 		);
+
+		const weakestDamage = Object.entries(boss.stats.damage).reduce(
+			(acc, current) => acc.at(1) < current.at(1) ? acc : current,
+			[BossManager.DAMAGE_SOURCES.other, Number.MAX_SAFE_INTEGER]
+		);
 		
 
 		const contents = {
 			dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
 			bossLevel: `Достигнутый уровень: ${ boss.level } (${ this.calculateKillReward({fromLevel: 1, toLevel: boss.level}) } опыта)`,
-			damageDealt: `Совместными усилиями участники сервера нанесли ${ Util.NumberFormatLetterize(boss.damageTaken) } единиц урона`,
+			damageDealt: `Совместными усилиями участники сервера нанесли **${ Util.NumberFormatLetterize(boss.damageTaken) }** ед. урона`,
 			mainDamageType: `Основной источник: **${ BossManager.DAMAGE_SOURCES[mainDamage.at(0)].label } ${ (mainDamage.at(1) / boss.damageTaken * 100).toFixed(1) }%**`,
+			weakestDamageType: `Худший источник: **${ BossManager.DAMAGE_SOURCES[weakestDamage.at(0)].label } ${ (weakestDamage.at(1) / boss.damageTaken * 100).toFixed(2) }%**`,
 			attacksCount: `Совершено прямых атак: ${ boss.stats.userAttacksCount }`,
 			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
@@ -1011,7 +1017,7 @@ class BossManager {
 			disabled: true
 		}
 	
-		const description = `🧩 ${ contents.dice }\n${ contents.bossLevel }\n\n⚔️ ${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸 ${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.\n\n${ contents.invisibleSpace }`;
+		const description = `🧩 ${ contents.dice }\n${ contents.bossLevel }\n\n${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸 ${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.\n\n${ contents.invisibleSpace }`;
 		const embed = {
 			title: "Среди ночи он покинул сервер",
 			description,
