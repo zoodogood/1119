@@ -230,7 +230,7 @@ function NumberFormatLetterize(numb){
   const letters = ["", "K", "M", "B", "T", "q", "Q", "s", "S", "O", "N", "d", "U", "D", "z", "Z", "x", "X", "c", "C", "v", "V", "!", "@", "#", "$", "/", "%", "^", "&", "*"];
   const letter = letters[ ~~(cut / DISTANCE) ] || `e+${ cut }`;
 
-  return `${ numb }-${ letter }`;
+  return `${ numb } ${ letter }`;
 }
 
 
