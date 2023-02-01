@@ -98,7 +98,7 @@ class Command {
 
     let message = await msg.msg({description: `У вас клубничек — **${ myBerrys }** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(marketPrise) }** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${ getPrice(myBerrys, -1) } (с учётом налога ${ TAX * 100 }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`, author: {name: msg.author.tag, iconURL: msg.author.avatarURL()}})
     let react = await message.awaitReact({user: msg.author, removeType: "all"}, "📥", "📤");
-    let answer;
+    let answer, _questionMessage;
 
     while (true) {
       switch (react) {
@@ -123,7 +123,10 @@ class Command {
           let maxCount = getMaxCount(interaction.userData.coins, marketPrise);
 
           maxCount = Math.min(maxCount, MAX_LIMIT - myBerrys);
-          answer = await msg.channel.awaitMessage(msg.author, {title: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(2)}) ед. <:berry:756114492055617558> (Beta calculator)`, embed: {description: "[Посмотреть код](https://pastebin.com/Cg9eYndC)"}});
+          _questionMessage = await msg.msg({title: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(2)}) ед. <:berry:756114492055617558>`, description: "[Посмотреть способ расчёта](https://pastebin.com/t7DerPQm)"})
+          answer = await msg.channel.awaitMessage({user: msg.author});
+          _questionMessage.delete();
+
           if (!answer)
             break;
 
@@ -133,7 +136,10 @@ class Command {
           store(answer.content, 1);
           break;
         case "📤":
-          answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите колич-во клубничек на продажу"});
+          _questionMessage = await msg.msg({title: "Укажите колич-во клубничек на продажу"});
+          answer = await msg.channel.awaitMessage({user: msg.author});
+          _questionMessage.delete();
+
           if (!answer)
             break;
 

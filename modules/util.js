@@ -214,6 +214,24 @@ function resolveGithubPath(relative, lineOfCode){
   return `${ BASE }/${ relative }${ lineOfCode ? `#L${ lineOfCode }` : "" }`
 }
 
+function NumberFormatLetterize(numb){
+  numb = String( ~~(+numb) );
+
+  const THRESHOLD = 5;
+  const DISTANCE  = 3;
+
+  if (numb.length <= THRESHOLD)
+    return numb;
+
+  const cut = numb.length - (numb.length % (THRESHOLD - DISTANCE + 1) + DISTANCE);
+  numb = numb.slice(0, numb.length - cut);
+  numb = new Intl.NumberFormat().format(numb);
+
+  const letters = ["", "K", "M", "B", "T", "q", "Q", "s", "S", "O", "N", "d", "U", "D", "z", "Z", "x", "X", "c", "C", "v", "V", "!", "@", "#", "$", "/", "%", "^", "&", "*"];
+  const letter = letters[ ~~(cut / DISTANCE) ] || `e+${ cut }`;
+
+  return `${ numb }${ letter }`;
+}
 
 
 
@@ -232,5 +250,6 @@ export {
   similarity,
   getSimilar,
   match,
-  resolveGithubPath
+  resolveGithubPath,
+  NumberFormatLetterize
 };

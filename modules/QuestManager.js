@@ -109,7 +109,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 
 		const SEPARATOR = " ";
 
-		const completed = data.questsGlobalCompleted.split(SEPARATOR);
+		const completed = data.questsGlobalCompleted.split(SEPARATOR).filter(Boolean);
 
 		if (completed.includes(questBase.id)){
 			return;

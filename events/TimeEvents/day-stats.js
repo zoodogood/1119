@@ -54,7 +54,7 @@ class Event {
 		let description = `За этот день было отправлено ${Util.ending(msgs, "сообщени", "й", "е", "я")}\nРекордное количество: ${data.day_max || (data.day_max = 0)}`;
 
 		if (data.days > 3) {
-			description += `\nВсего сообщений: ${Math.letters(data.msg_total)}\nВ среднем за день: ${Math.round(data.msg_total / data.days)}`;
+			description += `\nВсего сообщений: ${ Util.NumberFormatLetterize(data.msg_total) }\nВ среднем за день: ${Math.round(data.msg_total / data.days)}`;
 		}
 
 		if (data.day_max < msgs) {

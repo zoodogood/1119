@@ -91,7 +91,7 @@ class Command {
 
 
 
-    let embed = {title: "Казна сервера", description: `В хранилище **${ Math.letters(server.coins) }** <:coin:637533074879414272>\n\n<a:message:794632668137652225> ⠿ Заработные платы\n<:meow:637290387655884800> ⠿ Положить\n<:merunna:755844134677512273> ${[..."⠯⠷⠟⠻"].random()} Взять`, author: {name: msg.guild.name, iconURL: msg.guild.iconURL()}, image: "https://media.discordapp.net/attachments/629546680840093696/830774000597991434/96-967226_tree-forest-green-vector-map-of-the-trees.png"};
+    let embed = {title: "Казна сервера", description: `В хранилище **${ Util.NumberFormatLetterize(server.coins) }** <:coin:637533074879414272>\n\n<a:message:794632668137652225> ⠿ Заработные платы\n<:meow:637290387655884800> ⠿ Положить\n<:merunna:755844134677512273> ${[..."⠯⠷⠟⠻"].random()} Взять`, author: {name: msg.guild.name, iconURL: msg.guild.iconURL()}, image: "https://media.discordapp.net/attachments/629546680840093696/830774000597991434/96-967226_tree-forest-green-vector-map-of-the-trees.png"};
     let coinInfo = server.coins;
     let react, answer;
     let reactions = ["637290387655884800", isAdmin ? "755844134677512273" : null, "794632668137652225"];
