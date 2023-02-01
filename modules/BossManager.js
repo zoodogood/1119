@@ -449,7 +449,7 @@ class BossEffects {
 
 					if (effectValues.keepAliveUserId){
 						const targetUserStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
-						delete userStats.alreadyKeepAliveRitualBy;
+						delete targetUserStats.alreadyKeepAliveRitualBy;
 						!userStats.heroIsDead && (delete targetUserStats.heroIsDead);
 					}
 					
