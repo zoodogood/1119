@@ -715,7 +715,7 @@ class BossManager {
 			sourceUser.action(Actions.bossMakeDamage, context);
 		}
 
-		if (damageSourceType){
+		if (damageSourceType !== null){
 			const damageStats = boss.stats.damage;
 			damageStats[damageSourceType] ??= 0;
 			damageStats[damageSourceType] += damage;
