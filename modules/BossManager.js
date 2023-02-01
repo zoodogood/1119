@@ -985,7 +985,7 @@ class BossManager {
 			dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
 			bossLevel: `Достигнутый уровень: ${ boss.level } (${ this.calculateKillReward({fromLevel: 1, toLevel: boss.level}) } опыта)`,
 			damageDealt: `Совместными усилиями участники сервера нанесли ${ Util.NumberFormatLetterize(boss.damageTaken) } единиц урона`,
-			mainDamageType: `Основной источник урона: **${ BossManager.DAMAGE_SOURCES[mainDamage.at(0)].label } ${ (mainDamage.at(1) / boss.damageTaken * 100).toFixed(1) }%**`,
+			mainDamageType: `Основной источник: **${ BossManager.DAMAGE_SOURCES[mainDamage.at(0)].label } ${ (mainDamage.at(1) / boss.damageTaken * 100).toFixed(1) }%**`,
 			attacksCount: `Совершено прямых атак: ${ boss.stats.userAttacksCount }`,
 			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
@@ -1011,7 +1011,7 @@ class BossManager {
 			disabled: true
 		}
 	
-		const description = `🧩 ${ contents.dice }\n${ contents.bossLevel }\n\n⚔️ ${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸 ${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.\n\n${ contents.invisible }`;
+		const description = `🧩 ${ contents.dice }\n${ contents.bossLevel }\n\n⚔️ ${ contents.damageDealt }.\n${ contents.mainDamageType }\n${ contents.attacksCount }\n\n🩸 ${ contents.usersCount }. ${ contents.parting }\n${ contents.rewards }.\n\n${ contents.invisibleSpace }`;
 		const embed = {
 			title: "Среди ночи он покинул сервер",
 			description,
