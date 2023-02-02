@@ -7,6 +7,7 @@ import { Collection } from '@discordjs/collection';
 import BossManager from '#src/modules/BossManager.js';
 import { CreateModal } from '@zoodogood/utils/discordjs';
 import { CustomCollector } from '@zoodogood/utils/objectives';
+import QuestManager from '#src/modules/QuestManager.js';
 
 
 class Command {
@@ -91,7 +92,7 @@ class Command {
       display: (element, output, index, _context) => {
         const cup = (index == 0) ? "<a:cupZ:806813908241350696> " : (index == 1) ? "<a:cupY:806813850745176114> " : (index == 2) ? "<a:cupX:806813757832953876> " : "";
         const name =  `${ cup } ${ index + 1 }. ${ element.username }`;
-        const value = `Выполнено ежедневных квестов: ${ output } | Глобальных: ${(element.data.completedQuest || []).length}/${Object.values(quests.names).length}`;
+        const value = `Выполнено ежедневных квестов: ${ output } | Глобальных: ${ (element.data.completedQuest || []).length}/${QuestManager.questsBase.filter(base => base.isGlobal).size }`;
         return {name, value};
       }
     },
@@ -122,7 +123,7 @@ class Command {
       },
       filter: (context) => context.boss.isArrived,
       value: (element, context) => {
-        return BossManager.getUserStats(context.boss, element.id).dealtDamage;
+        return BossManager.getUserStats(context.boss, element.id).damageDealt;
       },
       display: (element, output, index, context) => {
         const name = `${ index + 1 }. ${ element.username }`;
@@ -209,7 +210,10 @@ class Command {
       title: executorIndex !== -1 ? `Вы находитесь на ${ executorIndex + 1 } месте, ${ interaction.user.username }` : `Вы не числитесь в этом топе, ${ interaction.user.username }`,
       fields,
       edit,
-      author: {name: `Топ на сервере ${ context.guild.name }`, iconURL: context.guild.iconURL()},
+      author: {
+        name: `Топ на сервере ${ context.guild.name }・${ selected.component.label }`,
+        iconURL: context.guild.iconURL()
+      },
       components: this.createComponents(context),
       footer: pages > 1 ? {text: `Страница: ${ page + 1 } / ${ pages }`} : null
     };
