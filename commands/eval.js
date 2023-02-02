@@ -2,14 +2,16 @@ import * as Util from '#src/modules/util.js';
 
 import { client } from '#src/index.js';
 import Template from '#src/modules/Template.js';
-import Discord from 'discord.js';
+import config from '#src/config';
+
+import { escapeCodeBlock, WebhookClient } from 'discord.js';
 
 class Command {
 
 	async onChatInput(msg, interaction){
 
 
-    const parseReferense = async (reference) => {
+    const fetchReferense = async (reference) => {
       if (!reference){
         return null;
       }
@@ -19,28 +21,31 @@ class Command {
         return null;
       }
 
-      const blockQuote = message.content.match(/```js\n((?:.|\n)+?)```/);
-      if (!blockQuote)
-        return null;
-
-      return blockQuote[1];
+      return message.content;
     }
 
     
-    const code = (await parseReferense(msg.reference)) ?? interaction.params;
 
+    
+
+    const codeContent = (await fetchReferense(msg.reference)) ?? interaction.params;
+
+    
     Object.assign(interaction, {
       launchTimestamp: Date.now(),
       leadTime: null,
       emojiByType: null,
-      description: null
+      description: null,
+      codeContent: codeContent.startsWith("```js") ?
+        codeContent.match(/```js\n((?:.|\n)+?)```$/)[1] :
+        codeContent
     });
 
     
     const getOutput = async (interaction) => {
       try {
         const source = {executer: interaction.user, type: Template.sourceTypes.call};
-        return await new Template(source, interaction).createVM().run(code);
+        return await new Template(source, interaction).createVM().run(interaction.codeContent);
       }
       catch (error){
         return error;
@@ -60,7 +65,7 @@ class Command {
         interaction.emojiByType = "753916394135093289";
         break;
       case (typeof output === "object"):
-        interaction.description = `\`\`\`json\n${ Discord.escapeCodeBlock(  JSON.stringify(output, null, 3)  ) }\`\`\``;
+        interaction.description = `\`\`\`json\n${ escapeCodeBlock(  JSON.stringify(output, null, 3)  ) }\`\`\``;
         interaction.emojiByType = "753916315755872266";
         break;
       default:
@@ -69,10 +74,7 @@ class Command {
     }
 
 
-    if (process.env.DEVELOPMENT === "FALSE"){
-      const hook = new Discord.WebhookClient("1006423793100664953", "dFUlXrQkpMu7Kb3ytBYzzfsHPDRucDonBwMGpqApi426J3OKuFEMttvw2ivlIcbrtAFJ");
-      interaction.messageForLogging = await hook.msg({author: {name: `${ msg.author.username }, в #${ msg.channel.id }`, iconURL: client.user.avatarURL()}, description: `\`\`\`js\n${ code }\`\`\``, color: "#1f2022", footer: {iconURL: client.emojis.cache.get(interaction.emojiByType).url, text: "Вызвана команда !eval"}});
-    }
+    this.loggerProtocol({interaction});
 
 
     let react = await msg.awaitReact({user: msg.author, removeType: "one", time: 20000}, interaction.emojiByType);
@@ -94,6 +96,29 @@ class Command {
     );
 
 
+  }
+
+  async loggerProtocol({interaction}){
+    if (config.development){
+      return;
+    }
+
+    if (!process.env.EVAL_WEBHOOK_ID_AND_TOKEN){
+      return;
+    }
+    
+    const [id, token] = process.env.EVAL_WEBHOOK_ID_AND_TOKEN.split(" ");
+    const hook = new WebhookClient({id, token});
+    interaction.messageForLogging = await hook.msg({
+      author: {
+        name: `${ interaction.user.username }, в #${ interaction.channel.id }`,
+        iconURL: client.user.avatarURL()
+      },
+      description: `\`\`\`js\n${ codeContent }\`\`\``,
+      color: "#1f2022",
+      footer: {iconURL: client.emojis.cache.get(interaction.emojiByType).url, text: "Вызвана команда !eval"}
+    });
+    return;
   }
 
 
