@@ -328,7 +328,7 @@ class Command {
 		"allowDM": true,
 		"cooldown": 20000000,
 		"type": "user",
-		"Permissions": 16384
+		"Permissions": 16384n
 	};
 };
 
