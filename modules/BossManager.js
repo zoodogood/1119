@@ -824,6 +824,7 @@ class BossManager {
 		GUARANTEE_DAMAGE_PART_FOR_VOID: 0.2,
 		VOID_REWARD_DENOMINATOR: 0.8,
 		DAMAGE_FOR_KEY: 2_000,
+		KEYS_LIMIT: 30_000,
 		MAIN_COLOR: "#ffda73",
 
 		createRewardPull: ({userStats, level, bonuses = true}) => {
@@ -847,7 +848,10 @@ class BossManager {
 			);
 
 			// keys
-			const keysReward = Math.floor(userStats.damageDealt / BossChest.DAMAGE_FOR_KEY);
+			const keysReward = Math.min(
+				BossChest.KEYS_LIMIT,
+				Math.floor(userStats.damageDealt / BossChest.DAMAGE_FOR_KEY)
+			);
 
 			const rewards = {
 				"chestBonus": bonuses ? bonusesReward : 0,
