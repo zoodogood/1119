@@ -1257,9 +1257,10 @@ class BossManager {
 						const DAMAGE_PER_LEVEL = 15;
 						const damage = BASE_DAMAGE + DAMAGE_PER_LEVEL * boss.level;
 						
-						message.msg({description: content});
+						
 						const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
 						const content = `Успех! Нанесено ${ dealt }ед. урона`;
+						message.msg({description: content});
 						return;
 					}
 		
