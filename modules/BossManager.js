@@ -820,10 +820,10 @@ class BossManager {
 		BONUSES_PER_LEVEL: 10,
 		RECEIVE_LIMIT: 20,
 		BONUS_VOID_PULL: 3,
-		DAMAGE_FOR_VOID: 15_000,
+		DAMAGE_FOR_VOID: 150_000,
 		GUARANTEE_DAMAGE_PART_FOR_VOID: 0.2,
 		VOID_REWARD_DENOMINATOR: 0.8,
-		DAMAGE_FOR_KEY: 200,
+		DAMAGE_FOR_KEY: 2_000,
 		MAIN_COLOR: "#ffda73",
 
 		createRewardPull: ({userStats, level, bonuses = true}) => {
