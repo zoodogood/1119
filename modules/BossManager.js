@@ -839,7 +839,12 @@ class BossManager {
 
 			const bonus = Number(Util.random(BossChest.BONUS_VOID_PULL) === 1);
 
-			const voidReward = Math.floor(byDamage + bonus);
+			const voidLimit = level;
+
+			const voidReward = Math.min(
+				voidLimit,
+				Math.floor(byDamage + bonus)
+			);
 
 			// keys
 			const keysReward = Math.floor(userStats.damageDealt * BossChest.DAMAGE_FOR_KEY);
