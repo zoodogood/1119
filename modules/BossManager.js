@@ -823,8 +823,8 @@ class BossManager {
 		DAMAGE_FOR_VOID: 150_000,
 		GUARANTEE_DAMAGE_PART_FOR_VOID: 0.2,
 		VOID_REWARD_DENOMINATOR: 0.8,
-		DAMAGE_FOR_KEY: 2_000,
-		KEYS_LIMIT: 30_000,
+		DAMAGE_FOR_KEY: 5_000,
+		KEYS_LIMIT: 3_000,
 		MAIN_COLOR: "#ffda73",
 
 		createRewardPull: ({userStats, level, bonuses = true}) => {
