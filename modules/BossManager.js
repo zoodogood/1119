@@ -847,7 +847,7 @@ class BossManager {
 			);
 
 			// keys
-			const keysReward = Math.floor(userStats.damageDealt * BossChest.DAMAGE_FOR_KEY);
+			const keysReward = Math.floor(userStats.damageDealt / BossChest.DAMAGE_FOR_KEY);
 
 			const rewards = {
 				"chestBonus": bonuses ? bonusesReward : 0,
