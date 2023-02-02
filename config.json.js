@@ -6,5 +6,6 @@ export default {
 	guild: {
 		url: "https://discord.gg/76hCg2h7r8"
 	},
+	development: process.env.DEVELOPMENT === "TRUE",
 	version: packageConfig.version
 }
