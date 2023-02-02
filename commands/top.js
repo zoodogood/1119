@@ -27,7 +27,7 @@ class Command {
       },
       display: (element, output, index, _context) => {
         const name = `${ index + 1 }. ${ element.username }`;
-        const value = `Уровень: **${ element.data.level }** | Опыта: ${ output }`;
+        const value = `Уровень: **${ element.data.level }** | Опыта: ${ Util.NumberFormatLetterize(output) }`;
         return {name, value};
       }
     },
@@ -43,7 +43,7 @@ class Command {
       },
       display: (element, output, index, _context) => {
         const name = `${ index + 1 }. ${ element.username }`;
-        const value = `— ${ element.data.coins } (${ output }) <:coin:637533074879414272>`;
+        const value = `— ${ element.data.coins } (${ Util.NumberFormatLetterize(output) }) <:coin:637533074879414272>`;
         return {name, value};
       }
     },
@@ -127,7 +127,7 @@ class Command {
       },
       display: (element, output, index, context) => {
         const name = `${ index + 1 }. ${ element.username }`;
-        const value = `Великий воин нанёс ${ output } (${ (output * 100 / context.boss.damageTaken).toFixed(1) }%) урона`;
+        const value = `Великий воин нанёс ${ Util.NumberFormatLetterize(output) } (${ (output * 100 / context.boss.damageTaken).toFixed(1) }%) урона`;
         return {name, value};
       }
     },
@@ -143,7 +143,7 @@ class Command {
       },
       display: (element, output, index, context) => {
         const name = `${ index + 1 }. ${ element.username }`;
-        const value = output.toString(2);
+        const value = `0b${ output.toString(2) } (${ output })`;
         return {name, value};
       }
     }
