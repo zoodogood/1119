@@ -215,7 +215,7 @@ function resolveGithubPath(relative, lineOfCode){
 }
 
 function NumberFormatLetterize(numb){
-  numb = String( ~~(+numb) );
+  numb = String( Math.floor(+numb) );
 
   const THRESHOLD = 5;
   const DISTANCE  = 3;
