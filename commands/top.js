@@ -100,7 +100,7 @@ class Command {
       key: "witch",
       component: {
         value: "witch",
-        label: "Использования",
+        label: "Использования котла",
         emoji: "⚜️"
       },
       value: (element, _context) => {
