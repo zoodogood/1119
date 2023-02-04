@@ -36,7 +36,7 @@ class Command {
           {item: "berrys", count: 1, _weight: 4},
           {item: "keys", count: Util.random(2, 3), _weight: 9},
           {item: "trash", count: 0, _weight: 13},
-          {item: "exp", count: Util.random(19, 119), _weight: 22},
+          {item: "exp", count: Util.random(19, 89), _weight: 22},
           {item: "coins", count: Util.random(23, 40), _weight: 46},
           {item: "chilli", count: 1, _weight: 4},
           {item: "gloves", count: 1, _weight: 1}
@@ -46,7 +46,7 @@ class Command {
           {item: "berrys", count: Util.random(1, 2), _weight: 8},
           {item: "keys", count: Util.random(3, 5), _weight: 7},
           {item: "trash", count: 0, _weight: 3},
-          {item: "exp", count: Util.random(30, 200), _weight: 22},
+          {item: "exp", count: Util.random(39, 119), _weight: 22},
           {item: "coins", count: Util.random(88, 148), _weight: 54},
           {item: "chilli", count: 1, _weight: 3},
           {item: "gloves", count: 1, _weight: 2}
@@ -55,7 +55,7 @@ class Command {
           {item: "void", count: 1, _weight: 1},
           {item: "berrys", count: Util.random(1, 3), _weight: 12},
           {item: "keys", count: 9, _weight: 1},
-          {item: "exp", count: Util.random(470), _weight: 22},
+          {item: "exp", count: Util.random(229), _weight: 22},
           {item: "coins", count: Util.random(304, 479), _weight: 62},
           {item: "gloves", count: 1, _weight: 1},
           {item: "bonus", count: 5, _weight: 1}
