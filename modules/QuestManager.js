@@ -138,9 +138,11 @@ import { Actions } from "#src/modules/ActionManager.js";
 			/ DataManager.data.users.length * 100
 		).toFixed(2) + "%";
 
+		const isSecret = questBase.isSecret;
+
 		const MEDIA_URL = "https://media.discordapp.net/attachments/629546680840093696/1047587012665933884/batman-gif.gif";
 		user.msg({
-			title: `Вы выполнили глобальный квест\n"${ questBase.title }"!`,
+			title: `Вы выполнили ${ isSecret ? "секретный" : "глобальный"} квест\n"${ questBase.title }"!`,
 			description: `Описание: "${ questBase.description }"\nОпыта получено: **${ questBase.reward }**\nЭтот квест смогло выполнить ${ percentOfMade } пользователей.\n[Я молодец.](${ MEDIA_URL })`});
 	}
 
@@ -260,19 +262,22 @@ import { Actions } from "#src/modules/ActionManager.js";
 			isGlobal: true,
 			reward: 900
 		},
-		"killBossAlone": {
-			id: "killBossAlone",
-			description: "Победите босса в одиночку",
-			isGlobal: true,
-			isSecret: true,
-			reward: 1_200
-		},
 		"firstTimeKillBoss": {
 			id: "firstTimeKillBoss",
-			description: "Добейте босса",
+			title: "Добейте босса",
+			description: "Насколько это было сложно..?",
+			isGlobal: true,
+			reward: 200
+		},
+		"killBossAlone": {
+			id: "killBossAlone",
+			title: "Корона босса",
+			description: "Победите его в одиночку",
 			isGlobal: true,
 			isSecret: true,
-			reward: 200
+			emoji: "👑",
+			key: "bossCrown",
+			reward: 1_200
 		},
 		"coolingSenses": {
 			id: "coolingSenses",
@@ -280,6 +285,8 @@ import { Actions } from "#src/modules/ActionManager.js";
 			description: "Променяйте всех знакомых на кучку монет и новый способ самоутверждения\nВозможно вы просто действуете рационально, однако обратного пути больше нет.",
 			isGlobal: true,
 			isSecret: true,
+			emoji: "❄️",
+			key: "voidIce",
 			reward: 30
 		},
 
