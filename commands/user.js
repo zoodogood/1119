@@ -92,10 +92,11 @@ class Command {
         }
           
         if (member){
-          const secretAchievements = [{emoji: "👑", property: "crown"}, {emoji: "❄️", property: "voidIce"}]
-            .filter(({property}) => property in user);
+          const secretAchievements = QuestManager.questsBase
+            .filter(questBase => questBase.isGlobal && questBase.isSecret && !questBase.isRemoved)
+            .filter(questBase => user.questsGlobalCompleted.includes(questBase.id));
 
-          const achiementContent = secretAchievements.at(-1) ? secretAchievements.random().emoji + " " : "";
+          const achiementContent = secretAchievements.size ? secretAchievements.random().emoji + " " : "";
           embed.fields.push({name: " ᠌᠌", value: "\n**" + `${ achiementContent }${ member.roles.highest }**\nᅠ`});
         }
 
@@ -165,7 +166,10 @@ class Command {
             name: "Выполнено квестов 📜",
             value: (() => {
               const userCompleted = (user.questsGlobalCompleted ?? "").split(" ").filter(Boolean);
-              const globalsContent = `Глобальных: ${ userCompleted.length }/${ QuestManager.questsBase.filter(quest => quest.isGlobal).size }`;
+              const isSimpleGlobalQuest = (questBase) => questBase.isGlobal && !questBase.isSecret && !questBase.isRemoved;
+
+              const bases = QuestManager.questsBase.filter(quest => userCompleted.includes(quest.id) || isSimpleGlobalQuest(quest));
+              const globalsContent = `Глобальных: ${ userCompleted.length }/${ bases.size }`;
               const dailyQuestsContent = `Ежедневных: ${target.bot ? "BOT" : user.dayQuests || 0}`;
               return `${ dailyQuestsContent }\n${ globalsContent }`;
             })(),
