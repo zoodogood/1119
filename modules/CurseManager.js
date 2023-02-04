@@ -421,7 +421,7 @@ class CurseManager {
 	}
  
 	static checkAvailableAll(user){
-	  user.data.curses.forEach(
+	  user.data.curses?.forEach(
 		 (curse) => this.checkAvailable({curse, user})
 	  );
 	}
