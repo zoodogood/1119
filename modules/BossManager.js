@@ -167,6 +167,12 @@ class BossEvents {
 		if (precedesTen){
 			this.events.get("notifyLevel10").callback(boss, context);
 		}
+
+		if (precedesTen){
+			this.events.get("checkQuestAloneKill").callback(boss, context);
+		}
+
+		this.events.get("questFirstTimeKillBoss").callback(boss, context);
 	}
 
 	static onTakeDamage(boss, context){
@@ -209,6 +215,29 @@ class BossEvents {
 					description,
 					color: BossManager.MAIN_COLOR
 				});
+			}
+		},
+
+		questFirstTimeKillBoss: {
+			id: "questFirstTimeKillBoss",
+			callback(boss, context){
+				const {sourceUser} = context;
+				sourceUser.action(Actions.globalQuest, {name: "firstTimeKillBoss"});
+			}
+		},
+
+		checkQuestAloneKill: {
+			id: "checkQuestAloneKill",
+			callback(boss, context){
+				const {sourceUser} = context;
+				const hasImpostor = Object.entries(boss.users)
+					.some(([id, {damageDealt}]) => damageDealt && id !== sourceUser.id);
+
+				if (hasImpostor){
+					return;
+				}
+
+				sourceUser.action(Actions.globalQuest, {name: "killBossAlone"});
 			}
 		}
 	}));
