@@ -10,7 +10,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 		const userQuestField = user.data.quest;
 
 	  	const questBase = [...this.questsBase.values()]
-			.filter(quest => !quest.isGlobal)
+			.filter(quest => !quest.isGlobal && !quest.isRemoved)
 			.filter(quest => quest.id !== userQuestField?.id)
 			.random({weight: true});
 
@@ -104,6 +104,12 @@ import { Actions } from "#src/modules/ActionManager.js";
 	}
 
 	static completeGlobalQuest({user, questBase}){
+
+		if (questBase.isRemoved){
+			return;
+		}
+
+
 		const data = user.data;
 		data.questsGlobalCompleted ||= "";
 
@@ -209,6 +215,7 @@ import { Actions } from "#src/modules/ActionManager.js";
 			title: "Разумно-безумен",
 			description: "Украдите у пользователя, у которого никто не смог украсть.",
 			isGlobal: true,
+			isRemoved: true,
 			reward: 900
 		},
 		"day100": {
@@ -253,7 +260,29 @@ import { Actions } from "#src/modules/ActionManager.js";
 			isGlobal: true,
 			reward: 900
 		},
-		
+		"killBossAlone": {
+			id: "killBossAlone",
+			description: "Победите босса в одиночку",
+			isGlobal: true,
+			isSecret: true,
+			reward: 1_200
+		},
+		"firstTimeKillBoss": {
+			id: "firstTimeKillBoss",
+			description: "Добейте босса",
+			isGlobal: true,
+			isSecret: true,
+			reward: 200
+		},
+		"coolingSenses": {
+			id: "coolingSenses",
+			title: "Охлаждение чувств",
+			description: "Променяйте всех знакомых на кучку монет и новый способ самоутверждения\nВозможно вы просто действуете рационально, однако обратного пути больше нет.",
+			isGlobal: true,
+			isSecret: true,
+			reward: 30
+		},
+
 		"onlyCoin": {
 			id: "onlyCoin",
 			handler: "coinFromMessage",
@@ -322,6 +351,32 @@ import { Actions } from "#src/modules/ActionManager.js";
 		},
 	}));
 
+
+
+	static questIsGlobalBased(questResolable){
+		const questBase = this.resolveQuestBase(questResolable);
+		return questBase.isGlobal;
+	}
+
+	static questIsDailyBased(questResolable){
+		const questBase = this.resolveQuestBase(questResolable);
+		return !questBase.isGlobal;
+	}
+
+	static questIsRemoved(questResolable){
+		const questBase = this.resolveQuestBase(questResolable);
+		return questBase.isRemoved;
+	}
+
+	static questIsSecret(questResolable){
+		const questBase = this.resolveQuestBase(questResolable);
+		return questBase.isSecret;
+	}
+
+	static resolveQuestBase(questResolable){
+		const id = typeof questResolable === "string" ? questResolable : questResolable.id;
+		return this.questsBase.get(id) ?? null;
+	}
  }
 
 export default QuestManager;
