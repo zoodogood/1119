@@ -232,7 +232,6 @@ class Command {
         return !user.data.voidIce && !user.data.praiseMe || !user.data.praiseMe.length;
       },
       action(user, _interaction){
-        user.data.voidIce = true;
         user.action(Actions.globalQuest, {name: "coolingSenses"});
         return;
       }
