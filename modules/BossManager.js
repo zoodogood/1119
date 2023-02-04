@@ -189,8 +189,9 @@ class BossEvents {
 
 	static beforeDeath(boss, context){
 		const MAXIMUM_LEVEL = BossManager.MAXIMUM_LEVEL;
-		const transition = context.fromLevel < MAXIMUM_LEVEL && context.toLevel > MAXIMUM_LEVEL;
-		if (transition){
+		const isDefeatTransition = boss.level < MAXIMUM_LEVEL && context.possibleLevels > MAXIMUM_LEVEL;
+		if (isDefeatTransition){
+			boss.damageTaken = BossManager.calculateHealthPointThresholder(MAXIMUM_LEVEL);
 			context.possibleLevels = MAXIMUM_LEVEL;
 		}
 		return;
@@ -211,7 +212,9 @@ class BossEvents {
 					time: Util.timestampToDate(now - (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) * 86_400_000)
 				};
 				const description = `**10-й уровень за ${ contents.time }**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий. Соберите 5 штук, чтобы получить случайную из них`;
-				context.channel.msg({
+				const guild = BossManager.client.guilds.cache.get(boss.guildId);
+
+				guild.chatSend({
 					description,
 					color: BossManager.MAIN_COLOR
 				});
