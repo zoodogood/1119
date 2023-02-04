@@ -390,7 +390,7 @@ class CurseManager {
 	  }
  
 	  const fail = () => {
-		 CurseManager.curseEnd({lost: true, user});
+		 CurseManager.curseEnd({lost: true, user, curse});
 	  }
  
 	  return {
