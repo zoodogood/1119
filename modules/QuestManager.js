@@ -141,12 +141,13 @@ import { Actions } from "#src/modules/ActionManager.js";
 	static completeQuest({user, quest, context: {channel}}){
 		const DEFAULT_REWARD_MULTIPLAYER = 1.4;
 		const DEFAULT_CHEST_REWARD = 4;
+		const EXPERIENCE_REWARD_MULTIPLAYER = 3;
 		const multiplayer = DEFAULT_REWARD_MULTIPLAYER * quest.reward;
 
 		const data = user.data;
 		const questBase = this.questsBase.get(quest.id);
 
-		const expReward = Math.round((data.level + 5) * multiplayer);
+		const expReward = Math.round((data.level + EXPERIENCE_REWARD_MULTIPLAYER) * multiplayer);
 		const chestBonusReward = Math.ceil(multiplayer * DEFAULT_CHEST_REWARD) + 1;
 		data.exp += expReward;
 		data.chestBonus = (data.chestBonus ?? 0) + chestBonusReward;
