@@ -9,14 +9,21 @@ class Command {
 
     QuestManager.checkAvailable({user: msg.author});
 
-    const userQuests = (user.questsGlobalCompleted ?? "").split(" ").filter(Boolean);
-    const globalQuestsList = QuestManager.questsBase.filter(quest => quest.isGlobal);
+    const isSimpleGlobalQuest = (questBase) => questBase.isGlobal && !questBase.isSecret && !questBase.isRemoved;
 
-    let globalQuestsContent = globalQuestsList
+    const userQuests = (user.questsGlobalCompleted ?? "").split(" ").filter(Boolean);
+    const globalQuestsList = QuestManager.questsBase
+      .filter(isSimpleGlobalQuest);
+
+    
+
+    const globalQuestsContent = globalQuestsList
       .map(({id, title}) => userQuests.includes(id) ? `<a:yes:763371572073201714> **${ title }**` : `<a:Yno:763371626908876830> ${ title }`)
       .join("\n");
 
-    const secretAchievements = ["voidIce", "crown"];
+    const secretAchievements = QuestManager.questsBase
+      .filter(questBase => questBase.isGlobal && questBase.isSecret && !questBase.isRemoved);
+    
 
     const dailyQuest = {
       nextContent: `До обновления: \`${ +((new Date().setHours(23, 59, 50) - Date.now()) / 3_600_000).toFixed(1) }ч\``,
@@ -27,7 +34,7 @@ class Command {
     const fields = [
       {
         name: "Прогресс достижений:",
-        value: `Достигнуто: \`${ userQuests.length }/${ globalQuestsList.size }\`\nСекретных: \`${ secretAchievements.filter(keyword => keyword in user).length }/${ secretAchievements.length }\``
+        value: `Достигнуто: \`${ globalQuestsList.filter(quest => userQuests.includes(quest.id) ).size }/${ globalQuestsList.size }\`\nСекретных: \`${ secretAchievements.filter(quest => userQuests.includes(quest.id) ).size }/${ secretAchievements.size }\``
       },
       {
         name: "Дневные задачи:",
