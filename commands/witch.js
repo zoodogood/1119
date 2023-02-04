@@ -233,7 +233,7 @@ class Command {
       },
       action(user, _interaction){
         user.data.voidIce = true;
-        user.msg({title: "Охлаждение чувств", description: `Вы выполнили секретное достижение\nОписание: \"Променяйте всех знакомых на кучку монет и метод самоутверждения\"\nВозможно вы просто действуете рационально, но все-таки обратного пути больше нет.\nЭто достижение выполнило 0.000% пользователей.`});
+        user.action(Actions.globalQuest, {name: "coolingSenses"});
         return;
       }
     }
