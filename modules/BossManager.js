@@ -763,7 +763,8 @@ class BossManager {
 
 	
 	static calculateKillReward({fromLevel, toLevel}){
-		const perLevel = 100 + (toLevel - fromLevel + 1) * 25;
+		const ADDING_PER_LEVEL = 25;
+		const perLevel = 100 + (toLevel + fromLevel + 1) * (ADDING_PER_LEVEL / 2);
 		return perLevel * (toLevel - fromLevel);	
 	}
 
