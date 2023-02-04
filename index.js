@@ -358,7 +358,7 @@ async function eventHundler(msg){
   }
 
 
-  if (msg.content.toLowerCase().match(/((ухуель|глупый|тупой|дурной|бездарный) бот)|(бот (ухуель|глупый|тупой|дурной|бездарный))/i)) stupid_bot(user, msg);
+  if (msg.content.toLowerCase().match(/((ухуель|глупый|тупой|енот|дурной|бездарный) бот)|(бот (ухуель|енот|глупый|тупой|дурной|бездарный))/i)) stupid_bot(user, msg);
   if (msg.content.toLowerCase().match(/((классный|умный|хороший|милый) бот)|(бот (классный|умный|хороший|милый))/i)) good_bot(user, msg);
 
   if (!msg.guild) return;
