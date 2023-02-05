@@ -211,7 +211,7 @@ class BossEvents {
 				const contents = {
 					time: Util.timestampToDate(now - (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) * 86_400_000)
 				};
-				const description = `**10-й уровень за ${ contents.time }**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий. Соберите 5 штук, чтобы получить случайную из них`;
+				const description = `**10-й уровень за ${ contents.time }**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий. Соберите 5 штук, чтобы получить случайную из реликвий`;
 				const guild = BossManager.client.guilds.cache.get(boss.guildId);
 
 				guild.chatSend({
