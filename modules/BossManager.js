@@ -288,8 +288,27 @@ class BossEffects {
 		return effect;
 	}
 
-	static removeEffect({effect, user}){
+	static removeEffects({list, user}){
+		for (const effect of list){
+			this._removeEffect({effect, user});	
+		}
+		
+		this.cleanCallbackMap(user);
+	}
 
+	static cleanCallbackMap(user){
+		const bossEffects = user.data.bossEffects;
+		const needRemove = (callbackKey) => !bossEffects.some(({id}) => callbackKey in this.effectBases.get(id).callback);
+		const callbackMap = user.data.bossEffectsCallbackMap;
+		Object.keys(callbackMap).filter(needRemove)
+			.forEach(key => delete callbackMap[key]);
+	}
+
+	static removeEffect({effect, user}){
+		this.removeEffects({list: [effect], user})
+	}
+
+	static _removeEffect({effect, user}){
 		const index = user.data.bossEffects.indexOf(effect);
 		if (index === -1){
 			return null;
@@ -297,12 +316,6 @@ class BossEffects {
 		
 		user.action(Actions.bossEffectEnd, effect);
 		user.data.bossEffects.splice(index, 1);
-
-		const needRemove = (callbackKey) => !user.data.bossEffects.some(({id}) => callbackKey in this.effectBases.get(id).callback);
-		const callbackMap = user.data.bossEffectsCallbackMap;
-		Object.keys(callbackMap).filter(needRemove)
-			.forEach(key => delete callbackMap[key]);
-
 	}
 
 	static effectsOf({boss, user}){
