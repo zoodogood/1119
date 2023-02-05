@@ -1027,10 +1027,23 @@ class BossManager {
 			)
 		};
 
-		Object.entries(boss.users)
+		const cleanEffects = (user) => {
+			const list = BossEffects.effectsOf({user, boss});
+			BossEffects.removeEffects({list, user});
+		}
+
+		const usersStatsEntries = Object.entries(boss.users);
+
+		usersStatsEntries
 			.filter(([_id, {damageDealt}]) => damageDealt > DAMAGE_THRESHOLDER_FOR_REWARD)
 			.forEach(sendReward);
 
+		usersStatsEntries
+			.map(([id]) => usersCache.get(id))
+			.forEach(cleanEffects);
+
+
+			
 		const mainDamage = Object.entries(boss.stats.damage).reduce(
 			(acc, current) => acc.at(1) > current.at(1) ? acc : current,
 			[BossManager.DAMAGE_SOURCES.other, 0]
