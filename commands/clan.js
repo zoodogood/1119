@@ -1,6 +1,5 @@
 import * as Util from '#src/modules/util.js';
 import { client } from '#src/index.js';
-import {} from '#src/modules/';
 import { ButtonStyle, ComponentType } from 'discord.js';
 
 class Command {
