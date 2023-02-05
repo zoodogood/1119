@@ -22,7 +22,7 @@ class Command {
     };
 
     if (!command){
-      let helpMessage = await msg.msg({title: "Не удалось найти команду", description: `Не существует вызова \`!${interaction.params}\`\nВоспользуйтесь командой !хелп или нажмите реакцию ниже для получения списка команд.\nВы можете предложить новое слово для вызова одной из существующих команд.`});
+      let helpMessage = await msg.msg({title: "Не удалось найти команду", description: `Не существует вызова \`!${interaction.params}\`\nВоспользуйтесь командой !хелп или нажмите реакцию ниже для получения списка команд.\nНа сервере бота Вы можете предложить псевдонимы для вызова одной из существующих команд.`});
       //** Реакция-помощник
       let react = await helpMessage.awaitReact({user: msg.author, removeType: "all"}, "❓");
       if (!react){
