@@ -556,8 +556,61 @@ class BossEffects {
 
 class BossRelics {
 	static collection = new Collection(Object.entries({
-		"to-do: rename1": {
-			id: "to-do: rename1"
+		"destroy": {
+			id: "destroy",
+			label: "Техномагия",
+			description: "Дарует способность: позволяет единожды уничтожить босса",
+			onBought: () => {
+
+			}
+		},
+		"helper": {
+			id: "helper",
+			label: "Молочко",
+			description: "Дарует способность: снимает негативные эффекты с упомянутого пользователя",
+			onBought: () => {
+
+			}
+		},
+		"dealt": {
+			id: "dealt",
+			label: "Сильная атака",
+			description: "Новая способность с перезарядкой в 4 часа: наносит ровно 10% от здоровья босса",
+			onBought: () => {
+
+			}
+		},
+		"timeSecrets": {
+			id: "timeSecrets",
+			label: "Управление временем",
+			description: "Классическое событие увеличивающее перезарядку больше на вас не действует",
+			onBought: () => {
+
+			}
+		},
+		"mastery": {
+			id: "mastery",
+			label: "Поглатить",
+			description: "Дарует способность поглатить другого воина, его урон и перезарядку атаки",
+			onBought: () => {
+
+			}
+		},
+		"pestsKing": {
+			id: "pestsKing",
+			label: "Король клопов",
+			description: "Навык призыва клопов — худшый навык",
+			onBought: () => {
+
+			}
+		},
+		"toy": {
+			id: "toy",
+			label: "Игрушка",
+			description: "Ничего не делает",
+			onBought: () => {
+
+			}
 		}
 	}));
 
@@ -1043,7 +1096,7 @@ class BossManager {
 			.forEach(cleanEffects);
 
 
-			
+
 		const mainDamage = Object.entries(boss.stats.damage).reduce(
 			(acc, current) => acc.at(1) > current.at(1) ? acc : current,
 			[BossManager.DAMAGE_SOURCES.other, 0]
