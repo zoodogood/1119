@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"#src/config": ["./src/config.js"],
+			"#src/*": ["./src/*"],
+			"#module-lib/*": ["./src/modules/*"],
+			"#module/*": ["./src/modules/*/mod.svelte"],
+			"#lib/*": ["./src/lib/*"]
+		},
+		"target": "ESNext",
+		"moduleResolution": "node"
+	},
+	"exclude": ["node_modules", "**/node_modules", "dist"]
+}
