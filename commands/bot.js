@@ -21,8 +21,8 @@ class Command {
     const components = [
       {
         type: ComponentType.Button,
-        label: "Больше~",
-        style: ButtonStyle.Primary,
+        label: "Больше",
+        style: ButtonStyle.Success,
         customId: "@command/bot/getMoreInfo"
       },
       {
@@ -93,7 +93,7 @@ class Command {
         components: [
           {
             type: ComponentType.Button,
-            label: "Удалить.",
+            label: "Удалить!",
             style: ButtonStyle.Primary,
             customId: "@command/bot/removeMessage"
           },
