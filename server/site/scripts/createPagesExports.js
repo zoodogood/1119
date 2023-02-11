@@ -5,7 +5,7 @@
 
 const FOLDER_NAME = "./src/pages"; // Folder with commands list relative process cwd()
 
-const TARGET_PATH = "./exports[builded].js"; // Generate file with this name
+const TARGET_PATH = "./exports[builded].mjs"; // Generate file with this name
 
 
 

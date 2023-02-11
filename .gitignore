@@ -2,3 +2,4 @@
 node_modules/
 data/
 folder/errors/*.json
+server/site/src/pages/exports\[builded\].mjs

@@ -1,4 +1,4 @@
-import * as PagesEnum from '#src/pages/exports[builded].js';
+import * as PagesEnum from '#src/pages/exports[builded].mjs';
 
 
 
