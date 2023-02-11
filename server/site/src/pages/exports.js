@@ -1,3 +1,2 @@
-import Welcome from './+Welcome.svelte';
-
-export { Welcome }
+export {default as index} from './+index.svelte';
+export {default as oauth_AuthSuccess} from './oauth/+AuthSuccess.svelte';
