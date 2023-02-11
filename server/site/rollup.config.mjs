@@ -5,8 +5,10 @@ import { terser } from 'rollup-plugin-terser';
 import livereload from 'rollup-plugin-livereload';
 import css from 'rollup-plugin-css-only';
 
+
 import replace from '@rollup/plugin-replace';
 import replaces from '#src/enviroment/values.js';
+import { execSync, spawn } from 'child_process';
 
 
 const production = !process.env.ROLLUP_WATCH;
@@ -21,7 +23,6 @@ function serve() {
 	return {
 		async writeBundle() {
 			if (server) return;
-			const { spawn } = (await import('child_process')).default;
 			server = spawn('npm', ['run', 'start', '--', '--dev'], {
 				stdio: ['ignore', 'inherit', 'inherit'],
 				shell: true
@@ -42,6 +43,8 @@ export default {
 		file: 'public/build/bundle.js'
 	},
 	plugins: [
+		execSync("npm run createPagesExports") && false,
+
 		replace({
 			include: ["src/enviroment/mod.js"],
 			preventAssignment: true,
