@@ -99,7 +99,7 @@ class Command {
           },
           {
             type: ComponentType.Button,
-            label: "Отправить отзыв.",
+            label: "Оставить отзыв",
             style: ButtonStyle.Primary,
             customId: "@command/bot/postReview"
           }
@@ -193,7 +193,7 @@ class Command {
         description,
         color: "#6534bf",
         footer: {text: `Ответ предоставил ${ interaction.user.tag }`},
-        image: "https://www.freepnglogos.com/uploads/line-png/draw-black-line-transparent-png-11.png"
+        image: "https://media.discordapp.net/attachments/629546680840093696/1073849735850508339/simple-black-rounded-line.png?width=559&height=559"
       };
 
       const message = await user.msg(embed);
