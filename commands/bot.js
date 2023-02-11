@@ -203,7 +203,13 @@ class Command {
         description: `<t:${ Math.floor(interaction.message.createdTimestamp / 1_000) }>\n>>> ${ interaction.message.embeds.at(0).description }`,
         author: {name: "Содержимое Вашего отзыва:", iconURL: user.avatarURL()},
         color: "#3260a8",
-        footer: null
+        footer: null,
+        components: [{
+          type: ComponentType.Button,
+          label: "Спрятать",
+          style: ButtonStyle.Secondary,
+          customId: "@command/bot/hideMessage"
+        }]
       });
 
       await user.msg(embed);
@@ -214,6 +220,14 @@ class Command {
         ephemeral: true,
         content: "Ваш ответ дошёл до пользователя!",
       });
+    },
+    hideMessage(interaction){
+      interaction.message.delete();
+      interaction.msg({
+        ephemeral: true,
+        content: "Совет: используйте команду !клир, чтобы очистить ненужные сообщения в этом чате"
+      });
+      return;
     }
   }
 
