@@ -20,7 +20,14 @@ function timestampDay(timestamp){
   	return Math.floor(timestamp / 86_400_000)
 }
 
+function relativeSiteRoot(app, path, removeHash = true){
+	const {origin, hash} = app.document.location;
+	const pathname = Object.values(app.url.base).join("/");
+	return `${ origin }${ pathname }/${ path }${ removeHash ? "" : `#${ hash }` }`;
+}
+
 export {
 	resolveDate,
-	timestampDay
+	timestampDay,
+	relativeSiteRoot
 }
