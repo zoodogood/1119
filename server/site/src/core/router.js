@@ -1,4 +1,4 @@
-import * as PagesEnum from '#src/pages/exports.js';
+import * as PagesEnum from '#src/pages/exports[builded].js';
 
 
 
@@ -9,8 +9,6 @@ function route(app){
 		.join("_");
 
 
-	console.log(subpath);
-	console.log(PagesEnum);
 	const _Page = Object.entries(PagesEnum)
 		.find(([name]) => name.toLocaleLowerCase() === subpath.toLocaleLowerCase())
 		?.at(1) ?? PagesEnum.index;
