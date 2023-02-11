@@ -1,3 +1,3 @@
 export default {
-	cwd: process.cwd()
+	siteRoot: "pages"
 }
