@@ -1,7 +1,7 @@
 
 <main>
 	<h1>Hello Bot!</h1>
-	<p>Visit the <a href="./docs">public</a>.</p>
+	<p>Visit the <a href={_url}>public</a>.</p>
 </main>
 
 <style>
@@ -25,3 +25,10 @@
 		}
 	}
 </style>
+
+
+<script>
+	import app from "#src/core/app.js";
+	import {relativeSiteRoot} from "#src/lib/util.js";
+	const _url = relativeSiteRoot(app, "public");
+</script>
