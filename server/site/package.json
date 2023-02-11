@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv . --no-clear"
+    "start": "sirv . --no-clear",
+    "createPagesExports": "node scripts/createPagesExports.js"
   },
   "imports": {
     "#src/config": "./src/config.js",
