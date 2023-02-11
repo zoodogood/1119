@@ -5,7 +5,7 @@ const ROOT = "server/site";
 const root = Path.join(process.cwd(), ROOT);
 const target = "index.html";
 
-const PREFIX = ["/page/**", "/page", "/pages/**", "/pages", "/site/**", "/site"];
+const PREFIX = /^\/(?:(?:ru|ua|en)\/)?pages/;
 
 
 class Route {
