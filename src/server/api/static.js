@@ -100,7 +100,7 @@ class PathControll {
 			return files;
 		}
 
-		return this.createresponse({folderChunk, target});
+		return this.createResponse({folderChunk, target});
 	}
 
 	parseURL(url){
@@ -143,7 +143,7 @@ class PathControll {
 	}
 
 
-	createresponse({folderChunk, target}){
+	createResponse({folderChunk, target}){
 		
 		const pathToFile = path.join(
 			root,
