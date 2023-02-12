@@ -1,5 +1,5 @@
-import HashController from '#lib/HashController.js';
-import {resolveDate} from '#lib/util.js';
+import HashController from '#site/lib/HashController.js';
+import { resolveDate } from '#lib/safe-utils.js';
 import enviroment from '#site/enviroment/mod.js';
 import { Collection } from '@discordjs/collection';
 import config from '#config';
