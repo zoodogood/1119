@@ -2,8 +2,6 @@
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {
-			"#src/*":  ["./src/*"],
-			"#root/*": ["./*"],
 			"#config": ["./src/config.json.js"],
 			"#app":    ["./src/app/app.js"],
 
@@ -15,7 +13,10 @@
 			"#static/*": ["./static/*"],
 
 			"#site-component-lib/*": ["./src/site/src/modules/*"],
-			"#site-component/*":     ["./src/site/src/modules/*/mod.svelte"]
+			"#site-component/*":     ["./src/site/src/modules/*/mod.svelte"],
+
+			"#src/*":  ["./src/*"],
+			"#root/*": ["./*"],
 		},
 		"target": "ESNext",
 		"moduleResolution": "node"
