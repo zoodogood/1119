@@ -268,8 +268,6 @@ client.on("ready", async () => {
     }
     user.guilds.forEach(guild => guild.logSend({title: `${guild.members.resolve(user).displayName} изменил свой аватар`, author: {name: user.username, iconURL: user.avatarURL({dynamic: true})}, description: "", footer: {text: "Старый аватар", iconURL: old.displayAvatarURL({dynamic: true})}}));
   });
-
-  console.info(`\n\n\n     Ready...\n\n`);
 });
 
 

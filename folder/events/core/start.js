@@ -4,7 +4,6 @@ import { omit, timestampDay } from "#src/lib/util.js";
 
 import { DataManager, TimeEventsManager, CommandsManager, CounterManager, EventsManager } from '#lib/modules/mod.js';
 import { client } from '#bot/client.js';
-import { ReadPackageJson } from '#lib/util.js';
 
 import app from '#app';
 
@@ -43,13 +42,7 @@ class Event extends BaseEvent {
 
 		
 		app.client = client;
-		app.version = (await ReadPackageJson()).version;
-
-
-		const {default: server} = await import('#server/start.js');
-		app.server = server;
-		
-		setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
+		client.login(process.env.DISCORD_TOKEN);
 	}
 
 	checkDataManagerFullset(){
