@@ -40,7 +40,9 @@ class App {
 	#parseDocumentLocate(location){
 		const url = location.pathname;
 
-		const key = config.siteRoot;
+		const key = config.server.paths.site.split("/")
+			.at(-1);
+
 		const regex = new RegExp(key);
 		const index = (url.match(regex)?.index ?? 0) + key.length;
 		const base = url.slice(0, index);
