@@ -1,8 +1,9 @@
 import HashController from '#site/lib/HashController.js';
-import { resolveDate } from '#lib/safe-utils.js';
+import { resolveDate, parseDocumentLocate } from '#lib/safe-utils.js';
 import enviroment from '#site/enviroment/mod.js';
-import { Collection } from '@discordjs/collection';
-import config from '#config';
+
+import PagesEnum from '#static/build/svelte-pages/enum[builded].mjs';
+
 
 class App {
 
@@ -10,11 +11,12 @@ class App {
 	data = {hash: {}};
 	Hash = this.#createHashController();
 	enviroment = enviroment;
-	url = this.#parseDocumentLocate(this.document.location);
+	url = parseDocumentLocate(this.document.location);
+	PagesEnum = PagesEnum;
 
 	constructor(){
 		this.lang = this.url.base.lang ?? "ru";
-
+		
 		console.info(this);
 	}
 
@@ -35,35 +37,6 @@ class App {
 		Object.assign(data.hash, hash);
 
 		data.Date = resolveDate(data.currentHash.day, ...(data.currentHash.date?.split(".") ?? []));
-	}
-
-	#parseDocumentLocate(location){
-		const url = location.pathname;
-
-		const key = config.server.paths.site.split("/")
-			.at(-1);
-
-		const regex = new RegExp(key);
-		const index = (url.match(regex)?.index ?? 0) + key.length;
-		const base = url.slice(0, index);
-		const subpath = url.slice(index)
-			.split("/")
-			.filter(Boolean);
-
-		return {
-			subpath,
-			base: this.#parseLocationBase(base)
-		};	
-	}
-
-	#parseLocationBase(base){
-		typeof base === "string" && (base = base.split("/"));
-		base = base.filter(Boolean);
-
-		const entry 	= base.at(-1);
-		const lang  	= base.at(-2);
-		const prefix   = base.at(-3);
-		return {prefix, lang, entry};
 	}
 	
 }

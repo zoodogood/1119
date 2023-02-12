@@ -1,4 +1,8 @@
 import {route} from '#site/core/router.js';
-import app from './app';
+import SvelteApp from './app.js';
 
-route(app);
+import app from '#app';
+
+app.svelte = SvelteApp;
+
+route(SvelteApp);
