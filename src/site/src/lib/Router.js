@@ -1,5 +1,5 @@
 import PagesEnum from "#static/build/svelte-pages/enum[builded].mjs";
-import { relativeSiteRoot } from '#lib/util.js';
+import { relativeSiteRoot } from '#lib/safe-utils.js';
 
 class Router {
 	static #pagesEnum = PagesEnum;

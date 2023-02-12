@@ -1,4 +1,4 @@
-import {store as reactiveURL} from '#lib/reactiveURL.js';
+import {store as reactiveURL} from '#site/lib/reactiveURL.js';
 import { writable } from 'svelte/store';
 
 
