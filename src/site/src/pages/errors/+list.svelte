@@ -1,7 +1,11 @@
 
 <main>
 	<h1>Hello 1119!</h1>
-	<p>Visit the <a href={_url}>public</a>.</p>
+	<ul>
+		{#each errors as error}
+			<p>{ error }</p>
+		{/each}
+	</ul>
 </main>
 
 <style>
@@ -28,7 +32,17 @@
 
 
 <script>
-	import app from "#site/core/app.js";
-	import { relativeSiteRoot } from "#lib/safe-utils.js";
-	const _url = relativeSiteRoot(app, "public");
+
+	let errors = [];
+
+	(async () => {
+		const fileName = "";
+		const BASE = "http://localhost:8001/errors/files/";
+		const url = `${ BASE }${ fileName }`;
+  		const response = await fetch(url);
+
+		const data = await response.json();
+		errors = data;
+	})();
+  
 </script>
