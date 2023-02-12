@@ -1,8 +1,10 @@
-import {TimeEventsManager, BossManager, Util} from '#lib/modules/mod.js';
+import {TimeEventsManager, BossManager} from '#lib/modules/mod.js';
 import { client } from '#bot/client.js';
+
 
 import TreeCommand from '#folder/commands/seed.js';
 import BankCommand from '#folder/commands/bank.js';
+import { ending, NumberFormatLetterize } from '#src/lib/util.js';
 
 class Event {
 	run(isLost){
@@ -51,10 +53,10 @@ class Event {
 		data.msg_total = data.msg_total + msgs || msgs;
 
 
-		let description = `За этот день было отправлено ${Util.ending(msgs, "сообщени", "й", "е", "я")}\nРекордное количество: ${data.day_max || (data.day_max = 0)}`;
+		let description = `За этот день было отправлено ${ ending(msgs, "сообщени", "й", "е", "я") }\nРекордное количество: ${data.day_max || (data.day_max = 0)}`;
 
 		if (data.days > 3) {
-			description += `\nВсего сообщений: ${ Util.NumberFormatLetterize(data.msg_total) }\nВ среднем за день: ${Math.round(data.msg_total / data.days)}`;
+			description += `\nВсего сообщений: ${ NumberFormatLetterize(data.msg_total) }\nВ среднем за день: ${Math.round(data.msg_total / data.days)}`;
 		}
 
 		if (data.day_max < msgs) {
@@ -71,7 +73,7 @@ class Event {
 		}
 
 		if (misstake)
-			description += `\n\nДерево засыхает! Ему необходимо на ${ Util.ending(misstake - msgs, "сообщени", "й", "е", "я") } больше 💧`;
+			description += `\n\nДерево засыхает! Ему необходимо на ${ ending(misstake - msgs, "сообщени", "й", "е", "я") } больше 💧`;
 
 			guild.chatSend({ title: "Статистика сервера", description });
 	}

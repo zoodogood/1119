@@ -1,4 +1,4 @@
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 import DataManager from '#lib/modules/DataManager.js';
 import CurseManager from '#lib/modules/CurseManager.js';
 import { Actions } from '#lib/modules/ActionManager.js';

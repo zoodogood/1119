@@ -1,4 +1,4 @@
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 import DataManager from '#lib/modules/DataManager.js';
 import Path from 'path';
 

@@ -1,5 +1,6 @@
 import { client } from '#bot/client.js';
-import {TimeEventsManager, BossManager, Util, DataManager} from '#lib/modules/mod.js';
+import * as Util from '#lib/util.js';
+import {TimeEventsManager, BossManager, DataManager} from '#lib/modules/mod.js';
 
 class Event {
 	async run(isLost){

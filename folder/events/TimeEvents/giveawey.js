@@ -1,5 +1,6 @@
 import { client } from '#bot/client.js';
-import { Util } from '#lib/modules/mod.js';
+import { sleep } from '#src/lib/util.js';
+
 
 
 class Event {
@@ -49,7 +50,7 @@ class Event {
 				channel.guild.members.resolve(user).roles.add(roleId, "Win In Giveway")
 			);
 		
-		await Util.sleep(1000);
+		await sleep(1000);
 		giveaway.reactions.cache.get("🌲").remove();
 	}
 

@@ -1,4 +1,4 @@
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 import { client } from '#bot/client.js';
 import CurseManager from '#lib/modules/CurseManager.js';
 import Template from '#lib/modules/Template.js';
@@ -94,7 +94,7 @@ class Command {
         if (member){
           const secretAchievements = QuestManager.questsBase
             .filter(questBase => questBase.isGlobal && questBase.isSecret && !questBase.isRemoved)
-            .filter(questBase => user.questsGlobalCompleted.includes(questBase.id));
+            .filter(questBase => user.questsGlobalCompleted?.includes(questBase.id));
 
           const achiementContent = secretAchievements.size ? secretAchievements.random().emoji + " " : "";
           embed.fields.push({name: " ᠌᠌", value: "\n**" + `${ achiementContent }${ member.roles.highest }**\nᅠ`});

@@ -1,6 +1,6 @@
 'use strict';
 
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 import DataManager from '#lib/modules/DataManager.js';
 import { ButtonStyle, ComponentType, TextInputStyle } from 'discord.js';
 import { Collection } from '@discordjs/collection';

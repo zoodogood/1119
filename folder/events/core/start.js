@@ -1,8 +1,10 @@
 import { BaseEvent } from "#lib/modules/EventsManager.js";
 import { assert } from 'console';
-import { DataManager, TimeEventsManager, CommandsManager, CounterManager, Util, EventsManager } from '#lib/modules/mod.js';
+import { omit, timestampDay } from "#src/lib/util.js";
+
+import { DataManager, TimeEventsManager, CommandsManager, CounterManager, EventsManager } from '#lib/modules/mod.js';
 import { client } from '#bot/client.js';
-import app from '#lib/modules/app.js';
+import app from '#app';
 
 class Event extends BaseEvent {
 	constructor(){
@@ -30,7 +32,7 @@ class Event extends BaseEvent {
 		TimeEventsManager.handle();
 
 		
-		const needUpdate = DataManager.data.bot.currentDay !== Util.timestampDay( Date.now() );
+		const needUpdate = DataManager.data.bot.currentDay !== timestampDay( Date.now() );
 		if (needUpdate){
 			await EventsManager.collection.get("TimeEvent/new-day")
 				.run(true);
@@ -42,6 +44,7 @@ class Event extends BaseEvent {
 		const {default: server} = await import('#server/start.js');
 
 		app.server = server;
+		app.client = client;
 		setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
 	}
 
@@ -57,7 +60,7 @@ class Event extends BaseEvent {
 
 		Object.assign(
 			data.bot, 
-			Util.omit(defaultData, (k) => k in data.bot === false)
+			omit(defaultData, (k) => k in data.bot === false)
 		);
 
 		const now = Date.now();

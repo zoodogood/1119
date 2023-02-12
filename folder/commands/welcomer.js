@@ -1,4 +1,4 @@
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 
 class Command {
 

@@ -1,4 +1,4 @@
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 import EventsManager from '#lib/modules/EventsManager.js';
 import CurseManager from '#lib/modules/CurseManager.js';
 import DataManager from '#lib/modules/DataManager.js';
@@ -1304,7 +1304,7 @@ class Command {
   
 
   static boss = {
-    manager: import("#src/modules/BossManager.js")
+    manager: import("#lib/modules/BossManager.js")
       .then((module) => this.boss.manager = module.BossManager),
 
     ELEMENT_DAMAGE_MULTIPLAYER: 2,

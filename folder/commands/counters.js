@@ -1,6 +1,6 @@
 
 
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 import Discord from 'discord.js';
 import CounterManager from '#lib/modules/CounterManager.js';
 

@@ -1,4 +1,4 @@
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 import { client } from '#bot/client.js';
 import EventsManager from '#lib/modules/EventsManager.js';
 import TimeEventsManager from '#lib/modules/TimeEventsManager.js';

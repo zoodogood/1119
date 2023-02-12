@@ -1,4 +1,4 @@
-import * as Util from '#lib/modules/util.js';
+import * as Util from '#lib/util.js';
 import { client } from '#bot/client.js';
 import DataManager from '#lib/modules/DataManager.js';
 import BerryCommand from '#folder/commands/berry.js';

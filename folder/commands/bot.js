@@ -1,9 +1,9 @@
-import * as Util from '#lib/modules/util.js';
+import { timestampToDate } from '#lib/util.js';
 import { client } from '#bot/client.js';
 import config from '#config';
 import DataManager from '#lib/modules/DataManager.js';
 import CommandsManager from '#lib/modules/CommandsManager.js';
-import app from '#lib/modules/app.js';
+import app from '#app';
 import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
 
 import { CreateModal } from '@zoodogood/utils/discordjs';
@@ -66,7 +66,7 @@ class Command {
     const embed = {
       title: "ну типа.. ай, да, я живой, да",
       description: `${ contents.ping } ${ contents.version } ${ contents.season }, что сюда ещё запихнуть?\n${ contents.guilds }(?) ${ contents.commands }\n${ contents.performance }\n${ contents.time }${ contents.address }\n${ contents.errors };\n${ contents.uniqueErrors }`,
-      footer: {text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${ Util.timestampToDate(Date.now() - (DataManager.data.bot.newGuildTimestamp ?? null), 2) }`},
+      footer: {text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${ timestampToDate(Date.now() - (DataManager.data.bot.newGuildTimestamp ?? null), 2) }`},
       components: this.getMainInterfaceComponents()
     };
 
