@@ -1,0 +1,1 @@
+[["Unexpected reserved word",[{"stack":"SyntaxError: Unexpected reserved word\n    at ESMLoader.moduleStrategy (node:internal/modules/esm/translators:119:18)\n    at ESMLoader.moduleProvider (node:internal/modules/esm/loader:483:14)\n    at async link (node:internal/modules/esm/module_job:67:21)","context":"{ event: 'core/start' }","timestamp":1676140508099}]]]
