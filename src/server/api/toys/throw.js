@@ -1,6 +1,6 @@
 import { BaseRoute } from "#server/router.js";
 
-const PREFIX = "/ping";
+const PREFIX = "/toys/throw";
 
 
 class Route extends BaseRoute {
@@ -11,14 +11,7 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, responce, next){
-		try {
-			throw new Error("1");	
-		} catch (error) {
-			next(error);
-			return;
-		}
-		
-		responce.send("Alive!")
+		throw new Error("1");
 	}
 }
 
