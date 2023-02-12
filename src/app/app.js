@@ -1,9 +1,14 @@
 
+
+
 class App {
 	/** @type {Client|null} */
 	client = null;
 
 	server = null;
+
+	/** @type {string|null} */
+	version = null;
 }
 
 
