@@ -1,5 +1,5 @@
-import { client } from '#src/index.js';
-import {CurseManager} from '#src/modules/mod.js';
+import { client } from '#bot/client.js';
+import {CurseManager} from '#lib/modules/mod.js';
 
 
 class Event {

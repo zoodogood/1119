@@ -1,5 +1,5 @@
-import * as Util from '#src/modules/util.js';
-import { Actions } from '#src/modules/ActionManager.js';
+import * as Util from '#lib/modules/util.js';
+import { Actions } from '#lib/modules/ActionManager.js';
 
 class Command {
 

@@ -1,9 +1,9 @@
-import * as Util from '#src/modules/util.js';
-import EventsManager from '#src/modules/EventsManager.js';
-import CurseManager from '#src/modules/CurseManager.js';
-import DataManager from '#src/modules/DataManager.js';
-import TimeEventsManager from '#src/modules/TimeEventsManager.js';
-import { Actions } from '#src/modules/ActionManager.js';
+import * as Util from '#lib/modules/util.js';
+import EventsManager from '#lib/modules/EventsManager.js';
+import CurseManager from '#lib/modules/CurseManager.js';
+import DataManager from '#lib/modules/DataManager.js';
+import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
+import { Actions } from '#lib/modules/ActionManager.js';
 import { Collection } from '@discordjs/collection';
 
 const Elements = new Collection(Object.entries({

@@ -1,6 +1,6 @@
-import * as Util from '#src/modules/util.js';
-import { client } from '#src/index.js';
-import { Actions } from '#src/modules/ActionManager.js';
+import * as Util from '#lib/modules/util.js';
+import { client } from '#bot/client.js';
+import { Actions } from '#lib/modules/ActionManager.js';
 
 class Command {
 

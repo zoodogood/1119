@@ -1,5 +1,5 @@
-import * as Util from '#src/modules/util.js';
-import GuildVariablesManager from '#src/modules/GuildVariablesManager.js';
+import * as Util from '#lib/modules/util.js';
+import GuildVariablesManager from '#lib/modules/GuildVariablesManager.js';
 import { escapeMarkdown } from 'discord.js';
 
 class Command {

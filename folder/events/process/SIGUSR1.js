@@ -1,5 +1,5 @@
-import { BaseEvent } from "#src/modules/EventsManager.js";
-import { DataManager, TimeEventsManager, ErrorsHandler } from '#src/modules/mod.js';
+import { BaseEvent } from "#lib/modules/EventsManager.js";
+import { DataManager, TimeEventsManager, ErrorsHandler } from '#lib/modules/mod.js';
 
 
 class Event extends BaseEvent {

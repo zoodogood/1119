@@ -1,4 +1,4 @@
-import DataManager from '#src/modules/DataManager.js';
+import DataManager from '#lib/modules/DataManager.js';
 
 class Command {
 

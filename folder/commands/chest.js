@@ -1,7 +1,7 @@
-import * as Util from '#src/modules/util.js';
-import DataManager from '#src/modules/DataManager.js';
-import CurseManager from '#src/modules/CurseManager.js';
-import { Actions } from '#src/modules/ActionManager.js';
+import * as Util from '#lib/modules/util.js';
+import DataManager from '#lib/modules/DataManager.js';
+import CurseManager from '#lib/modules/CurseManager.js';
+import { Actions } from '#lib/modules/ActionManager.js';
 
 class Command {
 

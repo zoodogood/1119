@@ -1,4 +1,4 @@
-import {TimeEventsManager, DataManager} from '#src/modules/mod.js';
+import {TimeEventsManager, DataManager} from '#lib/modules/mod.js';
 
 
 class Event {

@@ -1,13 +1,13 @@
 'use strict';
 
-import * as Util from '#src/modules/util.js';
-import DataManager from '#src/modules/DataManager.js';
+import * as Util from '#lib/modules/util.js';
+import DataManager from '#lib/modules/DataManager.js';
 import { ButtonStyle, ComponentType, TextInputStyle } from 'discord.js';
 import { Collection } from '@discordjs/collection';
-import BossManager from '#src/modules/BossManager.js';
+import BossManager from '#lib/modules/BossManager.js';
 import { CreateModal } from '@zoodogood/utils/discordjs';
 import { CustomCollector } from '@zoodogood/utils/objectives';
-import QuestManager from '#src/modules/QuestManager.js';
+import QuestManager from '#lib/modules/QuestManager.js';
 
 
 class Command {

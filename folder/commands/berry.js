@@ -1,5 +1,5 @@
-import DataManager from '#src/modules/DataManager.js';
-import { Actions } from '#src/modules/ActionManager.js';
+import DataManager from '#lib/modules/DataManager.js';
+import { Actions } from '#lib/modules/ActionManager.js';
 
 class Command {
   static INFLATION = 0.2;

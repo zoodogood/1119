@@ -1,5 +1,5 @@
-import { client } from '#src/index.js';
-import QuestManager from '#src/modules/QuestManager.js';
+import { client } from '#bot/client.js';
+import QuestManager from '#lib/modules/QuestManager.js';
 
 class Command {
 

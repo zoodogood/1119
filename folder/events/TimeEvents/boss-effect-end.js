@@ -1,4 +1,4 @@
-import { Actions } from '#src/modules/ActionManager.js';
+import { Actions } from '#lib/modules/ActionManager.js';
 
 
 

@@ -1,8 +1,8 @@
-import * as Util from '#src/modules/util.js';
-import { client } from '#src/index.js';
-import CurseManager from '#src/modules/CurseManager.js';
-import Template from '#src/modules/Template.js';
-import QuestManager from '#src/modules/QuestManager.js';
+import * as Util from '#lib/modules/util.js';
+import { client } from '#bot/client.js';
+import CurseManager from '#lib/modules/CurseManager.js';
+import Template from '#lib/modules/Template.js';
+import QuestManager from '#lib/modules/QuestManager.js';
 
 class Command {
 

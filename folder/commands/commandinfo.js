@@ -1,9 +1,9 @@
-import * as Util from '#src/modules/util.js';
-import DataManager from '#src/modules/DataManager.js';
+import * as Util from '#lib/modules/util.js';
+import DataManager from '#lib/modules/DataManager.js';
 import Path from 'path';
 
 import Discord from 'discord.js';
-import CommandsManager from '#src/modules/CommandsManager.js';
+import CommandsManager from '#lib/modules/CommandsManager.js';
 
 class Command {
 

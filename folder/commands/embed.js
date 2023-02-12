@@ -1,6 +1,6 @@
 //@ts-check
-import * as Util from '#src/modules/util.js';
-import { client } from '#src/index.js';
+import * as Util from '#lib/modules/util.js';
+import { client } from '#bot/client.js';
 import { EmbedBuilder } from 'discord.js';
 
 class Command {

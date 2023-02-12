@@ -1,4 +1,4 @@
-import { client } from '#src/index.js';
+import { client } from '#bot/client.js';
 
 class Command {
 

@@ -1,8 +1,8 @@
-import { BaseEvent } from "#src/modules/EventsManager.js";
+import { BaseEvent } from "#lib/modules/EventsManager.js";
 import { assert } from 'console';
-import { DataManager, TimeEventsManager, CommandsManager, CounterManager, Util, EventsManager } from '#src/modules/mod.js';
-import { client } from '#src/index.js';
-import app from '#src/modules/app.js';
+import { DataManager, TimeEventsManager, CommandsManager, CounterManager, Util, EventsManager } from '#lib/modules/mod.js';
+import { client } from '#bot/client.js';
+import app from '#lib/modules/app.js';
 
 class Event extends BaseEvent {
 	constructor(){

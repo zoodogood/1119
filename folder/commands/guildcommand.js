@@ -1,5 +1,5 @@
-import * as Util from '#src/modules/util.js';
-import Template from '#src/modules/Template.js';
+import * as Util from '#lib/modules/util.js';
+import Template from '#lib/modules/Template.js';
 
 class Command {
 

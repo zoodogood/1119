@@ -1,5 +1,5 @@
-import { client } from '#src/index.js';
-import DataManager from '#src/modules/DataManager.js';
+import { client } from '#bot/client.js';
+import DataManager from '#lib/modules/DataManager.js';
 import Discord from 'discord.js';
 
 class Command {

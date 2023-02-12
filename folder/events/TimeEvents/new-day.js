@@ -1,5 +1,5 @@
-import { client } from '#src/index.js';
-import {TimeEventsManager, BossManager, Util, DataManager} from '#src/modules/mod.js';
+import { client } from '#bot/client.js';
+import {TimeEventsManager, BossManager, Util, DataManager} from '#lib/modules/mod.js';
 
 class Event {
 	async run(isLost){

@@ -1,7 +1,7 @@
-import * as Util from '#src/modules/util.js';
-import { client } from '#src/index.js';
-import EventsManager from '#src/modules/EventsManager.js';
-import TimeEventsManager from '#src/modules/TimeEventsManager.js';
+import * as Util from '#lib/modules/util.js';
+import { client } from '#bot/client.js';
+import EventsManager from '#lib/modules/EventsManager.js';
+import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
 
 class Command {
 

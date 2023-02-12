@@ -1,6 +1,6 @@
-import { BaseEvent } from "#src/modules/EventsManager.js";
-import { CounterManager } from '#src/modules/mod.js';
-import { client } from '#src/index.js';
+import { BaseEvent } from "#lib/modules/EventsManager.js";
+import { CounterManager } from '#lib/modules/mod.js';
+import { client } from '#bot/client.js';
 
 class Event extends BaseEvent {
 	constructor(){

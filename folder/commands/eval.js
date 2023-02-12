@@ -1,8 +1,8 @@
-import * as Util from '#src/modules/util.js';
+import * as Util from '#lib/modules/util.js';
 
-import { client } from '#src/index.js';
-import Template from '#src/modules/Template.js';
-import config from '#src/config';
+import { client } from '#bot/client.js';
+import Template from '#lib/modules/Template.js';
+import config from '#config';
 
 import { escapeCodeBlock, WebhookClient } from 'discord.js';
 

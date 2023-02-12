@@ -1,5 +1,5 @@
-import { client } from '#src/index.js';
-import { Util } from '#src/modules/mod.js';
+import { client } from '#bot/client.js';
+import { Util } from '#lib/modules/mod.js';
 
 
 class Event {

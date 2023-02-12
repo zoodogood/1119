@@ -1,6 +1,6 @@
-import { BaseEvent } from '#src/modules/EventsManager.js';
-import TimeEventsManager from '#src/modules/TimeEventsManager.js';
-import EventsManager from '#src/modules/EventsManager.js';
+import { BaseEvent } from '#lib/modules/EventsManager.js';
+import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
+import EventsManager from '#lib/modules/EventsManager.js';
 
 
 class Event extends BaseEvent {

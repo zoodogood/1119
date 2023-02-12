@@ -1,8 +1,8 @@
 
 
-import * as Util from '#src/modules/util.js';
+import * as Util from '#lib/modules/util.js';
 import Discord from 'discord.js';
-import CounterManager from '#src/modules/CounterManager.js';
+import CounterManager from '#lib/modules/CounterManager.js';
 
 class Command {
 

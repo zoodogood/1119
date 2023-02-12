@@ -1,5 +1,5 @@
 //@ts-check
-import * as Util from '#src/modules/util.js';
+import * as Util from '#lib/modules/util.js';
 import { MessageMentions } from 'discord.js';
 
 

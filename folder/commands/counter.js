@@ -1,7 +1,7 @@
-import * as Util from '#src/modules/util.js';
-import CounterManager from '#src/modules/CounterManager.js';
+import * as Util from '#lib/modules/util.js';
+import CounterManager from '#lib/modules/CounterManager.js';
 import { ButtonStyle, ComponentType, escapeMarkdown } from 'discord.js';
-import { CommandsManager } from '#src/modules/mod.js';
+import { CommandsManager } from '#lib/modules/mod.js';
 
 class Command {
 

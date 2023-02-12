@@ -1,6 +1,6 @@
-import * as Util from '#src/modules/util.js';
-import DataManager from '#src/modules/DataManager.js';
-import { Actions } from '#src/modules/ActionManager.js';
+import * as Util from '#lib/modules/util.js';
+import DataManager from '#lib/modules/DataManager.js';
+import { Actions } from '#lib/modules/ActionManager.js';
 
 class Command {
   bonusesBase = [

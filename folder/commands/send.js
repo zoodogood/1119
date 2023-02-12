@@ -1,4 +1,4 @@
-import Template from '#src/modules/Template.js';
+import Template from '#lib/modules/Template.js';
 
 class Command {
 

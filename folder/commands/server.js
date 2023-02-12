@@ -1,6 +1,6 @@
-import * as Util from '#src/modules/util.js';
-import EventsManager from '#src/modules/EventsManager.js';
-import TimeEventsManager from '#src/modules/TimeEventsManager.js';
+import * as Util from '#lib/modules/util.js';
+import EventsManager from '#lib/modules/EventsManager.js';
+import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
 import { ChannelType } from 'discord.js';
 
 class Command {

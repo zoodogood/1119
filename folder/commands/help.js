@@ -1,5 +1,5 @@
 import { ButtonStyle, ComponentType } from 'discord.js';
-import CommandsManager from '#src/modules/CommandsManager.js';
+import CommandsManager from '#lib/modules/CommandsManager.js';
 
 class Guidances {
   get selectOptions(){

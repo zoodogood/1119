@@ -1,7 +1,7 @@
-import * as Util from '#src/modules/util.js';
-import { client } from '#src/index.js';
-import DataManager from '#src/modules/DataManager.js';
-import BerryCommand from '#src/commands/berry.js';
+import * as Util from '#lib/modules/util.js';
+import { client } from '#bot/client.js';
+import DataManager from '#lib/modules/DataManager.js';
+import BerryCommand from '#folder/commands/berry.js';
 
 class Command {
 

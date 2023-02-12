@@ -1,10 +1,10 @@
-import * as Util from '#src/modules/util.js';
-import { client } from '#src/index.js';
-import config from '#src/config';
-import DataManager from '#src/modules/DataManager.js';
-import CommandsManager from '#src/modules/CommandsManager.js';
-import app from '#src/modules/app.js';
-import ErrorsHandler from '#src/modules/ErrorsHandler.js';
+import * as Util from '#lib/modules/util.js';
+import { client } from '#bot/client.js';
+import config from '#config';
+import DataManager from '#lib/modules/DataManager.js';
+import CommandsManager from '#lib/modules/CommandsManager.js';
+import app from '#lib/modules/app.js';
+import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
 
 import { CreateModal } from '@zoodogood/utils/discordjs';
 import { ButtonStyle, ComponentType, TextInputStyle } from 'discord.js';

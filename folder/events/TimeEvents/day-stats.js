@@ -1,8 +1,8 @@
-import {TimeEventsManager, BossManager, Util} from '#src/modules/mod.js';
-import { client } from '#src/index.js';
+import {TimeEventsManager, BossManager, Util} from '#lib/modules/mod.js';
+import { client } from '#bot/client.js';
 
-import TreeCommand from '#src/commands/seed.js';
-import BankCommand from '#src/commands/bank.js';
+import TreeCommand from '#folder/commands/seed.js';
+import BankCommand from '#folder/commands/bank.js';
 
 class Event {
 	run(isLost){

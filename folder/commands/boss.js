@@ -1,6 +1,6 @@
-import * as Util from '#src/modules/util.js';
-import { client } from '#src/index.js';
-import {BossManager, BossEffects} from '#src/modules/BossManager.js';
+import * as Util from '#lib/modules/util.js';
+import { client } from '#bot/client.js';
+import {BossManager, BossEffects} from '#lib/modules/BossManager.js';
 import { ButtonStyle, ComponentType } from 'discord.js';
 
 class Command {
