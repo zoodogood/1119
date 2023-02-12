@@ -8,7 +8,7 @@ const PREFIX = "/";
 class Route extends BaseRoute {
 	constructor(express){
 		super();
-		
+
 		this.start();
 		this.express = express;
 	}

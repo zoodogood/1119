@@ -48,9 +48,7 @@ class Router {
 	}
 }
 
-class BaseRoute {
-
-}
+class BaseRoute {};
 
 export default Router;
 export { Router, BaseRoute };
