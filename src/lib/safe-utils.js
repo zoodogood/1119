@@ -206,6 +206,35 @@ function toLocaleDeveloperString(value){
 	 }
 	 return date;
  }
+
+ function parseDocumentLocate(location){
+	const url = location.pathname;
+
+	const key = config.server.paths.site.split("/")
+		.at(-1);
+
+	const regex = new RegExp(key);
+	const index = (url.match(regex)?.index ?? 0) + key.length;
+	const base = url.slice(0, index);
+	const subpath = url.slice(index)
+		.split("/")
+		.filter(Boolean);
+
+	return {
+		subpath,
+		base: parseLocationBase(base)
+	};	
+}
+
+function parseLocationBase(base){
+	typeof base === "string" && (base = base.split("/"));
+	base = base.filter(Boolean);
+
+	const entry 	= base.at(-1);
+	const lang  	= base.at(-2);
+	const prefix   = base.at(-3);
+	return {prefix, lang, entry};
+}
   
 
  export {
@@ -227,7 +256,9 @@ function toLocaleDeveloperString(value){
 	timestampToDate,
 	resolveDate,
 
-	resolveGithubPath
+	resolveGithubPath,
+	parseDocumentLocate,
+	parseLocationBase
  }
 
  export { relativeSiteRoot } from '#site/lib/util.js';
