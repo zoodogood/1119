@@ -31,8 +31,8 @@
 <script>
 	import app from "#site/core/app.js";
  	import HashController from "#site/lib/HashController.js";
-	import {relativeSiteRoot} from "#lib/util.js";
-	import { PagesEnum } from "#static/build/svelte-pages/enum[builded].mjs";
+	import {relativeSiteRoot} from "#lib/safe-utils.js";
+	import PagesEnum from "#static/build/svelte-pages/enum[builded].mjs";
 
 	const _url = relativeSiteRoot(app, "public");
 

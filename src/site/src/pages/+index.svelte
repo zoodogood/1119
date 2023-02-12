@@ -29,6 +29,6 @@
 
 <script>
 	import app from "#site/core/app.js";
-	import {relativeSiteRoot} from "#lib/util.js";
+	import { relativeSiteRoot } from "#lib/safe-utils.js";
 	const _url = relativeSiteRoot(app, "public");
 </script>
