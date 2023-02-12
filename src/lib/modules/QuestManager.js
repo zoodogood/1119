@@ -1,6 +1,6 @@
-import { DataManager } from "#src/modules/mod.js";
+import { DataManager } from "#lib/modules/mod.js";
 import { Collection } from "discord.js";
-import { Actions } from "#src/modules/ActionManager.js";
+import { Actions } from "#lib/modules/ActionManager.js";
 
 
 

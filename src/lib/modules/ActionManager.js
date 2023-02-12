@@ -1,7 +1,7 @@
 
 import Discord from 'discord.js';
-import { CurseManager, QuestManager } from '#src/modules/mod.js';
-import { BossEffects } from '#src/modules/BossManager.js';
+import { CurseManager, QuestManager } from '#lib/modules/mod.js';
+import { BossEffects } from '#lib/modules/BossManager.js';
 
 const ActionsMap = {
 	// Client

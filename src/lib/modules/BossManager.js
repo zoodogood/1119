@@ -1,11 +1,12 @@
 
 import { Collection } from "@discordjs/collection";
-import { DataManager, CurseManager, Properties, ErrorsHandler } from "#src/modules/mod.js";
-import TimeEventsManager from '#src/modules/TimeEventsManager.js';
-import { elementsEnum } from "#src/commands/thing.js";
-import { Actions } from '#src/modules/ActionManager.js';
-import * as Util from '#src/modules/util.js';
+import { DataManager, CurseManager, Properties, ErrorsHandler } from "#lib/modules/mod.js";
+import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
+import { elementsEnum } from "#folder/commands/thing.js";
+import { Actions } from '#lib/modules/ActionManager.js';
+import * as Util from '#lib/util.js';
 import { ButtonStyle, ComponentType } from "discord.js";
+import app from "#app";
 
 
 class BossShop {
@@ -876,7 +877,7 @@ class BossManager {
 
 		BossEvents.onBossDeath(boss, {fromLevel, toLevel, sourceUser})
 		
-		const guild = this.client.guilds.cache.get(boss.guildId);
+		const guild = app.client.guilds.cache.get(boss.guildId);
 		
 		boss.level = toLevel;
 		boss.healthThresholder = BossManager.calculateHealthPointThresholder(toLevel);
@@ -1857,10 +1858,6 @@ class BossManager {
 	static USER_DEFAULT_ATTACK_COOLDOWN = 3_600_000 * 2;
 	static USER_DEFAULT_ATTACK_DAMAGE = 10;
 
-
-	static setClient(client){
-		this.client = client;
-	}
 
 	static BossShop = BossShop;
 	static BossEvents = BossEvents;

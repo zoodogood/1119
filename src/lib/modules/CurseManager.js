@@ -1,10 +1,10 @@
 
 import { Collection } from "@discordjs/collection";
-import { Actions } from '#src/modules/ActionManager.js';
-import TimeEventsManager from '#src/modules/TimeEventsManager.js';
-import * as Util from '#src/modules/util.js';
+import { Actions } from '#lib/modules/ActionManager.js';
+import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
+import * as Util from '#lib/util.js';
 import Discord from 'discord.js';
-import CommandsManager from "#src/modules/CommandsManager.js";
+import CommandsManager from "#lib/modules/CommandsManager.js";
 
 
 

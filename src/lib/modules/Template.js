@@ -1,12 +1,12 @@
 import { VM } from "vm2";
-import config from '#src/config';
+import config from '#config';
 import { PermissionsBitField } from 'discord.js';
 import { Collection } from '@discordjs/collection';
 
-import * as Util from '#src/modules/util.js';
-import { CommandsManager, EventsManager, CurseManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager, GuildVariablesManager } from '#src/modules/mod.js';
+import * as Util from '#lib/util.js';
+import { CommandsManager, EventsManager, CurseManager, BossManager, DataManager, TimeEventsManager, ActionManager, QuestManager, GuildVariablesManager } from '#lib/modules/mod.js';
 
-import { client } from '#src/index.js';
+import { client } from '#bot/client.js';
 import FileSystem from 'fs';
 import Discord from 'discord.js';
 

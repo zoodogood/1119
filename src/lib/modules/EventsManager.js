@@ -1,11 +1,11 @@
 import { Collection } from '@discordjs/collection';
 
-import ErrorsHandler from '#src/modules/ErrorsHandler.js';
+import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
 import EventsEmitter from 'events';
 
 import { ImportDirectory } from '@zoodogood/import-directory';
 
-const PATH = "./events";
+const PATH = "./folder/events";
 
 
 class BaseEvent {

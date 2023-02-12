@@ -1,6 +1,10 @@
 import FileSystem from 'fs';
-import {Template, ErrorsHandler, Util} from '#src/modules/mod.js';
+import {Template, ErrorsHandler} from '#lib/modules/mod.js';
+
 import { Collection } from '@discordjs/collection';
+import { sleep } from '#src/lib/util.js';
+import app from '#app';
+
 
 class CounterManager {
 
@@ -30,8 +34,8 @@ class CounterManager {
 	}
 
 	static reportException(counter, error){
-		const channel = this.#client.channels.cache.get(counter.channelId);
-		const user = this.#client.users.cache.get(counter.authorId);
+		const channel = app.client.channels.cache.get(counter.channelId);
+		const user = app.client.users.cache.get(counter.authorId);
 		const target = channel.isTextBased() ? channel : user;
 
 		const description = `Во время обработки счётчика в канале ${ channel.toString() } произошло исключение.\n\nЗапускаемый счётчик заморожен до ручного возобновления. Узнать больше информации — через команду \`!счётчики\`.\nОн был создан/изменён пользователем:\n${ user.tag } (ID: ${ user.id }).`;
@@ -51,7 +55,7 @@ class CounterManager {
 		 const counter = this.data[i];
 		 yield this.call(counter);
  
-		 await Util.sleep(MINUTE * MINUTES / (this.data.length + 1));
+		 await sleep(MINUTE * MINUTES / (this.data.length + 1));
 		 i++;
 		 i %= this.data.length;
 	  }
@@ -67,7 +71,7 @@ class CounterManager {
 			return;
 		}
 
-		const client = this.#client;
+		const client = app.client;
 
 		if (counter.freezed){
 			return null;
@@ -90,7 +94,7 @@ class CounterManager {
 	}
  
 	static file = {
-		 path: `${ process.cwd() }/data/counters.json`,
+		 path: `${ process.cwd() }/folder/data/counters.json`,
 		 load: async () => {
 			const path = this.file.path;
 			const content = FileSystem.readFileSync(path, "utf-8");
@@ -223,10 +227,6 @@ class CounterManager {
       }
 	}));
 
-	static #client;
-	static setClient(client){
-		this.#client = client;
-	}
  }
 
 
@@ -254,7 +254,7 @@ class CounterManager {
 // 	  }
 
 // 	  msg.msg({title: "Через секунду здесь появится сообщение", description: "Это и будет готовый счётчик", delete: 7000});
-// 	  await Util.sleep(1500);
+// 	  await sleep(1500);
 // 	  counter = await msg.msg({title: textValue, ...embed});
 	  
 // 	break;
@@ -273,6 +273,6 @@ class CounterManager {
 // 	  if (!interval) return msg.msg({title: "Неверное значение", color: "#ff0000", delete: 4000});
 // 	  CounterManager.create({channelId: msg.channel.id, guildId: msg.guild.id, type: "poster", template, params: interval});
 // 	break;
-// 	default: return await Util.sleep(2000);
+// 	default: return await sleep(2000);
 
 //  }

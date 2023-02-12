@@ -1,7 +1,7 @@
 import FileSystem from 'fs';
 import EventEmitter from 'events';
 
-import * as Util from '#src/modules/util.js';
+import * as Util from '#lib/util.js';
 
 class TimeEventsManager {
 
@@ -111,7 +111,7 @@ class TimeEventsManager {
 	}
 
 	static file = {
-		path: `${ process.cwd() }/data/time.json`,
+		path: `${ process.cwd() }/folder/data/time.json`,
 		load: () => {
 		  const path = this.file.path;
 		  const content = FileSystem.readFileSync(path, "utf-8");

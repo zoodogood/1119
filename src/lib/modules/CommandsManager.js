@@ -1,15 +1,19 @@
 import { Collection, CommandInteraction } from 'discord.js';
-import * as Util from '#src/modules/util.js';
-import EventsEmitter from 'events';
-import DataManager from '#src/modules/DataManager.js';
-import ErrorsHandler from '#src/modules/ErrorsHandler.js';
-import Executor from '#src/modules/Executor.js';
+import config from '#config';
 
-import { Actions } from '#src/modules/ActionManager.js';
+import * as Util from '#lib/util.js';
+import EventsEmitter from 'events';
+import DataManager from '#lib/modules/DataManager.js';
+import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
+import Executor from '#lib/modules/Executor.js';
+
+
+import { Actions } from '#lib/modules/ActionManager.js';
 
 import { ImportDirectory } from '@zoodogood/import-directory';
 
-const COMMANDS_PATH = "./commands";
+
+const COMMANDS_PATH = "./folder/commands";
 
 
 function parseInputCommandFromMessage(message){	
@@ -90,7 +94,7 @@ class CommandsManager {
 			problems.push("Эта команда была удалена и не может быть использована");
 		}
 
-		if (options.type === "dev" && process.env.DEVELOPMENT !== "TRUE" && interaction.user.id !== "921403577539387454"){
+		if (options.type === "dev" && !config.development && interaction.user.id !== "921403577539387454"){
 			problems.push("Эта команда находится в разработке и/или недоступна в публичной версии бота");
 		}
 
