@@ -39,7 +39,7 @@ export default {
 		sourcemap: true,
 		format: 'iife',
 		name: 'app',
-		file: './static/build/bundle.js'
+		file: './static/build/svelte-bundle/bundle.js'
 	},
 	plugins: [
 		execSync("npm run createPagesExports") && false,
