@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/index.js",
+    "watch": "sirv public --no-clear",
     "build": "rollup -c ./src/site/rollup.config.mjs",
     "dev": "rollup -c ./src/site/rollup.config.mjs -w",
     "createPagesExports": "node ./src/site/scripts/createPagesExports.js"
