@@ -1,49 +1,45 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.1064",
+  "version": "2.0.0-alpha.1123",
   "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node ./src/index.js",
-
     "build": "rollup -c ./src/site/rollup.config.mjs",
     "dev": "rollup -c ./src/site/rollup.config.mjs -w",
     "createPagesExports": "node ./src/site/scripts/createPagesExports.js"
   },
   "imports": {
-    "#root/*":   "./*",
-    "#src/*":    "./src/*",
-    "#config":   "./src/config.json.js",
-    "#app":      "./src/app/app.js",
-
+    "#root/*": "./*",
+    "#src/*": "./src/*",
+    "#config": "./src/config.json.js",
+    "#app": "./src/app/app.js",
     "#server/*": "./src/server/*",
-    "#site/*":   "./src/site/src/*",
-    "#bot/*":    "./src/bot/*",
-    "#lib/*":    "./src/lib/*",
+    "#site/*": "./src/site/src/*",
+    "#bot/*": "./src/bot/*",
+    "#lib/*": "./src/lib/*",
     "#folder/*": "./folder/*",
     "#static/*": "./static/*",
-
     "#site-component-lib/*": "./src/site/src/modules/*",
-    "#site-component/*":     "./src/site/src/modules/*/mod.svelte"
+    "#site-component/*": "./src/site/src/modules/*/mod.svelte"
   },
   "author": "zoodogood",
   "license": "ISC",
   "dependencies": {
     "@arthur.dev/discord-oauth2": "^0.0.6",
+    "@discordjs/collection": "^1.3.0",
+    "@rollup/plugin-replace": "^5.0.2",
     "@zoodogood/import-directory": "^1.3.3",
+    "@zoodogood/utils": "^0.7.4",
     "cors": "^2.8.5",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "node-fetch": "^2.6.0",
-    "vm2": "^3.9.11",
-
-    "@discordjs/collection": "^1.3.0",
-    "@rollup/plugin-replace": "^5.0.2",
-    "@zoodogood/utils": "^0.7.4",
     "sirv-cli": "^2.0.0",
-    "svelte-markdown": "^0.2.3"
+    "svelte-markdown": "^0.2.3",
+    "vm2": "^3.9.11"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
