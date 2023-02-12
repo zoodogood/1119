@@ -4,6 +4,8 @@ import { omit, timestampDay } from "#src/lib/util.js";
 
 import { DataManager, TimeEventsManager, CommandsManager, CounterManager, EventsManager } from '#lib/modules/mod.js';
 import { client } from '#bot/client.js';
+import { ReadPackageJson } from '#lib/util.js';
+
 import app from '#app';
 
 class Event extends BaseEvent {
@@ -45,6 +47,8 @@ class Event extends BaseEvent {
 
 		app.server = server;
 		app.client = client;
+		app.version = (await ReadPackageJson()).version;
+
 		setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
 	}
 
