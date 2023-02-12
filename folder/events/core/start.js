@@ -42,13 +42,13 @@ class Event extends BaseEvent {
 		}
 
 		
-
-		const {default: server} = await import('#server/start.js');
-
-		app.server = server;
 		app.client = client;
 		app.version = (await ReadPackageJson()).version;
 
+
+		const {default: server} = await import('#server/start.js');
+		app.server = server;
+		
 		setTimeout(() => client.login(process.env.DISCORD_TOKEN), 100);
 	}
 
