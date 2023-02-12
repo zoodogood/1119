@@ -2,13 +2,15 @@
 
 
 class App {
-	/** @type {Client|null} */
+	/** @type {Client} */
 	client = null;
 
 	server = null;
 
-	/** @type {string|null} */
+	/** @type {string} */
 	version = null;
+
+	svelte = null;
 }
 
 
