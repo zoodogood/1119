@@ -1,10 +1,13 @@
 const PREFIX = "/errors/current";
 import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
+import { BaseRoute } from '#src/server/router.js';
 
 
-class Route {
+class Route extends BaseRoute {
+	prefix = PREFIX;
+
 	constructor(express){
-		express.get(PREFIX, this.get);
+		super();
 	}
 
 	async get(request, responce){

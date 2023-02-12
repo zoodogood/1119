@@ -1,9 +1,13 @@
+import { BaseRoute } from "#server/router.js";
+
 const PREFIX = "/";
 
 
-class Route {
+class Route extends BaseRoute {
+	prefix = PREFIX;
+
 	constructor(express){
-		express.get(PREFIX, this.get);
+		super();
 	}
 
 	async get(request, responce){

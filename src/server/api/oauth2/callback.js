@@ -1,14 +1,15 @@
 const PREFIX = "/oauth2/callback";
 import oauth from './.mod.js';
 import Router from '#site/lib/Router.js';
+import { BaseRoute } from '#server/router.js';
 
-class Route {
+class Route extends BaseRoute {
+	prefix = PREFIX;
 
 	constructor(express){
-		express.get(PREFIX, this.get);
-		return;
+		super();
 	}
-
+	
 	async get(request, responce){
 		const code  = request.query.code;
 		if (!code) {

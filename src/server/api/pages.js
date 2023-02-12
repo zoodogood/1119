@@ -1,4 +1,5 @@
 
+import { BaseRoute } from '#server/router.js';
 import Path from 'path';
 
 const ROOT = "static";
@@ -8,9 +9,11 @@ const target = "index.html";
 const PREFIX = /^\/(?:(?:ru|ua|en)\/)?pages/;
 
 
-class Route {
+class Route extends BaseRoute {
+	prefix = PREFIX;
+
 	constructor(express){
-		express.get(PREFIX, this.get);
+		super();
 	}
 
 	async get(request, responce){

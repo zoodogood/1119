@@ -1,11 +1,12 @@
 const PREFIX = "/oauth2/auth";
+import { BaseRoute } from '#server/router.js';
 import oauth from './.mod.js';
 
-class Route {
+class Route extends BaseRoute {
+	prefix = PREFIX;
 
 	constructor(express){
-		express.get(PREFIX, this.get);
-		return;
+		super();
 	}
 
 	async get(request, responce){

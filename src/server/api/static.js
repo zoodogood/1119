@@ -1,15 +1,18 @@
 import path from 'path';
 import FileSystem from 'fs';
 import config from '#config';
+import { BaseRoute } from '#server/router.js';
 
 const ROOT = config.server.paths.static;
 const root = path.join(process.cwd(), ROOT);
 
 const PREFIX = /\/static+?/;
 
-class Route {
+class Route extends BaseRoute {
+	prefix = PREFIX;
+
 	constructor(express){
-		express.get(PREFIX, this.get.bind(this));
+		super();
 	}
 
 	async get(request, response){

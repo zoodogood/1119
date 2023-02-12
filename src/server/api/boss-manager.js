@@ -1,10 +1,13 @@
 const PREFIX = "/boss-manager";
 import BossManager from '#lib/modules/BossManager.js';
+import { BaseRoute } from '#server/router.js';
 
 
-class Route {
+class Route extends BaseRoute {
+	prefix = PREFIX;
+
 	constructor(express){
-		express.get(PREFIX, this.get);
+		super();
 	}
 
 	async get(request, responce){

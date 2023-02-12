@@ -1,12 +1,23 @@
+import { BaseRoute } from "#server/router.js";
+
 const PREFIX = "/ping";
 
 
-class Route {
+class Route extends BaseRoute {
+	prefix = PREFIX;
+
 	constructor(express){
-		express.get(PREFIX, this.get);
+		super();
 	}
 
-	async get(request, responce){
+	async get(request, responce, next){
+		try {
+			throw new Error("1");	
+		} catch (error) {
+			next(error);
+			return;
+		}
+		
 		responce.send("Alive!")
 	}
 }
