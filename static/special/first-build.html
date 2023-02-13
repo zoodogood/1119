@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Hello, User</title>
+</head>
+<body>
+	<section class = "page-section">
+		<h1>Helper</h1>
+		<p>
+			Ты впервые запустил <code>npm run build</code>. Ещё ничего не настроено!
+			<p><a href="https://github.com/zoodogood/1119">Оригинальный источник https://github.com/zoodogood/1119</a></p>
+		</p>
+	</section>
+
+	<section class = "page-section">
+		<h2><code>.env</code></h2>
+		<details open>
+			<p>Мы создали для Вас этот файл, однако его содержимое вы должны заполнить сами.</p>
+			<p>Ведь в нём хранятся секретные токены и другая дребедень.</p>
+			<p>Ищите в корневой папке: <code>./.env</code></p>
+		</details>
+	</section>
+
+	<section class = "page-section">
+		<h2>Возможно, вы захотите настроить конфиг,<br><code>./config.json.js</code></h2>
+		<details>
+			<h3>Самые важные параметры:</h3>
+			<ul>
+				<p><code>server.origin</code> — необходим для корректной работы сервера.</p>
+			</ul>
+		</details>
+	</section>
+
+	<section class = "page-section">
+		<h2>Существующие проблемы</h2>
+		<p>Этот проект не задумывался как воспроизводимый. Поэтому запуск с другими данными череват некоторыми проблемами</p>
+		<details>
+			<ul>
+				<b>1.</b>
+				<p>Ваш бот не знает о существовании Наших эмодзи.</p>
+				<p>Это черевато частыми ошибками и текстовыми идентификаторами в сообщениях вместо самих картинок.</p>
+				<h3>Способ исправления:</h3>
+				<p>Замените все идентификаторы в коде на собственные:</p>
+				<p>1. В редакторе кода Комбинацией <code>CTRL + SHIFT + F</code> откройте глобальный поиск (работает в большинстве редакторов)</p>
+				<p>2. Во-первых, замените совпадения <code>&lt;a:name:id&gt;</code>, например, <code>&lt;:arrowleft:640449848050712587&gt;</code> на аналогичную конструкцию, где <code>a</code> — анимирован ли эмодзи, <code>name</code> — его имя, и <code>id</code> — его идентификатор</p>
+				<p>3. Во-вторых, сделайте тоже самое со всеми идентификаторами, то есть замените, например <code>640449848050712587</code>, на айди вашего эмодзи</p>
+			</ul>
+			
+		</details>
+	</section>
+
+	<section class = "page-section">
+		<h2>Успех<a href="">?</a></h2>
+		<p>Используйте <code>npm run start</code> и начните исследовать!</p>
+	</section>
+</body>
+
+<style>
+	*
+	{
+		box-sizing: border-box;
+		padding: 0;
+		margin: 0;
+	}
+
+	body
+	{
+		font-size: 1.2em;
+		font-family: sans-serif;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+
+		min-height: 100vh;
+		padding-bottom: 20vh;
+	}
+
+	.page-section
+	{
+		width: 1200px;
+		max-width: 90vw;
+		padding-top: 7vh;
+	}
+
+	p 
+	{
+		opacity: 0.9;
+		padding-top: 0.5vh;
+	}
+
+	code 
+	{
+		background-color: #88888822;
+	}
+
+	a 
+	{
+		color: #5555bbbb;
+		text-decoration: none;
+
+	}
+</style>
+</html>
