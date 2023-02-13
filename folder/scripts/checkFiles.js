@@ -36,7 +36,8 @@ const Paths = {
 
 !await FileExists(Paths.main) && await 
 (async () => {
-	const DEFAULT_DATA = {bot: {}, users: [], guilds: []};
+	const BOT_DEFAULT_DATA = {commandsUsed: {}};
+	const DEFAULT_DATA = {bot: BOT_DEFAULT_DATA, users: [], guilds: []};
 	const content = JSON.stringify(DEFAULT_DATA);
 	await Write(Paths.main, content);
 	console.info(`CREATED: ${ Paths.main }`);
