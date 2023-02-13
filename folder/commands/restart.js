@@ -4,7 +4,7 @@ import get from '#lib/child-process-utils.js';
 const {run, info, _npm} = get({ root: process.cwd() });
 
 
-
+const toANSIBlock = (content) => `\`\`\`ansi\n${ content }\`\`\``;
 
 class Command {
 
@@ -25,17 +25,22 @@ class Command {
 		embed.edit = true;
 
 		const updateDescription = (content) => {
-			embed.description += `\n\`\`\`ansi\n${ content }\`\`\``;
+			embed.description += `\n${ content }`;
 			message.msg(embed);
 		}
 		
 		for (const string of COMMANDS) {
 			const [command, ...params] = string.split(" ");
-			embed.description += `\n> ${ string }`;
+			updateDescription(
+				`\n> ${ string }`
+			);
+
 			const result = await run(command, params)
 				.catch((error) => `Error: ${ error.message }`);
 
-			updateDescription(result);
+			updateDescription(
+				toANSIBlock(result)
+			);
 		}
   	}
 
