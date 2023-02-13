@@ -1,21 +1,36 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.1055",
+  "version": "2.0.0-alpha.1124",
   "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./src/index.js",
+    "watch": "sirv public --no-clear",
+    "build": "rollup -c ./src/site/rollup.config.mjs",
+    "dev": "rollup -c ./src/site/rollup.config.mjs -w",
+    "createPagesExports": "node ./src/site/scripts/createPagesExports.js"
   },
   "imports": {
-    "#src/*": "./*",
-    "#src/config": "./config.json.js",
-    "#server/*": "./server/*"
+    "#root/*": "./*",
+    "#src/*": "./src/*",
+    "#config": "./src/config.json.js",
+    "#app": "./src/app/app.js",
+    "#server/*": "./src/server/*",
+    "#site/*": "./src/site/src/*",
+    "#bot/*": "./src/bot/*",
+    "#lib/*": "./src/lib/*",
+    "#folder/*": "./folder/*",
+    "#static/*": "./static/*",
+    "#site-component-lib/*": "./src/site/src/modules/*",
+    "#site-component/*": "./src/site/src/modules/*/mod.svelte"
   },
   "author": "zoodogood",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/collection": "^1.2.0",
+    "@arthur.dev/discord-oauth2": "^0.0.6",
+    "@discordjs/collection": "^1.3.0",
+    "@rollup/plugin-replace": "^5.0.2",
     "@zoodogood/import-directory": "^1.3.3",
     "@zoodogood/utils": "^0.7.4",
     "cors": "^2.8.5",
@@ -23,6 +38,20 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "node-fetch": "^2.6.0",
+    "sirv-cli": "^2.0.0",
+    "svelte-markdown": "^0.2.3",
     "vm2": "^3.9.11"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.0.0",
+    "rollup": "^2.3.4",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-svelte": "^7.0.0",
+    "rollup-plugin-terser": "^7.0.0",
+    "sass": "^1.57.1",
+    "svelte": "^3.0.0",
+    "svelte-preprocess": "^5.0.0"
   }
 }
