@@ -1535,8 +1535,8 @@ class BossManager {
 								gotTable[user.id] = true;
 
 								user.data.chestBonus ||= 0;
-								user.data.chestBonus += 7;
-								const description = `Получено 7 бонусов сундука`;
+								user.data.chestBonus += 10;
+								const description = `Получено 10 бонусов сундука`;
 				
 								message.msg({description, footer: {iconURL: user.avatarURL(), text: user.tag}, delete: 8000});
 							});
@@ -1568,10 +1568,10 @@ class BossManager {
 						}
 						},
 						"🍯🍯🍯": {
-						description: "Вы мгновенно получаете 35 бонусов сундука!",
+						description: "Вы мгновенно получаете 45 бонусов сундука!",
 						callback: (_message, _embed) => {
 							user.data.chestBonus ||= 0;
-							user.data.chestBonus += 35;
+							user.data.chestBonus += 45;
 						}
 						},
 						"🩸🩸🩸": {
