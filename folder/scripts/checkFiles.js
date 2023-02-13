@@ -33,6 +33,7 @@ const Paths = {
 	const source = resolve(Paths.envExample);
 	const target = resolve(Paths.env);
 	await FileSystem.copyFile(source, target);
+	console.info(`CREATED: ${ Paths.env }`);
 })();
 
 !await FileExists(Paths.config) && await 
@@ -40,6 +41,7 @@ const Paths = {
 	const source = resolve(Paths.configExample);
 	const target = resolve(Paths.config);
 	await FileSystem.copyFile(source, target);
+	console.info(`CREATED: ${ Paths.config }`);
 })();
 
 
