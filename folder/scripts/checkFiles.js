@@ -25,7 +25,7 @@ const Paths = {
 
 
 
-!FileExists(Path.env) && await 
+!FileExists(Paths.env) && await 
 (async () => {
 	execSync(`start "" "file://${ resolve(Paths.firstBuildDocs) }"`);
 	const source = resolve(Paths.envExample);
