@@ -15,7 +15,7 @@ const Paths = {
 	env: 			 ".env",
 	envExample:  ".env.example",
 	main: 		 "folder/data/main.json",
-	counter: 	 "folder/data/counter.json",
+	counter: 	 "folder/data/counters.json",
 	time: 		 "folder/data/time.json",
 
 	firstBuildDocs: "static/special/first-build.html"
