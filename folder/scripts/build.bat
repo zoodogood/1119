@@ -1,3 +1,6 @@
+:: Google it
+@echo off
+
 cd ../../
 
 echo "Node version:"
