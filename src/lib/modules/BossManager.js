@@ -1597,7 +1597,7 @@ class BossManager {
 						description: "Эффект кубика. Урон по боссу увеличен",
 						callback: (_message, _embed) => {
 							boss.diceDamageMultiplayer ||= 1;
-							boss.diceDamageMultiplayer += 0.01;
+							boss.diceDamageMultiplayer += 0.05;
 						}
 						},
 						"🍯🩸🩸": {
