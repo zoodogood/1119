@@ -7,15 +7,20 @@
 <style>
 	main {
 		text-align: center;
-		padding: 1em;
+		padding: 2em;
 		max-width: 240px;
 		margin: 0 auto;
+	}
+
+	p 
+	{
+		font-size: 0.8em;
 	}
 
 	h1 {
 		color: #3b7c4c;
 		text-transform: uppercase;
-		font-size: 4em;
+		font-size: 3em;
 		font-weight: 100;
 	}
 
