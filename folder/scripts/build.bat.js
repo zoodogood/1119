@@ -37,7 +37,7 @@ await info("Node version:");
 await run("node", ["-v"]);
 
 await info("Install modules:");
-const x = await run("npm.cmd", ["install"]);
+await run("npm.cmd", ["install"]);
 
 await info("Check files:");
 await run("node", ["./folder/scripts/checkFiles.js"]);
@@ -46,6 +46,3 @@ await info("Build bundle:");
 await run("npm.cmd", ["run", "site-build"]);
 
 await info("Success");
-
-console.log("\n\n\n\n\n\n");
-console.log(x);
