@@ -6,9 +6,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/index.js",
-    "watch": "sirv public --no-clear",
-    "build": "cd ./folder/scripts & build.bat",
+    "build": "node ./folder/scripts/build.bat.js",
     "dev": "rollup -c ./src/site/rollup.config.mjs -w",
+    "site-build": "rollup -c ./src/site/rollup.config.mjs",
+    "site-watch": "sirv static --no-clear",
     "createPagesExports": "node ./src/site/scripts/createPagesExports.js"
   },
   "imports": {

@@ -22,7 +22,7 @@ function serve() {
 	return {
 		async writeBundle() {
 			if (server) return;
-			server = spawn('npm', ['run', 'watch', '--', '--dev'], {
+			server = spawn('npm', ['run', 'site-watch', '--', '--dev'], {
 				stdio: ['ignore', 'inherit', 'inherit'],
 				shell: true
 			});
