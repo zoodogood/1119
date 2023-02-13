@@ -1,5 +1,8 @@
 .env
+src/config.json.js
+
 node_modules/
 data/
 folder/errors/*.json
 build/
+
