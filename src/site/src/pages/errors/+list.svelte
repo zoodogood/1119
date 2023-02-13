@@ -2,38 +2,47 @@
 <main>
 	<h1>Hello 1119!</h1>
 	<ul>
-		{#each errors as error}
-			<p>{ error }</p>
+		<!-- Для каждой итерации создаётся обёртка. Внутрь { } помещаются переменные "извне". В остальном это обычный HTML  -->
+		{#each errors as errorFile, i}
+			<li class = "error-file">
+				{ i }.
+				<p>{ errorFile.name }</p>
+				<br>
+			</li>
 		{/each}
 	</ul>
 </main>
 
 <style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
 
 	h1 {
 		color: #3b7c4c;
 		text-transform: uppercase;
-		font-size: 4em;
+		font-size: 2em;
 		font-weight: 100;
 	}
 
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
+	.error-file:hover
+	{
+		background-color: #88888844;
 	}
+
 </style>
 
 
 <script>
 
 	let errors = [];
+	import svelteApp from "#site/core/svelte-app.js";
+
+	const parseName = (fullname) => {
+		const name = fullname.match(/.+?(?=\.json$)/)?.at(0);
+		const [day, month, hour, minute] = name?.split("-") ?? [];
+
+		const date = new Date(svelteApp.data.Date.getFullYear(), month - 1, day, hour, minute);
+		const timestamp = date.getTime();
+		return {fullname, name, timestamp};
+	}
 
 	(async () => {
 		const fileName = "";
@@ -41,8 +50,14 @@
 		const url = `${ BASE }${ fileName }`;
   		const response = await fetch(url);
 
-		const data = await response.json();
+		let data = (await response.json())
+			.map(parseName);
+
+		// Здесь ты можешь менять данные
+
 		errors = data;
+
+		console.log(errors);
 	})();
   
 </script>
