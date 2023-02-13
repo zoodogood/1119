@@ -1,13 +1,13 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.1124",
+  "version": "2.0.0-alpha.1212",
   "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node ./src/index.js",
     "watch": "sirv public --no-clear",
-    "build": "rollup -c ./src/site/rollup.config.mjs",
+    "build": "cd ./folder/scripts & build.bat",
     "dev": "rollup -c ./src/site/rollup.config.mjs -w",
     "createPagesExports": "node ./src/site/scripts/createPagesExports.js"
   },
