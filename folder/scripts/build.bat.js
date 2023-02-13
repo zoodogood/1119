@@ -22,9 +22,7 @@
 
 // echo "Success!"
 
-// process.on("uncaughtException", () => {
-// 	console.log(123);
-// })
+
 
 
 const root = process.cwd();
@@ -32,6 +30,7 @@ import get from '#lib/child-process-utils.js';
 
 const {run, info, _npm} = get({root, logger: true});
 const node = "node";
+
 
 
 await info("Node version:");
