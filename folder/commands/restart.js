@@ -5,7 +5,7 @@ import { exec } from 'child_process';
 class Command {
 
 	async onChatInput(msg, interaction){
-		const COMMAND = "git pull && pm2 restart --update-env blackghost";
+		const COMMAND = "git pull && npm run build && pm2 restart --update-env blackghost";
 		
 		const embed = {
 			title: "<:emoji_50:753916145177722941>",
