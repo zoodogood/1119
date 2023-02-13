@@ -611,6 +611,14 @@ class BossRelics {
 			onBought: () => {
 
 			}
+		},
+		"defiance": {
+			id: "defiance",
+			label: "Непокорность",
+			description: "Ваши атаки никогда не лечат босса",
+			onBought: () => {
+
+			}
 		}
 	}));
 
