@@ -12,11 +12,13 @@ const Write = async (path, content) =>
 	await FileSystem.writeFile(resolve(path), content);
 
 const Paths = {
-	env: 			 ".env",
-	envExample:  ".env.example",
-	main: 		 "folder/data/main.json",
-	counter: 	 "folder/data/counters.json",
-	time: 		 "folder/data/time.json",
+	env: 			 	 ".env",
+	envExample:  	 "folder/development/.env.example",
+	config:  		 "src/config.json.js",
+	configExample:  "folder/development/config.json.js.example",
+	main: 		 	 "folder/data/main.json",
+	counter: 	 	 "folder/data/counters.json",
+	time: 		 	 "folder/data/time.json",
 
 	firstBuildDocs: "static/special/first-build.html"
 }
@@ -30,6 +32,13 @@ const Paths = {
 	execSync(`start "" "file://${ resolve(Paths.firstBuildDocs) }"`);
 	const source = resolve(Paths.envExample);
 	const target = resolve(Paths.env);
+	await FileSystem.copyFile(source, target);
+})();
+
+!await FileExists(Paths.config) && await 
+(async () => {
+	const source = resolve(Paths.configExample);
+	const target = resolve(Paths.config);
 	await FileSystem.copyFile(source, target);
 })();
 
