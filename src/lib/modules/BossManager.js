@@ -1556,7 +1556,7 @@ class BossManager {
 						callback: (_message, _embed) => {
 							userStats.bought ||= {};
 							userStats.bought.wolf ||= 0;
-							userStats.bought.wolf -= 2;
+							userStats.bought.wolf -= 1;
 						}
 						},
 						"🧪🩸🩸": {
@@ -1564,7 +1564,7 @@ class BossManager {
 						callback: (_message, _embed) => {
 							userStats.bought ||= {};
 							userStats.bought.puzzle ||= 0;
-							userStats.bought.puzzle -= 2;
+							userStats.bought.puzzle -= 1;
 						}
 						},
 						"🍯🍯🍯": {
