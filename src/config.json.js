@@ -11,7 +11,7 @@ export default {
 	},
 
 	server: {
-		homepage: "localhost:8001",
+		origin: "localhost:8001",
 		paths: {
 			static: "./static",
 			site: "./pages"
