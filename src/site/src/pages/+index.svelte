@@ -28,7 +28,7 @@
 
 
 <script>
-	import app from "#site/core/app.js";
+	import svelteApp from "#site/core/svelte-app.js";
 	import { relativeSiteRoot } from "#lib/safe-utils.js";
-	const _url = relativeSiteRoot(app, "public");
+	const _url = relativeSiteRoot(svelteApp, "public");
 </script>

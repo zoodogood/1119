@@ -1,6 +1,6 @@
-function relativeSiteRoot(app, path, removeHash = true){
-	 const {origin, hash} = app.document.location;
-	 const pathname = Object.values(app.url.base)
+function relativeSiteRoot(svelteApp, path, removeHash = true){
+	 const {origin, hash} = svelteApp.document.location;
+	 const pathname = Object.values(svelteApp.url.base)
 		 .filter(Boolean)
 		 .join("/");
 		 

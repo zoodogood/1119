@@ -2,9 +2,9 @@ import * as PagesEnum from '#static/build/svelte-pages/exports[builded].mjs';
 
 
 
-function route(app){
+function route(svelteApp){
 	
-	const subpath = app.url.subpath
+	const subpath = svelteApp.url.subpath
 		.filter(subpath => !subpath.startsWith(":"))
 		.join("_");
 
@@ -15,7 +15,7 @@ function route(app){
 
 
 	new _Page({
-		target: app.document.body
+		target: svelteApp.document.body
 	});
 
 	

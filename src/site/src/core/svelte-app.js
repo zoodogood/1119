@@ -5,7 +5,7 @@ import enviroment from '#site/enviroment/mod.js';
 import PagesEnum from '#static/build/svelte-pages/enum[builded].mjs';
 
 
-class App {
+class SvelteApp {
 
 	document = document;
 	data = {hash: {}};
@@ -41,4 +41,4 @@ class App {
 	
 }
 
-export default new App();
+export default new SvelteApp();
