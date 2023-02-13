@@ -11,7 +11,7 @@ class Command {
 	async onChatInput(msg, interaction){
 		const COMMANDS = [
 			"git pull",
-			"npm.cmd run build",
+			`${ _npm } run build`,
 			config.pm2.id ? `${ _npm } run pm2-please-restart ${ config.pm2.id }` : "echo pm2 not setted"
 		];
 		
