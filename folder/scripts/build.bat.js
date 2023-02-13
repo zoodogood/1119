@@ -30,19 +30,20 @@
 const root = process.cwd();
 import get from '#lib/child-process-utils.js';
 
-const {run, info} = get({root, logger: true});
+const {run, info, _npm} = get({root, logger: true});
+const node = "node";
 
 
 await info("Node version:");
-await run("node", ["-v"]);
+await run(node, ["-v"]);
 
 await info("Install modules:");
-await run("npm.cmd", ["install"]);
+await run(_npm, ["install"]);
 
 await info("Check files:");
-await run("node", ["./folder/scripts/checkFiles.js"]);
+await run(node, ["./folder/scripts/checkFiles.js"]);
 
 await info("Build bundle:");
-await run("npm.cmd", ["run", "site-build"]);
+await run(_npm, ["run", "site-build"]);
 
 await info("Success");

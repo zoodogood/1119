@@ -4,6 +4,9 @@ import EventsEmitter from 'events';
 
 export default (({root, logger = false}) => {
 
+	// Solve problem: https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
+	const _npm = process.platform === "win32" ? "npm.cmd" : "npm";
+
 	const EventsCallbacks = [
 		{
 			key: "stdoutError",
@@ -107,5 +110,5 @@ export default (({root, logger = false}) => {
 		return promise;
 	}
 
-	return {run, info};
+	return {run, info, _npm};
 });

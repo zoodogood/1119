@@ -1,7 +1,7 @@
 
 import config from '#config';
 import get from '#lib/child-process-utils.js';
-const {run, info} = get({ root: process.cwd() });
+const {run, info, _npm} = get({ root: process.cwd() });
 
 
 
@@ -12,7 +12,7 @@ class Command {
 		const COMMANDS = [
 			"git pull",
 			"npm.cmd run build",
-			config.pm2.id ? `npm.cmd run pm2-please-restart ${ config.pm2.id }` : "echo pm2 not setted"
+			config.pm2.id ? `${ _npm } run pm2-please-restart ${ config.pm2.id }` : "echo pm2 not setted"
 		];
 		
 		const embed = {
