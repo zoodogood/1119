@@ -11,11 +11,15 @@ export default {
 	},
 
 	server: {
+		source: "./src/server",
 		origin: "localhost:8001",
 		paths: {
 			static: "./static",
 			site: "./pages"
 		}
+	},
+	site: {
+		source: "./src/site"
 	},
 	pm2: {
 		id: null
