@@ -1,0 +1,129 @@
+
+<button class = "switch-theme" data-current = { Theme.current } on:click = { Theme.switchToNext }>
+	<Icon code = ""/>
+</button>
+
+<style>
+	.switch-theme
+	{
+		display: inline-block;
+		cursor: pointer;
+		opacity: 0.7;
+		font-size: 1em;
+		
+		border-radius: 30px;
+		padding: 0;
+		width: fit-content;
+		min-width: 0;
+
+		transition: all 500ms;
+	}
+
+	.switch-theme[data-current="dark"]
+	{
+		color: var( --white );
+	}
+
+	.switch-theme[data-current="light"]
+	{
+		color: var( --dark );
+		background-color: #ffffff44;
+		opacity: 0.5;
+	}
+
+	.switch-theme[data-current="rainbow"]
+	{
+		transform: rotate(250deg);
+	}
+
+	.switch-theme:hover
+	{
+		opacity: 0.9;
+	}
+</style>
+
+<script context="module">
+	const DEFAULT_THEME = "default";
+	
+	const Theme = {
+		current: localStorage.selectedTheme ?? DEFAULT_THEME,
+		apply(themeName){
+			const theme = Theme.collection[themeName];
+			const target = document.documentElement.style;
+			
+			for (const style in theme){
+				target.setProperty(style, theme[style]);
+			}
+
+			localStorage.selectedTheme = themeName;
+		},
+
+		remove(themeName){
+			const theme = Theme.collection[themeName];
+			const target = document.documentElement.style;
+			
+			for (const style in theme){
+				target.removeProperty(style);
+			}
+		},
+
+		switchToNext(){
+			const themes = Object.keys(Theme.collection);
+			const index = themes.indexOf(Theme.current);
+			const themeName = themes.at((index + 1) % themes.length);
+
+			const previousName = themes.at(index);
+			Theme.remove(previousName);
+			
+			Theme.current = themeName;
+			Theme.apply(themeName);
+		},
+
+		collection: {
+			default: {
+				"--main-color": "#3b7c4c",
+				"--text-theme-accent": "var(--white)",
+				"--background-theme-accent": "var(--dark)",
+			},
+
+			light: {
+				"--text-theme-accent": "var(--dark)",
+				"--background-theme-accent": "var(--white)",
+				"--main-color": "#3f3c8d"
+			},
+
+			dark: {
+				"--text-theme-accent": "var(--white)",
+				"--background-theme-accent": "var(--dark)",
+				"--main-color": "#3f3c8d"
+
+			},
+
+			contrast: {
+				"--text-theme-accent": "var(--dark)",
+				"--background-theme-accent": "var(--white)",
+				"--main-color": "#000000"
+			},
+
+			rainbow: {
+				"--text-theme-accent": "var(--white)",
+				"--background-theme-accent": "var(--dark)",
+				"--main-color": "#349a4b"
+			},
+
+			black: {
+				"--text-theme-accent": "var(--white)",
+				"--background-theme-accent": "var(--dark)",
+				"--main-color": "#121212"
+			}
+		}
+	}
+
+	Theme.apply(Theme.current);
+</script>
+
+<script>
+	import Icon from '#site-component/iconic';
+</script>
+
+
