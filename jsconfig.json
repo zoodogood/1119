@@ -12,8 +12,8 @@
 			"#folder/*": ["./folder/*"],
 			"#static/*": ["./static/*"],
 
-			"#site-component-lib/*": ["./src/site/src/modules/*"],
-			"#site-component/*":     ["./src/site/src/modules/*/mod.svelte"],
+			"#site-component-lib/*": ["./src/site/src/components/*"],
+			"#site-component/*":     ["./src/site/src/components/*/mod.svelte"],
 
 			"#src/*":  ["./src/*"],
 			"#root/*": ["./*"],
