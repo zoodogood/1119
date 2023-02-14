@@ -10,7 +10,10 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, responce){
-		responce.redirect(oauth.authorizationUrl);
+		const siteRedirect = request.query.redirect;
+		const redirectURL = oauth(siteRedirect).authorizationUrl;
+
+		responce.redirect(redirectURL);
 		return;
 	}
 }
