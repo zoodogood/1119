@@ -620,6 +620,15 @@ class BossRelics {
 			onBought: () => {
 
 			}
+		},
+
+		"watcher": {
+			id: "watcher",
+			label: "Наблюдательный",
+			description: "Вы можете получать дополнительные сведения о боссе",
+			onBought: () => {
+
+			}
 		}
 	}));
 
