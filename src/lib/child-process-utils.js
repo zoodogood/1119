@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import EventsEmitter from 'events';
-
+import { bold } from 'console-log-colors';
 
 export default (({root, logger = false}) => {
 
@@ -68,7 +68,7 @@ export default (({root, logger = false}) => {
 		
 	]
 	
-	const info = async (...params) => console.info(...params);
+	const info = async (string) => console.info( bold(string) );
 
 	const run = async (command, params) => {
 		const child = spawn(command, params, {cwd: root});
