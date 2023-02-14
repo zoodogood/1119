@@ -4,6 +4,8 @@ import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import livereload from 'rollup-plugin-livereload';
 import css from 'rollup-plugin-css-only';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
+
 
 import replace from '@rollup/plugin-replace';
 import replaces from '#site/enviroment/values.js';
@@ -34,7 +36,7 @@ function serve() {
 }
 
 export default {
-	input: './src/site/src/core/main.js',
+	input: './src/site/src/core/index.js',
 	output: {
 		sourcemap: true,
 		format: 'iife',
@@ -49,6 +51,9 @@ export default {
 			preventAssignment: true,
 			values: replaces
 		}),
+
+		nodePolyfills(),
+
 
 		svelte({
 			compilerOptions: {
