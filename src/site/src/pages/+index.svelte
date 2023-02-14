@@ -24,6 +24,11 @@
 		font-weight: 100;
 	}
 
+	a 
+	{
+		color: var( --main-color );
+	}
+
 	@media (min-width: 640px) {
 		main {
 			max-width: none;
