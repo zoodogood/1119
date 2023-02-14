@@ -12,7 +12,7 @@ export default {
 
 	server: {
 		source: "./src/server",
-		origin: "localhost:8001",
+		origin: "http://localhost:8001",
 		paths: {
 			static: "./static",
 			site: "./pages"
