@@ -4,7 +4,7 @@ import OAuth from "@arthur.dev/discord-oauth2";
 
 
 
-const oauth2 = () => 
+const oauth2 = 
 	new OAuth.default({
 		clientId: client.user.id,
 		clientSecret: process.env.DISCORD_OAUTH2_TOKEN,
