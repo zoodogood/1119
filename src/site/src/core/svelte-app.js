@@ -2,7 +2,7 @@ import HashController from '#site/lib/HashController.js';
 import { resolveDate, parseDocumentLocate } from '#lib/safe-utils.js';
 import enviroment from '#site/enviroment/mod.js';
 
-import PagesEnum from '#static/build/svelte-pages/enum[builded].mjs';
+import PagesURLs from '#static/build/svelte-pages/enum[builded].mjs';
 
 
 class SvelteApp {
@@ -12,7 +12,7 @@ class SvelteApp {
 	Hash = this.#createHashController();
 	enviroment = enviroment;
 	url = parseDocumentLocate(this.document.location);
-	PagesEnum = PagesEnum;
+	PagesURLs = PagesURLs;
 
 	constructor(){
 		this.lang = this.url.base.lang ?? "ru";
