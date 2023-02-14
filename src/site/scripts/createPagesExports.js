@@ -12,11 +12,12 @@ const ENUM_TARGET_PATH = "./static/build/svelte-pages/enum[builded].mjs"; // ESJ
 
 
 
+
 /** Get's path */
 import Path from 'path';
 
-const root = process.cwd();
-const takePath = (...relativePath) => Path.resolve(root, ...relativePath);
+import { takePath } from '#lib/util.js';
+
 
 
 
@@ -32,23 +33,30 @@ console.info( `Count: ${ filesPath.length } of files` );
 
 
 /** Parse files */
-const resolveName = (filePath) => {
+function resolvePageName(source){
 	const directory = takePath(FOLDER_NAME);
-
-	const file = Path
-		.relative(directory, filePath)
+	
+	
+	const name = Path
+		.relative(directory, source)
 		.replaceAll(/\\|\//g, "_")
 		.replaceAll("+", "")
 		.replaceAll(/\..+$/g, "")
+		.toLowerCase()
 		.trim();
 
-	return file;
+	return name;
 };
+
+
 const resolveModule = (filePath) => {
-	const path = Path.relative(".", filePath);
 	const normalizePath = (path) => path.replaceAll(Path.win32.sep, Path.posix.sep);
-	const name = resolveName(filePath);
-	return {filePath, name, normalizedPath: normalizePath(path)};
+	const source = normalizePath(
+		Path.relative(".", filePath)
+	);
+	
+	const name = PagesRouter.resolvePageName(filePath);
+	return {filePath, name, source};
 };
 const modules = filesPath
 	.map(resolveModule);
@@ -59,10 +67,11 @@ const modules = filesPath
 
 /** First file */
 import FileSystem from 'fs/promises';
+import PagesRouter from '#site/lib/Router.js';
 (async () => {
 	/** Generate content */
-	const getStringByPattern = ({normalizedPath, name}) => {
-		const path = `#${ normalizedPath }`;
+	const getStringByPattern = ({source, name}) => {
+		const path = `#${ source }`;
 		return `export {default as ${ name }} from '${ path }';`;
 	}
 	
@@ -82,11 +91,11 @@ import FileSystem from 'fs/promises';
 (async () => {
 	/** Generate content */
 
-	const entries = modules
-		.map(({normalizedPath, name}) => [name, normalizedPath]);
+	const array = modules
+		.map(({source}) => source);
 
 	const json = JSON.stringify(
-		Object.fromEntries(entries), null, 2
+		array, null, 2
 	);
 	
 	const content = `export default ${ json }`;
