@@ -19,7 +19,8 @@ export default {
 		}
 	},
 	site: {
-		source: "./src/site"
+		source: "./src/site",
+		label: "Призрак",
 	},
 	pm2: {
 		id: null
