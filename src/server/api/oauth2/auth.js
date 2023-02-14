@@ -13,7 +13,15 @@ class Route extends BaseRoute {
 		const siteRedirect = request.query.redirect;
 		const redirectURL = oauth(siteRedirect).authorizationUrl;
 
-		responce.redirect(redirectURL);
+		// https://stackoverflow.com/questions/58858066/pass-a-string-through-discord-oauth
+		const injectSiteRedirect = (original, redirectURL) =>
+			original.concat(`&state=${ redirectURL }`);
+
+		responce.redirect(
+			siteRedirect ?
+				injectSiteRedirect(redirectURL, siteRedirect) :
+				redirectURL
+		);
 		return;
 	}
 }
