@@ -25,7 +25,7 @@
 	  
 	<section class = "authentication">
 		<button
-			on:click={() => PagesRouter.redirect(`../oauth2/auth?redirect=1`)}
+			on:click={() => PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`)}
 		>
 			Войти
 		</button>
