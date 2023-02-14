@@ -12,14 +12,21 @@ class Route extends BaseRoute {
 	
 	async get(request, responce){
 		const code  = request.query.code;
+
+		if (!oauth.clientSecret){
+			throw new Error("Accessing OAuth2 without DISCORD_OAUTH2_TOKEN");
+		}
+
 		if (!code) {
 			responce.sendStatus(400);
 			return;
 		}
 		
 		const exchangeResponse = await oauth.exchangeCode(code);
-		Router.relativeToPage(Router.pages.oauth_Active, {hash: {code: exchangeResponse.access_token}});
-		responce.redirect(`/pages/oauth/active#code=${ exchangeResponse.access_token }`);
+		
+		const redirect = request.query.state;
+		const url = `${ Router.pages.oauth_active }?code=${ exchangeResponse.access_token }${ redirect }`;
+		responce.redirect(url);
 	}
 }
 
