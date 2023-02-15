@@ -1,7 +1,6 @@
 import { relativeSiteRoot } from '#lib/safe-utils.js';
 import { Collection } from "@discordjs/collection";
 import Path from 'path';
-import app from '#app';
 
 class PagesRouter {
 
@@ -13,6 +12,11 @@ class PagesRouter {
 			const page = this.resolvePage(path);
 			this.addPage(page);
 		}
+	}
+
+	static #svelteApp;
+	static setSvelteApp(svelteApp){
+		this.#svelteApp = svelteApp;
 	}
 
 	static resolvePage(path){
@@ -65,12 +69,12 @@ class PagesRouter {
 	}
 
 	static relativeToPage(path){
-		const svelteApp = app.svelte;
+		const svelteApp = this.#svelteApp;
 		return relativeSiteRoot(svelteApp, path);
 	}
 
 	static redirect(path){
-		app.svelte.document.location.href
+		this.#svelteApp.document.location.href
 			= this.relativeToPage(path);
 	}
 }

@@ -3,6 +3,7 @@ import Router from '#site/lib/Router.js';
 
 
 function route(svelteApp){
+	Router.setSvelteApp(svelteApp);
 	
 	const subpath = svelteApp.url.subpath
 		.filter(subpath => !subpath.startsWith(":"))
