@@ -1,7 +1,9 @@
-
+import PagesRouter from "#site/lib/Router.js";
+import PagesURLs from '#static/build/svelte-pages/enum[builded].mjs';
 
 
 class App {
+
 	/** @type {Client} */
 	client = null;
 
@@ -11,6 +13,10 @@ class App {
 	version = null;
 
 	svelte = null;
+
+	async launch(){
+		PagesRouter.resolvePages(PagesURLs);
+	}
 }
 
 

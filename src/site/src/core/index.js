@@ -4,6 +4,7 @@ import PageWrapper from '#site-component/PageWrapper';
 
 import app from '#app';
 app.svelte = svelteApp;
+app.launch();
 
 const page = route(svelteApp);
 new PageWrapper({
