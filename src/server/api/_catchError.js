@@ -16,7 +16,7 @@ class Route extends BaseRoute {
 	async catch(error, request, response, next){
 		ErrorsHandler.Audit.push(error, {path: request.originalUrl});
 		response.status(500);
-		response.send("Error)!");
+		response.send(`Error)!\n${ error.message }`);
 	}
 
 	async start(){
