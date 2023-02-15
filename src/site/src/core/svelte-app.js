@@ -3,6 +3,7 @@ import { resolveDate, parseDocumentLocate } from '#lib/safe-utils.js';
 import enviroment from '#site/enviroment/mod.js';
 
 import PagesURLs from '#static/build/svelte-pages/enum[builded].mjs';
+import config from '#config';
 
 
 class SvelteApp {
@@ -24,6 +25,18 @@ class SvelteApp {
 		return this.document.location.href;
 	}
 
+	getBot(){
+		const bot = this.enviroment.bot ?? {
+			id: null,
+			username: "Призрак",
+			discriminator: "1119",
+			displayAvatarURL: `${ config.origin }/static/favicon.ico`,
+			invite: null
+		};
+
+		return bot;
+	}
+
 
 	#createHashController(){
 		const controller = new HashController().subscribe();
@@ -39,6 +52,10 @@ class SvelteApp {
 		data.Date = resolveDate(data.currentHash.day, ...(data.currentHash.date?.split(".") ?? []));
 	}
 	
+
 }
 
-export default new SvelteApp();
+const appSvelte = new SvelteApp();
+
+export default appSvelte;
+export { appSvelte };
