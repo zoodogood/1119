@@ -8,6 +8,7 @@ import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
 
 import { CreateModal } from '@zoodogood/utils/discordjs';
 import { ButtonStyle, ComponentType, TextInputStyle } from 'discord.js';
+import { generateInviteFor } from '#lib/util.js';
 
 
 class Command {
@@ -36,7 +37,7 @@ class Command {
         type: ComponentType.Button,
         label: "Пригласить",
         style: ButtonStyle.Link,
-        url: `https://discord.com/api/oauth2/authorize?client_id=${ client.user.id }&permissions=1073741832&scope=applications.commands%20bot`,
+        url: generateInviteFor(client),
         emoji: {name: "berry", id: "756114492055617558"}
       }
     ];
