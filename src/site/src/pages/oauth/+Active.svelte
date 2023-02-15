@@ -36,6 +36,6 @@
 
 	const _url = relativeSiteRoot(svelteApp, "public");
 
-	const token = new HashController().get("code");
+	const {code, state} = svelteApp.url.queries;
 	sessionStorage.setItem("access_token", token);
 </script>
