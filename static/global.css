@@ -126,8 +126,8 @@ button
 	background-color: var( --main-color );
 	color: var( --white );
     
-	padding: 20px;
-	min-width: 100px;
+	padding: calc(10px + 0.5vw);
+	min-width: calc(65px + 2vw);
 
 	border-radius: 15px;
 	outline: none;

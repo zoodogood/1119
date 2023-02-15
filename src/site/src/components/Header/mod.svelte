@@ -133,7 +133,6 @@
 	color: var( --text-theme-accent );
 	display: flex;
 	justify-content: center;
-	gap: 15px;
 }
 
 .navigation-element
