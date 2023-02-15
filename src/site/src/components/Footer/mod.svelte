@@ -74,29 +74,7 @@
 
 <style>
 
-	footer::before
-	{
-		content: '';
-		background-color: var( --text-theme-accent );
-		opacity: 0.1;
-		display: block;
-		position: absolute;
-		top: -4em;
-		left: 4em;
-		
-		width: 1.5em;
-		aspect-ratio: 1 / 1;
-		border-radius: 0.7em;
-		border-radius: 2em;
 
-		transition: opacity 1s;;
-	}
-
-	footer:hover::before
-	{
-		content: '';
-		opacity: 0.5;
-	}
 
 
 	.container 
