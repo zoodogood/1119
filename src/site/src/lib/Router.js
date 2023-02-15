@@ -1,6 +1,5 @@
 import { relativeSiteRoot } from '#lib/safe-utils.js';
 import { Collection } from "@discordjs/collection";
-import config from '#config';
 import Path from 'path';
 import app from '#app';
 
