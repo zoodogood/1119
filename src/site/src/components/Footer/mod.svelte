@@ -1,7 +1,4 @@
 <script>
-	import config from '#config';
-
-
 	import appSvelte from '#site/core/svelte-app.js';
 	
 	const bot = appSvelte.getBot();
@@ -58,7 +55,7 @@
 					</aside>
 
 					<aside class = "invite">
-						 <a href={ config.guild.url }>
+						 <a href={ bot.invite }>
 							<button>Пригласить</button>
 						</a>
 					</aside>

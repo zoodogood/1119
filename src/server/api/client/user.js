@@ -1,5 +1,6 @@
 import { BaseRoute } from "#server/router.js";
 import client from "#bot/client.js";
+import { generateInviteFor } from "#lib/util.js";
 
 const PREFIX = "/client/user";
 
@@ -13,7 +14,9 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, responce){
-		const data = { ...client.user, displayAvatarURL: client.user.displayAvatarURL() };
+		const invite = generateInviteFor(client);
+		const displayAvatarURL = client.user.displayAvatarURL();
+		const data = { ...client.user, displayAvatarURL, invite };
 		responce.json(data);
 	}
 }
