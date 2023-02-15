@@ -43,12 +43,12 @@
 </style>
 
 <script context="module">
-	const DEFAULT_THEME = "default";
+	const DEFAULT_THEME = "darkGreen";
 	
 	const Theme = {
 		current: localStorage.selectedTheme ?? DEFAULT_THEME,
 		apply(themeName){
-			const theme = Theme.collection[themeName];
+			const theme = Theme.collection.get(themeName);
 			const target = document.documentElement.style;
 			
 			for (const style in theme){
@@ -59,7 +59,7 @@
 		},
 
 		remove(themeName){
-			const theme = Theme.collection[themeName];
+			const theme = Theme.collection.get(themeName);
 			const target = document.documentElement.style;
 			
 			for (const style in theme){
@@ -68,7 +68,7 @@
 		},
 
 		switchToNext(){
-			const themes = Object.keys(Theme.collection);
+			const themes = [...Theme.collection.keys()];
 			const index = themes.indexOf(Theme.current);
 			const themeName = themes.at((index + 1) % themes.length);
 
@@ -79,44 +79,7 @@
 			Theme.apply(themeName);
 		},
 
-		collection: {
-			default: {
-				"--main-color": "#3b7c4c",
-				"--text-theme-accent": "var(--white)",
-				"--background-theme-accent": "var(--dark)",
-			},
-
-			light: {
-				"--text-theme-accent": "var(--dark)",
-				"--background-theme-accent": "var(--white)",
-				"--main-color": "#3f3c8d"
-			},
-
-			dark: {
-				"--text-theme-accent": "var(--white)",
-				"--background-theme-accent": "var(--dark)",
-				"--main-color": "#3f3c8d"
-
-			},
-
-			contrast: {
-				"--text-theme-accent": "var(--dark)",
-				"--background-theme-accent": "var(--white)",
-				"--main-color": "#000000"
-			},
-
-			rainbow: {
-				"--text-theme-accent": "var(--white)",
-				"--background-theme-accent": "var(--dark)",
-				"--main-color": "#349a4b"
-			},
-
-			black: {
-				"--text-theme-accent": "var(--white)",
-				"--background-theme-accent": "var(--dark)",
-				"--main-color": "#121212"
-			}
-		}
+		collection: themes
 	}
 
 	Theme.apply(Theme.current);
@@ -124,6 +87,7 @@
 
 <script>
 	import Icon from '#site-component/iconic';
+	import themes from './themes.js';
 </script>
 
 
