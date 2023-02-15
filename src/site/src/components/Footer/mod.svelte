@@ -1,5 +1,8 @@
 <script>
+ 	import config from '#config';
 	import appSvelte from '#site/core/svelte-app.js';
+  	import PagesRouter from '#site/lib/Router.js';
+  
 	
 	const bot = appSvelte.getBot();
 </script>
@@ -20,7 +23,7 @@
 						 <h3 class = "article-aside-header">Информация</h3>
 						 <ul class = "article-aside-list">
 							  <li><a href = "">Политика использования</a></li>
-							  <li><a href = "">Благодарности</a></li>
+							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.pages.friendsheep )}>Благодарности</a></li>
 							  <li><a href = "">1119</a></li>
 							  <li></li>
 						 </ul>
@@ -28,10 +31,10 @@
 					<aside class = "article-aside">
 						 <h3 class = "article-aside-header">Навигация</h3>
 						 <ul class = "article-aside-list">
-							  <li><a href = "">Пригласить</a></li>
-							  <li><a href = "">Дискорд</a></li>
-							  <li><a href = "">Гитхаб</a></li>
-							  <li><a href = "">Помощь</a></li>
+							  <li><a href = { bot.invite }>Пригласить</a></li>
+							  <li><a href = { config.guild.url }>Дискорд</a></li>
+							  <li><a href = { config.enviroment.github }>Гитхаб</a></li>
+							  <li><a href = "{ config.enviroment.github}/issues/new">Помощь</a></li>
 						 </ul>
 					</aside>
 			  </section>
