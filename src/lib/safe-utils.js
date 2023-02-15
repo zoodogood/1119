@@ -2,6 +2,7 @@ import config from "#config";
 
 import { ending } from '@zoodogood/utils/primitives';
 import { omit, CustomCollector } from '@zoodogood/utils/objectives';
+import Path from 'path';
 
 
 
@@ -235,9 +236,16 @@ function parseLocationBase(base){
 	const prefix   = base.at(-3);
 	return {prefix, lang, entry};
 }
-  
 
- export {
+async function fetchFromInnerApi(subpath, fetchOptions){
+	const path = Path.join(config.server.origin, subpath);
+	const response = await fetch(path, fetchOptions);
+	return response.json();
+}
+
+
+
+export {
 	ending,
 	omit,
 	CustomCollector,
@@ -258,7 +266,9 @@ function parseLocationBase(base){
 
 	resolveGithubPath,
 	parseDocumentLocate,
-	parseLocationBase
+	parseLocationBase,
+
+	fetchFromInnerApi
  }
 
  export { relativeSiteRoot } from '#site/lib/util.js';
