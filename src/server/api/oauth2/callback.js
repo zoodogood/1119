@@ -25,32 +25,16 @@ class Route extends BaseRoute {
 			return;
 		}
 
-		let options = {
-			url: 'https://discord.com/api/oauth2/token',
-			method: 'POST',
-			headers: {
-			  'Content-Type': 'application/x-www-form-urlencoded'
-			},
-			body: new URLSearchParams({
-			  'client_id': oauth.clientId,
-			  'client_secret': oauth.clientSecret,
-			  'grant_type': 'authorization_code',
-			  'code': code,
-			  'redirect_uri': oauth.callbackUrl,
-			  'scope': 'identify guilds'
-			})
-		 }
-		 
-		let discord_data = await fetch('https://discord.com/api/oauth2/token', options);
-		const data = await discord_data.json();
-		console.log(data);
 		
-		const exchangeResponse = await oauth.exchangeCode(code);
+		
+		const exchangeResponse = await oauth.getOauth2Data(code);
 		
 		const redirect = request.query.state;
 		
 		const {server: {origin, paths}} = config;
-		const base = Path.resolve(origin, paths.site, PagesRouter.pages.oauth_active);
+		const base = Path.join(origin, paths.site, `./${ PagesRouter.pages.oauth_active }`)
+			.replaceAll("\\", "/")
+			.replace(/(?:http|https):\//, (match) => `${ match }/`);
 
 		const url = `${ base }?code=${ exchangeResponse.access_token }${ redirect }`;
 		responce.redirect(url);
