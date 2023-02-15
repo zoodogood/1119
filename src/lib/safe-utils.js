@@ -210,6 +210,12 @@ function toLocaleDeveloperString(value){
 
  function parseDocumentLocate(location){
 	const url = location.pathname;
+	const queries = Object.fromEntries(
+		decodeURI(location.search)
+		.slice(1)
+		.split("&")
+		.map((raw) => raw.split("="))
+	);
 
 	const key = config.server.paths.site.split("/")
 		.at(-1);
@@ -223,6 +229,7 @@ function toLocaleDeveloperString(value){
 
 	return {
 		subpath,
+		queries, 
 		base: parseLocationBase(base)
 	};	
 }
