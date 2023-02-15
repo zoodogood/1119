@@ -1,4 +1,4 @@
-<header class = "page-header">
+<header class = "page-header" bind:this = {Header.node} class:header--hide = { Header.isHide }>
 	<main class = "container">
 
 
@@ -12,9 +12,9 @@
 	<section class = "navigation">
 
 		<nav>
-			<a href = "pricing.html" class = "page_header-navigation-element">Главная</a>
-			<a href = "" class = "page_header-navigation-element">Навигация</a>
-			<a href = "" class = "page_header-navigation-element">Дискорд</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.public) } class = "navigation-element">Главная</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.natigation) } class = "navigation-element">Навигация</a>
+			<a href = { config.guild.url } class = "navigation-element">Дискорд</a>
 		</nav>
 
 		<span class = "theme-switcher-container">
@@ -35,16 +35,37 @@
 	</main>
 </header>
 
+<svelte:window on:scroll={onScroll}/>
+
 <style>
 	header 
 	{
 		width: 100%;
-		position: fixed;
+		position: sticky;
+		top: 0; 
 
 		font-size: 0.8em;
+		transition: top 200ms;
+		backdrop-filter: blur(10px);
 	}
 
+	.header--hide
+	{
+		top: -15vh;
+	}
 
+	.container::after
+	{
+		content: '';
+		position: absolute;
+		display: block;
+		width: 100%;
+		height: 100%;
+		z-index: -1;
+
+		background-color: var( --background-theme-accent );
+		opacity: 0.5;
+	}
 
 	.container
 	{
@@ -105,6 +126,44 @@
 		flex-grow: 1;
 		position: relative;
 	}
+
+
+.navigation 
+{
+	color: var( --text-theme-accent );
+	display: flex;
+	justify-content: center;
+	gap: 15px;
+}
+
+.navigation-element
+{
+	transition: all 300ms;
+}
+
+.navigation-element:hover
+{
+	color: var( --main-color );
+   filter: brightness(2);
+}
+
+
+
+
+
+
+@media (max-width: 980px){
+	.navigation 
+	{
+		position: absolute;
+		bottom: 0;
+	}
+
+	.navigation-element
+	{
+		text-decoration: underline;
+	}
+}
 </style>
 
 
@@ -114,6 +173,25 @@
 	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
 
-	
+	const Header = {
+		node: null,
+		isHide: false
+	}
 
+	
+	let scrollPosition = window.scrollY;
+	function onScroll(){
+		
+		window.scrollY === 0 &&
+			(Header.isHide = false);
+
+		scrollPosition > window.scrollY &&
+			(Header.isHide = false);
+
+      scrollPosition < window.scrollY &&
+			(Header.isHide = true);
+
+		scrollPosition = window.scrollY;
+	}
+	
 </script>
