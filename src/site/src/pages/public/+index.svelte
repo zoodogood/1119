@@ -10,3 +10,11 @@
 
 
 </script>
+
+
+<style>
+	main
+	{
+		padding: 3em;
+	}
+</style>
