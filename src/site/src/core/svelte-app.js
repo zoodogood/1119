@@ -30,7 +30,7 @@ class SvelteApp {
 			id: null,
 			username: "Призрак",
 			discriminator: "1119",
-			displayAvatarURL: `${ config.origin }/static/favicon.ico`,
+			displayAvatarURL: `${ config.server.origin }/static/favicon.ico`,
 			invite: null
 		};
 
