@@ -6,6 +6,7 @@ class PagesRouter {
 
 	static PAGES_FOLDER_PATH = "./src/site/src/pages";
 	static collection = new Collection();
+	static #pagesMap = new Map();
 
 	static resolvePages(PagesURLs){
 		for (const path of PagesURLs){
@@ -49,16 +50,18 @@ class PagesRouter {
 	}
 
 	
-
+	
 	static addPage(page){
-		const collection = this.collection;
-		collection.set(page.key , page);
-		collection.set(page.relativeToPages , page);
-		collection.set(page.source , page);
+		const pagesMap = this.#pagesMap;
+		pagesMap.set(page.key , page);
+		pagesMap.set(page.relativeToPages , page);
+		pagesMap.set(page.source , page);
+
+		this.collection.set(page.key, page);
 	}
 
 	static getPageBy(any){
-		return this.collection.get(any);
+		return this.#pagesMap.get(any);
 	}
 
 	static get pages(){
@@ -70,7 +73,11 @@ class PagesRouter {
 
 	static relativeToPage(path){
 		const svelteApp = this.#svelteApp;
-		return relativeSiteRoot(svelteApp, path);
+		const url = relativeSiteRoot(svelteApp, path);
+		const simplifyURL = (url) => {
+			return url.endsWith("index") ? url.split("/").slice(0, -1).join("/") : url;
+		}
+		return simplifyURL(url);
 	}
 
 	static redirect(path){
