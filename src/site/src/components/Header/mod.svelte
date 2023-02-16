@@ -128,24 +128,29 @@
 	}
 
 
-.navigation 
-{
-	color: var( --text-theme-accent );
-	display: flex;
-	justify-content: center;
-	gap: 15px;
-}
+	.navigation 
+	{
+		color: var( --text-theme-accent );
+		display: flex;
+		justify-content: center;
+	}
 
-.navigation-element
-{
-	transition: all 300ms;
-}
+	.navigation-element
+	{
+		transition: all 300ms;
+	}
 
-.navigation-element:hover
-{
-	color: var( --main-color );
-   filter: brightness(2);
-}
+	.navigation-element:hover
+	{
+		color: var( --main-color );
+		filter: brightness(2);
+	}
+
+	.navigation nav
+	{
+		display: flex;
+		gap: 10px;
+	}
 
 
 
@@ -153,10 +158,21 @@
 
 
 @media (max-width: 980px){
+	.container
+	{
+		padding-top: 0;
+	}
+
 	.navigation 
 	{
 		position: absolute;
 		bottom: 0;
+	}
+
+	.navigation nav 
+	{
+		gap: 20px;
+		font-size: 0.8em;
 	}
 
 	.navigation-element

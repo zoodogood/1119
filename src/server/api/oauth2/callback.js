@@ -32,7 +32,7 @@ class Route extends BaseRoute {
 		const redirect = request.query.state;
 		
 		const {server: {origin, paths}} = config;
-		const base = Path.join(origin, paths.site, `./${ PagesRouter.pages.oauth_active }`)
+		const base = Path.join(origin, paths.site, `./${ PagesRouter.pages.oauth_index }`)
 			.replaceAll("\\", "/")
 			.replace(/(?:http|https):\//, (match) => `${ match }/`);
 
