@@ -27,6 +27,16 @@
 			Пока здесь пусто ;)
 		</details>
 
+		<details open>
+			<summary>Другое</summary>
+			<ul>
+				<li><a href={config.guild.url}>Discord server</a></li>
+				<li><a href={config.enviroment.github}>Github</a></li>
+				<li><a href={svelteApp.enviroment.bot.invite}>Пригласить бота</a></li>
+				<li><a href="https://learn.javascript.ru/hello-world">Javascript учебник</a></li>
+			</ul>
+		</details>
+
 
 	</section>
 </Main>
@@ -34,7 +44,7 @@
 <Footer/>
 
 <script>
-	console.info({pages: PagesRouter.pages});
+	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
 	
 	import Header from '#site-component/Header';
