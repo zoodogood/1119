@@ -142,4 +142,5 @@ hr
     opacity: 0.2;
     background-color: var( --text-theme-accent );
     width: 15%;
+	 height: 3px;
 }
