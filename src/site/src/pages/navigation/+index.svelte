@@ -67,6 +67,11 @@
 		font-weight: 800;
 	}
 
+	li > a 
+	{
+		font-family: monospace;
+	}
+
 	details
 	{
 		border-radius: 15px;
