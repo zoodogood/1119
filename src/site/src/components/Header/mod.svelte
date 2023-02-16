@@ -47,6 +47,7 @@
 		font-size: 0.8em;
 		transition: top 200ms;
 		backdrop-filter: blur(10px);
+		z-index: 10000;
 	}
 
 	.header--hide
