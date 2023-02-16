@@ -1,5 +1,10 @@
 
-<button class = "switch-theme" data-current = { Theme.current } on:click = { Theme.switchToNext }>
+<button
+class = "switch-theme"
+data-current = { Theme.current }
+on:click = { () => Theme.switchToNext() & CallBulbAnimation(node) }
+bind:this = { node }
+>
 	<Icon code = ""/>
 </button>
 
@@ -87,7 +92,14 @@
 
 <script>
 	import Icon from '#site-component/iconic';
+	import BulbAnimation from './BulbAnimation.svelte';
 	import themes from './themes.js';
+
+	let node = null;
+
+	function CallBulbAnimation(){
+		new BulbAnimation({target: node});
+	}
 </script>
 
 
