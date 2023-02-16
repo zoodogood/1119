@@ -222,4 +222,9 @@
 	{
 		border-radius: 0.5em;
 	}
+
+	.invite > a
+	{
+		text-decoration-color: var( --white );
+	}
 </style>
