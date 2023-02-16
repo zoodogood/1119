@@ -12,7 +12,7 @@
 	<section class = "navigation">
 
 		<nav>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.public) } class = "navigation-element">Главная</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.public_index) } class = "navigation-element">Главная</a>
 			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.navigation_index) } class = "navigation-element">Навигация</a>
 			<a href = { config.guild.url } class = "navigation-element">Дискорд</a>
 		</nav>
