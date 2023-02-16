@@ -2,10 +2,10 @@
 <Header/>
 
 <Main>
-	<center>
+	<span>
 		<h1>Навигация</h1>
 		<hr>
-	</center>
+	</span>
 
 	<section>
 
@@ -49,6 +49,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: stretch;
+		gap: 30px;
 	}
 
 	summary
@@ -71,9 +72,9 @@
 		border-radius: 15px;
 		background-color: #88888822;
 		padding: 15px;
-		margin: 15px;
 		width: max-content;
 		min-width: 300px;
+		
 	}
 
 	details:not([open])
