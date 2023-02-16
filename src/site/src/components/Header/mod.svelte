@@ -42,7 +42,7 @@
 	{
 		width: 100%;
 		position: sticky;
-		top: 0; 
+		top: -2vh; 
 
 		font-size: 0.8em;
 		transition: top 200ms;
@@ -119,6 +119,10 @@
 	{
 		max-width: 0px;
 		overflow: visible;
+	}
+
+	.navigation :global(.switch-theme){
+		width: 2em;
 	}
 
 	.label, .navigation, .authentication

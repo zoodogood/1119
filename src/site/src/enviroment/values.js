@@ -3,7 +3,7 @@ import { fetchFromInnerApi } from "#lib/safe-utils.js";
 
 const packageJSON = JSON.parse(readFileSync(`${ process.cwd() }/package.json`));
 
-const bot = (await fetchFromInnerApi("./client/user")) ?? null;
+const bot = (await fetchFromInnerApi("./client/user").catch(() => null)) ?? null;
 
 const data = {
 	bot: Object(bot).id ? bot : null,
