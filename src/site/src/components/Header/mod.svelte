@@ -13,7 +13,7 @@
 
 		<nav>
 			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.public) } class = "navigation-element">Главная</a>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.natigation) } class = "navigation-element">Навигация</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.navigation) } class = "navigation-element">Навигация</a>
 			<a href = { config.guild.url } class = "navigation-element">Дискорд</a>
 		</nav>
 
