@@ -1,12 +1,13 @@
 <Header/>
-<main>
+<Main>
 	<h1>Привет!</h1>
 	<p>Сундук Кота это круто</p>
-</main>
+</Main>
 <Footer/>
 
 <script>
 	import Header from '#site-component/Header';
+	import Main from '#site-component/Main';
 	import Footer from '#site-component/Footer';
 
 
@@ -14,8 +15,5 @@
 
 
 <style>
-	main
-	{
-		padding: 3em;
-	}
+	
 </style>
