@@ -144,3 +144,10 @@ hr
     width: 15%;
 	 height: 3px;
 }
+
+code
+{
+	background-color: #88888833;
+	font-size: 0.8em;
+	padding: 0.1em;
+}
