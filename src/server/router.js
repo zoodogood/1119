@@ -7,23 +7,47 @@ const directory = path.join(process.cwd(), ROOT);
 
 
 
-
 class Router {
+
+	routes = [];
+
+
 	async fetch(){
 		const modules = await new ImportDirectory({subfolders: true})
 			.import(directory);
 
 
-		this.routes = modules;
+		this.fetchedRoutes = modules;
 
 		return this;
 	}
 
-	bind(express){
-		for (const {default: Route} of this.routes){
+	bindAll(express){
+		for (const {default: Route} of this.fetchedRoutes){
 			const route = new Route(express);
 			this.handle(route, express);
+
+			this.routes.push(route);
 		} 
+	}
+
+	getParsedRoutesList(){
+		const isRegex = (prefix) => prefix instanceof RegExp;
+		const isSimple = (prefix) => typeof prefix === "string" && !prefix.match(/:|\*|\\/);
+		// to-do: complete a list
+		const getMethods = (router) => [
+			"get" in router ?  "get" : null,
+			"post" in router ? "post" : null,
+			"put" in router ?  "put" : null
+		].filter(Boolean);
+
+		const parse = (router => ({
+			prefix: String(router.prefix),
+			isRegex: isRegex(router.prefix),
+			isSimple: isSimple(router.prefix),
+			methods: getMethods(router)
+		}));
+		return this.routes.map(parse);
 	}
 
 	handle(route, express){

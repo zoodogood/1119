@@ -31,12 +31,13 @@ function logger(server){
 export default async () => {
 	const router = await new Router().fetch();
 	express.use( cors({origin: "*"}) );
-	router.bind(express);
+	router.bindAll(express);
 
 
 	const port = config.port ?? 8001;
 	const server = await raiseServer(port);
 	
+	server.router = router;
 	
 	logger(server);
 	return server;
