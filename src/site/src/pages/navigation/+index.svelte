@@ -129,6 +129,13 @@
 		margin-bottom: 0.5em;
 	}
 
+	ul 
+	{
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
 	li 
 	{
 		list-style: inside;
@@ -144,11 +151,11 @@
 		content: '';
 		display: block;
 		height: 1em;
+		overflow: hidden;
 	}
 
 	li a 
 	{
-		display: flex-inline;
 		color: #17a3d6;
 		display: inline-block;
 		width: var( --min-table-width );
@@ -172,7 +179,7 @@
 		background-color: #88888822;
 		padding: 15px;
 		width: max-content;
-		min-width: var( --min-table-width );
+		flex-grow: 1;
 		font-size: 0.7em;
 	}
 
