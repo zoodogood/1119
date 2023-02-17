@@ -99,7 +99,7 @@
 			<ul>
 				<li><a href={config.guild.url}>Discord server</a></li>
 				<li><a href={config.enviroment.github}>Github</a></li>
-				<li><a href={svelteApp.enviroment.bot.invite}>Пригласить бота</a></li>
+				<li><a href={svelteApp.getBot().invite}>Пригласить бота</a></li>
 				<li><a href="https://learn.javascript.ru/hello-world">Javascript учебник</a></li>
 			</ul>
 		</details>
@@ -203,12 +203,12 @@
 <script>
 	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
-	
+
 	import Header from '#site-component/Header';
 	import Main from '#site-component/Main';	
 	import Footer from '#site-component/Footer';
-  	import config from '#config';
-  	import { fetchFromInnerApi } from '#lib/safe-utils.js';
+	import config from '#config';
+	import { fetchFromInnerApi } from '#lib/safe-utils.js';
 
 	const whenApiListIsReceived = (async () => {
 		return fetchFromInnerApi("./utils/api-list");
