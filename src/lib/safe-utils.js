@@ -245,7 +245,10 @@ function parseLocationBase(base){
 }
 
 async function fetchFromInnerApi(subpath, fetchOptions){
-	const path = Path.join(config.server.origin, subpath);
+	const path = config.server.origin.concat(
+		Path.resolve(subpath)
+	);
+	
 	const response = await fetch(path, fetchOptions);
 	return response.json();
 }
