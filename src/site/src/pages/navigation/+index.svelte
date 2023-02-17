@@ -77,6 +77,13 @@
 		font-weight: 800;
 	}
 
+	li:nth-child(10n)::after
+	{
+		content: '';
+		display: block;
+		height: 1em;
+	}
+
 	li > a 
 	{
 		font-family: monospace;
