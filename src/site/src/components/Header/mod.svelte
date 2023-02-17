@@ -148,7 +148,7 @@
 	.navigation-element:hover
 	{
 		color: var( --main-color );
-		filter: brightness(2);
+		filter: brightness(1.2);
 	}
 
 	.navigation nav
