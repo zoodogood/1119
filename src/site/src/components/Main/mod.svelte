@@ -5,7 +5,7 @@
 <style>
 	main
 	{
-		padding: calc(1em + 3vw);
+		padding: calc(0.5em + 3vw);
 		display: flex;
 		flex-direction: column;
 
