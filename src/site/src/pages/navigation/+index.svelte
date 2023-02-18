@@ -138,11 +138,28 @@
 
 	li 
 	{
-		list-style: inside;
+		list-style: none;
 		opacity: 0.8;
 
 		font-weight: 800;
 		font-family: monospace;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		padding-left: 1em;
+
+		position: relative;
+	}
+
+	li::before
+	{
+		content: '';
+		display: inline-block;
+		width: 0.3em;
+		height: 0.3em;
+		background-color: var( --main-color );
+		position: absolute;
+		left: 0;
 	}
 
 
@@ -158,7 +175,7 @@
 	{
 		color: #17a3d6;
 		display: inline-block;
-		width: var( --min-table-width );
+		width: 100%;
 	}
 
 	li a:hover
@@ -181,6 +198,8 @@
 		width: max-content;
 		flex-grow: 1;
 		font-size: 0.7em;
+
+		max-width: 100%;
 	}
 
 	.table:not([open])
