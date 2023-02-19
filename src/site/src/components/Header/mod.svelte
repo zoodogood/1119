@@ -4,7 +4,7 @@
 
 
 	<section class = "label">
-		<a href = { PagesRouter.relativeToPage(PagesRouter.pages.public_index) } >
+		<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } >
 			<b class = "page_header-title-container-label">{ config.site.label.toUpperCase() }</b>
 		</a>
 	</section>
@@ -12,8 +12,8 @@
 	<section class = "navigation">
 
 		<nav>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.public_index) } class = "navigation-element">Главная</a>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.pages.navigation_index) } class = "navigation-element">Навигация</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element">Главная</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element">Навигация</a>
 			<a href = { config.guild.url } class = "navigation-element">Дискорд</a>
 		</nav>
 
