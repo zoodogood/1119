@@ -33,7 +33,7 @@ class Route extends BaseRoute {
 		
 		const {server: {origin, paths}} = config;
 		const base = origin.concat(
-			`/${ Path.normalize(`${ paths.site }/${ PagesRouter.pages.oauth_index }`) }`
+			`/${ Path.normalize(`${ paths.site }/${ PagesRouter.getPageBy("oauth/index").key }`) }`
 		);
 			
 		const queries = new URLSearchParams({
