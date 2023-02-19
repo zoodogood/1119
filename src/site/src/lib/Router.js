@@ -28,7 +28,7 @@ class PagesRouter {
 			const arr = key.split("_");
 			
 			isFolderIndex(arr) && arr.splice(-1, 1);
-			return arr.join("/");
+			return arr.join("_");
 		})();
 		
 		return {source: path, key, relativeToPages};
@@ -67,13 +67,15 @@ class PagesRouter {
 	static get pages(){
 		return Object.fromEntries(
 			[...this.collection.entries()]
-				.map(([any, {key}]) => [any, key.replaceAll("_", "/")])
+				.map(([any, {key}]) => [any, key])
 		);
 	}
 
-	static relativeToPage(path){
+	static relativeToPage(key){
+		key = key.replaceAll("_", "/");
+		
 		const svelteApp = this.#svelteApp;
-		const url = relativeSiteRoot(svelteApp, path);
+		const url = relativeSiteRoot(svelteApp, key);
 		const simplifyURL = (url) => {
 			return url.endsWith("index") ? url.split("/").slice(0, -1).join("/") : url;
 		}
