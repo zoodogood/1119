@@ -4,13 +4,15 @@ import Router from '#site/lib/Router.js';
 
 function route(svelteApp){
 	Router.setSvelteApp(svelteApp);
+
 	
 	const subpath = svelteApp.url.subpath
 		.filter(subpath => !subpath.startsWith(":"))
-		.join("_");
+		.join("/");
 	
 	const key = Router.getPageBy( subpath.toLocaleLowerCase() )?.key;
-	const _Page = PagesExports[key] ?? PagesExports.index;
+
+	const _Page = PagesExports[ key?.replaceAll("/", "_") ] ?? PagesExports.index;
 
 	
 	return _Page;

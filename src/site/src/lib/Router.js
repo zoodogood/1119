@@ -25,10 +25,10 @@ class PagesRouter {
 
 		const relativeToPages = (() => {
 			const isFolderIndex = (arr) => arr.at(-1).toLowerCase() === "index";
-			const arr = key.split("_");
+			const arr = key.split("/");
 			
 			isFolderIndex(arr) && arr.splice(-1, 1);
-			return arr.join("_");
+			return arr.join("/");
 		})();
 		
 		return {source: path, key, relativeToPages};
@@ -40,7 +40,7 @@ class PagesRouter {
 	
 		const name = Path
 			.relative(directory, path)
-			.replaceAll(/\\|\//g, "_")
+			.replaceAll("\/", "/")
 			.replaceAll("+", "")
 			.replaceAll(/\..+$/g, "")
 			.toLowerCase()
@@ -72,8 +72,6 @@ class PagesRouter {
 	}
 
 	static relativeToPage(key){
-		key = key.replaceAll("_", "/");
-		
 		const svelteApp = this.#svelteApp;
 		const url = relativeSiteRoot(svelteApp, key);
 		const simplifyURL = (url) => {
