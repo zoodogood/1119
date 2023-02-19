@@ -22,6 +22,7 @@
 		text-transform: uppercase;
 		font-size: 3em;
 		font-weight: 100;
+		overflow-wrap: normal;
 	}
 
 	a 
