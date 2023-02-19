@@ -44,7 +44,7 @@ class Router {
 		const parse = (router => ({
 			prefix: String(router.prefix),
 			isRegex: isRegex(router.prefix),
-			isSimple: isSimple(router.prefix),
+			isSimple: isSimple(router.prefix) && router.isSimple !== false,
 			methods: getMethods(router)
 		}));
 		return this.routes.map(parse);
