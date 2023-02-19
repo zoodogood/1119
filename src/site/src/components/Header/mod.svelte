@@ -124,6 +124,7 @@
 
 	.navigation :global(.switch-theme){
 		width: 2em;
+		margin-bottom: 1em;
 	}
 
 	.label, .navigation, .authentication
