@@ -4,7 +4,7 @@
 
 
 	<section class = "label">
-		<a href="./index.html" >
+		<a href = { PagesRouter.relativeToPage(PagesRouter.pages.public_index) } >
 			<b class = "page_header-title-container-label">{ config.site.label.toUpperCase() }</b>
 		</a>
 	</section>
