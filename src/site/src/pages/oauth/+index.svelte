@@ -2,12 +2,22 @@
 <main>
 	<h1>Привет неизвестный!</h1>
 	<p class = "token">Ваш токен: { String(code).split("").reduce((acc, symbol, i) => acc.concat((!i || i % 4) ? symbol : `-${ symbol }`), "") }</p>
-	<a href={PagesRouter.relativeToPage(PagesRouter.pages[state] ?? PagesRouter.pages.public)}>
-		<button>Вернуться к сайту</button>
-	</a>
+
+	<nav>
+
+		<a href={ _redirectURL } class = "button-to-site">
+			<button>Вернуться к сайту</button>
+		</a>
+	
+		<a href={ 1 }>
+			<button>Панель управления</button>
+		</a>
+
+	</nav>
 </main>
 
 <style>
+	
 	main {
 		text-align: center;
 		padding: 1em;
@@ -35,6 +45,18 @@
 	{
 		margin-top: 3em;
 	}
+
+	nav
+	{
+		display: flex;
+		gap: 2em;
+	}
+
+	.button-to-site
+	{
+		filter: hue-rotate(90deg);
+	}
+
 </style>
 
 
@@ -45,8 +67,13 @@
 	import PagesEnum from "#static/build/svelte-pages/enum[builded].mjs";
   	import PagesRouter from "#site/lib/Router.js";
 
-	const _url = relativeSiteRoot(svelteApp, "public");
+	
 
-	const {code, state} = svelteApp.url.queries;
+	const {code, redirect} = svelteApp.url.queries;
 	sessionStorage.setItem("access_token", code);
+
+	let _redirectURL = PagesRouter.relativeToPage(
+		PagesRouter.getPageBy( PagesRouter.pages[redirect] )?.key ??
+		PagesRouter.getPageBy("public").key
+	);
 </script>
