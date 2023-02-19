@@ -32,21 +32,6 @@ const filesPath = (await importDirectory
 console.info( `Count: ${ filesPath.length } of files` );
 
 
-/** Parse files */
-function resolvePageName(source){
-	const directory = takePath(FOLDER_NAME);
-	
-	
-	const name = Path
-		.relative(directory, source)
-		.replaceAll(/\\|\//g, "_")
-		.replaceAll("+", "")
-		.replaceAll(/\..+$/g, "")
-		.toLowerCase()
-		.trim();
-
-	return name;
-};
 
 
 const resolveModule = (filePath) => {
@@ -55,7 +40,8 @@ const resolveModule = (filePath) => {
 		Path.relative(".", filePath)
 	);
 	
-	const name = PagesRouter.resolvePageName(filePath);
+	console.log(filePath);
+	const name = PagesRouter.resolvePageName(filePath).replaceAll("/", "_");
 	return {filePath, name, source};
 };
 const modules = filesPath
