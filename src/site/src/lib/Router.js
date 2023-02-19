@@ -40,7 +40,7 @@ class PagesRouter {
 	
 		const name = Path
 			.relative(directory, path)
-			.replaceAll("\/", "/")
+			.replaceAll("\\", "/")
 			.replaceAll("+", "")
 			.replaceAll(/\..+$/g, "")
 			.toLowerCase()
