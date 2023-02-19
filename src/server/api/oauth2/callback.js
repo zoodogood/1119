@@ -27,17 +27,21 @@ class Route extends BaseRoute {
 
 		
 		
-		const exchangeResponse = await oauth.getOauth2Data(code);
+		const exchangeResponse = await oauth.getOAuth2Data(code);
 		
 		const redirect = request.query.state;
 		
 		const {server: {origin, paths}} = config;
 		const base = origin.concat(
-			`/${ Path.normalize(paths.site, `./${ PagesRouter.pages.oauth_index }`) }`
+			`/${ Path.normalize(`${ paths.site }/${ PagesRouter.pages.oauth_index }`) }`
 		);
 			
+		const queries = new URLSearchParams({
+			code: exchangeResponse.access_token,
+			redirect
+		}).toString();
 
-		const url = `${ base }?code=${ exchangeResponse.access_token }${ redirect }`;
+		const url = `${ base }?${ queries }`.replaceAll("\\", "/");
 		responce.redirect(url);
 	}
 }
