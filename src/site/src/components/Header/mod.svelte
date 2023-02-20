@@ -4,7 +4,7 @@
 
 
 	<section class = "label">
-		<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } >
+		<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "link" >
 			<b class = "page_header-title-container-label">{ config.site.label.toUpperCase() }</b>
 		</a>
 	</section>
@@ -12,9 +12,9 @@
 	<section class = "navigation">
 
 		<nav>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element">Главная</a>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element">Навигация</a>
-			<a href = { config.guild.url } class = "navigation-element">Дискорд</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element link">Главная</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element link">Навигация</a>
+			<a href = { config.guild.url } class = "navigation-element link">Дискорд</a>
 		</nav>
 
 		<span class = "theme-switcher-container">
@@ -142,7 +142,7 @@
 
 	.navigation-element
 	{
-		transition: all 300ms;
+		transition: all 250ms;
 	}
 
 	.navigation-element:hover
@@ -159,66 +159,66 @@
 
 
 
-a
-{
-	position: relative;
-}
-
-a:hover
-{
-	text-decoration: none;
-}
-
-a:hover::before
-{
-	content: '';
-	display: block;
-	position: absolute;
-	width: 100%;
-	height: 1px;
-	background-color: currentColor;
-	bottom: -0.1em;
-	animation: link-hovered .5s;
-}
-
-@keyframes link-hovered
-{
-	0%
+	.link
 	{
-		opacity: 0.5;
-		transform: scaleX(0);
+		position: relative;
 	}
 
-	100%
+	.link:hover
 	{
-		opacity: 1;
-		transform: scaleX(1);
-	}
-}
-
-@media (max-width: 980px){
-	.container
-	{
-		padding-top: 0;
+		text-decoration: none;
 	}
 
-	.navigation 
+	.link::before
 	{
+		content: '';
+		display: block;
 		position: absolute;
-		bottom: 0;
+
+		height: 1px;
+		background-color: currentColor;
+		bottom: -0.15em;
+
+		width: 0%;
+		opacity: 0.5;
+		transition: opacity 0.5s ease, width 0.5s ease;
+		right: 0;
 	}
 
-	.navigation nav 
+	
+
+	.link:hover::before
 	{
-		gap: 20px;
-		font-size: 0.8em;
+		left: 0;
+		width: 100%;
+		opacity: 1;
 	}
 
-	.navigation-element
-	{
-		text-decoration: underline;
+	
+
+	@media (max-width: 980px){
+		.container
+		{
+			padding-top: 0;
+		}
+
+		.navigation 
+		{
+			position: absolute;
+			bottom: 0;
+		}
+
+		.navigation nav 
+		{
+			gap: 20px;
+			font-size: 0.8em;
+		}
+
+		.navigation-element
+		{
+			text-decoration: underline;
+		}
 	}
-}
 </style>
 
 
