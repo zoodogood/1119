@@ -159,8 +159,42 @@
 
 
 
+a
+{
+	position: relative;
+}
 
+a:hover
+{
+	text-decoration: none;
+}
 
+a:hover::before
+{
+	content: '';
+	display: block;
+	position: absolute;
+	width: 100%;
+	height: 1px;
+	background-color: currentColor;
+	bottom: -0.1em;
+	animation: link-hovered .5s;
+}
+
+@keyframes link-hovered
+{
+	0%
+	{
+		opacity: 0.5;
+		transform: scaleX(0);
+	}
+
+	100%
+	{
+		opacity: 1;
+		transform: scaleX(1);
+	}
+}
 
 @media (max-width: 980px){
 	.container
