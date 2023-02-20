@@ -12,5 +12,20 @@
 		gap: 2vh;
 		padding-top: 1.5vw;
 		min-height: 50vh;
+
+		animation: apparance 1.5s;
+	}
+
+	@keyframes apparance 
+	{
+		0%
+		{
+			opacity: 0;
+		}
+
+		100%
+		{
+			opacity: 1;
+		}
 	}
 </style>
