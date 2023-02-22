@@ -59,5 +59,11 @@ export default new Map(Object.entries({
 		"--text-theme-accent": "var(--dark)",
 		"--background-theme-accent": "var(--white)",
 		"--main-color": "#000000"
+	},
+
+	gray: {
+		"--text-theme-accent": "var(--white)",
+		"--background-theme-accent": "#1b1d21",
+		"--main-color": "#414d6b"
 	}
 }))
