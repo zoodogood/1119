@@ -7,10 +7,10 @@
 		<hr>
 	</span>
 
-	<main>
+	<main bind:this = {node} on:click = { features.handleClick } on:keydown = { features.handleClick }>
 
 
-		<details open class = "table">
+		<details open class = "table pages">
 			<summary>Страницы</summary>
 			<ul>
 				{#each Object.values(PagesRouter.pages) as pageKey}
@@ -22,7 +22,7 @@
 			</ul>
 		</details>
 		
-		<details open class = "table">
+		<details open class = "table api">
 			<summary>API'шечки</summary>
 			<details open>
 				<summary><b>Простые пути:</b></summary>
@@ -94,13 +94,24 @@
 			
 		</details>
 
-		<details open class = "table">
+		<details open class = "table other">
 			<summary>Другое</summary>
 			<ul>
 				<li><a href={config.guild.url}>Discord server</a></li>
 				<li><a href={config.enviroment.github}>Github</a></li>
 				<li><a href={svelteApp.getBot().invite}>Пригласить бота</a></li>
 				<li><a href="https://learn.javascript.ru/hello-world">Javascript учебник</a></li>
+			</ul>
+		</details>
+
+		<details open class = "table history" style:display = {localStorage.navigationPageHistory ? null : "none"}>
+			<summary>История</summary>
+			<ul>
+				{#each JSON.parse(localStorage.navigationPageHistory ?? "[]").reverse() as item}
+					<li>
+						<a href = {item.url}>{ item.name }</a>
+					</li>
+				{/each}	
 			</ul>
 		</details>
 
@@ -115,7 +126,7 @@
 <style>
 	main 
 	{
-		--min-table-width: 300px;
+		--min-table-width: 350px;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: stretch;
@@ -125,7 +136,7 @@
 	.table > summary
 	{
 		font-weight: 100;
-		font-size: 1.5em;
+		font-size: 1.35em;
 		margin-bottom: 0.5em;
 	}
 
@@ -193,12 +204,13 @@
 	.table
 	{
 		border-radius: 15px;
-		background-color: #88888822;
+		background-color: #88888810;
 		padding: 15px;
 		width: max-content;
 		flex-grow: 1;
 		font-size: 0.7em;
 
+		min-width: var( --min-table-width );
 		max-width: 100%;
 	}
 
@@ -239,4 +251,29 @@
 	const whenApiListIsReceived = (async () => {
 		return fetchFromInnerApi("./utils/api-list");
 	})();
+
+	let node;
+
+
+	const features = {
+		handleClick(pointerEvent){
+			if (pointerEvent.target.nodeName !== "A"){
+				return;
+			}
+			
+			const node = pointerEvent.target;
+			const url = node.getAttribute("href");
+			const name = node.textContent;
+			features.AddToHistory({url, name});
+		},
+		AddToHistory({url, name}){
+			localStorage.navigationPageHistory ||= "[]";
+			const history = JSON.parse(localStorage.navigationPageHistory);
+			const index = history.findIndex((item) => item.name === name);
+			(~index) && history.splice(index, 1);
+			history.push({url, name});
+
+			localStorage.navigationPageHistory = JSON.stringify(history);
+		}
+	}
 </script>
