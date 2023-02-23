@@ -62,7 +62,7 @@ class SvelteApp {
 
 }
 
-const appSvelte = new SvelteApp();
+const svelteApp = new SvelteApp();
 
-export default appSvelte;
-export { appSvelte };
+export default svelteApp;
+export { svelteApp };
