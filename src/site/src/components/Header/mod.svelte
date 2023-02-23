@@ -11,15 +11,16 @@
 
 	<section class = "navigation">
 
+		<span class = "theme-switcher-container">
+			<ThemeSwitcher/>
+		</span>
+
 		<nav>
 			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element link">Главная</a>
 			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element link">Навигация</a>
 			<a href = { config.guild.url } class = "navigation-element link">Дискорд</a>
 		</nav>
 
-		<span class = "theme-switcher-container">
-			<ThemeSwitcher/>
-		</span>
 	</section>
 	
 	  
@@ -84,6 +85,12 @@
 		justify-content: space-around;
 
 		height: 15vh;
+		gap: 2em;
+	}
+
+	.label
+	{
+		flex-grow: 1;
 	}
 
 	.label::after
@@ -118,17 +125,18 @@
 
 	.navigation .theme-switcher-container
 	{
-		max-width: 0px;
 		overflow: visible;
 	}
 
 	.navigation :global(.switch-theme){
 		width: 2em;
+		margin: 0;
+		margin-left: 3px;
+		vertical-align: middle;
 	}
 
 	.label, .navigation, .authentication
 	{
-		flex-grow: 1;
 		position: relative;
 	}
 
@@ -138,6 +146,7 @@
 		color: var( --text-theme-accent );
 		display: flex;
 		justify-content: center;
+		gap: 10px;
 	}
 
 	.navigation-element
@@ -206,6 +215,8 @@
 		{
 			position: absolute;
 			bottom: 0;
+			flex-direction: row-reverse;
+			gap: 0;
 		}
 
 		.navigation nav 
@@ -217,6 +228,12 @@
 		.navigation-element
 		{
 			text-decoration: underline;
+		}
+
+		.navigation .theme-switcher-container
+		{
+			max-width: 0px;
+			margin-bottom: 0.5em;
 		}
 	}
 </style>
