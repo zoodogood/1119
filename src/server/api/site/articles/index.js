@@ -1,4 +1,6 @@
 import { BaseRoute } from "#server/router.js";
+import { ImportDirectory } from '@zoodogood/import-directory';
+import Path from 'path';
 
 const PREFIX = "/site/articles";
 
@@ -11,8 +13,15 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, responce){
-		
+		const DIRECTORY = "static/articles";
+		const filesPaths = await new ImportDirectory({regex: /\.md$/}).takeFilesPath({path: DIRECTORY});
+
+		const articles = filesPaths
+			.map(path => Path.relative(DIRECTORY, path));
+
+		responce.json(articles);
 	}
+
 }
 
 export default Route;
