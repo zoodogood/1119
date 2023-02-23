@@ -1,3 +1,14 @@
+@font-face {
+	font-family: Roboto;
+	src: url('./resources/fonts/Roboto/Roboto-Black.ttf');
+}
+
+@font-face {
+	font-family: PTMono;
+	src: url('./resources/fonts/PT_Mono/PTMono-Regular.ttf');
+}
+
+
 :root 
 {
 	--main-color: #3b7c4c;
@@ -31,8 +42,6 @@ html, body
 
 body
 {
-	scrollbar-width: thin;
-	scroll-behavior: smooth;
 	transition: color 300ms, background-color 300ms;
 
 	background-color: var( --background-theme-accent );
@@ -46,11 +55,6 @@ body
 
 
 
-
-::selection
-{
-	background-color: #88888844;
-}
 
 
 h1, h2, h3, h4, h5, h6
@@ -82,12 +86,15 @@ input, button, select, textarea
 {
 	font-family: inherit;
 	font-size: inherit;
-	-webkit-padding: 0.4em 0;
+
 	padding: 0.4em;
 	margin: 0 0 0.5em 0;
-	box-sizing: border-box;
-	border: 1px solid #ccc;
 	border-radius: 2px;
+
+	outline: none;
+	border: none;
+	background-color: #88888822;
+	color: var( --text-theme-accent );
 }
 
 input:disabled
@@ -104,17 +111,14 @@ button
 
 button:disabled
 {
-	color: #999;
+	color: #888888;
+	cursor: default;
+	filter: brightness(0.8);
 }
 
 button:not(:disabled):active
 {
-	background-color: #ddd;
-}
-
-button:focus
-{
-	border-color: #666;
+	background-color: #dddddd;
 }
 
 
@@ -152,4 +156,40 @@ code
 	background-color: #88888833;
 	font-size: 0.8em;
 	padding: 0.1em;
+	padding-inline: 0.2em;
+}
+
+
+
+
+
+
+
+::selection
+{
+	background-color: #88888844;
+}
+
+
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var( --main-color ) transparent;
+	scroll-behavior: smooth;
+}
+
+
+::-webkit-scrollbar {
+	width: 4px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: var( --main-color );
+	opacity: 0.5;
+	border-radius: 10px;
+	border: 2px solid transparent;
 }
