@@ -2,19 +2,19 @@ export default new Map(Object.entries({
 	brightGreen: {
 		"--text-theme-accent": "var(--white)",
 		"--background-theme-accent": "var(--dark)",
-		"--main-color": "#349a4b",
+		"--main-color": "#3b7c4c",
 		"--theme-accent-name": "dark"
 	},
 
 	darkGreen: {
-		"--main-color": "#3b7c4c",
+		"--main-color": "#2b5b37",
 		"--text-theme-accent": "var(--white)",
 		"--background-theme-accent": "var(--dark)",
 		"--theme-accent-name": "dark"
 	},
 
 	lightGreen: {
-		"--main-color": "#3b7c4c",
+		"--main-color": "#2b5b37",
 		"--text-theme-accent": "var(--dark)",
 		"--background-theme-accent": "var(--white)",
 		"--theme-accent-name": "light"
@@ -43,22 +43,22 @@ export default new Map(Object.entries({
 
 	brightBlue: {
 		"--main-color": "#409ff6",
-		"--text-theme-accent": "var(--dark)",
-		"--background-theme-accent": "var(--white)",
-		"--theme-accent-name": "light"
-	},
-
-	darkBlue: {
-		"--main-color": "#409ff6",
 		"--text-theme-accent": "var(--white)",
 		"--background-theme-accent": "var(--dark)",
 		"--theme-accent-name": "dark"
 	},
 
-	lightBlue: {
+	darkBlue: {
 		"--text-theme-accent": "var(--white)",
 		"--background-theme-accent": "var(--dark)",
-		"--main-color": "#0085ff",
+		"--main-color": "#00529d",
+		"--theme-accent-name": "dark"
+	},
+
+	lightBlue: {
+		"--main-color": "#409ff6",
+		"--text-theme-accent": "var(--dark)",
+		"--background-theme-accent": "var(--white)",
 		"--theme-accent-name": "light"
 	},
 
