@@ -15,9 +15,9 @@
 			<button>Вернуться к сайту</button>
 		</a>
 		
-		{#if user}
-			<a href={ 1 }>
-				<button>Панель управления</button>
+		{#if code}
+			<a href="" class = "button-to-panel">
+				<button disabled = {!user || null}>Панель управления</button>
 			</a>
 			{:else}
 			<button
@@ -44,6 +44,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		max-width: 100%;
+		overflow: hidden;
 	}
 
 	h1 {
@@ -64,22 +66,25 @@
 		opacity: 0.5;
 	}
 
-	.button
-	{
-		margin-top: 3em;
-		width: 15em;
-	}
+	
 
 	nav
 	{
 		display: flex;
 		gap: calc(2em + 1vw);
+		margin-top: 10vh;
+	}
+
+	button
+	{
+		width: 15em;
 	}
 
 	.button-to-site
 	{
 		filter: hue-rotate(90deg);
 	}
+
 
 
 </style>
@@ -89,7 +94,6 @@
   	import { fetchFromInnerApi, sleep, GlitchText } from "#lib/safe-utils.js";
 	import svelteApp from "#site/core/svelte-app.js";
   	import PagesRouter from "#site/lib/Router.js";
-	import Dialog from '#site-component/Dialog';
   	import { onMount } from "svelte";
 
 	let node;
