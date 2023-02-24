@@ -28,7 +28,7 @@
 			</section>
 
 			<article>
-				<SvelteMarkdown {source}/>
+				<EditableMarkdown {source}/>
 			</article>
 
 			<button class = "download-button" on:click={ downloadArticleAsMarkdown }>
@@ -80,7 +80,6 @@
 		width: 100%;
 		min-height: 40vh;
 		margin-bottom: 10vh;
-		font-family: 'PTMono', 'Roboto', sans-serif;
 	}
 
 	.article-info
@@ -162,7 +161,7 @@
 </style>
 
 <script>
-	import SvelteMarkdown from 'svelte-markdown'
+	import EditableMarkdown from '#site-component/EditableMarkdown';
 	import Layout from '#site-component/Layout';
 	import Giscus from '#site-component/Giscus';
 	import Icon from '#site-component/iconic';
