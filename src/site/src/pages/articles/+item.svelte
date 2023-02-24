@@ -161,7 +161,7 @@
 
 <script>
 	import SvelteMarkdown from 'svelte-markdown'
-	import Layout from '#site/components/Layout';
+	import Layout from '#site-component/Layout';
 	import Giscus from '#site-component/Giscus';
 	import Icon from '#site-component/iconic';
 	

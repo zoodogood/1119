@@ -62,7 +62,7 @@
 </style>
 
 <script>
-	import Layout from '#site/components/Layout';
+	import Layout from '#site-component/Layout';
 	import PagesRouter from '#site/lib/Router.js';
   	import { fetchFromInnerApi } from '#lib/safe-utils.js';
 

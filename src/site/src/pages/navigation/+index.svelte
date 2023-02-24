@@ -252,7 +252,7 @@
 	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
 
-	import Layout from '#site/components/Layout';	
+	import Layout from '#site-component/Layout';	
 	import Icon from '#site-component/iconic';
 	import config from '#config';
 	import { fetchFromInnerApi } from '#lib/safe-utils.js';

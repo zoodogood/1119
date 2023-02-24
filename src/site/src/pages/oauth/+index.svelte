@@ -8,10 +8,17 @@
 		<a href={ _redirectURL } class = "button-to-site">
 			<button>Вернуться к сайту</button>
 		</a>
-	
-		<a href={ 1 }>
-			<button>Панель управления</button>
-		</a>
+		
+		{#if code}
+			<a href={ 1 }>
+				<button>Панель управления</button>
+			</a>
+			{:else}
+			<a href={ 1 }>
+				<button>Войти</button>
+			</a>
+		{/if}
+		
 
 	</nav>
 </main>

@@ -5,7 +5,7 @@
 </Layout>
 
 <script>
-	import Layout from '#site/components/Layout';
+	import Layout from '#site-component/Layout';
 
 
 </script>

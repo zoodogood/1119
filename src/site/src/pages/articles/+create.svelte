@@ -34,7 +34,7 @@
 
 <script>
 	import Layout from '#site-component/Layout';
-	import Dialog from '#site/components/Dialog/mod.svelte';
+	import Dialog from '#site-component/Dialog';
 
 	import PagesRouter from '#site/lib/Router.js';
   	import { fetchFromInnerApi, sleep } from '#lib/safe-utils.js';
