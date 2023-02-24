@@ -1,5 +1,5 @@
-<Header/>
-<Main>
+
+<Layout>
 	<group>
 		<h1>Статьи</h1>
 		<p>Что может быть хуже экспериментов ради экспериментов.. Эта часть сайта просто *существует* и, надеюсь, живёт своей жизнью. В будущем здесь будут появляться тексты раскрывающие возможности бота.</p>
@@ -26,8 +26,8 @@
 			<p>Загрузка неудалась</p>
 		{/await}
 	</section>
-</Main>
-<Footer/>
+</Layout>
+
 
 <style>
 	a
@@ -62,9 +62,7 @@
 </style>
 
 <script>
-	import Header from '#site/components/Header/Header.svelte';
-	import Main from '#site/components/Layout/Main.svelte';
-	import Footer from '#site/components/Layout/Footer.svelte';
+	import Layout from '#site/components/Layout';
 	import PagesRouter from '#site/lib/Router.js';
   	import { fetchFromInnerApi } from '#lib/safe-utils.js';
 

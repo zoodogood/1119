@@ -1,5 +1,5 @@
-<Header/>
-<Main>
+
+<Layout>
 	{#await articlePromise}
 		<h2>Загрузка основного контента</h2>
 	{:then data} 
@@ -47,8 +47,7 @@
 	<section class = "comments-container">
 		<Giscus tag = "article: { key ?? "void" }"/>
 	</section>
-</Main>
-<Footer/>
+</Layout>
 
 <style>
 	:global(a)
@@ -161,16 +160,14 @@
 </style>
 
 <script>
-	import Header from '#site-component/Header';
 	import SvelteMarkdown from 'svelte-markdown'
-	import Main from '#site-component/Main';
+	import Layout from '#site/components/Layout';
 	import Giscus from '#site-component/Giscus';
-	import Footer from '#site-component/Footer';
 	import Icon from '#site-component/iconic';
 	
 	import svelteApp from '#site/core/svelte-app.js';
   	import { fetchFromInnerApi, timestampToDate } from '#lib/safe-utils.js';
-  import PagesRouter from '#site/lib/Router.js';
+  	import PagesRouter from '#site/lib/Router.js';
 
 	const key = svelteApp.url.queries.id;
 

@@ -21,8 +21,8 @@
 
 
 <script>
-	import Header from '#site-component/Header';
-	import Main from '#site-component/Main';
+	import Header from '#site/components/Header/Header.svelte';
+	import Main from '#site/components/Layout/Main.svelte';
 
 
 </script>

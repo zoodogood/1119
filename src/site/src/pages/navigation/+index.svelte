@@ -1,7 +1,7 @@
 
-<Header/>
 
-<Main>
+
+<Layout>
 	<span>
 		<h1>Навигация</h1>
 		<hr>
@@ -117,9 +117,9 @@
 
 
 	</main>
-</Main>
+</Layout>
 
-<Footer/>
+
 
 
 
@@ -220,7 +220,7 @@
 		flex-grow: 1;
 		font-size: 0.7em;
 
-		min-width: var( --min-table-width );
+		min-width: min(100%, var( --min-table-width ));
 		max-width: 100%;
 	}
 
@@ -252,9 +252,7 @@
 	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
 
-	import Header from '#site-component/Header';
-	import Main from '#site-component/Main';	
-	import Footer from '#site-component/Footer';
+	import Layout from '#site/components/Layout';	
 	import Icon from '#site-component/iconic';
 	import config from '#config';
 	import { fetchFromInnerApi } from '#lib/safe-utils.js';
