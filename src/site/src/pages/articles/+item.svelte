@@ -95,6 +95,8 @@
 		background-color: #88888810;
 		padding: 30px;
 		border-radius: 15px;
+
+		transform: translateY(-1.5vw);
 	}
 
 	.article-author
