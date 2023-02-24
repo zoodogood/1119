@@ -63,12 +63,14 @@
 		 top: 50%;
 		 left: 50%;
 		 transform: translate(-50%, -50%);
-		 max-width: 95vw;
+		 max-width: 85vw;
+		 max-height: 80vh;
+
 
 		 background-color: transparent;
 		 border: none;
 
-		 overflow: visible;
+		 overflow: auto;
 	}
 
 	:global(html):has(dialog)
