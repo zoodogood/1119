@@ -110,15 +110,14 @@
 
 		const headers = {Authorization: code};
 		const data = await fetchFromInnerApi(`./oauth2/user`, {headers});
+
+		
 		
 		if (typeof data !== "object"){
 			return;
 		}
 
-		new Dialog({
-			target: svelteApp.document.body,
-			props: {useClassic: true, title: "Ответ сервера:", description: JSON.stringify(data, null, 2)}
-		})
+		
 
 
 		const titleNode = node.querySelector(".title");
