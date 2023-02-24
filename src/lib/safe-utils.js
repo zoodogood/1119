@@ -1,7 +1,7 @@
 import config from "#config";
 
 import { ending } from '@zoodogood/utils/primitives';
-import { omit, CustomCollector } from '@zoodogood/utils/objectives';
+import { omit, CustomCollector, GlitchText } from '@zoodogood/utils/objectives';
 import Path from 'path';
 
 
@@ -259,6 +259,7 @@ export {
 	ending,
 	omit,
 	CustomCollector,
+	GlitchText,
 
 	toLocaleDeveloperString,
 	sleep,
