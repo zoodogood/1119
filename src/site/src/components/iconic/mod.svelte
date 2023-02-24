@@ -8,11 +8,11 @@
 	@font-face {
 		font-family: 'Icon';
 		src:
-			url('/static/resources/fonts/fontello/fonts/item.eot') format('embedded-opentype'),
-			url('/static/resources/fonts/fontello/fonts/item.woff2') format('woff2'),
-			url('/static/resources/fonts/fontello/fonts/item.woff') format('woff'),
-			url('/static/resources/fonts/fontello/fonts/item.ttf') format('truetype'),
-			url('/static/resources/fonts/fontello/fonts/item.svg') format('svg');
+			url('/static/resources/fonts/fontello/font/fontello.eot') format('embedded-opentype'),
+			url('/static/resources/fonts/fontello/font/fontello.woff2') format('woff2'),
+			url('/static/resources/fonts/fontello/font/fontello.woff') format('woff'),
+			url('/static/resources/fonts/fontello/font/fontello.ttf') format('truetype'),
+			url('/static/resources/fonts/fontello/font/fontello.svg') format('svg');
 
 		font-weight: normal;
 		font-style: normal;

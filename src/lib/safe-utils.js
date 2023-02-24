@@ -244,14 +244,13 @@ function parseLocationBase(base){
 	return {prefix, lang, entry};
 }
 
-async function fetchFromInnerApi(subpath, fetchOptions){
+async function fetchFromInnerApi(subpath, {parseType = "json", ...fetchOptions} = {}){
 	const path = config.server.origin.concat(
 		`/${ Path.normalize(subpath) }`
 	);
 
-	
 	const response = await fetch(path, fetchOptions);
-	return response.json();
+	return response[ parseType ]();
 }
 
 

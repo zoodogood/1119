@@ -14,10 +14,19 @@
 		<a href={ _redirectURL } class = "button button-to-site">
 			<button>Вернуться к сайту</button>
 		</a>
-	
-		<a href={ 1 } class = "button">
-			<button>Панель управления</button>
-		</a>
+		
+		{#if user}
+			<a href={ 1 }>
+				<button>Панель управления</button>
+			</a>
+			{:else}
+			<button
+				on:click={() => PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`)}
+			>
+				Войти
+			</button>
+		{/if}
+		
 
 	</nav>
 
@@ -57,7 +66,8 @@
 
 	.button
 	{
-		margin-top: 2em;
+		margin-top: 3em;
+		width: 15em;
 	}
 
 	nav
@@ -79,13 +89,14 @@
   	import { fetchFromInnerApi, sleep, GlitchText } from "#lib/safe-utils.js";
 	import svelteApp from "#site/core/svelte-app.js";
   	import PagesRouter from "#site/lib/Router.js";
-
+	import Dialog from '#site-component/Dialog';
   	import { onMount } from "svelte";
 
 	let node;
 
 	const {code, redirect} = svelteApp.url.queries;
 	sessionStorage.setItem("access_token", code);
+	let user;
 
 	const _redirectURL = PagesRouter.relativeToPage(
 		PagesRouter.getPageBy( PagesRouter.pages[redirect] )?.key ??
@@ -93,6 +104,10 @@
 	);
 
 	onMount(async () => {
+		if (!code){
+			return;
+		}
+
 		const headers = {Authorization: code};
 		const data = await fetchFromInnerApi(`./oauth2/user`, {headers});
 		
@@ -100,9 +115,14 @@
 			return;
 		}
 
-		const {user} = data;
+		new Dialog({
+			target: svelteApp.document.body,
+			props: {useClassic: true, title: "Ответ сервера:", description: JSON.stringify(data, null, 2)}
+		})
+
 
 		const titleNode = node.querySelector(".title");
+		user = data;
 
 		const previousContent = titleNode.textContent;
 		const content = `Здравствуй, ${ user.username }!`
@@ -111,6 +131,8 @@
 			await sleep(35);
 			titleNode.textContent = text;
 		}
+		
+	
 		
 	});
 </script>

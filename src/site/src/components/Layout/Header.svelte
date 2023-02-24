@@ -4,22 +4,23 @@
 
 
 	<section class = "label">
-		<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } >
+		<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "link" >
 			<b class = "page_header-title-container-label">{ config.site.label.toUpperCase() }</b>
 		</a>
 	</section>
 
 	<section class = "navigation">
 
-		<nav>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element">Главная</a>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element">Навигация</a>
-			<a href = { config.guild.url } class = "navigation-element">Дискорд</a>
-		</nav>
-
 		<span class = "theme-switcher-container">
 			<ThemeSwitcher/>
 		</span>
+
+		<nav>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element link">Главная</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element link">Навигация</a>
+			<a href = { config.guild.url } class = "navigation-element link">Дискорд</a>
+		</nav>
+
 	</section>
 	
 	  
@@ -84,6 +85,12 @@
 		justify-content: space-around;
 
 		height: 15vh;
+		gap: 2em;
+	}
+
+	.label
+	{
+		flex-grow: 1;
 	}
 
 	.label::after
@@ -118,18 +125,18 @@
 
 	.navigation .theme-switcher-container
 	{
-		max-width: 0px;
 		overflow: visible;
 	}
 
 	.navigation :global(.switch-theme){
 		width: 2em;
-		margin-bottom: 1em;
+		margin: 0;
+		margin-left: 3px;
+		vertical-align: middle;
 	}
 
 	.label, .navigation, .authentication
 	{
-		flex-grow: 1;
 		position: relative;
 	}
 
@@ -139,11 +146,12 @@
 		color: var( --text-theme-accent );
 		display: flex;
 		justify-content: center;
+		gap: 10px;
 	}
 
 	.navigation-element
 	{
-		transition: all 300ms;
+		transition: all 250ms;
 	}
 
 	.navigation-element:hover
@@ -160,32 +168,74 @@
 
 
 
-
-
-
-@media (max-width: 980px){
-	.container
+	.link
 	{
-		padding-top: 0;
+		position: relative;
 	}
 
-	.navigation 
+	.link:hover
 	{
+		text-decoration: none;
+	}
+
+	.link::before
+	{
+		content: '';
+		display: block;
 		position: absolute;
-		bottom: 0;
+
+		height: 1px;
+		background-color: currentColor;
+		bottom: -0.15em;
+
+		width: 0%;
+		opacity: 0.5;
+		transition: opacity 0.5s ease, width 0.5s ease;
+		right: 0;
 	}
 
-	.navigation nav 
+	
+
+	.link:hover::before
 	{
-		gap: 20px;
-		font-size: 0.8em;
+		left: 0;
+		width: 100%;
+		opacity: 1;
 	}
 
-	.navigation-element
-	{
-		text-decoration: underline;
+	
+
+	@media (max-width: 980px){
+		.container
+		{
+			padding-top: 0;
+		}
+
+		.navigation 
+		{
+			position: absolute;
+			bottom: 0;
+			flex-direction: row-reverse;
+			gap: 0;
+		}
+
+		.navigation nav 
+		{
+			gap: 20px;
+			font-size: 0.8em;
+		}
+
+		.navigation-element
+		{
+			text-decoration: underline;
+		}
+
+		.navigation .theme-switcher-container
+		{
+			max-width: 0px;
+			margin-bottom: 0.5em;
+		}
 	}
-}
 </style>
 
 

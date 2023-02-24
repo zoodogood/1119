@@ -18,6 +18,7 @@ class SvelteApp {
 	constructor(){
 		this.lang = this.url.base.lang ?? "ru";
 		
+		this.#checkOrigin();
 		console.info(this);
 	}
 
@@ -35,6 +36,12 @@ class SvelteApp {
 		};
 
 		return bot;
+	}
+
+	#checkOrigin(){
+		if (config.server.origin !== this.document.location.origin){
+			throw new Error(`You need set in config server.origin equal to ${ this.document.location.origin }`);
+		}
 	}
 
 

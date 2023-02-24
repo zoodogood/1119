@@ -1,32 +1,68 @@
 const PREFIX = "/oauth2/user";
+import client from '#bot/client.js';
 import { BaseRoute } from '#server/router.js';
 import oauth from './.mod.js';
 
+class TokensUsersExchanger {
+	static #cacheMap = new Map();
+
+	static fromCache(token){
+		const id = this.#cacheMap.get(token);
+		if (!id){
+			return null;
+		}
+
+		return client.users.cache.get(id) ?? null;
+	}
+
+	static addToCache(token, userId){
+		this.#cacheMap.set(token, userId);
+		return;
+	}
+
+	static async fromOAuth(token){
+		const data = await oauth.getOAuth2Data(token) ?? {};
+		const {user, guilds} = data;
+		
+		if (!user){
+			return null;
+		}
+
+		user.guilds = guilds;
+		return user;
+	}
+
+	static async getUser(token, {requireOAuth}){
+		return (!requireOAuth && this.fromCache(token)) || (await this.fromOAuth(token)) || null;
+	}
+}
+
+
 class Route extends BaseRoute {
 	prefix = PREFIX;
-	isSimple = false;
 
 	constructor(express){
 		super();
 	}
 
-	async get(request, responce){
-		const secret = request.headers.authorization;
+	#cacheMap = new Map();
 
-		if (!secret){
+	async get(request, responce){
+		const token = request.headers.authorization;
+		if (!token){
 			responce.status(401).send(`"Not authorized"`);
 			return;
 		}
 
-		const user = await oauth.fetchUser(secret);
-		if (!user){
+		const user = await TokensUsersExchanger.getUser(token, {requireOAuth: true});
+		if (user === null){
 			responce.status(401).send(`"Authorization failed"`);
 			return;
 		}
-		
+
 		responce.json(user);
-		return;
 	}
 }
 
 export default Route;
+export { TokensUsersExchanger };

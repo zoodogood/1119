@@ -1,17 +1,17 @@
 
-<Header/>
 
-<Main>
+
+<Layout>
 	<span>
 		<h1>Навигация</h1>
 		<hr>
 	</span>
 
-	<main>
+	<main bind:this = {node} on:click = { features.handleClick } on:keydown = { features.handleClick }>
 
 
-		<details open class = "table">
-			<summary>Страницы</summary>
+		<details open class = "table pages">
+			<summary>Страницы <Icon code = ""/></summary>
 			<ul>
 				{#each Object.values(PagesRouter.pages) as pageKey}
 					{@const url = PagesRouter.relativeToPage(pageKey)}
@@ -22,8 +22,8 @@
 			</ul>
 		</details>
 		
-		<details open class = "table">
-			<summary>API'шечки</summary>
+		<details open class = "table api">
+			<summary>API'шечки <Icon code = ""/></summary>
 			<details open>
 				<summary><b>Простые пути:</b></summary>
 				<p>
@@ -94,8 +94,8 @@
 			
 		</details>
 
-		<details open class = "table">
-			<summary>Другое</summary>
+		<details open class = "table other">
+			<summary>Другое <Icon code = ""/></summary>
 			<ul>
 				<li><a href={config.guild.url}>Discord server</a></li>
 				<li><a href={config.enviroment.github}>Github</a></li>
@@ -104,18 +104,29 @@
 			</ul>
 		</details>
 
+		<details open class = "table history" style:display = {localStorage.navigationPageHistory ? null : "none"}>
+			<summary>История <Icon code = ""/></summary>
+			<ul>
+				{#each JSON.parse(localStorage.navigationPageHistory ?? "[]").reverse() as item}
+					<li>
+						<a href = {item.url}>{ item.name }</a>
+					</li>
+				{/each}	
+			</ul>
+		</details>
+
 
 	</main>
-</Main>
+</Layout>
 
-<Footer/>
+
 
 
 
 <style>
 	main 
 	{
-		--min-table-width: 300px;
+		--min-table-width: 350px;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: stretch;
@@ -125,8 +136,18 @@
 	.table > summary
 	{
 		font-weight: 100;
-		font-size: 1.5em;
+		font-size: 1.35em;
 		margin-bottom: 0.5em;
+
+		display: flex;
+		justify-content: space-between;
+		cursor: pointer;
+		transition: opacity 300ms;
+	}
+
+	.table > summary:hover
+	{
+		opacity: 0.5;
 	}
 
 	ul 
@@ -193,12 +214,13 @@
 	.table
 	{
 		border-radius: 15px;
-		background-color: #88888822;
+		background-color: #88888810;
 		padding: 15px;
 		width: max-content;
 		flex-grow: 1;
 		font-size: 0.7em;
 
+		min-width: min(100%, var( --min-table-width ));
 		max-width: 100%;
 	}
 
@@ -230,13 +252,38 @@
 	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
 
-	import Header from '#site-component/Header';
-	import Main from '#site-component/Main';	
-	import Footer from '#site-component/Footer';
+	import Layout from '#site-component/Layout';	
+	import Icon from '#site-component/iconic';
 	import config from '#config';
 	import { fetchFromInnerApi } from '#lib/safe-utils.js';
 
 	const whenApiListIsReceived = (async () => {
 		return fetchFromInnerApi("./utils/api-list");
 	})();
+
+	let node;
+
+
+	const features = {
+		handleClick(pointerEvent){
+			if (pointerEvent.target.nodeName !== "A"){
+				return;
+			}
+			
+			const node = pointerEvent.target;
+			const url = node.getAttribute("href");
+			const name = node.textContent;
+			features.AddToHistory({url, name});
+		},
+		AddToHistory({url, name}){
+			localStorage.navigationPageHistory ||= "[]";
+			const history = JSON.parse(localStorage.navigationPageHistory);
+			const index = history.findIndex((item) => item.name === name);
+			(~index) && history.splice(index, 1);
+			history.length > 10 && history.shift();
+			history.push({url, name});
+
+			localStorage.navigationPageHistory = JSON.stringify(history);
+		}
+	}
 </script>

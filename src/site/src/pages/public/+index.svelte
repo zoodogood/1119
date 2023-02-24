@@ -1,14 +1,11 @@
-<Header/>
-<Main>
+
+<Layout>
 	<h1>Привет!</h1>
 	<p>Сундук Кота это круто</p>
-</Main>
-<Footer/>
+</Layout>
 
 <script>
-	import Header from '#site-component/Header';
-	import Main from '#site-component/Main';
-	import Footer from '#site-component/Footer';
+	import Layout from '#site-component/Layout';
 
 
 </script>
