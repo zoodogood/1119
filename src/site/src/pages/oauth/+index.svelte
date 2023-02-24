@@ -9,14 +9,16 @@
 			<button>Вернуться к сайту</button>
 		</a>
 		
-		{#if code}
+		{#if user}
 			<a href={ 1 }>
 				<button>Панель управления</button>
 			</a>
 			{:else}
-			<a href={ 1 }>
-				<button>Войти</button>
-			</a>
+			<button
+				on:click={() => PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`)}
+			>
+				Войти
+			</button>
 		{/if}
 		
 
@@ -51,6 +53,7 @@
 	button
 	{
 		margin-top: 3em;
+		width: 15em;
 	}
 
 	nav
@@ -69,18 +72,32 @@
 
 <script>
 	import svelteApp from "#site/core/svelte-app.js";
- 	import HashController from "#site/lib/HashController.js";
-	import {relativeSiteRoot} from "#lib/safe-utils.js";
-	import PagesEnum from "#static/build/svelte-pages/enum[builded].mjs";
   	import PagesRouter from "#site/lib/Router.js";
+	import Dialog from '#site-component/Dialog';
+  	import { onMount } from "svelte";
+	import { fetchFromInnerApi, GlitchText } from "#lib/safe-utils.js";
 
 	
 
 	const {code, redirect} = svelteApp.url.queries;
 	sessionStorage.setItem("access_token", code);
+	let user;
 
 	let _redirectURL = PagesRouter.relativeToPage(
 		PagesRouter.getPageBy( PagesRouter.pages[redirect] )?.key ??
 		PagesRouter.getPageBy("public").key
 	);
+
+	onMount(async () => {
+		if (!code){
+			return;
+		}
+
+		const headers = {Authorization: code};
+		const data = await fetchFromInnerApi("oauth2/user", {headers});
+		new Dialog({
+			target: svelteApp.document.body,
+			props: {useClassic: true, title: "Ответ сервера:", description: JSON.stringify(data, null, 2)}
+		})
+	});
 </script>
