@@ -11,7 +11,7 @@
 
 
 		<details open class = "table pages">
-			<summary>Страницы</summary>
+			<summary>Страницы <Icon code = ""/></summary>
 			<ul>
 				{#each Object.values(PagesRouter.pages) as pageKey}
 					{@const url = PagesRouter.relativeToPage(pageKey)}
@@ -23,7 +23,7 @@
 		</details>
 		
 		<details open class = "table api">
-			<summary>API'шечки</summary>
+			<summary>API'шечки <Icon code = ""/></summary>
 			<details open>
 				<summary><b>Простые пути:</b></summary>
 				<p>
@@ -95,7 +95,7 @@
 		</details>
 
 		<details open class = "table other">
-			<summary>Другое</summary>
+			<summary>Другое <Icon code = ""/></summary>
 			<ul>
 				<li><a href={config.guild.url}>Discord server</a></li>
 				<li><a href={config.enviroment.github}>Github</a></li>
@@ -105,7 +105,7 @@
 		</details>
 
 		<details open class = "table history" style:display = {localStorage.navigationPageHistory ? null : "none"}>
-			<summary>История</summary>
+			<summary>История <Icon code = ""/></summary>
 			<ul>
 				{#each JSON.parse(localStorage.navigationPageHistory ?? "[]").reverse() as item}
 					<li>
@@ -138,6 +138,16 @@
 		font-weight: 100;
 		font-size: 1.35em;
 		margin-bottom: 0.5em;
+
+		display: flex;
+		justify-content: space-between;
+		cursor: pointer;
+		transition: opacity 300ms;
+	}
+
+	.table > summary:hover
+	{
+		opacity: 0.5;
 	}
 
 	ul 
@@ -245,6 +255,7 @@
 	import Header from '#site-component/Header';
 	import Main from '#site-component/Main';	
 	import Footer from '#site-component/Footer';
+	import Icon from '#site-component/iconic';
 	import config from '#config';
 	import { fetchFromInnerApi } from '#lib/safe-utils.js';
 
@@ -271,6 +282,7 @@
 			const history = JSON.parse(localStorage.navigationPageHistory);
 			const index = history.findIndex((item) => item.name === name);
 			(~index) && history.splice(index, 1);
+			history.length > 10 && history.shift();
 			history.push({url, name});
 
 			localStorage.navigationPageHistory = JSON.stringify(history);
