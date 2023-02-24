@@ -21,7 +21,7 @@ class TokensUsersExchanger {
 	}
 
 	static async fromOAuth(token){
-		const data = await oauth.getOAuth2Data(token) ?? {};
+		const data = await oauth.fetchUser(token) ?? {};
 		const {user, guilds} = data;
 		
 		if (!user){
