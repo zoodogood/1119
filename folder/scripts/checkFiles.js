@@ -4,6 +4,7 @@ import Path from 'path';
 
 const root = process.cwd();
 const resolve = (path) => Path.resolve(root, path);
+const isWindowsBased = process.platform === "win32";
 
 const FileExists = async (path) =>
 	!!(await FileSystem.stat(resolve(path)).catch(err => null));
@@ -29,7 +30,9 @@ const Paths = {
 
 !await FileExists(Paths.env) && await 
 (async () => {
-	execSync(`start "" "file://${ resolve(Paths.firstBuildDocs) }"`);
+	const command = isWindowsBased ? `start ""` : "open";
+	
+	execSync(`${ command } "file://${ resolve(Paths.firstBuildDocs) }"`);
 	const source = resolve(Paths.envExample);
 	const target = resolve(Paths.env);
 	await FileSystem.copyFile(source, target);
