@@ -14,11 +14,11 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, responce){
-		const path = request.params[0];
-		const full = Path.resolve(this.directory, path);
+		const path = request.params[0].replace(/\.md$/, "");
+		const full = Path.resolve(this.directory, `${ path }.md`);
 		try {
 			const content = String(await FileSystem.readFile(full));
-			responce.send(content);
+			responce.json( content );
 		}
 		catch (error){
 			if (error.code !== "ENOENT"){
