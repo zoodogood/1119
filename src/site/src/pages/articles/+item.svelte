@@ -175,7 +175,7 @@
 	const AVERAGE_PER_WORD = 60_000 / 200;
 	
 	const articlePromise = (async () => {
-		const markdown = await fetchFromInnerApi(`site/articles/item/${ key }`, {parseType: "text"});
+		const markdown = await fetchFromInnerApi(`site/articles/item/${ key }`);
 		if (markdown === ""){
 			throw new Error("Response is empty");
 		}
