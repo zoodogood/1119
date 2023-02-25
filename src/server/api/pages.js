@@ -16,9 +16,9 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
+	async get(request, response){
 		const targetPath = Path.join(root, target);
-		responce.sendFile(targetPath);
+		response.sendFile(targetPath);
 	}
 }
 

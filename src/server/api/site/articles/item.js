@@ -13,28 +13,28 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
+	async get(request, response){
 		const path = request.params[0].replace(/\.md$/, "");
 		const full = Path.resolve(this.directory, `${ path }.md`);
 		try {
 			const content = String(await FileSystem.readFile(full));
-			responce.json( content );
+			response.json( content );
 		}
 		catch (error){
 			if (error.code !== "ENOENT"){
 				throw error;
 			}
 
-			responce.status(404).send();
+			response.status(404).send();
 		}
 		
 	}
 
-	async post(request, responce){
+	async post(request, response){
 
 	}
 
-	async delete(request, responce){
+	async delete(request, response){
 
 	}
 }

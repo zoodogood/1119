@@ -9,11 +9,11 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
+	async get(request, response){
 		const siteRedirect = request.query.redirect;
 		const redirectURL = oauth.getLink({state: siteRedirect});
 
-		responce.redirect(
+		response.redirect(
 			redirectURL
 		);
 		return;

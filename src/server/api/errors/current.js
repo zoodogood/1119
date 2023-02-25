@@ -10,9 +10,9 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
+	async get(request, response){
 		const json = ErrorsHandler.Audit.toJSON();
-		responce.json(json);
+		response.json(json);
 	}
 }
 

@@ -13,7 +13,7 @@ class Route extends BaseRoute {
 		super();
 	}
 	
-	async get(request, responce){
+	async get(request, response){
 		const code = request.query.code;
 		
 		if (!oauth.clientSecret){
@@ -21,7 +21,7 @@ class Route extends BaseRoute {
 		}
 
 		if (!code) {
-			responce.sendStatus(400);
+			response.sendStatus(400);
 			return;
 		}
 
@@ -42,7 +42,7 @@ class Route extends BaseRoute {
 		}).toString();
 
 		const url = `${ base }?${ queries }`.replaceAll("\\", "/");
-		responce.redirect(url);
+		response.redirect(url);
 	}
 }
 

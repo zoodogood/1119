@@ -10,8 +10,8 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
-		responce.send(String(BossManager));
+	async get(request, response){
+		response.send(String(BossManager));
 	}
 }
 

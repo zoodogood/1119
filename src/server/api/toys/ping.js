@@ -10,8 +10,8 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce, next){
-		responce.send("Alive!")
+	async get(request, response, next){
+		response.send("Alive!")
 	}
 }
 

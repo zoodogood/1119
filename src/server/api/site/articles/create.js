@@ -10,9 +10,9 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async post(request, responce){
+	async post(request, response){
 		if (!request.headers.authorization){
-			responce.status(401).send(`"Not authorized"`);
+			response.status(401).send(`"Not authorized"`);
 		}
 	}
 }

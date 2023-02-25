@@ -235,24 +235,24 @@ class Command {
   }
 
   async onCollect(interaction, context){
-    const responceTo = (replitableInteraction = interaction) => {
+    const responseTo = (replitableInteraction = interaction) => {
       context.pages = this.calculatePages(context.values.length);
       const embed = this.createEmbed({interaction: context.interaction, context, edit: true});
       replitableInteraction.msg(embed);
     }
-    await this.componentsCallbacks[interaction.customId](interaction, context, responceTo);
+    await this.componentsCallbacks[interaction.customId](interaction, context, responseTo);
   }
 
   componentsCallbacks = {
-    previousPage: (interaction, context, responceTo) => {
+    previousPage: (interaction, context, responseTo) => {
       context.page--;
-      responceTo();
+      responseTo();
     },
-    nextPage: (interaction, context, responceTo) => {
+    nextPage: (interaction, context, responseTo) => {
       context.page++;
-      responceTo();
+      responseTo();
     },
-    selectPage: async (interaction, context, responceTo) => {
+    selectPage: async (interaction, context, responseTo) => {
       const user = interaction.user;
       const title = "Перейти к странице";
       const customId = "pageSelectValue";
@@ -273,16 +273,16 @@ class Command {
         
         const value = (+interaction.fields.getField("pageSelectValue").value - 1) || context.page;
         context.page = Math.max(Math.min(context.pages, value), 1);
-        responceTo(interaction);
+        responseTo(interaction);
         return;
       });
     },
-    selectFilter: (interaction, context, responceTo) => {
+    selectFilter: (interaction, context, responseTo) => {
       const value = interaction.values.at(0);
       context.selected = this.leaderboardTypes.find(leaderboard => leaderboard.component.value === value);
       context.values = this.createValuesMap(context);
 
-      responceTo();
+      responseTo();
     }
   }
 

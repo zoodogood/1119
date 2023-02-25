@@ -10,16 +10,16 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
+	async get(request, response){
 		const fileName = request.params.name;
 		const json = await ErrorsHandler.Audit.readFile(fileName);
 		if (!json){
-			responce.sendStatus(404);
+			response.sendStatus(404);
 			return;
 		}
 		
 		const list = JSON.parse(json);
-		responce.json(list);
+		response.json(list);
 	}
 }
 

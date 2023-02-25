@@ -10,7 +10,7 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce, next){
+	async get(request, response, next){
 		throw new Error("1");
 	}
 }

@@ -12,10 +12,10 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
+	async get(request, response){
 		const router = app.server.router;
 		const data = router.getParsedRoutesList();
-		responce.json(data);
+		response.json(data);
 	}
 }
 

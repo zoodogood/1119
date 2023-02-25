@@ -47,20 +47,20 @@ class Route extends BaseRoute {
 
 	#cacheMap = new Map();
 
-	async get(request, responce){
+	async get(request, response){
 		const token = request.headers.authorization;
 		if (!token){
-			responce.status(401).send(`"Not authorized"`);
+			response.status(401).send(`"Not authorized"`);
 			return;
 		}
 
 		const user = await TokensUsersExchanger.getUser(token, {requireOAuth: true});
 		if (user === null){
-			responce.status(401).send(`"Authorization failed"`);
+			response.status(401).send(`"Authorization failed"`);
 			return;
 		}
 
-		responce.json(user);
+		response.json(user);
 	}
 }
 

@@ -10,8 +10,8 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
-		responce.redirect("/pages/")
+	async get(request, response){
+		response.redirect("/pages/")
 	}
 }
 

@@ -13,11 +13,11 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
+	async get(request, response){
 		const invite = generateInviteFor(client);
 		const displayAvatarURL = client.user.displayAvatarURL();
 		const data = { ...client.user, displayAvatarURL, invite };
-		responce.json(data);
+		response.json(data);
 	}
 }
 

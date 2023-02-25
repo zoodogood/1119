@@ -12,14 +12,14 @@ class Route extends BaseRoute {
 		super();
 	}
 
-	async get(request, responce){
+	async get(request, response){
 		const DIRECTORY = "static/articles";
 		const filesPaths = await new ImportDirectory({regex: /\.md$/}).takeFilesPath({path: DIRECTORY});
 
 		const articles = filesPaths
 			.map(path => Path.relative(DIRECTORY, path));
 
-		responce.json(articles);
+		response.json(articles);
 	}
 
 }
