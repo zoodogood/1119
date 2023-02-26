@@ -78,7 +78,9 @@ class Command {
 
       if (!react) return message.delete();
 
-      let answer = await msg.channel.awaitMessage(msg.author, {title: "3... 2.. 1.! Пробуем...!", embed: {color: "#f2fafa"}});
+      let _questionMessage = await interaction.channel.msg({title: "3... 2.. 1.! Пробуем...!", color: "#f2fafa"});
+      let answer = await msg.channel.awaitMessage({user: msg.author});
+      _questionMessage.delete();
 
       answer = answer.content;
       if (isNaN(answer)) return msg.msg({title: "Ответом должно быть число!", color: "#ff0000", delete: 5000});
