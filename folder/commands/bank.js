@@ -97,13 +97,16 @@ class Command {
     let reactions = ["637290387655884800", isAdmin ? "755844134677512273" : null, "794632668137652225"];
     let message = await msg.msg(embed);
     embed.edit = true;
+    let _questionMessage;
 
     while (true) {
       message = await message.msg(embed);
       react = await message.awaitReact({user: msg.author, removeType: "all"}, ...reactions);
       switch (react) {
         case "637290387655884800":
-          answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите сумму коинов, которую хотите внести в казну"});
+          _questionMessage = await interaction.channel.msg({title: "Укажите сумму коинов, которую хотите внести в казну"});
+          answer = await msg.channel.awaitMessage({user: interaction.user});
+          _questionMessage.delete();
           if (!answer){
             break;
           }
@@ -112,7 +115,9 @@ class Command {
           embed.description = `В казну внесли коины`;
           break;
         case "755844134677512273":
-          answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите сумму коинов. А также причину их извлечения из общей казны."});
+          _questionMessage = interaction.channel.msg({title: "Укажите сумму коинов. А также причину их извлечения из общей казны."});
+          answer = await msg.channel.awaitMessage({user: interaction.user});
+          _questionMessage.delete();
           if (!answer){
             break;
           }
@@ -160,7 +165,9 @@ class Command {
                 msg.msg({title: `Лимит 20 профессий`, delete: 4500, color: "#ff0000"});
                 continue;
               }
-              answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите айди роли, а также количество коинов, выдаваемое ежедневно"});
+              _questionMessage = interaction.channel.msg({title: "Укажите айди роли, а также количество коинов, выдаваемое ежедневно"});
+              answer = await msg.channel.awaitMessage({user: interaction.user});
+              _questionMessage.delete();
               if (!answer) {
                 professionManager.delete();
                 return;
@@ -181,7 +188,10 @@ class Command {
             }
 
             if (react == "❎"){
-              answer = await msg.channel.awaitMessage(msg.author, {title: "Укажите айди роли профессии, для её удаления"});
+              _questionMessage = interaction.channel.msg({title: "Укажите айди роли профессии, для её удаления"});
+              answer = await msg.channel.awaitMessage({user: interaction.user});
+              _questionMessage.delete();
+             
               if (!answer) {
                 professionManager.delete();
                 return;
