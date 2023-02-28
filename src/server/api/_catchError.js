@@ -16,7 +16,7 @@ class Route extends BaseRoute {
 	async catch(error, request, response, next){
 		ErrorsHandler.Audit.push(error, {path: request.originalUrl});
 		response.status(500);
-		response.send(`Error)!\n${ error.message }`);
+		response.json(`Ошибка сервера переданная от сервера: "${ error.message }". Информация об ошибке записана и может быть найдена по адресу /pages/errors/select`);
 	}
 
 	async start(){
