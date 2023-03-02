@@ -26,6 +26,12 @@ function checkPort(port) {
 	 })
 }
 
+function getAddress(server){
+	const { address, port } = server.address();
+	return `http://${ address === "::" ? "localhost" : address }:${ port }/`;
+}
+
 export {
-	checkPort
+	checkPort,
+	getAddress
 }
