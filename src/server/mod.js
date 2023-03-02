@@ -4,6 +4,7 @@ import config from '#config';
 import express from './express.js';
 import Router from './router.js';
 import cors from 'cors';
+import helmer from 'helmer';
 
 import { checkPort } from './util.js';
 
@@ -31,6 +32,7 @@ function logger(server){
 export default async () => {
 	const router = await new Router().fetch();
 	express.use( cors({origin: "*"}) );
+	express.use( helmer() )
 	router.bindAll(express);
 
 
