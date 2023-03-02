@@ -5,7 +5,7 @@ import express from './express.js';
 import { setMiddleware } from './middleware.js';
 
 
-import { checkPort } from './util.js';
+import { checkPort, getAddress } from './util.js';
 
 
 
@@ -27,8 +27,8 @@ async function raiseServer(port){
 }
 
 function logger(server){
-	const {address, port} = server.address();
-	console.info(`Listen on http://${ address === "::" ? "localhost" : address }:${ port }/`);
+	const address = getAddress(server);
+	console.info(`Listen on ${ address }`);
 }
 
 export default async () => {

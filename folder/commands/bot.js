@@ -1,4 +1,4 @@
-import { timestampToDate } from '#lib/util.js';
+import { getAddress, timestampToDate } from '#lib/util.js';
 import { client } from '#bot/client.js';
 import config from '#config';
 import DataManager from '#lib/modules/DataManager.js';
@@ -46,7 +46,7 @@ class Command {
 
   displayMainInterface(interaction){
     const {rss, heapTotal} = process.memoryUsage();
-    const { address, port } = app.server?.address() || {};
+    const address = app.server && getAddress(app.server);
 
     const season = ["Зима", "Весна", "Лето", "Осень"][Math.floor((new Date().getMonth() + 1) / 3) % 4];
     const version = app.version ?? "0.0.0";
@@ -58,7 +58,7 @@ class Command {
       guilds: `Серваков...**${ client.guilds.cache.size }**`,
       commands: `Команд: ${ CommandsManager.collection.size }`,
       time: `Время сервера: ${ new Intl.DateTimeFormat("ru-ru", {hour: "2-digit", minute: "2-digit"}).format() }`,
-      address: address ? `; Доступен по адрессу: http://${ address.replace("::", "localhost") }:${ port }` : "",
+      address: address ? `; Доступен по адрессу: ${ address }` : "",
       performance: `\`${ ( heapTotal/1024/1024 ).toFixed(2) } мб / ${( rss/1024/1024 ).toFixed(2)} МБ\``,
       errors: `Ошибок за текущий сеанс: ${ ErrorsHandler.Audit.collection.reduce((acc, errors) => acc + errors.length, 0) }`,
       uniqueErrors: `Уникальных ошибок: ${ ErrorsHandler.Audit.collection.size }`
