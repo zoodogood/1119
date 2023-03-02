@@ -2,13 +2,15 @@ import 'dotenv/config';
 
 import config from '#config';
 import express from './express.js';
-import Router from './router.js';
-import cors from 'cors';
-import helmer from 'helmer';
+import { setMiddleware } from './middleware.js';
+
 
 import { checkPort } from './util.js';
 
-const raiseServer = async (port) => {
+
+
+
+async function raiseServer(port){
 	while (true){
 		const isOpen = await checkPort(port);
 		if (isOpen){
@@ -30,13 +32,10 @@ function logger(server){
 }
 
 export default async () => {
-	const router = await new Router().fetch();
-	express.use( cors({origin: "*"}) );
-	express.use( helmer() )
-	router.bindAll(express);
+	const { router } = await setMiddleware( express );
 
 
-	const port = config.port ?? 8001;
+	const port = config.server.port ?? 8001;
 	const server = await raiseServer(port);
 	
 	server.router = router;
