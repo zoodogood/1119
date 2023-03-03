@@ -7,3 +7,5 @@ folder/errors/*.json
 build/
 static/articles/
 
+folder/SSLSecret/server.crt
+folder/SSLSecret/server.key
