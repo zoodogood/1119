@@ -1,5 +1,6 @@
 import net from 'net';
 import { CustomCollector } from '@zoodogood/utils/objectives';
+import config from '#config';
 
 function checkPort(port) {
 	const server = net.createServer();
@@ -27,8 +28,9 @@ function checkPort(port) {
 }
 
 function getAddress(server){
+	const protocol = config.server.hasSSLCertificate ? "https" : "http";
 	const { address, port } = server.address();
-	return `http://${ address === "::" ? "localhost" : address }:${ port }/`;
+	return `${ protocol }://${ address === "::" ? "localhost" : address }:${ port }/`;
 }
 
 export {

@@ -11,10 +11,12 @@ export default {
 	},
 
 	server: {
+		isAvailable: true,
 		source: "./src/server",
 		origin: "http://localhost:8119",
 		hostname: "localhost",
 		port: 8119,
+		hasSSLCertificate: null,
 		paths: {
 			static: "./static",
 			site: "./pages"

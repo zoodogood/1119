@@ -2,12 +2,19 @@ import 'dotenv/config';
 
 import config from '#config';
 import express from './express.js';
+import FileSystem from 'fs/promises';
 import { setMiddleware } from './middleware.js';
 
 
 import { checkPort, getAddress } from './util.js';
+import { sleep } from '#lib/util.js';
 
-
+const SSLSecret = config.server.hasSSLCertificate
+	&& (await Promise.all([
+		FileSystem.readFile("./folder/SSLSecret/server.key"),
+		FileSystem.readFile("./folder/SSLSecret/server.crt")
+	]))
+	.map(String);
 
 
 async function raiseServer(port){
@@ -19,10 +26,23 @@ async function raiseServer(port){
 
 		port++;
 	}
-	
 
-	return await new Promise(async (resolve) => {
-		const server = express.listen({ port }, async () => resolve(server));
+	
+	return await new Promise(async (resolve, reject) => {
+		const HTTPBase = (config.server.hasSSLCertificate ? (await import("https")).default : (await import("http")).default);
+		const options = {
+			port,
+			host: config.server.hostname,
+			key: SSLSecret?.at(0),
+  			cert: SSLSecret?.at(1)
+		};
+		
+		const server = HTTPBase.createServer(options, express);
+		server.listen(options, () => resolve(server));
+
+		
+		await sleep(3_000);
+		reject( new Error("TIMEOUT ERROR") );
 	})
 }
 
@@ -32,6 +52,11 @@ function logger(server){
 }
 
 export default async () => {
+	if (!config.server.isAvailable){
+		return null;
+	}
+
+	
 	const { router } = await setMiddleware( express );
 
 
