@@ -103,11 +103,13 @@ class ErrorsHandler {
 	}
 
 	static parseErrorStack(stack, {node_modules}){
-		stack = stack.replaceAll("\\", "/");
+		stack = decodeURI(stack).replaceAll("\\", "/");
 
 		const projectPath = process.cwd().replaceAll("\\", "/");
 		const regular = new RegExp(`(?<fileOfError>${ projectPath }/.+?\\.js):(?<strokeOfError>\\d+)`);
 		const groups = stack.match(regular)?.groups;
+
+		console.log({projectPath});
 
 		
 		if (!groups){
