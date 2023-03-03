@@ -9,7 +9,7 @@ class Command {
     const chilli = msg.channel.chilli && msg.channel.chilli.find(chilli => chilli.current === msg.author.id);
     setTimeout(() => msg.delete(), 30_000);
 
-    const guildMembers = guild.members;
+    const guildMembers = interaction.guild.members;
     const addName = (member) => {
       const newName = member.displayName + "(🌶)";
       member.setNickname(newName).catch(() => {});
