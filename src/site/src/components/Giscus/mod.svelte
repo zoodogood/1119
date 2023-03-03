@@ -47,7 +47,7 @@
 		const giscusConfig = config.giscus;
 
 
-		const discusSource = "https://giscus.app/client.js";
+		const giscusSource = "https://giscus.app/client.js";
 		const lang = svelteApp.lang;
 
 		const themes = {
@@ -59,7 +59,7 @@
 			? themes.light : themes.dark;
 
 		const attributes = new Map([
-			["src", 							discusSource],
+			["src", 							giscusSource],
 			["data-repo", 					giscusConfig.repository],
 			["data-repo-id", 				giscusConfig.repoId],
 			["data-category", 			giscusConfig.categoryName],
