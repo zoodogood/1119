@@ -30,7 +30,7 @@ function checkPort(port) {
 function getAddress(server){
 	const protocol = config.server.hasSSLCertificate ? "https" : "http";
 	const { address, port } = server.address();
-	return `${ protocol }://${ address === "::" ? "localhost" : address }:${ port }/`;
+	return `${ protocol }://${ address.startsWith("::") ? "localhost" : address }:${ port }/`;
 }
 
 export {
