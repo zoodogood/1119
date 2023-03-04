@@ -172,24 +172,42 @@
 		position: relative;
 	}
 
+
 	li::before
 	{
-		content: '';
+		content: '~';
 		display: inline-block;
 		width: 0.3em;
 		height: 0.3em;
-		background-color: var( --main-color );
+		color: var( --main-color );
 		position: absolute;
+		top: 0;
 		left: 0;
+		
 	}
 
-
-	li:nth-child(10n)::after
+	li:hover::before
 	{
-		content: '';
-		display: block;
-		height: 1em;
-		overflow: hidden;
+		content: '[';
+		opacity: 0.5;
+	}
+
+	li:hover::after
+	{
+		content: ']';
+		display: inline-block;
+		width: 0.3em;
+		height: 0.3em;
+		color: var( --main-color );
+		position: absolute;
+		top: 0;
+		right: 0;
+		opacity: 0.5;
+	}
+
+	li:nth-child(10n)
+	{
+		margin-bottom: 1em;
 	}
 
 	li a 
