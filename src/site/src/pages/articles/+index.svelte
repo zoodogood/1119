@@ -18,9 +18,13 @@
 		{:then data}
 			<input type="text" placeholder = " Фильтровать">
 			<ul>
-				{#each data as name}
+				{#if data.length}
+					{#each data as name}
 					<li>{ name }</li>
-				{/each}
+					{/each}
+				{:else}
+					<p>Здесь пусто..</p>
+				{/if}
 			</ul>
 		{:catch}
 			<p>Загрузка неудалась</p>
