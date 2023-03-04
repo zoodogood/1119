@@ -32,7 +32,7 @@
   "dependencies": {
     "@discordjs/collection": "^1.3.0",
     "@rollup/plugin-replace": "^5.0.2",
-    "@zoodogood/import-directory": "^1.4.0",
+    "@zoodogood/import-directory": "^1.4.1",
     "@zoodogood/utils": "^0.8.4",
     "cors": "^2.8.5",
     "discord-oauth2-utils": "^2.1.4-0",

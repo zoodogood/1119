@@ -41,7 +41,7 @@
 	{:catch}
 		<main class = "article-container">
 			<h1>Нет результатов</h1>
-			<p>Проверьте правильность id в строке запроса или вернитесь к <a href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("articles").key ) }>списку страниц</a>.</p>
+			<p>Проверьте правильность <code>id</code> в строке запроса или вернитесь к <a href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("articles").key ) }>списку страниц</a>.</p>
 		</main>
 	{/await}
 	<section class = "comments-container">

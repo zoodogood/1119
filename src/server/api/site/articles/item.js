@@ -1,6 +1,6 @@
+import { ArticlesManager } from "./.mod.js";
 import { BaseRoute } from "#server/router.js";
-import FileSystem from 'fs/promises';
-import Path from 'path';
+
 
 const PREFIX = "/site/articles/item/**";
 
@@ -14,20 +14,13 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, response){
-		const path = request.params[0].replace(/\.md$/, "");
-		const full = Path.resolve(this.directory, `${ path }.md`);
-		try {
-			const content = String(await FileSystem.readFile(full));
-			response.json( content );
-		}
-		catch (error){
-			if (error.code !== "ENOENT"){
-				throw error;
-			}
-
+		const id = request.params[0];
+		const content = await ArticlesManager.getArticleContent(key);
+		if (content === null){
 			response.status(404).send();
 		}
-		
+
+		response.json(content);
 	}
 
 	async post(request, response){

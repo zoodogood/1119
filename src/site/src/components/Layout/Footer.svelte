@@ -22,8 +22,8 @@
 					<aside class = "article-aside">
 						 <h3 class = "article-aside-header">Информация</h3>
 						 <ul class = "article-aside-list">
-							  <li><a href = "">Политика использования</a></li>
-							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("friendship").key )}>Благодарности</a></li>
+							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/policy").key )}>Политика использования</a></li>
+							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/friendship").key )}>Благодарности</a></li>
 							  <li><a href = "">1119</a></li>
 							  <li></li>
 						 </ul>

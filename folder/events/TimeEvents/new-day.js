@@ -57,7 +57,6 @@ class Event {
 			);
 
 		const commandsLaunched = Object.values(DataManager.data.bot.commandsUsed).reduce( ((acc, e) => acc + e), 0);
-		console.info(`\n\n\n      —— Ежедневная статистика\n\nСерверов: ${DataManager.data.guilds.length}\nПользователей: ${DataManager.data.users.length}\nКаналов: ${client.channels.cache.size}\n\nЦена клубники: ${DataManager.data.bot.berrysPrise}\nВыполнено команд: ${commandsLaunched - DataManager.data.bot.commandsLaunched}\nВыполнено команд по серверам:\n${DataManager.data.guilds.map(e => e.name + ":\nВыполнено команд: " + e.commandsLaunched + "\nРекорд сообщений: " + e.day_max).join("\n")}\n\n`);
 		DataManager.data.bot.commandsLaunched = commandsLaunched;
 	}
 

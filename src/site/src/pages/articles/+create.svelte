@@ -5,7 +5,7 @@
 	<h1>Написать статью</h1>
 
 	<main>
-		<label for="load-file" bind:this = { labelNode }>
+		<label for="load-file" bind:this = { labelNode } on:click={(pointerEvent) => !svelteApp.user && pointerEvent.preventDefault()} on:keydown={(keyEvent) => !svelteApp.user && keyEvent.preventDefault()}>
 			<input type="file" id="load-file" accept=".md" on:change={onFileUpload}>
 			<button on:click = {() => labelNode.click()} disabled = {!svelteApp.user || null}>Загрузить .md файл</button>
 		</label>
