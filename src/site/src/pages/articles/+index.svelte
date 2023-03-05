@@ -16,10 +16,11 @@
 		{#await articlesPromise}
 			<p>Загрузка...</p>
 		{:then data}
-			<input type="text" placeholder = " Фильтровать">
+			{@const list = data.filter(Search.filter)}
+			<input type="text" placeholder = " Фильтровать" bind:value = { Search.value }>
 			<ul>
-				{#if data.length}
-					{#each data as name}
+				{#if list.length}
+					{#each list as name}
 					<li>{ name }</li>
 					{/each}
 				{:else}
@@ -55,6 +56,17 @@
 		height: 200px;
 		border-radius: 15px;
 		padding: 20px;
+		animation: article-apparance 1s;
+	}
+
+	@keyframes article-apparance
+	{
+		0% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
 	}
 
 	input 
@@ -77,4 +89,11 @@
 	articlesPromise
 		.then(data => articlesPromise.filesCount = data.length);
 
+	
+	const Search = {
+		value: "",
+		filter(name){
+			return name.includes(Search.value);
+		}
+	}
 </script>
