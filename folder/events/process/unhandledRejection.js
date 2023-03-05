@@ -18,7 +18,6 @@ class Event extends BaseEvent {
 		if (ignoreMessages.includes(error.message)){
 			return;
 		};
-	   console.error(error);
 	}
 
 	options = {
