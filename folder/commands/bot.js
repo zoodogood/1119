@@ -120,7 +120,8 @@ class Command {
         type: ComponentType.TextInput,
         customId: "content",
         style: TextInputStyle.Paragraph,
-        label: "Введите сообщение"
+        label: "Введите сообщение",
+        maxLength: 2000
       }];
 
       
@@ -137,10 +138,6 @@ class Command {
     postReviewModal(interaction){
       const description = interaction.fields.getField("content").value;
       const {user} = interaction;
-      interaction.msg({
-        ephemeral: true,
-        content: "Спасибо!"
-      });
 
       const embed = {
         author: {iconURL: client.user.avatarURL(), name: `Получен отзыв из сервера с ${ interaction.guild ? interaction.guild.memberCount : 0 } участниками(-ом)\nСодержимое:`},
@@ -158,6 +155,11 @@ class Command {
         const user = client.users.cache.get(id);
         user?.msg(embed);
       });
+
+      interaction.msg({
+        ephemeral: true,
+        content: "Спасибо!"
+      });
     },
     answerForReview(interaction, id){
       const user = client.users.cache.get(id);
@@ -170,7 +172,8 @@ class Command {
         type: ComponentType.TextInput,
         customId: "content",
         style: TextInputStyle.Paragraph,
-        label: "Введите сообщение"
+        label: "Введите сообщение",
+        maxLength: 2000
       }];
 
       
