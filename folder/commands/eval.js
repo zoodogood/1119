@@ -111,7 +111,7 @@ class Command {
         name: `${ interaction.user.username }, в #${ interaction.channel.id }`,
         iconURL: client.user.avatarURL()
       },
-      description: `\`\`\`js\n${ codeContent }\`\`\``,
+      description: `\`\`\`js\n${ interaction.codeContent }\`\`\``,
       color: "#1f2022",
       footer: {iconURL: client.emojis.cache.get(interaction.emojiByType).url, text: "Вызвана команда !eval"}
     });
