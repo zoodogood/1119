@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.3227",
+  "version": "2.0.0-alpha.3235",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -39,6 +39,7 @@
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "greenlock": "^4.0.4",
     "helmet": "^6.0.1",
     "node-fetch": "^2.6.0",
     "sirv-cli": "^2.0.0",
