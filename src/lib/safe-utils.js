@@ -3,6 +3,7 @@ import config from "#config";
 import { ending } from '@zoodogood/utils/primitives';
 import { omit, CustomCollector, GlitchText } from '@zoodogood/utils/objectives';
 import Path from 'path';
+import FileSystem from 'fs/promises';
 
 
 
@@ -253,6 +254,10 @@ async function fetchFromInnerApi(subpath, {parseType = "json", ...fetchOptions} 
 	return response[ parseType ]();
 }
 
+async function getPackageJSON(){
+	return JSON.parse(await FileSystem.readFile(`${ process.cwd() }/package.json`));
+}
+
 
 
 export {
@@ -279,7 +284,8 @@ export {
 	parseDocumentLocate,
 	parseLocationBase,
 
-	fetchFromInnerApi
+	fetchFromInnerApi,
+	getPackageJSON
  }
 
  export { relativeSiteRoot } from '#site/lib/util.js';
