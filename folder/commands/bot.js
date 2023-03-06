@@ -196,7 +196,7 @@ class Command {
         author: {iconURL: interaction.user.avatarURL(), name: `Получен ответ на отзыв`},
         description,
         color: "#6534bf",
-        footer: {text: `Ответ предоставил ${ interaction.user.tag }`},
+        footer: {text: `Ответ предоставил ${ interaction.user.tag }. Пожалуйста, не создавайте новый отзыв чтобы ответить на это сообщение.`},
         image: "https://media.discordapp.net/attachments/629546680840093696/1073849735850508339/simple-black-rounded-line.png?width=559&height=559"
       };
 
