@@ -6,6 +6,10 @@ class Event {
 
 	run(isLost, userId, timestamp){
 		const user = client.users.cache.get(userId);
+		if (!user){
+			return;
+		}
+		
 		const curses = user.data.curses;
 		
 		const compare = curse => curse.timestamp === timestamp;
