@@ -10,7 +10,6 @@ class Event extends BaseEvent {
 
 	async run(error){
 		ErrorsHandler.Audit.push(error);
-    	console.error(error);
     	process.exit(1);
 	}
 

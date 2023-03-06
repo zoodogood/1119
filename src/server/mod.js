@@ -35,8 +35,8 @@ async function raiseServer(port){
 		const options = {
 			port,
 			host: config.server.hostname,
-			key: SSLSecret.at?.(0),
-  			cert: SSLSecret.at?.(1)
+			key: SSLSecret?.at(0),
+  			cert: SSLSecret?.at(1)
 		};
 		
 		const server = HTTPBase.createServer(options, express);

@@ -1,6 +1,6 @@
 
 import Discord from 'discord.js';
-import { CurseManager, QuestManager } from '#lib/modules/mod.js';
+import { CurseManager, QuestManager, ErrorsHandler } from '#lib/modules/mod.js';
 import { BossEffects } from '#lib/modules/BossManager.js';
 
 const ActionsMap = {
@@ -74,7 +74,7 @@ class ActionManager {
 							effectBase.callback[actionName].call(null, this, effect, data);
 						
 					} catch (error) {
-						console.error(error);
+						ErrorsHandler.Audit.push(error, {actionName});
 					}
 				}
 
@@ -87,8 +87,8 @@ class ActionManager {
 						if (actionName in curseBase.callback)
 							curseBase.callback[actionName].call(null, this, curse, data);
 					
-					} catch (err) {
-						console.error(err);
+					} catch (error) {
+						ErrorsHandler.Audit.push(error, {actionName});
 					}
 				}
 				

@@ -2,6 +2,7 @@ import path from 'path';
 import FileSystem from 'fs';
 import config from '#config';
 import { BaseRoute } from '#server/router.js';
+import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
 
 const ROOT = config.server.paths.static;
 const root = path.join(process.cwd(), ROOT);
@@ -73,7 +74,6 @@ class Route extends BaseRoute {
 				break;
 
 			case "DEFAULT":
-				console.error(data);
 				throw new Error("Unknown response");
 				break;
 			
