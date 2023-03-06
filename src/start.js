@@ -149,6 +149,22 @@ client.on("ready", async () => {
     }
 
     const guildInvites = await guild.invites.fetch();
+
+    // to-do: unknow bug
+    var _data = {
+      label: "fetch is not a function",
+      constructor: guild.invites.constructor.name,
+      keys: Object.keys(guild.invites),
+      values: Object.values(guild.invites).map(String)
+    };
+    console.log(_data);
+
+    if (!guild.invites.fetch){
+      console.log("fetch is not a function");
+      const error = new Error("fetch is not a function");
+      ErrorsHandler.Audit.push(error, {custom: true, _data});
+      return;
+    }
     const old = guild.invites;
     guild.invites = guildInvites;
     const invite = guildInvites.find(i => old.get(i.code).uses < i.uses);
