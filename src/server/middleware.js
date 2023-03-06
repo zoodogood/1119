@@ -10,7 +10,7 @@ async function setMiddleware(express){
 
 	const HelmetOptions = [
 		"crossOriginOpenerPolicy", "crossOriginResourcePolicy", 	  "dnsPrefetchControl",
-		"expectCt", 					"frameguard", 						  "hidePoweredBy",
+		"frameguard", 					"hidePoweredBy",
 		"hsts",							"ieNoOpen", 						  "noSniff",
 		"originAgentCluster",      "permittedCrossDomainPolicies", "referrerPolicy",
 		"xssFilter"
