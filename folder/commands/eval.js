@@ -99,9 +99,6 @@ class Command {
   }
 
   async loggerProtocol({interaction}){
-    if (config.development){
-      return;
-    }
 
     if (!process.env.EVAL_WEBHOOK_ID_AND_TOKEN){
       return;
