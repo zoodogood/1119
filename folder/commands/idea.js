@@ -12,7 +12,7 @@ class Command {
     const getIdeaNumber = async () => {
       const messages = await channel.messages.fetch();
       const lastIdeaMessage = messages.find(message => message.author === client.user);
-      return +match(lastIdeaMessage.embeds[0].author.name, /#\d+/).slice(1);
+      return Util.match(lastIdeaMessage.embeds[0].author.name, /#\d+/).slice(1);
     }
 
 
