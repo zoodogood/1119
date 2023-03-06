@@ -644,7 +644,9 @@ Discord.Guild.prototype.logSend = async function(message){
 }
 
 Discord.Guild.prototype.Audit = async function(find = false, {limit = 3, before = null, user = null, type = null}){
-  const audit = await this.fetchAuditLogs({limit, before, user, type});
+  // to-do: fix
+  // const audit = await this.fetchAuditLogs({limit, before, user, type});
+  return null;
   let auditLog = find ? audit.entries.find(find) : audit.entries.first();
   if (!audit){
     return null;
