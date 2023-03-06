@@ -8,6 +8,7 @@ import { setMiddleware } from './middleware.js';
 
 import { checkPort, getAddress } from './util.js';
 import { sleep } from '#lib/util.js';
+import { updateSSL } from './updateSSL.js';
 
 const SSLSecret = config.server.hasSSLCertificate
 	&& (await Promise.all([
@@ -29,6 +30,7 @@ async function raiseServer(port){
 
 	
 	return await new Promise(async (resolve, reject) => {
+		config.server.hasSSLCertificate && updateSSL();
 		const HTTPBase = (config.server.hasSSLCertificate ? (await import("https")).default : (await import("http")).default);
 		const options = {
 			port,
