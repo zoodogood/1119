@@ -80,7 +80,7 @@ class Command {
           edit: interaction.controller.editEmbed,
           description,
           fields: [{name: " ᠌", value: " ᠌"}],
-          footer: {text: `Похвал: ${user.praiseMe?.length || "0"}   ${interaction.rank ? `Ранг: ${interaction.rank.position ?? 0}/${ interaction.rank.members.length }` : ""}`},
+          footer: {text: `Похвал: ${user.praiseMe?.length || "0"}   ${interaction.rank ? `Ранг: ${interaction.rank.position ? `${interaction.rank.position ?? 0}/${ interaction.rank.members.length }` : "Недоступно" }` : ""}`},
         }
 
         
