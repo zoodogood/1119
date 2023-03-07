@@ -15,13 +15,13 @@ class StorageManager {
 	}
 
 	getUserData(){
-		return localStorage.getItem("user") ?? null;
+		return JSON.parse(localStorage.getItem("user") ?? null);
 	}
 
 	setUserData(user){
 		const availableList = ["username"];
-		user = Util.omit(user, (key) => availableList.includes(key));
-		return localStorage.setItem("item", user);
+		user = omit(user, (key) => availableList.includes(key));
+		return localStorage.setItem("user", JSON.stringify(user));
 	}
 }
 
