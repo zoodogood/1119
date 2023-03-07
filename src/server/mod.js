@@ -11,8 +11,9 @@ import { sleep } from '#lib/util.js';
 
 const SSLSecret = config.server.hasSSLCertificate
 	&& (await Promise.all([
-		FileSystem.readFile("./folder/SSLSecret/server.key"),
-		FileSystem.readFile("./folder/SSLSecret/server.crt")
+		FileSystem.readFile("./folder/SSLSecret/private.key"),
+		FileSystem.readFile("./folder/SSLSecret/certificate.crt"),
+		FileSystem.readFile("./folder/SSLSecret/ca_bundle.crt")
 	]))
 	.map(String);
 
@@ -33,8 +34,10 @@ async function raiseServer(port){
 		const options = {
 			port,
 			host: config.server.hostname,
+
 			key: SSLSecret && SSLSecret.at(0),
-  			cert: SSLSecret && SSLSecret.at(1)
+  			cert: SSLSecret && SSLSecret.at(1),
+			ca: SSLSecret && SSLSecret.at(2),
 		};
 		
 		const server = HTTPBase.createServer(options, express);
