@@ -149,6 +149,12 @@
 		display: flex;
 		width: 3em;
 		aspect-ratio: 1 / 1;
+		transition: transform 1s;
+	}
+
+	.user:hover .user-avatar-container
+	{
+		transform: translateY(-10%);
 	}
 
 	.user-avatar-container img
