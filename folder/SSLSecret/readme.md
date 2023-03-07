@@ -1,1 +1,1 @@
-Put `server.crt` and `server.key` here
+Put `certificate.crt`, `ca_bundle` and `private.key` here
