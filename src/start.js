@@ -148,8 +148,6 @@ client.on("ready", async () => {
       return;
     }
 
-    const guildInvites = await guild.invites.fetch();
-
     // to-do: unknow bug
     var _data = {
       label: "fetch is not a function",
@@ -165,6 +163,10 @@ client.on("ready", async () => {
       ErrorsHandler.Audit.push(error, {custom: true, _data});
       return;
     }
+    
+    const guildInvites = await guild.invites.fetch();
+
+    
     const old = guild.invites;
     guild.invites = guildInvites;
     const invite = guildInvites.find(i => old.get(i.code).uses < i.uses);
