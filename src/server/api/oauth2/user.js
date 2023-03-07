@@ -32,8 +32,12 @@ class TokensUsersExchanger {
 		return user;
 	}
 
-	static async getUser(token, {requireOAuth}){
-		return (!requireOAuth && this.fromCache(token)) || (await this.fromOAuth(token)) || null;
+	static async getUserRaw(token, {requireOAuth}){
+		const user = structuredClone(
+			(!requireOAuth && this.fromCache(token)) || (await this.fromOAuth(token)) || null
+		);
+		user.avatarURL = client.rest.cdn.avatar(user.id, user.avatar);
+		return user;
 	}
 }
 
@@ -54,7 +58,7 @@ class Route extends BaseRoute {
 			return;
 		}
 
-		const user = await TokensUsersExchanger.getUser(token, {requireOAuth: true});
+		const user = await TokensUsersExchanger.getUserRaw(token, {requireOAuth: true});
 		if (user === null){
 			response.status(401).send(`"Authorization failed"`);
 			return;
