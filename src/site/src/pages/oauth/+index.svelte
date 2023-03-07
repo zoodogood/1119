@@ -139,6 +139,8 @@
 
 		const titleNode = node.querySelector(".title");
 		user = data;
+		svelteApp.storage.setUserData(user);
+		svelteApp.user = svelteApp.storage.getUserData();
 
 		const previousContent = titleNode.textContent;
 		const content = `Здравствуй, ${ user.username }!`
