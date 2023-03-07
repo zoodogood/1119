@@ -106,9 +106,9 @@
 
 
 	let {code, redirect} = svelteApp.url.queries;
-	code ||= svelteApp.storage.getToken("access_token");
+	code ||= svelteApp.storage.getToken();
 	
-	svelteApp.storage.setToken("access_token", code);
+	svelteApp.storage.setToken(code);
 
 
 	let user;
