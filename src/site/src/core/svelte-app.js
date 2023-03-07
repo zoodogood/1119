@@ -19,8 +19,8 @@ class StorageManager {
 	}
 
 	setUserData(user){
-		const availableList = ["username"];
-		user = omit(user, (key) => availableList.includes(key));
+		const ignoreKeysList = ["guilds"];
+		user = omit(user, (key) => !ignoreKeysList.includes(key));
 		return localStorage.setItem("user", JSON.stringify(user));
 	}
 }
