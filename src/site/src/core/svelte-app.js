@@ -1,10 +1,29 @@
 import HashController from '#site/lib/HashController.js';
-import { resolveDate, parseDocumentLocate } from '#lib/safe-utils.js';
+import { resolveDate, parseDocumentLocate, omit } from '#lib/safe-utils.js';
 import enviroment from '#site/enviroment/mod.js';
 
 import PagesURLs from '#static/build/svelte-pages/enum[builded].mjs';
 import config from '#config';
 
+class StorageManager {
+	getToken(){
+		return localStorage.getItem("access_token");
+	}
+
+	setToken(token){
+		return localStorage.setItem("access_token", token);
+	}
+
+	getUserData(){
+		return localStorage.getItem("user") ?? null;
+	}
+
+	setUserData(user){
+		const availableList = ["username"];
+		user = Util.omit(user, (key) => availableList.includes(key));
+		return localStorage.setItem("item", user);
+	}
+}
 
 class SvelteApp {
 
@@ -14,6 +33,8 @@ class SvelteApp {
 	enviroment = enviroment;
 	url = parseDocumentLocate(this.document.location);
 	PagesURLs = PagesURLs;
+	storage = new StorageManager();
+	user = this.storage.getUserData();
 
 	constructor(){
 		this.lang = this.url.base.lang ?? "ru";
