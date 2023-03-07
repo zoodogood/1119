@@ -22,16 +22,27 @@
 		</nav>
 
 	</section>
+
+	{#if !svelteApp.user}
+		<section class = "authentication">
+			<button
+				class = "oauth"
+				on:click={() => PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`)}
+			>
+				Войти
+			</button>
+		</section>
+		{:else}
+		<section class = "user">
+			<span class = "user-avatar-container">
+				<img src = { svelteApp.user.avatarURL } alt = "avatar">
+			</span>
+			<hr>
+		</section>
+	{/if}
 	
-	  
-	<section class = "authentication">
-		<button
-			class = "oauth"
-			on:click={() => PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`)}
-		>
-			Войти
-		</button>
-	</section>
+	
+	
 
 
 	</main>
@@ -114,6 +125,46 @@
 	{
 		display: flex;
 		justify-content: flex-end;
+	}
+
+	.user 
+	{
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+		font-size: 0.7em;
+		gap: 0.4em;
+		flex-direction: column;
+
+		filter: grayscale(0.3);
+	}
+
+	.user:hover
+	{
+		filter: grayscale(0);
+	}
+
+	.user-avatar-container
+	{
+		display: flex;
+		width: 3em;
+		aspect-ratio: 1 / 1;
+	}
+
+	.user-avatar-container img
+	{
+		width: 100%;
+		border-radius: 1.5em;
+	}
+
+	.user hr 
+	{
+		transition: width 200ms;
+	}
+
+	.user:hover hr
+	{
+		width: 50%;
 	}
 
 	.navigation
@@ -236,6 +287,8 @@
 			max-width: 0px;
 			margin-bottom: 0.5em;
 		}
+
+		
 	}
 </style>
 
@@ -243,6 +296,7 @@
 <script>
    import config from '#config';
 	import ThemeSwitcher from '#site-component/ThemeSwitcher';
+	import Icon from '#site-component/iconic';
 	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
 
