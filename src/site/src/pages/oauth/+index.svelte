@@ -30,6 +30,10 @@
 
 	</nav>
 
+	{#if user}
+		<p>Теперь вы можете покинуть эту страницу</p>
+	{/if}
+
 </main>
 
 
@@ -95,17 +99,26 @@
 	import svelteApp from "#site/core/svelte-app.js";
   	import PagesRouter from "#site/lib/Router.js";
   	import { onMount } from "svelte";
+	
 
 	let node;
 
-	const {code, redirect} = svelteApp.url.queries;
-	sessionStorage.setItem("access_token", code);
+
+
+	let {code, redirect} = svelteApp.url.queries;
+	code ||= svelteApp.storage.getToken("access_token");
+	
+	svelteApp.storage.setToken("access_token", code);
+
+
 	let user;
 
 	const _redirectURL = PagesRouter.relativeToPage(
 		PagesRouter.getPageBy( PagesRouter.pages[redirect] )?.key ??
 		PagesRouter.getPageBy("public").key
 	);
+
+	
 
 	onMount(async () => {
 		if (!code){
@@ -135,7 +148,7 @@
 			titleNode.textContent = text;
 		}
 		
-	
+		
 		
 	});
 </script>
