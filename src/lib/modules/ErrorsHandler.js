@@ -3,7 +3,7 @@ import { resolveGithubPath } from '#lib/util.js';
 import Path from 'path';
 import FileSystem from 'fs';
 import { Collection } from '@discordjs/collection';
-import { inspect } from 'util';
+import { stringify } from 'flatted';
 import config from '#config';
 
 class ErrorsAudit {
@@ -38,7 +38,7 @@ class ErrorsAudit {
 
 	push(error, context){
 		const list = this.listOf(error.message);
-		context &&= inspect(context);
+		context &&= stringify(context);
 		const stack = error.stack;
 		list.push({stack, context, timestamp: Date.now()});
 
