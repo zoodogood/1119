@@ -4,7 +4,7 @@
 		<ul>
 			{#each Component.errors as errorFile, i}
 				{@const [day, month, hour, minute] = errorFile.name.split("-").map(number => `0${ number }`.slice(-2))}
-				<li class = "error-file">
+				<li class = "error-file" class:special = { errorFile.fullname === "" }>
 					<a href = "{ PagesRouter.relativeToPage( PagesRouter.getPageBy("errors/list/item").key ) }/:{ errorFile.fullname }">
 						<big>ID: { Component.errors.length - i }</big>
 						<p>Создано: <code>{ day }.{ month }, { hour }:{ minute }</code></p>
@@ -50,6 +50,7 @@
 			
 	
 			font-size: 0.8em;
+			position: relative;
 		}
 	
 		.error-file a 
@@ -72,7 +73,20 @@
 		{
 			font-size: 0.7em;
 		}
-	
+		
+		.error-file.special big::before
+		{
+			content: '';
+			font-family: 'Icon';
+			float: right;
+			display: block;
+			width: 1em;
+			
+			right: 1em;
+			top: 0.5em;
+			font-size: 1.2em;
+			opacity: 0.3;
+		}
 	</style>
 	
 	
