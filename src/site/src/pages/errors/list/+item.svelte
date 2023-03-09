@@ -12,7 +12,7 @@
 			<li class = "error-file">
 				
 					<h2>{ message }</h2>
-					<section class = "tags">
+					<section class = "tags" title = "Ключи из контекста">
 						<span>Тэги:</span>
 						{#each array.uniqueKeys as tag}
 							<li>{ tag }</li>
