@@ -1,9 +1,11 @@
 import HashController from '#site/lib/HashController.js';
-import { parseDocumentLocate, omit, fetchFromInnerApi, sleep } from '#lib/safe-utils.js';
+import { parseDocumentLocate, omit, fetchFromInnerApi } from '#lib/safe-utils.js';
+import { whenDocumentReadyStateIsComplete } from '#site/lib/util.js';
 import enviroment from '#site/enviroment/mod.js';
 
 import PagesURLs from '#static/build/svelte-pages/enum[builded].mjs';
 import config from '#config';
+
 
 class StorageManager {
 	getToken(){
@@ -80,7 +82,8 @@ class SvelteApp {
 	}
 	
 	async #checkExternalUserDataByToken(){
-		await sleep(1);
+		await whenDocumentReadyStateIsComplete(this.document);
+		
 		const token = this.storage.getToken();
 		if (!token){
 			return;
