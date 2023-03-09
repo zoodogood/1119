@@ -32,6 +32,7 @@ class SvelteApp {
 	document = document;
 	Date = new Date();
 	Hash = this.#createHashController();
+	HashData;
 	enviroment = enviroment;
 	url = parseDocumentLocate(this.document.location);
 	PagesURLs = PagesURLs;
@@ -76,7 +77,7 @@ class SvelteApp {
 	}
 
 	#onHashUpdate(hash){
-		const data = this.data;
+		const data = (this.HashData ||= {hash: {}});
 		data.currentHash = hash;
 		Object.assign(data.hash, hash);
 	}
