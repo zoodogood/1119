@@ -47,7 +47,8 @@ class Router {
 			isSimple: isSimple(router.prefix) && router.isSimple !== false,
 			methods: getMethods(router)
 		}));
-		return this.routes.map(parse);
+		const isAvailable = (router) => router.isHidden !== true;
+		return this.routes.filter(isAvailable).map(parse);
 	}
 
 	handle(route, express){
