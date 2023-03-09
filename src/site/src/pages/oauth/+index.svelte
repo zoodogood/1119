@@ -50,12 +50,14 @@
 		align-items: center;
 		max-width: 100%;
 		overflow: hidden;
+
+		font-size: 0.9em;
 	}
 
 	h1 {
 		color: #3b7c4c;
 		text-transform: uppercase;
-		font-size: 3em;
+		font-size: 2em;
 		font-weight: 100;
 	}
 
@@ -144,9 +146,9 @@
 
 		const previousContent = titleNode.textContent;
 		const content = `Здравствуй, ${ user.username }!`
-		const glitchText = new GlitchText(previousContent, content, {step: 3});
+		const glitchText = new GlitchText(previousContent, content, {step: 2});
 		for (const text of glitchText){
-			await sleep(35);
+			await sleep(25);
 			titleNode.textContent = text;
 		}
 		
