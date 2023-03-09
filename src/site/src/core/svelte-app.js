@@ -1,5 +1,5 @@
 import HashController from '#site/lib/HashController.js';
-import { resolveDate, parseDocumentLocate, omit } from '#lib/safe-utils.js';
+import { parseDocumentLocate, omit, fetchFromInnerApi, sleep } from '#lib/safe-utils.js';
 import enviroment from '#site/enviroment/mod.js';
 
 import PagesURLs from '#static/build/svelte-pages/enum[builded].mjs';
@@ -40,6 +40,7 @@ class SvelteApp {
 		this.lang = this.url.base.lang ?? "ru";
 		
 		this.#checkOrigin();
+		this.#checkExternalUserDataByToken();
 		console.info(this);
 	}
 
@@ -76,11 +77,27 @@ class SvelteApp {
 		const data = this.data;
 		data.currentHash = hash;
 		Object.assign(data.hash, hash);
-
-		data.Date = resolveDate(data.currentHash.day, ...(data.currentHash.date?.split(".") ?? []));
 	}
 	
+	async #checkExternalUserDataByToken(){
+		await sleep(1);
+		const token = this.storage.getToken();
+		if (!token){
+			return;
+		}
 
+		const headers = {Authorization: token};
+		const user = await fetchFromInnerApi("oauth2/user", {headers})
+			.catch(() => {});
+
+		if (!user){
+			// to-do: update
+			alert("PLEASE UPDATE TOKEN");
+			return;
+		}
+
+		this.storage.setUserData(user);
+	}
 }
 
 const svelteApp = new SvelteApp();
