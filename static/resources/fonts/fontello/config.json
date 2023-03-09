@@ -159,6 +159,18 @@
       ]
     },
     {
+      "uid": "6373242453e92e8ce419b8391463867a",
+      "css": "pin-outline",
+      "code": 59529,
+      "src": "typicons"
+    },
+    {
+      "uid": "p57wgnf4glngbchbucdi029iptu8oxb8",
+      "css": "pin",
+      "code": 59536,
+      "src": "typicons"
+    },
+    {
       "uid": "08652194f729167418fb6551b19000e7",
       "css": "github",
       "code": 103,
