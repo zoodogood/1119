@@ -1,25 +1,44 @@
-
+<Layout>
 <main>
-	<h1>Hello 1119!</h1>
+	<h1>Комплекты ошибок:</h1>
 	<ul>
-		<!-- Для каждой итерации создаётся обёртка. Внутрь { } помещаются переменные "извне". В остальном это обычный HTML  -->
 		{#each Component.errors as errorFile, i}
+			{@const [day, month, hour, minute] = errorFile.name.split("-").map(number => `0${ number }`.slice(-2))}
 			<li class = "error-file">
-				{ i }.
-				<p>{ errorFile.name }</p>
-				<br>
+				<p>ID: { i + 1 }</p>
+				<p>от: <code>{ day }.{ month }</code>, <code>{ hour }:{ minute }</code></p>
 			</li>
 		{/each}
 	</ul>
 </main>
+</Layout>
 
 <style>
 
-	h1 {
+	h1 
+	{
 		color: #3b7c4c;
 		text-transform: uppercase;
 		font-size: 2em;
 		font-weight: 100;
+	}
+
+	ul
+	{
+		display: flex;
+		flex-wrap: wrap;
+		list-style: none;
+		gap: 15px;
+	}
+
+	li
+	{
+		padding: 0.5em;
+		border-radius: 15px;
+		background-color: #88888811;
+		width: 400px;
+		height: 300px;
+		flex-grow: 1;
 	}
 
 	.error-file:hover
@@ -32,6 +51,7 @@
 
 <script>
 	import svelteApp from "#site/core/svelte-app.js";
+	import Layout from '#site-component/Layout';
 	import { fetchFromInnerApi } from '#lib/safe-utils.js';
 
 	const Component = {
