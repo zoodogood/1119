@@ -5,7 +5,7 @@ const PREFIX = "/.well-known/pki-validation/<secret>.txt";
 
 class Route extends BaseRoute {
 	prefix = PREFIX;
-	hidden = true;
+	isHidden = true;
 
 	constructor(express){
 		super();
