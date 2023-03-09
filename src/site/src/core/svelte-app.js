@@ -30,7 +30,7 @@ class StorageManager {
 class SvelteApp {
 
 	document = document;
-	data = {hash: {}};
+	Date = new Date();
 	Hash = this.#createHashController();
 	enviroment = enviroment;
 	url = parseDocumentLocate(this.document.location);
