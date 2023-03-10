@@ -18,7 +18,7 @@
 		<nav>
 			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element link">Главная</a>
 			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element link">Навигация</a>
-			<a href = { config.guild.url } class = "navigation-element link">Дискорд</a>
+			<a href = { config.guild.url } class = "navigation-element link" target = "_blank" rel = "noreferrer">Дискорд</a>
 		</nav>
 
 	</section>

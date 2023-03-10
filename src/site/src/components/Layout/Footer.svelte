@@ -32,7 +32,7 @@
 						 <h3 class = "article-aside-header">Навигация</h3>
 						 <ul class = "article-aside-list">
 							  <li><a href = { bot.invite }>Пригласить</a></li>
-							  <li><a href = { config.guild.url }>Дискорд</a></li>
+							  <li><a href = { config.guild.url } target = "_blank" rel = "noreferrer">Дискорд</a></li>
 							  <li><a href = { config.enviroment.github }>Гитхаб</a></li>
 							  <li><a href = "{ config.enviroment.github}/issues/new">Помощь</a></li>
 						 </ul>
