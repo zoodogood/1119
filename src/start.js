@@ -21,7 +21,7 @@ import { Actions } from '#lib/modules/ActionManager.js';
 
 
 client.on("ready", async () => {
-  client.guilds.cache.forEach(async guild => guild.invites = await guild.invites.fetch().catch(() => {}));
+  client.guilds.cache.forEach(async guild => guild.invitesCollection = await guild.invites.fetch().catch(() => {}));
 
   if (config.development) {
     client.user.setActivity("Кабзец тебе, Хозяин", {type: "STREAMING", url: "https://www.twitch.tv/monstercat"});
@@ -54,7 +54,7 @@ client.on("ready", async () => {
 
   client.on("inviteCreate", async (invite) => {
     let guild = invite.guild;
-    guild.invites = await guild.invites.fetch();
+    guild.invitesCollection = await guild.invites.fetch();
   });
 
   client.on("inviteDelete", async (invite) => {
@@ -70,7 +70,7 @@ client.on("ready", async () => {
     const developerChat = client.channels.cache.get(DEVELOPER_CHAT_ID);
     const title = `Бот присоеденился к серверу ${ guild.name }!`;
     developerChat.msg({title, description: `Участников: ${ members.size }\nКол-во знакомых боту людей: ${members.filter(member => DataManager.data.users.some(user => user.id === member.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.members.resolve(whoAdded) ? "Да" : "Нет"}.`, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
-    guild.invites = await guild.invites.fetch();
+    guild.invitesCollection = await guild.invites.fetch();
     DataManager.data.bot.newGuildTimestamp = Date.now();
   });
 
@@ -144,31 +144,17 @@ client.on("ready", async () => {
     if (e.user.bot) {
       let whoAdded = await guild.Audit(audit => audit.target.id === e.id, {type: "BOT_ADD"});
       let permissions = e.permissions.toArray().map(e => Command.permissions[e]).join(", ") || "Отсуствуют";
+      // to-do fix
+      return;
       guild.logSend({title: "Добавлен бот", author: {iconURL: e.user.avatarURL(), name: e.user.tag}, description: `Название: ${e.user.username}\n${e.user.flags.has("VERIFIED_BOT") ? "Верифицирован 👌" : "Ещё не верифицирован ❗"}\nКоличество серверов: \`неизвестно\`\n\n${whoAdded ? `Бота добавил: ${whoAdded.executor.username}` : ""}`, footer: {text: `Предоставленные права: ${permissions[0] + permissions.slice(1).toLowerCase()}`}});
       return;
     }
 
-    // to-do: unknow bug
-    var _data = {
-      label: "fetch is not a function",
-      constructor: guild.invites.constructor.name,
-      keys: Object.keys(guild.invites),
-      values: Object.values(guild.invites).map(String)
-    };
-    console.log(_data);
-
-    if (!guild.invites.fetch){
-      console.log("fetch is not a function");
-      const error = new Error("fetch is not a function");
-      ErrorsHandler.Audit.push(error, {custom: true, _data});
-      return;
-    }
-    
     const guildInvites = await guild.invites.fetch();
 
     
-    const old = guild.invites;
-    guild.invites = guildInvites;
+    const old = guild.invitesCollection;
+    guild.invitesCollection = guildInvites;
     const invite = guildInvites.find(i => old.get(i.code).uses < i.uses);
 
 
