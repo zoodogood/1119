@@ -5,7 +5,7 @@ class Command {
 	async onChatInput(msg, interaction){
 
     if (interaction.mention){
-      msg.msg({title: "Вы не можете просматривать содержимое сумки у других пользователей", color: "#ff0000", delete: 15_000});
+      msg.msg({title: "Вы не можете просматривать содержимое сумки у других пользователей", color: "#ff0000", delete: 15_000, description: "Попросите человека открыть сумку, чтобы вы смогли увидеть содержимое"});
       return;
     }
 
