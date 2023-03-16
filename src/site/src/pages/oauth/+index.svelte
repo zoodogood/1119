@@ -3,7 +3,7 @@
 	<h1 class = "title">Привет неизвестный!</h1>
 	<p class = "token">
 		Ваш токен: {
-			String(code)
+			String(State.code)
 				.split("")
 				.reduce( (acc, symbol, i) => acc.concat((!i || i % 4) ? symbol : `-${ symbol }`) , "")
 		}
@@ -15,9 +15,9 @@
 			<button>Вернуться к сайту</button>
 		</a>
 		
-		{#if code}
+		{#if State.status & (StatusEnum.dataSuccess | StatusEnum.dataPending)}
 			<a href="" class = "button-to-panel">
-				<button disabled = {!user || null}>Панель управления</button>
+				<button disabled = {State.status === StatusEnum.dataPending}>Панель управления</button>
 			</a>
 			{:else}
 			<button
@@ -30,8 +30,8 @@
 
 	</nav>
 
-	{#if user}
-		<p>Теперь вы можете покинуть эту страницу</p>
+	{#if StatusEnum.dataSuccess}
+		<p class = "tip">Теперь вы можете покинуть эту страницу</p>
 	{/if}
 
 </main>
@@ -50,6 +50,10 @@
 		align-items: center;
 		max-width: 100%;
 		overflow: hidden;
+
+		justify-content: center;
+		height: 100vh;
+		padding-bottom: 20vh;
 
 		font-size: 0.9em;
 	}
@@ -92,6 +96,13 @@
 	}
 
 
+	.tip 
+	{
+		position: fixed;
+		bottom: 3em;
+		font-size: 0.7em;
+		opacity: 0.5;
+	}
 
 </style>
 
@@ -104,6 +115,7 @@
 	
 
 	let node;
+
 
 
 
@@ -120,23 +132,32 @@
 		PagesRouter.getPageBy("public").key
 	);
 
-	
 
-	onMount(async () => {
+	const StatusEnum = {
+		noToken: 1,
+		dataPending: 2,
+		dataSuccess: 4,
+		dataReject: 8
+	}
+
+	const State = {
+		status: code ? StatusEnum.dataPending : StatusEnum.noToken,
+		code,
+		redirect
+	}
+	
+	async function realizeDataByToken(code){
 		if (!code){
 			return;
 		}
+		
 
 		const headers = {Authorization: code};
 		const data = await fetchFromInnerApi(`./oauth2/user`, {headers});
-
-		
-		
+			
 		if (typeof data !== "object"){
 			return;
 		}
-
-		
 
 
 		const titleNode = node.querySelector(".title");
@@ -151,8 +172,17 @@
 			await sleep(25);
 			titleNode.textContent = text;
 		}
-		
-		
-		
+
+		return user;
+	}
+
+
+	
+
+	onMount(async () => {
+		const user = await realizeDataByToken(code);
+		State.status = user ? StatusEnum.dataSuccess : StatusEnum.dataReject
 	});
+
+
 </script>
