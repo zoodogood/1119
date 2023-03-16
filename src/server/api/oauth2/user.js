@@ -36,6 +36,11 @@ class TokensUsersExchanger {
 		const user = structuredClone(
 			(!requireOAuth && this.fromCache(token)) || (await this.fromOAuth(token)) || null
 		);
+
+		if (!user?.id){
+			return null;
+		}
+		
 		user.avatarURL = client.rest.cdn.avatar(user.id, user.avatar);
 		return user;
 	}
