@@ -9,7 +9,7 @@ import { setMiddleware } from './middleware.js';
 import { checkPort, getAddress } from './util.js';
 import { sleep } from '#lib/util.js';
 
-const SSLSecret = config.server.hasSSLCertificate
+const SSLSecret = config.server.hasSSLCertificate && config.server.isAvailable
 	&& (await Promise.all([
 		FileSystem.readFile("./folder/SSLSecret/private.key"),
 		FileSystem.readFile("./folder/SSLSecret/certificate.crt"),
