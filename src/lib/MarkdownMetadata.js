@@ -22,6 +22,11 @@ class MarkdownMetadata {
 		return yaml.parse(metadata);
 	}
 
+	assign(content, data){
+		data = Object.assign(data, this.parse(content));
+		return this.replace(content, data);
+	}
+
 	createMetadataFieldIn(content){
 		const field = "---\n\n\n---\n"
 		return `${ field }${ content }`;
