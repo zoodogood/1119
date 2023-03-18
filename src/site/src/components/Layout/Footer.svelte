@@ -1,10 +1,11 @@
 <script>
  	import config from '#config';
-	import appSvelte from '#site/core/svelte-app.js';
+	import svelteApp from '#site/core/svelte-app.js';
   	import PagesRouter from '#site/lib/Router.js';
-  
+	import { dayjs } from '#lib/safe-utils.js';
 	
-	const bot = appSvelte.getBot();
+	const bot = svelteApp.getBot();
+
 </script>
 
 
@@ -44,7 +45,11 @@
 		 <section class = "bottom-container">
 			  <hr class = "bottom-horizontal_line">
 			  <header class = "build-info">
-				<span>При поддержке Expented; Версия: V2.0.0; Сборка от 15.02.2023 14:20</span>
+				<span>
+					При поддержке Expented;
+					Версия: V{ svelteApp.enviroment.version };
+					Сборка от { dayjs(svelteApp.enviroment.buildedTimestamp).format("DD.MM.YYYY HH:mm") }
+				</span>
 			</header>
 
 			  <main class = "bottom-main">
