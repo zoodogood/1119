@@ -75,7 +75,7 @@ class Chest {
           i += quantity;
           openCount += quantity;
       }
-      pushTreasure(item, openCount);
+      pushTreasure(item, quantity);
     }
     
 
