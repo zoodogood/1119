@@ -2,18 +2,13 @@ import * as Util from '#lib/util.js';
 import DataManager from '#lib/modules/DataManager.js';
 import CurseManager from '#lib/modules/CurseManager.js';
 import { Actions } from '#lib/modules/ActionManager.js';
+import CooldownManager from '#lib/modules/CooldownManager.js';
+import client from '#bot/client.js';
 
 class Chest {
-  static callOpen({userData}){
-
-    const nowBirthday = userData.BDay === DataManager.data.bot.dayDate;
-    nowBirthday && (userData.chestBonus = 30 + (userData.chestBonus || 0));
-
-    
-    const openCount = this.calculateOpenCount({userData});
-    delete userData.chestBonus;
-    
-    return this.#openBy({userData, openCount});
+  static callOpen({userData}){    
+    const count = this.calculateOpenCount({userData});
+    return this.getResources({userData, openCount: count});
   }
 
   static applyTreasures({userData, treasures}){
@@ -61,8 +56,8 @@ class Chest {
     return 2 + Math.ceil(bonuses / 3);
   }
 
-  static #openBy({userData, openCount}){
-    const pushTreasure = (item, count) => treasures[item] = treasures[item] ? count + treasures[item] : count;
+  static getResources({userData, openCount}){
+    const pushTreasure = (item, quantity) => treasures[item] = treasures[item] ? quantity + treasures[item] : quantity;
     const treasuresPull = this.TREASURES_PULL[userData.chestLevel ?? 0];
     const treasures = {};
 
@@ -84,48 +79,91 @@ class Chest {
 
   static TREASURES_PULL = [
     [
-      {item: "void", count: 1, _weight: 1},
-      {item: "berrys", count: 1, _weight: 4},
-      {item: "keys", count: Util.random(2, 3), _weight: 9},
-      {item: "trash", count: 0, _weight: 13},
-      {item: "exp", count: Util.random(19, 89), _weight: 22},
-      {item: "coins", count: Util.random(23, 40), _weight: 46},
-      {item: "chilli", count: 1, _weight: 4},
-      {item: "gloves", count: 1, _weight: 1}
+      {item: "void",   quantity: 1, _weight: 1},
+      {item: "berrys", quantity: 1, _weight: 4},
+      {item: "keys",   quantity: Util.random(2, 3), _weight: 9},
+      {item: "trash",  quantity: 0, _weight: 13},
+      {item: "exp",    quantity: Util.random(19, 89), _weight: 22},
+      {item: "coins",  quantity: Util.random(23, 40), _weight: 46},
+      {item: "chilli", quantity: 1, _weight: 4},
+      {item: "gloves", quantity: 1, _weight: 1}
     ],
     [
-      {item: "void", count: 1, _weight: 1},
-      {item: "berrys", count: Util.random(1, 2), _weight: 8},
-      {item: "keys", count: Util.random(3, 5), _weight: 7},
-      {item: "trash", count: 0, _weight: 3},
-      {item: "exp", count: Util.random(39, 119), _weight: 22},
-      {item: "coins", count: Util.random(88, 148), _weight: 54},
-      {item: "chilli", count: 1, _weight: 3},
-      {item: "gloves", count: 1, _weight: 2}
+      {item: "void",    quantity: 1, _weight: 1},
+      {item: "berrys",  quantity: Util.random(1, 2), _weight: 8},
+      {item: "keys",    quantity: Util.random(3, 5), _weight: 7},
+      {item: "trash",   quantity: 0, _weight: 3},
+      {item: "exp",     quantity: Util.random(39, 119), _weight: 22},
+      {item: "coins",   quantity: Util.random(88, 148), _weight: 54},
+      {item: "chilli",  quantity: 1, _weight: 3},
+      {item: "gloves",  quantity: 1, _weight: 2}
     ],
     [
-      {item: "void", count: 1, _weight: 1},
-      {item: "berrys", count: Util.random(1, 3), _weight: 12},
-      {item: "keys", count: 9, _weight: 1},
-      {item: "exp", count: Util.random(229), _weight: 22},
-      {item: "coins", count: Util.random(304, 479), _weight: 62},
-      {item: "gloves", count: 1, _weight: 1},
-      {item: "bonus", count: 5, _weight: 1}
+      {item: "void",    quantity: 1, _weight: 1},
+      {item: "berrys",  quantity: Util.random(1, 3), _weight: 12},
+      {item: "keys",    quantity: 9, _weight: 1},
+      {item: "exp",     quantity: Util.random(229), _weight: 22},
+      {item: "coins",   quantity: Util.random(304, 479), _weight: 62},
+      {item: "gloves",  quantity: 1, _weight: 1},
+      {item: "bonus",   quantity: 5, _weight: 1}
     ]
   ];
+}
+
+
+class ChestManager {
+  static open({userData}){
+    const nowBirthday = userData.BDay === DataManager.data.bot.dayDate;
+    nowBirthday && (userData.chestBonus = 30 + (userData.chestBonus || 0));
+
+    const {treasures, openCount} = Chest.callOpen({userData});
+    delete userData.chestBonus;
+    Chest.applyTreasures({userData, treasures});
+
+    Object.entries(treasures)
+      .forEach((item, quantity) => this.handleTreasure(item, quantity, userData));
+
+    return {treasures, openCount};
+  }
+
+  static handleTreasure(item, quantity, userData){
+    switch (item){
+        case "keys":
+          if (quantity > 99){
+            const user = client.users.cache.get(userData.id);
+            user.action(Actions.globalQuest, {name: "bigHungredBonus"});
+          }
+          break;
+    }
+  }
+
+  static cooldown = {
+    key: "CD_32",
+    for(userData){
+      const cooldown = CooldownManager.api(userData, this.key);
+      cooldown.install = function(){
+        const timestamp = +Util.dayjs().endOf("date");
+        this.setCooldownThreshold(timestamp);
+        return this;
+      }
+
+      return cooldown;
+    }
+  }
 }
 
 class Command {
 
 	async onChatInput(msg, interaction){
-
-    const cooldown = interaction.userData.CD_32 - Date.now();
-    if (cooldown > 0) {
-      msg.msg({title: `Сундук заперт, возвращайтесь позже!`, color: "#ffda73", footer: {text: "До открытия: " + Util.timestampToDate(cooldown), iconURL: "https://vignette.wikia.nocookie.net/e2e-expert/images/b/b3/Chest.png/revision/latest?cb=20200108233859"}});
-      return;
-    }
-
     const userData = interaction.userData;
+
+    const cooldown = ChestManager.cooldown.for(userData);
+    if (cooldown.checkYet()){
+      const diffContent = Util.timestampToDate( -cooldown.diff() );
+      msg.msg({title: `Сундук заперт, возвращайтесь позже!`, color: "#ffda73", footer: {text: `До открытия: ${ diffContent }` , iconURL: "https://vignette.wikia.nocookie.net/e2e-expert/images/b/b3/Chest.png/revision/latest?cb=20200108233859"}});
+      // return;
+    }
+    
 
     const chest = {
       icon: ["https://cdn.discordapp.com/attachments/629546680840093696/778990528947027988/ezgif.com-gif-maker.gif", "https://cdn.discordapp.com/attachments/629546680840093696/778990564779229234/ezgif.com-gif-maker_1.gif"].random(),
@@ -133,45 +171,41 @@ class Command {
     }
 
     
-    const {treasures, openCount} = Chest.callOpen({userData});
-    Chest.applyTreasures({userData, treasures});
+    const {treasures, openCount} = ChestManager.open({userData});
+    
 
     let actualOpenCount = openCount;
 
 
-    
-
-    const handleTreasure = (item, count) => {
+    const handleTreasure = (item, quantity) => {
       switch (item) {
         case "trash":
-          actualOpenCount -= count
+          actualOpenCount -= quantity
           delete treasures.trash;
           break;
 
         case "void":
           Object.assign(chest, { color: "#3d17a0", icon: "https://media.discordapp.net/attachments/631093957115379733/842122055527694366/image-removebg-preview.png" });
-          itemsOutput.push( `${ Util.ending(count, "Уров", "ней", "ень", "ня")} нестабильности <a:void:768047066890895360>` );
+          itemsOutput.push( `${ Util.ending(quantity, "Уров", "ней", "ень", "ня")} нестабильности <a:void:768047066890895360>` );
           break;
 
         case "keys":
-          itemsOutput.push( `${ Util.ending(count, "Ключ", "ей", "", "а")} 🔩` );
-
-          if (count > 99){
-            msg.author.action(Actions.globalQuest, {name: "bigHungredBonus"});
-          }
+          itemsOutput.push( `${ Util.ending(quantity, "Ключ", "ей", "", "а")} 🔩` );
           break;
 
         case "coins":
-          itemsOutput.push( `${ Util.ending(count, "Коин", "ов", "", "а")} <:coin:637533074879414272>` );
+          itemsOutput.push( `${ Util.ending(quantity, "Коин", "ов", "", "а")} <:coin:637533074879414272>` );
           break;
 
         case "exp":
-          let emoji = ["<:crys:637290406958202880>", "<:crys2:763767958559391795>", "<:crys3:763767653571231804>"][Math.min(2, Math.floor(count / 10))];
-          itemsOutput.push( `${ Util.ending(count, "Опыт", "а", "", "а")} ${emoji}` );
+          (() => {
+            const emoji = ["<:crys:637290406958202880>", "<:crys2:763767958559391795>", "<:crys3:763767653571231804>"][Math.min(2, Math.floor(quantity / 10))];
+            itemsOutput.push( `${ Util.ending(quantity, "Опыт", "а", "", "а")} ${ emoji }` );
+          })();
           break;
 
         case "berrys":
-          itemsOutput.push( `${ Util.ending(count, "Клубник", "", "а", "и")} <:berry:756114492055617558>` );
+          itemsOutput.push( `${ Util.ending(quantity, "Клубник", "", "а", "и")} <:berry:756114492055617558>` );
           break;
 
         case "cake":
@@ -179,17 +213,15 @@ class Command {
           break;
 
         case "bonus":
-          itemsOutput.push( `${ Util.ending(count, "Сокровищ", "", "е", "а")} для этого сундука <a:chest:805405279326961684>`);
+          itemsOutput.push( `${ Util.ending(quantity, "Сокровищ", "", "е", "а")} для этого сундука <a:chest:805405279326961684>`);
           break;
 
         case "gloves":
-          
-
-          itemsOutput.push( `${ Util.ending(count, "Перчат", "ок", "ка", "ки")} 🧤`);
+          itemsOutput.push( `${ Util.ending(quantity, "Перчат", "ок", "ка", "ки")} 🧤`);
           break;
 
         case "chilli":
-          itemsOutput.push( `${ Util.ending(count, "Пер", "цев", "ец", "ца")} 🌶️`);
+          itemsOutput.push( `${ Util.ending(quantity, "Пер", "цев", "ец", "ца")} 🌶️`);
           break;
 
         default:
@@ -204,7 +236,7 @@ class Command {
 
     msg.author.action(Actions.openChest, {msg, interaction, treasures});
 
-    userData.CD_32 = new Date().setHours(23, 59, 0) + 120000;
+   
     msg.author.action(Actions.globalQuest, {name: "firstChest"});
 
     const embed = {
@@ -226,7 +258,12 @@ class Command {
 
     if (itemsOutput.length === 0 && Util.random(2) === 0){
       const curse = CurseManager.generate({hard: null, user: interaction.user, guild: interaction.guild});
+
       CurseManager.init({user: interaction.user, curse});
+      await Util.sleep(3000);
+      msg.msg({
+        description: `${ interaction.user }, вы были прокляты. В пустом сундуке и не такое встречается.. 🪸`
+      });
     }
   }
 
@@ -244,4 +281,4 @@ class Command {
 };
 
 export default Command;
-export { Chest };
+export { Chest, ChestManager };
