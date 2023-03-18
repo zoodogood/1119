@@ -15,7 +15,7 @@ class Route extends BaseRoute {
 
 	async get(request, response){
 		const id = request.params[0];
-		const content = await ArticlesManager.getArticleContent(key);
+		const content = await ArticlesManager.getArticleContent(id);
 		if (content === null){
 			response.status(404).send();
 		}
