@@ -291,3 +291,4 @@ export {
  }
 
  export { relativeSiteRoot } from '#site/lib/util.js';
+ export { MarkdownMetadata } from './MarkdownMetadata.js';
