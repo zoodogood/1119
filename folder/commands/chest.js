@@ -244,3 +244,4 @@ class Command {
 };
 
 export default Command;
+export { Chest };
