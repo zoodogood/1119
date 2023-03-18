@@ -20,7 +20,7 @@ class Route extends BaseRoute {
 		}
 		
 
-		const rawUser = await TokensUsersExchanger.getUserRaw(token, {requireOAuth: true});
+		const rawUser = await TokensUsersExchanger.getUserRaw(token);
 		if (rawUser === null){
 			response.status(401).send(`"Authorization failed"`);
 			return;
