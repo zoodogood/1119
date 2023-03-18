@@ -10,11 +10,13 @@ import CounterManager from "./CounterManager.js";
 import ErrorsHandler from "./ErrorsHandler.js";
 import EventsManager from './EventsManager.js';
 import GuildVariablesManager from './GuildVariablesManager.js';
+import CooldownManager from "./CooldownManager.js";
 import Properties from "./Properties.js";
 import Executor from "./Executor.js";
 
 export {
 	DataManager, Template, CurseManager, BossManager, TimeEventsManager,
 	CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler,
-	EventsManager, GuildVariablesManager, Properties, Executor
+	EventsManager, GuildVariablesManager, CooldownManager, 
+	Properties, Executor
 };
