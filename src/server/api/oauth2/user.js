@@ -32,7 +32,7 @@ class TokensUsersExchanger {
 		return user;
 	}
 
-	static async getUserRaw(token, {requireOAuth}){
+	static async getUserRaw(token, {requireOAuth} = {}){
 		const user = structuredClone(
 			(!requireOAuth && this.fromCache(token)) || (await this.fromOAuth(token)) || null
 		);
