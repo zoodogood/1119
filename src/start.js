@@ -38,6 +38,8 @@ client.on("ready", async () => {
 
   client.on("messageCreate", async message => {
 
+    DataManager.data.bot.messagesToday++;
+    
     if (message.author.bot) {
       return;
     }
@@ -50,6 +52,7 @@ client.on("ready", async () => {
     if (commandContext && CommandsManager.checkAvailable(command, commandContext)){
       CommandsManager.execute(command, commandContext);
     }
+
   });
 
   client.on("inviteCreate", async (invite) => {
