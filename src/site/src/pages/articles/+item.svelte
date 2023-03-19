@@ -3,19 +3,19 @@
 	{#await articlePromise}
 		<h2>Загрузка основного контента</h2>
 	{:then data} 
-		{@const source = data.markdown}
+		{@const source = data.content}
 		<main class = "article-container">
 			<section class = "article-info">
 				<group class = "article-author">
-					<img src={data.author.avatarURL} alt="avatar">
+					<img src={data.author?.avatarURL} alt="avatar">
 					<span>
 						<b>Автор:</b>
-						<p>{data.author.tag}</p>
+						<p>{data.author?.username ?? null}#{data.author?.discriminator ?? "0000"}</p>
 					</span>
 				</group>
 
 				<group class = "article-statistic">
-					<p>Последнее редактирование: <code>22.02.2023 16:39</code></p>
+					<p>Последнее редактирование: <code>{dayjs(data.timestamp).format("DD.MM.YYYY HH:mm")}</code></p>
 					<p>Время чтения: ~{ timestampToDate(data.wordsCount * AVERAGE_PER_WORD ) }</p>
 				</group>
 
@@ -150,6 +150,7 @@
 	{
 		border-radius: 50%;
 		height: 100%;
+		aspect-ratio: 1 / 1;
 	}
 
 	.download-button
@@ -167,7 +168,7 @@
 	import Icon from '#site-component/iconic';
 	
 	import svelteApp from '#site/core/svelte-app.js';
-  	import { fetchFromInnerApi, timestampToDate } from '#lib/safe-utils.js';
+  	import { fetchFromInnerApi, MarkdownMetadata, timestampToDate, dayjs } from '#lib/safe-utils.js';
   	import PagesRouter from '#site/lib/Router.js';
 
 	const key = svelteApp.url.queries.id;
@@ -180,20 +181,24 @@
 			throw new Error("Response is empty");
 		}
 
-		const wordsCount = markdown
+		const {author, timestamp, tags} = MarkdownMetadata.parse(markdown) ?? {};
+		const content = MarkdownMetadata.removeMetadataFieldIn(markdown);
+		
+		
+
+		const wordsCount = content
 			.split(" ")
 			.filter(word => word.match(/[a-zа-я]/i))
 			.length;
 
 
 		return {
+			content,
 			markdown,
-			author: {
-				avatarURL: "https://animalsglobe.ru/wp-content/uploads/2013/01/enot.jpg",
-				tag: "Енот#8040"
-			},
-			timestamp: "123",
-			wordsCount
+			author,
+			timestamp,
+			wordsCount,
+			tags
 		};
 	})();
 
