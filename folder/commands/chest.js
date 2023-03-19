@@ -161,7 +161,7 @@ class Command {
     if (cooldown.checkYet()){
       const diffContent = Util.timestampToDate( -cooldown.diff() );
       msg.msg({title: `Сундук заперт, возвращайтесь позже!`, color: "#ffda73", footer: {text: `До открытия: ${ diffContent }` , iconURL: "https://vignette.wikia.nocookie.net/e2e-expert/images/b/b3/Chest.png/revision/latest?cb=20200108233859"}});
-      // return;
+      return;
     }
     
 
