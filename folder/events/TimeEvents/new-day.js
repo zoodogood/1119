@@ -1,20 +1,33 @@
 import { client } from '#bot/client.js';
 import * as Util from '#lib/util.js';
 import {TimeEventsManager, BossManager, DataManager} from '#lib/modules/mod.js';
+import { dayjs } from '#lib/util.js';
 
 class Event {
 	async run(isLost){
-		let next = new Date(Date.now() + 14500000).setHours(23, 59, 50) - Date.now();
+
+		const Data = DataManager.data;
+
+		
+		let next = dayjs().endOf("date").add(1, "second") - Date.now();
 		TimeEventsManager.create("new-day", next);
 		
+		Data.dailyAudit[ Data.bot.currentDay ] = {
+			enterToPages: Data.site.entersToPagesToday,
+			commandsUsed: Data.bot.commandsUsedToday,
+			messages: Data.bot.messagesToday
+		};
 
-		!isLost && await Util.sleep(20000);
+		Data.site.entersToPagesToday = 0;
+		Data.bot.commandsUsedToday = 0;
+		Data.bot.messagesToday = 0;
 
 		const today = Util.toDayDate( Date.now() );
-		DataManager.data.bot.dayDate = today;
-		DataManager.data.bot.currentDay = Util.timestampDay( Date.now() );
+		Data.bot.dayDate = today;
+		Data.bot.currentDay = Util.timestampDay( Date.now() );
 
-		DataManager.data.bot.grempen = "";
+
+		Data.bot.grempen = "";
 		let arr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e"]; //0123456789abcdef
 		for (let i = 1; i < 7; i++) {
 			DataManager.data.bot.grempen += arr.random({pop: true});
@@ -22,7 +35,7 @@ class Event {
 
 		let berryRandom = [{_weight: 10, prise: 1}, {_weight: 1, prise: -7}, {_weight: 5, prise: 3}].random({weights: true}).prise;
 		let berryTarget = Math.sqrt(client.users.cache.size / 3) * 7 + 200;
-		DataManager.data.bot.berrysPrise += Math.round((berryTarget - DataManager.data.bot.berrysPrise) / 30 + berryRandom);
+		Data.bot.berrysPrise += Math.round((berryTarget - Data.bot.berrysPrise) / 30 + berryRandom);
 
 		
 
@@ -50,14 +63,14 @@ class Event {
 
 		
 
-		DataManager.data.guilds
+		Data.guilds
 			.forEach(e => 
 				e.commandsLaunched = Object.values(e.commandsUsed)
 				.reduce((acc, e) => acc + e, 0)
 			);
 
-		const commandsLaunched = Object.values(DataManager.data.bot.commandsUsed).reduce( ((acc, e) => acc + e), 0);
-		DataManager.data.bot.commandsLaunched = commandsLaunched;
+		const commandsLaunched = Object.values(Data.bot.commandsUsed).reduce( ((acc, e) => acc + e), 0);
+		Data.bot.commandsLaunched = commandsLaunched;
 	}
 
 	
