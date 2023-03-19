@@ -27,7 +27,7 @@ class Event extends BaseEvent {
 
 		await CommandsManager.importCommands();
 		CommandsManager.createCallMap();
-
+	
 
 
 		TimeEventsManager.handle();
@@ -46,31 +46,37 @@ class Event extends BaseEvent {
 	}
 
 	checkDataManagerFullset(){
-		const data = DataManager.data;
+		const Data = DataManager.Data;
 
-		assert(data.users);
-		assert(data.guilds);
-		assert(data.bot);
+		assert(Data.users);
+		assert(Data.guilds);
+		assert(Data.bot);
 		const defaultData = {
 			commandsUsed: {}
 		}
 
 		Object.assign(
-			data.bot, 
-			omit(defaultData, (k) => k in data.bot === false)
+			Data.bot, 
+			omit(defaultData, (k) => k in Data.bot === false)
 		);
 
-		data.site ||= {};
-		data.site.enterToPages ||= {_all: 0};
+		Data.bot.messagesToday ||= 0;
+
+		Data.site ||= {};
+		Data.site.enterToPages ||= {};
+		Data.site.entersToPages ||= 0;
+		Data.site.entersToPagesToday ||= 0;
+
+		Data.dailyAudit ||= {};
 
 		const now = Date.now();
-		data.users.forEach(user =>
+		Data.users.forEach(user =>
 			Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
 		);
-		data.users = data.users.sort((a, b) => b.level - a.level);
+		Data.users = Data.users.sort((a, b) => b.level - a.level);
 
-		data.bot.berrysPrise ||= 200;
-		data.bot.grempen ||= "123456";
+		Data.bot.berrysPrise ||= 200;
+		Data.bot.grempen ||= "123456";
 	}
 
 	options = {
