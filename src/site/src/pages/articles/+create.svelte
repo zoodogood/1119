@@ -57,8 +57,6 @@
 			"Content-Type": "application/octet-stream",
 			"FileName": file.name
 		};
-
-		console.dir(file);
 		
 
 		const answer = await fetchFromInnerApi(
@@ -68,7 +66,7 @@
 
 		new Dialog({
 			target: document.body,
-			props: {title: "Ответ сервера:", description: answer, useClassic: true}
+			props: {title: "Ответ сервера:", description: JSON.stringify(answer, null, 2), useClassic: true}
 		});
 		button.removeAttribute("disabled");
 	});
