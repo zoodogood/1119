@@ -18,6 +18,7 @@ class Route extends BaseRoute {
 		const content = await ArticlesManager.getArticleContent(id);
 		if (content === null){
 			response.status(404).send();
+			return;
 		}
 
 		response.json(content);
