@@ -229,7 +229,7 @@ class Command {
       }
     }
 
-    const itemsOutput = [];
+    const items = [];
     Object.entries(treasures)
       .forEach(([item, quantity]) => handleTreasure(item, quantity));
 
@@ -239,11 +239,12 @@ class Command {
    
     msg.author.action(Actions.globalQuest, {name: "firstChest"});
 
+    const itemsOutput = structureClone(items);
     const embed = {
       title: actualOpenCount > 30 ? "Невероятный сундук" : "Ежедневный сундук",
-      description: (itemsOutput.length) ? `БОНУСОВ СУНДУКА — ${ actualOpenCount }:` : "Ежедневный сундук — пуст. Всего-лишь пара бесполезных крабьих ножек и горы песка... <a:penguin:780093060628873296>",
+      description: (items.length) ? `БОНУСОВ СУНДУКА — ${ actualOpenCount }:` : "Ежедневный сундук — пуст. Всего-лишь пара бесполезных крабьих ножек и горы песка... <a:penguin:780093060628873296>",
       color: chest.color,
-      thumbnail: !itemsOutput.length ? chest.icon : null,
+      thumbnail: !items.length ? chest.icon : null,
       footer: {text: `Уровень сундука: ${ userData.chestLevel + 1 }`}
     }
     const message = await msg.msg(embed);
@@ -256,7 +257,7 @@ class Command {
       await message.msg(embed);
     }
 
-    if (itemsOutput.length === 0 && Util.random(2) === 0){
+    if (items.length === 0 && Util.random(2) === 0){
       const curse = CurseManager.generate({hard: null, user: interaction.user, guild: interaction.guild});
 
       CurseManager.init({user: interaction.user, curse});
