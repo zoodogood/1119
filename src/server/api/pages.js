@@ -28,11 +28,12 @@ class Route extends BaseRoute {
 	statistic = {
 		increment(request){
 			const subpath = parsePagesPath(request.path).subpath.join("/");
-			const siteData = DataManager.data.site.enterToPages;
+			const siteData = DataManager.data.site;
 			
-			siteData[subpath] ||= 0;
-			siteData[subpath]++;
-			siteData._all++;
+			siteData.enterToPages[subpath] ||= 0;
+			siteData.enterToPages[subpath]++;
+			siteData.entersToPages++;
+			siteData.entersToPagesToday++;
 		}
 	}
 }
