@@ -20,8 +20,9 @@
 			<input type="text" placeholder = " Фильтровать" bind:value = { Search.value }>
 			<ul>
 				{#if list.length}
-					{#each list as name}
-					<li>{ name }</li>
+					{#each list as key}
+						{@const href = `${ PagesRouter.relativeToPage(PagesRouter.getPageBy("articles/item").key) }?id=${ key }`}
+						<a {href}><li>{ key }</li></a>
 					{/each}
 				{:else}
 					<p>Здесь пусто..</p>
@@ -52,11 +53,18 @@
 	{
 		display: block;
 		background-color: #88888822;
-		width: 300px;
+		min-width: 300px;
 		height: 200px;
 		border-radius: 15px;
 		padding: 20px;
+		padding-right: 1.5em;
 		animation: article-apparance 1s;
+		color: var( --text-theme-accent );
+	}
+
+	.articles-list a
+	{
+		text-decoration: none;
 	}
 
 	@keyframes article-apparance
