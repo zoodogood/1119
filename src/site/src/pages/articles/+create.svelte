@@ -52,7 +52,13 @@
 		const files = inputEvent.target.files;
 		const file = files[0];
 
-		const headers = {Authorization: svelteApp.storage.getToken()};
+		const headers = {
+			Authorization: svelteApp.storage.getToken(),
+			"Content-Type": "application/octet-stream",
+			"FileName": file.name
+		};
+
+		console.dir(file);
 		
 
 		const answer = await fetchFromInnerApi(
