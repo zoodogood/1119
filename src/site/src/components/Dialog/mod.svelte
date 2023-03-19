@@ -43,7 +43,7 @@
 			<article class = "classic-dialog">
 				<p>{ title }</p>
 				<span>{ description }</span>
-				<button on:click = { close }>Закрыть</button>
+				<button on:click = { close }>⛌, или кликните вне диалогового окна</button>
 			</article>
 		{/if}
 		<slot/>
@@ -71,6 +71,21 @@
 		 border: none;
 
 		 overflow: auto;
+		 animation: apparance 1s;
+		 box-shadow: 0px 3px 30px -15px var( --main-color );
+	}
+
+	@keyframes apparance
+	{
+		0% {
+			opacity: 0.5;
+			transform: translate(-50%, -100vh);
+		}
+
+		100% {
+			opacity: 1;
+			transform: translate(-50%, -50%);
+		}
 	}
 
 	:global(html):has(dialog)
@@ -90,10 +105,30 @@
 		align-items: center;
 		gap: 1em;
 
-		font-family: 'PTMono';
 		color: var( --text-theme-accent );
 		border: 1px solid var( --main-color );		
+
+		white-space: pre-wrap;
+		overflow: auto;
 	}
+
+	.classic-dialog p 
+	{
+		font-family: 'PTMono', sans-serif;
+		text-transform: uppercase;
+		opacity: 0.8;
+		font-size: 0.7em;
+	}
+
+	.classic-dialog span
+	{
+		position: relative;
+		padding: 1em;
+		align-self: baseline;
+		max-width: 100%;
+	}
+
+	
 
 	.classic-dialog::before
 	{
@@ -103,6 +138,6 @@
 		width: 70%;
 
 		background-color: var( --main-color );
-		opacity: 0.5;
+		opacity: 0.2;
 	}
 </style>
