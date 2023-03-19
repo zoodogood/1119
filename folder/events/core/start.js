@@ -46,7 +46,7 @@ class Event extends BaseEvent {
 	}
 
 	checkDataManagerFullset(){
-		const Data = DataManager.Data;
+		const Data = DataManager.data;
 
 		assert(Data.users);
 		assert(Data.guilds);
