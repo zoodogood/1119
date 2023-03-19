@@ -20,6 +20,16 @@ class StorageManager {
 		return JSON.parse(localStorage.getItem("user") ?? null);
 	}
 
+	yetTokenHeat(){
+		if (sessionStorage.tokenHeat < Date.now()){
+			return true;
+		}
+
+		const HEAT_DELAY = 60_000 * 5;
+		sessionStorage.tokenHeat = HEAT_DELAY;
+		return false;
+	}
+
 	setUserData(user){
 		const ignoreKeysList = ["guilds"];
 		user = omit(user, (key) => !ignoreKeysList.includes(key));
@@ -89,6 +99,12 @@ class SvelteApp {
 		if (!token){
 			return;
 		}
+		
+		const yet = this.storage.yetTokenHeat();
+		if (yet){
+			return;
+		}
+
 
 		const headers = {Authorization: token};
 		const user = await fetchFromInnerApi("oauth2/user", {headers})
