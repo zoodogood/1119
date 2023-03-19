@@ -60,6 +60,9 @@ class Event extends BaseEvent {
 			omit(defaultData, (k) => k in data.bot === false)
 		);
 
+		data.site ||= {};
+		data.site.enterToPages ||= {_all: 0};
+
 		const now = Date.now();
 		data.users.forEach(user =>
 			Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
