@@ -109,8 +109,6 @@ class ErrorsHandler {
 		const regular = new RegExp(`(?<fileOfError>${ projectPath }/.+?\\.js):(?<strokeOfError>\\d+)`);
 		const groups = stack.match(regular)?.groups;
 
-		console.log({projectPath});
-
 		
 		if (!groups){
 			return undefined;
