@@ -244,6 +244,9 @@ class CommandsManager {
 			if (botData){
 				botData.commandsUsed[commandOptions.id] ||= 0;
 				botData.commandsUsed[commandOptions.id]++;
+
+				botData.commandsUsedToday ||= 0;
+				botData.commandsUsedToday++;
 			}
 		},
 
