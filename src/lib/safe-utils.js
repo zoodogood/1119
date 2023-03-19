@@ -211,7 +211,6 @@ function toLocaleDeveloperString(value){
  }
 
  function parseDocumentLocate(location){
-	const url = location.pathname;
 	const queries = Object.fromEntries(
 		decodeURI(location.search)
 		.slice(1)
@@ -219,21 +218,27 @@ function toLocaleDeveloperString(value){
 		.map((raw) => raw.split("="))
 	);
 
-	const key = config.server.paths.site.split("/")
-		.at(-1);
-
-	const regex = new RegExp(key);
-	const index = (url.match(regex)?.index ?? 0) + key.length;
-	const base = url.slice(0, index);
-	const subpath = url.slice(index)
-		.split("/")
-		.filter(Boolean);
+	const {subpath, base} = parsePagesPath(location.pathname);
 
 	return {
 		subpath,
 		queries, 
 		base: parseLocationBase(base)
 	};	
+}
+
+function parsePagesPath(path){
+	const key = config.server.paths.site.split("/")
+		.at(-1);
+
+	const regex = new RegExp(key);
+	const index = (path.match(regex)?.index ?? 0) + key.length;
+	const base = path.slice(0, index);
+	const subpath = path.slice(index)
+		.split("/")
+		.filter(Boolean);
+
+	return {base, subpath};
 }
 
 function parseLocationBase(base){
@@ -284,6 +289,7 @@ export {
 
 	resolveGithubPath,
 	parseDocumentLocate,
+	parsePagesPath,
 	parseLocationBase,
 
 	fetchFromInnerApi,
