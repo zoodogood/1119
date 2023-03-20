@@ -44,7 +44,9 @@ class BaseEvent {
  
 	  	if (this.checkCondition?.(...args) === false)
 		 	return;
-		
+			
+		this.options.once && this.freeze();
+
 		try {
 			await this.run(...args);
 		} catch (error){
