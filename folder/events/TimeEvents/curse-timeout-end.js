@@ -11,6 +11,9 @@ class Event {
 		}
 		
 		const curses = user.data.curses;
+		if (!curses){
+			return;
+		}
 		
 		const compare = curse => curse.timestamp === timestamp;
 		const curse = curses.find(compare);
