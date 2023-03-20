@@ -1,5 +1,5 @@
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
-import { resolveGithubPath } from '#lib/util.js';
+import { dayjs, resolveGithubPath } from '#lib/util.js';
 import Path from 'path';
 import FileSystem from 'fs';
 import { Collection } from '@discordjs/collection';
@@ -13,7 +13,7 @@ class ErrorsAudit {
 		directory: `${ process.cwd() }/folder/data/errors`,
 		write(data){
 			const now = new Date();
-			const date = `${ now.getDate() }-${ now.getMonth() + 1 }-${ now.getHours() }-${ now.getMinutes() }`;
+			const date = dayjs().format("DD-MM HH:mm");
 		  	const path = `${ this.directory }/${ date }.json`;
 			
 		  	data = JSON.stringify(data);
