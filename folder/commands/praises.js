@@ -75,6 +75,10 @@ class Command {
           let answer = await msg.channel.awaitMessage({user: msg.author, remove: true})?.content;
           context.questionMessage.delete();
 
+          if (!answer){
+            break;
+          }
+
           if (answer === "+")
             answer = user.praise
               .map((id, i) => i + 1)
