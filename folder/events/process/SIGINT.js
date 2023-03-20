@@ -9,6 +9,7 @@ class Event extends BaseEvent {
 	}
 
 	async run(){
+		process.emit("exit");
 		process.exit(1);
 	}
 

@@ -16,7 +16,8 @@ class Event extends BaseEvent {
 	}
 
 	options = {
-		name: "process/exit"
+		name: "process/exit",
+		once: true
 	}
 }
 
