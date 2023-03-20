@@ -13,7 +13,7 @@ class ErrorsAudit {
 		directory: `${ process.cwd() }/folder/data/errors`,
 		write(data){
 			const now = new Date();
-			const date = dayjs().format("DD+MM-HH+mm");
+			const date = dayjs().format("DD-MM-HH-mm");
 		  	const path = `${ this.directory }/${ date }.json`;
 			
 		  	data = JSON.stringify(data);
