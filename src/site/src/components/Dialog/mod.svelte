@@ -93,10 +93,12 @@
 		overflow: hidden;
 	}
 
+	
+
 	.classic-dialog
 	{
 		background-color: var( --background-theme-accent );
-		padding: 30px;
+		padding: calc(10px + 1vw);
 		border-radius: 15px;
 		min-width: 400px;
 
@@ -112,6 +114,27 @@
 		overflow: auto;
 	}
 
+	@media (max-width: 700px){
+		dialog
+		{
+			max-width: 95vw;
+		}
+
+		.classic-dialog
+		{
+			width: 100%;
+			min-width: 0;
+			padding: 10px;
+		}
+
+		.classic-dialog span
+		{
+			padding: 0.5em;
+		}
+	}
+
+
+
 	.classic-dialog p 
 	{
 		font-family: 'PTMono', sans-serif;
@@ -123,7 +146,7 @@
 	.classic-dialog span
 	{
 		position: relative;
-		padding: 1em;
+		padding: calc(3px + 0.3vw);
 		align-self: baseline;
 		max-width: 100%;
 	}
