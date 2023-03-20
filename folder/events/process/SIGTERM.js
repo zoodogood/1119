@@ -4,7 +4,7 @@ import { DataManager, TimeEventsManager, ErrorsHandler } from '#lib/modules/mod.
 
 class Event extends BaseEvent {
 	constructor(){
-		const EVENT = "SIGINT";
+		const EVENT = "SIGTERM";
 		super(process, EVENT);
 	}
 
@@ -13,7 +13,7 @@ class Event extends BaseEvent {
 	}
 
 	options = {
-		name: "process/SIGINT"
+		name: "process/SIGTERM"
 	}
 }
 
