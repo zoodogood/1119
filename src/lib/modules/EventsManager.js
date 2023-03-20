@@ -37,6 +37,10 @@ class BaseEvent {
  
 	freeze(){
 	  this.isListeningNow = false;
+
+	  const callback  = this.callback;
+	  const eventName = this.eventName;
+	  const target    = this.eventTarget;
 	  target.removeListener(eventName, callback);
 	}
  
