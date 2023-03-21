@@ -159,6 +159,7 @@
 		padding: 1em;
 		width: 100%;
 		white-space: pre;
+		border-radius: 5px;
 	}
 
 	.arrayErrorElement
