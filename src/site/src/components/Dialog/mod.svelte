@@ -5,6 +5,8 @@
 	export let useClassic;
 	export let title;
 	export let description;
+	export let preventDestroy = false;
+	export let hide = false;
 
 	const self = getCurrentComponent();
 	
@@ -13,19 +15,27 @@
 
 	const dispatch = createEventDispatcher();
 	const close = () => {
+		if (!ref.open){
+			return;
+		}
+
 		ref.close();
 		history.state.isModal && history.go(-1);
 		dispatch.call(ref, "close");
 	};
-	const destroy = () => self.$destroy();
+	const open = () => {
+		if (ref.open){
+			return;
+		}
 
-
-	onMount(() => {
-		ref.showModal()
+		ref.showModal();
 		globalThis.history.pushState({isModal: true}, "Open modal");
 		addEventListener("popstate", close);
-		
-	});
+	};
+	const destroy = () => !preventDestroy && self.$destroy();
+
+	$: 
+		if (ref && !hide) open();
 
 	onDestroy(() => {
 		removeEventListener("popstate", close);
