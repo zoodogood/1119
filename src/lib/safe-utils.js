@@ -3,6 +3,7 @@ import config from "#config";
 import { ending } from '@zoodogood/utils/primitives';
 import { omit, CustomCollector, GlitchText } from '@zoodogood/utils/objectives';
 import dayjs from "dayjs";
+import yaml from "yamljs";
 import Path from 'path';
 import FileSystem from 'fs/promises';
 
@@ -272,6 +273,7 @@ export {
 	CustomCollector,
 	GlitchText,
 	dayjs,
+	yaml,
 
 	toLocaleDeveloperString,
 	sleep,
