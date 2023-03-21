@@ -1,5 +1,6 @@
 <script>
-	import { onMount, onDestroy, createEventDispatcher } from "svelte";
+	import { onDestroy, createEventDispatcher } from "svelte";
+	import Icon from '#site-component/iconic';
   	import { get_current_component as getCurrentComponent } from "svelte/internal";
 
 	export let useClassic;
@@ -53,7 +54,7 @@
 			<article class = "classic-dialog">
 				<p>{ title }</p>
 				<span>{ description }</span>
-				<button on:click = { close }>⛌, или кликните вне диалогового окна</button>
+				<button on:click = { close }><Icon code = ""/> или кликните вне диалогового окна</button>
 			</article>
 		{/if}
 		<slot/>
