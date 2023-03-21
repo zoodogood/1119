@@ -1,24 +1,51 @@
 <Layout>
 <main>
 	<h1>Коллекция ошибок из файла:</h1>
+	
 	<p>
 		Уникальных элементов:
 		<span>{ Component.errors.length }</span>
 	</p>
+	<a class = "collections-link" href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("errors/list").key ) }><Icon code = ""/> Вернуться к списку коллекций.</a>
+	{#if Component.errors.length}
+		<input type="text" placeholder = " Фильтровать" bind:value = { Search.value } title = {`Используйте символ перед словом "!", чтобы исключить варианты содержащие это слово`}>
+	{/if}
 
-	<ul>
-		{#each Component.errors as element, i}
+	<ul class = "errors">
+		{#each Component.errors.filter(Search.filter) as element, i}
 			{@const [message, array] = element}
-			<li class = "error-file">
+			<li class = "error-file" id = { message }>
 				
 					<h2>{ message }</h2>
 					<section class = "tags" title = "Ключи из контекста">
 						<span>Тэги:</span>
-						{#each array.uniqueKeys as tag}
-							<li>{ tag }</li>
-						{/each}
+						<ul on:click = {Search.tagClickHandler} on:keydown = {() => {}}>
+							{#each array.uniqueKeys as tag}
+								<li>{ tag }</li>
+							{/each}
+						</ul>;
 					</section>
-				
+					<p>
+						<span>Вызвано:</span>
+						{ ending(array.length, "раз", "", "", "а") };
+					</p>
+					
+					<details class = "error-details">
+						<summary>Сведения</summary>
+						{#each array as arrayErrorElement, i}
+							<details class = "arrayErrorElement">
+								<summary>Элемент #{ i + 1 } ({ dayjs(arrayErrorElement.timestamp).format("HH:mm") })</summary>
+								<h3>Контекст:</h3>
+								<code class = "context">
+									{ yaml.stringify(arrayErrorElement.context) }
+								</code>
+								<h3>Стэк:</h3>
+								<code class = "stack">
+									{arrayErrorElement.stack}
+								</code>
+							</details>
+						{/each}
+					</details>
 			</li>
 		{/each}
 	</ul>
@@ -35,7 +62,21 @@
 		font-weight: 100;
 	}
 
-	ul
+
+	input 
+	{
+		font-family: 'Icon', sans-serif;
+		font-weight: 100;
+		margin-top: 1em;
+	}
+
+	.collections-link 
+	{
+		font-size: 0.5em;
+		display: block;
+	}
+
+	.errors
 	{
 		display: flex;
 		flex-wrap: wrap;
@@ -54,12 +95,22 @@
 		padding-inline: 1.5em;
 		padding-bottom: 2em;
 		font-size: 0.8em;
+
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
 	}
 
-	.tags
+	.error-details
 	{
-		display: flex;
-		gap: 0.5em;
+		margin-top: auto;
+		padding-top: 3em;
+	}
+
+	.tags ul
+	{
+		display: inline-flex;
+		gap: 1em;
 	}
 
 	.tags li 
@@ -75,19 +126,95 @@
 		content: ', ';
 		position: absolute;
 	}
+
+
+	details > summary
+	{
+		list-style-type: '';
+		cursor: pointer;
+	}
+
+	details > summary::before
+	{
+		content: '';
+		font-family: 'Icon';
+		display: inline-block;
+		transition: transform 300ms;
+		transform: rotate(90deg);
+
+		opacity: 0.5;
+		margin: 1vw;
+
+		width: 1vw;
+	}
+
+	details[open] > summary::before
+	{
+		transform: rotate(180deg);
+	}
+
+	.stack, .context
+	{
+		font-size: 0.65em;
+		padding: 1em;
+		width: 100%;
+		white-space: pre;
+	}
+
+	.arrayErrorElement
+	{
+		font-size: 0.8em;
+	}
+
+	
 </style>
 
 
 <script>
 	import svelteApp from "#site/core/svelte-app.js";
 	import Layout from '#site-component/Layout';
-	import { fetchFromInnerApi } from '#lib/safe-utils.js';
+	import Icon from '#site-component/iconic';
+
+	import { dayjs, ending, fetchFromInnerApi, yaml } from '#lib/safe-utils.js';
 	import { fly } from 'svelte/transition';
 	import { parse } from 'flatted';
+  	import PagesRouter from "#site/lib/Router.js";
 	
 
 	const Component = {
 		errors: []
+	}
+
+	const Search = {
+		filter([message, errorsArray]){
+			if (!Search.value){
+				return true;
+			}
+			const blacklist = [];
+			const whitelist = [];
+			
+			Search.value.split(" ").forEach(word => 
+				word.startsWith("!") ? blacklist.push(word.slice(1)) : whitelist.push(word)
+			);
+
+			const isIncludes = (list) => list.every(word => 
+				message.includes(word) ||
+				errorsArray.uniqueKeys.some(tag => tag.includes(word))
+			);
+			
+			return isIncludes(whitelist) && (!blacklist.length || !isIncludes(blacklist));
+		},
+		tagClickHandler(clickEvent){
+			if (clickEvent.target.tagName !== "LI"){
+				return;
+			}
+
+			const value = clickEvent.target.textContent;
+			Search.value = Search.value.includes(value) ?
+				Search.value.replace(value, `!${ value }`) :
+				`${ Search.value } ${ value }`;
+		},
+		value: ""
 	}
 
 	const parseName = (fullname) => {
@@ -107,12 +234,15 @@
 
   		const data = await fetchFromInnerApi(`errors/${ path }`);
 		for (const [_message, array] of data){
-			array.forEach(item => item.context = parse(item.context));
+			array.forEach(item => {
+				item.context = parse(item.context);
+				item.stack = decodeURI(item.stack).replaceAll("\\", "/");
+			});
 			const set = [...new Set(...array.map(({context}) => Object.keys(context)))];
 			array.uniqueKeys = set;
 		}
 
-		console.log(data);
+		console.log({data});
 		Component.errors = data;
 	})();
   
