@@ -175,6 +175,8 @@ class Command {
     
 
     let actualOpenCount = openCount;
+    const items = [];
+    
 
 
     const handleTreasure = (item, quantity) => {
@@ -186,42 +188,42 @@ class Command {
 
         case "void":
           Object.assign(chest, { color: "#3d17a0", icon: "https://media.discordapp.net/attachments/631093957115379733/842122055527694366/image-removebg-preview.png" });
-          itemsOutput.push( `${ Util.ending(quantity, "Уров", "ней", "ень", "ня")} нестабильности <a:void:768047066890895360>` );
+          items.push( `${ Util.ending(quantity, "Уров", "ней", "ень", "ня")} нестабильности <a:void:768047066890895360>` );
           break;
 
         case "keys":
-          itemsOutput.push( `${ Util.ending(quantity, "Ключ", "ей", "", "а")} 🔩` );
+          items.push( `${ Util.ending(quantity, "Ключ", "ей", "", "а")} 🔩` );
           break;
 
         case "coins":
-          itemsOutput.push( `${ Util.ending(quantity, "Коин", "ов", "", "а")} <:coin:637533074879414272>` );
+          items.push( `${ Util.ending(quantity, "Коин", "ов", "", "а")} <:coin:637533074879414272>` );
           break;
 
         case "exp":
           (() => {
             const emoji = ["<:crys:637290406958202880>", "<:crys2:763767958559391795>", "<:crys3:763767653571231804>"][Math.min(2, Math.floor(quantity / 10))];
-            itemsOutput.push( `${ Util.ending(quantity, "Опыт", "а", "", "а")} ${ emoji }` );
+            items.push( `${ Util.ending(quantity, "Опыт", "а", "", "а")} ${ emoji }` );
           })();
           break;
 
         case "berrys":
-          itemsOutput.push( `${ Util.ending(quantity, "Клубник", "", "а", "и")} <:berry:756114492055617558>` );
+          items.push( `${ Util.ending(quantity, "Клубник", "", "а", "и")} <:berry:756114492055617558>` );
           break;
 
         case "cake":
-          itemsOutput.push("Один Тортик 🎂");
+          items.push("Один Тортик 🎂");
           break;
 
         case "bonus":
-          itemsOutput.push( `${ Util.ending(quantity, "Сокровищ", "", "е", "а")} для этого сундука <a:chest:805405279326961684>`);
+          items.push( `${ Util.ending(quantity, "Сокровищ", "", "е", "а")} для этого сундука <a:chest:805405279326961684>`);
           break;
 
         case "gloves":
-          itemsOutput.push( `${ Util.ending(quantity, "Перчат", "ок", "ка", "ки")} 🧤`);
+          items.push( `${ Util.ending(quantity, "Перчат", "ок", "ка", "ки")} 🧤`);
           break;
 
         case "chilli":
-          itemsOutput.push( `${ Util.ending(quantity, "Пер", "цев", "ец", "ца")} 🌶️`);
+          items.push( `${ Util.ending(quantity, "Пер", "цев", "ец", "ца")} 🌶️`);
           break;
 
         default:
@@ -229,7 +231,8 @@ class Command {
       }
     }
 
-    const items = [];
+    const itemsOutput = structureClone(items);
+    
     Object.entries(treasures)
       .forEach(([item, quantity]) => handleTreasure(item, quantity));
 
@@ -239,7 +242,7 @@ class Command {
    
     msg.author.action(Actions.globalQuest, {name: "firstChest"});
 
-    const itemsOutput = structureClone(items);
+    
     const embed = {
       title: actualOpenCount > 30 ? "Невероятный сундук" : "Ежедневный сундук",
       description: (items.length) ? `БОНУСОВ СУНДУКА — ${ actualOpenCount }:` : "Ежедневный сундук — пуст. Всего-лишь пара бесполезных крабьих ножек и горы песка... <a:penguin:780093060628873296>",
