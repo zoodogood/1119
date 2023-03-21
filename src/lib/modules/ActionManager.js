@@ -74,7 +74,7 @@ class ActionManager {
 							effectBase.callback[actionName].call(null, this, effect, data);
 						
 					} catch (error) {
-						ErrorsHandler.Audit.push(error, {actionName});
+						ErrorsHandler.Audit.push(error, {actionName, source: "BossEffectAction"});
 					}
 				}
 
@@ -88,7 +88,7 @@ class ActionManager {
 							curseBase.callback[actionName].call(null, this, curse, data);
 					
 					} catch (error) {
-						ErrorsHandler.Audit.push(error, {actionName});
+						ErrorsHandler.Audit.push(error, {actionName, source: "CurseAction"});
 					}
 				}
 				

@@ -221,7 +221,8 @@ class CommandsManager {
 			ErrorsHandler.Audit.push(error, {
 				userId: interaction.user.id,
 				type: typeBase.type,
-				command: command.options.name
+				command: command.options.name,
+				source: "Command"
 			});
 			ErrorsHandler.sendErrorInfo({channel: interaction.channel, error, interaction});
 		}

@@ -1273,7 +1273,7 @@ class BossManager {
 				event.callback(data);
 			}
 			catch (error){
-				ErrorsHandler.Audit.push(error);
+				ErrorsHandler.Audit.push(error, {source: "BossAttackAction"});
 				channel.msg({title: `Источник исключения: ${ event.id }. Он был убран из списка возможных событий на неопределенный срок`, description: `**${ error.message }:**\n${ error.stack }`});
 				BossManager.eventBases.delete(event.id);
 			}
