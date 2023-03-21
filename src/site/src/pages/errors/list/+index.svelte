@@ -12,7 +12,10 @@
 	
 						{#if errorFile.metadata}
 							<section class = "metadata-container">
-								<span>Метаданные:</span>
+								<ul>
+									<li>Уникальных сообщений: { errorFile.metadata.errors }шт.</li>
+									<li>Теги: { errorFile.metadata.tags.join(" ") }</li>
+								</ul>
 							</section>
 						{/if}
 					</a>
@@ -69,9 +72,10 @@
 			background-color: #88888844;
 		}
 	
-		.error-file .metadata-container > span
+		.error-file .metadata-container li
 		{
 			font-size: 0.7em;
+			opacity: 0.7;
 		}
 		
 		.error-file.special big::before
@@ -87,6 +91,7 @@
 			font-size: 1.2em;
 			opacity: 0.3;
 		}
+
 	</style>
 	
 	
@@ -101,7 +106,6 @@
 		const Component = {
 			errors: []
 		}
-		console.log(PagesRouter);
 	
 		const parseName = (fullname) => {
 			const name = fullname.match(/.+?(?=\.json$)/)?.at(0);
@@ -114,7 +118,7 @@
 	
 		(async () => {
 		
-		  const data = await fetchFromInnerApi("errors/files");
+		  	const data = await fetchFromInnerApi("errors/files");
 	
 			const errors = data
 				.map(parseName);
@@ -124,6 +128,9 @@
 			Component.errors = [current, ...errors.reverse()];
 	
 			await whenDocumentReadyStateIsComplete(svelteApp.document);
+
+
+			
 		})();
 	  
 	</script>
