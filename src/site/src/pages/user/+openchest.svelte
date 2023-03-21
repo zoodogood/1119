@@ -130,6 +130,6 @@
 
 	img 
 	{
-		max-width: 100%;
+		max-width: min(100%, 50vw);
 	}
 </style>
