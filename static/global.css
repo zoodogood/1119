@@ -154,12 +154,15 @@ hr
 	 outline: none;
 }
 
-code
-{
+
+
+code {
 	background-color: #88888833;
 	font-size: 0.8em;
 	padding: 0.1em;
 	padding-inline: 0.2em;
+	display: inline-block;
+	max-width: 100%;
 }
 
 
