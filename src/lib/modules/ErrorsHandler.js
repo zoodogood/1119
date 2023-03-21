@@ -47,6 +47,10 @@ class ErrorsAudit {
 	}
 
 	createLog(){
+		if (this.collection.size === 0){
+			return false;
+		}
+
 		this.constructor.file.write(
 			this.toJSON()
 		);
