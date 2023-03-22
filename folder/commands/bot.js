@@ -100,7 +100,7 @@ class Command {
           },
           {
             type: ComponentType.Button,
-            label: "Оставить отзыв",
+            label: "Создать интригу",
             style: ButtonStyle.Primary,
             customId: "@command/bot/postReview"
           }
@@ -120,7 +120,7 @@ class Command {
         type: ComponentType.TextInput,
         customId: "content",
         style: TextInputStyle.Paragraph,
-        label: "Введите сообщение",
+        label: "Введите сообщение: полезный отзыв или фигню",
         maxLength: 2000
       }];
 
@@ -128,7 +128,7 @@ class Command {
       const modal = CreateModal({
         components,
         customId: "@command/bot/postReviewModal",
-        title: "Отправьте отзыв"
+        title: "Отправить"
         
       });
       
@@ -172,7 +172,7 @@ class Command {
         type: ComponentType.TextInput,
         customId: "content",
         style: TextInputStyle.Paragraph,
-        label: "Введите сообщение",
+        label: "Введите сообщение. Будьте грубы лишь с теми, кто уже грубит. В остальном будьте няшками и в целом можете отвечать несерьёзно",
         maxLength: 2000
       }];
 
@@ -193,10 +193,10 @@ class Command {
       
 
       const embed = {
-        author: {iconURL: interaction.user.avatarURL(), name: `Получен ответ на отзыв`},
+        author: {iconURL: interaction.user.avatarURL(), name: `Получен ответ на ваше сообщение`},
         description,
         color: "#6534bf",
-        footer: {text: `Ответ предоставил ${ interaction.user.tag }. Пожалуйста, не создавайте новый отзыв чтобы ответить на это сообщение.`},
+        footer: {text: `Ответ предоставил ${ interaction.user.tag }. Если вы отреагировать, свяжитесь с пользователем, ответившим вам`},
         image: "https://media.discordapp.net/attachments/629546680840093696/1073849735850508339/simple-black-rounded-line.png?width=559&height=559"
       };
 
@@ -205,7 +205,7 @@ class Command {
       Object.assign(embed, {
         reference: message.id,
         description: `<t:${ Math.floor(interaction.message.createdTimestamp / 1_000) }>\n>>> ${ interaction.message.embeds.at(0).description }`,
-        author: {name: "Содержимое Вашего отзыва:", iconURL: user.avatarURL()},
+        author: {name: "Содержимое вашего сообщения:", iconURL: user.avatarURL()},
         color: "#3260a8",
         footer: null,
         components: [{
