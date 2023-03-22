@@ -231,7 +231,7 @@ class Command {
       }
     }
 
-    const itemsOutput = structureClone(items);
+    const itemsOutput = structuredClone(items);
     
     Object.entries(treasures)
       .forEach(([item, quantity]) => handleTreasure(item, quantity));
