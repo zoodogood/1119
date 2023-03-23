@@ -17,6 +17,7 @@
 		opacity: 0.5;
 		position: absolute;
 		transform: translateX( -1em );
+		filter: contrast(0.3);
 	}
 
 	.editable-markdown-container :global(hr)
@@ -35,6 +36,13 @@
 	{
 		margin-block: 0.5em;
 		margin-left: 1em;
+	}
+
+	.editable-markdown-container :global(img)
+	{
+		max-width: 100%;
+		max-height: 50vh;
+		margin-block: 1em;
 	}
 </style>
 
