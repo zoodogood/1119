@@ -164,8 +164,6 @@ code {
 	padding-inline: 0.2em;
 	display: inline-block;
 	max-width: 100%;
-
-	overflow-x: auto;
 }
 
 
