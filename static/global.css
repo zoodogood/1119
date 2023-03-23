@@ -157,13 +157,30 @@ hr
 
 
 
-code {
+code
+{
 	background-color: #88888833;
 	font-size: 0.8em;
 	padding: 0.1em;
 	padding-inline: 0.2em;
 	display: inline-block;
-	max-width: 100%;
+}
+
+pre 
+{
+	background-color: #88888833;
+	padding: 0.5em;
+	padding-block: 0.7em;
+	margin: 0.2em;
+
+	width: 100%;
+	overflow-x: auto;
+	overflow-x: overlay;
+}
+
+pre > code
+{
+	background: none;
 }
 
 
