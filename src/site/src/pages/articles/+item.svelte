@@ -4,7 +4,7 @@
 		<h2>Загрузка основного контента</h2>
 	{:then data} 
 		{@const source = data.content}
-		<main class = "article-container">
+		<main class = "container">
 			<section class = "article-info">
 				<group class = "article-author">
 					<img src={data.author?.avatarURL} alt="avatar">
@@ -27,7 +27,7 @@
 				</group>
 			</section>
 
-			<article>
+			<article class = "article-container">
 				<EditableMarkdown {source}/>
 			</article>
 
@@ -55,14 +55,14 @@
 		color: var( --main-color );
 	}
 
-	.article-container
+	.container
 	{
 		display: flex;
 		flex-direction: column;
 		width: 100%;
 	}
 
-	.article-container::after
+	.container::after
 	{
 		content: '';
 		display: block;
@@ -75,12 +75,6 @@
 		margin-block: 1.5em;
 	}
 
-	article
-	{
-		width: 100%;
-		min-height: 40vh;
-		margin-bottom: 10vh;
-	}
 
 	.article-info
 	{
@@ -151,6 +145,17 @@
 		border-radius: 50%;
 		height: 100%;
 		aspect-ratio: 1 / 1;
+	}
+
+	.article-container 
+	{
+		display: flex;
+		flex-direction: column;
+		width: 95%;
+
+		min-height: 40vh;
+		margin-bottom: 10vh;
+		align-self: center;
 	}
 
 	.download-button
