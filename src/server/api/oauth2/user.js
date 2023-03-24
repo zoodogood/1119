@@ -32,7 +32,7 @@ class TokensUsersExchanger {
 		return user;
 	}
 
-	static async getUserRaw(token, {requireOAuth} = {}){
+	static async getUserRaw(token, {requireOAuth, prepareGuilds = false} = {}){
 
 		const user = structuredClone(
 			(!requireOAuth && this.fromCache(token)) || (await this.fromOAuth(token)) || null
@@ -42,8 +42,11 @@ class TokensUsersExchanger {
 			return null;
 		}
 		
-		user.guilds && this.fillGuilds(user.guilds);
 		user.avatarURL = client.rest.cdn.avatar(user.id, user.avatar);
+		prepareGuilds && (() => {
+			user.guilds && this.fillGuilds(user.guilds);
+			user.mutualBotGuilds = this.fetchMutualGuilds(user);
+		})();
 		return user;
 	}
 
@@ -52,6 +55,10 @@ class TokensUsersExchanger {
 		guild.iconURL = guild.icon ? client.rest.cdn.icon(guild.id, guild.icon) : null;
 		
 		return;
+	}
+
+	static fetchMutualGuilds(user){
+		return client.users.cache.get(user.id).guilds.map(guild => guild.id);
 	}
 }
 
@@ -70,7 +77,9 @@ class Route extends BaseRoute {
 			return;
 		}
 
-		const user = await TokensUsersExchanger.getUserRaw(token, {requireOAuth: true});
+		const prepareGuilds = !!request.headers.guilds;
+
+		const user = await TokensUsersExchanger.getUserRaw(token, {requireOAuth: true, prepareGuilds});
 		if (user === null){
 			response.status(401).send(`"Authorization failed"`);
 			return;
