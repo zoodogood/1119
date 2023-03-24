@@ -306,7 +306,7 @@
 	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
 
-	const i18n = svelteApp.i18n.components.Layout.header;
+	const i18n = svelteApp.i18n.components.Layout.Header;
 
 	const Header = {
 		node: null,
