@@ -1,0 +1,14 @@
+pages:
+  public:
+    hi: Привет
+    cool: Сундук кота это круто
+
+components:
+  Layout:
+    header:
+      ghost: Призрак
+      nav:
+        home: Главная
+        navigation: Навигация
+        discord: Дискорд
+      authorization: Войти

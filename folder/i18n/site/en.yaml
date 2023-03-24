@@ -1,0 +1,13 @@
+pages:
+  public:
+    hi: Hello
+    cool: Cat Chest is cool
+components:
+  Layout:
+    header:
+      ghost: ПризRак
+      nav:
+        home: Home
+        navigation: Navigation
+        discord: Discord
+      authorization: Login
