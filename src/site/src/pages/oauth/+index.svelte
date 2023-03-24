@@ -16,7 +16,7 @@
 		</a>
 		
 		{#if State.status & (StatusEnum.dataSuccess | StatusEnum.dataPending)}
-			<a href="" class = "button-to-panel">
+			<a href= {PagesRouter.relativeToPage( PagesRouter.getPageBy("user/panel").key )} class = "button-to-panel">
 				<button disabled = {State.status === StatusEnum.dataPending}>Панель управления</button>
 			</a>
 			{:else}
