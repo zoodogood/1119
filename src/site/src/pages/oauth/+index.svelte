@@ -30,7 +30,7 @@
 
 	</nav>
 
-	{#if StatusEnum.dataSuccess}
+	{#if State.status === StatusEnum.dataSuccess}
 		<p class = "tip">Теперь вы можете покинуть эту страницу</p>
 	{/if}
 
@@ -181,7 +181,7 @@
 
 	onMount(async () => {
 		const user = await realizeDataByToken(code);
-		State.status = user ? StatusEnum.dataSuccess : StatusEnum.dataReject
+		State.status = user?.id ? StatusEnum.dataSuccess : StatusEnum.dataReject
 	});
 
 
