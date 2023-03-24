@@ -4,26 +4,26 @@
 
 		 <section class = "article">
 			  <aside class = "article-aside article-title">
-					<h2 class = "article-aside-header">Представьте себе...</h2>
+					<h2 class = "article-aside-header">{ i18n.imagine }</h2>
 					<p class = "article-aside-paragraph">Expented 2022</p>
 			  </aside>
 			  <section class = "article-information_section group">
 					<aside class = "article-aside">
-						 <h3 class = "article-aside-header">Информация</h3>
+						 <h3 class = "article-aside-header">{ i18n.info.label }</h3>
 						 <ul class = "article-aside-list">
-							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/policy").key )}>Политика использования</a></li>
-							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/friendship").key )}>Благодарности</a></li>
+							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/policy").key )}>{ i18n.info.policy }</a></li>
+							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/friendship").key )}>{ i18n.info.thanks }</a></li>
 							  <li><a href = "">1119</a></li>
 							  <li></li>
 						 </ul>
 					</aside>
 					<aside class = "article-aside">
-						 <h3 class = "article-aside-header">Навигация</h3>
+						 <h3 class = "article-aside-header">{ i18n.nav.label }</h3>
 						 <ul class = "article-aside-list">
-							  <li><a href = { bot.invite }>Пригласить</a></li>
-							  <li><a href = { config.guild.url } target = "_blank" rel = "noreferrer">Дискорд</a></li>
-							  <li><a href = { config.enviroment.github }>Гитхаб</a></li>
-							  <li><a href = "{ config.enviroment.github}/issues/new">Помощь</a></li>
+							  <li><a href = { bot.invite }>{ i18n.nav.invite }</a></li>
+							  <li><a href = { config.guild.url } target = "_blank" rel = "noreferrer">{ i18n.nav.discord }</a></li>
+							  <li><a href = { config.enviroment.github }>{ i18n.nav.github }</a></li>
+							  <li><a href = "{ config.enviroment.github}/issues/new">{ i18n.nav.help }</a></li>
 						 </ul>
 					</aside>
 			  </section>
@@ -52,7 +52,7 @@
 
 					<aside class = "invite">
 						 <a href={ bot.invite }>
-							<button>Пригласить</button>
+							<button>{ i18n.invite }</button>
 						</a>
 					</aside>
 			  </main>
@@ -225,11 +225,12 @@
 
 <script>
 	import config from '#config';
-  import svelteApp from '#site/core/svelte-app.js';
-	 import PagesRouter from '#site/lib/Router.js';
-  import { dayjs } from '#lib/safe-utils.js';
+  	import svelteApp from '#site/core/svelte-app.js';
+	import PagesRouter from '#site/lib/Router.js';
+  	import { dayjs } from '#lib/safe-utils.js';
   
-  const bot = svelteApp.getBot();
+  	const bot = svelteApp.getBot();
+	const i18n = svelteApp.i18n.components.Layout.Footer;
 
 </script>
 
