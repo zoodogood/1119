@@ -1,10 +1,11 @@
 import HashController from '#site/lib/HashController.js';
-import { parseDocumentLocate, omit, fetchFromInnerApi } from '#lib/safe-utils.js';
+import { parseDocumentLocate, omit, fetchFromInnerApi, createDialog } from '#lib/safe-utils.js';
 import { whenDocumentReadyStateIsComplete } from '#site/lib/util.js';
 import enviroment from '#site/enviroment/mod.js';
 
 import PagesURLs from '#static/build/svelte-pages/enum[builded].mjs';
 import config from '#config';
+import PagesRouter from '#site/lib/Router.js';
 
 
 class StorageManager {
@@ -110,9 +111,15 @@ class SvelteApp {
 		const user = await fetchFromInnerApi("oauth2/user", {headers})
 			.catch(() => {});
 
-		if (!user){
+		if (!user || typeof user === "string"){
 			// to-do: update
-			alert("PLEASE UPDATE TOKEN");
+			const _key = PagesRouter.getPageBy("oauth").key;
+			const link = PagesRouter.relativeToPage(_key);
+			createDialog(svelteApp, {
+				title: "Пожалуйста, авторизуйтесь повторно",
+				description: `Токен действителен в течении двух недель и становится недействительным. Чтобы его обновить авторизуйтесь повторно; Если это сообщение возникает чаще указаного срока, сообщите о проблеме для её решения.\n\n<a href = ${ link }>${ _key }</a>`,
+				isHTMLAccepted: true
+			});
 			return;
 		}
 
