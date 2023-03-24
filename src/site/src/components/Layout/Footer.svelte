@@ -1,15 +1,3 @@
-<script>
- 	import config from '#config';
-	import svelteApp from '#site/core/svelte-app.js';
-  	import PagesRouter from '#site/lib/Router.js';
-	import { dayjs } from '#lib/safe-utils.js';
-	
-	const bot = svelteApp.getBot();
-
-</script>
-
-
-
 
 <footer class = "container">
 	<main class = "footer-main">
@@ -233,3 +221,16 @@
 		text-decoration-color: var( --white );
 	}
 </style>
+
+
+<script>
+	import config from '#config';
+  import svelteApp from '#site/core/svelte-app.js';
+	 import PagesRouter from '#site/lib/Router.js';
+  import { dayjs } from '#lib/safe-utils.js';
+  
+  const bot = svelteApp.getBot();
+
+</script>
+
+
