@@ -1,11 +1,12 @@
 
 <Layout>
 
-	<p>На каких гильдиях вы находитесь:</p>
-	<p>Гильдий: { ending(State.guilds.length, "сущност", "ей", "ь", "и") }</p>
-	<ul>
+	<p>Взаимные гильдии: { ending(State.guilds.length, "сущност", "ей", "ь", "и") }</p>
+	
+	
+	<ul style:font-size = "{ 5 - State.guilds?.length * 0.05 }em">
 		{#each State.guilds as guild}
-		<li style:width = "{ 10 - State.guilds?.length * 0.1 }em" title = "Сервер { guild.name }">
+		<li title = "Сервер { guild.name }">
 			{#if guild.iconURL}
 				<img src = {guild.iconURL} alt = "guild-icon">
 			{:else}
@@ -30,14 +31,16 @@
 	li
 	{
 		min-width: 2vw;
+		width: 1em;
 		aspect-ratio: 1 / 1;
 		border-radius: 50%;
 		overflow: hidden;
+		cursor: pointer;
 	}
 
 	li img 
 	{
-		max-width: 100%;
+		width: 100%;
 	}
 
 	li span 
@@ -48,6 +51,14 @@
 		background-color: #88888820;
 		width: 100%;
 		height: 100%;
+
+		font-size: 0.5em;
+	}
+
+	li:hover
+	{
+		border-radius: 20%;
+		background: #88888833;
 	}
 </style>
 
@@ -70,7 +81,7 @@
 			return;
 			
 		}
-		State.guilds = guilds;
+		State.guilds = guilds.filter(guild => guilds.mutual.includes(guild.id));
 	});
 
 
@@ -80,7 +91,7 @@
 			return null;
 		}
 
-		const headers = {Authorization: token};
+		const headers = {Authorization: token, guilds: true};
 		const userRaw = await fetchFromInnerApi("oauth2/user", {headers})
 			.catch(() => {});
 
@@ -88,8 +99,8 @@
 			return;
 		}
 
-		const {guilds} = userRaw;
-
+		const {guilds, mutualBotGuilds} = userRaw;
+		guilds.mutual = mutualBotGuilds;
 
 		return guilds;
 	}
