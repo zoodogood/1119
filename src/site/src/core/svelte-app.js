@@ -51,9 +51,11 @@ class SvelteApp {
 	PagesURLs = PagesURLs;
 	storage = new StorageManager();
 	user = this.storage.getUserData();
+	i18n = null;
 
 	constructor(){
 		this.lang = this.url.base.lang ?? "ru";
+		this.i18n = this.enviroment.i18n[this.lang];
 		
 		this.#checkOrigin();
 		this.#checkExternalUserDataByToken();
