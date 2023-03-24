@@ -16,7 +16,7 @@
 <style>
 	main 
 	{
-		--angle: 182deg;
+		--angle: 275deg;
 		--color: #ddffdd88;
 
 		text-transform: uppercase;
@@ -30,13 +30,32 @@
 		padding-bottom: 20vh;
 		gap: 0.2em;
 
+		text-align: center;
+
 		background-image: conic-gradient(
-			#00000000 var( --angle ), 
-			color-mix(in lch, var( --color ), var(--main-color)) 0
-		);
-		
+			#00000000, 
+			var(--main-color) 360deg
+		)
 	}
 
+
+	main::after
+	{
+		content: '';
+		position: absolute;
+		width: 100%;
+		height: 100%;
+
+		background-image: conic-gradient(
+			#00000000 var( --angle ), 
+			color-mix(in srgb, var( --color ), var(--main-color)) 0
+		);
+		
+
+		
+		filter: blur(2px);
+		z-index: -1;
+	}
 	
 
 	small
