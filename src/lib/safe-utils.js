@@ -298,5 +298,5 @@ export {
 	getPackageJSON
  }
 
- export { relativeSiteRoot } from '#site/lib/util.js';
+ export { relativeSiteRoot, createDialog } from '#site/lib/util.js';
  export { MarkdownMetadata } from './MarkdownMetadata.js';

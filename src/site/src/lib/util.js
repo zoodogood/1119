@@ -13,7 +13,10 @@ async function whenDocumentReadyStateIsComplete(document){
 	);
 }
 
+
 export {
 	relativeSiteRoot,
 	whenDocumentReadyStateIsComplete
 };
+
+export { createDialog } from '#site/lib/createDialog.js';
