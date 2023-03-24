@@ -26,6 +26,9 @@ export default {
 		source: "./src/site",
 		label: "Призрак",
 	},
+	i18n: {
+		path: "folder/i18n"
+	},
 	giscus: {
 		repository: "zoodogood/1119",
 		repoId: "MDEwOlJlcG9zaXRvcnkyNTI3MjE2NjQ=",
