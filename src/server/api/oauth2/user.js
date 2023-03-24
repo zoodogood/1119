@@ -22,17 +22,18 @@ class TokensUsersExchanger {
 
 	static async fromOAuth(token){
 		const data = await oauth.fetchUser(token) ?? {};
-		const {user, guilds} = data;
+		const {user, guilds: _guilds} = data;
 		
 		if (!user){
 			return null;
 		}
 
-		user.guilds = guilds;
+		user.guilds = _guilds.guilds;
 		return user;
 	}
 
 	static async getUserRaw(token, {requireOAuth} = {}){
+
 		const user = structuredClone(
 			(!requireOAuth && this.fromCache(token)) || (await this.fromOAuth(token)) || null
 		);
@@ -41,8 +42,16 @@ class TokensUsersExchanger {
 			return null;
 		}
 		
+		user.guilds && this.fillGuilds(user.guilds);
 		user.avatarURL = client.rest.cdn.avatar(user.id, user.avatar);
 		return user;
+	}
+
+	static fillGuilds(guilds){
+		for (const guild of guilds)
+		guild.iconURL = guild.icon ? client.rest.cdn.icon(guild.id, guild.icon) : null;
+		
+		return;
 	}
 }
 
@@ -53,8 +62,6 @@ class Route extends BaseRoute {
 	constructor(express){
 		super();
 	}
-
-	#cacheMap = new Map();
 
 	async get(request, response){
 		const token = request.headers.authorization;
