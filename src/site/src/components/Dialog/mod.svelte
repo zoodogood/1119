@@ -1,47 +1,4 @@
-<script>
-	import { onDestroy, createEventDispatcher } from "svelte";
-	import Icon from '#site-component/iconic';
-  	import { get_current_component as getCurrentComponent } from "svelte/internal";
 
-	export let useClassic;
-	export let title;
-	export let description;
-	export let preventDestroy = false;
-	export let hide = false;
-
-	const self = getCurrentComponent();
-	
-	let ref;
-	
-
-	const dispatch = createEventDispatcher();
-	const close = () => {
-		if (!ref.open){
-			return;
-		}
-
-		ref.close();
-		history.state.isModal && history.go(-1);
-		dispatch.call(ref, "close");
-	};
-	const open = () => {
-		if (ref.open){
-			return;
-		}
-
-		ref.showModal();
-		globalThis.history.pushState({isModal: true}, "Open modal");
-		addEventListener("popstate", close);
-	};
-	const destroy = () => !preventDestroy && self.$destroy();
-
-	$: 
-		if (ref && !hide) open();
-
-	onDestroy(() => {
-		removeEventListener("popstate", close);
-	})
-</script>
 
 <dialog
 	bind:this = { ref }
@@ -60,6 +17,9 @@
 		<slot/>
 	</main>
 </dialog>
+
+
+
 
 <style>
 	dialog::backdrop
@@ -175,3 +135,52 @@
 		opacity: 0.2;
 	}
 </style>
+
+
+
+
+
+<script>
+	import { onDestroy, createEventDispatcher } from "svelte";
+	import Icon from '#site-component/iconic';
+  	import { get_current_component as getCurrentComponent } from "svelte/internal";
+
+	export let useClassic;
+	export let title;
+	export let description;
+	export let preventDestroy = false;
+	export let hide = false;
+
+	const self = getCurrentComponent();
+	
+	let ref;
+	
+
+	const dispatch = createEventDispatcher();
+	const close = () => {
+		if (!ref.open){
+			return;
+		}
+
+		ref.close();
+		history.state.isModal && history.go(-1);
+		dispatch.call(ref, "close");
+	};
+	const open = () => {
+		if (ref.open){
+			return;
+		}
+
+		ref.showModal();
+		globalThis.history.pushState({isModal: true}, "Open modal");
+		addEventListener("popstate", close);
+	};
+	const destroy = () => !preventDestroy && self.$destroy();
+
+	$: 
+		if (ref && !hide) open();
+
+	onDestroy(() => {
+		removeEventListener("popstate", close);
+	})
+</script>
