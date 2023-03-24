@@ -10,7 +10,13 @@
 		{#if useClassic}
 			<article class = "classic-dialog">
 				<p>{ title }</p>
-				<span>{ description }</span>
+				<span>
+					{#if isHTMLAccepted}
+						{@html description}
+					{:else}
+						{ description }
+					{/if}
+				</span>
 				<button on:click = { close }><Icon code = ""/> или кликните вне диалогового окна</button>
 			</article>
 		{/if}
@@ -148,6 +154,7 @@
 	export let useClassic;
 	export let title;
 	export let description;
+	export let isHTMLAccepted;
 	export let preventDestroy = false;
 	export let hide = false;
 
