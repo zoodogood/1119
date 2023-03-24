@@ -1,5 +1,7 @@
 import HashController from '#site/lib/HashController.js';
-import { parseDocumentLocate, omit, fetchFromInnerApi, createDialog } from '#lib/safe-utils.js';
+import { parseDocumentLocate, omit, fetchFromInnerApi } from '#lib/safe-utils.js';
+import { createDialog } from '#site/lib/createDialog.js';
+
 import { whenDocumentReadyStateIsComplete } from '#site/lib/util.js';
 import enviroment from '#site/enviroment/mod.js';
 
