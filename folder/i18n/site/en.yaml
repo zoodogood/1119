@@ -1,13 +1,26 @@
 pages:
   public:
-    hi: Hello
+    hi: Hello!
     cool: Cat Chest is cool
 components:
   Layout:
-    header:
+    Header:
       ghost: ПризRак
       nav:
         home: Home
         navigation: Navigation
         discord: Discord
       authorization: Login
+    Footer:
+      imagine: Представьте себе...
+      info:
+        label: Информация
+        policy: Политика использования
+        thanks: Благодарности
+      nav:
+        label: Навигация
+        invite: Пригласить
+        discord: Дискорд
+        github: Гитхаб
+        help: Помощь
+      invite: Пригласить

@@ -2,7 +2,6 @@ pages:
   public:
     hi: Привет!
     cool: Сундук кота это круто
-
 components:
   Layout:
     Header:
@@ -12,17 +11,16 @@ components:
         navigation: Навигация
         discord: Дискорд
       authorization: Войти
-    Footer: 
+    Footer:
       imagine: Представьте себе...
-      info: 
+      info:
         label: Информация
         policy: Политика использования
         thanks: Благодарности
-      nav: 
+      nav:
         label: Навигация
         invite: Пригласить
         discord: Дискорд
         github: Гитхаб
         help: Помощь
       invite: Пригласить
-      # to-do: При поддержке Expented...
