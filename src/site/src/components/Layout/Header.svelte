@@ -5,7 +5,7 @@
 
 	<section class = "label">
 		<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "link" >
-			<b class = "page_header-title-container-label">{ config.site.label.toUpperCase() }</b>
+			<b class = "page_header-title-container-label">{ i18n.ghost.toUpperCase() }</b>
 		</a>
 	</section>
 
@@ -16,9 +16,9 @@
 		</span>
 
 		<nav>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element link">Главная</a>
-			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element link">Навигация</a>
-			<a href = { config.guild.url } class = "navigation-element link" target = "_blank" rel = "noreferrer">Дискорд</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key) } class = "navigation-element link">{ i18n.nav.home }</a>
+			<a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("navigation").key) } class = "navigation-element link">{ i18n.nav.navigation }</a>
+			<a href = { config.guild.url } class = "navigation-element link" target = "_blank" rel = "noreferrer">{ i18n.nav.discord }</a>
 		</nav>
 
 	</section>
@@ -29,7 +29,7 @@
 				class = "oauth"
 				on:click={() => PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`)}
 			>
-				Войти
+				{ i18n.authorization }
 			</button>
 		</section>
 		{:else}
@@ -107,7 +107,7 @@
 
 	.label::after
 	{
-		content: 'Beta';
+		content: 'Alpha';
 		padding: 5px;
 		border-radius: 3px;
 		font-size: 0.5em;
@@ -305,6 +305,8 @@
 	import Icon from '#site-component/iconic';
 	import svelteApp from '#site/core/svelte-app.js';
 	import PagesRouter from '#site/lib/Router.js';
+
+	const i18n = svelteApp.i18n.components.Layout.header;
 
 	const Header = {
 		node: null,
