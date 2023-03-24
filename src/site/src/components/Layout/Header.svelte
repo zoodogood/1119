@@ -33,7 +33,7 @@
 			</button>
 		</section>
 		{:else}
-		<section class = "user">
+		<section class = "user" on:click={ () => PagesRouter.redirect(PagesRouter.getPageBy("user/panel").key) } on:keydown={ ({target}) => target.click() }>
 			<span class = "user-avatar-container">
 				<img src = { svelteApp.user.avatarURL } alt = "avatar">
 			</span>
@@ -326,5 +326,7 @@
 
 		scrollPosition = window.scrollY;
 	}
+
+
 	
 </script>
