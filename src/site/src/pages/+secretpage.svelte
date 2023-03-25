@@ -1,8 +1,8 @@
 
 
 <main>
-	<p>Вы оказались на первой секретной странице</p>
-	<small>(радужно смотрит в будущее...)</small>
+	<p>{ i18n.label }</p>
+	<small>{ i18n.future }</small>
 </main>
 
 
@@ -82,4 +82,7 @@
 	import ThemeSwitcher from '#site-component/ThemeSwitcher';
 	import Icon from '#site-component/iconic';
 	import PagesRouter from '#site/lib/Router.js';
+  	import svelteApp from '#site/core/svelte-app.js';
+
+	const i18n = svelteApp.i18n.PagesRouter.secretpage;
 </script>
