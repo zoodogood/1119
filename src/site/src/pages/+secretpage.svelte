@@ -84,5 +84,5 @@
 	import PagesRouter from '#site/lib/Router.js';
   	import svelteApp from '#site/core/svelte-app.js';
 
-	const i18n = svelteApp.i18n.PagesRouter.secretpage;
+	const i18n = svelteApp.i18n.pages.secretpage;
 </script>
