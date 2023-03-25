@@ -265,6 +265,10 @@ async function getPackageJSON(){
 	return JSON.parse(await FileSystem.readFile(`${ process.cwd() }/package.json`));
 }
 
+function ReplaceTemplate(string, values){
+	string.replaceAll(/(?<!\\)\$\{[a-zа-яъё]+\}/i, (match) => values[match.trim()]);
+}
+
 
 
 export {
@@ -279,6 +283,7 @@ export {
 	sleep,
 	random,
 	match,
+	ReplaceTemplate,
 	similarity,
 	getSimilar,
 	joinWithAndSeparator,
