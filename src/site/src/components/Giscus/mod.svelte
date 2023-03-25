@@ -1,11 +1,11 @@
 <section class = "discus-container">
 	<group>
-		<h4>Комментарии</h4>
-		<small>Идентификатор: <code>{ tag }</code></small>
+		<h4>{ i18n.comments }</h4>
+		<small>{ i18n.identify } <code>{ tag }</code></small>
 	</group>
 	
 	<main class = "giscus">
-		<p>Giscus не поддерживается</p>
+		<p>{ i18n.notSupported }</p>
 	</main>
 </section>
 
@@ -41,6 +41,8 @@
   	import { onMount } from 'svelte';
 
 	export let tag = svelteApp.document.location.href;
+
+	const i18n = svelteApp.i18n.components.Giscus;
 
 	const InitGiscus = () => {
 		const document = svelteApp.document;
