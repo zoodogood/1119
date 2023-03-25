@@ -16,6 +16,24 @@ pages:
     panel: Панель управления
     login: Войти
     nowYouCanLeave: Теперь вы можете покинуть эту страницу
+  errorsIndex: 
+    label: "Комплекты ошибок:"
+    created: "Создано:"
+    uniqueMessages: "Уникальных сообщений:"
+    tags: "Теги:"
+    units: шт.
+  errorsItem:
+    label: "Коллекция ошибок из файла:"
+    backToCollections: Вернуться к списку коллекций.
+    filter: Фильтровать
+    filterTip: 'Используйте символ перед словом "!", чтобы исключить варианты содержащие это слово'
+    uniqueCount: "Уникальных элементов:"
+    tags: "Теги:"
+    called: "Вызвано:"
+    details: Сведения
+    element: Элемент
+    context: "Контекст:"
+    stack: "Стек:"
 
   secretpage: 
     label: Вы оказались на первой секретной странице
