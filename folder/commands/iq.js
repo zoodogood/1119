@@ -4,7 +4,6 @@ import { client } from '#bot/client.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-    console.log(interaction);
     let memb = interaction.mention || client.users.cache.get(interaction.params) || msg.author;
 
     let first = true;
