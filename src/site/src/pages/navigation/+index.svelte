@@ -3,7 +3,7 @@
 
 <Layout>
 	<span>
-		<h1>Навигация</h1>
+		<h1>{ i18n.label }</h1>
 		<hr>
 	</span>
 
@@ -11,7 +11,7 @@
 
 
 		<details open class = "table pages">
-			<summary>Страницы <Icon code = ""/></summary>
+			<summary>{ i18n.pages.label } <Icon code = ""/></summary>
 			<ul>
 				{#each Object.values(PagesRouter.pages) as pageKey}
 					{@const url = PagesRouter.relativeToPage(pageKey)}
@@ -23,14 +23,14 @@
 		</details>
 		
 		<details open class = "table api">
-			<summary>API'шечки <Icon code = ""/></summary>
+			<summary>{ i18n.api.label } <Icon code = ""/></summary>
 			<details open>
-				<summary><b>Простые пути:</b></summary>
+				<summary><b>{ i18n.api.simple }</b></summary>
 				<p>
-					<small>Данные из точки зачастую можно получить напрямую.</small>
+					<small>{ i18n.api.simpleDescription }</small>
 				</p>
 				{#await whenApiListIsReceived}
-					<p>Загрузка...</p>
+					<p>{ i18n.api.loading }</p>
 				{:then data} 
 					<ul>
 						{#each data.filter(route => route.isSimple && route.methods.includes("get")) as route}
@@ -41,19 +41,19 @@
 						{/each}	
 					</ul>
 				{:catch}
-					<p>Сервер недоступен</p>
+					<p>{ i18n.api.serverNotAvailable }</p>
 				{/await}
 				
 			</details>
 			
 
 			<details>
-				<summary><b>Особые пути:</b></summary>
+				<summary><b>{ i18n.api.special }</b></summary>
 				<p>
-					<small>Опциональны, иногда, требуется аунтефикация или другие действия.</small>
+					<small>{ i18n.api.specialDescription }</small>
 				</p>
 				{#await whenApiListIsReceived}
-					<p>Загрузка...</p>
+					<p>{ i18n.api.loading }</p>
 				{:then data} 
 					<ul>
 						{#each data.filter(route => route.methods.length && !route.isRegex) as route}
@@ -63,19 +63,19 @@
 						{/each}	
 					</ul>
 				{:catch}
-					<p>Сервер недоступен</p>
+					<p>{ i18n.api.serverNotAvailable }</p>
 				{/await}
 			</details>
 			
 
 			<details>
-				<summary><b>Регулярные выражения:</b></summary>
+				<summary><b>{ i18n.api.regexp }</b></summary>
 				<p>
-					<small>Не имеют чёткого адреса.</small>
+					<small>{ i18n.api.regexpDescription }</small>
 				</p>
 				<ul>
 					{#await whenApiListIsReceived}
-						<p>Загрузка...</p>
+						<p>{ i18n.api.loading }</p>
 					{:then data} 
 						<ul>
 							{#each data.filter(route => route.isRegex) as route}
@@ -85,7 +85,7 @@
 							{/each}	
 						</ul>
 					{:catch}
-						<p>Сервер недоступен</p>
+						<p>{ i18n.api.serverNotAvailable }</p>
 					{/await}
 				</ul>
 				
@@ -95,17 +95,17 @@
 		</details>
 
 		<details open class = "table other">
-			<summary>Другое <Icon code = ""/></summary>
+			<summary>{ i18n.other.label } <Icon code = ""/></summary>
 			<ul>
-				<li><a href={config.guild.url}>Discord server</a></li>
-				<li><a href={config.enviroment.github}>Github</a></li>
-				<li><a href={svelteApp.getBot().invite}>Пригласить бота</a></li>
-				<li><a href="https://learn.javascript.ru/hello-world">Javascript учебник</a></li>
+				<li><a href={config.guild.url}>{ i18n.other.server }</a></li>
+				<li><a href={config.enviroment.github}>{ i18n.other.github }</a></li>
+				<li><a href={svelteApp.getBot().invite}>{ i18n.other.inviteBot }</a></li>
+				<li><a href="https://learn.javascript.ru/hello-world">{ i18n.other.learnJavascript }</a></li>
 			</ul>
 		</details>
 
 		<details open class = "table history" style:display = {localStorage.navigationPageHistory ? null : "none"}>
-			<summary>История <Icon code = ""/></summary>
+			<summary>{ i18n.history.label } <Icon code = ""/></summary>
 			<ul>
 				{#each JSON.parse(localStorage.navigationPageHistory ?? "[]").reverse() as item}
 					<li>
@@ -280,6 +280,7 @@
 	})();
 
 	let node;
+	const i18n = svelteApp.i18n.pages.navigation;
 
 
 	const features = {
