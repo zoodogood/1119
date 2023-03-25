@@ -16,7 +16,7 @@ class Command {
 
     let description;
     if (Util.random(18)){
-      description = `У ${name}${(!first) ? " всё так же" : ""} ${iq} ${ (interaction.message.content.match(/[a-zа-яїъё]+?/i)?.[0] ?? "IQ") .toUpperCase() }`;
+      description = `У ${name}${(!first) ? " всё так же" : ""} ${iq} ${ (interaction.message.content.match(/[a-zа-яїъё]+/i)?.[0] ?? "IQ") .toUpperCase() }`;
     } else {
       iq = ++memb.data.iq;
       description = `Удивительно у ${name} айкью вырос на одну единицу! Сейчас ${interaction.command.toUpperCase()} === ${iq}`;
