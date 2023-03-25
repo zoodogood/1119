@@ -1,5 +1,5 @@
 import HashController from '#site/lib/HashController.js';
-import { parseDocumentLocate, omit, fetchFromInnerApi } from '#lib/safe-utils.js';
+import { parseDocumentLocate, omit, fetchFromInnerApi, ReplaceTemplate } from '#lib/safe-utils.js';
 import { createDialog } from '#site/lib/createDialog.js';
 
 import { whenDocumentReadyStateIsComplete } from '#site/lib/util.js';
@@ -116,12 +116,11 @@ class SvelteApp {
 			.catch(() => {});
 
 		if (!user || typeof user === "string"){
-			// to-do: update
 			const _key = PagesRouter.getPageBy("oauth").key;
 			const link = PagesRouter.relativeToPage(_key);
 			createDialog(svelteApp, {
-				title: "Пожалуйста, авторизуйтесь повторно",
-				description: `Токен действителен в течении двух недель и становится недействительным. Чтобы его обновить авторизуйтесь повторно; Если это сообщение возникает чаще указаного срока, сообщите о проблеме для её решения.\n\n<a href = ${ link }>${ _key }</a>`,
+				title: this.i18n.general.app.externalTokenDialog.title,
+				description: ReplaceTemplate(this.i18n.general.app.externalTokenDialog.description, {link, _key}),
 				isHTMLAccepted: true
 			});
 			return;
