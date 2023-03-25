@@ -7,14 +7,14 @@
 				<li class = "error-file" class:special = { errorFile.fullname === "" }>
 					<a href = "{ PagesRouter.relativeToPage( PagesRouter.getPageBy("errors/list/item").key ) }/:{ errorFile.fullname }">
 						<big>ID: { Component.errors.length - i }</big>
-						<p>Создано: <code>{ day }.{ month }, { hour }:{ minute }</code></p>
+						<p>{ i18n.created } <code>{ day }.{ month }, { hour }:{ minute }</code></p>
 						<br>
 	
 						{#if errorFile.metadata}
 							<section class = "metadata-container">
 								<ul>
-									<li>Уникальных сообщений: { errorFile.metadata.errors }шт.</li>
-									<li>Теги: { errorFile.metadata.tags.join(" ") }</li>
+									<li>{ i18n.uniqueMessages } { errorFile.metadata.errors }{ i18n.units }</li>
+									<li>{ i18n.tags } { errorFile.metadata.tags.join(" ") }</li>
 								</ul>
 							</section>
 						{/if}
@@ -106,6 +106,7 @@
 		const Component = {
 			errors: []
 		}
+		const i18n = svelteApp.pages.errorsIndex;
 	
 		const parseName = (fullname) => {
 			const name = fullname.match(/.+?(?=\.json$)/)?.at(0);
