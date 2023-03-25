@@ -64,12 +64,16 @@
 		-webkit-text-stroke: 1px var( --white );
 		-moz-text-stroke: 1px var( --white );
 		font-weight: 900;
+
+		max-width: 90vw;
+		line-height: 1.2;
 	}
 	small
 	{
 		opacity: 0.3;
 		user-select: none;
 		font-size: 0.3em;	
+		max-width: 90vw;
 	}
 
 	nav
@@ -81,6 +85,11 @@
 
 		display: flex;
 		gap: 1vw;
+	}
+
+	nav a:hover
+	{
+		filter: brightness(1.2);
 	}
 </style>
 
