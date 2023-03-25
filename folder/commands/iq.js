@@ -4,6 +4,7 @@ import { client } from '#bot/client.js';
 class Command {
 
 	async onChatInput(msg, interaction){
+    console.log(interaction);
     let memb = interaction.mention || client.users.cache.get(interaction.params) || msg.author;
 
     let first = true;
@@ -16,7 +17,7 @@ class Command {
 
     let description;
     if (Util.random(18)){
-      description = `У ${name}${(!first) ? " всё так же" : ""} ${iq} ${interaction.command.toUpperCase()}`;
+      description = `У ${name}${(!first) ? " всё так же" : ""} ${iq} ${ (interaction.message.content.match(/[a-zа-яїъё]/i)?.[0] ?? "IQ") .toUpperCase() }`;
     } else {
       iq = ++memb.data.iq;
       description = `Удивительно у ${name} айкью вырос на одну единицу! Сейчас ${interaction.command.toUpperCase()} === ${iq}`;
