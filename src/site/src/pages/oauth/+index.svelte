@@ -1,8 +1,8 @@
 
 <main bind:this = {node}>
-	<h1 class = "title">Привет неизвестный!</h1>
+	<h1 class = "title">{ i18n.greeting }</h1>
 	<p class = "token">
-		Ваш токен: {
+		{ i18n.yourToken }: {
 			String(State.code)
 				.split("")
 				.reduce( (acc, symbol, i) => acc.concat((!i || i % 4) ? symbol : `-${ symbol }`) , "")
@@ -12,18 +12,18 @@
 	<nav>
 
 		<a href={ _redirectURL } class = "button button-to-site">
-			<button>Вернуться к сайту</button>
+			<button>{ i18n.backToSite }</button>
 		</a>
 		
 		{#if State.status & (StatusEnum.dataSuccess | StatusEnum.dataPending)}
 			<a href= {PagesRouter.relativeToPage( PagesRouter.getPageBy("user/panel").key )} class = "button-to-panel">
-				<button disabled = {State.status === StatusEnum.dataPending}>Панель управления</button>
+				<button disabled = {State.status === StatusEnum.dataPending}>{ i18n.panel }</button>
 			</a>
 			{:else}
 			<button
 				on:click={() => PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`)}
 			>
-				Войти
+				{ i18n.login }
 			</button>
 		{/if}
 		
@@ -31,7 +31,7 @@
 	</nav>
 
 	{#if State.status === StatusEnum.dataSuccess}
-		<p class = "tip">Теперь вы можете покинуть эту страницу</p>
+		<p class = "tip">{ i18n.nowYouCanLeave }</p>
 	{/if}
 
 </main>
@@ -115,6 +115,7 @@
 	
 
 	let node;
+	const i18n = svelteApp.i18n.pages.oauth;
 
 
 
@@ -166,7 +167,7 @@
 		svelteApp.user = svelteApp.storage.getUserData();
 
 		const previousContent = titleNode.textContent;
-		const content = `Здравствуй, ${ user.username }!`
+		const content = `${ i18n.specialGreeting }, ${ user.username }!`
 		const glitchText = new GlitchText(previousContent, content, {step: 2});
 		for (const text of glitchText){
 			await sleep(25);
