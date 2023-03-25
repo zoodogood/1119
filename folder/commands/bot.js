@@ -140,7 +140,7 @@ class Command {
       const {user} = interaction;
 
       const embed = {
-        author: {iconURL: client.user.avatarURL(), name: `Получен отзыв из сервера с ${ interaction.guild ? interaction.guild.memberCount : 0 } участниками(-ом)\nСодержимое:`},
+        author: {iconURL: client.user.avatarURL(), name: `Получен отзыв из сервера с ${ ending(interaction.guild ? interaction.guild.memberCount : 0, "участник", "ами", "ом", "ами") }\nСодержимое:`},
         description,
         footer: {text: `${ user.tag } | ${ user.id }`, iconURL: user.avatarURL()},
         components: [{
@@ -173,7 +173,7 @@ class Command {
         customId: "content",
         style: TextInputStyle.Paragraph,
         label: "Если что вдруг",
-        placeholder: "Будьте грубы лишь с теми, кто уже грубит. В остальном будьте няшками и в целом можете отвечать несерьёзно",
+        placeholder: "Будьте няшками и в целом можете отвечать несерьёзно",
         maxLength: 2000
       }];
 
