@@ -1,6 +1,6 @@
 <Layout>
 	<main>
-		<h1>Комплекты ошибок:</h1>
+		<h1>{ i18n.label }</h1>
 		<ul>
 			{#each Component.errors as errorFile, i}
 				{@const [day, month, hour, minute] = errorFile.name.split("-").map(number => `0${ number }`.slice(-2))}
