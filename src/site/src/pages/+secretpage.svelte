@@ -35,7 +35,20 @@
 		background-image: conic-gradient(
 			#00000000, 
 			var(--main-color) 360deg
-		)
+		);
+
+		animation: pulse 30s infinite alternate;
+	}
+
+	@keyframes pulse 
+	{
+		0% {
+			filter: contrast(1);
+		}
+
+		100% {
+			filter: contrast(0.5);
+		}
 	}
 
 
