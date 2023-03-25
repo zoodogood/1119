@@ -5,7 +5,7 @@ pages:
 components:
   Layout:
     Header:
-      ghost: Призрак
+      ghost: Привид
       nav:
         home: Главная
         navigation: Навигация
