@@ -58,6 +58,13 @@
 	}
 	
 
+	p
+	{
+		text-stroke: 1px var( --white );
+		-webkit-text-stroke: 1px var( --white );
+		-moz-text-stroke: 1px var( --white );
+		font-weight: 900;
+	}
 	small
 	{
 		opacity: 0.3;
