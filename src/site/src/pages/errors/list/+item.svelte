@@ -1,14 +1,14 @@
 <Layout>
 <main>
-	<h1>Коллекция ошибок из файла:</h1>
+	<h1>{ i18n.label }</h1>
 	
 	<p>
-		Уникальных элементов:
+		{ i18n.uniqueCount }
 		<span>{ Component.errors.length }</span>
 	</p>
-	<a class = "collections-link" href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("errors/list").key ) }><Icon code = ""/> Вернуться к списку коллекций.</a>
+	<a class = "collections-link" href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("errors/list").key ) }><Icon code = ""/> { i18n.backToCollections }</a>
 	{#if Component.errors.length}
-		<input type="text" placeholder = " Фильтровать" bind:value = { Search.value } title = {`Используйте символ перед словом "!", чтобы исключить варианты содержащие это слово`}>
+		<input type="text" placeholder = " { i18n.filter }" bind:value = { Search.value } title = { i18n.filterTip }>
 	{/if}
 
 	<ul class = "errors">
@@ -18,7 +18,7 @@
 				
 					<h2>{ message }</h2>
 					<section class = "tags" title = "Ключи из контекста">
-						<span>Тэги:</span>
+						<span>{ i18n.tags }</span>
 						<ul on:click = {Search.tagClickHandler} on:keydown = {() => {}}>
 							{#each array.uniqueKeys as tag}
 								<li>{ tag }</li>
@@ -26,20 +26,20 @@
 						</ul>;
 					</section>
 					<p>
-						<span>Вызвано:</span>
+						<span>{ i18n.called }</span>
 						{ ending(array.length, "раз", "", "", "а") };
 					</p>
 					
 					<details class = "error-details">
-						<summary>Сведения</summary>
+						<summary>{ i18n.details }</summary>
 						{#each array as arrayErrorElement, i}
 							<details class = "arrayErrorElement">
-								<summary>Элемент #{ i + 1 } ({ dayjs(arrayErrorElement.timestamp).format("HH:mm") })</summary>
-								<h3>Контекст:</h3>
+								<summary>{ i18n.element } #{ i + 1 } ({ dayjs(arrayErrorElement.timestamp).format("HH:mm") })</summary>
+								<h3>{ i18n.context }</h3>
 								<code class = "context">
 									{ yaml.stringify(arrayErrorElement.context) }
 								</code>
-								<h3>Стэк:</h3>
+								<h3>{ i18n.stack }</h3>
 								<code class = "stack">
 									{arrayErrorElement.stack}
 								</code>
@@ -181,6 +181,7 @@
 	import { parse } from 'flatted';
   	import PagesRouter from "#site/lib/Router.js";
 	
+	const i18n = svelteApp.i18n.pages.errorsItem;
 
 	const Component = {
 		errors: []
