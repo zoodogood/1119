@@ -12,15 +12,15 @@ components:
         discord: Discord
       authorization: Login
     Footer:
-      imagine: Представьте себе...
+      imagine: Imagine is...
       info:
-        label: Информация
-        policy: Политика использования
+        label: Information
+        policy: Usage policy
         thanks: Благодарности
       nav:
-        label: Навигация
-        invite: Пригласить
-        discord: Дискорд
-        github: Гитхаб
-        help: Помощь
-      invite: Пригласить
+        label: Navigation
+        invite: Invite
+        discord: Discord
+        github: Github
+        help: Issue
+      invite: Invite
