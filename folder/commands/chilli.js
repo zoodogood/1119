@@ -6,7 +6,7 @@ class Command {
 
 	async onChatInput(msg, interaction){
     const memb = interaction.mention;
-    const chilli = msg.channel.chilli && msg.channel.chilli.find(chilli => chilli.current === msg.author.id);
+    let chilli = msg.channel.chilli && msg.channel.chilli.find(chilli => chilli.current === msg.author.id);
     setTimeout(() => msg.delete(), 30_000);
 
     const guildMembers = interaction.guild.members;
