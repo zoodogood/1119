@@ -1,4 +1,4 @@
-import { getAddress, timestampToDate } from '#lib/util.js';
+import { getAddress, timestampToDate, ending } from '#lib/util.js';
 import { client } from '#bot/client.js';
 import config from '#config';
 import DataManager from '#lib/modules/DataManager.js';
