@@ -1,8 +1,56 @@
+general:
+  app:
+    externalTokenDialog:
+      title: Пожалуйста, авторизуйтесь повторно
+      description: >-
+        Токен действителен в течении двух недель и становится недействительным.
+        Чтобы его обновить авторизуйтесь повторно; Если это сообщение возникает
+        чаще указаного срока, сообщите о проблеме для её решения.
+
+
+        <a href = ${ link }>${ _key }</a>
 pages:
   public:
     hi: Привет!
     cool: Сундук кота это круто
+  oauth:
+    greeting: Привет неизвестный!
+    specialGreeting: Здравствуй
+    yourToken: Ваш токен
+    backToSite: Вернуться к сайту
+    panel: Панель управления
+    login: Войти
+    nowYouCanLeave: Теперь вы можете покинуть эту страницу
+  secretpage:
+    label: Вы оказались на первой секретной странице
+    future: (радужно смотрит в будущее...)
+  navigation:
+    label: Навигация
+    pages:
+      label: Страницы
+    api:
+      label: API'шечки
+      loading: Загрузка...
+      serverNotAvailable: Сервер недоступен
+      simple: 'Простые пути:'
+      simpleDescription: Данные из точки зачастую можно получить напрямую.
+      special: 'Особые пути:'
+      specialDescription: Опциональны, иногда, требуется аунтефикация или другие действия.
+      regexp: 'Регулярные выражения:'
+      regexpDescription: Не имеют чёткого адреса.
+    other:
+      label: Другое
+      server: Discord server
+      github: Github
+      inviteBot: Пригласить бота
+      learnJavascript: Javascript учебник
+    history:
+      label: История
 components:
+  Giscus:
+    comments: Комментарии
+    identify: 'Идентификатор:'
+    notSupported: Giscus не поддерживается
   Layout:
     Header:
       ghost: Привид
