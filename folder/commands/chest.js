@@ -231,16 +231,17 @@ class Command {
       }
     }
 
-    const itemsOutput = structuredClone(items);
+    
     
     Object.entries(treasures)
       .forEach(([item, quantity]) => handleTreasure(item, quantity));
 
-
+    const itemsOutput = structuredClone(items);
     msg.author.action(Actions.openChest, {msg, interaction, treasures});
 
    
     msg.author.action(Actions.globalQuest, {name: "firstChest"});
+    cooldown.install();
 
     
     const embed = {
@@ -260,6 +261,8 @@ class Command {
       await message.msg(embed);
     }
 
+    
+
     if (items.length === 0 && Util.random(2) === 0){
       const curse = CurseManager.generate({hard: null, user: interaction.user, guild: interaction.guild});
 
@@ -269,6 +272,7 @@ class Command {
         description: `${ interaction.user }, вы были прокляты. В пустом сундуке и не такое встречается.. 🪸`
       });
     }
+
   }
 
 
