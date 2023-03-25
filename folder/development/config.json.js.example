@@ -27,7 +27,8 @@ export default {
 		label: "Призрак",
 	},
 	i18n: {
-		path: "folder/i18n"
+		path: "folder/i18n",
+		availableLanguages: ["en", "ru", "ua"]
 	},
 	giscus: {
 		repository: "zoodogood/1119",
