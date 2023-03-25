@@ -236,7 +236,7 @@
   		const data = await fetchFromInnerApi(`errors/${ path }`);
 		for (const [_message, array] of data){
 			array.forEach(item => {
-				item.context = parse(item.context);
+				item.context = item.context && parse(item.context) || {};
 				item.stack = decodeURI(item.stack).replaceAll("\\", "/");
 			});
 			const set = [...new Set(...array.map(({context}) => Object.keys(context)))];
