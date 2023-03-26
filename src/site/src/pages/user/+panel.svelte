@@ -1,10 +1,8 @@
 
 <Layout>
-
-	<p>Взаимные гильдии: { ending(State.guilds.length, "сущност", "ей", "ь", "и") }</p>
 	
 	
-	<ul style:font-size = "{ 5 - State.guilds?.length * 0.05 }em">
+	<ul style:font-size = "{ 3 - State.guilds?.length * 0.05 }em" class = "guilds-list">
 		{#each State.guilds as guild}
 		<li title = "Сервер { guild.name }">
 			{#if guild.iconURL}
@@ -21,21 +19,68 @@
 
 
 <style>
-	ul 
+	.guilds-list
 	{
+		--offset: 0;
 		display: flex;
-		flex-wrap: wrap;
 		list-style: none;
-		gap: 0.2em;
+		gap: 0.15em;
+
+		background-color: #88888810;
+		scroll-snap-align: center;
+		border-radius: 0.2em;
+		padding: 0.075em;
 	}
+
+	@media (max-width: 800px){
+		.guilds-list
+		{
+			left: 50%;
+			transform: translateX(-50%);
+			position: absolute;
+			max-width: 90vw;
+			top: var( --offset );
+			flex-direction: row;
+
+			overflow-x: auto;
+			overscroll-behavior-x: contain;
+			scroll-snap-type: x mandatory;
+
+			padding-inline: 0.5em;
+			padding-bottom: 0.2em;
+		}
+	}
+
+	@media (min-width: 800px){
+		.guilds-list
+		{	
+			top: 50%;
+			transform: translateY(-50%);
+			position: fixed;
+			max-height: 70vh;
+			left: var( --offset );
+			flex-direction: column;
+
+			overflow-y: auto;
+			overscroll-behavior-y: contain;
+			scroll-snap-type: y mandatory;
+
+			padding-block: 0.5em;
+			padding-right: 0.2em;
+		}
+	}
+
+
 	li
 	{
-		min-width: 2vw;
-		width: 1em;
+		width: calc( 0.5em + 0.5vw + 10px );
 		aspect-ratio: 1 / 1;
 		border-radius: 50%;
 		overflow: hidden;
 		cursor: pointer;
+
+		display: flex;
+		flex-shrink: 0;
 	}
 
 	li img 
@@ -48,11 +93,15 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background-color: #88888820;
+		background-color: var( --dark );
+		color: var( --white );
+		filter: contrast(0.7);
 		width: 100%;
 		height: 100%;
 
 		font-size: 0.5em;
+		font-weight: 600;
+		font-family: monospace;
 	}
 
 	li:hover
