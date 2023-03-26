@@ -2,9 +2,17 @@
 <Layout>
 	
 	
-	<ul style:font-size = "{ 3 - State.guilds?.length * 0.05 }em" class = "guilds-list">
+	<ul style:--elements-size = "{ 3 - State.guilds?.length * 0.05 }em" class = "guilds-list">
 		{#each State.guilds as guild}
-		<li title = "Сервер { guild.name }">
+		{@const onClick = () => State.selectedGuildId !== guild.id ? svelteApp.Hash.include({key: "guildId", value: guild.id}).apply() : svelteApp.Hash.remove("guildId").apply() }
+		<li
+			title = "Сервер { guild.name }"
+			class:selected = { State.selectedGuildId === guild.id }
+			data-id = { guild.id }
+			on:click = { onClick }
+			on:keydown = { onClick }
+			on:contextmenu|preventDefault = { navigator.clipboard.writeText(guild.id) & alert(`Скопирован ID сервера ${ guild.name }`) }
+		>
 			{#if guild.iconURL}
 				<img src = {guild.iconURL} alt = "guild-icon">
 			{:else}
@@ -22,14 +30,16 @@
 	.guilds-list
 	{
 		--offset: 0;
+		font-size: max(0.5em, var( --elements-size, 0em ));
 		display: flex;
 		list-style: none;
 		gap: 0.15em;
 
 		background-color: #88888810;
-		scroll-snap-align: center;
 		border-radius: 0.2em;
 		padding: 0.075em;
+
+		align-items: center;
 	}
 
 	@media (max-width: 800px){
@@ -48,6 +58,12 @@
 
 			padding-inline: 0.5em;
 			padding-bottom: 0.2em;
+			margin-top: 1vh;
+		}
+
+		.guilds-list > li 
+		{
+			margin-top: var( --margin, 0 );
 		}
 	}
 
@@ -68,10 +84,15 @@
 			padding-block: 0.5em;
 			padding-right: 0.2em;
 		}
+
+		.guilds-list > li 
+		{
+			margin-left: var( --margin, 0 );
+		}
 	}
 
 
-	li
+	.guilds-list > li
 	{
 		width: calc( 0.5em + 0.5vw + 10px );
 		aspect-ratio: 1 / 1;
@@ -81,14 +102,21 @@
 
 		display: flex;
 		flex-shrink: 0;
+
+		scroll-snap-align: start;
+
+		position: relative;
+
+		filter: brightness(0.7);
+		transition: filter 300ms;
 	}
 
-	li img 
+	.guilds-list > li img 
 	{
 		width: 100%;
 	}
 
-	li span 
+	.guilds-list > li span 
 	{
 		display: flex;
 		align-items: center;
@@ -102,12 +130,18 @@
 		font-size: 0.5em;
 		font-weight: 600;
 		font-family: monospace;
+		user-select: none;
 	}
 
-	li:hover
+	.guilds-list > li:hover
 	{
 		border-radius: 20%;
 		background: #88888833;
+	}
+
+	.guilds-list li.selected
+	{
+		filter: brightness(1);
 	}
 </style>
 
@@ -119,9 +153,16 @@
   	import { onMount } from 'svelte';
 	import { ending } from '#lib/safe-utils.js';
 
+	const hashStore = svelteApp.Hash.store;
+
 	const State = {
-		guilds: []
+		guilds: [],
+		selectedGuildId: null
 	}
+	
+	$: 
+		State.selectedGuildId = $hashStore.guildId;
+	
 
 	onMount(async () => {
 		const guilds = await fetchGuildsData();
