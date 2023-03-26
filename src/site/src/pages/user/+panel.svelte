@@ -2,7 +2,7 @@
 <Layout>
 	
 	
-	<ul style:--elements-size = "{ 3 - State.guilds?.length * 0.05 }em" class = "guilds-list">
+	<ul style:--elements-size = "{ 3 - State.guilds?.length * 0.15 }em" class = "guilds-list">
 		{#each State.guilds as guild}
 		{@const onClick = () => State.selectedGuildId !== guild.id ? svelteApp.Hash.include({key: "guildId", value: guild.id}).apply() : svelteApp.Hash.remove("guildId").apply() }
 		<li
