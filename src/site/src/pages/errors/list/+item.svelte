@@ -17,7 +17,7 @@
 			<li class = "error-file" id = { message }>
 				
 					<h2>{ message }</h2>
-					<section class = "tags" title = "Ключи из контекста">
+					<section class = "tags">
 						<span>{ i18n.tags }</span>
 						<ul on:click = {Search.tagClickHandler} on:keydown = {() => {}}>
 							{#each array.uniqueKeys as tag}
