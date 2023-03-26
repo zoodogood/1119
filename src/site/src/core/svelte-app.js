@@ -44,8 +44,8 @@ class SvelteApp {
 
 	document = document;
 	Date = new Date();
-	Hash = this.#createHashController();
 	HashData;
+	Hash = this.#createHashController();
 	enviroment = enviroment;
 	url = parseDocumentLocate(this.document.location);
 	PagesURLs = PagesURLs;
