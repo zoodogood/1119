@@ -14,6 +14,7 @@
 		min-height: 50vh;
 
 		animation: apparance 1.5s;
+		position: relative;
 	}
 
 	@keyframes apparance 
