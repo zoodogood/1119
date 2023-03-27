@@ -44,6 +44,7 @@ class TokensUsersExchanger {
 		
 		user.avatarURL = client.rest.cdn.avatar(user.id, user.avatar);
 		prepareGuilds && (() => {
+			user.guilds ||= [];
 			user.guilds && this.fillGuilds(user.guilds);
 			user.mutualBotGuilds = this.fetchMutualGuilds(user);
 		})();
