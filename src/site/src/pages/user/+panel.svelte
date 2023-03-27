@@ -45,6 +45,7 @@
 		
 		{#if State.target.type === TargetType.User}
 			<UserSettings {svelteApp} target = {State.target}/>
+			<button on:click={() => svelteApp.storage.setToken("") & svelteApp.document.location.reload()}>Выйти из аккаунта</button>
 		{:else}
 			<GuildSettings {svelteApp} target = {State.target}/>
 		{/if}
@@ -282,7 +283,7 @@
 	onMount(async () => {
 		const guilds = await fetchGuildsData();
 		if (guilds === null){
-			PagesRouter.redirect(`/oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`);
+			PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`);
 			return;
 			
 		}
