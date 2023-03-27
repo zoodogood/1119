@@ -222,6 +222,7 @@ function toLocaleDeveloperString(value){
 	const {subpath, base} = parsePagesPath(location.pathname);
 
 	return {
+		origin: location.origin,
 		subpath,
 		queries, 
 		base: parseLocationBase(base)
