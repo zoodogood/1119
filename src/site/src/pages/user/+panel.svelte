@@ -13,8 +13,8 @@
 			on:keydown = { onClick }
 			on:contextmenu|preventDefault = {
 				() => navigator.clipboard.writeText(guild.id)
-					.then(() => addNotification({text: `ID скопирован`, position: 'bottom-center', removeAfter: 4_000}))
-					.catch(() => addNotification({text: `Неудалось скопировать ID`, position: 'bottom-center', removeAfter: 4_000}))
+					.then(() => addNotification({text: `ID скопирован`, position: 'bottom-center', removeAfter: 5_000}))
+					.catch(() => addNotification({text: `Неудалось скопировать ID`, position: 'bottom-center', removeAfter: 5_000}))
 			}
 		>
 			{#if guild.iconURL}
