@@ -13,7 +13,7 @@
 						 <ul class = "article-aside-list">
 							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/policy").key )}>{ i18n.info.policy }</a></li>
 							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/friendship").key )}>{ i18n.info.thanks }</a></li>
-							  <li><a href = "">1119</a></li>
+							  <li><a href = {PagesRouter.relativeToPage( PagesRouter.getPageBy("info/1119").key )}>1119</a></li>
 							  <li></li>
 						 </ul>
 					</aside>
