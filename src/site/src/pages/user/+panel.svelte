@@ -199,6 +199,7 @@
 	.guilds-list > li.selected
 	{
 		filter: brightness(1);
+		border-radius: 40%;
 	}
 
 	.guilds-list > li.invite
