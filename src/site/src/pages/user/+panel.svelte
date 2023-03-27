@@ -43,6 +43,11 @@
 		<h1>{State.target.name}</h1>
 		</section>
 		
+		{#if State.target.type === TargetType.User}
+			<UserSettings {svelteApp} target = {State.target}/>
+		{:else}
+			<GuildSettings {svelteApp} target = {State.target}/>
+		{/if}
 	</main>
 	
 </Layout>
@@ -241,11 +246,11 @@
 
 <script>
 	import Layout from '#site-component/Layout';
+	import {UserSettings, GuildSettings} from '#site-component/frames/settings';
   	import svelteApp from '#site/core/svelte-app.js';
   	import PagesRouter from '#site/lib/Router.js';
 	import { fetchFromInnerApi } from '#lib/safe-utils.js';
   	import { onMount } from 'svelte';
-	import { ending } from '#lib/safe-utils.js';
 
 	const hashStore = svelteApp.Hash.store;
 
@@ -277,7 +282,7 @@
 	onMount(async () => {
 		const guilds = await fetchGuildsData();
 		if (guilds === null){
-			PagesRouter.redirect(PagesRouter.getPageBy("oauth").key);
+			PagesRouter.redirect(`/oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`);
 			return;
 			
 		}
