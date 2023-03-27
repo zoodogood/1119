@@ -1,0 +1,11 @@
+<section>
+	<slot/>
+</section>
+
+<style>
+	section
+	{
+		display: flex;
+		flex-wrap: wrap;
+	}
+</style>
