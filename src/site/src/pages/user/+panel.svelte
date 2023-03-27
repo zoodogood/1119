@@ -11,7 +11,11 @@
 			data-id = { guild.id }
 			on:click = { onClick }
 			on:keydown = { onClick }
-			on:contextmenu|preventDefault = { navigator.clipboard.writeText(guild.id) & alert(`Скопирован ID сервера ${ guild.name }`) }
+			on:contextmenu|preventDefault = {
+				() => navigator.clipboard.writeText(guild.id)
+					.then(() => addNotification({text: `ID скопирован`, position: 'bottom-center', removeAfter: 4_000}))
+					.catch(() => addNotification({text: `Неудалось скопировать ID`, position: 'bottom-center', removeAfter: 4_000}))
+			}
 		>
 			{#if guild.iconURL}
 				<img src = {guild.iconURL} alt = "guild-icon" class = "icon">
@@ -248,11 +252,14 @@
 <script>
 	import Layout from '#site-component/Layout';
 	import {UserSettings, GuildSettings} from '#site-component/frames/settings';
+	
   	import svelteApp from '#site/core/svelte-app.js';
   	import PagesRouter from '#site/lib/Router.js';
 	import { fetchFromInnerApi } from '#lib/safe-utils.js';
   	import { onMount } from 'svelte';
 
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
 	const hashStore = svelteApp.Hash.store;
 
 	const TargetType = {
