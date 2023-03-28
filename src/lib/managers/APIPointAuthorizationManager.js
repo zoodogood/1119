@@ -64,7 +64,7 @@ class TokensUsersExchanger {
 
 
 
-async function authorizationProtocol(request, response, {allowRaw = false}){
+async function authorizationProtocol(request, response, {allowRaw = false} = {}){
 	const token = request.headers.authorization;
 	if (!token){
 		response.status(401).send(`"Not authorized"`);
