@@ -1,7 +1,7 @@
 
 <Layout>
 	{#await articlePromise}
-		<h2>Загрузка основного контента</h2>
+		<h2>{ i18n.contentLoading }</h2>
 	{:then data} 
 		{@const source = data.content}
 		<main class = "container">
@@ -9,20 +9,20 @@
 				<group class = "article-author">
 					<img src={data.author?.avatarURL} alt="avatar">
 					<span>
-						<b>Автор:</b>
+						<b>{ i18n.article.author }</b>
 						<p>{data.author?.username ?? null}#{data.author?.discriminator ?? "0000"}</p>
 					</span>
 				</group>
 
 				<group class = "article-statistic">
-					<p>Последнее редактирование: <code>{dayjs(data.timestamp).format("DD.MM.YYYY HH:mm")}</code></p>
-					<p>Время чтения: ~{ timestampToDate(data.wordsCount * AVERAGE_PER_WORD ) }</p>
+					<p>{ i18n.article.lastEdited } <code>{dayjs(data.timestamp).format("DD.MM.YYYY HH:mm")}</code></p>
+					<p>{ i18n.article.readTime } ~{ timestampToDate(data.wordsCount * AVERAGE_PER_WORD ) }</p>
 				</group>
 
 				<group class = "article-tags">
-					<p>Включённые теги:</p>
+					<p>{ i18n.article.tags }</p>
 					<ul>
-						<li>Статья участника</li>
+						<li>{ i18n.article.defaultTag }</li>
 					</ul>
 				</group>
 			</section>
@@ -33,15 +33,15 @@
 
 			<button class = "download-button" on:click={ downloadArticleAsMarkdown }>
 				<Icon code = ""/> 
-				Скачать .md файл
+				{ i18n.downloadmarkdown }
 			</button>
 		</main>
 		
 
 	{:catch}
 		<main class = "article-container">
-			<h1>Нет результатов</h1>
-			<p>Проверьте правильность <code>id</code> в строке запроса или вернитесь к <a href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("articles").key ) }>списку страниц</a>.</p>
+			<h1>{ i18n.noResults.label }</h1>
+			<p>{@html ReplaceTemplate(i18n.noResults.content, {link: PagesRouter.relativeToPage( PagesRouter.getPageBy("articles").key )}) }</p>
 		</main>
 	{/await}
 	<section class = "comments-container">
@@ -173,9 +173,10 @@
 	import Icon from '#site-component/iconic';
 	
 	import svelteApp from '#site/core/svelte-app.js';
-  	import { fetchFromInnerApi, MarkdownMetadata, timestampToDate, dayjs } from '#lib/safe-utils.js';
+  	import { fetchFromInnerApi, MarkdownMetadata, timestampToDate, dayjs, ReplaceTemplate } from '#lib/safe-utils.js';
   	import PagesRouter from '#site/lib/Router.js';
 
+	const i18n = svelteApp.i18n.pages.articlesItem;
 	const key = svelteApp.url.queries.id;
 
 	const AVERAGE_PER_WORD = 60_000 / 200;
