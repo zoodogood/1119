@@ -17,7 +17,8 @@ pages:
     greeting: Привет неизвестный!
     specialGreeting: Здравствуй
     yourToken: Ваш токен
-    backToSite: Вернуться к сайту
+    backTo: Вернуться к
+    backTo_defaultTarget: сайту
     panel: Панель управления
     login: Войти
     nowYouCanLeave: Теперь вы можете покинуть эту страницу
