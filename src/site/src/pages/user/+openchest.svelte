@@ -2,15 +2,14 @@
 <Layout>
 	<article>
 		<main>
-			<h1>Сундук</h1>
+			<h1>{ i18n.label }</h1>
 			<p>
-				При нажатии на кнопку отправляется запрос на сервер. Обработчик запроса содержится в отдельном файле по пути <code>~/src/server/api/user/open-chest.js</code>.
-				Импортирует класс <code>ChestManager</code> из файла по пути <code>~/folder/commands/chest.js</code>, применяя его методы.
+				{ i18n.mainInfo }				
 			</p>
 			{#if !svelteApp.user}
-				<small>~ Войдите в систему ещё раз</small>
+				<small>{ i18n.logInAgain }</small>
 			{/if}
-			<button disabled = {!svelteApp.user} on:click={clickHandler}>Открыть сундук</button>
+			<button disabled = {!svelteApp.user} on:click={clickHandler}>{ i18n.open }</button>
 		</main>
 		<section class = "logger">
 			<img src = { Resources.imageURL } alt="chest">
@@ -32,6 +31,7 @@
 	import Layout from '#site-component/Layout';
   	import svelteApp from '#site/core/svelte-app.js';
 
+	const i18n = svelteApp.i18n.pages.openChest;
 	const Resources = {
 		imageURL: "https://media.discordapp.net/attachments/629546680840093696/778990528947027988/ezgif.com-gif-maker.gif?width=540&height=630"
 	}
@@ -48,11 +48,11 @@
 		}
 
 		if (json.notAllowed){
-			State.loggerList = ["АААА СУНДУК НА ПЕРЕЗАРЯДКЕ!", timestampToDate(json.value)];
+			State.loggerList = [i18n.chestOnCooldown, timestampToDate(json.value)];
 			return;
 		}
 
-		State.loggerList = [`Бонусов: ${ json.openCount }`, `Сокровищ: ${ Object.keys(json.treasures).length }:`, ...Object.entries(json.treasures).map(entrie => entrie.join(" "))];
+		State.loggerList = [`${ i18n.bonuses }: ${ json.openCount }`, `${ i18n.treasures }: ${ Object.keys(json.treasures).length }:`, ...Object.entries(json.treasures).map(entrie => entrie.join(" "))];
 	}
 </script>
 
