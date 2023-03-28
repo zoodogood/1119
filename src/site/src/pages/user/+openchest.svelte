@@ -69,7 +69,7 @@
 
 	button:not([disabled]):hover
 	{
-		transform: scale(0);
+		transform: rotateX(30deg);
 	}
 
 	article
