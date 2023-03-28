@@ -60,6 +60,9 @@ class TokensUsersExchanger {
 	}
 }
 
+
+
+
 async function authorizationProtocol(request, response){
 	const token = request.headers.authorization;
 	if (!token){
