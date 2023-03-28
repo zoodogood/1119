@@ -18,6 +18,17 @@ pages:
     chestOnCooldown: АААА СУНДУК НА ПЕРЕЗАРЯДКЕ!
     bonuses: Бонусов
     treasures: Сокровищ
+  articlesCreate:
+    label: Написать статью
+    atFirstAuthorize: Сначала авторизуйтесь*
+    uploadMarkdown: Загрузить .md файл
+    getDownToPage: Перейти к созданной странице
+    generalCharacters:
+      public: После загрузки содержимое обретёт публичный характер.
+      editable: Вы сможете внести изменения в любой момент времени.
+      author: Ваши никнейм и аватар будут видны другим.
+      noWarnings: Других предупреждений нет.
+    serverResponse: "Ответ сервера:"
   oauth: 
     greeting: Привет неизвестный!
     specialGreeting: Здравствуй
