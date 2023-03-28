@@ -12,7 +12,7 @@
 	<nav>
 
 		<a href={ _redirectURL } class = "button button-to-site">
-			<button>{ i18n.backToSite }</button>
+			<button>{ i18n.backTo } { redirect ?? i18n.backTo_defaultTarget }</button>
 		</a>
 		
 		{#if State.status & (StatusEnum.dataSuccess | StatusEnum.dataPending)}
