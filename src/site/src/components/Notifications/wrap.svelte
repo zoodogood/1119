@@ -10,9 +10,17 @@
 		background-color: var( --main-color ) !important;
 		border-radius: 100vw !important;
 		padding-left: 1em !important;
+		min-width: 400px !important;
 	}
 
-	:global(.notification-button){
+	:global(.notification-content)
+	{
+		width: 350px !important;
+		font-size: 0.9em !important;
+	}
+
+	:global(.notification-button)
+	{
 		color: var( --white ) !important;
 		border: none !important;
 	}
