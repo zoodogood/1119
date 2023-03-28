@@ -1,4 +1,5 @@
 import client from '#bot/client.js';
+import oauth from '#server/api/oauth2/.mod.js';
 
 class TokensUsersExchanger {
 	static #cacheMap = new Map();
@@ -63,7 +64,7 @@ class TokensUsersExchanger {
 
 
 
-async function authorizationProtocol(request, response){
+async function authorizationProtocol(request, response, {allowRaw = false}){
 	const token = request.headers.authorization;
 	if (!token){
 		response.status(401).send(`"Not authorized"`);
@@ -79,6 +80,7 @@ async function authorizationProtocol(request, response){
 
 	const user = client.users.cache.get(rawUser.id);
 	if (!user){
+		!allowRaw && response.status(404).send(`"Only partial data received"`);
 		return {status: null, raw: rawUser};
 	}
 	
