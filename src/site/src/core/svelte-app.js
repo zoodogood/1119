@@ -18,6 +18,7 @@ class StorageManager {
 	setToken(token){
 		if (token === null){
 			localStorage.removeItem("access_token");
+			return;
 		}
 
 		return localStorage.setItem("access_token", token);
@@ -40,6 +41,7 @@ class StorageManager {
 	setUserData(user){
 		if (user === null){
 			localStorage.removeItem("user");
+			return;
 		}
 
 		const ignoreKeysList = ["guilds"];
