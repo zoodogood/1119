@@ -11,8 +11,11 @@ pages:
   openChest:
     label: Сундук
     mainInfo: >-
-      При нажатии на кнопку отправляется запрос на сервер. Обработчик запроса содержится в отдельном файле по пути <code>~/src/server/api/user/open-chest.js</code>.
-			Импортирует класс <code>ChestManager</code> из файла по пути <code>~/folder/commands/chest.js</code>, применяя его методы.
+      При нажатии на кнопку отправляется запрос на сервер. Обработчик запроса
+      содержится в отдельном файле по пути
+      <code>~/src/server/api/user/open-chest.js</code>. Импортирует класс
+      <code>ChestManager</code> из файла по пути
+      <code>~/folder/commands/chest.js</code>, применяя его методы.
     logInAgain: ~ Войдите в систему ещё раз
     open: Открыть сундук
     chestOnCooldown: АААА СУНДУК НА ПЕРЕЗАРЯДКЕ!

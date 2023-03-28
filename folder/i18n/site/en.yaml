@@ -13,6 +13,61 @@ pages:
   public:
     hi: Hello!
     cool: Cat Chest is cool
+  openChest:
+    label: Сундук
+    mainInfo: >-
+      При нажатии на кнопку отправляется запрос на сервер. Обработчик запроса
+      содержится в отдельном файле по пути
+      <code>~/src/server/api/user/open-chest.js</code>. Импортирует класс
+      <code>ChestManager</code> из файла по пути
+      <code>~/folder/commands/chest.js</code>, применяя его методы.
+    logInAgain: ~ Войдите в систему ещё раз
+    open: Открыть сундук
+    chestOnCooldown: АААА СУНДУК НА ПЕРЕЗАРЯДКЕ!
+    bonuses: Бонусов
+    treasures: Сокровищ
+  articlesCreate:
+    label: Написать статью
+    atFirstAuthorize: Сначала авторизуйтесь*
+    uploadMarkdown: Загрузить .md файл
+    getDownToPage: Перейти к созданной странице
+    generalCharacters:
+      public: После загрузки содержимое обретёт публичный характер.
+      editable: Вы сможете внести изменения в любой момент времени.
+      author: Ваши никнейм и аватар будут видны другим.
+      noWarnings: Других предупреждений нет.
+    serverResponse: 'Ответ сервера:'
+  articlesIndex:
+    label: Статьи
+    description: >-
+      Что может быть хуже экспериментов ради экспериментов.. Эта часть сайта
+      просто *существует* и, надеюсь, живёт своей жизнью. В будущем вы здесь
+      найдете тексты раскрывающие возможности бота.
+    createInfo:
+      label: Создать
+      content: >-
+        Чтобы написать статью авторизуйтесь и воспользуйтесь <a href = ${ href
+        }>этой ссылкой</a>.
+    articleList:
+      label: 'Написание статьи:'
+      filesCount: 'Количество файлов:'
+      loading: Загрузка...
+      hereEmpty: Здесь пусто..
+      loadingFailed: Загрузка неудалась
+  articlesItem:
+    contentLoading: Загрузка основного контента
+    article:
+      author: 'Автор:'
+      lastEdited: 'Последнее редактирование:'
+      readTime: 'Время чтения:'
+      tags: 'Включённые теги:'
+      defaultTag: Статья участника
+    downloadMarkdown: Скачать .md файл
+    noResults:
+      label: Нет результатов
+      content: >-
+        Проверьте правильность <code>id</code> в строке запроса или вернитесь к
+        <a href = ${ link }>списку страниц</a>.
   oauth:
     greeting: Привет неизвестный!
     specialGreeting: Здравствуй
@@ -42,6 +97,11 @@ pages:
     element: Элемент
     context: 'Контекст:'
     stack: 'Стек:'
+    times__ending:
+      - раз
+      - ''
+      - ''
+      - а
   secretpage:
     label: Вы оказались на первой секретной странице
     future: (радужно смотрит в будущее...)
