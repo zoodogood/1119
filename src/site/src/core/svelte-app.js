@@ -16,6 +16,10 @@ class StorageManager {
 	}
 
 	setToken(token){
+		if (token === null){
+			localStorage.removeItem("access_token");
+		}
+
 		return localStorage.setItem("access_token", token);
 	}
 
@@ -37,7 +41,7 @@ class StorageManager {
 		if (user === null){
 			localStorage.removeItem("user");
 		}
-		
+
 		const ignoreKeysList = ["guilds"];
 		user = omit(user, (key) => !ignoreKeysList.includes(key));
 		return localStorage.setItem("user", JSON.stringify(user));
