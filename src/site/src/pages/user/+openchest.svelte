@@ -4,7 +4,7 @@
 		<main>
 			<h1>{ i18n.label }</h1>
 			<p>
-				{ i18n.mainInfo }				
+				{@html i18n.mainInfo }				
 			</p>
 			{#if !svelteApp.user}
 				<small>{ i18n.logInAgain }</small>
