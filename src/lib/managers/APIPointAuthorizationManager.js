@@ -78,6 +78,10 @@ async function authorizationProtocol(request, response){
 	}
 
 	const user = client.users.cache.get(rawUser.id);
+	if (!user){
+		return {status: null, raw: rawUser};
+	}
+	
 	return {status: true, data: user};
 }
 
