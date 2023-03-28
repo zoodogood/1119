@@ -11,7 +11,7 @@ class Route extends BaseRoute {
 	}
 
 	async post(request, response){
-		const {data: user} = authorizationProtocol(request, response);
+		const {data: user} = await authorizationProtocol(request, response);
 		if (!user){
 			return;
 		}
