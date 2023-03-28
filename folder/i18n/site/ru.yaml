@@ -41,6 +41,18 @@ pages:
       loading: Загрузка...
       hereEmpty: Здесь пусто..
       loadingFailed: Загрузка неудалась
+  articlesItem:
+    contentLoading: Загрузка основного контента
+    article: 
+      author: "Автор:" 
+      lastEdited: "Последнее редактирование:"
+      readTime: "Время чтения:"
+      tags: "Включённые теги:"
+      defaultTag: Статья участника
+    downloadMarkdown: Скачать .md файл
+    noResults: 
+      label: Нет результатов
+      content: Проверьте правильность <code>id</code> в строке запроса или вернитесь к <a href = ${ link }>списку страниц</a>.
   oauth: 
     greeting: Привет неизвестный!
     specialGreeting: Здравствуй
