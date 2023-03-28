@@ -1,20 +1,20 @@
 
 <Layout>
 	<group>
-		<h1>Статьи</h1>
-		<p>Что может быть хуже экспериментов ради экспериментов.. Эта часть сайта просто *существует* и, надеюсь, живёт своей жизнью. В будущем вы здесь найдете тексты раскрывающие возможности бота.</p>
+		<h1>{ i18n.label }</h1>
+		<p>{ i18n.description }</p>
 	</group>
 	
-	<section>
-		<h3>Создать</h3>
-		<p>Чтобы написать статью авторизуйтесь и воспользуйтесь <a href = { PagesRouter.relativeToPage(PagesRouter.getPageBy("articles/create").key) }>этой ссылкой</a>.</p>
+	<section class = "article-create">
+		<h3>{ i18n.createInfo.label }</h3>
+		<p>{ ReplaceTemplate(i18n.createInfo.content, {href: PagesRouter.relativeToPage(PagesRouter.getPageBy("articles/create").key)}) }</p>
 	</section>
 
 	<section class = "articles-list">
-		<h3>Написанные статьи:</h3>
-		<p>Количество файлов: { articlesPromise.filesCount ?? 0 }</p>
+		<h3>{ i18n.articlesList.label }</h3>
+		<p>{ i18n.articlesList.filesCount } { articlesPromise.filesCount ?? 0 }</p>
 		{#await articlesPromise}
-			<p>Загрузка...</p>
+			<p>{ i18n.articlesList.loading }</p>
 		{:then data}
 			{@const list = data.filter(Search.filter)}
 			<input type="text" placeholder = " Фильтровать" bind:value = { Search.value }>
@@ -25,11 +25,11 @@
 						<a {href}><li>{ key }</li></a>
 					{/each}
 				{:else}
-					<p>Здесь пусто..</p>
+					<p>{ i18n.articlesList.hereEmpty }</p>
 				{/if}
 			</ul>
 		{:catch}
-			<p>Загрузка неудалась</p>
+			<p>{ i18n.articlesList.loadingFailed }</p>
 		{/await}
 	</section>
 </Layout>
@@ -88,8 +88,9 @@
 <script>
 	import Layout from '#site-component/Layout';
 	import PagesRouter from '#site/lib/Router.js';
-  	import { fetchFromInnerApi } from '#lib/safe-utils.js';
+  	import { fetchFromInnerApi, ReplaceTemplate } from '#lib/safe-utils.js';
 
+	const i18n = svelteApp.i18n.pages.articlesIndex;
 	const articlesPromise = (async () => {
 		return fetchFromInnerApi("site/articles");
 	})();
@@ -104,4 +105,5 @@
 			return name.includes(Search.value);
 		}
 	}
+
 </script>
