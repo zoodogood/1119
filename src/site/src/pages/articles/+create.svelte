@@ -1,28 +1,28 @@
 <Layout>
 	{#if !svelteApp.user}
-		<p>Сначала авторизуйтесь*</p>
+		<p>{ i18n.atFirstAuthorize }</p>
 	{/if}
-	<h1>Написать статью</h1>
+	<h1>{ i18n.label }</h1>
 
 	<main>
 		<section class = "main-buttons">
 			<label for="load-file" bind:this = { labelNode } on:click={(pointerEvent) => !svelteApp.user && pointerEvent.preventDefault()} on:keydown={(keyEvent) => !svelteApp.user && keyEvent.preventDefault()}>
 				<input type="file" id="load-file" accept=".md" on:change={onFileUpload}>
-				<button on:click = {() => labelNode.click()} disabled = {!svelteApp.user || null}>Загрузить .md файл</button>
+				<button on:click = {() => labelNode.click()} disabled = {!svelteApp.user || null}>{ i18n.uploadMarkdown }</button>
 			</label>
 			{#if Contents.filename}
 				<a href = "{ PagesRouter.relativeToPage(PagesRouter.getPageBy("articles/item").key) }?id={ svelteApp.user.id }/{ Contents.filename }">
-					<button>Перейти к созданной странице</button>
+					<button>{ i18n.getDownToPage }</button>
 				</a>
 			{/if}
 		</section>
 		
 	</main>
 	
-	<p>После загрузки содержимое обретёт публичный характер.</p>
-	<p>Вы сможете внести изменения в любой момент времени.</p>
-	<p>Ваши никнейм и аватар будут видны другим.</p>
-	<p>Других предупреждений нет.</p>
+	<p>{ i18n.generalCharacters.public }</p>
+	<p>{ i18n.generalCharacters.editable }</p>
+	<p>{ i18n.generalCharacters.author }</p>
+	<p>{ i18n.generalCharacters.noWarnings }</p>
 	
 
 </Layout>
@@ -50,6 +50,7 @@
   	import { fetchFromInnerApi, MarkdownMetadata, sleep } from '#lib/safe-utils.js';
   	import { svelteApp } from '#site/core/svelte-app.js';
 
+	const i18n = svelteApp.i18n.pages.articlesCreate;
 	const Contents = {
 		filename: null
 	}
@@ -76,7 +77,7 @@
 
 		new Dialog({
 			target: document.body,
-			props: {title: "Ответ сервера:", description: MarkdownMetadata.yaml.stringify(answer), useClassic: true}
+			props: {title: i18n.serverResponse, description: MarkdownMetadata.yaml.stringify(answer), useClassic: true}
 		});
 		button.removeAttribute("disabled");
 
