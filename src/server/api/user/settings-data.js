@@ -1,6 +1,6 @@
 import client from "#bot/client.js";
 import { BaseRoute } from "#server/router.js";
-const PREFIX = "/user/chest-open";
+const PREFIX = "/user/settings-data";
 import { authorizationProtocol } from "#lib/managers/APIPointAuthorizationManager.js";
 
 
@@ -10,6 +10,7 @@ class Route extends BaseRoute {
 	constructor(express){
 		super();
 	}
+	isSimple = false;
 
 	async post(request, response){
 		const {data: user} = await authorizationProtocol(request, response);
