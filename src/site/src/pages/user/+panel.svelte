@@ -49,7 +49,18 @@
 		
 		{#if State.target.type === TargetType.User}
 			<UserSettings {svelteApp} target = {State.target}/>
-			<button on:click={() => svelteApp.storage.setToken("") & svelteApp.document.location.reload()}>Выйти из аккаунта</button>
+			<button 
+				on:click={() => {
+					svelteApp.storage.setToken(null);
+					svelteApp.storage.setUserData(null);
+					svelteApp.document.location.reload();
+					return;
+				}}
+				style:background-color = {"#dd000099"}
+			>
+				Выйти из аккаунта
+			</button>
+			
 		{:else}
 			<GuildSettings {svelteApp} target = {State.target}/>
 		{/if}
@@ -272,7 +283,8 @@
 		target: {}
 	}
 	
-	$: {
+	$: if (svelteApp.user){
+		
 		State.selectedGuild = State.guilds.find(guild => guild.id === $hashStore.guildId) ?? null;
 		const targetType = State.selectedGuild ? TargetType.Guild : TargetType.User;
 		const targetEntity = targetType === TargetType.User ? svelteApp.user : State.selectedGuild;
@@ -292,7 +304,11 @@
 		if (guilds === null){
 			PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`);
 			return;
-			
+		}
+
+		if (guilds === undefined){
+			addNotification({text: "Неудалось получить данные гильдий", position: "bottom-center"});
+			return;
 		}
 		State.guilds = guilds.filter(guild => guilds.mutual.includes(guild.id));
 	});
@@ -308,7 +324,7 @@
 		const userRaw = await fetchFromInnerApi("oauth2/user", {headers})
 			.catch(() => {});
 
-		if (!userRaw){
+		if (!userRaw?.id){
 			return;
 		}
 
