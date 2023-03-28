@@ -34,6 +34,10 @@ class StorageManager {
 	}
 
 	setUserData(user){
+		if (user === null){
+			localStorage.removeItem("user");
+		}
+		
 		const ignoreKeysList = ["guilds"];
 		user = omit(user, (key) => !ignoreKeysList.includes(key));
 		return localStorage.setItem("user", JSON.stringify(user));
