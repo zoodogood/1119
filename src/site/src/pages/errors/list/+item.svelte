@@ -27,7 +27,7 @@
 					</section>
 					<p>
 						<span>{ i18n.called }</span>
-						{ ending(array.length, "раз", "", "", "а") };
+						{ ending(array.length, ...i18n.times__ending) };
 					</p>
 					
 					<details class = "error-details">
@@ -177,7 +177,6 @@
 	import Icon from '#site-component/iconic';
 
 	import { dayjs, ending, fetchFromInnerApi, yaml } from '#lib/safe-utils.js';
-	import { fly } from 'svelte/transition';
 	import { parse } from 'flatted';
   	import PagesRouter from "#site/lib/Router.js";
 	
