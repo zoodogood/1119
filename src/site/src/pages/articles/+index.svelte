@@ -7,7 +7,7 @@
 	
 	<section class = "article-create">
 		<h3>{ i18n.createInfo.label }</h3>
-		<p>{ ReplaceTemplate(i18n.createInfo.content, {href: PagesRouter.relativeToPage(PagesRouter.getPageBy("articles/create").key)}) }</p>
+		<p>{@html ReplaceTemplate(i18n.createInfo.content, {href: PagesRouter.relativeToPage(PagesRouter.getPageBy("articles/create").key)}) }</p>
 	</section>
 
 	<section class = "articles-list">
