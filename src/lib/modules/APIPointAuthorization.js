@@ -1,5 +1,7 @@
-import client from '#bot/client.js';
-import oauth from '#server/api/oauth2/.mod.js';
+
+import client from "#bot/client.js";
+import config from "#config";
+import {OAuth2} from "discord-oauth2-utils";
 
 class TokensUsersExchanger {
 	static #cacheMap = new Map();
@@ -19,7 +21,7 @@ class TokensUsersExchanger {
 	}
 
 	static async fromOAuth(token){
-		const data = await oauth.fetchUser(token) ?? {};
+		const data = await APIPointAuthorizationManager.OAuth.fetchUser(token) ?? {};
 		const {user, guilds: _guilds} = data;
 		
 		if (!user){
@@ -93,7 +95,19 @@ async function authorizationProtocol(request, response, {allowRaw = false} = {})
 class APIPointAuthorizationManager {
 	static authorizationProtocol = authorizationProtocol;
 	static TokensUsersExchanger = TokensUsersExchanger;
+	static OAuth = null;
 }
+
+client.once("ready", () => {
+	APIPointAuthorizationManager.OAuth =
+		new OAuth2({
+			clientId: client.user.id,
+			clientSecret: process.env.DISCORD_OAUTH2_TOKEN,
+
+			scopes: ["identify", "guilds"],
+			redirectURI: `${ config.server.origin }/oauth2/callback`,
+		});
+})
 
 export default APIPointAuthorizationManager;
 export { APIPointAuthorizationManager, TokensUsersExchanger, authorizationProtocol };

@@ -1,5 +1,5 @@
 const PREFIX = "/oauth2/callback";
-import oauth from './.mod.js';
+import { APIPointAuthorizationManager } from '#lib/modules/APIPointAuthorization.js';
 import PagesRouter from '#site/lib/Router.js';
 import { BaseRoute } from '#server/router.js';
 import config from '#config';
@@ -15,6 +15,7 @@ class Route extends BaseRoute {
 	
 	async get(request, response){
 		const code = request.query.code;
+		const oauth = APIPointAuthorizationManager.OAuth;
 		
 		if (!oauth.clientSecret){
 			throw new Error("Accessing OAuth2 without DISCORD_OAUTH2_TOKEN");
