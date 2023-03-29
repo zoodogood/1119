@@ -67,7 +67,8 @@ function parseInputCommandFromMessage(message){
 
 
 class CommandsManager {
-
+	static collection = null;
+	
 	static parseInputCommandFromMessage = parseInputCommandFromMessage;
 
 	static emitter = new EventsEmitter();
