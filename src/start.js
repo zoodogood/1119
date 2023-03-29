@@ -693,6 +693,10 @@ Array.prototype.sortBy = function(property, reverse){
   return this.sort(func);
 }
 
+BigInt.prototype.toJSON = function(){
+  return this.toString();
+}
+
 
 
 Object.defineProperty(Discord.User.prototype, "guilds", {get(){
