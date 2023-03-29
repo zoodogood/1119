@@ -92,6 +92,8 @@ async function authorizationProtocol(request, response, {allowRaw = false} = {})
 
 class APIPointAuthorizationManager {
 	static authorizationProtocol = authorizationProtocol;
+	static TokensUsersExchanger = TokensUsersExchanger;
 }
 
+export default APIPointAuthorizationManager;
 export { APIPointAuthorizationManager, TokensUsersExchanger, authorizationProtocol };

@@ -1,7 +1,7 @@
 const PREFIX = "/oauth2/user";
 import client from '#bot/client.js';
 import { BaseRoute } from '#server/router.js';
-import { TokensUsersExchanger } from '#lib/managers/APIPointAuthorizationManager.js';
+import { TokensUsersExchanger } from '#lib/modules/APIPointAuthorization.js';
 
 
 

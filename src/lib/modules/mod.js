@@ -13,10 +13,11 @@ import GuildVariablesManager from './GuildVariablesManager.js';
 import CooldownManager from "./CooldownManager.js";
 import Properties from "./Properties.js";
 import Executor from "./Executor.js";
+import APIPointAuthorizationManager from "./APIPointAuthorization.js";
 
 export {
 	DataManager, Template, CurseManager, BossManager, TimeEventsManager,
 	CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler,
 	EventsManager, GuildVariablesManager, CooldownManager, 
-	Properties, Executor
+	Properties, Executor, APIPointAuthorizationManager
 };

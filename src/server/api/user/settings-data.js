@@ -1,7 +1,7 @@
 import client from "#bot/client.js";
 import { BaseRoute } from "#server/router.js";
 const PREFIX = "/user/settings-data";
-import { authorizationProtocol } from "#lib/managers/APIPointAuthorizationManager.js";
+import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 
 
 class Route extends BaseRoute {

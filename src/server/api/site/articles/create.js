@@ -2,7 +2,7 @@ import { BaseRoute } from "#server/router.js";
 import { ArticlesManager } from './.mod.js';
 import { omit } from "#lib/safe-utils.js";
 import bodyParser from "body-parser";
-import { authorizationProtocol } from "#lib/managers/APIPointAuthorizationManager.js";
+import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 
 
 const PREFIX = "/site/articles/create";
