@@ -2,6 +2,7 @@
 import client from "#bot/client.js";
 import config from "#config";
 import {OAuth2} from "discord-oauth2-utils";
+import { User } from "discord.js";
 
 class TokensUsersExchanger {
 	static #cacheMap = new Map();
@@ -45,7 +46,7 @@ class TokensUsersExchanger {
 		user.avatarURL = client.rest.cdn.avatar(user.id, user.avatar);
 		prepareGuilds && (() => {
 			user.guilds ||= [];
-			user.guilds && this.fillGuilds(user.guilds);
+			!(user instanceof User) && user.guilds && this.fillGuilds(user.guilds);
 			user.mutualBotGuilds = this.fetchMutualGuilds(user);
 		})();
 		return user;
