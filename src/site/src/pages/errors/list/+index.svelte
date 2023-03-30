@@ -14,7 +14,7 @@
 							<section class = "metadata-container">
 								<ul>
 									<li data-value = { errorFile.metadata.errorsCount ?? null }>{ i18n.uniqueMessages } { errorFile.metadata.errorsCount } { i18n.units }</li>
-									<li data-value = { errorFile.metadata.uniqueTags ?? null }>{ i18n.tags } { errorFile.metadata.uniqueTags?.join(", ") }</li>
+									<li data-value = { errorFile.metadata.uniqueTags?.length || null }>{ i18n.tags } { errorFile.metadata.uniqueTags?.join(", ") }</li>
 								</ul>
 							</section>
 						{/if}
