@@ -1,10 +1,10 @@
 <Layout>
 	<main>
 		<h1>{ i18n.label }</h1>
-		<ul>
+		<ul class = "errors-list">
 			{#each Component.errors as errorFile, i}
 				{@const [day, month, hour, minute] = errorFile.name.split("-").map(number => `0${ number }`.slice(-2))}
-				<li class = "error-file" class:special = { errorFile.fullname === "" }>
+				<li class = "error-file" class:special = { errorFile.fullname === "" } data-uniqueErrors = { errorFile.metadata?.errorsCount }>
 					<a href = "{ PagesRouter.relativeToPage( PagesRouter.getPageBy("errors/list/item").key ) }/:{ errorFile.fullname }">
 						<big>ID: { Component.errors.length - i }</big>
 						<p>{ i18n.created } <code>{ day }.{ month }, { hour }:{ minute }</code></p>
@@ -13,8 +13,8 @@
 						{#if errorFile.metadata}
 							<section class = "metadata-container">
 								<ul>
-									<li>{ i18n.uniqueMessages } { errorFile.metadata.errors }{ i18n.units }</li>
-									<li>{ i18n.tags } { errorFile.metadata.tags.join(" ") }</li>
+									<li data-value = { errorFile.metadata.errorsCount ?? null }>{ i18n.uniqueMessages } { errorFile.metadata.errorsCount } { i18n.units }</li>
+									<li data-value = { errorFile.metadata.tags ?? null }>{ i18n.tags } { errorFile.metadata.tags?.join(" ") }</li>
 								</ul>
 							</section>
 						{/if}
@@ -35,7 +35,7 @@
 			font-weight: 100;
 		}
 	
-		ul
+		.errors-list
 		{
 			display: flex;
 			flex-wrap: wrap;
@@ -55,6 +55,11 @@
 			font-size: 0.8em;
 			position: relative;
 		}
+
+		.error-file[data-uniqueErrors="0"]
+		{
+			opacity: 0.5;
+		}
 	
 		.error-file a 
 		{
@@ -71,11 +76,23 @@
 		{
 			background-color: #88888844;
 		}
-	
+		
+		.metadata-container ul
+		{
+			display: flex;
+			flex-direction: column;
+			list-style: none;
+		}
+
 		.error-file .metadata-container li
 		{
 			font-size: 0.7em;
 			opacity: 0.7;
+		}
+
+		.error-file .metadata-container li:not([data-value])
+		{
+			display: none;
 		}
 		
 		.error-file.special big::before
@@ -92,6 +109,9 @@
 			opacity: 0.3;
 		}
 
+
+		
+
 	</style>
 	
 	
@@ -99,14 +119,13 @@
 		import svelteApp from "#site/core/svelte-app.js";
 		import Layout from '#site-component/Layout';
 		import { fetchFromInnerApi } from '#lib/safe-utils.js';
-		import { whenDocumentReadyStateIsComplete } from "#site/lib/util.js";
 		import PagesRouter from "#site/lib/Router.js";
 		
 	
 		const Component = {
 			errors: []
 		}
-		const i18n = svelteApp.pages.errorsIndex;
+		const i18n = svelteApp.i18n.pages.errorsIndex;
 	
 		const parseName = (fullname) => {
 			const name = fullname.match(/.+?(?=\.json$)/)?.at(0);
@@ -119,17 +138,20 @@
 	
 		(async () => {
 		
-		  	const data = await fetchFromInnerApi("errors/files");
-	
-			const errors = data
+		  	const {list, metadata} = await fetchFromInnerApi("errors/files");
+			const errors = list
 				.map(parseName);
-	
+			
+			
 			
 			const current = {fullname: "", name: "дд-мм-чч-мм"};
 			Component.errors = [current, ...errors.reverse()];
 	
-			await whenDocumentReadyStateIsComplete(svelteApp.document);
-
+			for (const [name, metadata] of Object.entries(metadata)){
+				const error = errors.find(error => error.name === name);
+				error.metadata = metadata;
+				error.metadata.errorsCount = metadata.messages.length;
+			}
 
 			
 		})();
