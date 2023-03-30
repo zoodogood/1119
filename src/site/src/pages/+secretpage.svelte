@@ -12,6 +12,16 @@
 </nav>
 
 
+<!-- svelte-ignore missing-declaration -->
+<svelte:element
+	this = "script"
+	async
+	src = "https://zoodogood.github.io/LetItSnow/LetItSnow.js"
+	on:load = { function(){ return new SnowBackground() } }
+/>
+
+
+
 
 <style>
 	main 
@@ -103,6 +113,12 @@
 	nav a:hover
 	{
 		filter: brightness(1.2);
+	}
+
+	nav :global(.switch-theme)
+	{
+		background: none;
+		color: var( --main-color );
 	}
 </style>
 
