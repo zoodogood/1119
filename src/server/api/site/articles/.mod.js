@@ -36,7 +36,15 @@ class ArticlesCacheData {
 	parseMetadata(data){
 		const {author: _author, timestamp, tags} = MarkdownMetadata.parse(data) ?? {};
 		const author = _author ? {id: _author.id, username: _author.username} : null;
-		return {author, timestamp, tags};
+
+		const content = MarkdownMetadata.removeMetadataFieldIn(data);
+		
+		const wordsCount = content
+			.split(" ")
+			.filter(word => word.match(/[a-zа-я]/i))
+			.length;
+
+		return {author, timestamp, tags, wordsCount};
 	}
 
 	async #addToCache(id){
