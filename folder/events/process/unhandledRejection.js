@@ -9,7 +9,7 @@ class Event extends BaseEvent {
 	}
 
 	async run(error){
-		ErrorsHandler.Audit.push(error);
+		ErrorsHandler.Audit.push(error, {uncaughtException: true});
 
 		const ignoreMessages = [
 			"Cannot execute action on a DM channel",
