@@ -20,9 +20,10 @@
 			<input type="text" placeholder = " Фильтровать" bind:value = { Search.value }>
 			<ul>
 				{#if list.length}
-					{#each list as key}
-						{@const href = `${ PagesRouter.relativeToPage(PagesRouter.getPageBy("articles/item").key) }?id=${ key }`}
-						<a {href}><li>{ key }</li></a>
+					{#each list as article}
+						{@const {id, metadata, name} = article}
+						{@const href = `${ PagesRouter.relativeToPage(PagesRouter.getPageBy("articles/item").key) }?id=${ id }`}
+						<a {href}><li>{ name }</li></a>
 					{/each}
 				{:else}
 					<p>{ i18n.articlesList.hereEmpty }</p>
@@ -90,10 +91,18 @@
 	import PagesRouter from '#site/lib/Router.js';
   	import { fetchFromInnerApi, ReplaceTemplate } from '#lib/safe-utils.js';
   	import svelteApp from '#site/core/svelte-app.js';
+	import Path from 'path';
 
 	const i18n = svelteApp.i18n.pages.articlesIndex;
 	const articlesPromise = (async () => {
-		return fetchFromInnerApi("site/articles");
+		const {list, metadata: _metadata} = await fetchFromInnerApi("site/articles");
+		const parse = (id) => {
+			const metadata = _metadata[id];
+			const name = Path.basename(id, ".md");
+			return {id, name, metadata};
+		};
+		const articles = list.map(parse);
+		return articles;
 	})();
 
 	articlesPromise
@@ -102,8 +111,8 @@
 	
 	const Search = {
 		value: "",
-		filter(name){
-			return name.includes(Search.value);
+		filter(article){
+			return article.name.includes(Search.value);
 		}
 	}
 
