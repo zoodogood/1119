@@ -16,7 +16,7 @@
 
 				<group class = "article-statistic">
 					<p>{ i18n.article.lastEdited } <code>{dayjs(data.timestamp).format("DD.MM.YYYY HH:mm")}</code></p>
-					<p>{ i18n.article.readTime } ~{ timestampToDate(data.wordsCount * AVERAGE_PER_WORD ) }</p>
+					<p title = {`${ i18n.article.words }: ${ data.wordsCount }`}>{ i18n.article.readTime } ~{ timestampToDate(data.wordsCount * AVERAGE_PER_WORD ) }</p>
 				</group>
 
 				<group class = "article-tags">
