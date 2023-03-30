@@ -97,10 +97,9 @@ class APIPointAuthorizationManager {
 	static authorizationProtocol = authorizationProtocol;
 	static TokensUsersExchanger = TokensUsersExchanger;
 	static OAuth = null;
-}
 
-client.once("ready", () => {
-	APIPointAuthorizationManager.OAuth =
+	static onClientReady(){
+		this.OAuth =
 		new OAuth2({
 			clientId: client.user.id,
 			clientSecret: process.env.DISCORD_OAUTH2_TOKEN,
@@ -108,7 +107,12 @@ client.once("ready", () => {
 			scopes: ["identify", "guilds"],
 			redirectURI: `${ config.server.origin }/oauth2/callback`,
 		});
-})
+	}
+}
+
+client.once("ready", () => {
+	APIPointAuthorizationManager.onClientReady();
+});
 
 export default APIPointAuthorizationManager;
 export { APIPointAuthorizationManager, TokensUsersExchanger, authorizationProtocol };
