@@ -80,7 +80,7 @@ pages:
   errorsIndex:
     label: 'Комплекты ошибок:'
     created: 'Создано:'
-    uniqueMessages: 'Уникальных сообщений:'
+    uniqueMessages: 'Уникальных элементов:'
     tags: 'Теги:'
     units: шт.
   errorsItem:
