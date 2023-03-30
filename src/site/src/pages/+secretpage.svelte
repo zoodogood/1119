@@ -17,7 +17,7 @@
 	this = "script"
 	async
 	src = "https://zoodogood.github.io/LetItSnow/LetItSnow.js"
-	on:load = { function(){ return new SnowBackground() } }
+	on:load = { function(){ return new SnowBackground({particlesCount: 200}) } }
 />
 
 
