@@ -6,13 +6,58 @@ import { Collection } from '@discordjs/collection';
 import { stringify } from 'flatted';
 import config from '#config';
 
+
+class ErrorsDataCache {
+	#cache = new Map();
+	constructor(Audit){
+		this.Audit = Audit;
+		this.update();
+	}
+
+	async update(){
+		const files = await this.Audit.fetchLogs();
+		for (const name of files){
+			this.#addToCache(name);
+		} 
+	}
+
+	getBulk(){
+		return Object.fromEntries(
+			[...this.#cache.entries()]
+		);
+	}
+
+	async get(name){
+		const cache = this.#cache;
+		name = this.normalizeName(name);
+		!cache.has(name) && await this.#addToCache(name);
+
+		return cache.get(name);
+	}
+
+	normalizeName(name){
+		if (name.endsWith(".json")){
+			name = name.replace(/\.json$/, "");
+		}
+		return name;
+	}
+
+	async #addToCache(name){
+		name = this.normalizeName(name);
+		const data = JSON.parse(await this.Audit.readFile(`${ name }.json`));
+		const errors = data.map(errorData => errorData.at(0));
+		this.#cache.set(name, errors);
+	}
+}
+
+
+
 class ErrorsAudit {
 	collection = new Collection();
 
 	static file = {
 		directory: `${ process.cwd() }/folder/data/errors`,
 		write(data){
-			const now = new Date();
 			const date = dayjs().format("DD-MM-HH-mm");
 		  	const path = `${ this.directory }/${ date }.json`;
 			
@@ -71,8 +116,12 @@ class ErrorsAudit {
 };
 
 
+
+
+
 class ErrorsHandler {
 	static Audit = new ErrorsAudit();
+	static CacheData = new ErrorsDataCache(this.Audit);
 
 	static async sendErrorInfo({channel, error, interaction = {}, description = ""}){
 		const { fileOfError, strokeOfError } = this.parseErrorStack(error.stack, {node_modules: false}) ?? {};
