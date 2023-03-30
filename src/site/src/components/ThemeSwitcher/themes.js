@@ -62,6 +62,27 @@ export default new Map(Object.entries({
 		"--theme-accent-name": "light"
 	},
 
+	brightGreen: {
+		"--text-theme-accent": "var(--white)",
+		"--background-theme-accent": "var(--dark)",
+		"--main-color": "#ff9f64",
+		"--theme-accent-name": "dark"
+	},
+
+	darkGreen: {
+		"--main-color": "#e1864e",
+		"--text-theme-accent": "var(--white)",
+		"--background-theme-accent": "var(--dark)",
+		"--theme-accent-name": "dark"
+	},
+
+	lightGreen: {
+		"--main-color": "#e1864e",
+		"--text-theme-accent": "var(--dark)",
+		"--background-theme-accent": "var(--white)",
+		"--theme-accent-name": "light"
+	},
+
 	
 
 	contrast: {
