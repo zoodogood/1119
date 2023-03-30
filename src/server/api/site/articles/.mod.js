@@ -6,9 +6,50 @@ import Path from 'path';
 
 const DIRECTORY = "static/articles";
 		
+class ArticlesCacheData {
+	#cache = new Map();
+	constructor(manager){
+		this.manager = manager;
+		this.update();
+	}
+
+	async update(){
+		const files = await this.manager.fetchArticles();
+		for (const id of files){
+			this.#addToCache(id);
+		} 
+	}
+
+	getBulk(){
+		return Object.fromEntries(
+			[...this.#cache.entries()]
+		);
+	}
+
+	async get(id){
+		const cache = this.#cache;
+		!cache.has(id) && await this.#addToCache(id);
+
+		return cache.get(id);
+	}
+
+	parseMetadata(data){
+		const {author: _author, timestamp, tags} = MarkdownMetadata.parse(data) ?? {};
+		const author = _author ? {id: _author.id, username: _author.username} : null;
+		return {author, timestamp, tags};
+	}
+
+	async #addToCache(id){
+		const data = await this.manager.getArticleContent(id);
+		const metadata = this.parseMetadata(data);
+		this.#cache.set(id, metadata);
+	}
+}
+
 
 class ArticlesManager {
 	static directory = DIRECTORY;
+	static CacheData = new ArticlesCacheData(this);
 
 	static async fetchArticles(){
 		const filesPaths = await new ImportDirectory({regex: /\.md$/}).takeFilesPath({path: DIRECTORY, subfolders: true});
