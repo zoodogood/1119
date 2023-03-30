@@ -159,7 +159,9 @@
 	const Search = {
 		value: "",
 		filter(article){
-			return article.name.includes(Search.value);
+			const isIncludes = (content) => content.includes(Search.value);
+			const metadata = article.metadata;
+			return isIncludes(article.name) || isIncludes(metadata.author?.username) || isIncludes(metadata.tags);
 		}
 	}
 
