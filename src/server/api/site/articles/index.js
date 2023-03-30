@@ -12,10 +12,9 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, response){
-		const articles = await ArticlesManager.fetchArticles();
-		
-
-		response.json(articles);
+		const list = await ArticlesManager.fetchArticles();
+		const metadata = ArticlesManager.CacheData.getBulk();
+		response.json({list, metadata});
 	}
 
 }
