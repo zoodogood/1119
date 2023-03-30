@@ -8,6 +8,14 @@ pages:
   public:
     hi: Привет!
     cool: Сундук кота это круто
+  commandsIndex: 
+    category: 
+      dev: "Доступна только разработчикам"
+      delete: "Удалена"
+      user: "Пользователь"
+      guild: "Сервер"
+      bot: "Бот"
+      other: "Другое"
   openChest:
     label: Сундук
     mainInfo: >-
