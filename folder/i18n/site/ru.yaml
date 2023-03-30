@@ -38,7 +38,7 @@ pages:
     createInfo: 
       label: Создать
       content: Чтобы написать статью авторизуйтесь и воспользуйтесь <a href = ${ href }>этой ссылкой</a>.
-    articleList: 
+    articlesList: 
       label: "Написание статьи:"
       filesCount: "Количество файлов:"
       loading: Загрузка...
