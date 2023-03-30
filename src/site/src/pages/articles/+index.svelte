@@ -89,6 +89,7 @@
 	import Layout from '#site-component/Layout';
 	import PagesRouter from '#site/lib/Router.js';
   	import { fetchFromInnerApi, ReplaceTemplate } from '#lib/safe-utils.js';
+  	import svelteApp from '#site/core/svelte-app.js';
 
 	const i18n = svelteApp.i18n.pages.articlesIndex;
 	const articlesPromise = (async () => {
