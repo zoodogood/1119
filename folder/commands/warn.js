@@ -27,7 +27,7 @@ class Command {
 	  "name": "warn",
 	  "id": 7,
 	  "media": {
-	    "description": "\n\nВыдаёт формальное предупреждение пользователю — —\n\n:pencil2:\n```python\n!warn {memb}\n```\n\n"
+	    "description": "\n\nВыдаёт формальное предупреждение пользователю — —\n\n✏️\n```python\n!warn {memb}\n```\n\n"
 	  },
 	  "allias": "пред варн",
 		"expectMention": true,

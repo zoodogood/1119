@@ -42,7 +42,7 @@ class Command {
 	  "name": "archive",
 	  "id": 10,
 	  "media": {
-	    "description": "\n\nАрхивирует сообщения в канале и отправляет содержимое пользователю в виде файла.\n\n:pencil2:\n```python\n!archive #без аргументов\n```\n\n"
+	    "description": "\n\nАрхивирует сообщения в канале и отправляет содержимое пользователю в виде файла.\n\n✏️\n```python\n!archive #без аргументов\n```\n\n"
 	  },
 	  "allias": "arhive архив",
 		"allowDM": true,

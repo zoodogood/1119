@@ -129,7 +129,7 @@ class Command {
 	  "name": "level",
 	  "id": 33,
 	  "media": {
-	    "description": "\n\nОтправляет красивое [изображние-карточку](https://media.discordapp.net/attachments/781902008973393940/784507304350580826/level.png) вашего уровня!\nСогласитесь, выглядит [неплохо](https://cdn.discordapp.com/attachments/781902008973393940/784513626413072404/level.png).\n\n[Апхчи.](https://cdn.discordapp.com/attachments/702057949031563264/786891802698711050/level.png)\n\n:pencil2:\n```python\n!level <memb>\n```\n\n"
+	    "description": "\n\nОтправляет красивое [изображние-карточку](https://media.discordapp.net/attachments/781902008973393940/784507304350580826/level.png) вашего уровня!\nСогласитесь, выглядит [неплохо](https://cdn.discordapp.com/attachments/781902008973393940/784513626413072404/level.png).\n\n[Апхчи.](https://cdn.discordapp.com/attachments/702057949031563264/786891802698711050/level.png)\n\n✏️\n```python\n!level <memb>\n```\n\n"
 	  },
 	  "allias": "уровень rang rank ранг ранк lvl лвл",
 		"allowDM": true

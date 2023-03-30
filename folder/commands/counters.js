@@ -86,7 +86,7 @@ class Command {
 	  "name": "counters",
 	  "id": 43,
 	  "media": {
-	    "description": "\n\nОтображает список существующих счётчиков на сервере. См. команду `!counter`\n\n:pencil2:\n```python\n!counters #без аргументов\n```\n\n"
+	    "description": "\n\nОтображает список существующих счётчиков на сервере. См. команду `!counter`\n\n✏️\n```python\n!counters #без аргументов\n```\n\n"
 	  },
 	  "allias": "счётчики счетчики",
 		"allowDM": false,

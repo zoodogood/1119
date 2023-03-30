@@ -127,7 +127,7 @@ class Command {
 	  "name": "remind",
 	  "id": 44,
 	  "media": {
-	    "description": "\n\nСоздаёт напоминание, например, выключить суп, ну или что ещё вам напомнить надо :rolling_eyes:\n\n:pencil2:\n```python\n!remind {time} {text} #Время в формате 1ч 2д 18м\n```\n\n"
+	    "description": "\n\nСоздаёт напоминание, например, выключить суп, ну или что ещё вам напомнить надо :rolling_eyes:\n\n✏️\n```python\n!remind {time} {text} #Время в формате 1ч 2д 18м\n```\n\n"
 	  },
 	  "allias": "напомни напоминание напомнить",
 		"allowDM": true,

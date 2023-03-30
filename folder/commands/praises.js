@@ -184,7 +184,7 @@ class Command {
 	  "name": "praises",
 	  "id": 6,
 	  "media": {
-	    "description": "\n\nОтображает список людей, которых вы похвалили и которые похвалили вас.\n\n:pencil2:\n```python\n!praises <memb>\n```\n\n"
+	    "description": "\n\nОтображает список людей, которых вы похвалили и которые похвалили вас.\n\n✏️\n```python\n!praises <memb>\n```\n\n"
 	  },
 	  "allias": "похвалы лайки likes",
 		"allowDM": true,

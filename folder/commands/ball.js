@@ -20,7 +20,7 @@ class Command {
 	  "name": "ball",
 	  "id": 40,
 	  "media": {
-	    "description": "Всегда отвечающий \"нет\" Шар, почему все думают, что он всевидящий?\n\n:pencil2:\n```python\n!ball {question?} # Не спрашивайте у него как его дела\n```",
+	    "description": "Всегда отвечающий \"нет\" Шар, почему все думают, что он всевидящий?\n\n✏️\n```python\n!ball {question?} # Не спрашивайте у него как его дела\n```",
 	    "poster": "https://media.discordapp.net/attachments/769566192846635010/872442452152307762/ball.gif"
 	  },
 	  "allias": "8ball шар",

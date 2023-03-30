@@ -96,7 +96,7 @@ class Command {
 	  "name": "birthdays",
 	  "id": 22,
 	  "media": {
-	    "description": "\n\nОтображает список ближайших именинников! :tada:\nНе забудьте поздравить их с праздником.\n\n:pencil2:\n```python\n!birthdays #без аргументов\n```\n\n"
+	    "description": "\n\nОтображает список ближайших именинников! :tada:\nНе забудьте поздравить их с праздником.\n\n✏️\n```python\n!birthdays #без аргументов\n```\n\n"
 	  },
 	  "allias": "parties праздники вечеринки днирождения др",
 		"allowDM": true,

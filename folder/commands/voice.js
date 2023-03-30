@@ -18,7 +18,7 @@ class Command {
 	  "name": "voice",
 	  "id": 21,
 	  "media": {
-	    "description": "\n\nСтарые тестирования муз. команд.\n\n:pencil2:\n```python\n!voice #без аргументов\n```\n\n"
+	    "description": "\n\nСтарые тестирования муз. команд.\n\n✏️\n```python\n!voice #без аргументов\n```\n\n"
 	  },
 	  "allias": "войс",
 		"allowDM": true,

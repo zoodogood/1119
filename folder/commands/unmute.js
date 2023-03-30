@@ -65,7 +65,7 @@ class Command {
 	  "name": "unmute",
 	  "id": 18,
 	  "media": {
-	    "description": "\n\nМут наоборот — снимает ограничения на общение в чатах для пользователей.\n\n:pencil2:\n```python\n!unmute {memb}\n```\n\n"
+	    "description": "\n\nМут наоборот — снимает ограничения на общение в чатах для пользователей.\n\n✏️\n```python\n!unmute {memb}\n```\n\n"
 	  },
 	  "allias": "анмут анмьют",
 		"expectMention": true,
