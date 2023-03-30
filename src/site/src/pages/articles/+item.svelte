@@ -33,7 +33,7 @@
 
 			<button class = "download-button" on:click={ downloadArticleAsMarkdown }>
 				<Icon code = ""/> 
-				{ i18n.downloadmarkdown }
+				{ i18n.downloadMarkdown }
 			</button>
 		</main>
 		
