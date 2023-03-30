@@ -4,16 +4,18 @@
 			{#each commands as command}
 			<li>
 				<h2>{ command.name }</h2>
-				<span class = "type">{ CategoryEnum[ command.type ]}</span>
 				<EditableMarkdown source = { command.media.description.trim() }/>
-				{#if command.media.poster}
-					<img src = { command.media.poster } alt="poster" fetchpriority = "low" loading = "lazy">
-				{/if}
-				<h6>
-					{#each command.allias.split(" ") as allias}
-						<span>!{ allias }</span>
-					{/each}
-				</h6>
+				<footer>
+					<span class = "category">{ CategoryEnum[ command.type ]}</span>
+					{#if command.media.poster}
+						<img src = { command.media.poster } alt="poster" fetchpriority = "low" loading = "lazy">
+					{/if}
+					<h6>
+						{#each command.allias.split(" ") as allias}
+							<span>!{ allias }</span>
+						{/each}
+					</h6>
+				</footer>
 			</li>
 			{/each}
 		</ul>
@@ -46,6 +48,13 @@
 		padding: 30px;
 		border-radius: 15px;
 		white-space: pre-line;
+
+		font-size: 0.9em;
+	}
+
+	h2
+	{
+		text-transform: uppercase;
 	}
 
 	img
@@ -59,17 +68,27 @@
 		opacity: 1;
 	}
 
-	.type 
+	.category 
 	{
 		background-color: #88888811;
 		display: inline-block;
 		width: fit-content;
 		padding: 0.2em;
+
+		margin-top: 1.5em;
+	}
+
+	footer
+	{
+		display: flex;
+		flex-direction: column;
+		gap: 1em;
+		margin-top: auto;
 	}
 
 	h6
 	{
-		margin-top: auto;
+		margin-top: 0.75em;
 		opacity: 0.65;
 		display: flex;
 		gap: 0.5em;
