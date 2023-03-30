@@ -130,4 +130,12 @@
   	import svelteApp from '#site/core/svelte-app.js';
 
 	const i18n = svelteApp.i18n.pages.secretpage;
+	console.info(`
+		Ты нашёл эту страницу
+		Ты нашёл её
+		Весь мир должен узнать, что ты нашёл её
+		Ведь это так
+		Каждый цвет имеет значение
+		Это не загадка и не предназначение
+	`);
 </script>
