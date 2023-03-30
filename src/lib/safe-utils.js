@@ -267,7 +267,7 @@ async function getPackageJSON(){
 }
 
 function ReplaceTemplate(string, values){
-	string.replaceAll(/(?<!\\)\$\{[a-zа-яъё]+\}/ig, (match) => values[match.trim()]);
+	return string.replaceAll(/(?<!\\)\$\{[a-zа-яъё]+\}/ig, (match) => values[match.trim()]);
 }
 
 
