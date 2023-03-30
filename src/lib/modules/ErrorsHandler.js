@@ -3,8 +3,9 @@ import { dayjs, resolveGithubPath } from '#lib/util.js';
 import Path from 'path';
 import FileSystem from 'fs';
 import { Collection } from '@discordjs/collection';
-import { stringify } from 'flatted';
+import { stringify, parse } from 'flatted';
 import config from '#config';
+
 
 
 class ErrorsDataCache {
@@ -42,11 +43,33 @@ class ErrorsDataCache {
 		return name;
 	}
 
+	parseMetadata(data){
+		const errors = data.map(errorData => errorData.at(0));
+		
+		const uniqueTags = (() => {
+			const tags = data
+				.map(errorData => errorData.at(1))
+				.map(errors => 
+					errors.filter(error => error.context)
+				)
+				.map(errors => 
+					errors.map(error => parse(error.context))
+				)
+				.map(contextList => 
+					contextList.map(context => Object.keys(context))
+				)
+				.flat();
+				
+			return [...new Set(...tags)];
+		})();
+		return {messages: errors, uniqueTags};
+	}
+
 	async #addToCache(name){
 		name = this.normalizeName(name);
 		const data = JSON.parse(await this.Audit.readFile(`${ name }.json`));
-		const errors = data.map(errorData => errorData.at(0));
-		this.#cache.set(name, errors);
+		const metadata = this.parseMetadata(data);
+		this.#cache.set(name, metadata);
 	}
 }
 
