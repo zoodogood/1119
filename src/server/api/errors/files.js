@@ -12,8 +12,8 @@ class Route extends BaseRoute {
 
 	async get(request, response){
 		const list = await ErrorsHandler.Audit.fetchLogs();
-		const data = ErrorsHandler.CacheData.getBulk();
-		response.json({list, data});
+		const metadata = ErrorsHandler.CacheData.getBulk();
+		response.json({list, metadata});
 	}
 }
 
