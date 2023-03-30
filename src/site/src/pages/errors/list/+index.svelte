@@ -14,7 +14,7 @@
 							<section class = "metadata-container">
 								<ul>
 									<li data-value = { errorFile.metadata.errorsCount ?? null }>{ i18n.uniqueMessages } { errorFile.metadata.errorsCount } { i18n.units }</li>
-									<li data-value = { errorFile.metadata.tags ?? null }>{ i18n.tags } { errorFile.metadata.tags?.join(" ") }</li>
+									<li data-value = { errorFile.metadata.uniqueTags ?? null }>{ i18n.tags } { errorFile.metadata.uniqueTags?.join(", ") }</li>
 								</ul>
 							</section>
 						{/if}
@@ -147,12 +147,11 @@
 			const current = {fullname: "", name: "дд-мм-чч-мм"};
 			Component.errors = [current, ...errors.reverse()];
 	
-			for (const [name, metadata] of Object.entries(metadata)){
+			for (const [name, _metadata] of Object.entries(metadata)){
 				const error = errors.find(error => error.name === name);
-				error.metadata = metadata;
-				error.metadata.errorsCount = metadata.messages.length;
+				error.metadata = _metadata;
+				error.metadata.errorsCount = _metadata.messages.length;
 			}
-
 			
 		})();
 	  
