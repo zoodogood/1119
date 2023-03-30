@@ -35,6 +35,7 @@ pages:
   articlesIndex:
     label: Статьи
     description: Что может быть хуже экспериментов ради экспериментов.. Эта часть сайта просто *существует* и, надеюсь, живёт своей жизнью. В будущем вы здесь найдете тексты раскрывающие возможности бота.
+    filter: Фильтровать
     createInfo: 
       label: Создать
       content: Чтобы написать статью авторизуйтесь и воспользуйтесь <a href = ${ href }>этой ссылкой</a>.
@@ -44,6 +45,11 @@ pages:
       loading: Загрузка...
       hereEmpty: Здесь пусто..
       loadingFailed: Загрузка неудалась
+    articleMetadata: 
+      author: "Автор:"
+      readTime: "Время чтения:"
+      lastEdited: "Послед. изменение:"
+      tags: "Теги:"
   articlesItem:
     contentLoading: Загрузка основного контента
     article: 
@@ -52,6 +58,7 @@ pages:
       readTime: "Время чтения:"
       tags: "Включённые теги:"
       defaultTag: Статья участника
+      words: "Слов"
     downloadMarkdown: Скачать .md файл
     noResults: 
       label: Нет результатов
