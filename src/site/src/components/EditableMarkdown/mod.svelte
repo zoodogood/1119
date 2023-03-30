@@ -35,7 +35,7 @@
 	.editable-markdown-container :global(ul)
 	{
 		margin-block: 0.5em;
-		margin-left: 1em;
+		margin-left: 1.5em;
 	}
 
 	.editable-markdown-container :global(img)
