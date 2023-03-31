@@ -61,6 +61,8 @@
 		transition: top 200ms;
 		backdrop-filter: blur(10px);
 		z-index: 10000;
+
+		user-select: none;
 	}
 
 	.header--hide
