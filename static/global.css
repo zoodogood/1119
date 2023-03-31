@@ -202,9 +202,15 @@ img[alt]::after
 	left: 0;
 }	
 
-
-
-
+element-embed
+{
+	border-left: 0.5em solid var( --main-color );
+	border-radius: 0.2em;
+	padding: 1.2em;
+	background-color: #88888805;
+	display: inline-block;
+	width: 100%;
+}
 
 
 ::selection
