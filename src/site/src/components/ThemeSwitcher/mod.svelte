@@ -1,4 +1,5 @@
 
+
 <button
 class = "switch-theme"
 data-current = { Theme.current }
@@ -7,6 +8,8 @@ bind:this = { node }
 >
 	<Icon code = ""/>
 </button>
+
+
 
 <style>
 	.switch-theme
@@ -49,9 +52,10 @@ bind:this = { node }
 
 <script context="module">
 	const DEFAULT_THEME = "darkGreen";
+	const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
 	
 	const Theme = {
-		current: localStorage.selectedTheme ?? DEFAULT_THEME,
+		current: localStorage[STORAGE_KEY] ?? DEFAULT_THEME,
 		apply(themeName){
 			const theme = Theme.collection.get(themeName);
 			const target = document.documentElement.style;
@@ -60,7 +64,7 @@ bind:this = { node }
 				target.setProperty(style, theme[style]);
 			}
 
-			localStorage.selectedTheme = themeName;
+			localStorage[STORAGE_KEY] = themeName;
 		},
 
 		remove(themeName){
@@ -88,6 +92,7 @@ bind:this = { node }
 	}
 
 	Theme.apply(Theme.current);
+	export { Theme };
 </script>
 
 <script>
