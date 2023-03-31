@@ -90,7 +90,10 @@ bind:this = { node }
 			Theme.apply(themeName);
 		},
 
-		collection: themes
+		collection: themes,
+		
+		enum: Object.fromEntries([...themes.keys()].map(k => [k, k]))
+
 	}
 
 	Theme.current.subscribe(themeName => {
