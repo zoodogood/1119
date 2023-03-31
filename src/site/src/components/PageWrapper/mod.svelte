@@ -11,7 +11,7 @@
 	additionalMetaTags = {[
 		{
 			name: "theme-color",
-			content: Theme.collection.get(Theme.current)["--main-color"]
+			content: Theme.collection.get( getStoreValue(Theme.current ) )["--main-color"]
 		}
 	]}
 />
@@ -27,6 +27,7 @@
   	import config from '#config';
   	import { relativeSiteRoot } from '#lib/safe-utils.js';
 	import { Theme } from '#site-component/ThemeSwitcher';
+	import { get as getStoreValue } from 'svelte/store';
 	
 
 	const _currentURLLang = svelteApp.url.base.lang;
