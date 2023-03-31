@@ -25,6 +25,7 @@
 		font-family: monospace;
 		padding: 0.5em;
 		min-width: 20px;
+		color: inherit;
 	}
 
 	button:hover
