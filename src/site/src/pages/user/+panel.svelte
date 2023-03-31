@@ -293,7 +293,8 @@
 			icon: targetEntity.avatarURL ?? targetEntity.iconURL,
 			name: targetEntity.username ?? targetEntity.name,
 			id: targetEntity.id,
-			type: targetType
+			type: targetType,
+			permissions: targetEntity.permissions
 		};
 	}
 		
