@@ -2,7 +2,7 @@
 	<style>
 		body {
 			background: url('https://cdn.discordapp.com/attachments/629546680840093696/1091416746684063824/autumn.png') var( --background-theme-accent );
-			background-size: min(100vmax, 200vw);
+			background-size: contain;
 			background-repeat: no-repeat;
 		}
 	</style>
