@@ -1,4 +1,4 @@
-function relativeSiteRoot(svelteApp, path, removeQueries = true){
+function relativeSiteRoot(svelteApp, path = "", removeQueries = true){
 	const {origin, search} = svelteApp.document.location;
 	const pathname = Object.values(svelteApp.url.base)
 		.filter(Boolean)
