@@ -270,12 +270,13 @@
 		.container
 		{
 			padding-top: 0;
+			padding-bottom: 25px;
 		}
 
 		.navigation 
 		{
 			position: absolute;
-			bottom: 0;
+			bottom: 0.75em;
 			flex-direction: row-reverse;
 			gap: 0;
 		}
