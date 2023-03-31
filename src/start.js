@@ -71,8 +71,12 @@ client.on("ready", async () => {
 
     const DEVELOPER_CHAT_ID = "763637440174227506";
     const developerChat = client.channels.cache.get(DEVELOPER_CHAT_ID);
-    const title = `Бот присоеденился к серверу ${ guild.name }!`;
-    developerChat.msg({title, description: `Участников: ${ members.size }\nКол-во знакомых боту людей: ${members.filter(member => DataManager.data.users.some(user => user.id === member.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.members.resolve(whoAdded) ? "Да" : "Нет"}.`, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
+    if (developerChat){
+      const title = `Бот присоеденился к серверу ${ guild.name }!`;
+      const description = `Участников: ${ members.size }\nКол-во знакомых боту людей: ${members.filter(member => DataManager.data.users.some(user => user.id === member.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.members.resolve(whoAdded) ? "Да" : "Нет"}.`;
+      developerChat.msg({title, description, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
+    }
+    
     guild.invitesCollection = await guild.invites.fetch();
     DataManager.data.bot.newGuildTimestamp = Date.now();
   });
