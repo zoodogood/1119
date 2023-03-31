@@ -49,6 +49,7 @@
 		
 		{#if State.target.type === TargetType.User}
 			<UserSettings {svelteApp} target = {State.target}/>
+			<ChangeLanguage isAlwaysVisible = {true}/>
 			<button 
 				on:click={() => {
 					svelteApp.storage.setToken(null);
@@ -56,6 +57,7 @@
 					svelteApp.document.location.reload();
 					return;
 				}}
+				style:margin-top = {"2em"}
 				style:background-color = {"#dd000099"}
 			>
 				Выйти из аккаунта
@@ -263,6 +265,7 @@
 <script>
 	import Layout from '#site-component/Layout';
 	import {UserSettings, GuildSettings} from '#site-component/frames/settings';
+	import ChangeLanguage from '#site-component/ChangeLanguage';
 	
   	import svelteApp from '#site/core/svelte-app.js';
   	import PagesRouter from '#site/lib/Router.js';
