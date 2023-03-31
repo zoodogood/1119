@@ -1,4 +1,21 @@
 
+{#if $CurrentThemeStore !== Theme.enum.darkBlue}
+	<style>
+		.canvas-snow
+		{
+			filter: blur(20px);
+			
+		}
+	</style>
+{:else}
+	<style>
+		main
+		{
+			opacity: 0.5;
+		}
+	</style>
+{/if}
+
 
 <main>
 	<p>{ i18n.label }</p>
@@ -128,6 +145,9 @@
 	import Icon from '#site-component/iconic';
 	import PagesRouter from '#site/lib/Router.js';
   	import svelteApp from '#site/core/svelte-app.js';
+
+	import { Theme } from '#site-component/ThemeSwitcher';
+	const CurrentThemeStore = Theme.current;
 
 	const i18n = svelteApp.i18n.pages.secretpage;
 	console.info(`
