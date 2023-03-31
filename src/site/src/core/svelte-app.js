@@ -28,16 +28,6 @@ class StorageManager {
 		return JSON.parse(localStorage.getItem("user") ?? null);
 	}
 
-	yetTokenHeat(){
-		if (sessionStorage.tokenHeat < Date.now()){
-			return true;
-		}
-
-		const HEAT_DELAY = 60_000 * 5;
-		sessionStorage.tokenHeat = HEAT_DELAY;
-		return false;
-	}
-
 	setUserData(user){
 		if (user === null){
 			localStorage.removeItem("user");
@@ -47,6 +37,30 @@ class StorageManager {
 		const ignoreKeysList = ["guilds"];
 		user = omit(user, (key) => !ignoreKeysList.includes(key));
 		return localStorage.setItem("user", JSON.stringify(user));
+	}
+
+	getSelectedLocale(){
+		return localStorage.getItem("selected_locale") ?? null;
+	}
+
+	setLocale(locale){
+		if (locale === null){
+			localStorage.removeItem("selected_locale");
+			return;
+		}
+
+		localStorage.setItem("selected_locale", locale);
+	}
+
+
+	yetTokenHeat(){
+		if (sessionStorage.tokenHeat < Date.now()){
+			return true;
+		}
+
+		const HEAT_DELAY = 60_000 * 5;
+		sessionStorage.tokenHeat = HEAT_DELAY;
+		return false;
 	}
 }
 
@@ -69,6 +83,7 @@ class SvelteApp {
 		
 		this.#checkOrigin();
 		this.#checkExternalUserDataByToken();
+		this.#checkURLLocaleProtocol();
 		console.info(this);
 	}
 
@@ -137,6 +152,16 @@ class SvelteApp {
 		}
 
 		this.storage.setUserData(user);
+	}
+
+
+	#checkURLLocaleProtocol(){
+		const locale = this.url.base.lang;
+		if (!locale){
+			return;
+		}
+
+		this.storage.setLocale(locale);
 	}
 }
 
