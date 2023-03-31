@@ -55,7 +55,7 @@
 	{
 		width: 100%;
 		position: sticky;
-		top: -2vh; 
+		top: 0;
 
 		font-size: 0.8em;
 		transition: top 200ms;
@@ -97,6 +97,7 @@
 		justify-content: space-around;
 
 		height: 15vh;
+		top: -5px;
 		gap: 2em;
 	}
 
