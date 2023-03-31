@@ -62,7 +62,11 @@
 			</button>
 			
 		{:else}
-			<GuildSettings {svelteApp} target = {State.target}/>
+			{#if State.target.isAdmin}
+				<GuildSettings {svelteApp} target = { State.target }/>
+			{:else}
+				<small>Вы не являетесь Администратором и не можете редактировать параметры бота связанные с выбраной гильдией.</small>
+			{/if}
 		{/if}
 	</main>
 	
@@ -293,9 +297,10 @@
 			icon: targetEntity.avatarURL ?? targetEntity.iconURL,
 			name: targetEntity.username ?? targetEntity.name,
 			id: targetEntity.id,
-			type: targetType,
-			permissions: targetEntity.permissions
+			type: targetType
 		};
+
+		targetType === TargetType.Guild && (State.target.isAdmin = BigInt(targetEntity.permissions) & 8n);
 	}
 		
 	
