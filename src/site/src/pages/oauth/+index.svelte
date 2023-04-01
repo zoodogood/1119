@@ -121,6 +121,7 @@
 
 
 	let {code, redirect} = svelteApp.url.queries;
+	redirect &&= decodeURIComponent(redirect);
 	code ||= svelteApp.storage.getToken();
 	
 	svelteApp.storage.setToken(code);
