@@ -54,7 +54,7 @@
 				on:click={() => {
 					svelteApp.storage.setToken(null);
 					svelteApp.storage.setUserData(null);
-					svelteApp.document.location.reload();
+					PagesRouter.redirect( PagesRouter.getPageBy("public").key );
 					return;
 				}}
 				style:margin-top = {"2em"}
