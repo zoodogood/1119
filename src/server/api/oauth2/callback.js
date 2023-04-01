@@ -29,6 +29,10 @@ class Route extends BaseRoute {
 		
 		
 		const exchangeResponse = await oauth.getOAuth2Data(code);
+		if (exchangeResponse.access_token){
+			response.status(500).json(exchangeResponse);
+			return;
+		}
 		
 		const redirect = request.query.state;
 		
