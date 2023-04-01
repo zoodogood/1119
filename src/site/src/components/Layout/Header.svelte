@@ -55,12 +55,14 @@
 	{
 		width: 100%;
 		position: sticky;
-		top: -2vh; 
+		top: 0;
 
 		font-size: 0.8em;
 		transition: top 200ms;
 		backdrop-filter: blur(10px);
 		z-index: 10000;
+
+		user-select: none;
 	}
 
 	.header--hide
@@ -97,6 +99,7 @@
 		justify-content: space-around;
 
 		height: 15vh;
+		top: -5px;
 		gap: 2em;
 	}
 
@@ -267,12 +270,13 @@
 		.container
 		{
 			padding-top: 0;
+			padding-bottom: 25px;
 		}
 
 		.navigation 
 		{
 			position: absolute;
-			bottom: 0;
+			bottom: 0.75em;
 			flex-direction: row-reverse;
 			gap: 0;
 		}

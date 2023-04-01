@@ -1,4 +1,5 @@
 
+
 <button
 class = "switch-theme"
 data-current = { Theme.current }
@@ -7,6 +8,8 @@ bind:this = { node }
 >
 	<Icon code = ""/>
 </button>
+
+
 
 <style>
 	.switch-theme
@@ -49,9 +52,12 @@ bind:this = { node }
 
 <script context="module">
 	const DEFAULT_THEME = "darkGreen";
+	const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
+	import { writable, get } from 'svelte/store';
 	
 	const Theme = {
-		current: localStorage.selectedTheme ?? DEFAULT_THEME,
+		current: writable(localStorage[STORAGE_KEY] ?? DEFAULT_THEME),
+
 		apply(themeName){
 			const theme = Theme.collection.get(themeName);
 			const target = document.documentElement.style;
@@ -60,7 +66,7 @@ bind:this = { node }
 				target.setProperty(style, theme[style]);
 			}
 
-			localStorage.selectedTheme = themeName;
+			localStorage[STORAGE_KEY] = themeName;
 		},
 
 		remove(themeName){
@@ -74,20 +80,26 @@ bind:this = { node }
 
 		switchToNext(){
 			const themes = [...Theme.collection.keys()];
-			const index = themes.indexOf(Theme.current);
+			const index = themes.indexOf( get(Theme.current) );
 			const themeName = themes.at((index + 1) % themes.length);
 
 			const previousName = themes.at(index);
 			Theme.remove(previousName);
 			
-			Theme.current = themeName;
+			Theme.current.set(themeName);
 			Theme.apply(themeName);
 		},
 
-		collection: themes
+		collection: themes,
+		
+		enum: Object.fromEntries([...themes.keys()].map(k => [k, k]))
+
 	}
 
-	Theme.apply(Theme.current);
+	Theme.current.subscribe(themeName => {
+		Theme.apply(themeName);
+	})
+	export { Theme };
 </script>
 
 <script>

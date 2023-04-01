@@ -212,6 +212,15 @@ element-embed
 	width: 100%;
 }
 
+iframe
+{
+	border: none;
+	outline: none;
+}
+
+
+
+
 
 ::selection
 {

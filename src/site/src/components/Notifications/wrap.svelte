@@ -11,6 +11,13 @@
 		border-radius: 100vw !important;
 		padding-left: 1em !important;
 		min-width: 400px !important;
+
+		transition: filter 200ms;
+	}
+
+	:global(.notification:hover)
+	{
+		filter: none;
 	}
 
 	:global(.notification-content)

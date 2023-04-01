@@ -1,4 +1,21 @@
 
+{#if $CurrentThemeStore !== Theme.enum.darkBlue}
+	<style>
+		.canvas-snow
+		{
+			filter: blur(20px);
+			
+		}
+	</style>
+{:else}
+	<style>
+		main
+		{
+			opacity: 0.5;
+		}
+	</style>
+{/if}
+
 
 <main>
 	<p>{ i18n.label }</p>
@@ -10,6 +27,16 @@
 	<a href = {PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key)}><Icon code = ""/></a>
 	<ThemeSwitcher/>
 </nav>
+
+
+<!-- svelte-ignore missing-declaration -->
+<svelte:element
+	this = "script"
+	async
+	src = "https://zoodogood.github.io/LetItSnow/LetItSnow.js"
+	on:load = { function(){ return new SnowBackground({particlesCount: 200}) } }
+/>
+
 
 
 
@@ -104,6 +131,12 @@
 	{
 		filter: brightness(1.2);
 	}
+
+	nav :global(.switch-theme)
+	{
+		background: none;
+		color: var( --main-color );
+	}
 </style>
 
 
@@ -113,5 +146,16 @@
 	import PagesRouter from '#site/lib/Router.js';
   	import svelteApp from '#site/core/svelte-app.js';
 
+	import { Theme } from '#site-component/ThemeSwitcher';
+	const CurrentThemeStore = Theme.current;
+
 	const i18n = svelteApp.i18n.pages.secretpage;
+	console.info(`
+		Ты нашёл эту страницу
+		Ты нашёл её
+		Весь мир должен узнать, что ты нашёл её
+		Ведь это так
+		Каждый цвет имеет значение
+		Это не загадка и не предназначение
+	`);
 </script>

@@ -1,4 +1,12 @@
-
+{#if $CurrentThemeStore === Theme.enum.lightGreen}
+	<style>
+		body {
+			background: url('https://cdn.discordapp.com/attachments/629546680840093696/1091391266052382880/summer.png') var( --background-theme-accent );
+			background-size: min(100vmax, 200vw);
+			background-repeat: no-repeat;
+		}
+	</style>
+{/if}
 
 
 <Layout>
@@ -274,6 +282,8 @@
 	import Icon from '#site-component/iconic';
 	import config from '#config';
 	import { fetchFromInnerApi } from '#lib/safe-utils.js';
+	import { Theme } from '#site-component/ThemeSwitcher';
+	const CurrentThemeStore = Theme.current;
 
 	const whenApiListIsReceived = (async () => {
 		return fetchFromInnerApi("./utils/api-list");

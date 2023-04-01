@@ -1,4 +1,5 @@
 general:
+  title: Сундук кота
   app:
     externalTokenDialog:
       title: Пожалуйста, авторизуйтесь повторно
