@@ -190,7 +190,7 @@
 	}
 
 	.navigation :global(.switch-theme){
-		width: 2em;
+		width: 2.25em;
 		margin: 0;
 		margin-left: 3px;
 		vertical-align: middle;
