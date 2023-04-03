@@ -20,6 +20,7 @@ class Event {
 		};
 
 		Data.site.entersToPagesToday = 0;
+		Data.site.entersToAPIToday = 0;
 		Data.bot.commandsUsedToday = 0;
 		Data.bot.messagesToday = 0;
 
