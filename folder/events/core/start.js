@@ -66,6 +66,9 @@ class Event extends BaseEvent {
 		Data.site.enterToPages ||= {};
 		Data.site.entersToPages ||= 0;
 		Data.site.entersToPagesToday ||= 0;
+		Data.site.enterToAPI ||= {};
+		Data.site.entersToAPI ||= 0;
+		Data.site.entersToPagesAPI ||= 0;
 
 		Data.dailyAudit ||= {};
 
