@@ -14,6 +14,7 @@ class Event {
 		
 		Data.dailyAudit[ Data.bot.currentDay ] = {
 			enterToPages: Data.site.entersToPagesToday,
+			enterToAPI: Data.site.entersToAPIToday,
 			commandsUsed: Data.bot.commandsUsedToday,
 			messages: Data.bot.messagesToday
 		};
