@@ -37,7 +37,13 @@ function getAddress(server){
 }
 
 function incrementEnterAPIStatistic(request, response, next){
-	const subpath = request.path.join("/");
+	let subpath = request.path
+		.split("/").filter(Boolean).join("/");
+
+	if (subpath.startsWith("static")){
+		subpath = "static";
+	}
+	
 	const siteData = DataManager.data.site;
 	
 	siteData.enterToAPI[subpath] ||= 0;
