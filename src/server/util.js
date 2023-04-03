@@ -1,6 +1,7 @@
 import net from 'net';
 import { CustomCollector } from '@zoodogood/utils/objectives';
 import config from '#config';
+import DataManager from '#lib/modules/DataManager.js';
 
 function checkPort(port) {
 	const server = net.createServer();
@@ -35,7 +36,19 @@ function getAddress(server){
 	return `${ protocol }://${ address.startsWith("::") ? "localhost" : address }:${ port }/`;
 }
 
+function incrementEnterAPIStatistic(request, response, next){
+	const subpath = request.path.join("/");
+	const siteData = DataManager.data.site;
+	
+	siteData.enterToAPI[subpath] ||= 0;
+	siteData.enterToAPI[subpath]++;
+	siteData.entersToAPI++;
+	siteData.entersToAPIToday++;
+	next();
+}
+
 export {
+	incrementEnterAPIStatistic,
 	checkPort,
 	getAddress
 }
