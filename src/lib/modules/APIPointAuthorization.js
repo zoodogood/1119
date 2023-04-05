@@ -53,6 +53,11 @@ class TokensUsersExchanger {
 	}
 
 	static fillGuilds(guilds){
+		// to-do: developer crunch
+		if (guilds instanceof Array === false){
+			console.error(guilds);
+			throw new Error();
+		}
 		for (const guild of guilds)
 		guild.iconURL = guild.icon ? client.rest.cdn.icon(guild.id, guild.icon) : null;
 		
