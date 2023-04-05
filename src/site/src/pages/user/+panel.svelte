@@ -287,7 +287,9 @@
 	const State = {
 		guilds: [],
 		selectedGuild: null,
-		target: {}
+		target: {},
+		settingsData: null,
+		changes: {}
 	}
 	
 	$: if (svelteApp.user){
@@ -309,6 +311,24 @@
 	
 
 	onMount(async () => {
+		await realiazeGuildData();
+		State.settingsData = await fetchSettingsData();
+	});
+
+	async function fetchSettingsData(){
+		const token = svelteApp.storage.getToken();
+		if (!token){
+			return null;
+		}
+
+		const guilds = JSON.stringify(State.guilds.map(guild => guild.id));
+
+		const headers = {Authorization: token, guilds};
+		const data = await fetchFromInnerApi("user/settings-data", {headers});
+		console.log({data});
+	}
+
+	async function realiazeGuildData(){
 		const guilds = await fetchGuildsData();
 		if (guilds === null){
 			PagesRouter.redirect(`../oauth2/auth?redirect=${ svelteApp.url.subpath.join("/") }`);
@@ -320,7 +340,7 @@
 			return;
 		}
 		State.guilds = guilds.filter(guild => guilds.mutual.includes(guild.id));
-	});
+	}
 
 
 	async function fetchGuildsData(){
