@@ -3,6 +3,22 @@ import { BaseRoute } from "#server/router.js";
 const PREFIX = "/user/settings-data";
 import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 
+class UserSettings {
+	static FIELDS = [
+		{
+			key: "chatChannelId",
+			validate: () => {
+
+			}
+		}
+	]
+}
+
+class GuildSettings {
+	static FIELDS = {
+
+	}
+}
 
 class Route extends BaseRoute {
 	prefix = PREFIX;
@@ -26,6 +42,14 @@ class Route extends BaseRoute {
 		if (!user){
 			return;
 		}
+
+		const guildsId = request.headers.guilds ? JSON.parse(request.headers.guilds) : null;
+		guildsId.map(id => {
+			client.guilds.cache.get(id);
+		})
+		.filter(Boolean);
+
+
 	}
 }
 

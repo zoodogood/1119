@@ -5,7 +5,7 @@ class Command {
 	async onChatInput(msg, interaction){
     let user = interaction.userData, action, coins, cause;
     let server = msg.guild.data;
-    const isAdmin = !interaction.member.wastedPermissions(32)[0];
+    const isAdmin = !interaction.member.wastedPermissions(32n)[0];
 
 
     const cash = async (coins, isPut, cause) => {
