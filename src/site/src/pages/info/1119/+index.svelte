@@ -1,8 +1,8 @@
 <Layout>
 	<header>
-		<span>
+		<element-wrapper>
 			<img src = "https://images-ext-2.discordapp.net/external/fBq1I0O3Tdhoi-DeVVm7nDadXN-uzdgKveyekp-Vm88/https/media.discordapp.net/attachments/769566192846635010/872776969341796382/mute.gif" alt = "muteCommand">
-		</span>
+		</element-wrapper>
 	</header>
 
 	<h1>Бот без явного функционала</h1>
@@ -11,6 +11,9 @@
 	<p>
 		<a href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("commands").key ) }>Список команд.</a>
 	</p>
+
+	<hr style:margin-block = "10vh">
+	
 
 	<h3>Почему "это" всё-ещё существует.</h3>
 	<p>Этого бота зовут Призрак. — Захотелось так. И я уже смирился с тем, что он важен для меня и людей, которые дают понять, что он им не безразличен.</p>
@@ -34,7 +37,7 @@
 		justify-content: start;
 	}
 
-	header span
+	header element-wrapper
 	{
 		--padding: 10px;
 		border-radius: 30px;
@@ -51,12 +54,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-
-		/* clip-path: polygon(50% 0%, 90% 20%, 100% 60%, 75% 100%, 25% 100%, 0% 60%, 10% 20%); */
-		/* clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 75% 75%, 75% 100%, 50% 75%, 0% 75%); */
 	}
 
-	header span img 
+	header element-wrapper img 
 	{
 		object-fit: cover;
 		object-position: left;
@@ -66,7 +66,7 @@
 
 
 
-	header span::after
+	header element-wrapper::after
 	{
 		content: '';
 		position: absolute;
@@ -81,5 +81,5 @@
 
 <script>
 	import Layout from '#site-component/Layout';
-  import PagesRouter from '#site/lib/Router.js';
+  	import PagesRouter from '#site/lib/Router.js';
 </script>
