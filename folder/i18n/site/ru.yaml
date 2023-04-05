@@ -9,6 +9,8 @@ pages:
   public:
     hi: Привет!
     cool: Сундук кота это круто
+  publicExperiments:
+    thisPageNotingTranslate: "Эта страница не будет переведена"
   commandsIndex: 
     category: 
       dev: "Доступна только разработчикам"
