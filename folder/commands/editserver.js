@@ -2,6 +2,14 @@
 
 class Command {
 
+  getChannelsContent(interaction){
+    const guildData = interaction.guild.data;
+    return [guildData.chatChannel, guildData.logChannel, guildData.hiChannel]
+      .map(id => id ? (guild.channels.cache.get(id) || "не найден") : "не установлен")
+      .map((content, i) => ["Чат: ", "Для логов: ", "Для приветсвий: "][i] + content)
+      .join("\n")
+  }
+
 	async onChatInput(msg, interaction){
     let guild = msg.guild
     let server = guild.data;
@@ -13,13 +21,13 @@ class Command {
       //["globalXp", "📯 Опыт участников только с этого сервера", "Вы видите настоящий опыт всех участников!"]
     ]
 
-    let channels = [server.chatChannel, server.logChannel, server.hiChannel].map(e => e ? (guild.channels.cache.get(e) || "не найден") : "не установлен").map((e, i) => ["Чат: ", "Для логов: ", "Для приветсвий: "][i] + e);
+    let channelsContent = this.getChannelsContent(interaction);
     let settings = settingsAll.map(e => (server[e[0]]) ? "<a:yes:763371572073201714> " + e[2] : e[1]);
 
     let randomEmoji = ["🔧", "🔨", "💣", "🛠️", "🔏"].random(),
-     message = await msg.msg({title: "Идёт Настройка сервера... " + randomEmoji, description: settings.join("\n"), footer: {text: "🔂 - отобразить все действия"}, fields: [{name: "🏝️ Назначенные каналы", value: channels}]}),
-     react = await message.awaitReact({user: msg.author, removeType: "all"}, ...settings.map(e => e.split(" ")[0]).filter(e => e != "<a:yes:763371572073201714>"), "🏝️", "🔂"),
-     answer, bot_msg;
+      message = await msg.msg({title: "Идёт Настройка сервера... " + randomEmoji, description: settings.join("\n"), footer: {text: "🔂 - отобразить все действия"}, fields: [{name: "🏝️ Назначенные каналы", value: channelsContent}]}),
+      react = await message.awaitReact({user: msg.author, removeType: "all"}, ...settings.map(e => e.split(" ")[0]).filter(e => e != "<a:yes:763371572073201714>"), "🏝️", "🔂"),
+      answer, bot_msg;
 
     while (true) {
       let reactions;

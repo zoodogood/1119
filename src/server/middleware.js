@@ -1,6 +1,9 @@
 import Router from './router.js';
 import cors from 'cors';
 import helmet from 'helmet';
+import { incrementEnterAPIStatistic } from '#server/util.js';
+
+
 
 
 
@@ -15,6 +18,8 @@ async function setMiddleware(express){
 		"originAgentCluster",      "permittedCrossDomainPolicies", "referrerPolicy",
 		"xssFilter"
 	];
+
+	express.use(incrementEnterAPIStatistic);
 	
 	for (const methodKey of HelmetOptions)
 	express.use( helmet[methodKey]() );
