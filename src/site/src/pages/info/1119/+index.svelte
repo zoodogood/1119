@@ -5,27 +5,40 @@
 		</element-wrapper>
 	</header>
 
-	<h1>Бот без явного функционала</h1>
-	<p>Я действительно не могу описать его возможностей, ведь нет определённой задачи или темы к которой он был бы привязан.</p>
-	<p>Нет и особо уникальных черт, ведь всё, что имеет этот бот уже когда-то существовало: проклятия, испытания, недо-экономика, общая казна, шуточные вещи, утилиты и конечно же модеративные команды.</p>
-	<p>
-		<a href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("commands").key ) }>Список команд.</a>
-	</p>
+	<main bind:this = { Component.mainNode } class = "page-main">
+		<h1>Бот без явного функционала</h1>
+		<p>Я действительно не могу описать его возможностей, ведь нет определённой задачи или темы к которой он был бы привязан.</p>
+		<p>Нет и особо уникальных черт, ведь всё, что имеет этот бот уже когда-то существовало: проклятия, испытания, недо-экономика, общая казна, шуточные вещи, утилиты и конечно же модеративные команды.</p>
+		<p>
+			<a href = { PagesRouter.relativeToPage( PagesRouter.getPageBy("commands").key ) }>Список команд.</a>
+		</p>
 
-	<hr style:margin-block = "10vh">
+		<hr style:margin-block = "10vh">
+		
+
+		<h3>Почему "это" всё-ещё существует.</h3>
+		<section>
+			<p>Этого бота зовут Призрак. — Захотелось так. И я уже смирился с тем, что он важен для меня и людей, которые дают понять, что он им не безразличен.</p>
+			<p>Поэтому он будет продолжать жить и иногда обновляться пока мир не помешает этому. Так что не дождётесь, хейтеры.</p>
+		</section>
+		
+		
+		<h3>Эй! Давай больше обновлений!</h3>
+		<section>
+			<p>Кусь вам, ведь я хочу заниматься чем-то новым!</p>
+		</section>
+
+		<h2>Статистика</h2>
+		<section>
+			<AuditDaily/>
+		</section>
+
+		<h2>Не только бот</h2>
+		<section>
+			<p>Пожалуй, я займу это пространство своими хобби проектами, о которых вам может быть интересно узнать. Поймите правильно: иначе эта страница будет выглядить излишне пустой. Это весомое оправдание!</p>
+		</section>
+	</main>
 	
-
-	<h3>Почему "это" всё-ещё существует.</h3>
-	<p>Этого бота зовут Призрак. — Захотелось так. И я уже смирился с тем, что он важен для меня и людей, которые дают понять, что он им не безразличен.</p>
-	<p>Поэтому он будет продолжать жить и иногда обновляться пока мир не помешает этому. Так что не дождётесь, хейтеры.</p>
-	
-	<h3>Эй! Давай больше обновлений!</h3>
-	<p>Кусь вам, ведь я хочу заниматься чем-то новым!</p>
-
-	<h2>Статистика</h2>
-	<section>
-		<p>Я осмелюсь прорекламировать здесь другие свои хобби проекты</p>
-	</section>
 
 	
 </Layout>
@@ -77,9 +90,49 @@
 		aspect-ratio: 1 / 1;
 		transform: translateY(50%);
 	}
+
+	.page-main > section
+	{
+		transition: opacity 1s;
+	}
+
+	.page-main > section:not(.visible)
+	{
+		opacity: 0;
+	}
+
+
 </style>
 
 <script>
 	import Layout from '#site-component/Layout';
+	import AuditDaily from '#site-component-lib/frames/statistic/AuditDaily.svelte'
   	import PagesRouter from '#site/lib/Router.js';
+  	import { onMount } from 'svelte';
+
+	const Component = {
+		mainNode: null
+	}
+	const Interaction = {
+		onIntersection(node, entries){
+			node.classList.add("visible");
+		}
+	}
+	onMount(() => {
+		const sections = [...Component.mainNode.querySelectorAll(".page-main > section")];
+		for (const sectionNode of sections){
+
+			const observer = new IntersectionObserver(entries => {
+				const intersecting = entries[0].isIntersecting;
+				if (intersecting){
+					Interaction.onIntersection(sectionNode, entries)
+					observer.unobserve(sectionNode);
+				}
+			});
+
+			observer.observe(sectionNode);
+			continue;
+		}
+		
+	})
 </script>
