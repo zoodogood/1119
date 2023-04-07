@@ -29,11 +29,11 @@ class Cooldown {
 	}
 
 	checkYet(){
-		return this.diff() < 0;
+		return this.diff() > 0;
 	}
 
 	diff(){
-		return Date.now() - this.getCooldownThreshold();
+		return this.getCooldownThreshold() - Date.now();
 	}
 }
 
