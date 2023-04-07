@@ -19,7 +19,7 @@ class Route extends BaseRoute {
 		const cooldown = ChestManager.cooldown.for(user.data);
 
 		if (cooldown.checkYet()){
-			response.status(405).json({notAllowed: "cooldown", value: -cooldown.diff()});
+			response.status(405).json({notAllowed: "cooldown", value: cooldown.diff()});
 			return;
 		}
 
