@@ -144,7 +144,7 @@
 	const articlesPromise = (async () => {
 		const {list, metadata: _metadata} = await fetchFromInnerApi("site/articles");
 		const parse = (id) => {
-			const metadata = _metadata[id];
+			const metadata = _metadata[id] ?? {};
 			const name = Path.basename(id, ".md");
 			return {id, name, metadata};
 		};
