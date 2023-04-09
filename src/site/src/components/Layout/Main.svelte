@@ -15,6 +15,9 @@
 
 		animation: apparance 1.5s;
 		position: relative;
+		
+		max-width: 100%;
+		overflow: auto;
 	}
 
 	@keyframes apparance 
