@@ -1,4 +1,5 @@
 <Layout>
+	<h3>TO-DO: Задача. Полностью изменить внешний вид этой страницы</h3>
 	<section>
 		<ul>
 			{#each commands as command}
