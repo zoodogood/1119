@@ -81,7 +81,7 @@
 		z-index: -1;
 
 		background-color: var( --background-theme-accent );
-		opacity: 0.5;
+		opacity: 0.2;
 	}
 
 	.container
