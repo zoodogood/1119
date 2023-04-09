@@ -63,6 +63,7 @@
 		z-index: 10000;
 
 		user-select: none;
+		overflow: hidden;
 	}
 
 	.header--hide
