@@ -202,6 +202,14 @@ img[alt]::after
 	left: 0;
 }	
 
+
+iframe
+{
+	border: none;
+	outline: none;
+}
+
+
 element-embed
 {
 	border-left: 0.5em solid var( --main-color );
@@ -212,11 +220,14 @@ element-embed
 	width: 100%;
 }
 
-iframe
+
+
+element-container
 {
-	border: none;
-	outline: none;
+	display: flex;
+	max-width: 100%;
 }
+
 
 
 
