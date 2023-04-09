@@ -2,8 +2,8 @@
 	<nav><ul>
 		{#each [...Component.auditTypeEnum] as element, index}
 			{@const [key, { icon, label }] = element}
-			<li title = { label }>
-				<button on:click = { () => State.selectedAuditTypeIndex = index }>
+			<li title = { label } on:click = { () => State.selectedAuditTypeIndex = index } on:keydown = { () => State.selectedAuditTypeIndex = index }>
+				<button>
 					<Icon code = { icon }/>
 				</button>
 			</li>
@@ -11,17 +11,23 @@
 	</ul></nav>
 	<main>
 		{#await State.dataPromise}
-			<p>Загрузка</p>
+			<element-embed>
+				<Loader width = "100px"/>
+			</element-embed>
 		{:then} 
 			<h4>{ [...Component.auditTypeEnum.values()].at( State.selectedAuditTypeIndex ).label }:</h4>
 			<element-container class = "heatmap" on:click = { Component.heatMapOnClick } on:keydown = { Component.heatMapOnClick }>
 				<Heatmap {...HeatmapState}/>
 			</element-container>
+		{:catch}
+			<element-embed>
+				Сервер недоступен
+			</element-embed>
 		{/await}
 		
 	</main>
 	{#key State.footerLabel}
-		<footer>{ State.footerLabel }</footer>
+		<footer>{@html State.footerLabel }</footer>
 	{/key}
 </element-container>
 
@@ -34,7 +40,7 @@
 	nav ul 
 	{
 		display: flex;
-		height: 2em;
+		height: calc(1.5em + 0.75vw);
 		width: 100%;
 		list-style: none;
 		background-color: #88888822;
@@ -45,7 +51,7 @@
 		flex-grow: 1;
 		flex-shrink: 1;
 		width: 3em;
-		max-width: 5em;
+		max-width: calc(5em + 0.5vw);
 		cursor: pointer;
 		display: flex;
 		justify-content: center;
@@ -61,6 +67,12 @@
 	{
 		height: 110%;
 		margin: 0.3em;
+		min-width: 75%;
+	}
+
+	main > element-embed 
+	{
+		margin-top: 1em;
 	}
 
 	.heatmap
@@ -90,8 +102,9 @@
 <script>
 	import Icon from '#site-component/iconic';
 	import Heatmap from 'svelte-heatmap';
+	import Loader from '#site-component/Loader';
 
-	import { dayjs, fetchFromInnerApi } from '#lib/safe-utils.js';
+	import { dayjs, fetchFromInnerApi, sleep } from '#lib/safe-utils.js';
   	import { Theme } from '#site/components/ThemeSwitcher/mod.svelte';
   	import svelteApp from '#site/core/svelte-app.js';
 
@@ -114,7 +127,7 @@
 			},
 			messages: {
 				icon: "",
-				label: "Сообщений",
+				label: "Отправлено сообщений",
 				colorTheme: Theme.collection.get("darkBlue")["--main-color"]
 			}
 
@@ -130,10 +143,16 @@
 			return collection;
 		},
 
-		heatMapOnClick(clickEvent){
+		async heatMapOnClick(clickEvent){
+			// to-do: Transform to popup on element
 			const target = clickEvent.target;
 			if (target.tagName === "rect"){
-				State.footerLabel = `Выбранный элемент:\nЗначение: ${ target.getAttribute("data-value") };\nДата: ${ target.getAttribute("data-date") }`
+				State.footerLabel = `<h4>Выбранный элемент:</h4><b>Значение:</b> ${ target.getAttribute("data-value") };\n<b>Дата:</b> ${ target.getAttribute("data-date") }`
+				target.style.fill = "var(--main-color)";
+				target.style.filter = "invert(1)";
+				await new Promise(resolve => document.addEventListener("mousedown", resolve, {once: true}));
+				target.style.fill = "";
+				target.style.filter = "";
 			}
 		}
 	}
