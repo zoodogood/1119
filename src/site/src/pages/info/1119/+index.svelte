@@ -16,16 +16,8 @@
 		<hr style:margin-block = "10vh">
 		
 
-		<h3>Почему "это" всё-ещё существует.</h3>
-		<section>
-			<p>Этого бота зовут Призрак. — Захотелось так. И я уже смирился с тем, что он важен для меня и людей, которые дают понять, что он им не безразличен.</p>
-			<p>Поэтому он будет продолжать жить и иногда обновляться пока мир не помешает этому. Так что не дождётесь, хейтеры.</p>
-		</section>
-		
-		
-		<h3>Эй! Давай больше обновлений!</h3>
-		<section>
-			<p>Кусь вам, ведь я хочу заниматься чем-то новым!</p>
+		<section style:height = "80vh">
+			<Statistic/>
 		</section>
 
 		<h2>Статистика</h2>
@@ -33,7 +25,7 @@
 			<AuditDaily/>
 		</section>
 
-		<h2>Не только бот</h2>
+		<h2>Другие проекты</h2>
 		<section>
 			<p>Пожалуй, я займу это пространство своими хобби проектами, о которых вам может быть интересно узнать. Поймите правильно: иначе эта страница будет выглядить излишне пустой. Это весомое оправдание!</p>
 		</section>
@@ -93,20 +85,23 @@
 
 	.page-main > section
 	{
-		transition: opacity 1s;
+		transition: opacity 2s, transform 0.5s;
+		margin-bottom: 15vh;
 	}
 
 	.page-main > section:not(.visible)
 	{
+		transform: translateY(15%);
 		opacity: 0;
 	}
+
 
 
 </style>
 
 <script>
 	import Layout from '#site-component/Layout';
-	import AuditDaily from '#site-component-lib/frames/statistic/AuditDaily.svelte'
+	import {AuditDaily, Statistic} from '#site-component/frames/statistic';
   	import PagesRouter from '#site/lib/Router.js';
   	import { onMount } from 'svelte';
 
