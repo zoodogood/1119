@@ -179,7 +179,8 @@
 
 		allowOverflow: true,
 		monthGap: 20,
-		view: "monthly"
+		view: "monthly",
+		fontColor: "var( --text-theme-accent )"
 	}
 
 	$: if (State.data){
