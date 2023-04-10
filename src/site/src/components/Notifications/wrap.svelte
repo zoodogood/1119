@@ -10,7 +10,8 @@
 		background-color: var( --main-color ) !important;
 		border-radius: 100vw !important;
 		padding-left: 1em !important;
-		min-width: 400px !important;
+		min-width: min(95vw, 400px) !important;
+		max-width: 95vw;
 
 		transition: filter 200ms;
 	}
