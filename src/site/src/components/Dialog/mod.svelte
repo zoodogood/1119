@@ -89,9 +89,10 @@
 
 		white-space: pre-wrap;
 		overflow: auto;
+		overflow: overlay;
 	}
 
-	@media (max-width: 700px){
+	@media (max-width: 900px){
 		dialog
 		{
 			max-width: 95vw;
@@ -99,7 +100,7 @@
 
 		.classic-dialog
 		{
-			width: 100%;
+			width: 95vw;
 			min-width: 0;
 			padding: 10px;
 		}
