@@ -230,6 +230,11 @@ element-container
 }
 
 
+element-layout
+{
+	position: absolute;
+}
+
 
 
 
