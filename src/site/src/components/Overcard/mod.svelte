@@ -1,4 +1,9 @@
-<element-card style:--image = { imageURL ? `url("${ imageURL }")` : null } class = "component element-card">
+<element-card 
+	style:--image = { imageURL ? `url("${ imageURL }")` : null }
+	class = "component element-card" 
+	on:click = { Interaction.onClick }
+	on:keydown = { Interaction.onClick }
+>
 	<element-layer class = "background"/>
 	<element-layer class = "foreground">
 
@@ -21,8 +26,8 @@
 <style>
 	element-card 
 	{
-		min-width: 300px;
 		width: 300px;
+		max-width: 100%;
 		aspect-ratio: 410 / 240;
 		display: flex;
 
@@ -38,6 +43,8 @@
 	{
 		background-image: var( --image );
 		background-size: cover;
+		background-position: center;
+		
 		width: 100%;
 		height: 100%;
 		position: absolute;
@@ -97,6 +104,7 @@
 
 		transition: transform 0.5s, filter 0.5s;
 		transition-timing-function: cubic-bezier(0.7, 0, 0.35, 1);
+		filter: contrast(0.5);
 	}
 
 	.triange
@@ -134,12 +142,20 @@
 	{
 		font-weight: bold;
 		transition: color 500ms;
+		overflow-wrap: normal;
+
+	}
+
+	.content span
+	{
+		display: inline-block;
+		font-size: 0.5em;
 	}
 
 	element-card:hover .octagon
 	{
 		transform: scale(1.1) rotateZ(calc( (360deg / 8) * 4 ));
-		filter: brightness(1.1);
+		filter: contrast(0.5) brightness(1.1);
 	}
 
 	element-card:hover h3
@@ -159,7 +175,18 @@
 	export let
 		imageURL = null,
 		label = "",
-		content = "";
+		content = "",
+		url = null;
 
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
+
+	const Interaction = {
+		onClick(){
+			url && window.open(url, "_blank");
+
+			dispatch("click");
+		}
+	}
 	
 </script>
