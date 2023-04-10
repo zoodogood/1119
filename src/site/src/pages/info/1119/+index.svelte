@@ -28,6 +28,8 @@
 		<h2>Другие проекты</h2>
 		<section>
 			<p>Пожалуй, я займу это пространство своими хобби проектами, о которых вам может быть интересно узнать. Поймите правильно: иначе эта страница будет выглядить излишне пустой. Это весомое оправдание!</p>
+			<hr>
+			<AuthorProjects/>
 		</section>
 	</main>
 	
@@ -44,10 +46,10 @@
 
 	header element-wrapper
 	{
-		--padding: 10px;
+		--padding: calc(5px + 0.75vw);
 		border-radius: 30px;
-		width: 20vw;
-		height: 20vh;
+		width: calc(10px + 20vw);
+		height: calc(20vh + 10px);
 
 		padding-bottom: var( --padding );
 		border: var( --padding ) solid #88888811;
@@ -102,6 +104,9 @@
 <script>
 	import Layout from '#site-component/Layout';
 	import {AuditDaily, Statistic} from '#site-component/frames/statistic';
+	import AuthorProjects from '#site/components/frames/external/author/Projects.svelte';
+
+
   	import PagesRouter from '#site/lib/Router.js';
   	import { onMount } from 'svelte';
 
