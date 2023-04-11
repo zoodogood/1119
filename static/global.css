@@ -237,6 +237,14 @@ element-layout
 	position: absolute;
 }
 
+element-group
+{
+	display: inherit;
+	gap: inherit;
+	flex-direction: column;
+	flex-wrap: inherit;
+}
+
 
 
 
