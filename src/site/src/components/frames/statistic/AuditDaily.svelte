@@ -334,8 +334,7 @@
 			const data = await fetchFromInnerApi("client/audit/daily");
 			const entries = Object.entries( data )
 				.map(([day, data]) => [day * 86_400_000, data]);
-
-			console.log({dataRaw: data});
+			
 			const collection = new Map(entries);
 			State.data = collection;
 			return collection;
