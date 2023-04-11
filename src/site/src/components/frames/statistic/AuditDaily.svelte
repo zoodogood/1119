@@ -1,34 +1,60 @@
 <element-container class = "component" style:--main-color = { State.mainColor }>
-	<nav><ul>
+	<nav>
+		<ul class = "select-audit-list">
 		{#each [...Component.auditTypeEnum] as element, index}
 			{@const [key, { icon, label }] = element}
-			<li title = { label } on:click = { () => State.selectedAuditTypeIndex = index } on:keydown = { () => State.selectedAuditTypeIndex = index }>
+			<li
+				class = "select-audit-item"
+				class:active = { State.selectedAuditTypeIndex === index }
+				title = { label }
+				on:click = { () => State.selectedAuditTypeIndex = index }
+				on:keydown = { () => State.selectedAuditTypeIndex = index }
+			>
 				<button>
 					<Icon code = { icon }/>
 				</button>
 			</li>
 		{/each}
-	</ul></nav>
+		</ul>
+	</nav>
 	<main>
 		{#await State.dataPromise}
 			<element-embed>
 				<Loader width = "100px"/>
 			</element-embed>
 		{:then} 
-			<h4>{ [...Component.auditTypeEnum.values()].at( State.selectedAuditTypeIndex ).label }:</h4>
-			<element-container class = "heatmap" on:click = { Component.heatMapOnClick } on:keydown = { Component.heatMapOnClick }>
-				<Heatmap {...HeatmapState}/>
-			</element-container>
+			
+			<main class = "heatmap">
+				<element-container
+					class = "heatmap-inner-container"
+					on:click = { Component.heatMapOnClick }
+					on:keydown = { Component.heatMapOnClick } 
+				>
+					<Heatmap {...HeatmapState}/>
+				</element-container>
+			</main>
+		
+			<section>
+				<element-group>
+					<h4>Выбранный график:</h4>
+					<p>
+						{ [...Component.auditTypeEnum.values()].at( State.selectedAuditTypeIndex ).label }
+						<element-svg/>
+					</p>
+				</element-group>
+				
+				<element-group>
+					<h4>{ $ComponentSectionManagerWritableStore.footerLabel }:</h4>
+					{ @html $ComponentSectionManagerWritableStore.footerContent }
+				</element-group>
+			</section>
 		{:catch}
 			<element-embed>
 				Сервер недоступен
 			</element-embed>
 		{/await}
-		
 	</main>
-	{#key State.footerLabel}
-		<footer>{@html State.footerLabel }</footer>
-	{/key}
+	
 </element-container>
 
 <style>
@@ -36,17 +62,21 @@
 	{
 		flex-direction: column;
 		container: AuditDaily / inline-size;
+		margin-top: 1em;
 	}
-	nav ul 
+
+	
+
+	.select-audit-list
 	{
 		display: flex;
-		height: calc(1.5em + 0.75vw);
-		width: 100%;
+		height: calc(1em + 0.5vw);
+		width: fit-content;
 		list-style: none;
 		background-color: #88888822;
 	}
 
-	nav ul li
+	.select-audit-item
 	{
 		flex-grow: 1;
 		flex-shrink: 1;
@@ -58,16 +88,74 @@
 		align-items: end;
 	}
 
-	nav ul li:hover
+	.select-audit-item:hover
 	{
 		background-color: #88888833;
 	}
 
-	nav ul li button
+	.select-audit-item button
 	{
 		height: 110%;
 		margin: 0.3em;
 		min-width: 75%;
+
+		transition: margin 500ms, filter 500ms;
+		filter: brightness(0.8);
+	}
+
+	.select-audit-item.active button
+	{
+		margin-bottom: 0.5em;
+		filter: brightness(1);
+	}
+
+	.select-audit-item:hover button
+	{
+		margin-bottom: 0.7em;
+		filter: brightness(1);
+	}
+
+
+	.component > main 
+	{
+		display: flex;
+		flex-wrap: wrap;
+		
+		gap: 2em;
+	}
+
+	.component > main > section
+	{
+		margin-left: auto;
+		opacity: 0.7;
+		font-weight: 100;
+		text-transform: uppercase;
+		font-size: 0.8em;
+		padding-left: 2em;
+
+		display: flex;
+		flex-direction: column;
+		gap: 1em;
+
+		min-height: 100%;
+		justify-content: center;
+	}
+
+	.component > main > section h4
+	{
+		font-weight: 100;
+		font-size: 1.5em;
+		transform: translateX(-1em);
+	}
+
+	.component > main > section element-svg
+	{
+		display: inline-block;
+		width: 0.5em;
+		aspect-ratio: 1;
+		background-color: var( --main-color );
+		margin-inline: 0.5em;
+		vertical-align: middle;
 	}
 
 	main > element-embed 
@@ -77,25 +165,41 @@
 
 	.heatmap
 	{
-		height: 20vh;
+		overflow-x: auto;
 	}
 
-	footer 
+	.heatmap-inner-container
 	{
-		white-space: pre-line;
-		animation: footer-apparance 1000ms;
+		--size: 20vh;
+		height: var( --size );
+		overflow-x: auto;
+		box-sizing: content-box;
+		padding-block: 1em;
+		flex-shrink: 0;
+
+		width: fit-content;
+		max-width: none;
 	}
 
-	@keyframes footer-apparance
-	{
-		0% {
-			opacity: 0;
-		}
-
-		100% {
-			opacity: 1;
+	@media (min-width: 980px){
+		.component > main > section
+		{
+			transform: translateY(-3em);
+			flex-direction: column;
 		}
 	}
+
+	@media (max-width: 980px){
+		.component > main > section
+		{
+			flex-grow: 1;
+			align-items: center;
+			justify-content: space-around;
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+	}
+
 </style>
 
 
@@ -104,9 +208,100 @@
 	import Heatmap from 'svelte-heatmap';
 	import Loader from '#site-component/Loader';
 
-	import { dayjs, fetchFromInnerApi, sleep } from '#lib/safe-utils.js';
+	import { dayjs, fetchFromInnerApi, timestampDay } from '#lib/safe-utils.js';
   	import { Theme } from '#site/components/ThemeSwitcher/mod.svelte';
   	import svelteApp from '#site/core/svelte-app.js';
+  	import { writable } from 'svelte/store';
+
+	class ComponentSectionManager {
+		constructor(){
+			this.state = {
+				footerLabel: "",
+				footerContent: "",
+				data: null,
+				focusedHeat: null
+			}
+
+			this.store = writable(this.state);
+		}
+
+		setFocusedHeat(target){
+			const date = new Date(target.getAttribute("data-date"));
+			const key = timestampDay(date.getTime()) * 86_400_000;
+
+			
+			this.state.focusedHeat = {
+				target: target,
+				key,
+				date
+			}
+
+			this.update();
+		}
+
+		removeFocusedHeat(){
+			delete this.state.focusedHeat;
+			this.update();
+		}
+
+		setData(data){
+			this.state.data = data;
+			this.update();
+		}
+
+		update(){
+			const state = this.state;
+			if (!state.data){
+				return;
+			}
+
+			if (state.focusedHeat && state.data){
+				const heat = state.focusedHeat;
+				const values = state.data.get(heat.key) ?? {};
+				
+				const content = this.valuestToContent(values);
+
+				state.footerLabel = `За ${ dayjs(heat.date).format("DD.MM") }`;
+				state.footerContent = content;
+
+				this.store.update(() => this.state);
+				return;
+			}
+
+			if (state.data){
+				
+				const values = [...state.data.values()]
+					.reduce((acc, value) => {
+						for (const key in value)
+						acc[key] = (acc[key] ?? 0) + value[key];
+
+						return acc;
+					}, {});
+
+				const content = this.valuestToContent(values);
+				state.footerLabel = "Общие";
+				state.footerContent = content;
+
+				this.store.update(() => this.state);
+				return;
+			}
+		}
+
+		valuestToContent(values){
+			if (!Object.keys(values).length){
+				return "( Пусто )";
+			}
+			
+			const content = Object.entries(values)
+				.map(([key, value]) => `${ Component.auditTypeEnum.get(key).label }: ${ value }`)
+				.map(content => `<p>${ content }</p>`)
+				.join(""); 
+
+			return content;
+		}
+	}
+
+
 
 	const Component = {
 		auditTypeEnum: new Map(Object.entries({
@@ -122,7 +317,7 @@
 			},
 			commandsUsed: {
 				icon: "",
-				label: "Использованно команд",
+				label: "Использовано команд",
 				colorTheme: Theme.collection.get("darkPurple")["--main-color"]
 			},
 			messages: {
@@ -138,6 +333,7 @@
 			const entries = Object.entries( data )
 				.map(([day, data]) => [day * 86_400_000, data]);
 
+			console.log({dataRaw: data});
 			const collection = new Map(entries);
 			State.data = collection;
 			return collection;
@@ -147,14 +343,21 @@
 			// to-do: Transform to popup on element
 			const target = clickEvent.target;
 			if (target.tagName === "rect"){
-				State.footerLabel = `<h4>Выбранный элемент:</h4><b>Значение:</b> ${ target.getAttribute("data-value") };\n<b>Дата:</b> ${ target.getAttribute("data-date") }`
+				Component.SectionManager.setFocusedHeat(target);
+
 				target.style.fill = "var(--main-color)";
 				target.style.filter = "invert(1)";
-				await new Promise(resolve => document.addEventListener("mousedown", resolve, {once: true}));
+				const {target: clickTarget} = await new Promise(resolve => document.addEventListener("pointerdown", resolve, {once: true}));
+				if (clickTarget.tagName !== "rect"){
+					Component.SectionManager.removeFocusedHeat();
+				}
+
 				target.style.fill = "";
 				target.style.filter = "";
 			}
-		}
+		},
+
+		SectionManager: new ComponentSectionManager()
 	}
 
 	const State = {
@@ -162,8 +365,7 @@
 		selectedAuditTypeIndex: 0,
 		dataPromise: Component.GetData(),
 		data: null,
-		mainColor: null,
-		footerLabel: ""
+		mainColor: null
 	}
 
 	const HeatmapState = {
@@ -180,8 +382,19 @@
 		allowOverflow: true,
 		monthGap: 20,
 		view: "monthly",
-		fontColor: "var( --text-theme-accent )"
+		fontColor: "var( --text-theme-accent )",
+		fontFamily: "monospace",
+		fontSize: "0.2em"
 	}
+
+
+
+
+
+
+
+
+
 
 	$: if (State.data){
 		HeatmapState.startDate ||= 
@@ -196,6 +409,9 @@
 			date: dayjs(timestamp).toDate(),
 			value: raw[ key ]
 		}));
+
+		
+		Component.SectionManager.setData(State.data);
 	}
 
 	$: {
@@ -209,4 +425,6 @@
 			HeatmapState.colors = [...new Array(16 - MIN_ALPHA)].map(toColor);
 		})(State.selectedAuditTypeIndex)
 	}
+
+	const ComponentSectionManagerWritableStore = Component.SectionManager.store;
 </script>
