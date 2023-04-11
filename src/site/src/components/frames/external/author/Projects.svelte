@@ -24,7 +24,7 @@
 			{@const [key] = element}
 				<li>
 					<p>{ key }</p>
-					<span>Звёзд: { data[key].stargazers_count }</span>
+					<span>{ i18n.aside.stars } { data[key].stargazers_count }</span>
 				</li>
 			{/each}
 		</aside>
@@ -119,27 +119,31 @@
 <script>
 	import OverCard from '#site-component/Overcard';
 	import Icon from '#site-component/iconic';
+  	import svelteApp from '#site/core/svelte-app.js';
+
+
+	const i18n = svelteApp.i18n.frames.externalAuthorProjects;
 
 
 	const Component = {
 		projectesEnum: new Map(Object.entries({
 			piramide: {
-				label: "Пирамидка",
-				description: "Пользователю предстоит написать алгоритм для решения детской задачи — построить пирамидку, которая с высотой постепенно уменьшается в диаметре.",
+				label: i18n.projectesEnum.piramide.label,
+				description: i18n.projectesEnum.piramide.description,
 				imageURL: "https://camo.githubusercontent.com/764d636fff5a8d36cbce72b5c14c5fe895c25fd46fcc9b62dd00d13cffff15f1/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6174746163686d656e74732f3836343039383736353534363731373138342f3930323038393535353830373733313738322f756e6b6e6f776e2e706e67",
 				home: "https://zoodogood.github.io/piramide/",
 				github: "https://github.com/zoodogood/piramide"
 			},
 			letsbet: {
-				label: "Let-s-bet",
-				description: "Бинарный поиск очень эффективен",
+				label: i18n.projectesEnum.letsbet.label,
+				description: i18n.projectesEnum.letsbet.description,
 				imageURL: "https://media.discordapp.net/attachments/629546680840093696/1094660382993428510/image.png?width=1272&height=654",
 				home: "https://zoodogood.github.io/let-s-bet/index.html",
 				github: "https://github.com/zoodogood/let-s-bet"
 			},
 			glitchBall: {
-				label: "GlitchBall",
-				description: "Если вы заполнили область за пределами этого круга — проиграли.",
+				label: i18n.projectesEnum.glitchBall.label,
+				description: i18n.projectesEnum.glitchBall.description,
 				imageURL: "https://media.discordapp.net/attachments/629546680840093696/1094660456616042647/image.png",
 				home: "https://zoodogood.github.io/glitchBall/",
 				github: "https://github.com/zoodogood/glitchBall"
