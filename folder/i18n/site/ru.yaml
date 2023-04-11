@@ -5,6 +5,26 @@ general:
       title: Пожалуйста, авторизуйтесь повторно
       description: "Токен действителен в течении двух недель и становится недействительным. Чтобы его обновить авторизуйтесь повторно; Если это сообщение возникает чаще указаного срока, сообщите о проблеме для её решения.\n\n<a href = ${ link }>${ _key }</a>"
 frames:
+  AuditDaily:
+    auditTypeEnum: 
+      enterToPages:
+        label: Посещений страниц
+      enterToAPI:
+        label: Обращений к API
+      commandUsed:
+        label: Использовано команд
+      messages:
+        label: Отправлено сообщений
+    SectionManager:
+      footerLabels:
+        general: "Общие"
+        for$day: "За"
+      emptyContent: "( Пусто )"
+    section:
+      selectionGroup:
+        label: "Выбранный график:"
+    serverIsNotAvailable: "Сервер недоступен"
+
   Statistic:
     statsEnum:
       guilds:
