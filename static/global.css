@@ -20,6 +20,8 @@
    --background-theme-accent: var( --dark );
 
 	--adaptive-font-rule: calc(16px + 8 * (100vw / 1280));
+
+	--standart-media-screen-threshold: 980px;
 }
 
 

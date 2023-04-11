@@ -92,7 +92,7 @@
 		
 	}
 
-	@media (max-width: 800px){
+	@media (max-width: 980px){
 		.guilds-list
 		{
 			left: 50%;
@@ -128,7 +128,7 @@
 		}
 	}
 
-	@media (min-width: 800px){
+	@media (min-width: 980px){
 		.guilds-list
 		{	
 			top: 50%;

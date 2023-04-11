@@ -92,7 +92,7 @@
 		overflow: overlay;
 	}
 
-	@media (max-width: 900px){
+	@media (max-width: 980px){
 		dialog
 		{
 			max-width: 95vw;
