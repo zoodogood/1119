@@ -36,7 +36,7 @@
 		
 			<section>
 				<element-group>
-					<h4>{ i18n.SectionManager.selectionGroup.label }</h4>
+					<h4>{ i18n.section.selectionGroup.label }</h4>
 					<p>
 						{ [...Component.auditTypeEnum.values()].at( State.selectedAuditTypeIndex ).label }
 						<element-svg/>
