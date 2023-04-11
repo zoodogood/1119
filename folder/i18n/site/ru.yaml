@@ -11,7 +11,7 @@ frames:
         label: Посещений страниц
       enterToAPI:
         label: Обращений к API
-      commandUsed:
+      commandsUsed:
         label: Использовано команд
       messages:
         label: Отправлено сообщений
