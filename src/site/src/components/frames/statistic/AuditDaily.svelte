@@ -36,7 +36,7 @@
 		
 			<section>
 				<element-group>
-					<h4>Выбранный график:</h4>
+					<h4>{ i18n.SectionManager.selectionGroup.label }</h4>
 					<p>
 						{ [...Component.auditTypeEnum.values()].at( State.selectedAuditTypeIndex ).label }
 						<element-svg/>
@@ -50,7 +50,7 @@
 			</section>
 		{:catch}
 			<element-embed>
-				Сервер недоступен
+				{ i18n.serverIsNotAvailable }
 			</element-embed>
 		{/await}
 	</main>
@@ -213,6 +213,8 @@
   	import svelteApp from '#site/core/svelte-app.js';
   	import { writable } from 'svelte/store';
 
+	const i18n = svelteApp.i18n.frames.AuditDaily;
+
 	class ComponentSectionManager {
 		constructor(){
 			this.state = {
@@ -261,7 +263,7 @@
 				
 				const content = this.valuestToContent(values);
 
-				state.footerLabel = `За ${ dayjs(heat.date).format("DD.MM") }`;
+				state.footerLabel = `${ i18n.SectionManager.footerLabels.for$day } ${ dayjs(heat.date).format("DD.MM") }`;
 				state.footerContent = content;
 
 				this.store.update(() => this.state);
@@ -279,7 +281,7 @@
 					}, {});
 
 				const content = this.valuestToContent(values);
-				state.footerLabel = "Общие";
+				state.footerLabel = i18n.SectionManager.footerLabels.general;
 				state.footerContent = content;
 
 				this.store.update(() => this.state);
@@ -289,7 +291,7 @@
 
 		valuestToContent(values){
 			if (!Object.keys(values).length){
-				return "( Пусто )";
+				return i18n.SectionManager.emptyContent;
 			}
 			
 			const content = Object.entries(values)
@@ -307,22 +309,22 @@
 		auditTypeEnum: new Map(Object.entries({
 			enterToPages: {
 				icon: "",
-				label: "Посещений страниц",
+				label: i18n.auditTypeEnum.enterToPages.label,
 				colorTheme: Theme.collection.get("darkGreen")["--main-color"]
 			},
 			enterToAPI: {
 				icon: "",
-				label: "Обращений к API",
+				label: i18n.auditTypeEnum.enterToAPI.label,
 				colorTheme: Theme.collection.get("darkOrange")["--main-color"]
 			},
 			commandsUsed: {
 				icon: "",
-				label: "Использовано команд",
+				label: i18n.auditTypeEnum.commandsUsed.label,
 				colorTheme: Theme.collection.get("darkPurple")["--main-color"]
 			},
 			messages: {
 				icon: "",
-				label: "Отправлено сообщений",
+				label: i18n.auditTypeEnum.messages.label,
 				colorTheme: Theme.collection.get("darkBlue")["--main-color"]
 			}
 
