@@ -4,7 +4,15 @@ general:
     externalTokenDialog:
       title: Пожалуйста, авторизуйтесь повторно
       description: "Токен действителен в течении двух недель и становится недействительным. Чтобы его обновить авторизуйтесь повторно; Если это сообщение возникает чаще указаного срока, сообщите о проблеме для её решения.\n\n<a href = ${ link }>${ _key }</a>"
-
+frames:
+  Statistic:
+    statsEnum:
+      guilds:
+        label: Гильдий
+      users:
+        label: Пользователей
+      commands: 
+        label: Команд
 pages:
   public:
     hi: Привет!
