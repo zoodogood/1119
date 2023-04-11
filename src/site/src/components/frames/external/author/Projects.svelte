@@ -1,5 +1,4 @@
 <element-container class = "component">
-	<pre>zoodogood</pre>
 	<element-layout>
 		<a href = { Component.authorLink } target = "_blank" rel = "noreferrer">
 			<Icon code = ""/>
