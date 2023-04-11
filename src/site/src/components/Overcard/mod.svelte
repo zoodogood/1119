@@ -164,6 +164,11 @@
 		filter: contrast(1.5);
 	}
 
+	element-card:hover .content
+	{
+		opacity: 1;
+	}
+
 	element-card:hover 
 	{
 		filter: brightness(1.2);
