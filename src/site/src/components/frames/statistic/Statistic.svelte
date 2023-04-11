@@ -87,6 +87,9 @@
 	import IntersectionObserver from "svelte-intersection-observer";
   	import { onMount } from "svelte";
   	import { fetchFromInnerApi, sleep } from "#lib/safe-utils.js";
+  	import svelteApp from "#site/core/svelte-app.js";
+
+	const i18n = svelteApp.i18n.frames.Statistic;
 
 	const ComponentStyles = {
 		First: 1,
@@ -101,17 +104,17 @@
 			guilds: {
 				value: null,
 				displayedValue: 0,
-				label: "Гильдий"
+				label: i18n.statsEnum.guilds.label
 			},
 			users: {
 				value: null,
 				displayedValue: 0,
-				label: "Пользователей"
+				label: i18n.statsEnum.users.label
 			},
 			commands: {
 				value: null,
 				displayedValue: 0,
-				label: "Команд"
+				label: i18n.statsEnum.commands.label
 			}
 		})),
 
