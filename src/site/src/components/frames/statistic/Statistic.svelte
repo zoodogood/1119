@@ -21,17 +21,17 @@
 		flex-direction: column;
 		justify-content: start;
 		align-items: center;
-		height: 100%;
 		container: Statistic / inline-size;
-		padding-top: 5em;
+		padding-top: 15cqw;
 
 		gap: 3vh;
 
 		background-color: var( --background-theme-accent );
 		color: var( --text-theme-accent );
 		
-		clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 30% 75%, 5% 100%, 5% 75%, 0% 75%);
-		border-radius: 15px;
+		clip-path: polygon(0% 2%, 100% 0%, 100% 80%, 30% 80%, 10% 100%, 9% 78%, 10% 77%, 0% 80%);
+		aspect-ratio: 1.75 / 1;
+		margin-inline: 1vw;
 
 
 		transition: filter 1s;
@@ -39,7 +39,7 @@
 
 	element-container.second-style
 	{
-		filter: invert(1);
+		filter: invert(0.9);
 	}
 
 	ul
