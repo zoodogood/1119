@@ -49,7 +49,7 @@
 
 	header element-wrapper
 	{
-		--padding: calc(5px + 0.75vw);
+		--padding: calc(7px + 0.5vw);
 		border-radius: 30px;
 		width: calc(10px + 20vw);
 		height: calc(20vh + 10px);
