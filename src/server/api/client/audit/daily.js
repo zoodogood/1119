@@ -1,5 +1,7 @@
 import { BaseRoute } from "#server/router.js";
 import DataManager from "#lib/modules/DataManager.js";
+import { timestampDay } from "#lib/safe-utils.js";
+import { DailyAudit } from "#folder/events/TimeEvents/new-day.js";
 
 
 const PREFIX = "/client/audit/daily";
@@ -14,8 +16,14 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, response){
-		response.json( DataManager.data.dailyAudit );
-		return
+		const currentDay = timestampDay( Date.now() );
+		const currentData = DailyAudit.createData();
+
+		response.json({
+			...DataManager.data.dailyAudit, 
+			[currentDay]: currentData
+		});
+		return;
 	}
 }
 
