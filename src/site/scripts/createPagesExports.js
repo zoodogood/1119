@@ -16,7 +16,7 @@ const ENUM_TARGET_PATH = "./static/build/svelte-pages/enum[builded].mjs"; // ESJ
 /** Get's path */
 import Path from 'path';
 
-import { takePath } from '#lib/util.js';
+import { takePath } from '#src/app/utils.js';
 
 
 
