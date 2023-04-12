@@ -13,8 +13,8 @@ class DailyAudit {
 			commandsUsed: Data.bot.commandsUsedToday,
 			messages: Data.bot.messagesToday,
 			riches:
-				Data.users.reduce((acc, {coins}) => acc + (~~coins)) +
-				Data.guilds.reduce((acc, {coins}) => acc + (~~coins))
+				Data.users.reduce((acc, {coins}) => acc + (~~coins), 0) +
+				Data.guilds.reduce((acc, {coins}) => acc + (~~coins), 0)
 		};
 	}
 
