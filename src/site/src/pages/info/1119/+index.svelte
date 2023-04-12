@@ -88,6 +88,11 @@
 		transform: translateY(50%);
 	}
 
+	.page-main
+	{
+		overflow: hidden;
+	}
+
 	.page-main > section
 	{
 		transition: opacity 2s, transform 0.5s;
