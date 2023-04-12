@@ -208,11 +208,12 @@
 	import Heatmap from 'svelte-heatmap';
 	import Loader from '#site-component/Loader';
 
-	import { dayjs, fetchFromInnerApi, timestampDay } from '#lib/safe-utils.js';
+	import { dayjs, fetchFromInnerApi, timestampDay, NumberFormatLetterize } from '#lib/safe-utils.js';
   	import { Theme } from '#site/components/ThemeSwitcher/mod.svelte';
   	import svelteApp from '#site/core/svelte-app.js';
   	import { writable } from 'svelte/store';
 
+	
 	const i18n = svelteApp.i18n.frames.AuditDaily;
 
 	class ComponentSectionManager {
@@ -295,7 +296,7 @@
 			}
 			
 			const content = Object.entries(values)
-				.map(([key, value]) => `${ Component.auditTypeEnum.get(key).label }: ${ value }`)
+				.map(([key, value]) => `${ Component.auditTypeEnum.get(key).label }: ${ NumberFormatLetterize(value) }`)
 				.map(content => `<p>${ content }</p>`)
 				.join(""); 
 
@@ -326,6 +327,11 @@
 				icon: "",
 				label: i18n.auditTypeEnum.messages.label,
 				colorTheme: Theme.collection.get("darkBlue")["--main-color"]
+			},
+			riches: {
+				icon: "",
+				label: i18n.auditTypeEnum.riches.label,
+				colorTheme: "##ffd700"
 			}
 
 		})),
