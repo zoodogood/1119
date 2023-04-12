@@ -345,7 +345,7 @@
 				reduce: (acc, value) => acc + value
 			},
 			riches: {
-				icon: "",
+				icon: "",
 				label: i18n.auditTypeEnum.riches.label,
 				colorTheme: "#eac500",
 				reduce: (acc, value) => Math.max(acc, value)
