@@ -70,10 +70,13 @@
 	.select-audit-list
 	{
 		display: flex;
-		height: calc(1em + 0.5vw);
-		width: fit-content;
+		
 		list-style: none;
 		background-color: #88888822;
+		
+		width: fit-content;
+		max-width: 100%;
+		height: calc(1em + 0.5vw);
 	}
 
 	.select-audit-item
