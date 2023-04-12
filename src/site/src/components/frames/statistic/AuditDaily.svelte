@@ -274,12 +274,21 @@
 			if (state.data){
 				
 				const values = [...state.data.values()]
-					.reduce((acc, value) => {
-						for (const key in value)
-						acc[key] = (acc[key] ?? 0) + value[key];
+					.reduce((acc, values) => {
+						for (const key in values){
+							const auditTypeEntity = Component.auditTypeEnum.get(key);
+							
+							acc[key] = auditTypeEntity.reduce(
+								acc[key] ?? 0,
+								values[key]
+							);
+						}
+						
 
 						return acc;
 					}, {});
+					
+				
 
 				const content = this.valuestToContent(values);
 				state.footerLabel = i18n.SectionManager.footerLabels.general;
@@ -311,27 +320,32 @@
 			enterToPages: {
 				icon: "",
 				label: i18n.auditTypeEnum.enterToPages.label,
-				colorTheme: Theme.collection.get("darkGreen")["--main-color"]
+				colorTheme: Theme.collection.get("darkGreen")["--main-color"],
+				reduce: (acc, value) => acc + value
 			},
 			enterToAPI: {
 				icon: "",
 				label: i18n.auditTypeEnum.enterToAPI.label,
-				colorTheme: Theme.collection.get("darkOrange")["--main-color"]
+				colorTheme: Theme.collection.get("darkOrange")["--main-color"],
+				reduce: (acc, value) => acc + value
 			},
 			commandsUsed: {
 				icon: "",
 				label: i18n.auditTypeEnum.commandsUsed.label,
-				colorTheme: Theme.collection.get("darkPurple")["--main-color"]
+				colorTheme: Theme.collection.get("darkPurple")["--main-color"],
+				reduce: (acc, value) => acc + value
 			},
 			messages: {
 				icon: "",
 				label: i18n.auditTypeEnum.messages.label,
-				colorTheme: Theme.collection.get("darkBlue")["--main-color"]
+				colorTheme: Theme.collection.get("darkBlue")["--main-color"],
+				reduce: (acc, value) => acc + value
 			},
 			riches: {
-				icon: "",
+				icon: "",
 				label: i18n.auditTypeEnum.riches.label,
-				colorTheme: "##ffd700"
+				colorTheme: "#eac500",
+				reduce: (acc, value) => Math.max(acc, value)
 			}
 
 		})),
