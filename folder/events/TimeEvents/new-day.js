@@ -3,6 +3,36 @@ import * as Util from '#lib/util.js';
 import {TimeEventsManager, BossManager, DataManager} from '#lib/modules/mod.js';
 import { dayjs } from '#lib/util.js';
 
+class DailyAudit {
+	static createData(){
+		const Data = DataManager.data;
+
+		return {
+			enterToPages: Data.site.entersToPagesToday,
+			enterToAPI: Data.site.entersToAPIToday,
+			commandsUsed: Data.bot.commandsUsedToday,
+			messages: Data.bot.messagesToday,
+			riches:
+				Data.users.reduce((acc, {coins}) => acc + (~~coins)) +
+				Data.guilds.reduce((acc, {coins}) => acc + (~~coins))
+		};
+	}
+
+	static assign(day, data){
+		const Data = DataManager.data;
+		Data.dailyAudit[ day ] = data;
+	}
+
+	static cleanDataCollectors(){
+		const Data = DataManager.data;
+
+		Data.site.entersToPagesToday = 0;
+		Data.site.entersToAPIToday = 0;
+		Data.bot.commandsUsedToday = 0;
+		Data.bot.messagesToday = 0;
+	}
+}
+
 class Event {
 	async run(isLost){
 
@@ -12,17 +42,14 @@ class Event {
 		let next = dayjs().endOf("date").add(1, "second") - Date.now();
 		TimeEventsManager.create("new-day", next);
 		
-		Data.dailyAudit[ Data.bot.currentDay ] = {
-			enterToPages: Data.site.entersToPagesToday,
-			enterToAPI: Data.site.entersToAPIToday,
-			commandsUsed: Data.bot.commandsUsedToday,
-			messages: Data.bot.messagesToday
-		};
+		
+		DailyAudit.assign(
+			Data.bot.currentDay,
+			DailyAudit.createData()
+		);
+		DailyAudit.cleanDataCollectors();
 
-		Data.site.entersToPagesToday = 0;
-		Data.site.entersToAPIToday = 0;
-		Data.bot.commandsUsedToday = 0;
-		Data.bot.messagesToday = 0;
+		
 
 		const today = Util.toDayDate( Date.now() );
 		Data.bot.dayDate = today;
@@ -83,3 +110,4 @@ class Event {
 }
 
 export default Event;
+export { DailyAudit };
