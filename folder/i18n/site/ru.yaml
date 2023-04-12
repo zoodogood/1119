@@ -14,7 +14,9 @@ frames:
       commandsUsed:
         label: Использовано команд
       messages:
-        label: Отправлено сообщений
+        label: Отправлено сообщений 
+      riches:
+        label: Богатство
     SectionManager:
       footerLabels:
         general: "Общие"
