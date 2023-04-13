@@ -1,6 +1,6 @@
 <span class = "component">
 	<p>
-		<small>{ Math.floor($progress) }/{ max }</small>
+		<small>{ NumberFormatLetterize($progress) }/{ NumberFormatLetterize(max) }</small>
 		<span>{ targetLabel }</span>
 	</p>
 	
@@ -53,6 +53,7 @@
 <script>
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
+	import { NumberFormatLetterize } from '#lib/safe-utils.js';
 
 	export let 
 		max = 100,
