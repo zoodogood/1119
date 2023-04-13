@@ -1,5 +1,6 @@
 import { client } from '#bot/client.js';
 import Discord from 'discord.js';
+import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from '#constants/users/events.js';
 
 class Command {
 
@@ -108,7 +109,7 @@ class Command {
       ctx2.globalCompositeOperation = "source-atop";
 
       ctx2.fillStyle = (user.profile_color) ? "#" + user.profile_color : "#0c0";
-      ctx2.fillRect(expLine, (165 - width.textHeight) / 2, user.exp / (user.level * 45) * (670 - expLine * 1.8), width.textHeight * 1.5);
+      ctx2.fillRect(expLine, (165 - width.textHeight) / 2, user.exp / (user.level * LEVELINCREASE_EXPERIENCE_PER_LEVEL) * (670 - expLine * 1.8), width.textHeight * 1.5);
 
       gradient = ctx.createLinearGradient(expLine, 165, (670 - expLine * 1.8), 0);
       gradient.addColorStop(0.2, "rgba(0, 0, 0, 0.5)");
