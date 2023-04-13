@@ -349,7 +349,7 @@ async function eventHundler(msg){
 
     user.exp++;
     if (user.exp >= user.level * 45) {
-      levelUp(user, msg);
+      EventsManager.emitter.emit("users/levelIncrease", {user, message: msg});
     }
 
     server.day_msg++;
@@ -402,26 +402,6 @@ async function getCoinsFromMessage(user, msg){
   msg.msg({content: messageContent, delete: 2500});
 };
 
-async function levelUp(user, msg){
-  const level = user.level;
-  const PER_LEVEL = 45;
-  while (user.exp >= user.level * PER_LEVEL){
-    const expSummary = user.level * PER_LEVEL;
-    const coefficient = Math.max(0.97716 ** user.voidRituals, 0.01);
-    user.exp -= Math.ceil(expSummary * coefficient);
-    user.level++;
-  }
-
-  const textContent = user.level - level > 2 ?
-    `**${msg.author.username} повышает уровень с ${ level } до ${ user.level }!**` :
-    `**${ msg.author.username } получает ${user.level} уровень!**`;
-
-  const message = await msg.msg({content: textContent});
-
-  if (msg.channel.id !== msg.guild.data.chatChannel) {
-    message.delete({timeout: 5000});
-  }
-};
 
 async function stupid_bot(user, msg) {
   if (msg.channel.isDMBased())
