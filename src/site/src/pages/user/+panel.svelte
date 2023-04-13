@@ -48,6 +48,7 @@
 		</section>
 		
 		{#if State.target.type === TargetType.User}
+			<UserProgress {svelteApp} target = {State.target}/>
 			<UserSettings {svelteApp} target = {State.target}/>
 			<ChangeLanguage isAlwaysVisible = {true}/>
 			<button 
@@ -65,6 +66,7 @@
 			
 		{:else}
 			{#if State.target.isAdmin}
+				<GuildProgress {svelteApp} target = {State.target}/>
 				<GuildSettings {svelteApp} target = { State.target }/>
 			{:else}
 				<small>Вы не являетесь Администратором и не можете редактировать параметры бота связанные с выбраной гильдией.</small>
@@ -268,7 +270,7 @@
 
 <script>
 	import Layout from '#site-component/Layout';
-	import {UserSettings, GuildSettings} from '#site-component/frames/settings';
+	import {UserSettings, GuildSettings, GuildProgress, UserProgress} from '#site/components/frames/entityData/mod.svelte';
 	import ChangeLanguage from '#site-component/ChangeLanguage';
 	
   	import svelteApp from '#site/core/svelte-app.js';
