@@ -1,7 +1,7 @@
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 
 
-const EXPERIENCE_PER_LEVEL = 45;
+import { LEVELINCREASE_EXPERIENCE_PER_LEVEL as EXPERIENCE_PER_LEVEL } from "#lib/constants/users/events.js";
 
 
 
@@ -44,5 +44,5 @@ class Event extends BaseEvent {
 	}
 }
 
-export { EXPERIENCE_PER_LEVEL };
+
 export default Event;
