@@ -21,6 +21,7 @@
     "#server/*": "./src/server/*",
     "#site/*": "./src/site/src/*",
     "#bot/*": "./src/bot/*",
+    "#contants/*": "./src/lib/contants/*",
     "#lib/*": "./src/lib/*",
     "#folder/*": "./folder/*",
     "#static/*": "./static/*",
