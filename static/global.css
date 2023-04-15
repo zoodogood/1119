@@ -92,12 +92,13 @@ input, button, select, textarea
 
 	padding: 0.4em;
 	margin: 0 0 0.5em 0;
-	border-radius: 2px;
 
 	outline: none;
 	border: none;
 	background-color: #88888822;
 	color: var( --text-theme-accent );
+
+	border-radius: 10px;
 }
 
 input:disabled
