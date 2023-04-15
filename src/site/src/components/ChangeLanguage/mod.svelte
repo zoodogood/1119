@@ -2,7 +2,7 @@
 <section>
 	<ul>
 	{#each languages as locale}
-		<li>
+		<li title = {"Выбери меня"}>
 			<button on:click = {onClick}>{ locale }</button>
 		</li>
 	{/each}
