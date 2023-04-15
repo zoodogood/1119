@@ -133,12 +133,13 @@
 		const sections = [...Component.mainNode.querySelectorAll(".page-main > section")];
 		for (const sectionNode of sections){
 
-			const observer = new IntersectionObserver(entries => {
-				const intersecting = entries[0].isIntersecting;
-				if (intersecting){
-					Interaction.onIntersection(sectionNode, entries)
-					observer.unobserve(sectionNode);
+			const observer = new IntersectionObserver(([entry]) => {
+				if (entry.isIntersecting){
+					return;
 				}
+				
+				Interaction.onIntersection(sectionNode, entry) ;
+				observer.unobserve(sectionNode);
 			});
 
 			observer.observe(sectionNode);
