@@ -91,7 +91,13 @@
 		padding: 0.075em;
 
 		align-items: center;
-		
+		opacity: 0.8;
+		transition: opacity 1s;
+	}
+
+	.guilds-list:hover
+	{
+		opacity: 1;
 	}
 
 	@media (max-width: 980px){
