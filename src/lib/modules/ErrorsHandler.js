@@ -118,7 +118,7 @@ class ErrorsAudit {
 		if (this.collection.size === 0){
 			return false;
 		}
-
+		
 		this.constructor.file.write(
 			this.toJSON()
 		);
@@ -129,8 +129,24 @@ class ErrorsAudit {
 	}
 
 	async fetchLogs(){
-		return (await this.constructor.file.getFilesList())
-			.filter(name => name.endsWith(".json"));
+		const suffix = ".json";
+		const fileNames = (await this.constructor.file.getFilesList())
+			.filter(name => name.endsWith(suffix));
+			
+		const toDate = name => {
+			const [day, month, hour, minute] = name.replace(suffix, "").split("-");
+			
+			return dayjs()
+				.set("D", day,)
+				.set("M", month - 1)
+				.set("H", hour)
+				.set("m", minute)
+				.toDate();
+			
+		};
+		
+		fileNames.sort((a, b) => toDate(a).getTime() - toDate(b).getTime());
+		return fileNames;
 	}
 
 	async readFile(name){
