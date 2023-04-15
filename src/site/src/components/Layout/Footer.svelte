@@ -77,6 +77,8 @@
 		position: relative;
 		filter: var( --page-filter );
 		border-top: 2px solid var( --main-color );
+
+		overflow: hidden;
 	}
 
 	.footer-main 
