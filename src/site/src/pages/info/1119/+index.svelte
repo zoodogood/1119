@@ -134,7 +134,7 @@
 		for (const sectionNode of sections){
 
 			const observer = new IntersectionObserver(([entry]) => {
-				if (entry.isIntersecting){
+				if (entry.isIntersecting === false){
 					return;
 				}
 				
