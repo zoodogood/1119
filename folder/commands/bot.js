@@ -100,7 +100,7 @@ class Command {
           },
           {
             type: ComponentType.Button,
-            label: "Создать интригу",
+            label: "Быстрая связь",
             style: ButtonStyle.Primary,
             customId: "@command/bot/postReview"
           }
@@ -120,7 +120,7 @@ class Command {
         type: ComponentType.TextInput,
         customId: "content",
         style: TextInputStyle.Paragraph,
-        label: "Введите сообщение: полезный отзыв или фигню",
+        label: "Введите сообщение: вопрос, отзыв или веселую шутку",
         maxLength: 2000
       }];
 
@@ -173,7 +173,7 @@ class Command {
         customId: "content",
         style: TextInputStyle.Paragraph,
         label: "Если что вдруг",
-        placeholder: "Будьте няшками и в целом можете отвечать несерьёзно",
+        placeholder: "По пятницам я не отвечаю",
         maxLength: 2000
       }];
 
@@ -197,7 +197,7 @@ class Command {
         author: {iconURL: interaction.user.avatarURL(), name: `Получен ответ на ваше сообщение`},
         description,
         color: "#6534bf",
-        footer: {text: `Ответ предоставил ${ interaction.user.tag }. Если вы отреагировать, свяжитесь с пользователем, ответившим вам`},
+        footer: {text: `Ответ предоставил ${ interaction.user.tag }. Если вы хотите отреагировать, свяжитесь напрямую с пользователем, ответившим вам`},
         image: "https://media.discordapp.net/attachments/629546680840093696/1073849735850508339/simple-black-rounded-line.png?width=559&height=559"
       };
 
