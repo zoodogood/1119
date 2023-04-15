@@ -25,11 +25,14 @@ class TokensUsersExchanger {
 		const data = await APIPointAuthorizationManager.OAuth.fetchUser(token) ?? {};
 		const {user, guilds: _guilds} = data;
 		
-		if (!user){
+		if (!user?.id){
 			return null;
 		}
 
-		user.guilds = _guilds.guilds;
+		user.guilds = _guilds.guilds instanceof Array ?
+			_guilds.guilds :
+			null; 
+
 		return user;
 	}
 
@@ -46,18 +49,16 @@ class TokensUsersExchanger {
 		user.avatarURL = client.rest.cdn.avatar(user.id, user.avatar);
 		prepareGuilds && (() => {
 			user.guilds ||= [];
-			!(user instanceof User) && user.guilds && this.fillGuilds(user.guilds);
+			!(user instanceof User) && this.fillGuilds(user.guilds);
 			user.mutualBotGuilds = this.fetchMutualGuilds(user);
 		})();
+
+		this.addToCache(token, user.id);
 		return user;
 	}
 
 	static fillGuilds(guilds){
-		// to-do: developer crunch
-		if (guilds instanceof Array === false){
-			console.error(guilds);
-			throw new Error();
-		}
+
 		for (const guild of guilds)
 		guild.iconURL = guild.icon ? client.rest.cdn.icon(guild.id, guild.icon) : null;
 		
