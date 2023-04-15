@@ -6,9 +6,9 @@
 	:global(.notification)
 	{
 		filter: brightness(0.7) contrast(0.9) opacity(0.9);
-		color: var( --white ) !important;
-		background-color: var( --main-color ) !important;
-		border-radius: 100vw !important;
+		color: var( --text-theme-accent ) !important;
+		background-color: var( --background-theme-accent ) !important;
+		border-radius: 20px !important;
 		padding-left: 1em !important;
 		min-width: min(95vw, 400px) !important;
 		max-width: 95vw;
