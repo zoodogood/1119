@@ -97,6 +97,13 @@ class TimeEventsManager {
 		if (event.timestamp > Date.now()){
 			return this.handle();
 		}
+		
+		this.executeEvent(event);
+		this.handle(); 
+	}
+
+
+	static executeEvent(event){
 		this.remove(event);
 
 		const data = {
@@ -105,9 +112,9 @@ class TimeEventsManager {
 			params: event.params ? JSON.parse(event.params) : undefined
 		};
 		this.emitter.emit("event", data);
-		
 		console.info(`Ивент выполнен ${ event.name }`);
-		this.handle(); 
+
+		return;
 	}
 
 	static file = {
