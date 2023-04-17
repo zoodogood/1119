@@ -22,7 +22,6 @@ class Event extends BaseEvent {
 		await CounterManager.file.load();
 
 		this.checkDataManagerFullset();
-		const now = Date.now();
 
 
 		await CommandsManager.importCommands();
@@ -31,6 +30,7 @@ class Event extends BaseEvent {
 
 
 		TimeEventsManager.handle();
+		
 
 		
 		const needUpdate = DataManager.data.bot.currentDay !== timestampDay( Date.now() );
