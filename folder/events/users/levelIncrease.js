@@ -38,7 +38,7 @@ class Event extends BaseEvent {
 		})(message);
 	}
 
-	async run({user, message}){
+	async run([{user, message}]){
 		this.onLevelIncrease(user, message);
 	}
 
