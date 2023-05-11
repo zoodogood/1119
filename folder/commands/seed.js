@@ -2,6 +2,7 @@ import * as Util from '#lib/util.js';
 import { client } from '#bot/client.js';
 import DataManager from '#lib/modules/DataManager.js';
 import BerryCommand from '#folder/commands/berry.js';
+import EventsManager from '#lib/modules/EventsManager.js';
 
 class Command {
 
@@ -299,7 +300,7 @@ class Command {
       const collector = new Util.CustomCollector({target: client, event: "message", filter, time: 500_000});
       collector.setCallback((message) => {
         collector.end();
-        getCoinsFromMessage(userData, message);
+        EventsManager.emitter.emit("users/getCoinsFromMessage", {userData, message});
       });
     }
     
