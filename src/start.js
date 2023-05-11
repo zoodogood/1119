@@ -14,6 +14,7 @@ import config from '#config';
 import app from '#app';
 import FileSystem from "fs";
 import { Actions } from '#lib/modules/ActionManager.js';
+import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from '#constants/users/events.js';
 
 
 
@@ -348,7 +349,7 @@ async function eventHundler(msg){
     }
 
     user.exp++;
-    if (user.exp >= user.level * 45) {
+    if (user.exp >= user.level * LEVELINCREASE_EXPERIENCE_PER_LEVEL){
       EventsManager.emitter.emit("users/levelIncrease", {user, message: msg});
     }
 
