@@ -147,7 +147,7 @@ class CurseManager {
 			},
 			callback: {
 			  dailyQuestCompete: (user, curse) => CurseManager.intarface({user, curse}).incrementProgress(1),
-			  callBot:		      (user, curse, {type}) => type !== "stupid" && CurseManager.intarface({user, curse}).fail()
+			  callBot:		      (user, curse, {type}) => type === "stupid" && CurseManager.intarface({user, curse}).fail()
 			},
 			filter: (user) => user.data.quest?.id === "namebot",
 			interactionIsShort: true,
