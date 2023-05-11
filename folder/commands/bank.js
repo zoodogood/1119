@@ -115,7 +115,7 @@ class Command {
           embed.description = `В казну внесли коины`;
           break;
         case "755844134677512273":
-          _questionMessage = interaction.channel.msg({title: "Укажите сумму коинов. А также причину их извлечения из общей казны."});
+          _questionMessage = await interaction.channel.msg({title: "Укажите сумму коинов. А также причину их извлечения из общей казны."});
           answer = await msg.channel.awaitMessage({user: interaction.user});
           _questionMessage.delete();
           if (!answer){
