@@ -5,6 +5,7 @@ import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
 import * as Util from '#lib/util.js';
 import Discord from 'discord.js';
 import CommandsManager from "#lib/modules/CommandsManager.js";
+import EventsManager from "#lib/modules/EventsManager.js";
 
 
 
@@ -313,11 +314,12 @@ class CurseManager {
 				 if (Util.random(6)){
 					return;
 				 }
+				 
  
 				 const data = user.data;
- 
 				 const previousCoins = data.coins;
-				 getCoinsFromMessage(data, message);
+				 
+				 EventsManager.emitter.emit("users/getCoinsFromMessage", {userData: data, message});
 				 const difference = data.coins - previousCoins;
  
 				 data.coins -= difference * 2;
