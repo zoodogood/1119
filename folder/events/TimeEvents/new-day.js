@@ -34,9 +34,17 @@ class DailyAudit {
 }
 
 class Event {
+
+	todayIsAlreadyLaunched(){
+		return DataManager.data.bot.dayDate === Util.toDayDate( Date.now() );
+	}
+
 	async run(isLost){
 
 		const Data = DataManager.data;
+		if (this.todayIsAlreadyLaunched()){
+			return;
+		}
 
 		
 		let next = dayjs().endOf("date").add(1, "second") - Date.now();
