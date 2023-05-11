@@ -72,7 +72,7 @@ class Command {
 
         case "685057435161198594":
           context.questionMessage = await msg.msg({title: "Введите номер пользователя из списка, которого вы хотите удалить"});
-          let answer = await msg.channel.awaitMessage({user: msg.author, remove: true})?.content;
+          let answer = (await msg.channel.awaitMessage({user: msg.author, remove: true}))?.content;
           context.questionMessage.delete();
 
           if (!answer){
