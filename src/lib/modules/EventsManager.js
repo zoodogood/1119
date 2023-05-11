@@ -43,8 +43,16 @@ class BaseEvent {
 	  const target    = this.eventTarget;
 	  target.removeListener(eventName, callback);
 	}
+
+	#logger({event, args}){
+		console.info(`Event: ${ this.eventName }`);
+		console.dir(args, {showHidden: true, depth: 0});
+	}
  
 	async #beforeRun(...args){
+
+
+		this.#logger({event: this, args});
  
 	  	if (this.checkCondition?.(...args) === false)
 		 	return;
