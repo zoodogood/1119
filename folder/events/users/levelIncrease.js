@@ -7,7 +7,7 @@ import { LEVELINCREASE_EXPERIENCE_PER_LEVEL as EXPERIENCE_PER_LEVEL } from "#lib
 
 class Event extends BaseEvent {
 	constructor(){
-		const EVENT = "exit";
+		const EVENT = "users/levelIncrease";
 		super(EventsManager.emitter, EVENT);
 	}
 
@@ -20,19 +20,22 @@ class Event extends BaseEvent {
 			user.exp -= Math.ceil(expSummary * coefficient);
 			user.level++;
 		 }
-			
+		 
+		
 
-		(async () => {
+		(async (originalMessage) => {
+			const author = originalMessage.author;
+
 			const textContent = user.level - initialLevel > 2 ?
-				`**${ message.author.username } повышает уровень с ${ initialLevel } до ${ user.level }!**` :
-				`**${ message.author.username } получает ${ user.level } уровень!**`;
+				`**${ author.username } повышает уровень с ${ initialLevel } до ${ user.level }!**` :
+				`**${ author.username } получает ${ user.level } уровень!**`;
 
-			const message = await message.msg({content: textContent});
+			const message = await originalMessage.msg({content: textContent});
 			
 			if (message.channel.id !== message.guild.data.chatChannel) {
 				message.delete({timeout: 5000});
 			}
-		})();
+		})(message);
 	}
 
 	async run({user, message}){
