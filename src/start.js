@@ -345,7 +345,7 @@ async function eventHundler(msg){
     author.CD_msg += (8000 - 200 * (user.voidCooldown ?? 0));
 
     if (Util.random(1, 85 * 0.90 ** user.voidCoins) === 1){
-      getCoinsFromMessage(user, msg);
+      EventsManager.emitter.emit("users/getCoinsFromMessage", {userData: user, message: msg});
     }
 
     user.exp++;
@@ -370,38 +370,7 @@ async function eventHundler(msg){
   if (msg.guild.data.chatFilter) filterChat(msg);
 }
 
-async function getCoinsFromMessage(user, msg){
-  msg.author.action(Actions.coinFromMessage, {channel: msg.channel});
 
-  let reaction = "637533074879414272";
-  let k = 1;
-
-  if (DataManager.data.bot.dayDate === "31.12"){
-    reaction = "❄️";
-    k += 0.2;
-  }
-
-  if (msg.guild && "cloverEffect" in msg.guild.data) {
-    reaction = "☘️";
-    let multiplier = 0.08 + (0.07 * ((1 - 0.9242 ** msg.guild.data.cloverEffect.uses) / (1 - 0.9242)));
-    multiplier *= 2 ** (user.voidMysticClover ?? 0);
-    k += multiplier;
-    msg.guild.data.cloverEffect.coins++;
-  }
-
-  const coins = Math.round((35 + (user.coinsPerMessage ?? 0)) * k);
-  user.coins += coins;
-  user.chestBonus = (user.chestBonus ?? 0) + 5;
-
-  const react = await msg.awaitReact({user: msg.author, removeType: "full", time: 20000}, reaction);
-
-  if (!react) {
-    return;
-  }
-
-  const messageContent = `> У вас ${ Util.ending(user.coins, "коин", "ов", "", "а")} <:coin:637533074879414272>!\n> Получено ${coins}\n> Бонус сундука: ${user.chestBonus || 0}`
-  msg.msg({content: messageContent, delete: 2500});
-};
 
 
 async function stupid_bot(user, msg) {
