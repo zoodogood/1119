@@ -11,7 +11,6 @@ class Event extends BaseEvent {
 	}
 
 	async onGetCoinsFromMessage({userData, message}){
-		console.log(userData, message);
 		message.author.action(Actions.coinFromMessage, {channel: message.channel});
 	 
 		let reaction = "637533074879414272";
@@ -44,8 +43,8 @@ class Event extends BaseEvent {
 		message.msg({content: messageContent, delete: 2500});
 	 };
 
-	async run([{userData, message}]){
-		this.onGetCoinsFromMessage(userData, message);
+	async run({userData, message}){
+		this.onGetCoinsFromMessage({userData, message});
 	}
 
 	options = {
