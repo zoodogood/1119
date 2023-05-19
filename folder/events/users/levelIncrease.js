@@ -2,6 +2,7 @@ import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 
 
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL as EXPERIENCE_PER_LEVEL } from "#lib/constants/users/events.js";
+import { sleep } from "#lib/safe-utils.js";
 
 
 
@@ -33,12 +34,13 @@ class Event extends BaseEvent {
 			const message = await originalMessage.msg({content: textContent});
 			
 			if (message.channel.id !== message.guild.data.chatChannel) {
-				message.delete({timeout: 5000});
+				await sleep(5000);
+				message.delete();
 			}
 		})(message);
 	}
 
-	async run([{user, message}]){
+	async run({user, message}){
 		this.onLevelIncrease(user, message);
 	}
 
