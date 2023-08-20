@@ -105,7 +105,7 @@ class SvelteApp {
 
 	#checkOrigin(){
 		if (config.server.origin !== this.document.location.origin){
-			throw new Error(`You need set in config server.origin equal to ${ this.document.location.origin }`);
+			throw new Error(`You need set in config server.origin equal to ${ this.document.location.origin }\nCurrent: ${ this.document.location.origin }`);
 		}
 	}
 
