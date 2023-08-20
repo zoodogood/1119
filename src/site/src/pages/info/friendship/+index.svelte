@@ -1,11 +1,21 @@
 
-<main class = "page-main">
-	{#each [...Component.sectionsEnum] as element}
-	{@const [key, {content, className}] = element}
-		<section>
-			<main class = { className }>{@html content}</main>
-		</section>
-	{/each}
+<main class = "page-main" bind:this = { Component.node }>
+		
+	<section>
+		<main>
+			<h3>Добро пожаловать</h3>
+			<p>Вернуться</p><a href = "#">Домой</a>
+		</main>
+	</section>
+	
+
+	<section>
+
+	</section>
+
+	<section>
+
+	</section>
 </main>
 
 
@@ -74,18 +84,12 @@
 		padding-bottom: calc(5vw + 2.5em);
 	}
 
-	.flex
+	button
 	{
-		display: flex;
-		flex-direction: column;
-		gap: 1em;
+		text-transform: uppercase;
+		box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
 	}
 
-	.center
-	{
-		justify-content: center;
-		align-items: center;
-	}
 </style>
 
 
@@ -93,16 +97,29 @@
 	import Header from '#site-component-lib/Layout/Header.svelte';
 	import Main from '#site-component-lib/Layout/Main.svelte';
 
+  	import { onMount } from 'svelte';
+
 	const Component = {
-		sectionsEnum: new Map(Object.entries({
-			welcome: {
-				content: "123",
-				className: null
-			},
-			welcome2: {
-				content: "<p>Вернуться</p><button>Домой</button>",
-				className: "flex center"
-			}
-		}))
+		node: null
 	}
+
+	const State = {
+		intersectionSectionIndex: 0
+	}
+
+	onMount(async () => {
+		const observer = new IntersectionObserver(entries => {
+			const index = sections.findIndex(node => entries.find(({target}) => target === node));
+			State.intersectionSectionIndex = index;
+		});
+
+		const sections = [...Component.node.querySelectorAll(".page-main > section")];
+		for (const section of sections){
+			observer.observe(section);
+		}
+	})
+	
+
+
+	$: console.log( State.intersectionSectionIndex ); 
 </script>
