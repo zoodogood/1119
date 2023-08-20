@@ -44,12 +44,14 @@ class Route extends BaseRoute {
 		}
 
 		const guildsId = request.headers.guilds ? JSON.parse(request.headers.guilds) : null;
-		guildsId.map(id => {
-			client.guilds.cache.get(id);
-		})
-		.filter(Boolean);
+		// to-do: end
+		guildsId.map(id => 
+			client.guilds.cache.get(id)
+		)
+		.filter(Boolean)
+		.forEach(guild => 1);
 
-
+		response.json(guildsId);
 	}
 }
 
