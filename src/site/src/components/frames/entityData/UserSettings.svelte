@@ -3,7 +3,7 @@
 	<aside>
 		<details>
 			<summary><h2>Общие параметры</h2></summary>
-			<element-group>
+			<element-group style:display = "flex">
 				<small>День рождения:</small>
 				<input type="text" placeholder = "31.12">
 			</element-group>
@@ -28,6 +28,11 @@
 	small
 	{
 		font-size: 0.5em;
+	}
+
+	summary h2 
+	{
+		display: inline-block;
 	}
 </style>
 
