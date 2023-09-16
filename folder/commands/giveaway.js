@@ -54,7 +54,7 @@ class Command {
             }
           }
           timestamp = timestamp.getTime();
-          const title = `Готово! Времени до окончания ~${Util.timestampToDate(timestamp - Date.now(), 3)}`;
+          title = `Готово! Времени до окончания ~${Util.timestampToDate(timestamp - Date.now(), 3)}`;
           msg.msg({title, delete: 3000, timestamp});
           break;
         case "🎉":
