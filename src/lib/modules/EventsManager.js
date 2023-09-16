@@ -46,7 +46,8 @@ class BaseEvent {
 
 	#logger({event, args}){
 		console.info(`Event: ${ this.eventName }`);
-		console.dir(args, {showHidden: true, depth: 0});
+		// to-do: clean when bun supports the console.dir
+		(Bun === undefined) && console.dir(args, {showHidden: true, depth: 0});
 	}
  
 	async #beforeRun(...args){
