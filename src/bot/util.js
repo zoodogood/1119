@@ -43,7 +43,6 @@ function awaitReactOrMessage({target, user, time, reactionOptions = {}, messageO
       some.delete();
     }
     target.reactions.cache.each(reaction => reaction.users.remove(target.client.user));
-    console.log(some);
     resolve(some);
   });
 };
