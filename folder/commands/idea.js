@@ -21,7 +21,7 @@ class Command {
     channel.msg({title: "<:meow:637290387655884800> Какая классная идея!", 
       description: "**Идея:**\n" + interaction.params, color: interaction.userData.profile_color || "#00ffaf",
       author: {
-        name: `${msg.author.username} #${ ideaNumber + 1 }`,
+        name: `${msg.author.username} #${ +ideaNumber + 1 }`,
         iconURL: msg.author.avatarURL()
       },
       reactions: ["814911040964788254", "815109658637369377"]});
