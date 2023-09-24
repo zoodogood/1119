@@ -176,12 +176,26 @@ class Template {
 			.filter(({permissions}) => mask & permissions.scope);
 		
 
-		const availableList = Object.fromEntries(
-			modules.map(({name}) => this.availableModulesList.has(name) ? [name, true] : [name, false])
+		const availableList = Object.freeze(
+			Object.fromEntries(
+				modules.map(({name}) => this.availableModulesList.has(name) ? [name, true] : [name, false])
+			)
 		);
 
-		vm.sandbox.availableList = availableList;
-		vm.sandbox.module = this.addModuleToSandbox.bind(this, vm);
+		const moduleGetter = this.addModuleToSandbox.bind(this, vm);
+		
+		Object.defineProperty(vm.sandbox, "module", {
+			value: moduleGetter,
+			writable: false,
+			configurable: false
+		})
+		
+		Object.defineProperty(vm.sandbox, "availableList", {
+			value: availableList,
+			writable: false,
+			configurable: false
+		})
+		
 
 		return;
 	}
@@ -192,12 +206,13 @@ class Template {
 			throw new TypeError(`Unknow: ${ moduleName }`);
 		}
 		const { permissions } = moduleEntity;
+		const availableList = vm.sandbox.availableList;
 
-		if (moduleName in vm.sandbox.availableList === false){
+		if (moduleName in availableList === false){
 			throw new Error(`Does not exist next module: ${ moduleName }`);
 		}
 
-		if (vm.sandbox.availableList[ moduleName ] === false){
+		if (availableList[ moduleName ] === false){
 			const mask = this.getPermissionsMask();
 			const missing = Object.entries(this.constructor.PERMISSIONS_MASK_ENUM)
 				.filter(([_key, bit]) => (permissions.scope === bit) && !(mask & bit))
