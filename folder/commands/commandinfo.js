@@ -45,7 +45,7 @@ class Command {
       .toFixed(1) + "%";
 
 
-    const githubURL = Util.resolveGithubPath(`./commands/${ originalName }.js`);
+    const githubURL = Util.resolveGithubPath(`./src/commands/${ originalName }.js`);
 
     const embed = {
       title: `— ${ originalName.toUpperCase() }`,
