@@ -270,6 +270,13 @@ function ReplaceTemplate(string, values){
 	return string.replaceAll(/(?<!\\)\$\{([a-zа-яъё_$\s]+)\}/ig, (_full, match) => values[match.trim()]);
 }
 
+function RangeToArray([min, max] = []){
+	if (isNaN(min) || isNaN(max)){
+		return NaN;
+	}
+	return [...new Array(max - min + 1)].map((_, index) => index + min);
+}
+
 
 
 export {
@@ -282,6 +289,7 @@ export {
 
 	toLocaleDeveloperString,
 	sleep,
+	RangeToArray,
 	random,
 	match,
 	ReplaceTemplate,
