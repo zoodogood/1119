@@ -1,6 +1,6 @@
 import { client } from '#bot/client.js';
 import * as Util from '#lib/util.js';
-import {TimeEventsManager, BossManager, DataManager} from '#lib/modules/mod.js';
+import {TimeEventsManager, BossManager, DataManager, EventsManager} from '#lib/modules/mod.js';
 import { dayjs } from '#lib/util.js';
 
 class DailyAudit {
@@ -108,6 +108,12 @@ class Event {
 
 		const commandsLaunched = Object.values(Data.bot.commandsUsed).reduce( ((acc, e) => acc + e), 0);
 		Data.bot.commandsLaunched = commandsLaunched;
+
+	const dayStatsEventIsExists = TimeEventsManager.findEventInRange(({name}) => name === "day-stats", [Data.bot.currentDay, Data.bot.currentDay + 1]);
+		if (!dayStatsEventIsExists){
+			await EventsManager.collection.get("TimeEvent/day-stats")
+				.run(true);
+		}
 	}
 
 	
