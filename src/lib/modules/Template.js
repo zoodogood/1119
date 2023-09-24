@@ -187,13 +187,15 @@ class Template {
 		Object.defineProperty(vm.sandbox, "module", {
 			value: moduleGetter,
 			writable: false,
-			configurable: false
+			configurable: false,
+			enumerable: true
 		})
 		
 		Object.defineProperty(vm.sandbox, "availableList", {
 			value: availableList,
 			writable: false,
-			configurable: false
+			configurable: false,
+			enumerable: true
 		})
 		
 
