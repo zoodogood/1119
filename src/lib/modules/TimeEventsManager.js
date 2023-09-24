@@ -29,6 +29,23 @@ class TimeEventsManager {
 	  	return event;
 	}
  
+	static findEventInRange(filter, range){
+		const events = this.getEventsInRange(range);
+		return events.find(filter);
+	}
+
+	static filterEventsInRange(filter, range){
+		const events = this.getEventsInRange(range);
+		return events.filter(filter);
+	}
+
+	static getEventsInRange(range){
+		const days = Util.RangeToArray(range);
+		const events = [];
+		for (const day of days) {
+			events.push(...day);
+		}
+	}
  
 	static remove(event){
 	  	const day = this.Util.timestampDay(event.timestamp);
