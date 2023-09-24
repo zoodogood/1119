@@ -29,7 +29,7 @@ class Command {
         return;
       }
 
-      await CommandsManager.callMap.get("help").onChatInput(msg);
+      await CommandsManager.callMap.get("help").onChatInput(msg, interaction);
       /**/
       return;
     }
