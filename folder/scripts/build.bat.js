@@ -29,20 +29,23 @@ const root = process.cwd();
 import get from '#lib/child-process-utils.js';
 
 const {run, info, _npm} = get({root, logger: true});
-const node = "node";
 
 
+const isInBun = globalThis.Bun;
+const runtime = isInBun ? "bun" : "node";
+const manager = isInBun ? "bun" : _npm;
 
-await info("Node version:");
-await run(node, ["-v"]);
+
+await info(`${ runtime } version:`);
+await run(runtime, ["-v"]);
 
 await info("Install modules:");
-await run(_npm, ["install"]);
+await run(manager, ["install"]);
 
 await info("Check files:");
-await run(node, ["./folder/scripts/checkFiles.js"]);
+await run(runtime, ["./folder/scripts/checkFiles.js"]);
 
 await info("Build bundle:");
-await run(_npm, ["run", "site-build"]);
+await run(manager, ["run", "site-build"]);
 
 await info("Success");
