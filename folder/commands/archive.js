@@ -24,8 +24,8 @@ class Command {
     let input = date + "\n\n", last;
     sum_messages.reverse().forEach(item => {
       if (!last || last.author.tag != item.author.tag){
-        let data = new Date(item.createdTimestamp);
-        input += "\n    ---" + item.author.tag + " " + data.getHours() + ":" + data.getMinutes() + "\n";
+        let date = new Date(item.createdTimestamp);
+        input += "\n    ---" + item.author.tag + " " + date.getHours() + ":" + date.getMinutes() + "\n";
       }
       input += item.content + "\n";
       last = item;
