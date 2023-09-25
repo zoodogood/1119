@@ -43,7 +43,7 @@ class TimeEventsManager {
 		const days = Util.RangeToArray(range);
 		const events = [];
 		for (const day of days) {
-			events.push(...day);
+			day && events.push(...day);
 		}
 	}
  
