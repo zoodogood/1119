@@ -5,6 +5,8 @@ import * as Util from '#lib/util.js';
 
 class TimeEventsManager {
 
+	static #lastSeenDay;
+
 	static at(day){
 		return this.data[day];
 	}
@@ -43,8 +45,11 @@ class TimeEventsManager {
 		const days = Util.RangeToArray(range);
 		const events = [];
 		for (const day of days) {
-			day && events.push(...day);
+			const todayEvents = this.at(day);
+			todayEvents && events.push(...todayEvents);
 		}
+
+		return events;
 	}
  
 	static remove(event){
@@ -75,15 +80,35 @@ class TimeEventsManager {
 	}
 	
 	static fetchNextEvent(){
+		const day = this.getDistancePrefferedDay();
+		if (!day){
+			return null;
+		}
+
+	  	return this.at(day).at(0);
+	}
+
+	static getDistancePrefferedDay(needCache = true){
+		const day = this.#lastSeenDay?.length ? this.#lastSeenDay : this.getNearestDay();
+		needCache && (this.#lastSeenDay = day);
+		return day;
+	}
+
+	static getExistsDaysList(){
 		const days = Object.keys(this.data);
 		if (days.length === 0){
 			return null;
 		}
+		return days;
+	}
+
+	static getNearestDay(){
+		const days = this.getExistsDaysList();
 
 		const day = days
 			.reduce((min, day) => Math.min(min, day));
 
-	  	return this.data[day].at(0);
+		return day ?? null;
 	}
 
 	static handle(){
