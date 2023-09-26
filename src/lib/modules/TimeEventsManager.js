@@ -84,13 +84,22 @@ class TimeEventsManager {
 		if (!day){
 			return null;
 		}
-
+		
 	  	return this.at(day).at(0);
 	}
 
 	static getDistancePrefferedDay(needCache = true){
 		const day = this.#lastSeenDay?.length ? this.#lastSeenDay : this.getNearestDay();
 		needCache && (this.#lastSeenDay = day);
+		if (day === null){
+			return null;
+		}
+
+		// Day without events is not preffered
+		if (!day.length){
+			this.#lastSeenDay = null;
+			return this.getDistancePrefferedDay();
+		}
 		return day;
 	}
 
@@ -104,11 +113,14 @@ class TimeEventsManager {
 
 	static getNearestDay(){
 		const days = this.getExistsDaysList();
+		if (!days){
+			return null;
+		}
 
 		const day = days
 			.reduce((min, day) => Math.min(min, day));
 
-		return day ?? null;
+		return day;
 	}
 
 	static handle(){
