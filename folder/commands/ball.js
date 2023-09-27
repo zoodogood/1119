@@ -1,5 +1,5 @@
 import * as Util from '#lib/util.js';
-import { client } from '#bot/client.js';
+
 
 class Command {
 
@@ -11,8 +11,7 @@ class Command {
     msg.channel.sendTyping();
     await Util.sleep(700);
     let answer = [{_weight: 1, answer: "*Что-то на призрачном*"}, {_weight: 1, answer: "Ты скучный, я спать"}, {_weight: 2, answer: "\\*Звуки свёрчков\\*"}, {_weight: 3, answer: "нет-нет-нет."}, {_weight: 3, answer: "Я проверил — нет"}, {_weight: 3, answer: "Может быть в другой вселенной"}, {_weight: 4, answer: "Абсолютно и беспрекословно, мой ответ — нет."}, {_weight: 5, answer: "Меч лжи говорит, что да"}, {_weight: 6, answer: "Точно нет"}, {_weight: 7, answer: "неа"}, {_weight: 8, answer: "нет"}].random({weights: true}).answer;
-    client.api.channels(msg.channel.id).messages.post({data: {"content": `${answer}`, "message_reference": {message_id: msg.id}}});
-    await Util.sleep(1500);
+    msg.msg({content: answer, reference: msg.id});
   }
 
 
@@ -26,7 +25,7 @@ class Command {
 	  "allias": "8ball шар",
 		"allowDM": true,
 		"expectParams": true,
-		"cooldown": 3000000,
+		"cooldown": 3_000_000,
 		"type": "other"
 	};
 };
