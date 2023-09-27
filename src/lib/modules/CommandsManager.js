@@ -7,10 +7,12 @@ import DataManager from '#lib/modules/DataManager.js';
 import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
 import Executor from '#lib/modules/Executor.js';
 
+import CooldownManager from '#lib/modules/CooldownManager.js';
 
 import { Actions } from '#lib/modules/ActionManager.js';
 
 import { ImportDirectory } from '@zoodogood/import-directory';
+
 
 
 const COMMANDS_PATH = "./folder/commands";
@@ -90,6 +92,7 @@ class CommandsManager {
 	static checkAvailable(command, interaction){
 		const problems = [];
 		const options = command.options;
+		const userData = interaction.user.data;
 
 		if (options.removed && interaction.user.id !== "921403577539387454"){
 			problems.push("Эта команда была удалена и не может быть использована");
@@ -141,23 +144,33 @@ class CommandsManager {
 		}
 			
 
-		const userData = interaction.user.data;
+		
 		(() => {
+			
 			if (!options.cooldown){
 				return;
 			}
 
-			const cooldownFullEndAt = userData["CD_" + options.id];
+			const cooldownApi = CooldownManager.api(
+				userData,
+				`CD_${ options.id }`,
+				{
+					heat: options.cooldownTry ?? 1,
+					perCall: options.cooldown
+				}
+			);
+
+			const cooldownFullEndAt = cooldownApi.getCurrentCooldownEnd();
 			if (!cooldownFullEndAt){
 				return;
 			}
-			if (+(Date.now() + options.cooldown * (options.cooldownTry - 1)) > +cooldownFullEndAt){
+			if (!cooldownApi.checkYet()){
 				return;
 			}
 
-			const difference = userData["CD_" + options.id] - Date.now() - options.cooldown * (options.cooldownTry - 1) + 500;
+			const difference = cooldownApi.diff() + 500;
 			problems.push(`Перезарядка: **${ Util.timestampToDate(difference) }**`);
-		})
+		})();
 		
 
 
@@ -203,7 +216,9 @@ class CommandsManager {
     	return false;
 	}
 
-	static async execute(command, interaction){
+	static async execute(command, interaction, {preventCooldown = false} = {}){
+		const options = command.options;
+
 		const typesBase = {
 			"slash": {
 				type: "slash",
@@ -231,7 +246,15 @@ class CommandsManager {
 			await typeBase.call(command, interaction);
 			
 			this.emitter.emit("command", interaction);
+
+			
 			this.statistics.increase(interaction);
+
+			options.cooldown && !preventCooldown &&
+				CooldownManager.api(interaction.user.data, `CD_${ options.id }`, {
+					heat: options.cooldownTry ?? 1,
+					perCall: options.cooldown
+				}).call();
 		}
 		catch (error){
 			ErrorsHandler.Audit.push(error, {
