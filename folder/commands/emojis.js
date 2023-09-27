@@ -78,7 +78,7 @@ class Command {
 	  },
 	  "allias": "emoji смайлики эмодзи эмоджи",
 		"allowDM": true,
-		"cooldown": 7000000,
+		"cooldown": 7_000,
 		"type": "other"
 	};
 };

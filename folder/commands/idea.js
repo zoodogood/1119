@@ -38,7 +38,7 @@ class Command {
 	  "allias": "идея innovation новвоведение",
 		"allowDM": true,
 		"expectParams": true,
-		"cooldown": 1200000000,
+		"cooldown": 12_00_000,
 		"type": "bot"
 	};
 };

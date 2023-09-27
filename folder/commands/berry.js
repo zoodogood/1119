@@ -161,7 +161,7 @@ class Command {
 	  },
 	  "allias": "клубника клубнички ягода ягоды berrys берри",
 		"allowDM": true,
-		"cooldown": 15000000,
+		"cooldown": 15_000,
 		"type": "user"
 	};
 };

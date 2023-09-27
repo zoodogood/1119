@@ -249,7 +249,7 @@ class Command {
 	  },
 	  "allias": "бот stats статс ping пинг стата invite пригласить",
 		"allowDM": true,
-		"cooldown": 10000000,
+		"cooldown": 1_00_00,
 		"type": "bot"
 	};
 };

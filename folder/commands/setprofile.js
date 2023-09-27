@@ -143,7 +143,7 @@ class Command {
 	  },
 	  "allias": "настроитьпрофиль about осебе sp нп",
 		"allowDM": true,
-		"cooldown": 20000000,
+		"cooldown": 2_00_00,
 		"type": "user"
 	};
 };

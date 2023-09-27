@@ -131,7 +131,7 @@ class Command {
     },
     allias: "хелп помощь cmds commands команды х",
     allowDM: true,
-    cooldown: 15000000,
+    cooldown: 15_000,
     type: "other",
   };
 }

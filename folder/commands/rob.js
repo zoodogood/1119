@@ -165,7 +165,7 @@ class Command {
 	  "allias": "ограбить роб украсть",
 		"expectMention": true,
 		"allowDM": true,
-		"cooldown": 3000000,
+		"cooldown": 3_000,
 		"type": "user"
 	};
 };

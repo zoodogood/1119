@@ -57,7 +57,7 @@ class Command {
 	  },
 	  "allias": "quest квесты",
 		"allowDM": true,
-		"cooldown": 35000000,
+		"cooldown": 35_000,
 		"type": "user"
 	};
 };

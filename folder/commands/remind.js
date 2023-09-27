@@ -131,7 +131,7 @@ class Command {
 	  },
 	  "allias": "напомни напоминание напомнить",
 		"allowDM": true,
-		"cooldown": 20000000,
+		"cooldown": 2_00_00,
 		"type": "other"
 	};
 };

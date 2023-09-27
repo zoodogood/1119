@@ -95,7 +95,7 @@ class Command {
 	  "allias": "благотворительность",
 		"allowDM": true,
 		"expectParams": true,
-		"cooldown": 70000000,
+		"cooldown": 7_00_00,
 		"type": "other"
 	};
 };

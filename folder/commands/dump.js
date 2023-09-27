@@ -23,7 +23,7 @@ class Command {
 	  	},
 	  	"allias": "дамп",
 		"allowDM": true,
-		"cooldown": 100000000,
+		"cooldown": 1_00_000,
 		"type": "dev"
 	};
 };

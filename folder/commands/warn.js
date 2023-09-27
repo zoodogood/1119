@@ -32,7 +32,7 @@ class Command {
 	  "allias": "пред варн",
 		"expectMention": true,
 		"allowDM": true,
-		"cooldown": 120000000,
+		"cooldown": 12_00_00,
 		"type": "guild",
 		"Permissions": 4194304
 	};

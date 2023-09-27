@@ -426,7 +426,7 @@ class Command {
 	  },
 	  "allias": "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop",
 		"allowDM": true,
-		"cooldown": 10000000,
+		"cooldown": 10_000,
 		"type": "other"
 	};
 };

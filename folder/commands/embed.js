@@ -291,7 +291,7 @@ class Command {
 	  },
 	  "allias": "ембед эмбед",
 		"allowDM": true,
-		"cooldown": 30000000,
+		"cooldown": 3_00_00,
 		"type": "guild",
 		"ChannelPermissions": 16384
 	};

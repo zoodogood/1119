@@ -34,7 +34,7 @@ class Command {
 	  "allias": "отложить отложи",
 		"allowDM": true,
 		"expectParams": true,
-		"cooldown": 1800000000,
+		"cooldown": 18_00_000,
 		"type": "delete",
 		"myChannelPermissions": 536870912
 	};

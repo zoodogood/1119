@@ -330,7 +330,7 @@ class Command {
 	  },
 	  "allias": "топ ранги rank ranks rangs лидеры leaderboard leaders",
 		"allowDM": true,
-		"cooldown": 20000000,
+		"cooldown": 2_00_00,
 		"type": "user",
 		"Permissions": 16384n
 	};

@@ -108,7 +108,7 @@ class Command {
 		"expectMention": true,
 		"allowDM": true,
 		"hidden": true,
-		"cooldown": 3500000,
+		"cooldown": 35_00,
 		"type": "other"
 	};
 };

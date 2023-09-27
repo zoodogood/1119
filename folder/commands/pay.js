@@ -134,7 +134,7 @@ class Command {
 	  "allias": "give дать заплатить",
 		"expectMention": true,
 		"allowDM": true,
-		"cooldown": 300000000,
+		"cooldown": 3_00_000,
 		"type": "user"
 	};
 };

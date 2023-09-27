@@ -16,7 +16,7 @@ class Command {
 	  },
 	  "allias": "аватар",
 		"allowDM": true,
-		"cooldown": 12000000,
+		"cooldown": 12_000,
 		"type": "other"
 	};
 };

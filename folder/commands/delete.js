@@ -19,7 +19,7 @@ class Command {
 	  },
 	  "allias": "удалить удали",
 		"allowDM": true,
-		"cooldown": 5000000,
+		"cooldown": 5_000,
 		"type": "other"
 	};
 };

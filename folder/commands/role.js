@@ -307,7 +307,7 @@ class Command {
 	  },
 	  "allias": "роль roles роли",
 		"allowDM": true,
-		"cooldown": 3000000,
+		"cooldown": 3_000,
 		"type": "guild"
 	};
 };

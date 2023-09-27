@@ -175,7 +175,7 @@ class Command {
 	  },
 	  "allias": "очистить очисти очисть клир клиар",
 		"allowDM": true,
-		"cooldown": 15000000,
+		"cooldown": 15_000,
 		"type": "guild",
 		"myChannelPermissions": 8192n,
 		"ChannelPermissions": 8192n

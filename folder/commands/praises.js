@@ -188,7 +188,7 @@ class Command {
 	  },
 	  "allias": "похвалы лайки likes",
 		"allowDM": true,
-		"cooldown": 20000000,
+		"cooldown": 2_00_00,
 		"type": "user"
 	};
 };

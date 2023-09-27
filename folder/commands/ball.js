@@ -25,7 +25,7 @@ class Command {
 	  "allias": "8ball шар",
 		"allowDM": true,
 		"expectParams": true,
-		"cooldown": 3_000_000,
+		"cooldown": 3_000,
 		"type": "other"
 	};
 };

@@ -46,7 +46,7 @@ class Command {
 	  },
 	  "allias": "arhive архив",
 		"allowDM": true,
-		"cooldown": 3600000000,
+		"cooldown": 36_00_000,
 		"type": "delete",
 		"Permissions": 16
 	};

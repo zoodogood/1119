@@ -252,7 +252,7 @@ class Command {
 	  },
 	  "allias": "cash банк казна",
 		"allowDM": true,
-		"cooldown": 50000000,
+		"cooldown": 5_00_00,
 		"type": "guild"
 	};
 };

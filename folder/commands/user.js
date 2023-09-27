@@ -247,7 +247,8 @@ class Command {
 	  },
 	  "allias": "юзер u ю profile профиль",
 		"allowDM": true,
-		"cooldown": 20000000,
+		"cooldown": 20_000,
+    cooldownTry: 3,
 		"type": "user"
 	};
 };

@@ -75,7 +75,7 @@ class Command {
 	  "allias": "command команда",
 		"allowDM": true,
 		"expectParams": true,
-		"cooldown": 5000000,
+		"cooldown": 5_000,
 		"type": "bot"
 	};
 };

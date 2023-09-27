@@ -33,7 +33,7 @@ class Command {
 	  },
 	  "allias": "iqmeme icq айкю айкью iqbanana",
 		"allowDM": true,
-		"cooldown": 15000000,
+		"cooldown": 15_000,
 		"type": "user"
 	};
 };
