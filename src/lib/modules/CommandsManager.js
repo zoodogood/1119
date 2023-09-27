@@ -141,9 +141,24 @@ class CommandsManager {
 		}
 			
 
+		const userData = interaction.user.data;
+		(() => {
+			if (!options.cooldown){
+				return;
+			}
 
-		if (options.cooldown && interaction.user["CD_" + options.id] && (+(Date.now() + options.cooldown * (options.cooldownTry - 1)) < +user["CD_" + options.id]))
-			problems.push(`Перезарядка: **${ Util.timestampToDate(user["CD_" + options.id] - Date.now() - options.cooldown * (options.cooldownTry - 1) + 500) }**`);
+			const cooldownFullEndAt = userData["CD_" + options.id];
+			if (!cooldownFullEndAt){
+				return;
+			}
+			if (+(Date.now() + options.cooldown * (options.cooldownTry - 1)) > +cooldownFullEndAt){
+				return;
+			}
+
+			const difference = userData["CD_" + options.id] - Date.now() - options.cooldown * (options.cooldownTry - 1) + 500;
+			problems.push(`Перезарядка: **${ Util.timestampToDate(difference) }**`);
+		})
+		
 
 
 		if (problems.length === 0){
