@@ -243,18 +243,18 @@ class CommandsManager {
 
 		try {
 			interaction.user.action(Actions.callCommand, {command, interaction});
-			await typeBase.call(command, interaction);
+			const whenCommandEnd = typeBase.call(command, interaction);
 			
 			this.emitter.emit("command", interaction);
-
-			
-			this.statistics.increase(interaction);
 
 			options.cooldown && !preventCooldown &&
 				CooldownManager.api(interaction.user.data, `CD_${ options.id }`, {
 					heat: options.cooldownTry ?? 1,
 					perCall: options.cooldown
 				}).call();
+
+			await whenCommandEnd;
+			this.statistics.increase(interaction);
 		}
 		catch (error){
 			ErrorsHandler.Audit.push(error, {
