@@ -91,18 +91,21 @@ class TimeEventsManager {
 	}
 
 	static getDistancePrefferedDay(needCache = true){
-		const day = this.#lastSeenDay?.length ? this.#lastSeenDay : this.getNearestDay();
-		needCache && (this.#lastSeenDay = day);
-		if (day === null){
+		
+		const dayEvents = this.#lastSeenDay?.length ? this.#lastSeenDay : this.at(this.getNearestDay());
+		
+		
+		needCache && (this.#lastSeenDay = dayEvents);
+		if (dayEvents === null){
 			return null;
 		}
 
 		// Day without events is not preffered
-		if (!day.length){
+		if (!dayEvents.length){
 			this.#lastSeenDay = null;
 			return this.getDistancePrefferedDay();
 		}
-		return day;
+		return dayEvents;
 	}
 
 	static getExistsDaysList(){
