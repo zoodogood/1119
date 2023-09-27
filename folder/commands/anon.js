@@ -20,12 +20,12 @@ class Command {
 		return
 	}
 
-	const reward = Math.floor((3 * count) ** 1.007);
+	const reward = Math.floor((1 * count) ** 1.007);
 	const userData = interaction.user.data;
 	userData.coins += reward;
-	msg.msg({reference: question.id, content: `Получено немного монет: ${ reward } (по формуле: количество блоб * 3 ** 1.007). Шанс получить коин: ${ Math.floor(count / 2) }%`});
+	msg.msg({reference: question.id, content: `Получено немного монет: ${ reward } (по формуле: количество блоб * 1 ** 1.007). Шанс получить коин: ${ Math.floor(count / 3) }%`});
 
-	if (random(Math.floor(count / 2)) === 0){
+	if (random(Math.floor(count / 3)) === 0){
 		EventsManager.emitter.emit("users/getCoinsFromMessage", {userData, answer});
 	}
 
