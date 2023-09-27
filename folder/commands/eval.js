@@ -48,6 +48,7 @@ class Command {
         return await new Template(source, interaction).createVM().run(interaction.codeContent);
       }
       catch (error){
+        config.developers && console.info(error);
         return error;
       }
     }
