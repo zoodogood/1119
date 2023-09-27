@@ -169,11 +169,18 @@ class Template {
 		const context = this.context;
 
 		const modules = this.constructor.ModulesScope;
-		const mask = this.getPermissionsMask()
+		const mask = this.getPermissionsMask();
 		
 		this.availableModulesList = modules
 			.filter(({filter}) => !filter || filter(context))
-			.filter(({permissions}) => mask & permissions.scope);
+			.filter(({permissions}) => console.log(permissions) || true)
+			.filter(({permissions}) => mask & permissions.scope === mask);
+
+		
+		
+		
+		
+		
 		
 
 		const availableList = Object.freeze(
@@ -272,7 +279,7 @@ class Template {
 			getContent: (context) => context,
 			name: "interaction",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -314,7 +321,7 @@ class Template {
 			getContent: (context) => CommandsManager,
 			name: "CommandsManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -322,7 +329,7 @@ class Template {
 			getContent: (context) => EventsManager,
 			name: "EventsManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -330,7 +337,7 @@ class Template {
 			getContent: (context) => BossManager,
 			name: "BossManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -338,7 +345,7 @@ class Template {
 			getContent: (context) => CurseManager,
 			name: "CurseManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -346,7 +353,7 @@ class Template {
 			getContent: (context) => DataManager,
 			name: "DataManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -354,7 +361,7 @@ class Template {
 			getContent: (context) => TimeEventsManager,
 			name: "TimeEventsManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -362,7 +369,7 @@ class Template {
 			getContent: (context) => ActionManager,
 			name: "ActionManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -370,7 +377,7 @@ class Template {
 			getContent: (context) => QuestManager,
 			name: "QuestManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -378,7 +385,7 @@ class Template {
 			getContent: (context) => GuildVariablesManager,
 			name: "GuildVariablesManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -386,7 +393,7 @@ class Template {
 			getContent: (context) => Discord,
 			name: "Discord",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -394,7 +401,7 @@ class Template {
 			getContent: (context) => client,
 			name: "client",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.USER,
+				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
