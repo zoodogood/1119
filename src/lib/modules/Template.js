@@ -310,7 +310,13 @@ class Template {
 			filter: (context) => "user" in context
 		},
 		"Util": {
-			getContent: (context) => Util,
+			getContent: (context) => Util.omit(Util, (key) => 
+				[
+					"GlitchText", "RangeToArray", "ending", "omit", "random", "sleep",
+					"timestampDay", "timestampToDate", "resolveGithubPath", "yaml", "resolveDate",
+
+				].includes(key)
+			),
 			name: "Util",
 			permissions: {
 				scope: this.PERMISSIONS_MASK_ENUM.USER,
@@ -337,7 +343,7 @@ class Template {
 			getContent: (context) => BossManager,
 			name: "BossManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -345,7 +351,7 @@ class Template {
 			getContent: (context) => CurseManager,
 			name: "CurseManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
@@ -377,7 +383,7 @@ class Template {
 			getContent: (context) => QuestManager,
 			name: "QuestManager",
 			permissions: {
-				scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+				scope: this.PERMISSIONS_MASK_ENUM.USER,
 				investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
 			}
 		},
