@@ -5,7 +5,7 @@ import { Actions } from '#lib/modules/ActionManager.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-    let memb = interaction.mention;
+    const memb = interaction.mention;
     const member = interaction.guild.members.resolve(memb);
 
     if (!interaction.userData.thiefGloves)
