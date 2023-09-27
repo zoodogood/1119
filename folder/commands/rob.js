@@ -6,6 +6,7 @@ class Command {
 
 	async onChatInput(msg, interaction){
     let memb = interaction.mention;
+    const member = interaction.guild.members.resolve(memb);
 
     if (!interaction.userData.thiefGloves)
       return msg.msg({title: "Для использования этой команды нужно купить перчатки", description: "Их, иногда, можно найти в !лавке, по цене 700 коинов", color: "#ff0000", delete: 7000});
@@ -21,10 +22,10 @@ class Command {
       
 
     if (!count || +count < 1)
-      return msg.msg({title: "Вы потеряли все свои перчатки, сначала купите новые", color: "#ff0000", delete: 7000});
+      return msg.msg({title: "Вы потеряли все свои перчатки — сначала купите новые", color: "#ff0000", delete: 7000});
 
     if (memb.bot)
-      return msg.msg({title: `В попытках ограбить бота ${memb.username} вы не учли скорость его реакции.`, description: "К счастью роботы не обижаются...", color: "#ff0000"});
+      return msg.msg({title: `В попытках ограбить бота ${ memb.username } вы не учли скорость его реакции.`, description: "К счастью роботы не обижаются...", color: "#ff0000"});
 
 
     let membWins = memb.data.thiefWins |= 0;
@@ -36,9 +37,9 @@ class Command {
 
 
     let rand = ~~(Util.random(21, 49) * (combo / 10 + 1) * k) + memb.data.level;
-
-    if (!memb.presence || memb.presence.status === "offline")
-      return msg.msg({title: "Вы не можете ограбить пользователя, который в оффлайн", color: "#ff0000", delete: 7000});
+    
+    if (!member.presence || member.presence.status === "offline")
+      return msg.msg({title: "Вы не можете ограбить пользователя, находящегося в оффлайн режиме", description: "Кто ходит по утрам, бродит по утрам и иногда выходит на связь, тоже по утрам", color: "#ff0000", delete: 7000});
 
     let message = await memb.msg({title: "❕ Вы были ограблены", description: `Ловкий вор средь бело-дня украл у вас ${rand} <:coin:637533074879414272>\nУ вас есть минута, нажмите реакцию ниже, чтобы среагировать, догнать преступника и вернуть коины`, color: "#ff0000"}).catch(e => {});
     if (!message){
@@ -49,7 +50,7 @@ class Command {
 
     memb.data.coins -= rand;
     interaction.userData.coins += rand;
-    interaction.userData.CD_39 += 7200000;
+    interaction.userData.CD_39 += 7_200_000;
 
     msg.msg({title: "Ограблено и украдено, теперь бежать", description: `Вы успешно украли ${rand} <:coin:637533074879414272> у ${memb.username}, но это ещё не конец, если вас догонят, награбленное вернётся к владельцу.\nУ ${memb.username} есть минута, чтобы среагировать, в ином случае добыча останется с вами навсегда.`, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {text: "Серия ограблений: " + ++combo}, delete: 10000});
     let react = await message.awaitReact({user: memb, removeType: "none", time: 60000}, "❗");
@@ -132,10 +133,14 @@ class Command {
       interaction.userData.chestBonus = (interaction.userData.chestBonus || 0) + interaction.userData.voidThief * 15;
 
 
-
-    let description = note ? `У себя в карманах вы обнаружили записку:\n— ${note}` : "";
-    if (memb.data.voidMonster){
-      description = "Ваш монстр не захотел вам помочь, так как недавно вы сами ограбили своего друга\n" + description;
+    
+    let description = "";
+    if (note){
+      description = `У себя в карманах вы обнаружили записку:\n— ${note}`;
+    }
+    
+    if (memb.data.voidMonster && !monsterHelps){
+      description = "Ваш монстр не захотел вам помочь, известно, что недавно вы сами ограбили своего друга.\n" + description;
     }
     message.msg({title: "Вы слишком долго не могли прийти в себя — вор ушёл.", description: description, color: "#ff0000"});
 
