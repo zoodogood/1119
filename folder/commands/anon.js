@@ -1,0 +1,62 @@
+import EventsManager from '#lib/modules/EventsManager.js';
+import { random } from '#lib/util.js';
+
+class Command {
+  async onChatInput(msg, interaction) {
+
+	const { stroke, count } = this.generateLines();
+	const question = await msg.msg({content: `Введи число: сколько здесь палочек? (знаки пока не в счёт):\n${ stroke }`});
+	const answer = await interaction.channel.awaitMessage({user: msg.author});
+	
+	
+	if (!answer){
+		question.delete();
+		return;
+	}
+
+	const anseredCount = parseInt(answer.content);
+	if (anseredCount !== count){
+		msg.msg({reference: answer.id, content: Number.isNaN(anseredCount) ? "Отмена" : `неть || ${ count } ||`});
+		return
+	}
+
+	const reward = Math.floor((3 * count) ** 1.005);
+	const userData = interaction.user.data;
+	userData.coins += reward;
+	msg.msg({reference: question.id, content: `Получено немного монет: ${ reward } (по формуле: количество блоб * 3 ** 1.005). Шанс получить коин: ${ Math.floor(count / 2) }%`});
+
+	if (random(Math.floor(count / 2)) === 0){
+		EventsManager.emitter.emit("users/getCoinsFromMessage", {userData, message});
+	}
+
+  }
+
+  generateLines() {
+    const count = random(5, 30);
+    const stroke = [
+      ..."|".repeat(count),
+      ..."  ".repeat(random(count / 7)),
+		..." + ".repeat(random(1)),
+		..." * ".repeat(random(1)),
+		..." - ".repeat(random(1)),
+		..." % ".repeat(random(1))
+    ].sort(() => Math.random() - 0.5).join(",");
+
+    return { stroke, count };
+  }
+
+  options = {
+    name: "anon",
+    id: 63,
+    media: {
+      description:
+        "Медленно адаптируется\n\n✏️\n```python\n!anon <max count>\n```\n\n",
+    },
+    allias: "анон",
+    allowDM: true,
+    cooldown: 60_000,
+    type: "other",
+  };
+}
+
+export default Command;
