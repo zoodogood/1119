@@ -20,26 +20,27 @@ class Command {
 		return
 	}
 
-	const reward = Math.floor((3 * count) ** 1.005);
+	const reward = Math.floor((3 * count) ** 1.007);
 	const userData = interaction.user.data;
 	userData.coins += reward;
-	msg.msg({reference: question.id, content: `Получено немного монет: ${ reward } (по формуле: количество блоб * 3 ** 1.005). Шанс получить коин: ${ Math.floor(count / 2) }%`});
+	msg.msg({reference: question.id, content: `Получено немного монет: ${ reward } (по формуле: количество блоб * 3 ** 1.007). Шанс получить коин: ${ Math.floor(count / 2) }%`});
 
 	if (random(Math.floor(count / 2)) === 0){
-		EventsManager.emitter.emit("users/getCoinsFromMessage", {userData, message});
+		EventsManager.emitter.emit("users/getCoinsFromMessage", {userData, answer});
 	}
 
   }
 
   generateLines() {
-    const count = random(5, 30);
+    const count = random(5, 35);
     const stroke = [
       ..."|".repeat(count),
       ..."  ".repeat(random(count / 7)),
 		..." + ".repeat(random(1)),
 		..." * ".repeat(random(1)),
 		..." - ".repeat(random(1)),
-		..." % ".repeat(random(1))
+		..." % ".repeat(random(1)),
+		..." . ".repeat(random(1))
     ].sort(() => Math.random() - 0.5).join(",");
 
     return { stroke, count };
