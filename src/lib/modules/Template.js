@@ -174,7 +174,7 @@ class Template {
 
     this.availableModulesList = modules
       .filter(({filter}) => !filter || filter(context))
-      .filter(({permissions}) => permissions.scope & mask === permissions.scope);
+      .filter(({permissions}) => (permissions.scope & mask) === permissions.scope);
 
 
 
