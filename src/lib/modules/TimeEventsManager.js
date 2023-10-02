@@ -80,11 +80,11 @@ class TimeEventsManager {
 	}
 	
 	static fetchNextEvent(){
-		const day = this.getDistancePrefferedDay();
+		const day = this.getDistancePrefferedDayEvents();
 		return day?.at(0) ?? null;
 	}
 
-	static getDistancePrefferedDay(needCache = true){
+	static getDistancePrefferedDayEvents(needCache = true){
 		
 		const dayEvents = this.#lastSeenDay?.length ? this.#lastSeenDay : this.at(this.getNearestDay());
 		
@@ -97,7 +97,7 @@ class TimeEventsManager {
 		// Day without events is not preffered
 		if (!dayEvents.length){
 			this.#lastSeenDay = null;
-			return this.getDistancePrefferedDay();
+			return this.getDistancePrefferedDayEvents();
 		}
 		return dayEvents;
 	}
