@@ -24,7 +24,8 @@ class Command {
     };
 
     const codeContent =
-      (await fetchReferense(msg.reference)) ?? interaction.params ?? DEFAULT_CODE_CONTENT;
+      (await fetchReferense(msg.reference)) || interaction.params || DEFAULT_CODE_CONTENT;
+      
 
     Object.assign(interaction, {
       launchTimestamp: Date.now(),
@@ -66,6 +67,7 @@ class Command {
       interaction.description = `\`\`\`json\n${escapeCodeBlock(
         JSON.stringify(output, null, "\t")
       )}\`\`\``;
+      console.log(interaction.description);
       interaction.emojiByType = "753916315755872266";
       break;
     default:
