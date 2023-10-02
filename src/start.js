@@ -378,32 +378,7 @@ async function stupid_bot(user, msg) {
   msg.guild.data.stupid_evil++;
 };
 
-async function mute(member, off = false){
-  let guild = member.guild;
 
-  if (off === true){
-    guild.channels.cache.each(async channel => {
-      await channel.permissionOverwrites.edit(member, {SEND_MESSAGES: null, ADD_REACTIONS: null, SPEAK: null});
-      let {allow, deny} = channel.permissionOverwrites.get(member.id) || {allow: {}, deny: {}};
-
-      if (allow.bitfield === 0 && deny.bitfield === 0)
-        channel.permissionOverwrites.get(member.id).delete();
-
-    });
-    return;
-  }
-
-  guild.channels.cache.each(async channel => {
-    // let pastPermissions = channel.permissionOverwrites.get(memb.id);
-    // let {allow, deny} = pastPermissions || {};
-    await channel.permissionOverwrites.edit(member, {
-      SEND_MESSAGES: false,
-      ADD_REACTIONS: false,
-      SPEAK: false
-    });
-  });
-
-}
 
 function good_bot(user, msg){
   if (Util.random(1)) msg.react("🍪");
