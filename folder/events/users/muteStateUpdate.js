@@ -1,4 +1,4 @@
-import client from "#bot/client";
+import client from "#bot/client.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 
 
