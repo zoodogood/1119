@@ -1,11 +1,10 @@
-import * as Util from '#lib/util.js';
-import { client } from '#bot/client.js';
-import EventsManager from '#lib/modules/EventsManager.js';
-import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
+import * as Util from "#lib/util.js";
+import { client } from "#bot/client.js";
+import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 
 class Command {
 
-	async onChatInput(msg, interaction){
+  async onChatInput(msg, interaction){
     let guild = msg.guild;
     let guildMember = guild.members.resolve(interaction.mention);
     let role;
@@ -37,7 +36,7 @@ class Command {
     let timeToEnd = 0;
 
     while (true){
-      let regBase = `(\\d+?)\\s*(d|д|h|ч|m|м|s|с)[a-zA-Zа-яА-Я]*`;
+      let regBase = "(\\d+?)\\s*(d|д|h|ч|m|м|s|с)[a-zA-Zа-яА-Я]*";
       const reg = RegExp(`^${ regBase }|${ regBase }$`);
       let matched = interaction.params.match( reg );
 
@@ -65,9 +64,9 @@ class Command {
 
     if (!role){
       role =
-        guild.roles.cache.find(e => "mute muted замучен мьют мут замьючен".includes(e.name.toLowerCase()))
-        ||
-        await guild.roles.create({data: {name: "MUTED", color: "#a8a8a8", permissions: ["VIEW_CHANNEL"]}});
+  guild.roles.cache.find(e => "mute muted замучен мьют мут замьючен".includes(e.name.toLowerCase()))
+  ||
+  await guild.roles.create({data: {name: "MUTED", color: "#a8a8a8", permissions: ["VIEW_CHANNEL"]}});
 
       guild.data.mute_role = role.id;
     }
@@ -92,26 +91,26 @@ class Command {
       color: "#de3c37",
       author: {name: guildMember.displayName, iconURL: guildMember.user.displayAvatarURL()},
       footer: {text: `Мут выдал ${msg.author.username}`, iconURL: msg.author.avatarURL()}
-    }
+    };
     msg.guild.logSend({...embed, title: "Участнику выдан мут"});
     msg.msg({...embed, title: "Участник был замучен"});
   }
 
 
-	options = {
-	  "name": "mute",
-	  "id": 17,
-	  "media": {
-	    "description": "Заглушает пользователя во всех каналах сервера не давая ему отправлять сообщения. Необходимо её использовать, когда участники мешают беседе или нарушают правила.\n\n❓ Вы можете указать время, через которое пользователь автоматически снова сможет общаться.\n\n✏️\n```python\n!mute {memb} <cause> <time> #Вы можете вводить аргументы в любом порядке, время в формате 1 день 3 с 15min\n```",
-	    "poster": "https://images-ext-2.discordapp.net/external/fBq1I0O3Tdhoi-DeVVm7nDadXN-uzdgKveyekp-Vm88/https/media.discordapp.net/attachments/769566192846635010/872776969341796382/mute.gif"
-	  },
-	  "allias": "мут мьют",
-		"expectMention": true,
-		"allowDM": true,
-		"type": "guild",
-		"myPermissions": 268435456,
-		"Permissions": 4194304
-	};
-};
+  options = {
+    "name": "mute",
+    "id": 17,
+    "media": {
+      "description": "Заглушает пользователя во всех каналах сервера не давая ему отправлять сообщения. Необходимо её использовать, когда участники мешают беседе или нарушают правила.\n\n❓ Вы можете указать время, через которое пользователь автоматически снова сможет общаться.\n\n✏️\n```python\n!mute {memb} <cause> <time> #Вы можете вводить аргументы в любом порядке, время в формате 1 день 3 с 15min\n```",
+      "poster": "https://images-ext-2.discordapp.net/external/fBq1I0O3Tdhoi-DeVVm7nDadXN-uzdgKveyekp-Vm88/https/media.discordapp.net/attachments/769566192846635010/872776969341796382/mute.gif"
+    },
+    "allias": "мут мьют",
+    "expectMention": true,
+    "allowDM": true,
+    "type": "guild",
+    "myPermissions": 268435456,
+    "Permissions": 4194304
+  };
+}
 
 export default Command;
