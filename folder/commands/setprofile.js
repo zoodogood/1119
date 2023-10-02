@@ -93,17 +93,17 @@ class Command {
         case "birthday":
         case "др":
           if (user.BDay){
-            let prise = [1200, 3000, 12000][user.chestLevel];
-            let message = await msg.msg({title: `Вы уже устанавливали дату своего дня рождения, повторная смена будет стоить вам ${prise} коинов\nПродолжить?`});
+            let price = [1200, 3000, 12000][user.chestLevel];
+            let message = await msg.msg({title: `Вы уже устанавливали дату своего дня рождения, повторная смена будет стоить вам ${price} коинов\nПродолжить?`});
             let react = await message.awaitReact({user: msg.author, removeType: "all"}, "685057435161198594", "763807890573885456");
 
             if (react != "685057435161198594"){
               return msg.msg({title: "Действие отменено", color: "#ff0000", delete: 4000});
             }
-            if (user.coins < prise){
+            if (user.coins < price){
               return msg.msg({title: "Недостаточно коинов", color: "#ff0000", delete: 4000});
             }
-            user.coins -= prise;
+            user.coins -= price;
           }
 
           let day = value.match(/\d\d\.\d\d/);

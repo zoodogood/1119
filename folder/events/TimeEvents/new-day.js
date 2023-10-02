@@ -70,9 +70,9 @@ class Event {
 			DataManager.data.bot.grempen += arr.random({pop: true});
 		}
 
-		let berryRandom = [{_weight: 10, prise: 1}, {_weight: 1, prise: -7}, {_weight: 5, prise: 3}].random({weights: true}).prise;
+		let berryRandom = [{_weight: 10, price: 1}, {_weight: 1, price: -7}, {_weight: 5, price: 3}].random({weights: true}).price;
 		let berryTarget = Math.sqrt(client.users.cache.size / 3) * 7 + 200;
-		Data.bot.berrysPrise += Math.round((berryTarget - Data.bot.berrysPrise) / 30 + berryRandom);
+		Data.bot.berrysPrice += Math.round((berryTarget - Data.bot.berrysPrice) / 30 + berryRandom);
 
 		
 

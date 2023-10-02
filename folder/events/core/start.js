@@ -78,7 +78,7 @@ class Event extends BaseEvent {
 		);
 		Data.users = Data.users.sort((a, b) => b.level - a.level);
 
-		Data.bot.berrysPrise ||= 200;
+		Data.bot.berrysPrice ||= 200;
 		Data.bot.grempen ||= "123456";
 	}
 

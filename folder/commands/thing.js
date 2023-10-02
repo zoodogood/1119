@@ -79,10 +79,10 @@ class Command {
             action: async ({userData, level, scene}) => {
               if (userData.chilli && !Util.random(5)){
                 let sellingCount = Math.min(userData.chilli, 3 + userData.elementLevel) ?? 0;
-                let prise = Util.random(sellingCount * 160, sellingCount * 190);
+                let price = Util.random(sellingCount * 160, sellingCount * 190);
                 userData.chilli -= sellingCount;
-                userData.coins += prise;
-                scene.phrase = `Вы смогли продать ${ Util.ending(sellingCount, "пер", "цев", "ец", "ца")} и заработали ${ prise } <:coin:637533074879414272>`;
+                userData.coins += price;
+                scene.phrase = `Вы смогли продать ${ Util.ending(sellingCount, "пер", "цев", "ец", "ца")} и заработали ${ price } <:coin:637533074879414272>`;
                 return;
               }
 
@@ -343,7 +343,7 @@ class Command {
             textOutput: "Она то-ли увеличилась, то-ли уменьшилась. Никто так и не понял.."
           },
           {
-            action: async ({userData, level, scene}) => Util.random(1) ? userData.berrys++ : DataManager.data.bot.berrysPrise++,
+            action: async ({userData, level, scene}) => Util.random(1) ? userData.berrys++ : DataManager.data.bot.berrysPrice++,
             textOutput: "Она вроде увеличилась, а вроде увеличилась её цена. Никто так и не понял.."
           },
           false,
@@ -404,7 +404,7 @@ class Command {
           {
             action: async ({userData, level, scene}) => {
               scene.random = Util.random(3, 8);
-              DataManager.data.bot.berrysPrise += scene.random;
+              DataManager.data.bot.berrysPrice += scene.random;
             },
             textOutput: `Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, "коин", "ов", "", "а")} дороже.`
           },
@@ -619,7 +619,7 @@ class Command {
           {
             action: async ({userData, level, scene}) => {
               userData.berrys++;
-              DataManager.data.bot.berrysPrise += 3;
+              DataManager.data.bot.berrysPrice += 3;
             },
             textOutput: "Труд-труд и ещё раз труд.. За усердную работу вы получили одну клубнику, а их цена на рынке поднялась на 3ед."
           },
@@ -1002,7 +1002,7 @@ class Command {
         [
           {
             action: async () => {
-              DataManager.data.bot.berrysPrise -= 125;
+              DataManager.data.bot.berrysPrice -= 125;
             },
             textOutput: "За последние 2с цена клубники упала на 125ед."
           },
@@ -1015,7 +1015,7 @@ class Command {
           {
             action: async ({scene}) => {
               const value = random(55, 110);
-              DataManager.data.bot.berrysPrise -= value;
+              DataManager.data.bot.berrysPrice -= value;
               scene.value = value;
             },
             textOutput: `За последние 2с цена клубники упала на { scene.value }ед.`
@@ -1028,7 +1028,7 @@ class Command {
         [
           {
             action: async () => {
-              DataManager.data.bot.berrysPrise -= 50;
+              DataManager.data.bot.berrysPrice -= 50;
             },
             textOutput: `За последние 2с цена клубники упала на 50ед.`
           },
@@ -1040,7 +1040,7 @@ class Command {
         [
           {
             action: async ({userData}) => {
-              DataManager.data.bot.berrysPrise -= 50;
+              DataManager.data.bot.berrysPrice -= 50;
               userData.berrys -= Math.min(userData.berrys, 5);
             },
             textOutput: "За последние 2с цена клубники упала на 50ед.\nУ вас отбирают клубнику"
@@ -1050,13 +1050,13 @@ class Command {
           false,
           {
             action: async () => {
-              DataManager.data.bot.berrysPrise -= 200;
+              DataManager.data.bot.berrysPrice -= 200;
             },
             textOutput: "Вы снизили её цену на 200ед."
           },
         ],
       ],
-      filter: () => DataManager.data.bot.berrysPrise >= 1_000
+      filter: () => DataManager.data.bot.berrysPrice >= 1_000
     }
   ];
 

@@ -39,7 +39,7 @@ class Command {
         emoji: "637533074879414272"
       },
       value: (element, _context) => {
-        return element.data.coins + element.data.berrys * DataManager.data.bot.berrysPrise;
+        return element.data.coins + element.data.berrys * DataManager.data.bot.berrysPrice;
       },
       display: (element, output, index, _context) => {
         const name = `${ index + 1 }. ${ element.username }`;

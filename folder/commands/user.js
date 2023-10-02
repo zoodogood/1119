@@ -201,7 +201,7 @@ class Command {
           },
           {
             name: "Бонусы котла <a:placeForVoid:780051490357641226>",
-            value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrise}/3\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nСвобода проклятий: ${ ~~user.voidFreedomCurse }/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${user.voidMysticClover ?? 0 }\nФермер: ${user.voidTreeFarm ?? 0 }\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
+            value: `\`\`\`Уменьшений кулдауна: ${ ~~user.voidCooldown }/20\nСкидок на котёл: ${~~user.voidPrice}/3\nНестабилити: ${~~user.voidDouble}/1\nУсиление квестов: ${~~user.voidQuests}/5\nШанс коина: ${~~user.voidCoins}/7 (${+(1 / (85 * 0.90 ** user.voidCoins) * 100).toFixed(2)}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nСвобода проклятий: ${ ~~user.voidFreedomCurse }/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${user.voidMysticClover ?? 0 }\nФермер: ${user.voidTreeFarm ?? 0 }\nНаграда коин-сообщений: ${35 + (user.coinsPerMessage || 0)}\`\`\``,
             inline: false
           }
         ];

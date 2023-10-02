@@ -230,7 +230,7 @@ class Command {
       guildData.berrys -= berrys;
       interaction.berrysCollected += berrys;
 
-      DataManager.data.bot.berrysPrise += berrys * BerryCommand.INFLATION;
+      DataManager.data.bot.berrysPrice += berrys * BerryCommand.INFLATION;
       interaction.channel.msg({
         title: "Вы успешно собрали клубнику",
         author: {name: user.username, iconURL: user.avatarURL()},

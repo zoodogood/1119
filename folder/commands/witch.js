@@ -47,10 +47,10 @@ class Command {
       },
       _weight: 5,
       filter(user, _interaction){
-        return user.data.voidPrise < this.MAX_LEVEL;
+        return user.data.voidPrice < this.MAX_LEVEL;
       },
       action(user, _interaction){
-        return user.data.voidPrise = ++user.data.voidPrise || 1;
+        return user.data.voidPrice = ++user.data.voidPrice || 1;
       },
     },
     {
@@ -108,7 +108,7 @@ class Command {
       },
       _weight: 10,
       action(user, _interaction){
-        return DataManager.data.bot.berrysPrise += this.calculate(user) * (-1) ** Util.random(1);
+        return DataManager.data.bot.berrysPrice += this.calculate(user) * (-1) ** Util.random(1);
       },
     },
     {
@@ -306,7 +306,7 @@ class Command {
     const treeLevelBonus = Math.floor((guildData.treeLevel ?? 0) / 10);
 
     const basic = Math.min(2 + userData.voidRituals, 20) - treeLevelBonus;
-    const multiplayer = (1 - 0.10 * (userData.voidPrise || 0));
+    const multiplayer = (1 - 0.10 * (userData.voidPrice || 0));
     return Math.floor(basic * multiplayer);
   }
 
