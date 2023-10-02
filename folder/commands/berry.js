@@ -3,7 +3,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 
 class Command {
   static INFLATION = 0.2;
-  static BERRYS_LIMIT = 35000;
+  static BERRYS_LIMIT = 35_000;
   static TAX = 0.02;
 
   static getMaxCountForBuy(coins, price) {
@@ -78,7 +78,7 @@ class Command {
       quantity = Math.max(context.MAX_LIMIT - myBerrys, 0);
     }
 
-    let price = Command.calculatePrice(quantity, marketPrice, isBuying);
+    const price = Command.calculatePrice(quantity, marketPrice, isBuying);
 
     if (isBuying && userData.coins < price) {
       interaction.channel.msg({
