@@ -98,7 +98,7 @@ class CommandsManager {
 			problems.push("Эта команда была удалена и не может быть использована");
 		}
 
-		if (options.type === "dev" && !config.development && interaction.user.id !== "921403577539387454"){
+		if (options.type === "dev" && !config.developers.includes(interaction.user.id)){
 			problems.push("Эта команда находится в разработке и/или недоступна в публичной версии бота");
 		}
 
