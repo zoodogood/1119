@@ -80,14 +80,8 @@ class TimeEventsManager {
 	}
 	
 	static fetchNextEvent(){
-		// to-do watch problem with returns empty day
 		const day = this.getDistancePrefferedDay();
-		if (!day){
-			return null;
-		}
-		
-		
-	  	return this.at(day)?.at(0) ?? null;
+		return day?.at(0) ?? null;
 	}
 
 	static getDistancePrefferedDay(needCache = true){
