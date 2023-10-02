@@ -1,30 +1,30 @@
 import { BaseEvent } from "#lib/modules/EventsManager.js";
-import { CounterManager } from '#lib/modules/mod.js';
-import { client } from '#bot/client.js';
-import { ReadPackageJson } from '#lib/util.js';
+import { CounterManager } from "#lib/modules/mod.js";
+import { client } from "#bot/client.js";
+import { ReadPackageJson } from "#lib/util.js";
 import app from "#app";
 
 
 class Event extends BaseEvent {
-	constructor(){
-		const EVENT = "ready";
-		super(client, EVENT);
-	}
+  constructor(){
+    const EVENT = "ready";
+    super(client, EVENT);
+  }
 
-	async run(){
-		CounterManager.handle();
-		app.version = (await ReadPackageJson()).version;
+  async run(){
+    CounterManager.handle();
+    app.version = (await ReadPackageJson()).version;
 
 
-		const {default: server} = await import('#server/start.js');
-		app.server = server;
+    const {default: server} = await import("#server/start.js");
+    app.server = server;
 
-		console.info(`\n\n\n     Ready...\n\n`);
-	}
+    console.info("\n\n\n     Ready...\n\n");
+  }
 
-	options = {
-		name: "client/ready"
-	}
+  options = {
+    name: "client/ready"
+  };
 }
 
 export default Event;
