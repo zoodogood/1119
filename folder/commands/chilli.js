@@ -2,6 +2,9 @@ import * as Util from '#lib/util.js';
 import { client } from '#bot/client.js';
 import { Actions } from '#lib/modules/ActionManager.js';
 
+export const REASON_FOR_CHANGE_NICKNAME = "Special: in chilli game";
+const FOOTER_EMOJI = "https://media.discordapp.net/attachments/629546680840093696/1158272956812759050/hot-pepper-2179.png?ex=651ba540&is=651a53c0&hm=9cf4a793a57fb7d37d1f3a935fc6b39ad00b015df7ec500d548d4d4920801e64&=";
+
 class Command {
 
 	async onChatInput(msg, interaction){
@@ -12,22 +15,22 @@ class Command {
     const guildMembers = interaction.guild.members;
     const addName = (member) => {
       const newName = member.displayName + "(🌶)";
-      member.setNickname(newName).catch(() => {});
+      member.setNickname(newName, REASON_FOR_CHANGE_NICKNAME).catch(() => {});
     }
     const removeName = (member) => {
       const newName = member.displayName.replace(/\(🌶\)/g, "").trim();
-      member.setNickname(newName).catch(() => {});
+      member.setNickname(newName, REASON_FOR_CHANGE_NICKNAME).catch(() => {});
     }
 
 
     if (!chilli && !msg.author.data.chilli) {
-      return msg.msg({title: "Для броска у вас должен быть чилли 🌶️\nКупить его можно в !лавке", color: "#ff0000", delete: 5000, footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"}});
+      return msg.msg({title: "Для броска у вас должен быть чилли 🌶️\nКупить его можно в !лавке", color: "#ff0000", delete: 5000, footer: {iconURL: FOOTER_EMOJI, text: "Безудержный перчик™"}});
     }
     if (msg.channel.chilli && msg.channel.chilli.find(e => e.id == memb.id)) {
-      return msg.msg({title: "Вы не можете бросить перец в участника с перцем в руке", color: "#ff0000", footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Перчик™"}});
+      return msg.msg({title: "Вы не можете бросить перец в участника с перцем в руке", color: "#ff0000", footer: {iconURL: FOOTER_EMOJI, text: "Перчик™"}});
     }
     if (memb.bot) {
-      return msg.msg({title: "🤬🤬🤬", description: "it's hot fruitctttt", color: "#ff0000", footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Кое-кто бросил перец в бота.."}});
+      return msg.msg({title: "🤬🤬🤬", description: "it's hot fruitctttt", color: "#ff0000", footer: {iconURL: FOOTER_EMOJI, text: "Кое-кто бросил перец в бота.."}});
     }
 
     if (chilli){
@@ -39,7 +42,7 @@ class Command {
       msg.msg({title: ["Бросок!", "А говорят перцы не летают..."].random(), 
         description: `Вы бросили перчиком в ${ memb }`,
         author: {name: msg.author.username, iconURL: msg.author.avatarURL()},
-        footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"},
+        footer: {iconURL: FOOTER_EMOJI, text: "Безудержный перчик™"},
         delete: 7000
       });
 
@@ -65,7 +68,7 @@ class Command {
     msg.author.data.chilli--;
     msg.channel.chilli = msg.channel.chilli || [];
 
-    msg.msg({title: `Перец падает! Перец падает!!`, description: `\*перец упал в руки ${memb.toString()}\*\nЧтобы кинуть обратно используйте \`!chilli @memb\``, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"}});
+    msg.msg({title: `Перец падает! Перец падает!!`, description: `\*перец упал в руки ${memb.toString()}\*\nЧтобы кинуть обратно используйте \`!chilli @memb\``, author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, footer: {iconURL: FOOTER_EMOJI, text: "Безудержный перчик™"}});
     addName(guildMembers.resolve(memb));
     let ms = Util.random(30, 37) * 1000;
 
@@ -79,12 +82,16 @@ class Command {
       const member = guildMembers.cache.get(chilli.current);
 
       Object.keys(chilli.players)
-        .forEach(id => client.users.cache.get(id).action(Actions.chilliBooh, {boohTarget: member, chilli, msg, interaction}));
+        .forEach(id => {
+          const user = client.users.cache.get(id);
+          user.action(Actions.chilliBooh, {boohTarget: member, chilli, msg, interaction})
+          removeName(guildMembers.resolve(user));
+        });
 
       msg.msg({title: "Бах! Перчик взорвался!", 
         description: `Перец бахнул прямо у ${ member }\nИгра окончена.\nБыло совершено отскоков: ${ chilli.rebounds }`,
         fields: Object.entries(chilli.players).sortBy("1", true).map(([id, score]) => ({name: guildMembers.cache.get(id).user.username, value: `Счёт: ${ score }`})).slice(0, 20),
-        footer: {iconURL: "https://emojitool.ru/img/microsoft/windows-10-may-2019-update/hot-pepper-2179.png", text: "Безудержный перчик™"}
+        footer: {iconURL: FOOTER_EMOJI, text: "Безудержный перчик™"}
       });
       removeName(member);
       msg.channel.chilli.splice(msg.channel.chilli.indexOf(chilli), 1);
