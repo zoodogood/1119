@@ -225,53 +225,8 @@ client.on("ready", async () => {
 
     e.guild.logSend({title: message.content, description: message.description, color: banInfo ? "#ff0000" : "#00ff00"});
   });
-
-  client.on("guildMemberUpdate", async (old, memb) => {
-    let nameEdited = memb.user.data.name != memb.user.username || old.displayName != memb.displayName;
-    if (nameEdited){
-      let inGuild = memb.user.data.name === memb.user.username;
-      let names = inGuild ? {old: old.displayName, new: memb.displayName} : {old: memb.user.data.name, new: memb.user.username};
-      const title = `Новое имя: ${ names.new }`;
-      memb.guild.logSend({title, author: {name: inGuild ? "На сервере изменился\nник пользователя" : "Участник изменил свой никнейм", iconURL: memb.user.avatarURL()}, footer: {text: `Старый никнейм: ${names.old}`}});
-
-      if (!inGuild){
-        memb.user.data.name = memb.user.username;
-      }
-      return;
-    }
-
-    if (old.roles.cache.size !== memb.roles.cache.size){
-      let isRemoved = old.roles.cache.size - memb.roles.cache.size > 0;
-      let role = isRemoved ? old.roles.cache.find(e => !memb.roles.cache.get(e.id)) : memb.roles.cache.find(e => !old.roles.cache.get(e.id));
-
-      client.emit("guildMemberRolesUpdate", memb, role, isRemoved);
-    }
-  });
-
-  client.on("guildMemberRolesUpdate", async (memb, role, isRemoved) => {
-    if (role.id === memb.guild.data.mute_role){
-      mute(memb, isRemoved);
-
-      let executor = await memb.guild.Audit(audit => audit.target.id === memb.id, {type: "MEMBER_ROLE_UPDATE"});
-      if (!executor){
-        return;
-      }
-      executor = executor.executor;
-
-      if (executor.id === client.user.id){
-        return;
-      }
-
-      let embed = {
-        title: isRemoved ? "Мут снят" : "Участнику выдан мут",
-        description: isRemoved ? `С участника снята роль мута ограничивающая общение в чатах.` : `Пользователь ${memb.toString()} получил роль мута — это запрещает ему отправлять сообщения во всех чатах`,
-        author: { name: memb.displayName, iconURL: memb.user.displayAvatarURL() },
-        footer: { text: `Мут ${isRemoved ? "снял" : "выдал"} ${executor.username}`, iconURL: executor.avatarURL() }
-      }
-
-      memb.guild.logSend(embed);
-    }
-  });
+  
+  
 
   client.on("userUpdate", async (old, user) => {
     if (old.avatar === user.avatar){
