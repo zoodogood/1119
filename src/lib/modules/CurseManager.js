@@ -99,7 +99,7 @@ class CurseManager {
 			},
 			callback: {
 			  berryBarter: (user, curse, {quantity, isBuying}) => {
-				 isBuying === 1 ?
+				 isBuying ?
 					CurseManager.intarface({user, curse}).incrementProgress(quantity) :
 					CurseManager.intarface({user, curse}).fail();
 			  }
