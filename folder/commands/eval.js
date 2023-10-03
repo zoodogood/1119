@@ -67,7 +67,6 @@ class Command {
       interaction.description = `\`\`\`json\n${escapeCodeBlock(
         JSON.stringify(output, null, "\t")
       )}\`\`\``;
-      console.log(interaction.description);
       interaction.emojiByType = "753916315755872266";
       break;
     default:
