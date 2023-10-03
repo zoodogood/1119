@@ -1,5 +1,5 @@
-import { Actions } from "#lib/modules/ActionManager";
-import DataManager from "#lib/modules/DataManager";
+import { Actions } from "#lib/modules/ActionManager.js";
+import DataManager from "#lib/modules/DataManager.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 import * as Util from "#lib/util.js";
 
