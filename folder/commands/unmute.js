@@ -1,4 +1,5 @@
 import { client } from '#bot/client.js';
+import { PermissionFlagsBits } from 'discord.js';
 
 class Command {
 
@@ -21,7 +22,7 @@ class Command {
     if (guildMember.roles.highest.position > interaction.mention.roles.highest.position)
       return msg.msg({title: "Вы не можете размутить участника, роли которого выше ваших", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, delete: 12000});
 
-    if (guildMember.permissions.has("ADMINISTRATOR"))
+    if (guildMember.permissions.has(PermissionFlagsBits.Administrator))
       return msg.msg({title: "Вы не можете размутить Администратора, как бы это странно не звучало.", author: {name: msg.author.username, iconURL: msg.author.avatarURL()}, delete: 12000});
 
 
@@ -29,19 +30,11 @@ class Command {
     // find muted role
     if (guild.data.mute_role)
       role = guild.roles.cache.get(guild.data.mute_role);
-
-    if (!role){
-      role =
-        guild.roles.cache.find(e => "mute muted замучен мьют мут замьючен".includes(e.name.toLowerCase()))
-        ||
-        await guild.roles.create({data: {name: "MUTED", color: "#a8a8a8", permissions: ["VIEW_CHANNEL"]}});
-
-      guild.data.mute_role = role.id;
-    }
+    
 
 
 
-    if (!guildMember.roles.cache.get(role.id)){
+    if (!guildMember.roles.cache.get(role?.id)){
       msg.msg({title: "Участник не имеет роли мута", description: `Если по какой-то причине вам нужно отозвать запрет на общение в каналах, замутьте пользователя на 1с или выдайте и заберите роль ${role}`, color: "#ff0000"});
       return;
     }
