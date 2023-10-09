@@ -312,7 +312,7 @@ class Template {
     "Util": {
       getContent: (context) => Util.omit(Util, (key) => 
         [
-          "GlitchText", "RangeToArray", "ending", "omit", "random", "sleep",
+          "GlitchText", "rangeToArray", "ending", "omit", "random", "sleep",
           "timestampDay", "timestampToDate", "resolveGithubPath", "yaml", "resolveDate",
 
         ].includes(key)
