@@ -22,7 +22,7 @@ class Command {
       options.hidden || options.type === "dev" || options.removed;
     const design = (command) => `\`!${command.options.name}\``;
 
-    if (interaction.guild.data.commands) {
+    if (interaction.guild?.data.commands) {
       const list = interaction.guild.data.commands;
       guildCommands.push({
         name: "Кастомные команды <:cupS:806813704913682442>",
