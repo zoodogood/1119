@@ -1,9 +1,9 @@
-import * as Util from '#lib/util.js';
-import Discord from 'discord.js';
+import * as Util from "#lib/util.js";
+import Discord from "discord.js";
 
 class Command {
 
-	async onChatInput(msg, interaction){
+  async onChatInput(msg, interaction){
     let memb = interaction.mention;
     interaction.params = interaction.params.replace(new RegExp(`<@!?${memb.id}>`), "");
 
@@ -125,18 +125,19 @@ class Command {
   }
 
 
-	options = {
-	  "name": "pay",
-	  "id": 14,
-	  "media": {
-	    "description": "\n\nИспользуйте, чтобы передать коины другому пользователю в качестве доброго подарка или оплаты за помощь :wink:\n\n✏️\n```python\n!pay {memb} {coinsCount | \"+\"} <message> #аргументы можно указывать в любом порядке. \"+\" обозначает \"Все коины, которые у вас есть\"\n```\n\n"
-	  },
-	  "allias": "give дать заплатить",
-		"expectMention": true,
-		"allowDM": true,
-		"cooldown": 3_00_000,
-		"type": "user"
-	};
-};
+  options = {
+    "name": "pay",
+    "id": 14,
+    "media": {
+      "description": "\n\nИспользуйте, чтобы передать коины другому пользователю в качестве доброго подарка или оплаты за помощь :wink:\n\n✏️\n```python\n!pay {memb} {coinsCount | \"+\"} <message> #аргументы можно указывать в любом порядке. \"+\" обозначает \"Все коины, которые у вас есть\"\n```\n\n"
+    },
+    "allias": "give дать заплатить",
+    "expectMention": true,
+    "allowDM": true,
+    "cooldown": 7_000,
+    "cooldownTry": 10,
+    "type": "user"
+  };
+}
 
 export default Command;
