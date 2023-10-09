@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.5447",
+  "version": "2.0.0-alpha.6140",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -34,7 +34,7 @@
     "@discordjs/collection": "^1.5.0",
     "@rollup/plugin-replace": "^5.0.2",
     "@zoodogood/import-directory": "1.5.1",
-    "@zoodogood/utils": "^0.8.4",
+    "@zoodogood/utils": "^1.0.5-change.421",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dayjs": "^1.11.7",
@@ -57,6 +57,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
+    "eslint": "^8.50.0",
     "rollup": "^2.79.1",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.5",
