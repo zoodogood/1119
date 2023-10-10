@@ -585,7 +585,7 @@ BigInt.prototype.toJSON = function(){
 Object.defineProperty(Discord.User.prototype, "guilds", {get(){
   let guilds = client.guilds.cache.filter(guild => guild.members.cache.get(this.id));
   return [...guilds.values()];
-}});
+}, enumerable: false});
 
 
 
