@@ -24,8 +24,13 @@ class TimeEventsManager {
     this.data[day] ||= [];
     this.data[day].push(event);
     this.data[day].sortBy("timestamp");
-
-    this.handle();
+    
+    
+    
+    if (day <= this.#lastSeenDay || !this.#lastSeenDay){
+      (day < this.#lastSeenDay) && (this.#lastSeenDay = null);
+      this.handle();
+    }
 
     console.info(`Ивент создан ${ event.name }`);
     return event;
@@ -86,10 +91,12 @@ class TimeEventsManager {
 
   static getDistancePrefferedDayEvents(needCache = true){
 
-    const dayEvents = this.#lastSeenDay?.length ? this.#lastSeenDay : this.at(this.getNearestDay());
+    const day = this.#lastSeenDay || this.getNearestDay();
 
 
-    needCache && (this.#lastSeenDay = dayEvents);
+    needCache && (this.#lastSeenDay = day);
+
+    const dayEvents = this.at(day);
     if (!dayEvents){
       return null;
     }
@@ -119,7 +126,7 @@ class TimeEventsManager {
     const day = days
       .reduce((min, day) => Math.min(min, day));
 
-    return day;
+    return +day;
   }
 
   static handle(){
@@ -129,6 +136,7 @@ class TimeEventsManager {
 
     const event = this.fetchNextEvent();
     if (!event){
+      this.#lastSeenDay = null;
       return;
     }
 
