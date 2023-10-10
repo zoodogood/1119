@@ -1,13 +1,13 @@
-'use strict';
+"use strict";
 
-import * as Util from '#lib/util.js';
-import DataManager from '#lib/modules/DataManager.js';
-import { ButtonStyle, ComponentType, TextInputStyle } from 'discord.js';
-import { Collection } from '@discordjs/collection';
-import BossManager from '#lib/modules/BossManager.js';
-import { CreateModal } from '@zoodogood/utils/discordjs';
-import { CustomCollector } from '@zoodogood/utils/objectives';
-import QuestManager from '#lib/modules/QuestManager.js';
+import * as Util from "#lib/util.js";
+import DataManager from "#lib/modules/DataManager.js";
+import { ButtonStyle, ComponentType, TextInputStyle } from "discord.js";
+import { Collection } from "@discordjs/collection";
+import BossManager from "#lib/modules/BossManager.js";
+import { CreateModal } from "@zoodogood/utils/discordjs";
+import { CustomCollector } from "@zoodogood/utils/objectives";
+import QuestManager from "#lib/modules/QuestManager.js";
 
 
 class Command {
@@ -90,9 +90,10 @@ class Command {
         return element.data.dayQuests;
       },
       display: (element, output, index, _context) => {
-        const cup = (index == 0) ? "<a:cupZ:806813908241350696> " : (index == 1) ? "<a:cupY:806813850745176114> " : (index == 2) ? "<a:cupX:806813757832953876> " : "";
+        const cup = (index == 0) ? "<a:cupZ:806813908241350696> " : (index === 1) ? "<a:cupY:806813850745176114> " : (index === 2) ? "<a:cupX:806813757832953876> " : "";
         const name =  `${ cup } ${ index + 1 }. ${ element.username }`;
-        const value = `Выполнено ежедневных квестов: ${ output } | Глобальных: ${ (element.data.completedQuest || []).length}/${QuestManager.questsBase.filter(base => base.isGlobal).size }`;
+        const globalQuests = (element.data.questsGlobalCompleted ?? "").split(" ").filter(Boolean);
+        const value = `Выполнено ежедневных квестов: ${ output } | Глобальных: ${ globalQuests.length }/${QuestManager.questsBase.filter(base => base.isGlobal).size }`;
         return {name, value};
       }
     },
@@ -151,7 +152,7 @@ class Command {
 
 
   onComponent(params){
-    
+
   }
 
   createComponents(context){
@@ -186,13 +187,13 @@ class Command {
         options: this.leaderboardTypes
           .filter((leaderboard) => !leaderboard.filter || leaderboard.filter(context))
           .map(leaderboard => leaderboard.component)
-          ,
+        ,
 
         customId: "selectFilter",
         placeholder: "Сменить"
       }]
-    ]
-  };
+    ];
+  }
 
   createEmbed({interaction, context, edit = false}){
     const { pages, page, selected, values } = context;
@@ -223,7 +224,7 @@ class Command {
     const pull = context.sortedPull = 
       context.sortedPull ?? context.users.map(user => [user]);
 
-    
+
     for (const entrie of pull){
       entrie[1] = context.selected.value(entrie[0], context);
     }
@@ -239,7 +240,7 @@ class Command {
       context.pages = this.calculatePages(context.values.length);
       const embed = this.createEmbed({interaction: context.interaction, context, edit: true});
       replitableInteraction.msg(embed);
-    }
+    };
     await this.componentsCallbacks[interaction.customId](interaction, context, responseTo);
   }
 
@@ -270,7 +271,7 @@ class Command {
       const collector = new CustomCollector({target: interaction.client, event: "interactionCreate", filter, time: 300_000});
       collector.setCallback((interaction) => {
         collector.end();
-        
+
         const value = (+interaction.fields.getField("pageSelectValue").value - 1) || context.page;
         context.page = Math.max(Math.min(context.pages, value), 1);
         responseTo(interaction);
@@ -284,9 +285,9 @@ class Command {
 
       responseTo();
     }
-  }
+  };
 
-	async onChatInput(msg, interaction){
+  async onChatInput(msg, interaction){
 
     const users = interaction.guild.members.cache.map(element => element.user)
       .filter(element => !element.bot && !element.data.profile_confidentiality);
@@ -314,7 +315,7 @@ class Command {
     collector.on("collect", (interaction) => this.onCollect(interaction, context));
     collector.on("end", () => {
       context.message.msg({components: [], edit: true});
-    })
+    });
   }
 
   calculatePages(elementsCount){
@@ -322,18 +323,18 @@ class Command {
   }
 
 
-	options = {
-	  "name": "top",
-	  "id": 16,
-	  "media": {
-	    "description": "\n\nОтображает список лидеров на сервере по различным показателям.\n\nСуществующие данные:\n• Количество коинов\n• Уровень\n• Похвалы\n• Успешность краж\n• Статистика квестов\n• Использование котла\n\n✏️\n```python\n!top #без аргументов\n```\n\n"
-	  },
-	  "allias": "топ ранги rank ranks rangs лидеры leaderboard leaders",
-		"allowDM": true,
-		"cooldown": 2_00_00,
-		"type": "user",
-		"Permissions": 16384n
-	};
-};
+  options = {
+    "name": "top",
+    "id": 16,
+    "media": {
+      "description": "\n\nОтображает список лидеров на сервере по различным показателям.\n\nСуществующие данные:\n• Количество коинов\n• Уровень\n• Похвалы\n• Успешность краж\n• Статистика квестов\n• Использование котла\n\n✏️\n```python\n!top #без аргументов\n```\n\n"
+    },
+    "allias": "топ ранги rank ranks rangs лидеры leaderboard leaders",
+    "allowDM": true,
+    "cooldown": 2_00_00,
+    "type": "user",
+    "Permissions": 16384n
+  };
+}
 
 export default Command;
