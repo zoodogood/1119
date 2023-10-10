@@ -1,10 +1,10 @@
-import * as Util from '#lib/util.js';
-import EventsManager from '#lib/modules/EventsManager.js';
-import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
+import * as Util from "#lib/util.js";
+import EventsManager from "#lib/modules/EventsManager.js";
+import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 
 class Command {
 
-	async onChatInput(msg, interaction){
+  async onChatInput(msg, interaction){
     const parseParams = (params) => {
       params = params.split(" ");
 
@@ -12,11 +12,11 @@ class Command {
       while (params.at(0)?.match(/\d+(?:д|d|ч|h|м|m|с|s)/)){
         stamps.push( ...params.splice(0, 1) );
       }
-      const phrase = params.join();
+      const phrase = params.join(" ");
       return [stamps, phrase];
-    }
+    };
     const [stamps, phraseRaw] = parseParams(interaction.params);
-  
+
     const phrase = (phraseRaw || "Без описания")
       .replace(/[a-zа-яъёь]/i, (letter) => letter.toUpperCase());
 
@@ -37,15 +37,15 @@ class Command {
         }
         return event ?? null;
       })
-      .filter(Boolean);
+        .filter(Boolean);
 
       const userRemindsContentRaw = userRemindEvents.map(({params, timestamp}) => {
         const [_authorId, _channelId, phrase] = JSON.parse(params);
         return `• <t:${ Math.floor(timestamp / 1_000) }:R> — ${ phrase }.`;
-      })
+      });
 
-    
-      
+
+
       const remindsContent = userRemindEvents.length ? `\n\nВаши напоминания:\n${ userRemindsContentRaw.join("\n\n").slice(0, 100) }` : "";
       const description = `Пример:\n!напомни 1ч 7м ${ phrase }${ remindsContent }`;
       const message = await msg.msg({title: "Вы не указали время, через какое нужно напомнить..",  color: "#ff0000", delete: 50000, description });
@@ -81,7 +81,7 @@ class Command {
             }
             message.delete();
           }
-        }
+        };
         createRemoveRemindInterface();
       }
       return;
@@ -90,22 +90,22 @@ class Command {
     let timeTo = 0;
     stamps.forEach(stamp => {
       switch (stamp.slice(-1)) {
-        case "d":
-        case "д":
-          timeTo += 86400000 * stamp.slice(0, -1);
-          break;
-        case "h":
-        case "ч":
-          timeTo += 3600000 * stamp.slice(0, -1);
-          break;
-        case "m":
-        case "м":
-          timeTo += 60000 * stamp.slice(0, -1);
-          break;
-        case "s":
-        case "с":
-          timeTo += 1000 * stamp.slice(0, -1);
-          break;
+      case "d":
+      case "д":
+        timeTo += 86400000 * stamp.slice(0, -1);
+        break;
+      case "h":
+      case "ч":
+        timeTo += 3600000 * stamp.slice(0, -1);
+        break;
+      case "m":
+      case "м":
+        timeTo += 60000 * stamp.slice(0, -1);
+        break;
+      case "s":
+      case "с":
+        timeTo += 1000 * stamp.slice(0, -1);
+        break;
       }
     });
 
@@ -115,7 +115,7 @@ class Command {
       msg.msg({color: "#ff0000", title: "Максимальный период — 30 лет", delete: 8_000, description: phrase});
       return;
     }
-    
+
     const event = TimeEventsManager.create("remind", timeTo, [msg.author.id, msg.channel.id, phrase]);
     userData.reminds ||= [];
     userData.reminds.push(event.timestamp);
@@ -123,17 +123,17 @@ class Command {
   }
 
 
-	options = {
-	  "name": "remind",
-	  "id": 44,
-	  "media": {
-	    "description": "\n\nСоздаёт напоминание, например, выключить суп, ну или что ещё вам напомнить надо :rolling_eyes:\n\n✏️\n```python\n!remind {time} {text} #Время в формате 1ч 2д 18м\n```\n\n"
-	  },
-	  "allias": "напомни напоминание напомнить",
-		"allowDM": true,
-		"cooldown": 2_00_00,
-		"type": "other"
-	};
-};
+  options = {
+    "name": "remind",
+    "id": 44,
+    "media": {
+      "description": "\n\nСоздаёт напоминание, например, выключить суп, ну или что ещё вам напомнить надо :rolling_eyes:\n\n✏️\n```python\n!remind {time} {text} #Время в формате 1ч 2д 18м\n```\n\n"
+    },
+    "allias": "напомни напоминание напомнить",
+    "allowDM": true,
+    "cooldown": 2_00_00,
+    "type": "other"
+  };
+}
 
 export default Command;
