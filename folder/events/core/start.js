@@ -1,90 +1,90 @@
 import { BaseEvent } from "#lib/modules/EventsManager.js";
-import { assert } from 'console';
+import { assert } from "console";
 import { omit, timestampDay } from "#src/lib/util.js";
 
-import { DataManager, TimeEventsManager, CommandsManager, CounterManager, EventsManager } from '#lib/modules/mod.js';
-import { client } from '#bot/client.js';
+import { DataManager, TimeEventsManager, CommandsManager, CounterManager, EventsManager } from "#lib/modules/mod.js";
+import { client } from "#bot/client.js";
 
-import app from '#app';
+import app from "#app";
 
 class Event extends BaseEvent {
-	constructor(){
-		const EVENT = "start";
-		super(process, EVENT);
-	}
+  constructor(){
+    const EVENT = "start";
+    super(EventsManager.emitter, EVENT);
+  }
 
-	async run(){
-		EventsManager.listenAll();
+  async run(){
+    EventsManager.listenAll();
 
-		await DataManager.file.load();
-		await TimeEventsManager.file.load();
-		// await ReactionsManager.loadReactionsFromFile();
-		await CounterManager.file.load();
+    await DataManager.file.load();
+    await TimeEventsManager.file.load();
+    // await ReactionsManager.loadReactionsFromFile();
+    await CounterManager.file.load();
 
-		this.checkDataManagerFullset();
-
-
-		await CommandsManager.importCommands();
-		CommandsManager.createCallMap();
-	
+    this.checkDataManagerFullset();
 
 
-		TimeEventsManager.handle();
-		
+    await CommandsManager.importCommands();
+    CommandsManager.createCallMap();
 
-		
-		const needUpdate = DataManager.data.bot.currentDay !== timestampDay( Date.now() );
-		if (needUpdate){
-			await EventsManager.collection.get("TimeEvent/new-day")
-				.run(true);
 
-		}
 
-		
-		app.client = client;
-		client.login(process.env.DISCORD_TOKEN);
-	}
+    TimeEventsManager.handle();
 
-	checkDataManagerFullset(){
-		const Data = DataManager.data;
 
-		assert(Data.users);
-		assert(Data.guilds);
-		assert(Data.bot);
-		const defaultData = {
-			commandsUsed: {}
-		}
 
-		Object.assign(
-			Data.bot, 
-			omit(defaultData, (k) => k in Data.bot === false)
-		);
+    const needUpdate = DataManager.data.bot.currentDay !== timestampDay( Date.now() );
+    if (needUpdate){
+      await EventsManager.collection.get("TimeEvent/new-day")
+        .run(true);
 
-		Data.bot.messagesToday ||= 0;
+    }
 
-		Data.site ||= {};
-		Data.site.enterToPages ||= {};
-		Data.site.entersToPages ||= 0;
-		Data.site.entersToPagesToday ||= 0;
-		Data.site.enterToAPI ||= {};
-		Data.site.entersToAPI ||= 0;
-		Data.site.entersToPagesAPI ||= 0;
 
-		Data.dailyAudit ||= {};
+    app.client = client;
+    client.login(process.env.DISCORD_TOKEN);
+  }
 
-		const now = Date.now();
-		Data.users.forEach(user =>
-			Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
-		);
-		Data.users = Data.users.sort((a, b) => b.level - a.level);
+  checkDataManagerFullset(){
+    const Data = DataManager.data;
 
-		Data.bot.berrysPrice ||= 200;
-		Data.bot.grempen ||= "123456";
-	}
+    assert(Data.users);
+    assert(Data.guilds);
+    assert(Data.bot);
+    const defaultData = {
+      commandsUsed: {}
+    };
 
-	options = {
-		name: "core/start"
-	}
+    Object.assign(
+      Data.bot, 
+      omit(defaultData, (k) => k in Data.bot === false)
+    );
+
+    Data.bot.messagesToday ||= 0;
+
+    Data.site ||= {};
+    Data.site.enterToPages ||= {};
+    Data.site.entersToPages ||= 0;
+    Data.site.entersToPagesToday ||= 0;
+    Data.site.enterToAPI ||= {};
+    Data.site.entersToAPI ||= 0;
+    Data.site.entersToPagesAPI ||= 0;
+
+    Data.dailyAudit ||= {};
+
+    const now = Date.now();
+    Data.users.forEach(user =>
+      Object.keys(user).forEach(key => key.startsWith("CD") && user[key] < now ? delete user[key] : false)
+    );
+    Data.users = Data.users.sort((a, b) => b.level - a.level);
+
+    Data.bot.berrysPrice ||= 200;
+    Data.bot.grempen ||= "123456";
+  }
+
+  options = {
+    name: "core/start"
+  };
 }
 
 export default Event;
