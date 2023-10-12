@@ -40,5 +40,8 @@ export default {
 	},
 	pm2: {
 		id: null
+	},
+	database: {
+		mongoURL: null
 	}
 }
