@@ -1,5 +1,6 @@
 import EventsManager from "#lib/modules/EventsManager.js";
 import { random, TimeAuditor, timestampToDate } from "#lib/util.js";
+import { TextTableBuilder, CellAlignEnum } from "@zoodogood/utils/primitives";
 
 class Command {
   async onChatInput(msg, interaction) {
@@ -95,7 +96,7 @@ class Command {
     if (random(Math.floor(99 / coinOdds)) === 0) {
       EventsManager.emitter.emit("users/getCoinsFromMessage", {
         userData,
-        answer: context.lastAnswer,
+        message: context.lastAnswer,
       });
     }
 
@@ -103,27 +104,35 @@ class Command {
 
     this.displayReward(context, { coinOdds, experience });
 
-    const lines = [];
+    this.displayAudit(context);
+  }
+
+  displayAudit(context){
+
+    const builder = new TextTableBuilder()
+      .setBorderOptions()
+      .addEmptyRow()
+      .addCellAtRow(-1, "Колонна 1.", {align: CellAlignEnum.Right, removeNextSeparator: true})
+      .addCellAtRow(-1, "Колонна 2.", {align: CellAlignEnum.Left})
+      .addRowSeparator(({metadata}, index) => index === metadata.tableWidth - 1 || index === 0 ? "|" : " ");
 
     const fields = context.auditor
       .map(
-        ({ count, timeResult }, i) => `этап ${ i + 1 }. (${count}): ${timestampToDate(timeResult)}`
+        ({ count, timeResult }, i) => `${ this.getStageCodename(i) } ${ i + 1 }.(${count}):\n${timestampToDate(timeResult)}`
       );
 
+    
+    
+
     while (fields.length){
-      lines.push([fields.shift(), fields.shift() ?? "0"]);
+      builder.addMultilineRowWithElements([fields.shift(), fields.shift() ?? "0"], {align: CellAlignEnum.Center});
+      builder.addRowSeparator(({metadata}, index) => metadata.separatorsIndexesInRow.includes(index) ? "+" : "-" );
     }
+    
+    const content = `\`\`\`\n${ builder.generateTextContent() }\`\`\``;
+    
 
-    const maxLengthOfFirstColumn = Math.max(...lines.map((line) => line[0].length));
-    lines.forEach((line) => line[0] = line[0] + " ".repeat(maxLengthOfFirstColumn - line[0].length));
-
-    const content = `\`\`\`
-${ " ".repeat(maxLengthOfFirstColumn - 7) }Слой 1.\t|\tСлой 2.
----\n${
-  lines.map(line => line.join("\t|\t")).join("\n")
-}\`\`\``;
-
-
+    
     context.interaction.channel.msg({
       content,
     });
@@ -138,7 +147,7 @@ ${ " ".repeat(maxLengthOfFirstColumn - 7) }Слой 1.\t|\tСлой 2.
 
     context.messageInterface = await target.msg({
       edit: isMessageExists,
-      content: `Введи число: сколько здесь палочек? (знаки пока не в счёт):\n${strokeContent}`,
+      content: `Введи число: количество палочек. Математические операции между ними включены (округление всегда к меньшему):\n${strokeContent}`,
       reference: interaction.message.id,
     });
 
@@ -154,12 +163,17 @@ ${ " ".repeat(maxLengthOfFirstColumn - 7) }Слой 1.\t|\tСлой 2.
       ..." * ".repeat(random(1)),
       ..." - ".repeat(random(1)),
       ..." % ".repeat(random(1)),
+      ..." , ".repeat(random(1)),
       ..." . ".repeat(random(1)),
     ]
       .sort(() => Math.random() - 0.5)
       .join(",");
 
     return { stroke, count };
+  }
+
+  getStageCodename(stageIndex){
+    return ["Степь", "Джунгли", "База"].at(stageIndex) ?? "Отпечаток";
   }
 
   options = {
