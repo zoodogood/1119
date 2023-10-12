@@ -758,7 +758,7 @@ ActionManager.extendsGlobalPrototypes();
     .listen("core/start");
 
   app.launch();
-  process.emit("start");
+  EventsManager.emitter.emit("start");
 })();
 
 //---------------------------------{#End--}------------------------------                            #ff0
