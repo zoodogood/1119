@@ -14,11 +14,12 @@ import CooldownManager from "./CooldownManager.js";
 import Properties from "./Properties.js";
 import Executor from "./Executor.js";
 import I18nManager from "./I18nManager.js";
+import StorageManager from "./StorageManager.js";
 import APIPointAuthorizationManager from "./APIPointAuthorization.js";
 
 export {
   DataManager, Template, CurseManager, BossManager, TimeEventsManager,
   CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler,
   EventsManager, GuildVariablesManager, CooldownManager, 
-  Properties, Executor, I18nManager, APIPointAuthorizationManager
+  Properties, Executor, I18nManager, StorageManager, APIPointAuthorizationManager
 };
