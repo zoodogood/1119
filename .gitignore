@@ -11,3 +11,4 @@ folder/SSLSecret/certificate.crt
 folder/SSLSecret/private.key
 folder/SSLSecret/ca_bundle.crt
 
+yarn-error.log
