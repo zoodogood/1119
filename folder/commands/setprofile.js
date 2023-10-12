@@ -37,7 +37,7 @@ class Command {
     case "описание":
     case "осебе":
       let minus = (value.match(/<a?:.+?:\d+?>|\\?!\{.+?\}/g) || []).join("").length;
-      if (value.length - minus > 121) r eturn msg.msg({title: "Длина описания не должна превышать 120 символов", delete: 5000, color: "#ff0000", description: `Ваша длина: ${value.length - minus}\nТекст:\n${value}`});
+      if (value.length - minus > 121) return msg.msg({title: "Длина описания не должна превышать 120 символов", delete: 5000, color: "#ff0000", description: `Ваша длина: ${value.length - minus}\nТекст:\n${value}`});
       let line = "";
       let lineMinus = 0;
       minus = 0;
