@@ -29,7 +29,7 @@ class Command {
     let heAccpet = await Util.awaitUserAccept({name: "give", message: {title: "Используя эту команду вы потеряете коины или другие ресурсы"}, channel: msg.channel, userData: interaction.userData});
     if (!heAccpet) return;
 
-    if (memb === msg.author) {
+    if (memb === interaction.user) {
       msg.msg({title: `${msg.author.username} попытался наколдовать немного ресурсов (${ num } ❔) — безуспешно.`});
       return;
     }
@@ -89,13 +89,18 @@ class Command {
     message = message.join(" ");
 
     if (num === "+"){
-      num = interaction.userData[ resource ];
+      num = +interaction.userData[ resource ];
     }
     num = Math.floor(num);
+
 
     if (num < 0){
       msg.msg({title: "Введено отрицательное значение.\n<:grempen:753287402101014649> — Укушу."});
       return;
+    }
+
+    if (isNaN(num)){
+      num = 0;
     }
 
     if (isNaN(interaction.userData[resource])){
