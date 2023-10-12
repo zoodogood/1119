@@ -1,7 +1,7 @@
 
 import config from "#config";
 import get from "#lib/child-process-utils.js";
-const {run, info, _npm} = get({ root: process.cwd() });
+const {run, _npm} = get({ root: process.cwd() });
 
 
 const toANSIBlock = (content) => `\`\`\`ansi\n${ content }\`\`\``;
@@ -14,7 +14,7 @@ class Command {
       `${ _npm } run build`,
       config.pm2.id ? `${ _npm } run pm2-please-restart ${ config.pm2.id }` : "echo pm2 not setted"
     ];
-		
+
     const embed = {
       title: "<:emoji_50:753916145177722941>",
       color: "#2c2f33",
@@ -28,7 +28,7 @@ class Command {
       embed.description += `\n${ content }`;
       message.msg(embed);
     };
-		
+
     for (const string of COMMANDS) {
       const [command, ...params] = string.split(" ");
       updateDescription(
@@ -42,16 +42,16 @@ class Command {
         toANSIBlock(result)
       );
     }
-  	}
+  }
 
 
   options = {
-	  	"name": "restart",
-	  	"id": 61,
-	  	"media": {
-	   	"description": "Перезапускает процесс"
-	  	},
-	  	"allias": "перезапустить",
+    "name": "restart",
+    "id": 61,
+    "media": {
+      "description": "Перезапускает процесс"
+    },
+    "allias": "перезапустить перезапуск",
     "allowDM": true,
     "cooldown": 100_000,
     "cooldownTry": 5,

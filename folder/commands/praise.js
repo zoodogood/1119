@@ -47,7 +47,7 @@ class Command {
 	  "media": {
 	    "description": "\n\nМожете похвалить пользователя, например, если он классный. Однако количество похвал ограничено и зависит от уровня в профиле.\n\n✏️\n```python\n!praise {memb}\n```\n\n"
 	  },
-	  "allias": "похвалить like лайк лайкнуть",
+	  "allias": "похвалить like лайк лайкнуть похвалити лайкнути",
 		"expectMention": true,
 		"allowDM": true,
 		"type": "user"

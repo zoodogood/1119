@@ -1,9 +1,9 @@
-import * as Util from '#lib/util.js';
-import { client } from '#bot/client.js';
+import * as Util from "#lib/util.js";
+import { client } from "#bot/client.js";
 
 class Command {
 
-	async onChatInput(msg, interaction){
+  async onChatInput(msg, interaction){
 
 
     if (interaction.params){
@@ -14,7 +14,7 @@ class Command {
 
       if (!emoji){
         msg.msg({title: "Попробуйте ещё раз", description: `Указатель: "\`${ interaction.params }\`" — был произведён безуспешный поиск по айди и имени.\nЧтобы получить список эмодзи на сервере введите команду без аргументов.\nВведя идентификатор смайлика, получите более подробную информацию о нём`, color: "#ff0000", delete: 20_000});
-        return
+        return;
       }
 
 
@@ -23,7 +23,7 @@ class Command {
       const fields = [{name: "Имя:", value: "`" + emoji.name + "`", inline: true}, {name: "Эмодзи добавил:", value: author.tag, inline: true}, {name: "Был добавлен на сервер: ", value: Util.timestampToDate(Date.now() - emoji.createdTimestamp, 4) + " назад."}];
       msg.msg({title: "О нём:", description: `> ${ emoji.toString() }`, thumbnail: emoji.url, author: {name: `Эмотикон :>\nС сервера ${ emoji.guild.name }`, iconURL: emoji.guild.iconURL()}, footer: {text: `ID: ${ emoji.id }`}, fields});
       return;
-    };
+    }
 
     let emojis = msg.guild.emojis.cache.sort( (a, b) => b.  animated - a.animated || ((b.name > a.name) ? -1 : (b.name < a.name) ? 1 : 0) ).map(e => e.toString() + "  " + e.id);
 
@@ -31,7 +31,7 @@ class Command {
     let page = 0;
     while (emojis.length) pages.push(emojis.splice(0, 20));
     if (!pages[0]) {
-      return msg.msg({title: "<a:google:638650010019430441> Эмотиконы сервера!", description: "Но тут почему-то пусто... 🐘"})
+      return msg.msg({title: "<a:google:638650010019430441> Эмотиконы сервера!", description: "Но тут почему-то пусто... 🐘"});
     }
 
     let embed = {
@@ -49,13 +49,13 @@ class Command {
 
     while (true){
       switch (react) {
-        case "640449832799961088":
-          page++;
-          break;
-        case "640449848050712587":
-          page--;
-          break;
-        default: return;
+      case "640449832799961088":
+        page++;
+        break;
+      case "640449848050712587":
+        page--;
+        break;
+      default: return;
       }
 
       embed.footer = {text: `Страница: ${page + 1} / ${pages.length}`};
@@ -70,17 +70,17 @@ class Command {
   }
 
 
-	options = {
-	  "name": "emojis",
-	  "id": 23,
-	  "media": {
-	    "description": "\n\nОтправляет список смайликов на сервере или подробную информацию об одном из них.\n\n✏️\n```python\n!emojis <emoji|emojiID>\n```\n\n"
-	  },
-	  "allias": "emoji смайлики эмодзи эмоджи",
-		"allowDM": true,
-		"cooldown": 7_000,
-		"type": "other"
-	};
-};
+  options = {
+    "name": "emojis",
+    "id": 23,
+    "media": {
+      "description": "\n\nОтправляет список смайликов на сервере или подробную информацию об одном из них.\n\n✏️\n```python\n!emojis <emoji|emojiID>\n```\n\n"
+    },
+    "allias": "emoji смайлики эмодзи эмоджи емодзі",
+    "allowDM": true,
+    "cooldown": 7_000,
+    "type": "other"
+  };
+}
 
 export default Command;

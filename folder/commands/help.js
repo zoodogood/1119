@@ -129,7 +129,7 @@ class Command {
       description:
         "\n\nСтандартная команда отображающую основную информацию о возможностях бота. Она нужна чтобы помочь новым пользователям. Её так же можно вызвать отправив `/help`\n\n✏️\n```python\n!help #без аргументов\n```\n\n",
     },
-    allias: "хелп помощь cmds commands команды х",
+    allias: "хелп помощь cmds commands команды х допомога info інфо",
     allowDM: true,
     cooldown: 15_000,
     type: "other",

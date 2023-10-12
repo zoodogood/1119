@@ -1,10 +1,10 @@
-import * as Util from '#lib/util.js';
-import EventsManager from '#lib/modules/EventsManager.js';
-import CurseManager from '#lib/modules/CurseManager.js';
-import DataManager from '#lib/modules/DataManager.js';
-import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
-import { Actions } from '#lib/modules/ActionManager.js';
-import { Collection } from '@discordjs/collection';
+import * as Util from "#lib/util.js";
+import EventsManager from "#lib/modules/EventsManager.js";
+import CurseManager from "#lib/modules/CurseManager.js";
+import DataManager from "#lib/modules/DataManager.js";
+import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
+import { Actions } from "#lib/modules/ActionManager.js";
+import { Collection } from "@discordjs/collection";
 
 const Elements = new Collection(Object.entries({
   earth: {
@@ -176,8 +176,8 @@ class Command {
         const contents = {
           dealt: `Нанесено урона по боссу ${ damageDealt } ед.`,
           multiplayer: isSame ? `, под эффектом Х${ this.boss.ELEMENT_DAMAGE_MULTIPLAYER }` : ""
-        }
-        
+        };
+
         scene.phrase = `${ contents.dealt }${ contents.multiplayer }`;
       }
     },
@@ -372,7 +372,7 @@ class Command {
               userData.chestBonus = (userData.chestBonus ?? 0) + bonuses;
               scene.bonuses = bonuses;
             },
-            textOutput: `"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор, превратив часть своей клубники в {Util.ending(scene.bonuses, "бонус", "ов", "", "а")} сундука`
+            textOutput: "\"Сыворотка для преобразования клубники в волшебные сундуки\", так вы назвали свой раствор, превратив часть своей клубники в {Util.ending(scene.bonuses, \"бонус\", \"ов\", \"\", \"а\")} сундука"
           },
           false
         ],
@@ -406,7 +406,7 @@ class Command {
               scene.random = Util.random(3, 8);
               DataManager.data.bot.berrysPrice += scene.random;
             },
-            textOutput: `Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, "коин", "ов", "", "а")} дороже.`
+            textOutput: "Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, \"коин\", \"ов\", \"\", \"а\")} дороже."
           },
           false,
           false,
@@ -451,7 +451,7 @@ class Command {
           {
             action: async ({userData, level, scene}) => {
               userData.level -= Util.random(1, 2);
-              userData.void++
+              userData.void++;
             },
             textOutput: "Вы породили кусок нестабильности <a:void:768047066890895360>, но потеряли много опыта и крошечку рассудка."
           },
@@ -463,7 +463,7 @@ class Command {
               userData.coins -= Util.random(300, 700);
               userData.void += scene.voids = Util.random(1, 2);
             },
-            textOutput: `Преобразуя материальные предметы вы получаете {Util.ending(scene.voids, "уровн", "ей", "ь", "я")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег.`
+            textOutput: "Преобразуя материальные предметы вы получаете {Util.ending(scene.voids, \"уровн\", \"ей\", \"ь\", \"я\")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег."
           },
           false,
           {
@@ -521,7 +521,7 @@ class Command {
         [
           {
             action: async ({userData, level, scene}) => userData.berrys ? userData.berrys-- : false,
-            textOutput: `Сражаться с обезьяной и угрожать ей было плохой идеей{context.user.berrys ? ", вы потеряли ещё и пару клубник (1)" : "..."}`
+            textOutput: "Сражаться с обезьяной и угрожать ей было плохой идеей{context.user.berrys ? \", вы потеряли ещё и пару клубник (1)\" : \"...\"}"
           },
           false,
           false,
@@ -1018,7 +1018,7 @@ class Command {
               DataManager.data.bot.berrysPrice -= value;
               scene.value = value;
             },
-            textOutput: `За последние 2с цена клубники упала на { scene.value }ед.`
+            textOutput: "За последние 2с цена клубники упала на { scene.value }ед."
           },
           false,
           false,
@@ -1030,7 +1030,7 @@ class Command {
             action: async () => {
               DataManager.data.bot.berrysPrice -= 50;
             },
-            textOutput: `За последние 2с цена клубники упала на 50ед.`
+            textOutput: "За последние 2с цена клубники упала на 50ед."
           },
           false,
           false,
@@ -1085,7 +1085,7 @@ class Command {
 
 
     eventBase.onInit && eventBase.onInit(context);
-  
+
     await actionBase.action(context);
     const output = actionBase.textOutput.replace(/\{.+?\}/g, (raw) => eval(raw.slice(1, -1)));
 
@@ -1094,7 +1094,7 @@ class Command {
       phrase = ["Это птица? Это самолёт! Нет, это штука!", "Вдумайтесь..", "Ученье – свет, а неученье – штука.", "Игрушка!", "Случайности случайны.", "**ШТУКОВИНА**", "Используйте !штука я, чтобы поменять стихию", "Используйте !штука улучшить, чтобы открыть новые события"].random(),
       footerPhrase = ["кубик рубика", "сапог", "звёзду", "снеговика", "зайца", "большой город", "огненную обезьяну", "ананас", "кефир"].random();
 
-    
+
 
     const contents = {
       guildTakeCoins: `Вы помогли серверу — он получил ${ Util.ending(income, "коин", "ов", "", "а") }`,
@@ -1108,7 +1108,7 @@ class Command {
       description: `${ contents.guildTakeCoins }${ contents.event }`,
       color: elementBase.color,
       author: {iconURL: user.avatarURL(), name: user.username},
-      fields: [{name: `Если коротко..`, value: `**${ contents.description }**\n⠀`}, {name: `${elementBase.emoji} ${context.level + 1} ур.`, value: output}],
+      fields: [{name: "Если коротко..", value: `**${ contents.description }**\n⠀`}, {name: `${elementBase.emoji} ${context.level + 1} ур.`, value: output}],
       footer: {text: `Скажем так: эта вещь чем-то похожа на ${footerPhrase}..`}
     });
   }
@@ -1125,7 +1125,7 @@ class Command {
     if (!element){
       interaction.channel.msg({description: "Упомянутый пользователь пока не открыл штуку.."});
       return;
-    };
+    }
 
 
     const username = interaction.mention.username;
@@ -1138,7 +1138,7 @@ class Command {
     const {cooldownThresholder} = this.getCooldownInfo();
     const inCooldownContent = ["Нет.", "Да."][ +(interaction.mention.data.CD_52 > cooldownThresholder) ];
 
-    const description = `${ mentionContent }...\nВыбранная стихия: ${ emoji }\nУровень штуки: ${ (interaction.mention.data.elementLevel || 0) + 1 }\n\n${ element.description }\nНа перезарядке: ${ inCooldownContent }`
+    const description = `${ mentionContent }...\nВыбранная стихия: ${ emoji }\nУровень штуки: ${ (interaction.mention.data.elementLevel || 0) + 1 }\n\n${ element.description }\nНа перезарядке: ${ inCooldownContent }`;
     interaction.channel.msg({description, color});
     return;
   }
@@ -1146,7 +1146,7 @@ class Command {
   static MAX_LEVEL = 4;
 
   async displayThingIsClosed(interaction){
-    const description = `Вам ещё недоступна эта команда\nдля её открытия совершите хотя бы один ритуал, используя команду !котёл.\nВ будущем она будет генерировать коины для сервера, а также активировать случайные события.`;
+    const description = "Вам ещё недоступна эта команда\nдля её открытия совершите хотя бы один ритуал, используя команду !котёл.\nВ будущем она будет генерировать коины для сервера, а также активировать случайные события.";
     interaction.channel.msg({title: "Штуке требуется немного магии котла,\nчтобы она могла работать.", description, delete: 22_000, reactions: ["763804850508136478"]});
     return;
   }
@@ -1167,16 +1167,16 @@ class Command {
 
     const embed = {
       title: "Говорят, звёзды приносят удачу", 
-      description: `Каждая из них имеет свои недостатки и особенности, просто выберите ту, которая вам по нраву.`,
+      description: "Каждая из них имеет свои недостатки и особенности, просто выберите ту, которая вам по нраву.",
       author: {
         name: interaction.user.username,
         iconURL: interaction.user.avatarURL()
       },
       footer: {
-        text: `Вы всегда сможете изменить выбор — "!штука я"\nТакже не забывайте улучшать её способности командой "!штука улучшить"`
+        text: "Вы всегда сможете изменить выбор — \"!штука я\"\nТакже не забывайте улучшать её способности командой \"!штука улучшить\""
       },
       fields: Elements.map(elementBase => ({name: `**${ elementBase.emoji } ${ elementBase.name }**`, value: `${ elementBase.label }.`}))
-    }
+    };
 
     const message = await interaction.channel.msg(embed);
     const reactions = Elements.map(elementBase => elementBase.emoji);
@@ -1212,7 +1212,7 @@ class Command {
       coins:       ["коин", "ов", "а", "ов"],
       berrys:      ["клубник", "", "и", ""],
       voidRituals: ["ритуал", "ов", "а", "ов"]
-    }
+    };
 
     const checkResources = () => {
       // Проверяем АКТУАЛЬНЫЙ уровень
@@ -1234,14 +1234,14 @@ class Command {
         return;
       }
       if (checkResources() instanceof Array){
-        interaction.channel.msg({title: "Как это вообще работает..?", color: embedColor, description: `У вас резко пропали необходимые ресурсы, вы не можете улучшить штуку.`, author: {name: "Упс.."}});
+        interaction.channel.msg({title: "Как это вообще работает..?", color: embedColor, description: "У вас резко пропали необходимые ресурсы, вы не можете улучшить штуку.", author: {name: "Упс.."}});
         return;
       }
 
       userData.berrys -= resourcesInfo.berrys;
       userData.coins -= resourcesInfo.coins;
       userData.elementLevel = ~~userData.elementLevel + 1;
-      interaction.channel.msg({title: `Непослушная сила улучшена до ${userData.elementLevel + 1} уровня!`, description: `Апгрейды открывают новые события, а такккж-е штука становится более непредсказуемой, принося немrror} больше коинов.`, color: embedColor, delete: 9000, author: {name: interaction.user.username, iconURL: interaction.user.avatarURL()}});
+      interaction.channel.msg({title: `Непослушная сила улучшена до ${userData.elementLevel + 1} уровня!`, description: "Апгрейды открывают новые события, а такккж-е штука становится более непредсказуемой, принося немrror} больше коинов.", color: embedColor, delete: 9000, author: {name: interaction.user.username, iconURL: interaction.user.avatarURL()}});
       return;
     }
 
@@ -1252,12 +1252,12 @@ class Command {
 
 
 
-	async onChatInput(msg, interaction){
+  async onChatInput(msg, interaction){
 
     if (interaction.mention){
       const userData = interaction.mention.data;
       const elementIndex = userData.element ?? null;
-      
+
 
       const element = elementIndex !== undefined ? this.constructor.Elements.at(elementIndex) : null;
       return this.displayUserInfo({element, interaction});
@@ -1272,7 +1272,7 @@ class Command {
       return;
     }
 
-    
+
 
     const needSelectInterface = element === undefined || Util.match(interaction.params, /^(?:я|i)/i);
     if (needSelectInterface){
@@ -1280,7 +1280,7 @@ class Command {
       return;
     }
 
-    
+
 
     if (Util.match(interaction.params, /улучшить|up|level|уровень|ап/i)){
       this.displayIncreaseLevelInterface(interaction);
@@ -1296,12 +1296,12 @@ class Command {
       return;
     }
 
-    
+
     await this.run({user: interaction.user, channel: interaction.channel, elementBase, level: userData.elementLevel ?? 0});
     userData.CD_52 = Math.max(userData.CD_52 ?? 0, Date.now()) + COOLDOWN;
   }
 
-  
+
 
   static boss = {
     manager: import("#lib/modules/BossManager.js")
@@ -1323,20 +1323,20 @@ class Command {
       const dealt = this.boss.manager.makeDamage(boss, damage, {sourceUser: user, damageSourceType: DAMAGE_SOURCE_TYPE});
       return dealt;
     }
-  }
+  };
 
 
-	options = {
-	  "name": "thing",
-	  "id": 52,
-	  "media": {
-	    "description": "\n\nПовезло-повезло:\n1) Даёт деньги в банк сервера\n2) Абсолютно рандомная и непредсказуемая фигня\n3) Также даёт неплохие бонусы\nПссс, человек, я принимаю идеи по добавлению новых ивентов, надеюсь, ты знаешь где меня искать..\n\n✏️\n```python\n!thing <\"улучшить\" | \"я\">\n```\n\n"
-	  },
-	  "allias": "шутка штука aught аугт нечто",
-		"allowDM": true,
-		"type": "other"
-	};
-};
+  options = {
+    "name": "thing",
+    "id": 52,
+    "media": {
+      "description": "\n\nПовезло-повезло:\n1) Даёт деньги в банк сервера\n2) Абсолютно рандомная и непредсказуемая фигня\n3) Также даёт неплохие бонусы\nПссс, человек, я принимаю идеи по добавлению новых ивентов, надеюсь, ты знаешь где меня искать..\n\n✏️\n```python\n!thing <\"улучшить\" | \"я\">\n```\n\n"
+    },
+    "allias": "шутка штука aught аугт нечто штуковина щось",
+    "allowDM": true,
+    "type": "other"
+  };
+}
 
 export default Command;
 export {Elements, elementsEnum};

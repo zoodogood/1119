@@ -329,7 +329,7 @@ class Command {
     "media": {
       "description": "\n\nОтображает список лидеров на сервере по различным показателям.\n\nСуществующие данные:\n• Количество коинов\n• Уровень\n• Похвалы\n• Успешность краж\n• Статистика квестов\n• Использование котла\n\n✏️\n```python\n!top #без аргументов\n```\n\n"
     },
-    "allias": "топ ранги rank ranks rangs лидеры leaderboard leaders",
+    "allias": "топ ранги rank ranks rangs лидеры leaderboard leaders лідери",
     "allowDM": true,
     "cooldown": 2_00_00,
     "type": "user",

@@ -29,10 +29,10 @@ class Command {
 	  "media": {
 	    "description": "\n\nВыдаёт формальное предупреждение пользователю — —\n\n✏️\n```python\n!warn {memb}\n```\n\n"
 	  },
-	  "allias": "пред варн",
+	  "allias": "пред варн попередити",
 		"expectMention": true,
 		"allowDM": true,
-		"cooldown": 12_00_00,
+		"cooldown": 120_000,
 		"type": "guild",
 		"Permissions": 4194304
 	};
