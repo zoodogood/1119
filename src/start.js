@@ -1,20 +1,20 @@
 console.clear();
 
-import 'dotenv/config';
+import "dotenv/config";
 
-import Discord, { BaseInteraction } from 'discord.js';
+import Discord, { AuditLogEvent, BaseInteraction } from "discord.js";
 
-import * as Util from '#lib/util.js';
-import { Template, DataManager, BossManager, CurseManager, TimeEventsManager, CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler, EventsManager } from '#lib/modules/mod.js';
-import { CreateMessage } from '@zoodogood/utils/discordjs';
-import client from '#bot/client.js';
-import config from '#config';
+import * as Util from "#lib/util.js";
+import { DataManager, BossManager, TimeEventsManager, CommandsManager, ActionManager, EventsManager } from "#lib/modules/mod.js";
+import { CreateMessage } from "@zoodogood/utils/discordjs";
+import client from "#bot/client.js";
+import config from "#config";
 
 
-import app from '#app';
+import app from "#app";
 import FileSystem from "fs";
-import { Actions } from '#lib/modules/ActionManager.js';
-import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from '#constants/users/events.js';
+import { Actions } from "#lib/modules/ActionManager.js";
+import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 
 
 
@@ -34,13 +34,13 @@ client.on("ready", async () => {
 
 
 
-//----------------------------------{Events and intervals--}------------------------------                            #0bf
+  //----------------------------------{Events and intervals--}------------------------------                            #0bf
 
 
   client.on("messageCreate", async message => {
 
     DataManager.data.bot.messagesToday++;
-    
+
     if (message.author.bot) {
       return;
     }
@@ -67,7 +67,7 @@ client.on("ready", async () => {
 
   client.on("guildCreate", async (guild) => {
     let members = guild.members.cache.filter(e => !e.user.bot);
-    let whoAdded = await guild.Audit(e => e.target.id === client.user.id, {type: "BOT_ADD"});
+    let whoAdded = await guild.Audit(e => e.target.id === client.user.id, {type: AuditLogEvent.BotAdd});
     whoAdded = whoAdded ? whoAdded.target : null;
 
     const DEVELOPER_CHAT_ID = "763637440174227506";
@@ -77,14 +77,14 @@ client.on("ready", async () => {
       const description = `Участников: ${ members.size }\nКол-во знакомых боту людей: ${members.filter(member => DataManager.data.users.some(user => user.id === member.id)).size}\nПригласил пользователь этого сервера?: ${whoAdded && guild.members.resolve(whoAdded) ? "Да" : "Нет"}.`;
       developerChat.msg({title, description, footer: {text: `Серверов: ${client.guilds.cache.size}`}});
     }
-    
+
     guild.invitesCollection = await guild.invites.fetch();
     DataManager.data.bot.newGuildTimestamp = Date.now();
   });
 
   client.on("guildDelete", async (guild) => {
     client.users.cache.get("921403577539387454").msg({title: `Бота забанили на сервере ${guild.name}!`});
-  })
+  });
 
   client.on("messageReactionAdd", async (reaction, user) => {
 
@@ -94,28 +94,27 @@ client.on("ready", async () => {
 
       user.action(Actions.likedTheUser, {target, likeType: "reaction", reaction});
     }
-
-    const guildData = client.guilds.cache.get(reaction.message.guildId);
+    
 
     let msg = reaction.message;
     let rolesReactions = ReactionsManager.reactData.find(el => el.id == msg.id);
     if (!rolesReactions) return;
     switch (rolesReactions.type) {
-      case "reactor":
-        rolesReactions = rolesReactions.reactions;
+    case "reactor":
+      rolesReactions = rolesReactions.reactions;
 
-        let role = String(rolesReactions[reaction.emoji.id || reaction.emoji.name]);
-        if (!role){
-          break;
-        }
-        role = reaction.message.guild.roles.cache.get(role);
-        if (!role) {
-          reaction.message.msg({title: "Не удалось найти роль, вероятно она удалена", color: "#ff0000", delete: 7000});
-          reaction.remove();
-          return;
-        }
-        reaction.message.guild.members.resolve(user).roles.add(role);
+      let role = String(rolesReactions[reaction.emoji.id || reaction.emoji.name]);
+      if (!role){
         break;
+      }
+      role = reaction.message.guild.roles.cache.get(role);
+      if (!role) {
+        reaction.message.msg({title: "Не удалось найти роль, вероятно она удалена", color: "#ff0000", delete: 7000});
+        reaction.remove();
+        return;
+      }
+      reaction.message.guild.members.resolve(user).roles.add(role);
+      break;
     }
   });
 
@@ -124,14 +123,14 @@ client.on("ready", async () => {
     let rolesReactions = ReactionsManager.reactData.find(el => el.id == msg.id);
     if (!rolesReactions) return;
     switch (rolesReactions.type) {
-      case "reactor":
-        rolesReactions = rolesReactions.reactions;
+    case "reactor":
+      rolesReactions = rolesReactions.reactions;
 
-        let role = String(rolesReactions[reaction.emoji.id || reaction.emoji.name]);
-        role = reaction.message.guild.roles.cache.get(role);
-        if (!role) reaction.message.msg({title: "Не удалось найти роль, вероятно она удалена", color: "#ff0000", delete: 7000});
-        reaction.message.guild.members.resolve(user).roles.remove(role);
-        break;
+      let role = String(rolesReactions[reaction.emoji.id || reaction.emoji.name]);
+      role = reaction.message.guild.roles.cache.get(role);
+      if (!role) reaction.message.msg({title: "Не удалось найти роль, вероятно она удалена", color: "#ff0000", delete: 7000});
+      reaction.message.guild.members.resolve(user).roles.remove(role);
+      break;
     }
   });
 
@@ -149,7 +148,7 @@ client.on("ready", async () => {
     }
 
     if (e.user.bot) {
-      let whoAdded = await guild.Audit(audit => audit.target.id === e.id, {type: "BOT_ADD"});
+      let whoAdded = await guild.Audit(audit => audit.target.id === e.id, {type: AuditLogEvent.BotAdd});
       let permissions = e.permissions.toArray().map(e => Command.permissions[e]).join(", ") || "Отсуствуют";
       // to-do fix
       return;
@@ -159,7 +158,7 @@ client.on("ready", async () => {
 
     const guildInvites = await guild.invites.fetch();
 
-    
+
     const old = guild.invitesCollection;
     guild.invitesCollection = guildInvites;
     const invite = guildInvites.find(i => old.get(i.code).uses < i.uses);
@@ -214,7 +213,7 @@ client.on("ready", async () => {
     }
     e.guild.data.leave_roles[e.user.id] = Array.from(e.roles.cache.keys());
 
-    let banInfo = (  await e.guild.Audit(audit => audit.target.id === e.id, {limit: 50, type: "MEMBER_BAN_ADD"})  ) || (  await e.guild.Audit(audit => audit.target.id === e.id, {limit: 50, type: "MEMBER_KICK"})  );
+    let banInfo = (  await e.guild.Audit(audit => audit.target.id === e.id, {limit: 50, type: AuditLogEvent.MemberBanAdd})  ) || (  await e.guild.Audit(audit => audit.target.id === e.id, {limit: 50, type: AuditLogEvent.MemberKick})  );
     const reason = () => banInfo.reason ? `\nПричина: ${banInfo.reason}` : "";
 
     const name = `Имя: ${ e.user.tag }${ e.user.bot ? " BOT" : "" }`;
@@ -225,8 +224,8 @@ client.on("ready", async () => {
 
     e.guild.logSend({title: message.content, description: message.description, color: banInfo ? "#ff0000" : "#00ff00"});
   });
-  
-  
+
+
 
   client.on("userUpdate", async (old, user) => {
     if (old.avatar === user.avatar){
@@ -254,16 +253,16 @@ async function msg(options, ..._devFixParams){
 
   const messagePayload = CreateMessage(options);
   const target = this instanceof Discord.Message && !options.edit ? this.channel : this;
-  
+
   const message = target instanceof BaseInteraction ? 
     await (
       options.edit ?
-          (target.replied ? target.editReply(messagePayload) : target.update(messagePayload))
+        (target.replied ? target.editReply(messagePayload) : target.update(messagePayload))
         : (target.reply(messagePayload))
     ) :
     await (
       options.edit ?
-          target.edit(messagePayload)
+        target.edit(messagePayload)
         : target.send(messagePayload)
     );
 
@@ -277,7 +276,7 @@ async function msg(options, ..._devFixParams){
   }
 
   return message;
-};
+}
 
 
 
@@ -344,39 +343,39 @@ async function stupid_bot(user, msg) {
   msg.channel.sendTyping();
   await Util.sleep(2000);
   switch (msg.guild.data.stupid_evil) {
-    case 1: msg.msg({content: "Недостаточно прав!"});
+  case 1: msg.msg({content: "Недостаточно прав!"});
     break;
-    case 2: msg.msg({content: "-_-"});
+  case 2: msg.msg({content: "-_-"});
     break;
-    case 3: msg.msg({content: "-_-'"});
+  case 3: msg.msg({content: "-_-'"});
     break;
-    case 5: msg.msg({content: "Сами вы глупые!"});
+  case 5: msg.msg({content: "Сами вы глупые!"});
     break;
-    case 9: msg.msg({content: "ДА НЕ БОМБИТ У МЕНЯ1!!"});
+  case 9: msg.msg({content: "ДА НЕ БОМБИТ У МЕНЯ1!!"});
     break;
-    case 21: msg.msg({content: "🖕"}).then(async msg => {
-      msg.react("❕");
-      msg.react("🇵");
-      msg.react("🇮");
-      msg.react("🇩");
-      msg.react("🇴");
-      msg.react("🇷");
-      await Util.sleep(5000);
-      msg.reactions.removeAll();
-    });
+  case 21: msg.msg({content: "🖕"}).then(async msg => {
+    msg.react("❕");
+    msg.react("🇵");
+    msg.react("🇮");
+    msg.react("🇩");
+    msg.react("🇴");
+    msg.react("🇷");
+    await Util.sleep(5000);
+    msg.reactions.removeAll();
+  });
     break;
-    case 22: msg.msg({content: "Остановись, подумой думой своею. Не сделал, и не сделаю, ничего плохого я тебе. Оставь эту затею, Человек. Радуйся солнцу, земле. Не обидь словом ближнего своего"});
+  case 22: msg.msg({content: "Остановись, подумой думой своею. Не сделал, и не сделаю, ничего плохого я тебе. Оставь эту затею, Человек. Радуйся солнцу, земле. Не обидь словом ближнего своего"});
     break;
-    case 34: msg.msg({content: "Чел ну ты реально задрал"});
+  case 34: msg.msg({content: "Чел ну ты реально задрал"});
     break;
-    case 35: msg.msg({content: "**(╯>□<'）╯︵ ┻━┻**\nН-Ы-А #### НЫЫА НЫЫА НЫЫАААААА"});
-      client.user.setStatus("dnd");
-      setTimeout(() => client.user.setStatus("online"), 300000);
+  case 35: msg.msg({content: "**(╯>□<'）╯︵ ┻━┻**\nН-Ы-А #### НЫЫА НЫЫА НЫЫАААААА"});
+    client.user.setStatus("dnd");
+    setTimeout(() => client.user.setStatus("online"), 300000);
     break;
-    default: msg.msg({content: "..."})
+  default: msg.msg({content: "..."});
   }
   msg.guild.data.stupid_evil++;
-};
+}
 
 
 
@@ -455,7 +454,7 @@ Discord.Message.prototype.awaitReact = async function(options, ...reactions){
     const allowReaction = reactions.includes(reaction.emoji.id ?? reaction.emoji.name);
     const allowUser = options.user === "any" ? member.id !== client.user.id : member.id === options.user.id;
     return allowUser && allowReaction;
-  }
+  };
 
   let collected = this.awaitReactions({ filter, max: 1, time: options.time ?? 300_000 })
     .then(reaction => collected = reaction);
@@ -465,7 +464,7 @@ Discord.Message.prototype.awaitReact = async function(options, ...reactions){
       if (options.removeType === "all"){
         break;
       }
-      
+
     }
     this.react(reactions[i]);
   }
@@ -483,7 +482,7 @@ Discord.Message.prototype.awaitReact = async function(options, ...reactions){
   if (options.removeType === "full")   reaction.remove();
 
   return reaction.emoji.id ?? reaction.emoji.name;
-}
+};
 
 Discord.BaseChannel.prototype.awaitMessage = async function(options){
   const user = options.user;
@@ -496,12 +495,12 @@ Discord.BaseChannel.prototype.awaitMessage = async function(options){
     input.delete();
   }
   return input;
-}
+};
 
 Discord.GuildMember.prototype.wastedPermissions = function(bit, channel){
   let permissions = channel ? channel.permissionsFor(this).missing(bit) : this.permissions.missing(bit);
   return permissions[0] ? permissions : false;
-}
+};
 
 Discord.Guild.prototype.chatSend = async function(message){
   let id = this.data.chatChannel;
@@ -516,7 +515,7 @@ Discord.Guild.prototype.chatSend = async function(message){
   }
 
   return await channel.msg(message);
-}
+};
 
 Discord.Guild.prototype.logSend = async function(message){
   let id = this.data.logChannel;
@@ -531,18 +530,18 @@ Discord.Guild.prototype.logSend = async function(message){
   }
 
   return await channel.msg(message);
-}
+};
 
 Discord.Guild.prototype.Audit = async function(find = false, {limit = 3, before = null, user = null, type = null}){
-  // to-do: fix
-  // const audit = await this.fetchAuditLogs({limit, before, user, type});
-  return null;
+
+  const audit = await this.fetchAuditLogs({limit, before, user, type});
+
   let auditLog = find ? audit.entries.find(find) : audit.entries.first();
   if (!audit){
     return null;
   }
   return auditLog;
-}
+};
 
 Array.prototype.random = function({pop, weights} = {}){
   let index;
@@ -554,8 +553,8 @@ Array.prototype.random = function({pop, weights} = {}){
       }
       return previousLimit = element._weight + previousLimit;
     });
-    
-    
+
+
 
     const line = Math.random() * thresholds.at(-1);
     index = thresholds.findIndex(threshold => threshold >= line);
@@ -565,7 +564,7 @@ Array.prototype.random = function({pop, weights} = {}){
   let input = this[index];
   if (pop) this.splice(index, 1);
   return input;
-}
+};
 
 
 Array.prototype.sortBy = function(property, reverse){
@@ -574,11 +573,11 @@ Array.prototype.sortBy = function(property, reverse){
     ((a, b) => a[property] - b[property]) ;
 
   return this.sort(func);
-}
+};
 
 BigInt.prototype.toJSON = function(){
   return this.toString();
-}
+};
 
 
 
@@ -595,7 +594,7 @@ Object.defineProperty(Discord.User.prototype, "guilds", {get(){
 
 
 class Command {
-  
+
 
   static permissions = {
     "SPEAK": "Говорить",
@@ -629,7 +628,7 @@ class Command {
     "USE_EXTERNAL_EMOJIS": "Использовать внешние эмодзи",
     "VIEW_GUILD_INSIGHTS": "Просматривать аналитику сервера"
 
-  }
+  };
 
   static async CustomCommand(msg, name, args){
     const guildData = DataManager.getGuild(msg.guild.id);
@@ -654,11 +653,11 @@ class Command {
         return;
       }
       msg.msg(cmd.message, embed);
-    }
+    };
 
     try {
       if (cmd.delete) msg.delete();
-      await code(msg).catch(e => {throw e});
+      await code(msg).catch(e => {throw e;});
     }
     catch (e) {
       console.error(e);
@@ -668,7 +667,7 @@ class Command {
       let quote;
       while (react){
         quote = ["Самой большой ошибкой, которую вы можете совершить в своей жизни, является постоянная боязнь ошибаться.", "Здравствуйте, мои до боли знакомые грабли, давненько я на вас не наступал.", "А ведь именно ошибки делают нас интересными.", "Человеку свойственно ошибаться, а ещё больше — сваливать свою вину на другого.", "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.", "Хватит повторять старые ошибки, время совершать новые!"].random();
-        let errorContext = `**Сведения об ошибке:**\n• **Имя:** ${e.name}\n• **Номер строки:** #${e.stack.match(/js:(\d+)/)[1]}\n	• **Текст:** \n\`\`\`\n${e.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${Util.timestampToDate(timestamp - msg.createdTimestamp) || "0с"}`
+        let errorContext = `**Сведения об ошибке:**\n• **Имя:** ${e.name}\n• **Номер строки:** #${e.stack.match(/js:(\d+)/)[1]}\n	• **Текст:** \n\`\`\`\n${e.message}\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${Util.timestampToDate(timestamp - msg.createdTimestamp) || "0с"}`;
         message.msg({title: "Эта команда вызвала ошибку .-.", color: "#f0cc50", description: errorContext, footer: {text: quote}, delete: 12000});
         await Util.sleep(10000);
         react = await message.awaitReact({user: "any", removeType: "full", time: 180000}, "〽️");
@@ -685,7 +684,7 @@ class Command {
 class ReactionsManager {
 
   static path = "./data/reactions.json";
-  
+
   constructor (id, channel, guild, type, reactions){
     let reactionObject = {id, channel, guild, type, reactions};
     let isExists = ReactionsManager.reactData.find(e => e.id == id);
@@ -707,7 +706,7 @@ class ReactionsManager {
   }
 
   static async getMain(){
-    const data = await ReactionsManager.readFile()
+    const data = await ReactionsManager.readFile();
     return data.map( react => (({id, type, reactions}) => ({id, type, reactions}))(react) );
   }
 
@@ -729,7 +728,7 @@ class ReactionsManager {
     FileSystem.writeFileSync(this.path, JSON.stringify(reactions), (err, input) => false);
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
-  
+
   static async loadReactionsFromFile(){
     ReactionsManager.reactData = await ReactionsManager.getMain();
   }
@@ -784,7 +783,7 @@ console.info(Util.timestampToDate(
     new Date().setHours(20, 0, 0) : 
     new Date(Date.now() + 14500000).setHours(20, 0, 0)
   )
-  - Date.now()
+- Date.now()
 ));
 
 
