@@ -1,5 +1,6 @@
 import client from "#bot/client.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
+import { AuditLogEvent } from "discord.js";
 
 
 async function setMuteState(member, isSetDisable = false){
@@ -47,7 +48,7 @@ class Event extends BaseEvent {
 
     const executor = await guild.Audit(
       (audit) => audit.target.id === user.id,
-      { type: "MEMBER_ROLE_UPDATE" }
+      { type: AuditLogEvent.MemberRoleUpdate }
     )?.executor;
 
     if (!executor) {
