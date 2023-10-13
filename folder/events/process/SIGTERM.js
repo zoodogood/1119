@@ -1,21 +1,19 @@
-import { BaseEvent } from "#lib/modules/EventsManager.js";
-import { DataManager, TimeEventsManager, ErrorsHandler } from '#lib/modules/mod.js';
+import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 
 
 class Event extends BaseEvent {
-	constructor(){
-		const EVENT = "SIGTERM";
-		super(process, EVENT);
-	}
+  constructor(){
+    const EVENT = "SIGTERM";
+    super(process, EVENT);
+  }
 
-	async run(){
-		process.emit("exit");
-		process.exit(1);
-	}
+  async run(){
+    EventsManager.emitter.emit("beforeExit");
+  }
 
-	options = {
-		name: "process/SIGTERM"
-	}
+  options = {
+    name: "process/SIGTERM"
+  };
 }
 
 export default Event;
