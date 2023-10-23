@@ -2,23 +2,18 @@ import { MongoDBDriver } from "#lib/MongoDBDriver.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { random, TimeAuditor, timestampToDate } from "#lib/util.js";
 import { TextTableBuilder, CellAlignEnum } from "@zoodogood/utils/primitives";
-import JSONC from 'json5';
+import JSONC from "json5";
 
 class Command {
   async onChatInput(msg, interaction) {
+    return;
     const context = this.getContext(interaction);
     const db = await new MongoDBDriver().init();
 
     const result = db.writeFile("123.py", "111");
-    process.exit();
-    console.log(result);
-
-    
   }
 
-  addLineToFile(context){
-
-  }
+  addLineToFile(context) {}
 
   getContext(interaction) {
     const START_AVERAGE = 3;
@@ -33,7 +28,6 @@ class Command {
       auditor: [],
     };
   }
-  
 
   options = {
     name: "localization",
