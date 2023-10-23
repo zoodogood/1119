@@ -1,0 +1,13 @@
+.env
+src/config.json.js
+
+node_modules/
+data/
+folder/errors/*.json
+build/
+static/articles/
+
+folder/SSLSecret/certificate.crt
+folder/SSLSecret/private.key
+folder/SSLSecret/ca_bundle.crt
+
