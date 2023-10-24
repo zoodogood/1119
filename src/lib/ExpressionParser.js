@@ -44,7 +44,7 @@ class ExpressionParser {
         ),
       type: TokenTypeEnum.Operator,
       regexp: "\\+",
-      operatorPriority: 1,
+      operatorPriority: 2,
       merge: ({ previousToken, nextToken }) => {
         const isPreviousIsNumber = previousToken?.type === TokenTypeEnum.Digit;
 
@@ -79,7 +79,7 @@ class ExpressionParser {
         ),
       type: TokenTypeEnum.Operator,
       regexp: "\\-",
-      operatorPriority: 1,
+      operatorPriority: 2,
       merge: ({ previousToken, nextToken }) => {
         const isPreviousIsNumber = previousToken?.type === TokenTypeEnum.Digit;
         if (!nextToken) {
@@ -98,7 +98,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\/",
-      operatorPriority: 2,
+      operatorPriority: 3,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -121,7 +121,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\*\\*",
-      operatorPriority: 3,
+      operatorPriority: 4,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -136,7 +136,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\*",
-      operatorPriority: 2,
+      operatorPriority: 3,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -151,7 +151,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "%",
-      operatorPriority: 2,
+      operatorPriority: 3,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -166,6 +166,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\^",
+      operatorPriority: 1,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -180,6 +181,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "&",
+      operatorPriority: 1,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -194,6 +196,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\|",
+      operatorPriority: 1,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -208,6 +211,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\|\\|",
+      operatorPriority: 0,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -222,6 +226,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "&&",
+      operatorPriority: 0,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -249,6 +254,7 @@ class ExpressionParser {
       },
       type: TokenTypeEnum.Operator,
       regexp: "!",
+      operatorPriority: 0,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken) {
           throw new Error("Bad operator position");
@@ -263,6 +269,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "<",
+      operatorPriority: 0,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -277,6 +284,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: ">",
+      operatorPriority: 0,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -291,6 +299,7 @@ class ExpressionParser {
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "===",
+      operatorPriority: 0,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
@@ -318,6 +327,7 @@ class ExpressionParser {
       },
       type: TokenTypeEnum.Operator,
       regexp: "~",
+      operatorPriority: 1,
       merge: ({ previousToken, nextToken }) => {
         if (!nextToken) {
           throw new Error("Bad operator position");
@@ -470,17 +480,22 @@ class ExpressionParser {
     tokens = [...tokens];
 
     while (tokens.length > 1) {
-      const base = this.getSortedTokensBase().find((base) => {
-        if (base.type !== TokenTypeEnum.Operator) {
-          return false;
-        }
-
+      const hasResult = [
+        ...new Set(
+          this.getSortedTokensBase()
+            .filter((base) => "operatorPriority" in base)
+            .map((base) => base.operatorPriority),
+        ),
+      ].find((searchedWithOperatorPriority) => {
         const indexOfOperator = tokens.findIndex(
-          (element) => element.key === base.key,
+          (element) =>
+            this.Tokens[element.key].operatorPriority ===
+            searchedWithOperatorPriority,
         );
         if (indexOfOperator === -1) {
           return false;
         }
+        const base = this.Tokens[tokens.at(indexOfOperator).key];
 
         const token = tokens[indexOfOperator];
         const previousToken =
@@ -505,7 +520,7 @@ class ExpressionParser {
 
         return true;
       });
-      if (!base) {
+      if (!hasResult) {
         throw new Error();
       }
     }
