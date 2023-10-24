@@ -114,7 +114,7 @@ class Command {
         return this.end(context);
       }
 
-      answer.delete();
+      setTimeout(() => answer.delete(), 9_000);
       context.userScore += this.calculateScore(context);
 
       context.auditor.push({
@@ -477,7 +477,7 @@ class Command {
   }
 
   generateTextContentOfTask(context) {
-    const { currentTask: task } = context;
+    const { currentTask: task, interaction } = context;
     const isExpressionInstead = task.mode === ModesEnum.ExpressionsInstead;
     const isDefaultMode = task.mode === ModesEnum.Default;
 
@@ -517,7 +517,7 @@ class Command {
 
     const { label: modeLabel, description: modeDescription } =
       ModesData[task.mode];
-    return `${direct}${bananaContent}\n${dataContent}\n\n${
+    return `${interaction.user.toString()}, ${direct}${bananaContent}\n${dataContent}\n\n${
       !isDefaultMode ? `**${modeLabel}** )\n${modeDescription}` : ""
     } `;
   }
