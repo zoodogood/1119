@@ -92,6 +92,7 @@ class Command {
       await this.updateMessageInterface(context);
       const answer = await interaction.channel.awaitMessage({
         user: interaction.user,
+        time: 300_000,
       });
 
       answer && (context.lastAnswer = answer);
@@ -101,7 +102,6 @@ class Command {
       }
 
       const answerValue = this.parseUserInput(context);
-      // to-do: will be removed
 
       task.userInput = answerValue;
 
@@ -412,13 +412,13 @@ class Command {
     const stick = this.getStickSymbol(context);
     expression = expression.replace(/[\s,.]/g, "");
 
-    const regex = RegExp(
+    const numerals = RegExp(
       `(?:${escapeRegexp(stick)}|${Object.keys(ROMAN_NUMERALS_TABLE).join(
         "|",
       )})+`,
       "g",
     );
-    expression = expression.replace(regex, (value) =>
+    expression = expression.replace(numerals, (value) =>
       romanToDigit(value.replaceAll(stick, "I")),
     );
 
@@ -531,7 +531,7 @@ class Command {
     },
     allias: "анон",
     allowDM: true,
-    cooldown: 60_000,
+    cooldown: 10_000,
     type: "other",
   };
 }
