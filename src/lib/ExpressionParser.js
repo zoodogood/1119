@@ -161,51 +161,6 @@ class ExpressionParser {
         return [merged];
       },
     },
-    BitwiseXOR: {
-      key: "BitwiseXOR",
-      validate: generalOperatorValidation,
-      type: TokenTypeEnum.Operator,
-      regexp: "\\^",
-      operatorPriority: 1,
-      merge: ({ previousToken, nextToken }) => {
-        if (!nextToken || !previousToken) {
-          throw new Error("Bad operator position");
-        }
-        const value = Number(previousToken.raw) ^ Number(nextToken.raw);
-        const merged = this.createToken(value, "Digit");
-        return [merged];
-      },
-    },
-    BitwiseAND: {
-      key: "BitwiseAND",
-      validate: generalOperatorValidation,
-      type: TokenTypeEnum.Operator,
-      regexp: "&",
-      operatorPriority: 1,
-      merge: ({ previousToken, nextToken }) => {
-        if (!nextToken || !previousToken) {
-          throw new Error("Bad operator position");
-        }
-        const value = Number(previousToken.raw) & Number(nextToken.raw);
-        const merged = this.createToken(value, "Digit");
-        return [merged];
-      },
-    },
-    BitwiseOR: {
-      key: "BitwiseOR",
-      validate: generalOperatorValidation,
-      type: TokenTypeEnum.Operator,
-      regexp: "\\|",
-      operatorPriority: 1,
-      merge: ({ previousToken, nextToken }) => {
-        if (!nextToken || !previousToken) {
-          throw new Error("Bad operator position");
-        }
-        const value = Number(previousToken.raw) | Number(nextToken.raw);
-        const merged = this.createToken(value, "Digit");
-        return [merged];
-      },
-    },
     LogicalOR: {
       key: "LogicalOR",
       validate: generalOperatorValidation,
@@ -305,6 +260,51 @@ class ExpressionParser {
           throw new Error("Bad operator position");
         }
         const value = +(Number(previousToken.raw) === Number(nextToken.raw));
+        const merged = this.createToken(value, "Digit");
+        return [merged];
+      },
+    },
+    BitwiseXOR: {
+      key: "BitwiseXOR",
+      validate: generalOperatorValidation,
+      type: TokenTypeEnum.Operator,
+      regexp: "\\^",
+      operatorPriority: 1,
+      merge: ({ previousToken, nextToken }) => {
+        if (!nextToken || !previousToken) {
+          throw new Error("Bad operator position");
+        }
+        const value = Number(previousToken.raw) ^ Number(nextToken.raw);
+        const merged = this.createToken(value, "Digit");
+        return [merged];
+      },
+    },
+    BitwiseAND: {
+      key: "BitwiseAND",
+      validate: generalOperatorValidation,
+      type: TokenTypeEnum.Operator,
+      regexp: "&",
+      operatorPriority: 1,
+      merge: ({ previousToken, nextToken }) => {
+        if (!nextToken || !previousToken) {
+          throw new Error("Bad operator position");
+        }
+        const value = Number(previousToken.raw) & Number(nextToken.raw);
+        const merged = this.createToken(value, "Digit");
+        return [merged];
+      },
+    },
+    BitwiseOR: {
+      key: "BitwiseOR",
+      validate: generalOperatorValidation,
+      type: TokenTypeEnum.Operator,
+      regexp: "\\|",
+      operatorPriority: 1,
+      merge: ({ previousToken, nextToken }) => {
+        if (!nextToken || !previousToken) {
+          throw new Error("Bad operator position");
+        }
+        const value = Number(previousToken.raw) | Number(nextToken.raw);
         const merged = this.createToken(value, "Digit");
         return [merged];
       },
