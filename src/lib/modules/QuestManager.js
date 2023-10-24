@@ -304,7 +304,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 			id: "messagesFountain",
 			handler: "messageCreate",
 			description: "Отправьте сообщения",
-			_weight: 1,
+			_weight: 10,
 			isGlobal: false,
 			reward: 1.5,
 			baseGoal: 30
@@ -313,7 +313,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 			id: "messagesBigFountain",
 			handler: "messageCreate",
 			description: "Отправьте сообщения",
-			_weight: 10,
+			_weight: 1,
 			isGlobal: false,
 			reward: 4,
 			baseGoal: 280
