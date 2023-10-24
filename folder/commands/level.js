@@ -3,20 +3,43 @@ import { AttachmentBuilder } from "discord.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 
 class Command {
-  async onChatInput(msg, interaction) {
-    const canvas = await import("canvas");
+  constructor() {
+    this.#init();
+  }
+  #FONT_FAMILY = "VAG World";
+  async #init() {
+    this.canvasModule = await import("canvas");
 
-    const FONT_FAMILY = "VAG World";
-    await canvas.registerFont("./static/resources/fonts/VAG_World.ttf", {
-      family: "VAG World",
-    });
+    const FONT_FAMILY = this.#FONT_FAMILY;
+    await this.canvasModule.registerFont(
+      "./static/resources/fonts/VAG_World.ttf",
+      {
+        family: FONT_FAMILY,
+      },
+    );
+  }
+  async getContext(interaction) {
+    const canvasModule = this.canvasModule;
+    const canvas = canvasModule.createCanvas(900, 225);
 
-    const canv = canvas.createCanvas(900, 225);
-    const ctx = canv.getContext("2d");
     const member =
-      interaction.mention ??
-      (interaction.params && client.users.cache.get(interaction.params)) ??
+      interaction.mention ||
+      (interaction.params && client.users.cache.get(interaction.params)) ||
       interaction.user;
+
+    return {
+      canvasModule,
+      canvas,
+      ctx: canvas.getContext("2d"),
+      member,
+    };
+  }
+  async onChatInput(msg, interaction) {
+    const context = await this.getContext(interaction);
+    const { canvas, ctx, member, canvasModule } = context;
+
+    await member.fetch();
+
     const userData = member.data;
     const avatarURL = member.avatarURL({ extension: "png" });
     const displayName = interaction.guild
@@ -26,13 +49,7 @@ class Command {
     let width;
     let gradient;
 
-    await member.fetch();
-    
-    gradient = ctx.createLinearGradient(0, 225, 900, 0);
-    gradient.addColorStop(0, "#777");
-    gradient.addColorStop(1, "#aaa");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 900, 225);
+    // this.addBackground(context);
 
     ctx.save();
     ctx.fillStyle = "#080918";
@@ -74,12 +91,12 @@ class Command {
 
     ctx.globalCompositeOperation = "source-in";
 
-    const avatarBuffer = await canvas.loadImage(avatarURL);
+    const avatarBuffer = await canvasModule.loadImage(avatarURL);
 
     ctx.drawImage(avatarBuffer, 0, 0, 90, 90);
     ctx.restore();
 
-    ctx.font = `bold 20px ${FONT_FAMILY}`;
+    ctx.font = `bold 20px ${this.#FONT_FAMILY}`;
     const { width: levelFontWidth } = ctx.measureText(
       userData.level + " уровень",
     );
@@ -95,19 +112,19 @@ class Command {
     ctx.save();
 
     ctx.beginPath();
-    ctx.font = `bold 5px "${FONT_FAMILY}", 'sans-serif'`;
+    ctx.font = `bold 5px "${this.#FONT_FAMILY}", 'sans-serif'`;
     ctx.fillStyle = "#b0b4b0";
     width = {
       font: Math.min((545 / ctx.measureText(displayName).width) * 5, 180),
     };
 
-    ctx.font = `bold ${width.font}px "${FONT_FAMILY}", "sans-serif"`;
+    ctx.font = `bold ${width.font}px "${this.#FONT_FAMILY}", "sans-serif"`;
 
     width.textHeight =
       ctx.measureText(displayName).actualBoundingBoxAscent +
       ctx.measureText(displayName).actualBoundingBoxDescent;
 
-    let expCanvas = canvas.createCanvas(670, 165);
+    let expCanvas = canvasModule.createCanvas(670, 165);
     let ctx2 = expCanvas.getContext("2d");
 
     ctx2.textBaseline = "middle";
@@ -142,7 +159,7 @@ class Command {
 
     ctx.drawImage(expCanvas, 200, 30);
 
-    let image = canv.toBuffer("image/png");
+    let image = canvas.toBuffer("image/png");
     msg.msg({
       files: [new AttachmentBuilder(image, { name: "level.png" })],
       delete: 1_000_000,
@@ -159,6 +176,15 @@ class Command {
     return hex;
   }
 
+  addBackground(context) {
+    const { ctx } = context;
+    const gradient = ctx.createLinearGradient(0, 225, 900, 0);
+    gradient.addColorStop(0, "#777");
+    gradient.addColorStop(1, "#aaa");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 900, 225);
+  }
+
   options = {
     name: "level",
     id: 33,
@@ -166,7 +192,7 @@ class Command {
       description:
         "\n\nОтправляет красивое [изображние-карточку](https://media.discordapp.net/attachments/781902008973393940/784507304350580826/level.png) вашего уровня!\nСогласитесь, выглядит [неплохо](https://cdn.discordapp.com/attachments/781902008973393940/784513626413072404/level.png).\n\n[Апхчи.](https://cdn.discordapp.com/attachments/702057949031563264/786891802698711050/level.png)\n\n✏️\n```python\n!level <memb>\n```\n\n",
     },
-    allias: "уровень rang rank ранг ранк lvl лвл рівень",
+    allias: "уровень rang rank ранг ранк lvl лвл рівень левел",
     allowDM: true,
     type: "user",
   };
