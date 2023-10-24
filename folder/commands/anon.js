@@ -148,7 +148,7 @@ class Command {
   }
 
   processMonkeyPaschal(context) {
-    if (context.auditor.length < 8) {
+    if (context.auditor.length < 9) {
       return;
     }
 
