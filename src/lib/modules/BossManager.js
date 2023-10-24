@@ -1,3 +1,4 @@
+/* eslint-disable */
 
 import { Collection } from "@discordjs/collection";
 import { DataManager, CurseManager, Properties, ErrorsHandler } from "#lib/modules/mod.js";
@@ -180,11 +181,11 @@ class BossEvents {
 
 	}
 
-	static beforeAttacked(){
+	static beforeAttacked(boss, context){
 
 	}
 
-	static afterAttacked(){
+	static afterAttacked(boss, context){
 
 	}
 
@@ -621,7 +622,6 @@ class BossRelics {
 
 			}
 		},
-
 		"watcher": {
 			id: "watcher",
 			label: "Наблюдательный",
@@ -634,6 +634,13 @@ class BossRelics {
 
 	static isUserHasRelic({relic, userData}){
 		return !!userData.bossRelics?.includes(relic.id);
+	}
+
+	static calculatePriceForRelic({boss, user}){
+		const userStats = BossManager.getUserStats(boss, user.id);
+		const relicsBought = userStats.boughedRelics?.length;
+		const price = Math.round(350-(349*(1/1.0135)**relicsBought));
+		return price;
 	}
 }
 
