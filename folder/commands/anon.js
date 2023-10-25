@@ -628,7 +628,7 @@ class Command {
       const content = timestampToDate(remaining);
       interaction.msg({ ephemeral: true, title: content, color: "#c0c0c0" });
     },
-    getGuidance: async (interaction, _, context) => {
+    getGuidance: async (interaction) => {
       interaction.msg({ ephemeral: true, content: "*мотивирующая речь*" });
     },
   };
