@@ -254,6 +254,8 @@ class Command {
       );
     }
 
+    builder.addRowSeparator(() => (!random(2) ? "/" : !random(15) ? "⚘" : " "));
+
     const content = `\`\`\`\n${builder.generateTextContent()}\`\`\``;
     const customId = "watchInfo";
 
@@ -314,7 +316,6 @@ class Command {
       collector.resetTimer();
       return;
     }
-    
 
     const collector = message.createMessageComponentCollector({
       time: this.TIME_FOR_RESPONSE_ON_TASK,
@@ -427,9 +428,16 @@ class Command {
       random(mode === ModesEnum.BitsOperations ? 1 : 0) ? "&" : null,
       random(mode === ModesEnum.BitsOperations ? 1 : 0) ? "|" : null,
       random(mode === ModesEnum.BitsOperations ? 1 : 0) ? "~" : null,
-      random(mode === ModesEnum.RomanNumerals ? 2 : 0) ? "V" : null,
-      random(mode === ModesEnum.RomanNumerals ? 1 : 0) ? "X" : null,
-      random(mode === ModesEnum.RomanNumerals ? 1 : 0) ? "L" : null,
+      random(mode === ModesEnum.RomanNumerals ? count / 10 + 2 : 0)
+        ? "V"
+        : null,
+      random(mode === ModesEnum.RomanNumerals ? count / 12 + 1 : 0)
+        ? "X"
+        : null,
+      random(mode === ModesEnum.RomanNumerals ? count / 12 + 1 : 0)
+        ? "L"
+        : null,
+      random(mode === ModesEnum.RomanNumerals ? 1 : 0) ? "C" : null,
       random(mode === ModesEnum.BooleanOperators ? 1 : 0) ? "&&" : null,
       random(mode === ModesEnum.BooleanOperators ? 1 : 0) ? "||" : null,
       random(mode === ModesEnum.BooleanOperators ? 1 : 0) ? "<" : null,
@@ -535,7 +543,6 @@ class Command {
 
     let count = 0;
     const stick = this.getStickSymbol(context);
-
 
     for (const symbol of stroke) {
       symbol === stick && count++;
