@@ -562,9 +562,9 @@ class Command {
       return;
     }
 
-    console.log(task);
-    const taskData = JSON.stringify(task.data, null, "\t");
-    const modeLabel = ModesData[task.mode].label;
+    const { mode, data, userInput } = task;
+    const taskData = JSON.stringify({ ...data, userInput }, null, "\t");
+    const modeLabel = ModesData[mode].label;
     interaction.msg({
       edit: true,
       content: `**${modeLabel}** )\n${escapeMarkdown(taskData)}`,
