@@ -69,21 +69,20 @@ class Command {
       ).toFixed(2)} МБ\``,
       errors: `Ошибок за текущий сеанс: ${ErrorsHandler.Audit.collection.reduce(
         (acc, errors) => acc + errors.length,
-        0
+        0,
       )}`,
       uniqueErrors: `Уникальных ошибок: ${ErrorsHandler.Audit.collection.size}`,
-      commandsLaunched: this.commandsUsedContent()
     };
 
     const embed = {
       title: "ну типа.. ай, да, я живой, да",
-      description: `${contents.ping} ${contents.version} ${contents.season}, что сюда ещё запихнуть?\n${contents.guilds}(?) ${contents.commands}\n${contents.performance}\n${contents.time}${contents.address}\n${contents.errors};\n${contents.uniqueErrors}\n${ contents.commandsLaunched }`,
+      description: `${contents.ping} ${contents.version} ${contents.season}, что сюда ещё запихнуть?\n${contents.guilds}(?) ${contents.commands}\n${contents.performance}\n${contents.time}${contents.address}\n${contents.errors};\n${contents.uniqueErrors}\n${contents.commandsLaunched}`,
       footer: {
         text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${
           DataManager.data.bot.newGuildTimestamp
             ? timestampToDate(
               Date.now() - DataManager.data.bot.newGuildTimestamp,
-              2
+              2,
             )
             : "Вечность"
         }`,
@@ -125,6 +124,18 @@ class Command {
             style: ButtonStyle.Primary,
             customId: "@command/bot/postReview",
           },
+          {
+            type: ComponentType.Button,
+            label: "Аптайм",
+            style: ButtonStyle.Secondary,
+            customId: "@command/bot/getUptime",
+          },
+          {
+            type: ComponentType.Button,
+            label: "Команды",
+            style: ButtonStyle.Secondary,
+            customId: "@command/bot/commands",
+          },
         ],
       };
 
@@ -135,6 +146,15 @@ class Command {
 
       parent.msg({ edit: true, components });
       return;
+    },
+    getUptime(interaction) {
+      const ms = process.uptime() * 1_000;
+      const content = `Аптайм: ${timestampToDate(ms)}`;
+      interaction.msg({ content, delete: 15_000 });
+    },
+    commands(interaction) {
+      const content = this.commandsUsedContent();
+      interaction.msg({ ephemeral: true, description: content });
     },
     postReview(interaction) {
       const components = [
@@ -168,7 +188,7 @@ class Command {
             "участник",
             "ами",
             "ом",
-            "ами"
+            "ами",
           )}\nСодержимое:`,
         },
         description,
@@ -247,7 +267,7 @@ class Command {
       Object.assign(embed, {
         reference: message.id,
         description: `<t:${Math.floor(
-          interaction.message.createdTimestamp / 1_000
+          interaction.message.createdTimestamp / 1_000,
         )}>\n>>> ${interaction.message.embeds.at(0).description}`,
         author: {
           name: "Содержимое вашего сообщения:",
@@ -298,18 +318,20 @@ class Command {
           }_${uses}(${+(
             (uses / DataManager.data.bot.commandsLaunched) *
             100
-          ).toFixed(2)})%`
+          ).toFixed(2)})%`,
       );
     const maxLength = Math.max(...list.map((stroke) => stroke.length));
 
-    const lines = list.map((stroke) => `${stroke} ${" ".repeat(maxLength + 7 - stroke.length)}`);
+    const lines = list.map(
+      (stroke) => `${stroke} ${" ".repeat(maxLength + 7 - stroke.length)}`,
+    );
 
     let stroke = "";
     while (lines.length) {
       stroke += `${lines.splice(0, 2).join(" ")}\n`;
     }
-    
-    return `${ getThreeQuotes() }js\nТут такое было.. ого-го\nᅠ\n${stroke}ᅠ${ getThreeQuotes() }`;
+
+    return `${getThreeQuotes()}js\nТут такое было.. ого-го\nᅠ\n${stroke}ᅠ${getThreeQuotes()}`;
   }
 
   options = {
