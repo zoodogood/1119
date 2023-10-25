@@ -99,6 +99,12 @@ class Command {
 
       answer && (context.lastAnswer = answer);
 
+      context.auditor.push({
+        count: this.justCalculateStickCount(context),
+        task,
+        timeResult: context.timeAuditor.getDifference(),
+      });
+
       if (!answer) {
         return this.end(context);
       }
@@ -117,13 +123,8 @@ class Command {
       }
 
       setTimeout(() => answer.delete(), 9_000);
+      task.isResolved = true;
       context.userScore += this.calculateScore(context);
-
-      context.auditor.push({
-        count: this.justCalculateStickCount(context),
-        task,
-        timeResult: context.timeAuditor.getDifference(),
-      });
 
       this.increaseAverageSticksCount(context);
     }
@@ -232,12 +233,15 @@ class Command {
     const isExpressionInstead = (task) =>
       task.mode === ModesEnum.ExpressionsInstead;
 
-    const fields = context.auditor.map(
-      ({ count, task, timeResult }, i) =>
-        `${this.getStageCodename(i)} ${i + 1}.\n(${count}${
-          isExpressionInstead(task) ? "*" : ""
-        }): ${timestampToDate(timeResult)}`,
-    );
+    const fields = context.auditor.map(({ count, task, timeResult }, i) => {
+      const stage = task.isResolved
+        ? `${this.getStageCodename(i)} ${i + 1}.`
+        : "(×)";
+
+      return `${stage}\n(${count}${
+        isExpressionInstead(task) ? "*" : ""
+      }): ${timestampToDate(timeResult)}`;
+    });
 
     while (fields.length) {
       builder.addMultilineRowWithElements(
@@ -271,7 +275,7 @@ class Command {
     return [
       {
         type: ComponentType.Button,
-        label: "🡺 Оставшееся время",
+        label: "- Оставшееся время",
         style: ButtonStyle.Secondary,
         customId: "displayRemainingTime",
       },
@@ -310,8 +314,9 @@ class Command {
       collector.resetTimer();
       return;
     }
+    
 
-    const collector = context.messageInterface.createMessageComponentCollector({
+    const collector = message.createMessageComponentCollector({
       time: this.TIME_FOR_RESPONSE_ON_TASK,
     });
 
@@ -376,6 +381,13 @@ class Command {
 
     context.currentTask = task;
     task.data = this.generateTaskData(context);
+    switch (task.mode) {
+      case ModesEnum.ExpressionsInstead:
+        task.result = null;
+        break;
+      default:
+        task.result = this.calculateResult(task.data.expression, context);
+    }
 
     return task;
   }
@@ -517,8 +529,14 @@ class Command {
         ? task.userInput
         : task.data.expression;
 
+    if (!stroke) {
+      return 0;
+    }
+
     let count = 0;
     const stick = this.getStickSymbol(context);
+
+
     for (const symbol of stroke) {
       symbol === stick && count++;
     }
@@ -585,6 +603,9 @@ class Command {
   }
 
   async onComponent({ interaction, rawParams }, context, collector) {
+    // to-do: will be removed
+    console.log(222);
+
     const [target, ...params] = rawParams.split(":");
     const handler = this.componentsHandlers[target];
     handler.call(this, interaction, params, context, collector);
@@ -616,8 +637,12 @@ class Command {
         return;
       }
 
-      const { mode, data, userInput } = task;
-      const taskData = JSON.stringify({ ...data, userInput }, null, "\t");
+      const { mode, data, userInput, result } = task;
+      const taskData = JSON.stringify(
+        { ...data, userInput, result },
+        null,
+        "\t",
+      );
       const modeLabel = ModesData[mode].label;
       interaction.msg({
         edit: true,
