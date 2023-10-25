@@ -304,7 +304,9 @@ class Command {
 
   createMessageComponentCollector(message, context) {
     context._collectors ||= {};
+
     if (message.id in context._collectors) {
+      const collector = context._collectors[message.id];
       collector.resetTimer();
       return;
     }
@@ -312,6 +314,7 @@ class Command {
     const collector = context.messageInterface.createMessageComponentCollector({
       time: this.TIME_FOR_RESPONSE_ON_TASK,
     });
+
     collector.on("collect", (interaction) =>
       this.onComponent(
         { interaction, rawParams: interaction.customId },
@@ -320,7 +323,7 @@ class Command {
       ),
     );
 
-    context._collectors[message.id] = true;
+    context._collectors[message.id] = collector;
 
     collector.on("end", () => {
       message.msg({ edit: true, components: [] });
