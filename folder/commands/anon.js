@@ -210,6 +210,8 @@ class Command {
     this.displayReward(context, { coinOdds, experience, bonuses });
 
     this.displayAudit(context);
+
+    this.processMonkeyPaschal(context);
   }
 
   async displayAudit(context) {
