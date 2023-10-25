@@ -171,7 +171,7 @@ class ExpressionParser {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
         }
-        const value = +(Number(previousToken.raw) || Number(nextToken.raw));
+        const value = +!!(Number(previousToken.raw) || Number(nextToken.raw));
         const merged = this.createToken(value, "Digit");
         return [merged];
       },
@@ -186,7 +186,7 @@ class ExpressionParser {
         if (!nextToken || !previousToken) {
           throw new Error("Bad operator position");
         }
-        const value = +(Number(previousToken.raw) && Number(nextToken.raw));
+        const value = +!!(Number(previousToken.raw) && Number(nextToken.raw));
         const merged = this.createToken(value, "Digit");
         return [merged];
       },
