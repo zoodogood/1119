@@ -173,7 +173,7 @@ class ErrorsHandler {
       },
     ];
     const embed = {
-      title: `— Данные об исключении 🙄\n >>> ${error.message}`,
+      title: `— Данные об панике 🙄\n >>> ${error.message}`,
       description,
       color: "#f0cc50",
       components,
