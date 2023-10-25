@@ -28,7 +28,7 @@ function awaitReactOrMessage({
   reactionOptions = {},
   messageOptions = {},
 }) {
-  const reactions = reactionOptions.reactions?.filter(Boolean) ?? [];
+  const reactions = reactionOptions.reactions?.filter(Boolean);
 
   const MAX_TIMEOUT = time ?? 300_000;
 
