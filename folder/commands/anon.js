@@ -80,6 +80,8 @@ const ModesData = {
 };
 
 class Command {
+  TIME_FOR_RESPONSE_ON_TASK = 600_000;
+
   async onChatInput(msg, interaction) {
     const context = this.getContext(interaction);
 
@@ -92,7 +94,7 @@ class Command {
       await this.updateMessageInterface(context);
       const answer = await interaction.channel.awaitMessage({
         user: interaction.user,
-        time: 300_000,
+        time: this.TIME_FOR_RESPONSE_ON_TASK,
       });
 
       answer && (context.lastAnswer = answer);
@@ -249,28 +251,37 @@ class Command {
     }
 
     const content = `\`\`\`\n${builder.generateTextContent()}\`\`\``;
+    const customId = "watchInfo";
 
     const components = {
       emoji: "👀",
       type: ComponentType.Button,
       style: ButtonStyle.Secondary,
-      customId: "watchInfo",
+      customId,
     };
     const message = await context.interaction.channel.msg({
       content,
       components,
     });
 
-    const collector = message.createMessageComponentCollector({
-      time: 120_000,
-    });
-    collector.on("collect", (interaction) =>
-      this.onComponent(interaction, context),
-    );
+    this.createMessageComponentCollector(message, context);
+  }
 
-    collector.on("end", () => {
-      message.msg({ edit: true, components: [] });
-    });
+  getTaskContentComponents() {
+    return [
+      {
+        type: ComponentType.Button,
+        label: "🡺 Оставшееся время",
+        style: ButtonStyle.Secondary,
+        customId: "displayRemainingTime",
+      },
+      {
+        type: ComponentType.Button,
+        emoji: "📗",
+        style: ButtonStyle.Secondary,
+        customId: "getGuidance",
+      },
+    ];
   }
 
   async updateMessageInterface(context) {
@@ -284,9 +295,37 @@ class Command {
       edit: isMessageExists,
       content: this.generateTextContentOfTask(context),
       reference: interaction.message.id,
+      components: this.getTaskContentComponents(),
     });
 
+    this.createMessageComponentCollector(context.messageInterface, context);
     return context.messageInterface;
+  }
+
+  createMessageComponentCollector(message, context) {
+    context._collectors ||= {};
+    if (message.id in context._collectors) {
+      collector.resetTimer();
+      return;
+    }
+
+    const collector = context.messageInterface.createMessageComponentCollector({
+      time: this.TIME_FOR_RESPONSE_ON_TASK,
+    });
+    collector.on("collect", (interaction) =>
+      this.onComponent(
+        { interaction, rawParams: interaction.customId },
+        context,
+        collector,
+      ),
+    );
+
+    context._collectors[message.id] = true;
+
+    collector.on("end", () => {
+      message.msg({ edit: true, components: [] });
+      delete context._collectors[message.id];
+    });
   }
 
   checkUserInput(context, value) {
@@ -542,36 +581,57 @@ class Command {
     } `;
   }
 
-  async onComponent(interaction, context) {
-    interaction.msg({
-      ephemeral: true,
-      content: "Укажите индекс локации для дополнительных сведений",
-    });
-
-    const answer = await interaction.channel.awaitMessage({
-      remove: true,
-      user: interaction.user,
-    });
-    if (!answer) {
-      return;
-    }
-
-    const { task } =
-      context.auditor.at(+answer.content.match(/\d+/)?.[0] - 1) ?? {};
-
-    if (!task) {
-      interaction.msg({ edit: true, content: "Нет, такой локации не найдено" });
-      return;
-    }
-
-    const { mode, data, userInput } = task;
-    const taskData = JSON.stringify({ ...data, userInput }, null, "\t");
-    const modeLabel = ModesData[mode].label;
-    interaction.msg({
-      edit: true,
-      content: `**${modeLabel}** )\n${escapeMarkdown(taskData)}`,
-    });
+  async onComponent({ interaction, rawParams }, context, collector) {
+    const [target, ...params] = rawParams.split(":");
+    const handler = this.componentsHandlers[target];
+    handler.call(this, interaction, params, context, collector);
   }
+
+  componentsHandlers = {
+    watchInfo: async (interaction, _, context) => {
+      interaction.msg({
+        ephemeral: true,
+        content: "Укажите индекс локации для дополнительных сведений",
+      });
+
+      const answer = await interaction.channel.awaitMessage({
+        remove: true,
+        user: interaction.user,
+      });
+      if (!answer) {
+        return;
+      }
+
+      const { task } =
+        context.auditor.at(+answer.content.match(/\d+/)?.[0] - 1) ?? {};
+
+      if (!task) {
+        interaction.msg({
+          edit: true,
+          content: "Нет, такой локации не найдено",
+        });
+        return;
+      }
+
+      const { mode, data, userInput } = task;
+      const taskData = JSON.stringify({ ...data, userInput }, null, "\t");
+      const modeLabel = ModesData[mode].label;
+      interaction.msg({
+        edit: true,
+        content: `**${modeLabel}** )\n${escapeMarkdown(taskData)}`,
+      });
+    },
+    displayRemainingTime: async (interaction, _, context) => {
+      const remaining =
+        this.TIME_FOR_RESPONSE_ON_TASK - context.timeAuditor.getDifference();
+
+      const content = timestampToDate(remaining);
+      interaction.msg({ ephemeral: true, title: content, color: "#c0c0c0" });
+    },
+    getGuidance: async (interaction, _, context) => {
+      interaction.msg({ ephemeral: true, content: "*мотивирующая речь*" });
+    },
+  };
 
   options = {
     name: "anon",
