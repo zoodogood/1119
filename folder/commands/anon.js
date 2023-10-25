@@ -11,7 +11,11 @@ import {
   timestampToDate,
 } from "#lib/util.js";
 import { getRandomNumberInRange } from "@zoodogood/utils/objectives";
-import { TextTableBuilder, CellAlignEnum } from "@zoodogood/utils/primitives";
+import {
+  TextTableBuilder,
+  CellAlignEnum,
+  ending,
+} from "@zoodogood/utils/primitives";
 import { ButtonStyle, ComponentType, escapeMarkdown } from "discord.js";
 
 const ModesEnum = {
@@ -147,6 +151,7 @@ class Command {
       timeAuditor: new TimeAuditor(),
       auditor: [],
       currentTask: null,
+      isEnd: false,
     };
   }
 
@@ -198,6 +203,10 @@ class Command {
       context.messageInterface.delete();
       return;
     }
+
+    context.isEnd = true;
+    this.updateMessageInterface(context);
+
     const userData = context.interaction.user.data;
     const { coinOdds, experience, bonuses } = this.calculateReward(context);
 
@@ -254,7 +263,9 @@ class Command {
       );
     }
 
-    builder.addRowSeparator(() => (!random(2) ? "/" : !random(15) ? "⚘" : " "));
+    builder.addRowSeparator(() =>
+      !random(2) ? "/" : !random(20) ? "⚘" : !random(20) ? "❀" : " ",
+    );
 
     const content = `\`\`\`\n${builder.generateTextContent()}\`\`\``;
     const customId = "watchInfo";
@@ -273,21 +284,24 @@ class Command {
     this.createMessageComponentCollector(message, context);
   }
 
-  getTaskContentComponents() {
-    return [
-      {
-        type: ComponentType.Button,
-        label: "- Оставшееся время",
-        style: ButtonStyle.Secondary,
-        customId: "displayRemainingTime",
-      },
-      {
-        type: ComponentType.Button,
-        emoji: "📗",
-        style: ButtonStyle.Secondary,
-        customId: "getGuidance",
-      },
-    ];
+  getTaskContentComponents(context) {
+    const { isEnd } = context;
+    return isEnd
+      ? []
+      : [
+          {
+            type: ComponentType.Button,
+            label: "- Оставшееся время",
+            style: ButtonStyle.Secondary,
+            customId: "displayRemainingTime",
+          },
+          {
+            type: ComponentType.Button,
+            emoji: "📗",
+            style: ButtonStyle.Secondary,
+            customId: "getGuidance",
+          },
+        ];
   }
 
   async updateMessageInterface(context) {
@@ -301,7 +315,7 @@ class Command {
       edit: isMessageExists,
       content: this.generateTextContentOfTask(context),
       reference: interaction.message.id,
-      components: this.getTaskContentComponents(),
+      components: this.getTaskContentComponents(context),
     });
 
     this.createMessageComponentCollector(context.messageInterface, context);
@@ -350,7 +364,7 @@ class Command {
         }
         return this.calculateResult(value, context) === task.data.value;
       default:
-        return this.calculateResult(task.data.expression, context) === +value;
+        return task.result === +value;
     }
   }
 
@@ -564,12 +578,20 @@ class Command {
   }
 
   generateTextContentOfTask(context) {
-    const { currentTask: task, interaction } = context;
+    const { currentTask: task, interaction, isEnd, auditor } = context;
     const isExpressionInstead = task.mode === ModesEnum.ExpressionsInstead;
     const isDefaultMode = task.mode === ModesEnum.Default;
 
-    const direct = isExpressionInstead
-      ? "Введи выражение (обратная операция):"
+    const direct = isEnd
+      ? `The end, ты успешно решил ${ending(
+        auditor.length - 1,
+        "пример",
+        "ов",
+        "",
+        "а",
+      )}`
+      : isExpressionInstead
+        ? "Введи выражение (обратная операция):"
       : "Введи число: количество палочек. Математические операции между ними включены (округление всегда к меньшему):";
     const dataContent = (() => {
       const isMirrorMode = task.mode === ModesEnum.Mirror;
@@ -610,9 +632,6 @@ class Command {
   }
 
   async onComponent({ interaction, rawParams }, context, collector) {
-    // to-do: will be removed
-    console.log(222);
-
     const [target, ...params] = rawParams.split(":");
     const handler = this.componentsHandlers[target];
     handler.call(this, interaction, params, context, collector);
