@@ -12,7 +12,7 @@ import {
 } from "#lib/util.js";
 import { getRandomNumberInRange } from "@zoodogood/utils/objectives";
 import { TextTableBuilder, CellAlignEnum } from "@zoodogood/utils/primitives";
-import { escapeMarkdown } from "discord.js";
+import { ButtonStyle, ComponentType, escapeMarkdown } from "discord.js";
 
 const ModesEnum = {
   Default: 0,
@@ -212,7 +212,7 @@ class Command {
     this.displayAudit(context);
   }
 
-  displayAudit(context) {
+  async displayAudit(context) {
     const builder = new TextTableBuilder()
       .setBorderOptions()
       .addRowSeparator(({ metadata: { tableWidth } }, index) =>
@@ -248,8 +248,26 @@ class Command {
 
     const content = `\`\`\`\n${builder.generateTextContent()}\`\`\``;
 
-    context.interaction.channel.msg({
+    const components = {
+      emoji: "👀",
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
+      customId: "watchInfo",
+    };
+    const message = await context.interaction.channel.msg({
       content,
+      components,
+    });
+
+    const collector = message.createMessageComponentCollector({
+      time: 120_000,
+    });
+    collector.on("collect", (interaction) =>
+      this.onComponent(interaction, context),
+    );
+
+    collector.on("end", () => {
+      message.msg({ edit: true, components: [] });
     });
   }
 
@@ -520,6 +538,37 @@ class Command {
     return `${interaction.user.toString()}, ${direct}${bananaContent}\n${dataContent}\n\n${
       !isDefaultMode ? `**${modeLabel}** )\n${modeDescription}` : ""
     } `;
+  }
+
+  async onComponent(interaction, context) {
+    interaction.msg({
+      ephemeral: true,
+      content: "Укажите индекс локации для дополнительных сведений",
+    });
+
+    const answer = await interaction.channel.awaitMessage({
+      remove: true,
+      user: interaction.user,
+    });
+    if (!answer) {
+      return;
+    }
+
+    const { task } =
+      context.auditor.at(+answer.content.match(/\d+/)?.[0] - 1) ?? {};
+
+    if (!task) {
+      interaction.msg({ edit: true, content: "Нет, такой локации не найдено" });
+      return;
+    }
+
+    console.log(task);
+    const taskData = JSON.stringify(task.data, null, "\t");
+    const modeLabel = ModesData[task.mode].label;
+    interaction.msg({
+      edit: true,
+      content: `**${modeLabel}** )\n${escapeMarkdown(taskData)}`,
+    });
   }
 
   options = {
