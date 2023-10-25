@@ -85,6 +85,7 @@ const ModesData = {
 
 class Command {
   TIME_FOR_RESPONSE_ON_TASK = 600_000;
+  EXPERIENCE_FOR_STICK = 0.75;
 
   async onChatInput(msg, interaction) {
     const context = this.getContext(interaction);
@@ -171,7 +172,8 @@ class Command {
 
   calculateReward(context) {
     const { userScore } = context;
-    const experience = Math.floor((2 * userScore) ** 1.007) + 1;
+    const experience =
+      Math.floor((this.EXPERIENCE_FOR_STICK * userScore) ** 1.007) + 1;
     const coinOdds = userScore / 3;
     const bonuses =
       3 *
@@ -188,7 +190,9 @@ class Command {
     const { interaction } = context;
     interaction.channel.msg({
       reference: context.messageInterface.id,
-      content: `Получено немного опыта: ${experience} (по формуле: количество блоб * 2 ** 1.007). Шанс получить коин: ${Math.ceil(
+      content: `Получено немного опыта: ${experience} (по формуле: количество блоб * ${
+        this.EXPERIENCE_FOR_STICK
+      } ** 1.007). Шанс получить коин: ${Math.ceil(
         Math.min(100, coinOdds),
       )}%\n${
         bonuses
