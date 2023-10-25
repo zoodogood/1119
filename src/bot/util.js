@@ -30,7 +30,7 @@ function awaitReactOrMessage({
 }) {
   const reactions = reactionOptions.reactions?.filter(Boolean) ?? [];
 
-  const MAX_TIMEOUT = time ?? 900_000;
+  const MAX_TIMEOUT = time ?? 300_000;
 
   const filter = (some, adding) =>
     some instanceof Discord.Message
