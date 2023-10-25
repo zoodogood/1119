@@ -476,8 +476,8 @@ class ExpressionParser {
     return bases;
   }
 
-  static foldTokens(tokens) {
-    tokens = [...tokens];
+  static foldTokens(_tokens) {
+    const tokens = [..._tokens];
 
     while (tokens.length > 1) {
       const hasResult = [
@@ -492,6 +492,7 @@ class ExpressionParser {
             this.Tokens[element.key].operatorPriority ===
             searchedWithOperatorPriority,
         );
+
         if (indexOfOperator === -1) {
           return false;
         }
@@ -520,9 +521,17 @@ class ExpressionParser {
 
         return true;
       });
-      if (!hasResult) {
+
+      if (hasResult === undefined) {
         throw new Error();
       }
+    }
+    if (!tokens.length) {
+      throw new Error(
+        `tokens length is 0 in last step of parse tokens ${tokens
+          .map((token) => token.raw)
+          .join("")}`,
+      );
     }
     return tokens.at(0).raw;
   }
