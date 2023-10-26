@@ -154,7 +154,7 @@ class Command {
     },
     commands(interaction) {
       const content = this.commandsUsedContent();
-      interaction.msg({ ephemeral: true, description: content });
+      interaction.msg({ ephemeral: true, content });
     },
     postReview(interaction) {
       const components = [
