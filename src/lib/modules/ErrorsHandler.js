@@ -150,8 +150,12 @@ class ErrorsHandler {
     interaction = {},
     description = "",
   }) {
-    const { fileOfError, strokeOfError } =
+    const { fileOfError, strokeOfError, stack } =
       this.parseErrorStack(error.stack, { node_modules: false }) ?? {};
+
+    if (stack.length >= 1900) {
+      stack.length = 1900;
+    }
 
     const components = [
       {
@@ -187,7 +191,7 @@ class ErrorsHandler {
     collector.on("collect", async (interaction) => {
       interaction.msg({
         ephemeral: true,
-        content: `\`\`\`js\n${error.stack}\`\`\``,
+        content: `\`\`\`js\n${stack}\`\`\``,
       });
     });
     collector.on("end", () => message.edit({ components: [] }));
@@ -216,7 +220,7 @@ class ErrorsHandler {
       return null;
     }
 
-    return { ...groups };
+    return { ...groups, stack };
   }
 }
 
