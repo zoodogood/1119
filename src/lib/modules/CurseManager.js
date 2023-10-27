@@ -510,7 +510,7 @@ class CurseManager {
  
 		 const rewardContent = `${  Util.ending(coinsReward, "коин", "ов", "", "а") }${ voidReward ? ` и ${  Util.ending(voidReward, "нестабильност", "и", "ь", "и") }` : "" }`;
 		 const descriptionFooter = `${ coinsReward ? "<:coin:637533074879414272>" : "" } ${ voidReward ? "<a:void:768047066890895360>" : "" }`;
-		 const description = `Это ${ user.data.cursesEnded }-й раз, когда Вам удаётся преодолеть условия созданные нашей машиной для генерации проклятий.\nВ этот раз вы получаете: ${ rewardContent }. Награда такая незначительная в связи с тем, что основным поставщиком ресурсов является сундук. Да будь он проклят!\n${ descriptionFooter }`;
+		 const description = `Это ${ user.data.cursesEnded }-й раз, когда Вам удаётся преодолеть условия, созданные нашей машиной для генерации проклятий.\nВ этот раз вы получаете: ${ rewardContent }. Награда такая незначительная в связи с тем, что основным поставщиком ресурсов является сундук. Да будь он проклят!\n${ descriptionFooter }`;
  
 		 const image = "https://media.discordapp.net/attachments/629546680840093696/1014076170364534805/penguinwalk.gif";
  
