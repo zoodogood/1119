@@ -164,7 +164,7 @@ class CurseManager {
 			  timer: () => 86_400_000 * 2
 			},
 			callback: {
-			  chilliBooh: (user, curse, {boohIn}) => boohIn !== user ?
+			  chilliBooh: (user, curse, {boohTarget, chilli}) => boohTarget !== user && chilli.rebounds > 1  ?
 				 CurseManager.intarface({user, curse}).incrementProgress(1) :
 				 null,
 			},
@@ -185,7 +185,7 @@ class CurseManager {
 			  }
 			},
 			callback: {
-			  chilliBooh: (user, curse, {boohIn}) => boohIn !== user ?
+			  chilliBooh: (user, curse, {boohTarget, chilli}) => boohTarget !== user  && chilli.rebounds > 1 ?
 				 CurseManager.intarface({user, curse}).incrementProgress(1) :
 				 CurseManager.intarface({user, curse}).fail(),
 			},
