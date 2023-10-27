@@ -1,6 +1,9 @@
 import config from "#config";
 import get from "#lib/child-process-utils.js";
+import { ending } from "@zoodogood/utils/primitives";
 const { run, _npm } = get({ root: process.cwd() });
+
+
 
 const toANSIBlock = (content) => `\`\`\`ansi\n${content}\`\`\``;
 
@@ -25,6 +28,13 @@ class Command {
 
     const updateDescription = (content) => {
       embed.description += `\n${content}`;
+      embed.description >= 2000 &&
+        (embed.description = `Очищено ${ending(
+          embed.description.length,
+          "символ",
+          "ов",
+          "а",
+        )}\n${content}`);
       message.msg(embed);
     };
 
