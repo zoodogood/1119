@@ -27,7 +27,7 @@ class Command {
         name: "Пользователь",
         value: Object.entries(userStats)
           .map(
-            ([key, value]) => `${key}: ${Util.toLocaleDeveloperString(value)}`
+            ([key, value]) => `${key}: ${Util.toLocaleDeveloperString(value)}`,
           )
           .join("\n"),
       },
@@ -93,7 +93,7 @@ class Command {
 
     const embed = this.createEmbed(context);
     const reactions = REACTIONS.filter((reaction) =>
-      reaction.filter(context)
+      reaction.filter(context),
     ).map(({ emoji }) => emoji);
 
     const message = await msg.msg({ ...embed, reactions });
@@ -141,7 +141,7 @@ class Command {
         return null;
       }
       const member = guild.members.cache.get(
-        userStats.alreadyKeepAliveRitualBy
+        userStats.alreadyKeepAliveRitualBy,
       );
       if (!member) {
         delete userStats.alreadyKeepAliveRitualBy;
@@ -149,7 +149,7 @@ class Command {
       }
 
       const memberStats = BossManager.getUserStats(guild.data.boss, member.id);
-      
+
       if (memberStats.heroIsDead) {
         delete userStats.alreadyKeepAliveRitualBy;
         return null;
@@ -159,21 +159,27 @@ class Command {
         ({ id, guildId, values: { keepAliveUserId } }) =>
           id === "deadlyCurse" &&
           guildId === guild.id &&
-          keepAliveUserId === interaction.user.id
+          keepAliveUserId === interaction.user.id,
       );
 
-      if (!deadlyCurseEffect){
+      if (!deadlyCurseEffect) {
         delete userStats.alreadyKeepAliveRitualBy;
         return null;
       }
 
-      const curse = member.data.curses.find(({timestamp}) => timestamp === deadlyCurseEffect.values.targetTimestamp);
-      if (!curse){
+      const curse = member.data.curses.find(
+        ({ timestamp }) =>
+          timestamp === deadlyCurseEffect.values.targetTimestamp,
+      );
+      if (!curse) {
         delete userStats.alreadyKeepAliveRitualBy;
-        BossEffects.removeEffect({effect: deadlyCurseEffect, user: member.user})
+        BossEffects.removeEffect({
+          effect: deadlyCurseEffect,
+          user: member.user,
+        });
         return null;
       }
-      
+
       return member;
     })();
     const embed = {
@@ -205,7 +211,7 @@ class Command {
     collector.on("collect", (interaction) => {
       const isAlready = BossManager.getUserStats(
         boss,
-        member.id
+        member.id,
       ).alreadyKeepAliveRitualBy;
 
       if (isAlready) {
@@ -232,7 +238,8 @@ class Command {
 
       BossEffects.applyEffect({ guild, user, effectBase, values });
       interaction.msg({
-        description: `Примите и избавьтесь от быстродействующего проклятия. Провалите — та же участь под камнем.\n**Предостережение:** его не всегда возможно снять в срок.`,
+        description:
+          "Примите и избавьтесь от быстродействующего проклятия. Провалите — та же участь под камнем.\n**Предостережение:** его не всегда возможно снять в срок.",
         footer: { text: user.tag, iconURL: user.avatarURL() },
       });
       collector.stop();
