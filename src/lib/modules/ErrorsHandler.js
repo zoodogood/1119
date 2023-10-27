@@ -173,8 +173,8 @@ class ErrorsHandler {
       },
     ];
     const embed = {
-      title: `— Данные об панике 🙄\n >>> ${error.message}`,
-      description,
+      title: "— Данные об панике 🙄",
+      description: `> ${error.message}\n\n${description}`,
       color: "#f0cc50",
       components,
       reference: interaction.message?.id ?? null,
