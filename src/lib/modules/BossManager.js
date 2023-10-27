@@ -500,11 +500,12 @@ class BossEffects {
 					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
 
 					if (effectValues.keepAliveUserId){
+						const targetUser = app.client.users.cache.get(keepAliveUserId);
 						const targetUserStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
 						delete targetUserStats.alreadyKeepAliveRitualBy;
 						!userStats.heroIsDead && (delete targetUserStats.heroIsDead);
 						// to-do оформить
-						user.msg({title: "Оповещение в боссе: вас спасли"});
+						targetUser.msg({title: "Оповещение в боссе: вас спасли"});
 					}
 					
 				}
@@ -1790,14 +1791,15 @@ class BossManager {
 			filter: ({boss}) => boss.level >= 10
 		},
 		death: {
-			weight: Infinity,
+			weight: 100,
 			id: "death",
 			description: "Смэрть",
 			callback: ({userStats}) => {
 				userStats.heroIsDead = true;
 			},
 			repeats: false,
-			filter: ({boss}) => true
+			filter: ({boss}) => boss.level >= 3,
+			repeats: false,
 		},
 		theRarestEvent: {
 			weight: 1,
