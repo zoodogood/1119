@@ -149,13 +149,14 @@ class Command {
       }
 
       const memberStats = BossManager.getUserStats(guild.data.boss, member.id);
+      const memberData = member.user.data;
 
       if (memberStats.heroIsDead) {
         delete userStats.alreadyKeepAliveRitualBy;
         return null;
       }
 
-      const deadlyCurseEffect = member.user.data.bossEffects.find(
+      const deadlyCurseEffect = memberData.bossEffects?.find(
         ({ id, guildId, values: { keepAliveUserId } }) =>
           id === "deadlyCurse" &&
           guildId === guild.id &&
@@ -167,7 +168,7 @@ class Command {
         return null;
       }
 
-      const curse = member.data.curses.find(
+      const curse = memberData.curses?.find(
         ({ timestamp }) =>
           timestamp === deadlyCurseEffect.values.targetTimestamp,
       );
