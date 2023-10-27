@@ -85,7 +85,7 @@ const ModesData = {
 
 class Command {
   TIME_FOR_RESPONSE_ON_TASK = 600_000;
-  EXPERIENCE_FOR_STICK = 0.75;
+  EXPERIENCE_FOR_STICK = 0.3;
 
   async onChatInput(msg, interaction) {
     const context = this.getContext(interaction);
