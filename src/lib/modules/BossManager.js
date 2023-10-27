@@ -469,9 +469,9 @@ class BossEffects {
 					}
 					const guild = app.client.guilds.cache.get(effect.guildId);
 
-					const isShort = curseBase => curseBase.interactionIsShort;
+					const isShortCurse = curseBase => curseBase.interactionIsShort;
 					const curseBase = CurseManager.getGeneratePull(user)
-						.filter(isShort)
+						.filter(isShortCurse)
 						.random({_weights: true});
 
 					const curse = CurseManager.generateOfBase({curseBase, user});
@@ -500,10 +500,14 @@ class BossEffects {
 					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
 
 					if (effectValues.keepAliveUserId){
-						const targetUser = app.client.users.cache.get(keepAliveUserId);
+						const targetUser = app.client.users.cache.get(effectValues.keepAliveUserId);
 						const targetUserStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
 						delete targetUserStats.alreadyKeepAliveRitualBy;
-						!userStats.heroIsDead && (delete targetUserStats.heroIsDead);
+						if (userStats.heroIsDead){
+							return;
+						}
+
+						delete targetUserStats.heroIsDead;
 						// to-do оформить
 						targetUser.msg({title: "Оповещение в боссе: вас спасли"});
 					}
