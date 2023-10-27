@@ -503,6 +503,8 @@ class BossEffects {
 						const targetUserStats = BossManager.getUserStats(guild.data.boss, effectValues.keepAliveUserId);
 						delete targetUserStats.alreadyKeepAliveRitualBy;
 						!userStats.heroIsDead && (delete targetUserStats.heroIsDead);
+						// to-do оформить
+						user.msg({title: "Оповещение в боссе: вас спасли"});
 					}
 					
 				}
