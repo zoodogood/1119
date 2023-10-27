@@ -1791,7 +1791,7 @@ class BossManager {
 			filter: ({boss}) => boss.level >= 10
 		},
 		death: {
-			weight: 100,
+			weight: 75,
 			id: "death",
 			description: "Смэрть",
 			callback: ({userStats}) => {
