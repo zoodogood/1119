@@ -49,7 +49,7 @@ class Command {
     let width;
     let gradient;
 
-    // this.addBackground(context);
+    this.addBackground(context);
 
     ctx.save();
     ctx.fillStyle = "#080918";
