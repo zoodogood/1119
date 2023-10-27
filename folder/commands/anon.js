@@ -157,7 +157,7 @@ class Command {
   }
 
   processMonkeyPaschal(context) {
-    if (context.auditor.length < 9) {
+    if (context.auditor.length < 10) {
       return;
     }
 
@@ -237,7 +237,7 @@ class Command {
         [0, 1, tableWidth - 1, tableWidth - 2].includes(index) ? "|" : " ",
       )
       .addRowSeparator(({ metadata: { tableWidth } }, index) =>
-        [0, tableWidth - 1].includes(index) ? "|" : index % 2 ? " " : "/",
+        [0, tableWidth - 1].includes(index) ? "|" : index % 2 ? " " : "=",
       )
       .addRowSeparator(({ metadata: { tableWidth } }, index) =>
         [0, tableWidth - 1].includes(index) ? "|" : " ",
@@ -614,14 +614,14 @@ class Command {
 
     const direct = isEnd
       ? `The end, ты успешно решил ${ending(
-          auditor.length - 1,
-          "пример",
-          "ов",
-          "",
-          "а",
-        )}`
+        auditor.length - 1,
+        "пример",
+        "ов",
+        "",
+        "а",
+      )}`
       : isExpressionInstead
-      ? "Введи выражение (обратная операция):"
+        ? "Введи выражение (обратная операция):"
         : "Введи число: количество палочек. Математические операции между ними включены (округление всегда к меньшему):";
     const dataContent = (() => {
       const isMirrorMode = task.mode === ModesEnum.Mirror;
@@ -722,7 +722,7 @@ class Command {
     getGuidance: async (interaction) => {
       let currentPage = 0;
       const guidances = this.getGuidancePagesContent();
-      const message = await interaction.msg({
+      const interactionResponseMessage = await interaction.msg({
         ephemeral: true,
         description: guidances.at(currentPage),
         components: {
@@ -731,12 +731,13 @@ class Command {
           emoji: "640449832799961088",
           style: ButtonStyle.Secondary,
         },
+        fetchReply: true,
       });
 
-      const collector = message.createMessageComponentCollector({
-        time: 120_000,
-      });
-      
+      const collector =
+        interactionResponseMessage.createMessageComponentCollector({
+          time: 120_000,
+        });
 
       collector.on("collect", (interaction) => {
         collector.resetTimer();
@@ -745,22 +746,23 @@ class Command {
         const components = [
           currentPage > 0
             ? {
-                type: ComponentType.Button,
-                emoji: "640449832799961088",
-                customId: "nextPage",
-                style: ButtonStyle.Secondary,
-              }
+              type: ComponentType.Button,
+              emoji: "640449848050712587",
+              customId: "previousPage",
+              style: ButtonStyle.Secondary,
+            }
             : null,
+
           currentPage < guidances.length - 1
             ? {
-                type: ComponentType.Button,
-                emoji: "640449848050712587",
-                customId: "previousPage",
-                style: ButtonStyle.Secondary,
-              }
+              type: ComponentType.Button,
+              emoji: "640449832799961088",
+              customId: "nextPage",
+              style: ButtonStyle.Secondary,
+            }
             : null,
         ].filter(Boolean);
-        message.msg({
+        interaction.msg({
           edit: true,
           description: guidances.at(currentPage),
           components,
@@ -768,7 +770,7 @@ class Command {
       });
 
       collector.on("end", () => {
-        message.msg({ edit: true, components: [] });
+        interaction.msg({ edit: true, components: [] });
       });
     },
   };
