@@ -44,7 +44,7 @@ const ModesData = {
   },
   [ModesEnum.RomanNumerals]: {
     label: "Римские числа",
-    description: `Числа, выше по иеархии, рекурсивно отнимают от себя, или прибавляют, значения сторонних элементов соответсвенно стороне: ${Object.keys(
+    description: `Числа сверху, по иеархии, рекурсивно отнимают от себя, или прибавляют, значения сторонних элементов соответсвенно стороне: ${Object.keys(
       ROMAN_NUMERALS_TABLE,
     ).join(", ")}`,
     weights: 3,
@@ -105,7 +105,7 @@ class Command {
       answer && (context.lastAnswer = answer);
 
       context.auditor.push({
-        count: this.justCalculateStickCount(context),
+        count: this.justCalculateStickCount(task, context),
         task,
         timeResult: context.timeAuditor.getDifference(),
       });
@@ -293,19 +293,19 @@ class Command {
     return isEnd
       ? []
       : [
-          {
-            type: ComponentType.Button,
-            label: "- Оставшееся время",
-            style: ButtonStyle.Secondary,
-            customId: "displayRemainingTime",
-          },
-          {
-            type: ComponentType.Button,
-            emoji: "📗",
-            style: ButtonStyle.Secondary,
-            customId: "getGuidance",
-          },
-        ];
+        {
+          type: ComponentType.Button,
+          label: "- Оставшееся время",
+          style: ButtonStyle.Secondary,
+          customId: "displayRemainingTime",
+        },
+        {
+          type: ComponentType.Button,
+          emoji: "📗",
+          style: ButtonStyle.Secondary,
+          customId: "getGuidance",
+        },
+      ];
   }
 
   async updateMessageInterface(context) {
@@ -422,12 +422,10 @@ class Command {
   }
 
   generateStroke(context) {
-    const stickSymbol = this.getStickSymbol(context);
+    const { currentTask: task, averageSticksCount: average } = context;
+    const { mode } = task;
 
-    const {
-      currentTask: { mode },
-      averageSticksCount: average,
-    } = context;
+    const stickSymbol = this.getStickSymbol(task, context);
 
     const separator =
       mode === ModesEnum.NoComma || mode === ModesEnum.NoCommaSafe ? "" : ",";
@@ -486,14 +484,14 @@ class Command {
     );
   }
 
-  getStickSymbol(context) {
-    return context.currentTask.mode === ModesEnum.BitsOperations ? "\\" : "|";
+  getStickSymbol(task, context) {
+    return task.mode === ModesEnum.BitsOperations ? "\\" : "|";
   }
 
   calculateResult(expression, context) {
     const { currentTask: task } = context;
     if (task.mode === ModesEnum.JustCount) {
-      return this.justCalculateStickCount(context);
+      return this.justCalculateStickCount(task, context);
     }
     expression = this.cleanExpression(expression, context);
     return ExpressionParser.toDigit(expression);
@@ -505,11 +503,12 @@ class Command {
     const isExpressionInstead = task.mode === ModesEnum.ExpressionsInstead;
     return isExpressionInstead
       ? this.evaluateExpressionBrevity(task.userInput)
-      : this.justCalculateStickCount(context);
+      : this.justCalculateStickCount(task, context);
   }
 
   cleanExpression(expression, context) {
-    const stick = this.getStickSymbol(context);
+    const { currentTask: task } = context;
+    const stick = this.getStickSymbol(task, context);
     expression = expression.replace(/[\s,.]/g, "");
 
     const numerals = RegExp(
@@ -531,6 +530,16 @@ class Command {
     return Math.ceil(10 / (expression.length / 3));
   }
 
+  getGuidancePagesContent() {
+    return [
+      "\\*мотивирующая речь\\*",
+      "Руководство к команде !анон, +полезно ли оно?",
+      `Режим ${ModesData[ModesEnum.Default].label}\n> ${
+        ModesData[ModesEnum.Default].description
+      }\nНа момент написания руководства операторы должны применяться в порядке, соответсвующем арифметике`,
+    ];
+  }
+
   getStageCodename(stageIndex) {
     return (
       [
@@ -548,8 +557,7 @@ class Command {
     );
   }
 
-  justCalculateStickCount(context) {
-    const task = context.currentTask;
+  justCalculateStickCount(task, context) {
     const stroke =
       task.mode === ModesEnum.ExpressionsInstead
         ? task.userInput
@@ -560,7 +568,7 @@ class Command {
     }
 
     let count = 0;
-    const stick = this.getStickSymbol(context);
+    const stick = this.getStickSymbol(task, context);
 
     for (const symbol of stroke) {
       symbol === stick && count++;
@@ -569,16 +577,34 @@ class Command {
     return count;
   }
 
+  getExpressionOfTask(task, context) {
+    const isExpressionInstead = task.mode === ModesEnum.ExpressionsInstead;
+    return isExpressionInstead ? task.userInput : task.data.expression;
+  }
+
   generateTextContentOnFail(context) {
     const { currentTask: task } = context;
-    const isExpressionInstead = task.mode === ModesEnum.ExpressionsInstead;
-    const expression = isExpressionInstead
-      ? task.userInput
-      : task.data.expression;
+
+    const expression = this.getExpressionOfTask(task, context);
     const result = this.calculateResult(expression, context);
-    return `неть || ${escapeMarkdown(
-      this.cleanExpression(expression, context),
-    )} || === || ${result} ||`;
+    const logicOfResult = this.getContentLogicOfResult(
+      expression,
+      task,
+      context,
+    );
+    return `неть || ${logicOfResult} || === || ${result} ||`;
+  }
+
+  getContentLogicOfResult(expression, task, context) {
+    const logic =
+      task.mode === ModesEnum.JustCount
+        ? `${this.getStickSymbol(
+          task,
+          context,
+        )} × ${this.justCalculateStickCount(task, context)}`
+        : this.cleanExpression(expression, context);
+
+    return escapeMarkdown(logic);
   }
 
   generateTextContentOfTask(context) {
@@ -588,15 +614,15 @@ class Command {
 
     const direct = isEnd
       ? `The end, ты успешно решил ${ending(
-        auditor.length - 1,
-        "пример",
-        "ов",
-        "",
-        "а",
-      )}`
+          auditor.length - 1,
+          "пример",
+          "ов",
+          "",
+          "а",
+        )}`
       : isExpressionInstead
-        ? "Введи выражение (обратная операция):"
-      : "Введи число: количество палочек. Математические операции между ними включены (округление всегда к меньшему):";
+      ? "Введи выражение (обратная операция):"
+        : "Введи число: количество палочек. Математические операции между ними включены (округление всегда к меньшему):";
     const dataContent = (() => {
       const isMirrorMode = task.mode === ModesEnum.Mirror;
       let value;
@@ -668,8 +694,13 @@ class Command {
       }
 
       const { mode, data, userInput, result } = task;
+      const logic = this.getContentLogicOfResult(
+        this.getExpressionOfTask(task, context),
+        task,
+        context,
+      );
       const taskData = JSON.stringify(
-        { ...data, userInput, result },
+        { ...data, userInput, result, logic },
         null,
         "\t",
       );
@@ -683,11 +714,62 @@ class Command {
       const remaining =
         this.TIME_FOR_RESPONSE_ON_TASK - context.timeAuditor.getDifference();
 
-      const content = timestampToDate(remaining);
+      const content = `${timestampToDate(remaining)} для L${
+        context.auditor.length + 1
+      }`;
       interaction.msg({ ephemeral: true, title: content, color: "#c0c0c0" });
     },
     getGuidance: async (interaction) => {
-      interaction.msg({ ephemeral: true, content: "*мотивирующая речь*" });
+      let currentPage = 0;
+      const guidances = this.getGuidancePagesContent();
+      const message = await interaction.msg({
+        ephemeral: true,
+        description: guidances.at(currentPage),
+        components: {
+          customId: "nextPage",
+          type: ComponentType.Button,
+          emoji: "640449832799961088",
+          style: ButtonStyle.Secondary,
+        },
+      });
+
+      const collector = message.createMessageComponentCollector({
+        time: 120_000,
+      });
+      
+
+      collector.on("collect", (interaction) => {
+        collector.resetTimer();
+        const isDirectionRight = interaction.customId === "nextPage";
+        currentPage = isDirectionRight ? currentPage + 1 : currentPage - 1;
+        const components = [
+          currentPage > 0
+            ? {
+                type: ComponentType.Button,
+                emoji: "640449832799961088",
+                customId: "nextPage",
+                style: ButtonStyle.Secondary,
+              }
+            : null,
+          currentPage < guidances.length - 1
+            ? {
+                type: ComponentType.Button,
+                emoji: "640449848050712587",
+                customId: "previousPage",
+                style: ButtonStyle.Secondary,
+              }
+            : null,
+        ].filter(Boolean);
+        message.msg({
+          edit: true,
+          description: guidances.at(currentPage),
+          components,
+        });
+      });
+
+      collector.on("end", () => {
+        message.msg({ edit: true, components: [] });
+      });
     },
   };
 
