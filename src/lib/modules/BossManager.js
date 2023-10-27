@@ -214,7 +214,7 @@ class BossEvents {
 					time: Util.timestampToDate(now - (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) * 86_400_000)
 				};
 				const description = `**10-й уровень за ${ contents.time }**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий. Соберите 5 штук, чтобы получить случайную из реликвий`;
-				const guild = BossManager.client.guilds.cache.get(boss.guildId);
+				const guild = app.client.guilds.cache.get(boss.guildId);
 
 				guild.chatSend({
 					description,
@@ -300,6 +300,10 @@ class BossEffects {
 
 	static cleanCallbackMap(user){
 		const bossEffects = user.data.bossEffects;
+		if (!user.data.bossEffectsCallbackMap){
+			return;
+		}
+
 		const needRemove = (callbackKey) => !bossEffects.some(({id}) => callbackKey in this.effectBases.get(id).callback);
 		const callbackMap = user.data.bossEffectsCallbackMap;
 		Object.keys(callbackMap).filter(needRemove)
@@ -440,7 +444,7 @@ class BossEffects {
 					if (effect.values.targetTimestamp !== curse.timestamp){
 						return;
 					}
-					const guild = BossManager.client.guilds.cache.get(effect.guildId);
+					const guild = app.client.guilds.cache.get(effect.guildId);
 					
 					if (!BossManager.isArrivedIn(guild)){
 						return;
@@ -463,7 +467,7 @@ class BossEffects {
 					if (initedEffect.timestamp !== effect.timestamp){
 						return;
 					}
-					const guild = BossManager.client.guilds.cache.get(effect.guildId);
+					const guild = app.client.guilds.cache.get(effect.guildId);
 
 					const isShort = curseBase => curseBase.interactionIsShort;
 					const curseBase = CurseManager.getGeneratePull(user)
@@ -489,7 +493,7 @@ class BossEffects {
 					const effectValues = effect.values;
 
 					
-					const guild = BossManager.client.guilds.cache.get(effect.guildId);
+					const guild = app.client.guilds.cache.get(effect.guildId);
 					if (!BossManager.isArrivedIn(guild)){
 						return;
 					}
@@ -1784,14 +1788,14 @@ class BossManager {
 			filter: ({boss}) => boss.level >= 10
 		},
 		death: {
-			weight: 100,
+			weight: Infinity,
 			id: "death",
 			description: "Смэрть",
 			callback: ({userStats}) => {
 				userStats.heroIsDead = true;
 			},
-			repeats: true,
-			filter: ({boss}) => boss.level >= 3
+			repeats: false,
+			filter: ({boss}) => true
 		},
 		theRarestEvent: {
 			weight: 1,
