@@ -76,7 +76,7 @@ class Command {
 
     const embed = {
       title: "ну типа.. ай, да, я живой, да",
-      description: `${contents.ping} ${contents.version} ${contents.season}, что сюда ещё запихнуть?\n${contents.guilds}(?) ${contents.commands}\n${contents.performance}\n${contents.time}${contents.address}\n${contents.errors};\n${contents.uniqueErrors}\n${contents.commandsLaunched}`,
+      description: `${contents.ping} ${contents.version} ${contents.season}, что сюда ещё запихнуть?\n${contents.guilds}(?) ${contents.commands}\n${contents.performance}\n${contents.time}${contents.address}\n${contents.errors};\n${contents.uniqueErrors}`,
       footer: {
         text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${
           DataManager.data.bot.newGuildTimestamp
