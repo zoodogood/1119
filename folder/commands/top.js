@@ -111,10 +111,10 @@ class Command {
             index == 0
               ? "<a:cupZ:806813908241350696> "
               : index === 1
-              ? "<a:cupY:806813850745176114> "
-              : index === 2
-              ? "<a:cupX:806813757832953876> "
-              : "";
+                ? "<a:cupY:806813850745176114> "
+                : index === 2
+                  ? "<a:cupX:806813757832953876> "
+                  : "";
           const name = `${cup} ${index + 1}. ${element.username}`;
           const globalQuests = (element.data.questsGlobalCompleted ?? "")
             .split(" ")
@@ -165,7 +165,7 @@ class Command {
           const name = `${index + 1}. ${element.username}`;
           const value = `Великий воин нанёс ${Util.NumberFormatLetterize(
             output,
-          )}(${ output}) (${((output * 100) / context.boss.damageTaken).toFixed(
+          )} (${((output * 100) / context.boss.damageTaken).toFixed(
             1,
           )}%) урона`;
           return { name, value };
@@ -250,7 +250,7 @@ class Command {
     if (!fields.length) {
       fields.push({
         name: "Ещё никто не попал в топ",
-        value: "Значит вы лёгко можете стать первым(-ой)",
+        value: "Значит вы лёгко можете стать первыми",
       });
     }
 
@@ -258,8 +258,8 @@ class Command {
       title:
         executorIndex !== -1
           ? `Вы находитесь на ${executorIndex + 1} месте, ${
-              interaction.user.username
-            }`
+            interaction.user.username
+          }`
           : `Вы не числитесь в этом топе, ${interaction.user.username}`,
       fields,
       edit,
@@ -359,7 +359,9 @@ class Command {
     const users = interaction.guild.members.cache
       .map((element) => element.user)
       .filter(
-        (element) => !element.bot && !element.data.profile_confidentiality,
+        (user) =>
+          user.id === interaction.user.id ||
+          (!user.bot && !user.data.profile_confidentiality),
       );
 
     const context = {
