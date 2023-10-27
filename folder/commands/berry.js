@@ -109,6 +109,7 @@ class Command {
       interaction,
       isBuying,
       price,
+      channel: interaction.channel
     });
   }
 
@@ -142,10 +143,10 @@ class Command {
     const parsed = interaction.params.split(" ").filter(Boolean);
     const [action, quantity] = parsed;
 
-    if (action == "buy" || action == "купить") {
+    if (action === "buy" || action === "купить") {
       this.exchanger(context, quantity, true);
     }
-    if (action == "sell" || action == "продать") {
+    if (action === "sell" || action === "продать") {
       this.exchanger(context, quantity, false);
     }
   }
