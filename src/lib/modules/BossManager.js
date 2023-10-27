@@ -974,13 +974,13 @@ class BossManager {
 
 			const byDamage = (numerator / BossChest.DAMAGE_FOR_VOID) ** BossChest.VOID_REWARD_DENOMINATOR;
 
-			const bonus = Number(Util.random(BossChest.BONUS_VOID_PULL) === 1);
+			const voidByRandom = Number(Util.random(BossChest.BONUS_VOID_PULL) === 1);
 
 			const voidLimit = level * BossChest.VOID_LIMIT_MULTIPLAYER;
 
 			const voidReward = Math.min(
 				voidLimit,
-				Math.floor(byDamage + bonus)
+				Math.floor(byDamage + voidByRandom)
 			);
 
 			// keys
