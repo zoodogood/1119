@@ -16,6 +16,7 @@ const ActionsMap = {
   chilliBooh: "chilliBooh",
   praiseUser: "praiseUser",
   userPraiseMe: "userPraiseMe",
+  anonTaskResolve: "anonTaskResolve",
   // Quest
   dailyQuestSkiped: "dailyQuestSkiped",
   dailyQuestComplete: "dailyQuestComplete",
