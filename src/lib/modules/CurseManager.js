@@ -96,8 +96,8 @@ class CurseManager {
           berryBarter: (user, curse, { quantity, isBuying }) => {
             isBuying
               ? CurseManager.intarface({ user, curse }).incrementProgress(
-                quantity,
-              )
+                  quantity,
+                )
               : CurseManager.intarface({ user, curse }).fail();
           },
         },
@@ -391,6 +391,29 @@ class CurseManager {
         interactionIsLong: true,
         reward: 15,
       },
+      {
+        _weight: 5,
+        id: "anonSticksByExperinence",
+        description:
+          "Соберите столько палочек в команде !анон, сколько у Вас сейчас опыта",
+        hard: 0,
+        values: {
+          goal: (user) => user.data.exp,
+          timer: 3_600_000 * 24
+        },
+        callback: {
+          anonTaskResolve: (user, curse, { context, task }) => {
+            const sticks = CommandsManager.collection
+              .get("anon")
+              .justCalculateStickCount(task, context);
+            curse.values.goal = user.data.exp;
+            CurseManager.intarface({ user, curse }).incrementProgress(sticks);
+          },
+        },
+        filter: (_user, guild) => guild && guild.data.boss?.isArrived,
+        interactionIsLong: true,
+        reward: 50,
+      },
     ].map((curse) => [curse.id, curse]),
   );
   static intarface({ curse, user }) {
@@ -415,8 +438,8 @@ class CurseManager {
       }`;
       const timer = curse.values.timer
         ? `\nТаймер: <t:${Math.floor(
-          (curse.timestamp + curse.values.timer) / 1000,
-        )}:R> будет провалено`
+            (curse.timestamp + curse.values.timer) / 1000,
+          )}:R> будет провалено`
         : "";
 
       const content = `${description}\n${progress}${timer}`;
