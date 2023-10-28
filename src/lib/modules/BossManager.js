@@ -1105,7 +1105,7 @@ class BossManager {
 			guild.chatSend({content: "Босс покинул сервер в страхе..."});
 			return;
 		}
-		const DAMAGE_THRESHOLDER_FOR_REWARD = 10_000;
+		const DAMAGE_THRESHOLDER_FOR_REWARD = 3_000;
 		const createRewardPull = BossManager.BonusesChest.createRewardPull;
 
 		const sendReward = ([id, userStats]) => {
@@ -1142,7 +1142,9 @@ class BossManager {
 			(acc, current) => acc.at(1) < current.at(1) ? acc : current,
 			[BossManager.DAMAGE_SOURCES.other, Number.MAX_SAFE_INTEGER]
 		);
-		
+
+
+		const participants = Object.entries(boss.users).filter(([id, {damageDealt}]) => damageDealt);
 
 		const contents = {
 			dice: `Максимальный множитель урона от эффектов: Х${ this.calculateBossDamageMultiplayer(boss).toFixed(2) };`,
@@ -1151,7 +1153,7 @@ class BossManager {
 			mainDamageType: `Основной источник: **${ BossManager.DAMAGE_SOURCES[mainDamage.at(0)].label } ${ (mainDamage.at(1) / boss.damageTaken * 100).toFixed(1) }%**`,
 			weakestDamageType: `Худший источник: ${ BossManager.DAMAGE_SOURCES[weakestDamage.at(0)].label } — ${ (weakestDamage.at(1) / boss.damageTaken * 100).toFixed(2) }% (${ weakestDamage.at(1)} ед.)`,
 			attacksCount: `Совершено прямых атак: ${ boss.stats.userAttacksCount }`,
-			usersCount: `Приняло участие: ${  Util.ending(Object.keys(boss.users).length, "человек", "", "", "а") }`,
+			usersCount: `Приняло участие: ${  Util.ending(participants.length, "человек", "", "", "а") }`,
 			parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
 			rewards: `Пользователи получают ключи в количестве равном ${ 100 / BossManager.BonusesChest.DAMAGE_FOR_KEY }% от нанесенного урона и примерно случайное количество нестабильности в зависимости от нанесенного урона`,
 			invisibleSpace: "⠀"
