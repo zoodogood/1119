@@ -1,4 +1,5 @@
 import { ExpressionParser } from "#lib/ExpressionParser.js";
+import { Actions } from "#lib/modules/ActionManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import {
   escapeRegexp,
@@ -126,6 +127,8 @@ class Command {
 
         return this.end(context);
       }
+
+      interaction.user.action(Actions.anonTaskResolve, { task, context });
 
       setTimeout(() => answer.delete(), 9_000);
       task.isResolved = true;
@@ -293,19 +296,19 @@ class Command {
     return isEnd
       ? []
       : [
-        {
-          type: ComponentType.Button,
-          label: "- Оставшееся время",
-          style: ButtonStyle.Secondary,
-          customId: "displayRemainingTime",
-        },
-        {
-          type: ComponentType.Button,
-          emoji: "📗",
-          style: ButtonStyle.Secondary,
-          customId: "getGuidance",
-        },
-      ];
+          {
+            type: ComponentType.Button,
+            label: "- Оставшееся время",
+            style: ButtonStyle.Secondary,
+            customId: "displayRemainingTime",
+          },
+          {
+            type: ComponentType.Button,
+            emoji: "📗",
+            style: ButtonStyle.Secondary,
+            customId: "getGuidance",
+          },
+        ];
   }
 
   async updateMessageInterface(context) {
@@ -599,9 +602,9 @@ class Command {
     const logic =
       task.mode === ModesEnum.JustCount
         ? `${this.getStickSymbol(
-          task,
-          context,
-        )} × ${this.justCalculateStickCount(task, context)}`
+            task,
+            context,
+          )} × ${this.justCalculateStickCount(task, context)}`
         : this.cleanExpression(expression, context);
 
     return escapeMarkdown(logic);
@@ -614,15 +617,15 @@ class Command {
 
     const direct = isEnd
       ? `The end, ты успешно решил ${ending(
-        auditor.length - 1,
-        "пример",
-        "ов",
-        "",
-        "а",
-      )}`
+          auditor.length - 1,
+          "пример",
+          "ов",
+          "",
+          "а",
+        )}`
       : isExpressionInstead
-        ? "Введи выражение (обратная операция):"
-        : "Введи число: количество палочек. Математические операции между ними включены (округление всегда к меньшему):";
+      ? "Введи выражение (обратная операция):"
+      : "Введи число: количество палочек. Математические операции между ними включены (округление всегда к меньшему):";
     const dataContent = (() => {
       const isMirrorMode = task.mode === ModesEnum.Mirror;
       let value;
@@ -746,20 +749,20 @@ class Command {
         const components = [
           currentPage > 0
             ? {
-              type: ComponentType.Button,
-              emoji: "640449848050712587",
-              customId: "previousPage",
-              style: ButtonStyle.Secondary,
-            }
+                type: ComponentType.Button,
+                emoji: "640449848050712587",
+                customId: "previousPage",
+                style: ButtonStyle.Secondary,
+              }
             : null,
 
           currentPage < guidances.length - 1
             ? {
-              type: ComponentType.Button,
-              emoji: "640449832799961088",
-              customId: "nextPage",
-              style: ButtonStyle.Secondary,
-            }
+                type: ComponentType.Button,
+                emoji: "640449832799961088",
+                customId: "nextPage",
+                style: ButtonStyle.Secondary,
+              }
             : null,
         ].filter(Boolean);
         interaction.msg({
