@@ -96,8 +96,8 @@ class CurseManager {
           berryBarter: (user, curse, { quantity, isBuying }) => {
             isBuying
               ? CurseManager.intarface({ user, curse }).incrementProgress(
-                quantity,
-              )
+                  quantity,
+                )
               : CurseManager.intarface({ user, curse }).fail();
           },
         },
@@ -438,8 +438,8 @@ class CurseManager {
       }`;
       const timer = curse.values.timer
         ? `\nТаймер: <t:${Math.floor(
-          (curse.timestamp + curse.values.timer) / 1000,
-        )}:R> будет провалено`
+            (curse.timestamp + curse.values.timer) / 1000,
+          )}:R> будет провалено`
         : "";
 
       const content = `${description}\n${progress}${timer}`;
