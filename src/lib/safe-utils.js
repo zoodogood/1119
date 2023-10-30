@@ -110,7 +110,6 @@ function timestampToDate(ms, max) {
 }
 
 function timestampDay(timestamp) {
-  timestamp -= new Date().getTimezoneOffset() * 60_000;
   return Math.floor(timestamp / 86_400_000);
 }
 
