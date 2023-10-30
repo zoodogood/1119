@@ -1,20 +1,16 @@
 import * as Util from "#lib/util.js";
 
 const ProperiesEnum = {
-  "Bot": {
+  Bot: {
     berrysPrice: {},
-    grempen: {}
+    grempen: {},
   },
-  "Guild": {
-    name: {}
+  Guild: {
+    name: {},
   },
-  "boss": {
-
-  },
-  "userStats": {
-
-  },
-  "User": {
+  boss: {},
+  userStats: {},
+  User: {
     id: {},
     name: {},
     coins: {},
@@ -34,7 +30,7 @@ const ProperiesEnum = {
     chestBonus: {},
     praiseMe: {},
     BDay: {},
-    completedQuest: {},
+    questsGlobalCompleted: {},
     grempen: {},
     shopTime: {},
     first_$: {},
@@ -76,37 +72,31 @@ const ProperiesEnum = {
     bossEffectsCallbackMap: {},
     cursesCallbackMap: {},
   },
-  "curseEntity": {
+  curseEntity: {},
 
-  },
-	
-	
-  "timeEventEntity": {
-
-  },
-  "counterEntity": {
-
-  },
-	
+  timeEventEntity: {},
+  counterEntity: {},
 };
 
 class Properties {
-  static endingOf(propertyBase, quantity){
+  static endingOf(propertyBase, quantity) {
     const item = propertyBase;
-    if (!item){
+    if (!item) {
       return undefined;
     }
 
     // delevop crutch
     return "void";
 
-    return Util.ending(quantity, item.base, ...item.suffixes, {unite: (_, word) => word});
+    return Util.ending(quantity, item.base, ...item.suffixes, {
+      unite: (_, word) => word,
+    });
   }
 
-  static emojiOf(propertyBase){
+  static emojiOf(propertyBase) {
     return propertyBase.emoji;
   }
 }
 
-export {Properties, ProperiesEnum};
+export { Properties, ProperiesEnum };
 export default Properties;
