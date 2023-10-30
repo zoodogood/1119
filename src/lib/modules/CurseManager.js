@@ -96,8 +96,8 @@ class CurseManager {
           berryBarter: (user, curse, { quantity, isBuying }) => {
             isBuying
               ? CurseManager.intarface({ user, curse }).incrementProgress(
-                  quantity,
-                )
+                quantity,
+              )
               : CurseManager.intarface({ user, curse }).fail();
           },
         },
@@ -128,7 +128,7 @@ class CurseManager {
               ? CurseManager.intarface({ user, curse }).incrementProgress(1)
               : null,
 
-          dailyQuestCompete: (user, curse) =>
+          dailyQuestComplete: (user, curse) =>
             CurseManager.intarface({ user, curse }).incrementProgress(1),
           dailyQuestSkiped: (user, curse) =>
             CurseManager.intarface({ user, curse }).fail(),
@@ -399,7 +399,7 @@ class CurseManager {
         hard: 0,
         values: {
           goal: (user) => user.data.exp,
-          timer: 3_600_000 * 24
+          timer: 3_600_000 * 24,
         },
         callback: {
           anonTaskResolve: (user, curse, { context, task }) => {
@@ -438,8 +438,8 @@ class CurseManager {
       }`;
       const timer = curse.values.timer
         ? `\nТаймер: <t:${Math.floor(
-            (curse.timestamp + curse.values.timer) / 1000,
-          )}:R> будет провалено`
+          (curse.timestamp + curse.values.timer) / 1000,
+        )}:R> будет провалено`
         : "";
 
       const content = `${description}\n${progress}${timer}`;
