@@ -189,6 +189,7 @@
 		{
 			transform: translateY(-3em);
 			flex-direction: column;
+			margin-top: 3vh;
 		}
 	}
 
@@ -349,6 +350,12 @@
 				label: i18n.auditTypeEnum.riches.label,
 				colorTheme: "#eac500",
 				reduce: (acc, value) => Math.max(acc, value)
+			},
+			boss: {
+				icon: "",
+				label: i18n.auditTypeEnum.boss.label,
+				colorTheme: "#b12b2b",
+				reduce: (acc, value) => acc + value
 			}
 
 		})),
