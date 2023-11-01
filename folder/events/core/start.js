@@ -68,6 +68,7 @@ class Event extends BaseEvent {
     Data.site.enterToAPI ||= {};
     Data.site.entersToAPI ||= 0;
     Data.site.entersToPagesAPI ||= 0;
+    Data.bot.bossDamageToday ||= 0;
 
     Data.dailyAudit ||= {};
 
