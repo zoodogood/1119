@@ -11,7 +11,6 @@ import {
 import dayjs from "dayjs";
 import yaml from "yamljs";
 import Path from "path";
-import FileSystem from "fs/promises";
 
 function toLocaleDeveloperString(value) {
   if (!value) {
@@ -328,10 +327,6 @@ async function fetchFromInnerApi(
   return response[parseType]();
 }
 
-async function getPackageJSON() {
-  return JSON.parse(await FileSystem.readFile(`${process.cwd()}/package.json`));
-}
-
 function ReplaceTemplate(string, values) {
   return string.replaceAll(
     /(?<!\\)\$\{([a-zа-яъё_$\s]+)\}/gi,
@@ -393,7 +388,6 @@ export {
   parsePagesPath,
   parseLocationBase,
   fetchFromInnerApi,
-  getPackageJSON,
 };
 
 export { relativeSiteRoot } from "#site/lib/util.js";
