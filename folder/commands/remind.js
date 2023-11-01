@@ -1,9 +1,7 @@
-
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 
 class Command {
-  getContext(interaction){
-
+  getContext(interaction) {
     const parseParams = (params) => {
       params = params.split(" ");
 
@@ -19,20 +17,15 @@ class Command {
 
     const phrase = (phraseRaw || "Без описания").replace(
       /[a-zа-яъёь]/i,
-      (letter) => letter.toUpperCase()
+      (letter) => letter.toUpperCase(),
     );
 
-    return {stamps, phraseRaw, phrase};
+    return { stamps, phraseRaw, phrase };
   }
 
   async onChatInput(msg, interaction) {
     const context = this.getContext(interaction);
     const { phrase, stamps } = context;
-    
-
-    
-
-
 
     const userData = msg.author.data;
     if (stamps.length === 0) {
@@ -43,22 +36,22 @@ class Command {
     let timeTo = 0;
     stamps.forEach((stamp) => {
       switch (stamp.slice(-1)) {
-      case "d":
-      case "д":
-        timeTo += 86400000 * stamp.slice(0, -1);
-        break;
-      case "h":
-      case "ч":
-        timeTo += 3600000 * stamp.slice(0, -1);
-        break;
-      case "m":
-      case "м":
-        timeTo += 60000 * stamp.slice(0, -1);
-        break;
-      case "s":
-      case "с":
-        timeTo += 1000 * stamp.slice(0, -1);
-        break;
+        case "d":
+        case "д":
+          timeTo += 86400000 * stamp.slice(0, -1);
+          break;
+        case "h":
+        case "ч":
+          timeTo += 3600000 * stamp.slice(0, -1);
+          break;
+        case "m":
+        case "м":
+          timeTo += 60000 * stamp.slice(0, -1);
+          break;
+        case "s":
+        case "с":
+          timeTo += 1000 * stamp.slice(0, -1);
+          break;
       }
     });
 
@@ -103,7 +96,7 @@ class Command {
         const day = TimeEventsManager.Util.timestampDay(timestamp);
 
         const event = TimeEventsManager.at(day)?.find((event) =>
-          filter(event, timestamp)
+          filter(event, timestamp),
         );
 
         if (!event) {
@@ -118,7 +111,7 @@ class Command {
       ({ params, timestamp }) => {
         const [_authorId, _channelId, phrase] = JSON.parse(params);
         return `• <t:${Math.floor(timestamp / 1_000)}:R> — ${phrase}.`;
-      }
+      },
     );
 
     const remindsContent = userRemindEvents.length
@@ -138,15 +131,20 @@ class Command {
       const createRemoveRemindInterface = async () => {
         const react = await message.awaitReact(
           { user: interaction.user, removeType: "one" },
-          "🗑️"
+          "🗑️",
         );
         if (!react) {
           return;
         }
 
-        const answer = await message.channel.awaitMessage(interaction.user, {
+        const questionMessage = await interaction.channel.msg({
           title: `Переличите номера от 1 до ${userRemindEvents.length} через пробел, чтобы удалить 🗑️ напоминания. Или введите любое другое содержимое, чтобы отменить`,
         });
+
+        const answer = await message.channel.awaitMessage({
+          user: interaction.user,
+        });
+        questionMessage.delete();
         if (!answer) {
           return;
         }
@@ -155,16 +153,19 @@ class Command {
         if (
           numbers.some(isNaN) ||
           numbers.some(
-            (number) => number <= 0 || number > userRemindEvents.length
+            (number) => number <= 0 || number > userRemindEvents.length,
           )
         ) {
-          return interaction.channel.msg({ title: "🗑️ Отменено.", delete: 5000 });
+          return interaction.channel.msg({
+            title: "🗑️ Отменено.",
+            delete: 5000,
+          });
         }
 
         const willRemoved = numbers.map((index) => userData.reminds[index - 1]);
         for (const timestamp of willRemoved) {
           const event = userRemindEvents.find((event) =>
-            filter(event, timestamp)
+            filter(event, timestamp),
           );
           TimeEventsManager.remove(event);
           const index = userData.reminds.indexOf(timestamp);
