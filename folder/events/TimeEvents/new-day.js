@@ -53,6 +53,7 @@ class DailyAudit {
     Data.site.entersToAPIToday = 0;
     Data.bot.commandsUsedToday = 0;
     Data.bot.messagesToday = 0;
+    Data.bot.bossDamageToday = 0;
   }
 }
 
