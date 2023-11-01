@@ -1,4 +1,3 @@
-
 import Discord from "discord.js";
 import { CurseManager, QuestManager, ErrorsHandler } from "#lib/modules/mod.js";
 import { BossEffects } from "#lib/modules/BossManager.js";
@@ -7,6 +6,8 @@ const ActionsMap = {
   // Client
   messageCreate: "messageCreate",
 
+  // User
+  beforeProfileDisplay: "beforeProfileDisplay",
   coinFromMessage: "coinFromMessage",
   likedTheUser: "likedTheUser",
   buyFromGrempen: "buyFromGrempen",
@@ -36,37 +37,38 @@ const ActionsMap = {
   // Other
   callCommand: "callCommand",
   inputCommandParsed: "inputCommandParsed",
-  any: "_any"
+  any: "_any",
 };
-
 
 class ActionManager {
   static Actions = ActionsMap;
 
-  static extendsGlobalPrototypes(){
+  static extendsGlobalPrototypes() {
     const ActionManager = this;
 
     Object.defineProperty(Discord.User.prototype, "action", {
       enumerable: false,
-      value: function(actionName, data){
+      value: function (actionName, data) {
         const userData = this.data;
 
-
-        if (actionName === "globalQuest"){
+        if (actionName === "globalQuest") {
           const questId = data.name;
           const questBase = QuestManager.questsBase.get(questId);
-          QuestManager.onAction({user: this, questBase, data});
+          QuestManager.onAction({ user: this, questBase, data });
         }
 
-        if (userData.quest && QuestManager.questsBase.get(userData.quest.id).handler === actionName){
+        if (
+          userData.quest &&
+          QuestManager.questsBase.get(userData.quest.id).handler === actionName
+        ) {
           const questId = userData.quest.id;
           const questBase = QuestManager.questsBase.get(questId);
-          QuestManager.onAction({user: this, questBase, data});
+          QuestManager.onAction({ user: this, questBase, data });
         }
 
         if (actionName in (userData.bossEffectsCallbackMap ?? {}))
-          for (const effect of [...userData.bossEffects]){
-            if (data.guild && effect.guildId !== data.guild.id){
+          for (const effect of [...userData.bossEffects]) {
+            if (data.guild && effect.guildId !== data.guild.id) {
               continue;
             }
 
@@ -74,33 +76,34 @@ class ActionManager {
             try {
               if (actionName in effectBase.callback)
                 effectBase.callback[actionName].call(null, this, effect, data);
-						
             } catch (error) {
-              ErrorsHandler.Audit.push(error, {actionName, source: "BossEffectAction"});
+              ErrorsHandler.Audit.push(error, {
+                actionName,
+                source: "BossEffectAction",
+              });
             }
           }
 
-			
         /** Curse */
         if (actionName in (userData.cursesCallbackMap ?? {}))
-          for (const curse of [...userData.curses]){
+          for (const curse of [...userData.curses]) {
             const curseBase = CurseManager.cursesBase.get(curse.id);
             try {
               if (actionName in curseBase.callback)
                 curseBase.callback[actionName].call(null, this, curse, data);
-					
             } catch (error) {
-              ErrorsHandler.Audit.push(error, {actionName, source: "CurseAction"});
+              ErrorsHandler.Audit.push(error, {
+                actionName,
+                source: "CurseAction",
+              });
             }
           }
-				
-			
-        /** generalize */
-        if (actionName !== ActionManager.Actions.any){
-          this.action(ActionManager.Actions.any, {actionName, data});
-        }
-      }
 
+        /** generalize */
+        if (actionName !== ActionManager.Actions.any) {
+          this.action(ActionManager.Actions.any, { actionName, data });
+        }
+      },
     });
   }
 }
