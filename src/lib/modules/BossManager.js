@@ -856,7 +856,7 @@ class BossManager {
 		}
 
 		BossEvents.onTakeDamage(boss, context);
-
+		DataManager.bot.bossDamageToday += damage;
 
 		
 	
