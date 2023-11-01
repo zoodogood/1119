@@ -5,6 +5,7 @@ import Template from "#lib/modules/Template.js";
 import QuestManager from "#lib/modules/QuestManager.js";
 
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { Actions } from "#lib/modules/ActionManager.js";
 
 class Command {
   async onChatInput(msg, interaction) {
@@ -17,6 +18,8 @@ class Command {
       user = target.data,
       guild = msg.guild;
 
+    target.action(Actions.beforeProfileDisplay, interaction);
+
     Object.assign(interaction, {
       currentCurseView: 0,
 
@@ -24,9 +27,9 @@ class Command {
         position: null,
         members: guild
           ? guild.members.cache
-              .map((m) => m.user)
-              .filter((user) => !user.bot)
-              .filter((user) => user.data.level > 1)
+            .map((m) => m.user)
+            .filter((user) => !user.bot)
+            .filter((user) => user.data.level > 1)
           : null,
       },
 
@@ -70,8 +73,8 @@ class Command {
         31556926000000 < lastOnline
           ? "более года"
           : lastOnline > 2629743000
-          ? "более месяца"
-          : Util.timestampToDate(lastOnline);
+            ? "более месяца"
+            : Util.timestampToDate(lastOnline);
       const dateContent = user.profile_confidentiality ? "" : getDateContent();
       interaction.status = `<:offline:637544283737686027> Не в сети ${dateContent}`;
     }
@@ -102,12 +105,12 @@ class Command {
           text: `Похвал: ${user.praiseMe?.length || "0"}   ${
             interaction.rank
               ? `Ранг: ${
-                  interaction.rank.position
-                    ? `${interaction.rank.position ?? 0}/${
-                        interaction.rank.members.length
-                      }`
-                    : "Недоступно"
-                }`
+                interaction.rank.position
+                  ? `${interaction.rank.position ?? 0}/${
+                    interaction.rank.members.length
+                  }`
+                  : "Недоступно"
+              }`
               : ""
           }`,
         },
@@ -171,12 +174,12 @@ class Command {
     const createEmbedAtSecondPage = async () => {
       const footer = member
         ? {
-            text: `На сервере с ${new Intl.DateTimeFormat("ru-ru", {
-              day: "numeric",
-              year: "numeric",
-              month: "long",
-            }).format(member.joinedTimestamp)}`,
-          }
+          text: `На сервере с ${new Intl.DateTimeFormat("ru-ru", {
+            day: "numeric",
+            year: "numeric",
+            month: "long",
+          }).format(member.joinedTimestamp)}`,
+        }
         : null;
 
       const embed = {
