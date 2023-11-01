@@ -174,7 +174,7 @@ class CurseManager {
         },
         callback: {
           chilliBooh: (user, curse, { boohTarget, chilli }) =>
-            boohTarget !== user && chilli.rebounds > 1
+            boohTarget !== user && chilli.rebounds > 0
               ? CurseManager.intarface({ user, curse }).incrementProgress(1)
               : null,
         },
@@ -200,7 +200,7 @@ class CurseManager {
         },
         callback: {
           chilliBooh: (user, curse, { boohTarget, chilli }) =>
-            boohTarget !== user && chilli.rebounds > 1
+            boohTarget !== user && chilli.rebounds > 0
               ? CurseManager.intarface({ user, curse }).incrementProgress(1)
               : CurseManager.intarface({ user, curse }).fail(),
         },
@@ -392,14 +392,14 @@ class CurseManager {
         reward: 15,
       },
       {
-        _weight: 5,
+        _weight: 200,
         id: "anonSticksByExperinence",
         description:
           "Соберите столько палочек в команде !анон, сколько у Вас сейчас опыта",
         hard: 0,
         values: {
           goal: (user) => user.data.exp,
-          timer: 3_600_000 * 24,
+          timer: () => 3_600_000 * 24,
         },
         callback: {
           anonTaskResolve: (user, curse, { context, task }) => {
@@ -408,6 +408,10 @@ class CurseManager {
               .justCalculateStickCount(task, context);
             curse.values.goal = user.data.exp;
             CurseManager.intarface({ user, curse }).incrementProgress(sticks);
+          },
+          beforeProfileDisplay: (user, curse) => {
+            curse.values.goal = user.data.exp;
+            CurseManager.checkAvailable({ curse, user });
           },
         },
         filter: (_user, guild) => guild && guild.data.boss?.isArrived,
