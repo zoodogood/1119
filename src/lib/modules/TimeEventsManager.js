@@ -56,8 +56,28 @@ class TimeEventsManager {
 
   static remove(event) {
     const day = this.Util.timestampDay(event.timestamp);
-    const index = this.data[day]?.indexOf(event);
-    if (!index || ~index === 0) {
+    if (!this.data[day]) {
+      // developer crunch
+      const _data = this.data;
+
+      this.data = {};
+      const _events = Object.values(_data).reduce(
+        (acc, array) => acc.concat(...array),
+        [],
+      );
+
+      for (const _ev of _events) {
+        this.create(
+          _ev.name,
+          _ev.timestamp - Date.now(),
+          _ev.params ? JSON.parse(_ev.params) : undefined,
+        );
+      }
+    }
+    console.log(day, this.data);
+    const index = this.data[day].indexOf(event);
+
+    if (~index === 0) {
       return false;
     }
     this.data[day].splice(index, 1);
@@ -82,8 +102,8 @@ class TimeEventsManager {
   }
 
   static fetchNextEvent() {
-    const day = this.getDistancePrefferedDayEvents();
-    return day?.at(0) ?? null;
+    const dayEvents = this.getDistancePrefferedDayEvents();
+    return dayEvents?.at(0) ?? null;
   }
 
   static getDistancePrefferedDayEvents(needCache = true) {
