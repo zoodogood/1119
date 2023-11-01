@@ -33,7 +33,10 @@ class Command {
         footer: { iconURL: FOOTER_EMOJI, text: "Безудержный перчик™" },
       });
     }
-    if (msg.channel.chilli && msg.channel.chilli.find((e) => e.id == memb.id)) {
+    if (
+      msg.channel.chilli &&
+      msg.channel.chilli.find((channelChilli) => channelChilli.id === memb.id)
+    ) {
       return msg.msg({
         title: "Вы не можете бросить перец в участника с перцем в руке",
         color: "#ff0000",
@@ -75,7 +78,7 @@ class Command {
             chilli.timeout._onTimeout(),
           clearTimeout(chilli.timeout)
         ),
-        5500
+        5500,
       );
       return;
     }
@@ -161,7 +164,7 @@ class Command {
     id: 38,
     media: {
       description:
-        "\n\nМини-игра \"Жгучий перчик\" подразумивает перебрасывание вымешленного перца, который через некоторое время бабахнет в руках у одного из участников — в этом случае игрок проигрывает.\nСтратегия здесь приветсвуется, а сама игра отлично подходит для проведения турниров.\n\n✏️\n```python\n!chilli {memb}\n```\n\n",
+        '\n\nМини-игра "Жгучий перчик" подразумивает перебрасывание вымешленного перца, который через некоторое время бабахнет в руках у одного из участников — в этом случае игрок проигрывает.\nСтратегия здесь приветсвуется, а сама игра отлично подходит для проведения турниров.\n\n✏️\n```python\n!chilli {memb}\n```\n\n',
     },
     allias: "перчик перец перець",
     expectMention: true,
