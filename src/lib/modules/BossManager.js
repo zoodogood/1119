@@ -856,7 +856,7 @@ class BossManager {
 		}
 
 		BossEvents.onTakeDamage(boss, context);
-		DataManager.bot.bossDamageToday += damage;
+		DataManager.data.bot.bossDamageToday += damage;
 
 		
 	
@@ -1056,12 +1056,16 @@ class BossManager {
 
 			const rewardPull = BossManager.BonusesChest.createRewardPull({level: toLevel, userStats, bonuses: true});
 			userStats.chestRewardAt = toLevel;
-			Object.entries(rewardPull).forEach(([key, count]) => 
-				userData[key] = (userData[key] ?? 0) + count
-			)
+			BossManager.BonusesChest.sendReward(user, rewardPull);
 			message.msg({description: `Получено ${  Util.ending(rewardPull.chestBonus, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>, ${ rewardPull.keys } 🔩 и ${ rewardPull.void } <a:void:768047066890895360>`, color: BossManager.BonusesChest.MAIN_COLOR, delete: 7000});
 
 			return true;
+		},
+		sendReward(user, rewardPull){
+			const userData = user.data;
+			Object.entries(rewardPull).forEach(([key, count]) => 
+				userData[key] = (userData[key] ?? 0) + (count || 0)
+			)
 		}
 	};
  
@@ -1105,15 +1109,15 @@ class BossManager {
 			guild.chatSend({content: "Босс покинул сервер в страхе..."});
 			return;
 		}
-		const DAMAGE_THRESHOLDER_FOR_REWARD = 3_000;
+		const DAMAGE_THRESHOLDER_FOR_REWARD = 1_500;
 		const createRewardPull = BossManager.BonusesChest.createRewardPull;
 
 		const sendReward = ([id, userStats]) => {
-			const userData = usersCache.get(id).data;
+			const user = usersCache.get(id);
 			const reward = createRewardPull({bonuses: false, userStats, level: boss.level});
-			Object.entries(reward).forEach(([key, count]) => 
-				userData[key] = (userData[key] ?? 0) + count
-			)
+			BossManager.BossChest.sendReward(user, reward);
+
+			user.data.void += 1;
 		};
 
 		const cleanEffects = (user) => {
