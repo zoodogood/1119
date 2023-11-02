@@ -2,16 +2,20 @@ import { BaseEvent } from "#lib/modules/EventsManager.js";
 import { assert } from "console";
 import { omit, timestampDay } from "#src/lib/util.js";
 
+
+
 import {
   DataManager,
   TimeEventsManager,
   CommandsManager,
   CounterManager,
   EventsManager,
+  StorageManager,
 } from "#lib/modules/mod.js";
 import { client } from "#bot/client.js";
 
 import app from "#app";
+import config from "#config";
 
 class Event extends BaseEvent {
   constructor() {
@@ -20,6 +24,8 @@ class Event extends BaseEvent {
   }
 
   async run() {
+    await StorageManager.setDriver(config.database.driver);
+
     EventsManager.listenAll();
 
     await DataManager.file.load();
