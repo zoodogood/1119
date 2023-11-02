@@ -74,7 +74,6 @@ class TimeEventsManager {
         );
       }
     }
-    console.log(day, this.data);
     const index = this.data[day].indexOf(event);
 
     if (~index === 0) {
