@@ -1,40 +1,47 @@
 import * as Util from "#lib/util.js";
 
-const ProperiesEnum = {
+const Schema = {
   Bot: {
-    berrysPrice: {},
-    grempen: {},
+    berrysPrice: 0,
+    grempenItems: "",
   },
   Guild: {
-    name: {},
+    name: "",
+    boss: {
+      users: [
+        {
+          userStats: {},
+        },
+      ],
+    },
   },
-  boss: {},
-  userStats: {},
   User: {
-    id: {},
-    name: {},
-    coins: {},
-    level: {},
-    exp: {},
-    berrys: {},
-    chestLevel: {},
-    void: {},
-    keys: {},
-    voidRituals: {},
-    voidCoins: {},
-    questProgress: {},
-    questNeed: {},
+    id: "",
+    name: "",
+    coins: 0,
+    level: 0,
+    exp: 0,
+    berrys: 0,
+    chestLevel: 0,
+    void: 0,
+    keys: 0,
+    voidRituals: 0,
+    voidCoins: 0,
+    quest: {
+      goal: 0,
+      progress: 0,
+    },
     questReward: {},
     questTime: {},
-    last_online: {},
-    chestBonus: {},
-    praiseMe: {},
-    BDay: {},
+    last_online: 0,
+    chestBonus: 0,
+    praiseMe: [""],
+    BDay: "",
     questsGlobalCompleted: {},
-    grempen: {},
+    grempenBoughted: 0,
     shopTime: {},
-    first_$: {},
-    praise: {},
+    first_$: true,
+    praise: [""],
     profile_color: {},
     profile_description: {},
     questLast: {},
@@ -42,19 +49,19 @@ const ProperiesEnum = {
     thiefGloves: {},
     chilli: {},
     invites: {},
-    iq: {},
-    cursesEnded: {},
+    iq: 0,
+    cursesEnded: 0,
     voidCasino: {},
     element: {},
-    coinsPerMessage: {},
+    coinsPerMessage: 0,
     voidPrice: {},
-    elementLevel: {},
+    elementLevel: 0,
     bag: {},
     curses: {},
-    seed: {},
+    seed: 0,
     voidTreeFarm: {},
     voidDouble: {},
-    CD_$: {},
+    CD_$: 0,
     leave_roles: {},
     profile_confidentiality: {},
     voidQuests: {},
@@ -62,10 +69,8 @@ const ProperiesEnum = {
     monstersBought: {},
     voidThief: {},
     thiefWins: {},
-    quest: {},
     voidMysticClover: {},
     voidFreedomCurse: {},
-    chestbonus: {},
     voidCooldown: {},
     remainedQuest: {},
     bossEffects: {},
@@ -78,17 +83,97 @@ const ProperiesEnum = {
   counterEntity: {},
 };
 
+
+const ProperiesEnum = {
+  berrysPrice: {},
+  grempen: {},
+
+  name: {},
+  id: {},
+  coins: {
+    label: "Коин",
+    labelMeta: {
+      base: "коин",
+      suffixes: ["ов", "", "а"],
+    },
+  },
+  level: {},
+  exp: {},
+  berrys: {},
+  chestLevel: {},
+  void: {},
+  keys: {
+    label: "Ключ",
+    labelMeta: {
+      base: "ключ",
+      suffixes: ["ей", "", "а"],
+    },
+  },
+  voidRituals: {},
+  voidCoins: {},
+  questProgress: {},
+  questNeed: {},
+  questReward: {},
+  questTime: {},
+  last_online: {},
+  chestBonus: {},
+  praiseMe: {},
+  BDay: {},
+  questsGlobalCompleted: {},
+  shopTime: {},
+  first_$: {},
+  praise: {},
+  profile_color: {},
+  profile_description: {},
+  questLast: {},
+  dayQuests: {},
+  thiefGloves: {},
+  chilli: {},
+  invites: {},
+  iq: {},
+  cursesEnded: {},
+  voidCasino: {},
+  element: {},
+  coinsPerMessage: {},
+  voidPrice: {},
+  elementLevel: {},
+  bag: {},
+  curses: {},
+  seed: {},
+  voidTreeFarm: {},
+  voidDouble: {},
+  CD_$: {},
+  leave_roles: {},
+  profile_confidentiality: {},
+  voidQuests: {},
+  monster: 0,
+  monstersBought: 0,
+  voidThief: {},
+  thiefWins: {},
+  quest: {},
+  voidMysticClover: {},
+  voidFreedomCurse: {},
+  chestbonus: {},
+  voidCooldown: {},
+  remainedQuest: {},
+  bossEffects: {},
+  bossEffectsCallbackMap: {},
+  cursesCallbackMap: {},
+};
+
 class Properties {
-  static endingOf(propertyBase, quantity) {
-    const item = propertyBase;
+  static endingOf(property, quantity) {
+    const item = ProperiesEnum[property];
     if (!item) {
       return undefined;
     }
 
-    // delevop crutch
-    return "void";
+    const { labelMeta } = item;
+    if (!labelMeta) {
+      return `${quantity} ${item.label}`;
+    }
 
-    return Util.ending(quantity, item.base, ...item.suffixes, {
+    return Util.ending(quantity, labelMeta.base, ...labelMeta.suffixes, {
       unite: (_, word) => word,
     });
   }
@@ -98,5 +183,5 @@ class Properties {
   }
 }
 
-export { Properties, ProperiesEnum };
+export { Properties, ProperiesEnum, Schema };
 export default Properties;
