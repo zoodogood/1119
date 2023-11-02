@@ -25,10 +25,11 @@ class Command {
 
       const getList = (mask) =>
         wordNumbers.filter((word, index) => (2 ** index) & mask);
-      const list = getList(data.grempen || 0);
+
+      const list = getList(data.grempenBoughted || 0);
 
       const buyingItemsContent =
-        data.shopTime === Math.floor(Date.now() / 86400000) && data.grempen
+        data.shopTime === Math.floor(Date.now() / 86400000) && data.grempenBoughted
           ? `приобрел ${Util.ending(
             list.length,
             "товар",
@@ -385,7 +386,7 @@ class Command {
         inline: true,
         others: ["завоз", "завоз товаров"],
         fn: (product) => {
-          user.grempen = 0;
+          user.grempenBoughted = 0;
           return " как дорогостоящий завоз товаров. Заходите ко мне через пару минут за новыми товарами";
         },
       },
@@ -403,7 +404,7 @@ class Command {
 
           if (already && !user.voidFreedomCurse) {
             user.coins += product.value;
-            user.grempen -= 2 ** todayItems.indexOf(product);
+            user.grempenBoughted -= 2 ** todayItems.indexOf(product);
             return " как ничто. Ведь вы уже были прокляты!";
           }
 
@@ -422,14 +423,13 @@ class Command {
 
     const getTodayItems = () =>
       allItems.filter((e, i) =>
-        DataManager.data.bot.grempen.includes(i.toString(16)),
+        DataManager.data.bot.grempenItems.includes(i.toString(16)),
       );
-
-    let grempenList;
-    let todayItems = (grempenList = getTodayItems());
+    
+    let todayItems = getTodayItems();
 
     if (Math.floor(Date.now() / 86400000) !== user.shopTime) {
-      user.grempen = 0;
+      user.grempenBoughted = 0;
       user.shopTime = Math.floor(Date.now() / 86400000);
     }
 
@@ -437,7 +437,7 @@ class Command {
       const index = todayItems.indexOf(product);
       if (index === -1) return null;
 
-      return (user.grempen & (2 ** index)) !== 0;
+      return (user.grempenBoughted & (2 ** index)) !== 0;
     };
 
     const buyFunc = async (name) => {
@@ -476,12 +476,12 @@ class Command {
 
       if (!isNaN(product.value)) user.coins -= product.value;
 
-      user.grempen += 2 ** todayItems.indexOf(product);
+      user.grempenBoughted += 2 ** todayItems.indexOf(product);
       msg.author.action(Actions.buyFromGrempen, {
         product,
         channel: msg.channel,
       });
-      if (user.grempen == 63) {
+      if (user.grempenBoughted === 63) {
         msg.author.action(Actions.globalQuest, { name: "cleanShop" });
       }
 

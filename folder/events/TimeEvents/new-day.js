@@ -77,7 +77,7 @@ class Event {
     Data.bot.dayDate = today;
     Data.bot.currentDay = Util.timestampDay(Date.now());
 
-    Data.bot.grempen = "";
+    Data.bot.grempenItems = "";
     let arr = [
       "0",
       "1",
@@ -96,7 +96,7 @@ class Event {
       "e",
     ]; //0123456789abcdef
     for (let i = 1; i < 7; i++) {
-      DataManager.data.bot.grempen += arr.random({ pop: true });
+      DataManager.data.bot.grempenItems += arr.random({ pop: true });
     }
 
     let berryRandom = [
