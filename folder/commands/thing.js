@@ -459,7 +459,7 @@ class Command {
               scene.bonuses = bonuses;
             },
             textOutput:
-              '"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор, превратив часть своей клубники в {Util.ending(scene.bonuses, "бонус", "ов", "", "а")} сундука',
+              "\"Сыворотка для преобразования клубники в волшебные сундуки\", так вы назвали свой раствор, превратив часть своей клубники в {Util.ending(scene.bonuses, \"бонус\", \"ов\", \"\", \"а\")} сундука",
           },
           false,
         ],
@@ -497,7 +497,7 @@ class Command {
               DataManager.data.bot.berrysPrice += scene.random;
             },
             textOutput:
-              'Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, "коин", "ов", "", "а")} дороже.',
+              "Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, \"коин\", \"ов\", \"\", \"а\")} дороже.",
           },
           false,
           false,
@@ -566,7 +566,7 @@ class Command {
               userData.void += scene.voids = Util.random(1, 2);
             },
             textOutput:
-              'Преобразуя материальные предметы вы получаете {Util.ending(scene.voids, "уровн", "ей", "ь", "я")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег.',
+              "Преобразуя материальные предметы вы получаете {Util.ending(scene.voids, \"уровн\", \"ей\", \"ь\", \"я\")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег.",
           },
           false,
           {
@@ -630,7 +630,7 @@ class Command {
             action: async ({ userData, level, scene }) =>
               userData.berrys ? userData.berrys-- : false,
             textOutput:
-              'Сражаться с обезьяной и угрожать ей было плохой идеей{context.user.berrys ? ", вы потеряли ещё и пару клубник (1)" : "..."}',
+              "Сражаться с обезьяной и угрожать ей было плохой идеей{context.user.berrys ? \", вы потеряли ещё и пару клубник (1)\" : \"...\"}",
           },
           false,
           false,
@@ -920,9 +920,12 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Вы ничего не можете с этим поделать`, `Не взирая на Вашу силу, это так`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Вы ничего не можете с этим поделать",
+                "Не взирая на Вашу силу, это так",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
           false,
@@ -931,8 +934,12 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput: "[`Штука просто штука.`, `Так даже лучше`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Штука просто штука.",
+                "Так даже лучше",
+              ].random()),
+            textOutput: "{sceme.phrase}",
           },
           false,
           false,
@@ -941,9 +948,12 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Вы слишком сильны дня неё`, `Ваша мощь куда больше силы штуки`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Вы слишком сильны дня неё",
+                "Ваша мощь куда больше силы штуки",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
           false,
@@ -952,9 +962,12 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Что вам от неё нужно?!`, `Штука была вашим другом`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Что вам от неё нужно?!",
+                "Штука была вашим другом",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
           false,
@@ -971,77 +984,113 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Говорят, вы никакущий фермер`, `Поговаривают, что вы сами непонимаете для чего работаете`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Говорят, вы никакущий фермер",
+                "Поговаривают, что вы сами непонимаете для чего работаете",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Они хотят, чтобы вы рассказали побольше о своём деле`, `Всех интересует вопрос: как..?`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Они хотят, чтобы вы рассказали побольше о своём деле",
+                "Всех интересует вопрос: как..?",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Люди думают, вы продали душу ради урожая`, `Якобы вы добились всего нечестным путём`].random()",
-          },
-          false,
-        ],
-        [
-          {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Говорят, вы абсолютно легкомысленны`, `Поговаривают, что за свою жизнь вы побывали в самых разных абсурдных ситуациях`].random()",
-          },
-          false,
-          {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Они хотят, чтобы вы рассказали как оно, быть удачливым`, `Всех интересует вопрос: как..?`].random()",
-          },
-          {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Люди думают, что вы крадете их удачу`, `Якобы вы добились всего нечестным путём`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Люди думают, вы продали душу ради урожая",
+                "Якобы вы добились всего нечестным путём",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
         ],
         [
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Говорят, вы странный`, `Поговаривают самые разные мифы`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Говорят, вы абсолютно легкомысленны",
+                "Поговаривают, что за свою жизнь вы побывали в самых разных абсурдных ситуациях",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Они хотят, чтобы вы научили их медитации`, `Всех интересует вопрос: как..?`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Они хотят, чтобы вы рассказали как оно, быть удачливым",
+                "Всех интересует вопрос: как..?",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Люди думают, что у вас вообще нет эмоций`, `Якобы вы избавите этот мир от зла`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Люди думают, что вы крадете их удачу",
+                "Якобы вы добились всего нечестным путём",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
         ],
         [
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Говорят самые гадкие вещи про вас`, `Поговаривают, что в вас нет ничего святого`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Говорят, вы странный",
+                "Поговаривают самые разные мифы",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Они хотят той же мощи, что и у ваас`, `Всех интересует вопрос: когда найдется тот, кто даст вам по башке?`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Они хотят, чтобы вы научили их медитации",
+                "Всех интересует вопрос: как..?",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           {
-            action: async ({ userData, level, scene }) => true,
-            textOutput:
-              "[`Люди думают, что вы их не убиваете только, чтобы творить более ужасные вещи`, `Якобы вам никогда нельзя смотреть в глаза`].random()",
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Люди думают, что у вас вообще нет эмоций",
+                "Якобы вы избавите этот мир от зла",
+              ].random()),
+            textOutput: "{scene.phrase}",
+          },
+          false,
+        ],
+        [
+          {
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Говорят самые гадкие вещи про вас",
+                "Поговаривают, что в вас нет ничего святого",
+              ].random()),
+            textOutput: "{scene.phrase}",
+          },
+          false,
+          {
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Они хотят той же мощи, что и у ваас",
+                "Всех интересует вопрос: когда найдется тот, кто даст вам по башке?",
+              ].random()),
+            textOutput: "{scene.phrase}",
+          },
+          {
+            action: async ({ userData, level, scene }) =>
+              (scene.phrase = [
+                "Люди думают, что вы их не убиваете только, чтобы творить более ужасные вещи",
+                "Якобы вам никогда нельзя смотреть в глаза",
+              ].random()),
+            textOutput: "{scene.phrase}",
           },
           false,
         ],
@@ -1422,7 +1471,7 @@ class Command {
         iconURL: interaction.user.avatarURL(),
       },
       footer: {
-        text: 'Вы всегда сможете изменить выбор — "!штука я"\nТакже не забывайте улучшать её способности командой "!штука улучшить"',
+        text: "Вы всегда сможете изменить выбор — \"!штука я\"\nТакже не забывайте улучшать её способности командой \"!штука улучшить\"",
       },
       fields: Elements.map((elementBase) => ({
         name: `**${elementBase.emoji} ${elementBase.name}**`,
@@ -1648,7 +1697,7 @@ class Command {
     id: 52,
     media: {
       description:
-        '\n\nПовезло-повезло:\n1) Даёт деньги в банк сервера\n2) Абсолютно рандомная и непредсказуемая фигня\n3) Также даёт неплохие бонусы\nПссс, человек, я принимаю идеи по добавлению новых ивентов, надеюсь, ты знаешь где меня искать..\n\n✏️\n```python\n!thing <"улучшить" | "я">\n```\n\n',
+        "\n\nПовезло-повезло:\n1) Даёт деньги в банк сервера\n2) Абсолютно рандомная и непредсказуемая фигня\n3) Также даёт неплохие бонусы\nПссс, человек, я принимаю идеи по добавлению новых ивентов, надеюсь, ты знаешь где меня искать..\n\n✏️\n```python\n!thing <\"улучшить\" | \"я\">\n```\n\n",
     },
     allias: "шутка штука aught аугт нечто штуковина щось річ",
     allowDM: true,
