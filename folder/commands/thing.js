@@ -1578,7 +1578,7 @@ class Command {
 
       userData.berrys -= resourcesInfo.berrys;
       userData.coins -= resourcesInfo.coins;
-      userData.elementLevel = ~~userData.elementLevel + 1;
+      userData.elementLevel = (userData.elementLevel || 0) + 1;
       interaction.channel.msg({
         title: `Непослушная сила улучшена до ${
           userData.elementLevel + 1
@@ -1586,7 +1586,6 @@ class Command {
         description:
           "Апгрейды открывают новые события, а такккж-е штука становится более непредсказуемой, принося немrror} больше коинов.",
         color: embedColor,
-        delete: 9000,
         author: {
           name: interaction.user.username,
           iconURL: interaction.user.avatarURL(),
