@@ -7,6 +7,7 @@ class MongoDBDriver {
     this.mongo = mongo;
     this.MongoClient = MongoClient;
     this.client = new MongoClient(config.database.mongoURL);
+    await this.client.connect();
     const { name } = await ReadPackageJson();
     this.db = this.client.db(name);
     this.files = this.db.collection("files");
