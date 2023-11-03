@@ -1,5 +1,4 @@
 import * as Util from "#lib/util.js";
-import EventsManager from "#lib/modules/EventsManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
@@ -1455,10 +1454,12 @@ class Command {
   }
 
   async displayIncreaseLevelInterface(interaction) {
-    const user = interaction.user;
+    const { user } = interaction;
     const userData = user.data;
 
     const elementBase = this.constructor.Elements.at(userData.element);
+
+    const embedColor = elementBase.color;
 
     if (userData.elementLevel >= this.constructor.MAX_LEVEL) {
       interaction.channel.msg({
@@ -1499,10 +1500,10 @@ class Command {
         title: "Подтвердите",
         description: `Улучшение стоит целых ${Util.ending(
           resourcesInfo.coins,
-          ...endingKeys.coins,
+          ...endingSuffics.coins,
         )} и ${Util.ending(
           resourcesInfo.berrys,
-          ...endingKeys.berrys,
+          ...endingSuffics.berrys,
         )}\nВы хотите продолжить?`,
         color: embedColor,
       });
