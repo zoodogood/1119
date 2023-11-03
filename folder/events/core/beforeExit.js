@@ -13,10 +13,14 @@ class Event extends BaseEvent {
   }
 
   async run() {
-    await DataManager.file.write();
-    await TimeEventsManager.file.write();
-    await CounterManager.file.write();
-    await ErrorsHandler.Audit.createLog();
+    try {
+      await DataManager.file.write();
+      await TimeEventsManager.file.write();
+      await CounterManager.file.write();
+      await ErrorsHandler.Audit.createLog();
+    } catch (error) {
+      console.error(error);
+    }
 
     process.exit();
   }
