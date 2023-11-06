@@ -18,6 +18,7 @@ const ActionsMap = {
   praiseUser: "praiseUser",
   userPraiseMe: "userPraiseMe",
   anonTaskResolve: "anonTaskResolve",
+  beforeBagInteracted: "beforeBagInteracted",
   // Quest
   dailyQuestSkiped: "dailyQuestSkiped",
   dailyQuestComplete: "dailyQuestComplete",
