@@ -415,8 +415,37 @@ class CurseManager {
           },
         },
         filter: (_user, guild) => guild && guild.data.boss?.isArrived,
-        interactionIsLong: true,
+        interactionIsLong: false,
         reward: 50,
+      },
+      {
+        _weight: 5,
+        id: "noBagAvailable",
+        description:
+          "Вы не можете класть ресурсы в сумку, как и извлекать их из неё. Проклятие будет засчитано по окончании таймера",
+        hard: 0,
+        values: {
+          goal: (user) => 1,
+          timer: () => 3_600_000 * 24,
+        },
+        callback: {
+          curseTimeEnd: (user, curse, data) => {
+            if (data.curse !== curse) {
+              return;
+            }
+
+            const goal = curse.values.goal;
+            data.event.preventDefault();
+
+            CurseManager.intarface({ user, curse }).setProgress(goal);
+          },
+          beforeBagInteracted: (user, curse, context) => {
+            context.preventDefault();
+          },
+        },
+        filter: (_user, guild) => guild && guild.data.boss?.isArrived,
+        interactionIsLong: false,
+        reward: 15,
       },
     ].map((curse) => [curse.id, curse]),
   );
