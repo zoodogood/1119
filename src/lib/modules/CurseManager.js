@@ -414,8 +414,7 @@ class CurseManager {
             CurseManager.checkAvailable({ curse, user });
           },
         },
-        filter: (_user, guild) => guild && guild.data.boss?.isArrived,
-        interactionIsLong: false,
+        interactionIsShort: true,
         reward: 50,
       },
       {
@@ -443,7 +442,6 @@ class CurseManager {
             context.preventDefault();
           },
         },
-        filter: (_user, guild) => guild && guild.data.boss?.isArrived,
         interactionIsLong: false,
         reward: 15,
       },
