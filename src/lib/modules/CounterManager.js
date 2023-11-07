@@ -1,5 +1,5 @@
 import FileSystem from "fs";
-import { Template, ErrorsHandler } from "#lib/modules/mod.js";
+import { Template, ErrorsHandler, StorageManager } from "#lib/modules/mod.js";
 
 import { Collection } from "@discordjs/collection";
 import { sleep } from "#src/lib/util.js";
@@ -109,8 +109,11 @@ class CounterManager {
     write: async () => {
       const path = this.file.path;
       const data = JSON.stringify(this.data);
+      await StorageManager.write("counters.json", data);
+      // to-do @deprecated. will be removed
       FileSystem.writeFileSync(path, data);
     },
+    defaultData: [],
   };
 
   static data = {};
