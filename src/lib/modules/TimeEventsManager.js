@@ -2,6 +2,7 @@ import FileSystem from "fs";
 import EventEmitter from "events";
 
 import * as Util from "#lib/util.js";
+import StorageManager from "#lib/modules/StorageManager.js";
 
 class TimeEventsManager {
   static #lastSeenDay;
@@ -208,11 +209,14 @@ class TimeEventsManager {
       const data = JSON.parse(content);
       this.data = data;
     },
-    write: () => {
+    write: async () => {
       const path = this.file.path;
       const data = JSON.stringify(this.data);
+      await StorageManager.write("timeEvents.json", data);
+      // to-do @deprecated. will be removed
       FileSystem.writeFileSync(path, data);
     },
+    defaultData: {},
   };
 
   static emitter = new EventEmitter();
