@@ -97,6 +97,7 @@ class ArticlesManager {
 		content = MarkdownMetadata.replace(content, metadata);
 		
 		await StorageManager.write(`articles/${ path }.md`, content);
+		// to-do @deprecated. will be removed
 		await FileSystem.writeFile(full, content);
 		return metadata;
 	}
