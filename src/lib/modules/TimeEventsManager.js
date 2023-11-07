@@ -144,8 +144,6 @@ class TimeEventsManager {
   }
 
   static handle() {
-    this.file.write();
-
     clearTimeout(this.timeout);
 
     const event = this.fetchNextEvent();
