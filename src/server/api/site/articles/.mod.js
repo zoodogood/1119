@@ -1,3 +1,4 @@
+import StorageManager from '#lib/modules/StorageManager.js';
 import { MarkdownMetadata } from '#lib/util.js';
 import { ImportDirectory } from '@zoodogood/import-directory';
 import FileSystem from 'fs/promises';
@@ -94,8 +95,8 @@ class ArticlesManager {
 		Object.assign(metadata, {author, timestamp: Date.now()});
 
 		content = MarkdownMetadata.replace(content, metadata);
-
-		await FileSystem.mkdir(Path.resolve(full, "../"), { recursive: true });
+		
+		await StorageManager.write(`articles/${ path }.md`, content);
 		await FileSystem.writeFile(full, content);
 		return metadata;
 	}
