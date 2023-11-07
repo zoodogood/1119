@@ -1,239 +1,263 @@
-import FileSystem from 'fs';
-import {Template, ErrorsHandler} from '#lib/modules/mod.js';
+import FileSystem from "fs";
+import { Template, ErrorsHandler } from "#lib/modules/mod.js";
 
-import { Collection } from '@discordjs/collection';
-import { sleep } from '#src/lib/util.js';
-import app from '#app';
-
+import { Collection } from "@discordjs/collection";
+import { sleep } from "#src/lib/util.js";
+import app from "#app";
 
 class CounterManager {
+  static async create(counter) {
+    this.data.push(counter);
+    const result = await this.call(counter);
+    this.file.write();
 
-	static async create(counter){
-	  this.data.push(counter);
-	  const result = await this.call(counter);
-	  this.file.write();
- 
-	  return {result, counter};
-	}
- 
-	static delete(counterOrIndex){
-	  const index = typeof counterOrIndex == "number" ?
-		 counterOrIndex :
-		 this.counterData.indexOf(counterOrIndex);
-		 
-	  if (~index === 0){
-		 return false;
-	  }
- 
-	  this.data.splice(index, 1);
-	  this.file.write();
-	}
+    return { result, counter };
+  }
 
-	static freeze(counter){
-		counter.freezed = true;
-	}
+  static delete(counterOrIndex) {
+    const index =
+      typeof counterOrIndex === "number"
+        ? counterOrIndex
+        : this.counterData.indexOf(counterOrIndex);
 
-	static reportException(counter, error){
-		const channel = app.client.channels.cache.get(counter.channelId);
-		const user = app.client.users.cache.get(counter.authorId);
-		const target = channel.isTextBased() ? channel : user;
+    if (~index === 0) {
+      return false;
+    }
 
-		const description = `Во время обработки счётчика в канале ${ channel.toString() } произошло исключение.\n\nЗапускаемый счётчик заморожен до ручного возобновления. Узнать больше информации — через команду \`!счётчики\`.\nОн был создан/изменён пользователем:\n${ user.tag } (ID: ${ user.id }).`;
-		ErrorsHandler.sendErrorInfo({channel: target, error, description});
-	}
+    this.data.splice(index, 1);
+    this.file.write();
+  }
 
-	static resume(counter){
-		delete counter.freezed;
-	}
- 
-	static async *createGenerator(){
-	  let i = 0;
-	  const MINUTE = 60_000;
-	  const MINUTES = 15;
- 
-	  while (true) {
-		 const counter = this.data[i];
-		 yield this.call(counter);
- 
-		 await sleep(MINUTE * MINUTES / (this.data.length + 1));
-		 i++;
-		 i %= this.data.length;
-	  }
-	}
- 
-	static async handle(){
-	  const queue = this.createGenerator();
-	  for await (const _counter of queue){};
-	}
- 
-	static async call(counter){
-		if (!counter){
-			return;
-		}
+  static freeze(counter) {
+    counter.freezed = true;
+  }
 
-		const client = app.client;
+  static reportException(counter, error) {
+    const channel = app.client.channels.cache.get(counter.channelId);
+    const user = app.client.users.cache.get(counter.authorId);
+    const target = channel.isTextBased() ? channel : user;
 
-		if (counter.freezed){
-			return null;
-		}
-	
-	
-		try {
-			const channel = client.guilds.cache.get(counter.guildId).channels.cache.get(counter.channelId);
-			const context = {client, counter, channel};
-			const templater = new Template({executer: counter.authorId, type: Template.sourceTypes.counter}, context);
-		
-			const result = await this.countersTypes.get(counter.type).handle(context, templater);
-			return result;
-		}
-		catch (error) {
-			this.reportException(counter, error);
-			this.freeze(counter);
-			return error;
-		}
-	}
- 
-	static file = {
-		 path: `${ process.cwd() }/folder/data/counters.json`,
-		 load: async () => {
-			const path = this.file.path;
-			const content = FileSystem.readFileSync(path, "utf-8");
-			const data = JSON.parse(content);
-			this.data = data;
-		 },
-		 write: async () => {
-			const path = this.file.path;
-			const data = JSON.stringify(this.data);
-			FileSystem.writeFileSync(path, data);
-		 }
-	}
- 
-	static data = {};
+    const description = `Во время обработки счётчика в канале ${channel.toString()} произошло исключение.\n\nЗапускаемый счётчик заморожен до ручного возобновления. Узнать больше информации — через команду \`!счётчики\`.\nОн был создан/изменён пользователем:\n${
+      user.tag
+    } (ID: ${user.id}).`;
+    ErrorsHandler.sendErrorInfo({ channel: target, error, description });
+  }
 
-	static countersTypes = new Collection(Object.entries({
-      "message":
-		{
-			emoji: "🖊️",
-			label: "🖊️Сообщение",
-			description: "Единожды отправляет сообщение и после, ненавязчиво, изменяет его содержимое",
-			key: "message",
-			change: async (context) => {
-				const interaction = context.interaction;
-				const counter = context.counter;
-				counter.type = context.typeBase.key;
-				counter.channelId = interaction.channel.id;
-				counter.guildId   = interaction.guild.id;
-				counter.authorId  = interaction.user.id;
+  static resume(counter) {
+    delete counter.freezed;
+  }
+  static async *createGenerator() {
+    let i = 0;
+    const MINUTE = 60_000;
+    const MINUTES = 15;
 
-				const questionNeedEmbed = async () => {
-					const message = await interaction.message.msg({title: "Вашему сообщению нужен эмбед?", description: `Вы сможете передать JSON-набор для эмбед сообщения`});
-					const react = await message.awaitReact({user: interaction.user, removeType: "all"}, "685057435161198594", "763807890573885456");
-					message.delete();
-					return react === "685057435161198594";
-				}
+    while (true) {
+      const counter = this.data[i];
+      yield this.call(counter);
 
-				context.needEmbed = await questionNeedEmbed();
+      await sleep((MINUTE * MINUTES) / (this.data.length + 1));
+      i++;
+      i %= this.data.length;
+    }
+  }
 
-				if (context.needEmbed){
-					
-				}
+  static async handle() {
+    const queue = this.createGenerator();
+    for await (const _counter of queue) {
+    }
+  }
+  static async call(counter) {
+    if (!counter) {
+      return;
+    }
 
-				return counter;
-			},
-			async handle({channel, counter}, templater){
-				
-				const messageOptions = counter.message;
-				messageOptions.title 		&&= await templater.replaceAll(messageOptions.title);
-				messageOptions.description &&= await templater.replaceAll(messageOptions.description);
-				messageOptions.content 		&&= await templater.replaceAll(messageOptions.content);
-				 
+    const client = app.client;
 
-				const message = await channel.messages.fetch(counter.messageId);
-				message.msg({...messageOptions, edit: true});
-				return message;
-			}
+    if (counter.freezed) {
+      return null;
+    }
+
+    try {
+      const channel = client.guilds.cache
+        .get(counter.guildId)
+        .channels.cache.get(counter.channelId);
+      const context = { client, counter, channel };
+      const templater = new Template(
+        { executer: counter.authorId, type: Template.sourceTypes.counter },
+        context,
+      );
+
+      const result = await this.countersTypes
+        .get(counter.type)
+        .handle(context, templater);
+      return result;
+    } catch (error) {
+      this.reportException(counter, error);
+      this.freeze(counter);
+      return error;
+    }
+  }
+
+  static file = {
+    path: `${process.cwd()}/folder/data/counters.json`,
+    load: async () => {
+      const path = this.file.path;
+      const content = FileSystem.readFileSync(path, "utf-8");
+      const data = JSON.parse(content);
+      this.data = data;
+    },
+    write: async () => {
+      const path = this.file.path;
+      const data = JSON.stringify(this.data);
+      FileSystem.writeFileSync(path, data);
+    },
+  };
+
+  static data = {};
+
+  static countersTypes = new Collection(
+    Object.entries({
+      message: {
+        emoji: "🖊️",
+        label: "🖊️Сообщение",
+        description:
+          "Единожды отправляет сообщение и после, ненавязчиво, изменяет его содержимое",
+        key: "message",
+        change: async (context) => {
+          const interaction = context.interaction;
+          const counter = context.counter;
+          counter.type = context.typeBase.key;
+          counter.channelId = interaction.channel.id;
+          counter.guildId = interaction.guild.id;
+          counter.authorId = interaction.user.id;
+
+          const questionNeedEmbed = async () => {
+            const message = await interaction.message.msg({
+              title: "Вашему сообщению нужен эмбед?",
+              description: "Вы сможете передать JSON-набор для эмбед сообщения",
+            });
+            const react = await message.awaitReact(
+              { user: interaction.user, removeType: "all" },
+              "685057435161198594",
+              "763807890573885456",
+            );
+            message.delete();
+            return react === "685057435161198594";
+          };
+
+          context.needEmbed = await questionNeedEmbed();
+
+          if (context.needEmbed) {
+          }
+
+          return counter;
+        },
+        async handle({ channel, counter }, templater) {
+          const messageOptions = counter.message;
+          messageOptions.title &&= await templater.replaceAll(
+            messageOptions.title,
+          );
+          messageOptions.description &&= await templater.replaceAll(
+            messageOptions.description,
+          );
+          messageOptions.content &&= await templater.replaceAll(
+            messageOptions.content,
+          );
+
+          const message = await channel.messages.fetch(counter.messageId);
+          message.msg({ ...messageOptions, edit: true });
+          return message;
+        },
       },
-      "channel":
-		{
-			emoji: "🪧",
-			label: "🪧Имя канала",
-			description: "Изменяет имя указаного канала",
-			key: "channel",
-			change: async (context) => {
-				const interaction = context.interaction;
-				const counter = context.counter;
+      channel: {
+        emoji: "🪧",
+        label: "🪧Имя канала",
+        description: "Изменяет имя указаного канала",
+        key: "channel",
+        change: async (context) => {
+          const interaction = context.interaction;
+          const counter = context.counter;
 
-				counter.type = context.typeBase.key;
-				counter.guildId   = interaction.guild.id;
-				counter.authorId  = interaction.user.id;
+          counter.type = context.typeBase.key;
+          counter.guildId = interaction.guild.id;
+          counter.authorId = interaction.user.id;
 
-				const fetchChannel = async () => {
-					const message = await interaction.channel.msg({title: "Введите айди канала или упомяните его"});
-					const answer = await interaction.channel.awaitMessage({user: interaction.user});
-					if (!answer){
-						return null;
-					}
-					const id = answer.content.match(/\d{17,19}/)?.[0];
-					if (!id){
-						message.msg({color: "#ff0000", delete: 8_000, description: "Не удалось обнаружить метку канала"});
-						return false;
-					}
-					const channel = interaction.guild.channels.cache.get(id);
-					if (!channel){
-						message.msg({color: "#ff0000", delete: 8_000, description: `Не найдено канала с ID \`${ id }\``});
-						return false;
-					}
-					
-					return channel;
-				}
+          const fetchChannel = async () => {
+            const message = await interaction.channel.msg({
+              title: "Введите айди канала или упомяните его",
+            });
+            const answer = await interaction.channel.awaitMessage({
+              user: interaction.user,
+            });
+            if (!answer) {
+              return null;
+            }
+            const id = answer.content.match(/\d{17,19}/)?.[0];
+            if (!id) {
+              message.msg({
+                color: "#ff0000",
+                delete: 8_000,
+                description: "Не удалось обнаружить метку канала",
+              });
+              return false;
+            }
+            const channel = interaction.guild.channels.cache.get(id);
+            if (!channel) {
+              message.msg({
+                color: "#ff0000",
+                delete: 8_000,
+                description: `Не найдено канала с ID \`${id}\``,
+              });
+              return false;
+            }
 
-				
-				const channel = await fetchChannel();
-				if (!channel){
-					return;
-				}
+            return channel;
+          };
 
-				counter.channelId = channel.id;
-				counter.value = context.template;
-				return counter;
-			},
-			async handle({channel, counter}, templater){
-				const value = await templater.replaceAll(counter.value);
-				await channel.setName(value, `!commandInfo Counter, initialized by <@${ counter.authorId }>`);
-				return value;
-			}
+          const channel = await fetchChannel();
+          if (!channel) {
+            return;
+          }
+
+          counter.channelId = channel.id;
+          counter.value = context.template;
+          return counter;
+        },
+        async handle({ channel, counter }, templater) {
+          const value = await templater.replaceAll(counter.value);
+          await channel.setName(
+            value,
+            `!commandInfo Counter, initialized by <@${counter.authorId}>`,
+          );
+          return value;
+        },
       },
-      "poster": 
-		{
-			emoji: "🖌️",
-			label: "🖌️Отправка сообщения",
-			description: "Отправляет в указаный канал с интервалом в 15 минут",
-			key: "poster",
-			change: async (context) => {
-				const interaction = context.interaction;
-				const counter = context.counter;
-				counter.type = context.typeBase.key;
-				counter.channelId = interaction.channel.id;
-				counter.guildId   = interaction.guild.id;
-				counter.authorId  = interaction.user.id;
-				counter.value 		= context.template;
-				return counter;
-			},
-			async handle({channel, counter}, templater){
-				const content = await templater.replaceAll(counter.value);
-				await channel.msg({content});
-				return content;
-			}
-      }
-	}));
+      poster: {
+        emoji: "🖌️",
+        label: "🖌️Отправка сообщения",
+        description: "Отправляет в указаный канал с интервалом в 15 минут",
+        key: "poster",
+        change: async (context) => {
+          const interaction = context.interaction;
+          const counter = context.counter;
+          counter.type = context.typeBase.key;
+          counter.channelId = interaction.channel.id;
+          counter.guildId = interaction.guild.id;
+          counter.authorId = interaction.user.id;
+          counter.value = context.template;
+          return counter;
+        },
+        async handle({ channel, counter }, templater) {
+          const content = await templater.replaceAll(counter.value);
+          await channel.msg({ content });
+          return content;
+        },
+      },
+    }),
+  );
+}
 
- }
-
-
-
- 
- export default CounterManager;
-
+export default CounterManager;
 
 //  switch (type) {
 // 	case "🖊️":
@@ -256,7 +280,7 @@ class CounterManager {
 // 	  msg.msg({title: "Через секунду здесь появится сообщение", description: "Это и будет готовый счётчик", delete: 7000});
 // 	  await sleep(1500);
 // 	  counter = await msg.msg({title: textValue, ...embed});
-	  
+
 // 	break;
 // 	case "🪧":
 // 	  let channel = await msg.channel.awaitMessage(msg.author, {title: "Введите айди канала или упомяните его"});
