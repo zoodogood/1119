@@ -9,7 +9,6 @@ class CounterManager {
   static async create(counter) {
     this.data.push(counter);
     const result = await this.call(counter);
-    this.file.write();
 
     return { result, counter };
   }
@@ -25,7 +24,6 @@ class CounterManager {
     }
 
     this.data.splice(index, 1);
-    this.file.write();
   }
 
   static freeze(counter) {
