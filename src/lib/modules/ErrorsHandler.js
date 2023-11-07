@@ -5,6 +5,7 @@ import FileSystem from "fs";
 import { Collection } from "@discordjs/collection";
 import { stringify, parse } from "flatted";
 import config from "#config";
+import StorageManager from "#lib/modules/StorageManager.js";
 
 class ErrorsDataCache {
   #cache = new Map();
@@ -70,12 +71,14 @@ class ErrorsAudit {
 
   static file = {
     directory: `${process.cwd()}/folder/data/errors`,
-    write(data) {
+    async write(data) {
       const date = dayjs().format("DD-MM-HH-mm");
       const path = `${this.directory}/${date}.json`;
 
       data = JSON.stringify(data);
+      // to-do @deprecated. will be removed
       FileSystem.writeFileSync(path, data);
+      await StorageManager.write(`errors/${date}.json`);
     },
     async readFile(fileName) {
       const path = `${this.directory}/${fileName}`;
