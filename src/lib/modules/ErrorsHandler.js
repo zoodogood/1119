@@ -78,7 +78,7 @@ class ErrorsAudit {
       data = JSON.stringify(data);
       // to-do @deprecated. will be removed
       FileSystem.writeFileSync(path, data);
-      await StorageManager.write(`errors/${date}.json`);
+      await StorageManager.write(`errors/${date}.json`, data);
     },
     async readFile(fileName) {
       const path = `${this.directory}/${fileName}`;
@@ -105,12 +105,12 @@ class ErrorsAudit {
     config.development && console.error(error);
   }
 
-  createLog() {
+  async createLog() {
     if (this.collection.size === 0) {
       return false;
     }
 
-    this.constructor.file.write(this.toJSON());
+    await this.constructor.file.write(this.toJSON());
   }
 
   toJSON() {
