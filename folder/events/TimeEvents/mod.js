@@ -12,7 +12,7 @@ class Event extends BaseEvent {
 	run(event){
 		const eventBase = EventsManager.collection.get(`TimeEvent/${ event.name }`);
 		if (!eventBase){
-			throw new Error(`Unknow TimeEvent: ${ event.name }`)
+			throw new Error(`Unknown TimeEvent: ${ event.name }`)
 		}
 		const params = event.params ?? [];
 		eventBase.run(event.isLost, ...params);
