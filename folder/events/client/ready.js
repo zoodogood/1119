@@ -4,26 +4,28 @@ import { client } from "#bot/client.js";
 import { ReadPackageJson } from "#lib/util.js";
 import app from "#app";
 
-
 class Event extends BaseEvent {
-  constructor(){
+  constructor() {
     const EVENT = "ready";
     super(client, EVENT);
   }
 
-  async run(){
+  async run() {
     CounterManager.handle();
     app.version = (await ReadPackageJson()).version;
 
-
-    const {default: server} = await import("#server/start.js");
+    const { default: server } = await import("#server/start.js");
     app.server = server;
 
     console.info("\n\n\n     Ready...\n\n");
+
+    if (process.env.IN_CONTAINER) {
+      console.info(`PROCESS_ID: ${process.pid}`);
+    }
   }
 
   options = {
-    name: "client/ready"
+    name: "client/ready",
   };
 }
 
