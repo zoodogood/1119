@@ -14,6 +14,7 @@ import {
   ActionManager,
   QuestManager,
   GuildVariablesManager,
+  StorageManager,
 } from "#lib/modules/mod.js";
 
 import * as PropertiesManager from "#lib/modules/Properties.js";
@@ -100,7 +101,7 @@ class Template {
         const remove = () => context.nesting.pop();
         return brackets.length === 1 ? context.exitCode : remove();
       },
-      '"': (context) => (context.inQuotes = '"'),
+      "\"": (context) => (context.inQuotes = "\""),
       "'": (context) => (context.inQuotes = "'"),
       "`": (context) => (context.inQuotes = "`"),
       "\\": (context) => (context.skipOnce = true),
@@ -221,7 +222,7 @@ class Template {
   addModuleToSandbox(vm, moduleName) {
     const moduleEntity = this.constructor.ModulesScope.get(moduleName);
     if (!moduleEntity) {
-      throw new TypeError(`Unknow: ${moduleName}`);
+      throw new TypeError(`Unknown: ${moduleName}`);
     }
     const { permissions } = moduleEntity;
     const availableList = vm.sandbox.availableList;
@@ -425,8 +426,16 @@ class Template {
         name: "PropertiesManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER
-        }
+          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+        },
+      },
+      StorageManager: {
+        getContent: () => StorageManager,
+        name: "StorageManager",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+        },
       },
       Discord: {
         getContent: (context) => Discord,
