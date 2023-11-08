@@ -31,9 +31,9 @@ import get from '#lib/child-process-utils.js';
 const {run, info, _npm} = get({root, logger: true});
 
 
-const isInBun = globalThis.Bun;
-const runtime = isInBun ? "bun" : "node";
-const manager = isInBun ? "bun" : _npm;
+
+const runtime = "node";
+const manager = _npm;
 
 
 await info(`${ runtime } version:`);
