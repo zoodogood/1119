@@ -54,13 +54,14 @@ class QuestManager {
   }
 
   static checkAvailable({ user }) {
-    if ("quest" in user.data === false) {
+    const { quest } = user.data;
+    if (!quest) {
       const quest = this.generate({ user });
       this.init({ quest, user });
+      return;
     }
-    const quest = user.data.quest;
 
-    const currentDay = DataManager.data.bot.currentDay;
+    const { currentDay } = DataManager.data.bot;
     if (quest.day !== currentDay) {
       if (!quest.isCompleted) {
         user.action(Actions.dailyQuestSkiped, { quest });
