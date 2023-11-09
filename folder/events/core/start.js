@@ -2,8 +2,6 @@ import { BaseEvent } from "#lib/modules/EventsManager.js";
 import { assert } from "console";
 import { omit, timestampDay } from "#src/lib/util.js";
 
-
-
 import {
   DataManager,
   TimeEventsManager,
@@ -84,6 +82,9 @@ class Event extends BaseEvent {
         key.startsWith("CD") && user[key] < now ? delete user[key] : false,
       ),
     );
+    Data.guilds.forEach((guild) => {
+      delete guild.data.stupid_evil;
+    });
     Data.users = Data.users.sort((a, b) => b.level - a.level);
 
     Data.bot.berrysPrice ||= 200;
