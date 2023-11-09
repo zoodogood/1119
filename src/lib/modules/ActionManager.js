@@ -52,6 +52,8 @@ class ActionManager {
       value: function (actionName, data) {
         const userData = this.data;
 
+        QuestManager.checkAvailable({ user: this });
+
         if (actionName === "globalQuest") {
           const questId = data.name;
           const questBase = QuestManager.questsBase.get(questId);
@@ -59,7 +61,6 @@ class ActionManager {
         }
 
         if (
-          userData.quest &&
           QuestManager.questsBase.get(userData.quest.id).handler === actionName
         ) {
           const questId = userData.quest.id;
