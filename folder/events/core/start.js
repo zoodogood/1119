@@ -77,13 +77,15 @@ class Event extends BaseEvent {
     Data.dailyAudit ||= {};
 
     const now = Date.now();
-    Data.users.forEach((user) =>
-      Object.keys(user).forEach((key) =>
-        key.startsWith("CD") && user[key] < now ? delete user[key] : false,
+    Data.users.forEach((userData) =>
+      Object.keys(userData).forEach((key) =>
+        key.startsWith("CD") && userData[key] < now
+          ? delete userData[key]
+          : false,
       ),
     );
-    Data.guilds.forEach((guild) => {
-      delete guild.data.stupid_evil;
+    Data.guilds.forEach((guildData) => {
+      delete guildData.stupid_evil;
     });
     Data.users = Data.users.sort((a, b) => b.level - a.level);
 
