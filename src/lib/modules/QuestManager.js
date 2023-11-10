@@ -16,9 +16,9 @@ class QuestManager {
   }
 
   static generateOfBase({ questBase, user, context = {} }) {
+    const { baseGoal, maximalGoal, reward } = questBase;
     const calculateGoal = () => {
-      const baseGoal = questBase.baseGoal;
-      const limit = questBase.maximalGoal ?? Number.MAX_SAFE_INTEGER;
+      const limit = maximalGoal ?? Number.MAX_SAFE_INTEGER;
 
       const multiplayer =
         1 + (user.voidQuests ?? 0) * 0.15 + (context.goalMultiplayer ?? 0);
@@ -33,8 +33,8 @@ class QuestManager {
 
     const calculateReward = (goal) => {
       const multiplayer = 1 + (user.voidQuests ?? 0) * 0.3;
-      const difference = goal / questBase.baseGoal;
-      return difference * questBase.reward * multiplayer;
+      const difference = goal / baseGoal;
+      return difference * reward * multiplayer;
     };
 
     const quest = {
