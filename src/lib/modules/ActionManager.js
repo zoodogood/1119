@@ -89,6 +89,7 @@ class ActionManager {
               ErrorsHandler.Audit.push(error, {
                 actionName,
                 source: "BossEffectAction",
+                effectId: effect.id,
               });
             }
           }
@@ -104,6 +105,7 @@ class ActionManager {
               ErrorsHandler.Audit.push(error, {
                 actionName,
                 source: "CurseAction",
+                curseId: curse.id,
               });
             }
           }
