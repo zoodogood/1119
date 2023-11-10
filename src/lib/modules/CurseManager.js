@@ -97,8 +97,8 @@ class CurseManager {
           berryBarter: (user, curse, { quantity, isBuying }) => {
             isBuying
               ? CurseManager.interface({ user, curse }).incrementProgress(
-                quantity,
-              )
+                  quantity,
+                )
               : CurseManager.interface({ user, curse }).fail();
           },
         },
@@ -462,7 +462,7 @@ class CurseManager {
             if (data.curse !== curse) {
               return;
             }
-            
+
             CurseManager.interface({ curse, user }).fail();
           },
         },
@@ -583,8 +583,8 @@ class CurseManager {
 
       const timer = curse.values.timer
         ? `\nТаймер: <t:${Math.floor(
-          (curse.timestamp + curse.values.timer) / 1000,
-        )}:R> будет провалено`
+            (curse.timestamp + curse.values.timer) / 1000,
+          )}:R> будет провалено`
         : "";
 
       const content = `${description}\n${progressContent}${timer}`;
@@ -631,16 +631,30 @@ class CurseManager {
     user.data.curses?.forEach((curse) => this.checkAvailable({ curse, user }));
   }
 
-  static curseEnd({ lost, user, curse }) {
-    const curseBase = CurseManager.cursesBase.get(curse.id);
-
+  static removeCurse({ user, curse }) {
     const index = user.data.curses.indexOf(curse);
     if (index === -1) {
       return null;
     }
 
     user.data.curses.splice(index, 1);
+
+    const keysToRemove = (callbackKey) =>
+      !user.data.curses.some(
+        ({ id }) => callbackKey in this.cursesBase.get(id).callback,
+      );
+
+    const callbackMap = user.data.cursesCallbackMap;
+    Object.keys(callbackMap)
+      .filter(keysToRemove)
+      .forEach((key) => delete callbackMap[key]);
+  }
+
+  static curseEnd({ lost, user, curse }) {
+    this.removeCurse({ user, curse });
     user.action(Actions.curseEnd, { isLost: lost, curse });
+
+    const curseBase = CurseManager.cursesBase.get(curse.id);
 
     const getDefaultFields = () => {
       const fields = [];
@@ -675,15 +689,6 @@ class CurseManager {
 
       return fields;
     };
-
-    const needRemove = (callbackKey) =>
-      !user.data.curses.some(
-        ({ id }) => callbackKey in this.cursesBase.get(id).callback,
-      );
-    const callbackMap = user.data.cursesCallbackMap;
-    Object.keys(callbackMap)
-      .filter(needRemove)
-      .forEach((key) => delete callbackMap[key]);
 
     if (lost) {
       user.data.level = Math.max(1, user.data.level - 1);
