@@ -281,7 +281,7 @@ class Command {
               if (!curse) {
                 return "Проклятия отсуствуют.";
               }
-              const description = CurseManager.intarface({
+              const description = CurseManager.interface({
                 user: target,
                 curse,
               }).toString();
