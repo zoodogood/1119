@@ -1,4 +1,4 @@
-import Discord from "discord.js";
+import { User as DiscordUser } from "discord.js";
 import { CurseManager, QuestManager, ErrorsHandler } from "#lib/modules/mod.js";
 import { BossEffects } from "#lib/modules/BossManager.js";
 
@@ -23,6 +23,8 @@ const ActionsMap = {
   dailyQuestSkiped: "dailyQuestSkiped",
   dailyQuestComplete: "dailyQuestComplete",
   globalQuest: "globalQuest",
+  dailyQuestInit: "dailyQuestInit",
+  beforeDailyQuestInit: "beforeDailyQuestInit",
   // Boss
   bossAfterAttack: "bossAfterAttack",
   bossBeforeAttack: "bossBeforeAttack",
@@ -35,6 +37,7 @@ const ActionsMap = {
   curseInit: "curseInit",
   curseEnd: "curseEnd",
   curseTimeEnd: "curseTimeEnd",
+  curseBeforeSetProgress: "curseBeforeSetProgress",
   // Other
   callCommand: "callCommand",
   inputCommandParsed: "inputCommandParsed",
@@ -47,12 +50,16 @@ class ActionManager {
   static extendsGlobalPrototypes() {
     const ActionManager = this;
 
-    Object.defineProperty(Discord.User.prototype, "action", {
+    Object.defineProperty(DiscordUser.prototype, "action", {
       enumerable: false,
       value: function (actionName, data) {
         const userData = this.data;
 
-        QuestManager.checkAvailable({ user: this });
+        if (QuestManager.isNeedInstallDailyQuest({ user: this })) {
+          if (!this.data.quest?.willUpdate) {
+            QuestManager.requestInstallDailyQuest({ user: this });
+          }
+        }
 
         if (actionName === "globalQuest") {
           const questId = data.name;
