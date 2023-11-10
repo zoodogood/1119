@@ -5,6 +5,7 @@ import * as Util from "#lib/util.js";
 import Discord from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
+import QuestManager from "#lib/modules/QuestManager.js";
 
 class CurseManager {
   static generate({ hard = null, user, guild = null }) {
@@ -75,7 +76,7 @@ class CurseManager {
               CommandsManager.callMap.get("user").options.name ===
               command.options.name;
             compare &&
-              CurseManager.intarface({ user, curse }).incrementProgress(1);
+              CurseManager.interface({ user, curse }).incrementProgress(1);
 
             return;
           },
@@ -95,10 +96,10 @@ class CurseManager {
         callback: {
           berryBarter: (user, curse, { quantity, isBuying }) => {
             isBuying
-              ? CurseManager.intarface({ user, curse }).incrementProgress(
-                quantity,
-              )
-              : CurseManager.intarface({ user, curse }).fail();
+              ? CurseManager.interface({ user, curse }).incrementProgress(
+                  quantity,
+                )
+              : CurseManager.interface({ user, curse }).fail();
           },
         },
         interactionIsShort: true,
@@ -125,13 +126,13 @@ class CurseManager {
         callback: {
           curseInit: (user, curse, data) =>
             data.curse === curse && user.data.quest.isCompleted
-              ? CurseManager.intarface({ user, curse }).incrementProgress(1)
+              ? CurseManager.interface({ user, curse }).incrementProgress(1)
               : null,
 
           dailyQuestComplete: (user, curse) =>
-            CurseManager.intarface({ user, curse }).incrementProgress(1),
+            CurseManager.interface({ user, curse }).incrementProgress(1),
           dailyQuestSkiped: (user, curse) =>
-            CurseManager.intarface({ user, curse }).fail(),
+            CurseManager.interface({ user, curse }).fail(),
         },
         interactionIsLong: true,
         reward: 16,
@@ -154,10 +155,10 @@ class CurseManager {
           },
         },
         callback: {
-          dailyQuestCompete: (user, curse) =>
-            CurseManager.intarface({ user, curse }).incrementProgress(1),
+          dailyQuestComplete: (user, curse) =>
+            CurseManager.interface({ user, curse }).incrementProgress(1),
           callBot: (user, curse, { type }) =>
-            type === "stupid" && CurseManager.intarface({ user, curse }).fail(),
+            type === "stupid" && CurseManager.interface({ user, curse }).fail(),
         },
         filter: (user) => user.data.quest?.id === "namebot",
         interactionIsShort: true,
@@ -175,7 +176,7 @@ class CurseManager {
         callback: {
           chilliBooh: (user, curse, { boohTarget, chilli }) =>
             boohTarget !== user && chilli.rebounds > 0
-              ? CurseManager.intarface({ user, curse }).incrementProgress(1)
+              ? CurseManager.interface({ user, curse }).incrementProgress(1)
               : null,
         },
         interactionIsShort: true,
@@ -201,8 +202,8 @@ class CurseManager {
         callback: {
           chilliBooh: (user, curse, { boohTarget, chilli }) =>
             boohTarget !== user && chilli.rebounds > 0
-              ? CurseManager.intarface({ user, curse }).incrementProgress(1)
-              : CurseManager.intarface({ user, curse }).fail(),
+              ? CurseManager.interface({ user, curse }).incrementProgress(1)
+              : CurseManager.interface({ user, curse }).fail(),
         },
         interactionIsShort: true,
         reward: 7,
@@ -220,7 +221,7 @@ class CurseManager {
         callback: {
           openChest: (user, curse, { treasures }) =>
             "void" in treasures
-              ? CurseManager.intarface({ user, curse }).incrementProgress(1)
+              ? CurseManager.interface({ user, curse }).incrementProgress(1)
               : null,
         },
         interactionIsLong: true,
@@ -251,7 +252,7 @@ class CurseManager {
               messages.shift();
             }
 
-            CurseManager.intarface({ user, curse }).setProgress(
+            CurseManager.interface({ user, curse }).setProgress(
               messages.length,
             );
           },
@@ -314,7 +315,7 @@ class CurseManager {
             list.push(target.id);
             createdCurse.values.listOfUsers = list;
 
-            CurseManager.intarface({ user, curse }).incrementProgress(1);
+            CurseManager.interface({ user, curse }).incrementProgress(1);
           },
         },
         interactionIsShort: true,
@@ -346,7 +347,7 @@ class CurseManager {
             const difference = data.coins - previousCoins;
 
             data.coins -= difference * 2;
-            CurseManager.intarface({ user, curse }).incrementProgress(1);
+            CurseManager.interface({ user, curse }).incrementProgress(1);
           },
           curseTimeEnd: (user, curse, data) => {
             if (data.curse !== curse) {
@@ -356,7 +357,7 @@ class CurseManager {
             const goal = curse.values.goal;
             data.event.preventDefault();
 
-            CurseManager.intarface({ user, curse }).setProgress(goal);
+            CurseManager.interface({ user, curse }).setProgress(goal);
           },
         },
         reward: 7,
@@ -384,7 +385,7 @@ class CurseManager {
         },
         callback: {
           bossMakeDamage: (user, curse, { damage }) => {
-            CurseManager.intarface({ user, curse }).incrementProgress(damage);
+            CurseManager.interface({ user, curse }).incrementProgress(damage);
           },
         },
         filter: (_user, guild) => guild && guild.data.boss?.isArrived,
@@ -407,7 +408,7 @@ class CurseManager {
               .get("anon")
               .justCalculateStickCount(task, context);
             curse.values.goal = user.data.exp;
-            CurseManager.intarface({ user, curse }).incrementProgress(sticks);
+            CurseManager.interface({ user, curse }).incrementProgress(sticks);
           },
           beforeProfileDisplay: (user, curse) => {
             curse.values.goal = user.data.exp;
@@ -436,7 +437,7 @@ class CurseManager {
             const goal = curse.values.goal;
             data.event.preventDefault();
 
-            CurseManager.intarface({ user, curse }).setProgress(goal);
+            CurseManager.interface({ user, curse }).setProgress(goal);
           },
           beforeBagInteracted: (user, curse, context) => {
             context.preventDefault();
@@ -445,19 +446,129 @@ class CurseManager {
         interactionIsLong: false,
         reward: 15,
       },
+      {
+        _weight: 5,
+        id: "anyAction",
+        description: "Сделайте что-нибудь",
+        hard: 0,
+        values: {
+          goal: (user) => 195 + Util.random(9) * 5,
+          timer: () => 60_000 * 8,
+        },
+        callback: {
+          [Actions.any]: (user, curse, context) => {
+            const { progress } = curse.values;
+            CurseManager.interface({ user, curse })._setProgress(
+              (progress || 0) + 1,
+            );
+          },
+        },
+        reward: 15,
+        interactionIsShort: true
+      },
+      {
+        _weight: 2,
+        id: "spiritOfTheDailyQuest",
+        description:
+          "Выполняйте сегодняшний квест до 10-ти раз. Вы провалите проклятие, если не выполните хотя бы 3-х",
+        hard: 1,
+        values: {
+          goal: (user) => 10,
+          timer: () => {
+            const now = new Date();
+            const tomorrow = new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate() + 1,
+            ).getTime();
+            return Math.floor(tomorrow - now);
+          },
+          minimalProgress: () => 3,
+          goalAddingMultiplayerPerQuest: () => 0.3,
+        },
+        callback: {
+          curseTimeEnd: (user, curse, data) => {
+            if (data.curse !== curse) {
+              return;
+            }
+            if (curse.values.progress >= curse.values.minimalProgress) {
+              data.event.preventDefault();
+              const goal = curse.values.goal;
+              CurseManager.interface({ user, curse }).setProgress(goal);
+            }
+          },
+          curseInit: (user, curse, data) => {
+            if (data.curse !== curse) {
+              return;
+            }
+
+            const { quest } = user.data;
+            if (quest.isCompleted) {
+              CurseManager.interface({ curse, user }).incrementProgress(1);
+              const base = QuestManager.questsBase.get(quest.id);
+              const context = {
+                goalMultiplayer: curse.values.hardMultiplayerPerQuest,
+              };
+              const newQuest = QuestManager.generateOfBase({
+                questBase: base,
+                user,
+                context,
+              });
+              QuestManager.init({ user, quest: newQuest });
+            }
+          },
+          dailyQuestComplete: (user, curse) => {
+            const { quest } = user.data;
+            CurseManager.interface({ curse, user }).incrementProgress(1);
+
+            const base = QuestManager.questsBase.get(quest.id);
+            const context = {
+              goalMultiplayer:
+                curse.values.goalAddingMultiplayerPerQuest *
+                curse.values.progress,
+            };
+            const newQuest = QuestManager.generateOfBase({
+              questBase: base,
+              user,
+              context,
+            });
+            QuestManager.init({ user, quest: newQuest });
+          },
+        },
+        reward: 15,
+      },
+      // {
+      //   _weight: 5,
+      //   id: "__example",
+      //   description:
+      //     "Вы не можете класть ресурсы в сумку, как и извлекать их из неё. Проклятие будет засчитано по окончании таймера",
+      //   hard: 0,
+      //   values: {
+      //     goal: (user) => 1,
+      //     timer: () => 3_600_000 * 24,
+      //   },
+      //   callback: {
+      //
+      //   },
+      //   reward: 15,
+      // },
     ].map((curse) => [curse.id, curse]),
   );
-  static intarface({ curse, user }) {
+  static interface({ curse, user }) {
     const incrementProgress = (value) => {
-      curse.values.progress = (curse.values.progress || 0) + value;
+      setProgress((curse.values.progress || 0) + value);
       CurseManager.checkAvailable({ curse, user });
       return curse.values.progress;
     };
 
-    const setProgress = (value) => {
+    const _setProgress = (value) => {
       curse.values.progress = value;
       CurseManager.checkAvailable({ curse, user });
       return curse.values.progress;
+    };
+    const setProgress = (value) => {
+      user.action(Actions.curseBeforeSetProgress);
+      _setProgress(value);
     };
 
     const toString = () => {
@@ -469,8 +580,8 @@ class CurseManager {
       }`;
       const timer = curse.values.timer
         ? `\nТаймер: <t:${Math.floor(
-          (curse.timestamp + curse.values.timer) / 1000,
-        )}:R> будет провалено`
+            (curse.timestamp + curse.values.timer) / 1000,
+          )}:R> будет провалено`
         : "";
 
       const content = `${description}\n${progress}${timer}`;
@@ -483,6 +594,7 @@ class CurseManager {
     return {
       incrementProgress,
       setProgress,
+      _setProgress,
       toString,
       fail,
     };
