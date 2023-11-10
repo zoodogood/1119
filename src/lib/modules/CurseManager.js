@@ -462,7 +462,7 @@ class CurseManager {
             if (data.curse !== curse) {
               return;
             }
-
+            
             CurseManager.interface({ curse, user }).fail();
           },
         },
@@ -639,8 +639,8 @@ class CurseManager {
       return null;
     }
 
-    user.action(Actions.curseEnd, { isLost: lost, curse });
     user.data.curses.splice(index, 1);
+    user.action(Actions.curseEnd, { isLost: lost, curse });
 
     const getDefaultFields = () => {
       const fields = [];
@@ -672,6 +672,7 @@ class CurseManager {
       fields
         .filter((field) => field.value.length > 1024)
         .forEach((field) => (field.value = `${field.value.slice(0, 1021)}...`));
+
       return fields;
     };
 
