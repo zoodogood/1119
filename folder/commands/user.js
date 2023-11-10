@@ -27,9 +27,9 @@ class Command {
         position: null,
         members: guild
           ? guild.members.cache
-            .map((m) => m.user)
-            .filter((user) => !user.bot)
-            .filter((user) => user.data.level > 1)
+              .map((m) => m.user)
+              .filter((user) => !user.bot)
+              .filter((user) => user.data.level > 1)
           : null,
       },
 
@@ -63,7 +63,7 @@ class Command {
     }
 
     if (
-      (member?.presence && member.presence.status != "offline") ||
+      (member?.presence && member.presence.status !== "offline") ||
       target === msg.author
     ) {
       interaction.status = "<:online:637544335037956096> В сети";
@@ -73,8 +73,8 @@ class Command {
         31556926000000 < lastOnline
           ? "более года"
           : lastOnline > 2629743000
-            ? "более месяца"
-            : Util.timestampToDate(lastOnline);
+          ? "более месяца"
+          : Util.timestampToDate(lastOnline);
       const dateContent = user.profile_confidentiality ? "" : getDateContent();
       interaction.status = `<:offline:637544283737686027> Не в сети ${dateContent}`;
     }
@@ -105,12 +105,12 @@ class Command {
           text: `Похвал: ${user.praiseMe?.length || "0"}   ${
             interaction.rank
               ? `Ранг: ${
-                interaction.rank.position
-                  ? `${interaction.rank.position ?? 0}/${
-                    interaction.rank.members.length
-                  }`
-                  : "Недоступно"
-              }`
+                  interaction.rank.position
+                    ? `${interaction.rank.position ?? 0}/${
+                        interaction.rank.members.length
+                      }`
+                    : "Недоступно"
+                }`
               : ""
           }`,
         },
@@ -158,8 +158,10 @@ class Command {
 
       if (user.curses && user.curses.length) {
         const content = user.curses
-          .map(
-            (curse) => `・${curse.values.progress || 0}/${curse.values.goal}`,
+          .map((curse) =>
+            curse.values.goal
+              ? `・${curse.values.progress || 0}/${curse.values.goal}`
+              : `・${curse.values.progress || 0}`,
           )
           .join("; ");
         embed.fields.push({
@@ -174,12 +176,12 @@ class Command {
     const createEmbedAtSecondPage = async () => {
       const footer = member
         ? {
-          text: `На сервере с ${new Intl.DateTimeFormat("ru-ru", {
-            day: "numeric",
-            year: "numeric",
-            month: "long",
-          }).format(member.joinedTimestamp)}`,
-        }
+            text: `На сервере с ${new Intl.DateTimeFormat("ru-ru", {
+              day: "numeric",
+              year: "numeric",
+              month: "long",
+            }).format(member.joinedTimestamp)}`,
+          }
         : null;
 
       const embed = {
