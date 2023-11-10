@@ -97,8 +97,8 @@ class CurseManager {
           berryBarter: (user, curse, { quantity, isBuying }) => {
             isBuying
               ? CurseManager.interface({ user, curse }).incrementProgress(
-                  quantity,
-                )
+                quantity,
+              )
               : CurseManager.interface({ user, curse }).fail();
           },
         },
@@ -354,10 +354,8 @@ class CurseManager {
               return;
             }
 
-            const goal = curse.values.goal;
             data.event.preventDefault();
-
-            CurseManager.interface({ user, curse }).setProgress(goal);
+            CurseManager.interface({ user, curse }).success();
           },
         },
         reward: 7,
@@ -434,10 +432,8 @@ class CurseManager {
               return;
             }
 
-            const goal = curse.values.goal;
             data.event.preventDefault();
-
-            CurseManager.interface({ user, curse }).setProgress(goal);
+            CurseManager.interface({ user, curse }).success();
           },
           beforeBagInteracted: (user, curse, context) => {
             context.preventDefault();
@@ -462,9 +458,16 @@ class CurseManager {
               (progress || 0) + 1,
             );
           },
+          curseTimeEnd: (user, curse, data) => {
+            if (data.curse !== curse) {
+              return;
+            }
+
+            CurseManager.interface({ curse, user }).fail();
+          },
         },
         reward: 15,
-        interactionIsShort: true
+        interactionIsShort: true,
       },
       {
         _weight: 2,
@@ -473,7 +476,7 @@ class CurseManager {
           "Выполняйте сегодняшний квест до 10-ти раз. Вы провалите проклятие, если не выполните хотя бы 3-х",
         hard: 1,
         values: {
-          goal: (user) => 10,
+          goal: (user) => 0,
           timer: () => {
             const now = new Date();
             const tomorrow = new Date(
@@ -493,8 +496,7 @@ class CurseManager {
             }
             if (curse.values.progress >= curse.values.minimalProgress) {
               data.event.preventDefault();
-              const goal = curse.values.goal;
-              CurseManager.interface({ user, curse }).setProgress(goal);
+              CurseManager.interface({ user, curse }).success();
             }
           },
           curseInit: (user, curse, data) => {
@@ -575,17 +577,22 @@ class CurseManager {
       const curseBase = CurseManager.cursesBase.get(curse.id);
 
       const description = curseBase.description;
-      const progress = `Прогресс: ${curse.values.progress || 0}/${
-        curse.values.goal
-      }`;
+      const progressContent = curse.values.goal
+        ? `Прогресс: ${curse.values.progress || 0}/${curse.values.goal}`
+        : `Прогресс: ${curse.values.progress || 0}`;
+
       const timer = curse.values.timer
         ? `\nТаймер: <t:${Math.floor(
-            (curse.timestamp + curse.values.timer) / 1000,
-          )}:R> будет провалено`
+          (curse.timestamp + curse.values.timer) / 1000,
+        )}:R> будет провалено`
         : "";
 
-      const content = `${description}\n${progress}${timer}`;
+      const content = `${description}\n${progressContent}${timer}`;
       return content;
+    };
+
+    const success = () => {
+      CurseManager.curseEnd({ lost: false, user, curse });
     };
 
     const fail = () => {
@@ -597,6 +604,7 @@ class CurseManager {
       _setProgress,
       toString,
       fail,
+      success,
     };
   }
   static checkAvailable({ curse, user }) {
@@ -631,7 +639,7 @@ class CurseManager {
       return null;
     }
 
-    user.action(Actions.curseEnd, curse);
+    user.action(Actions.curseEnd, { isLost: lost, curse });
     user.data.curses.splice(index, 1);
 
     const getDefaultFields = () => {
