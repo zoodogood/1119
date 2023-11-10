@@ -28,9 +28,25 @@ const Schema = {
     voidRituals: 0,
     voidCoins: 0,
     quest: {
+      id: "",
       goal: 0,
       progress: 0,
+      reward: 0,
+      day: 0,
+      willUpdated: true,
+      isCompleted: true,
     },
+    curses: [
+      {
+        id: "",
+        values: {
+          goal: 0,
+          progress: 0,
+          timer: 0,
+        },
+        timestamp: 0,
+      },
+    ],
     questReward: {},
     questTime: {},
     last_online: 0,
@@ -57,7 +73,6 @@ const Schema = {
     voidPrice: {},
     elementLevel: 0,
     bag: {},
-    curses: {},
     seed: 0,
     voidTreeFarm: {},
     voidDouble: {},
@@ -82,7 +97,6 @@ const Schema = {
   timeEventEntity: {},
   counterEntity: {},
 };
-
 
 const ProperiesEnum = {
   berrysPrice: {},
