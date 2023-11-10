@@ -15,12 +15,14 @@ class QuestManager {
     return quest;
   }
 
-  static generateOfBase({ questBase, user }) {
+  static generateOfBase({ questBase, user, context = {} }) {
     const calculateGoal = () => {
       const baseGoal = questBase.baseGoal;
       const limit = questBase.maximalGoal ?? Number.MAX_SAFE_INTEGER;
 
-      const multiplayer = 1 + (user.voidQuests ?? 0) * 0.15;
+      const multiplayer =
+        1 + (user.voidQuests ?? 0) * 0.15 + (context.goalMultiplayer ?? 0);
+
       const value = Math.min(
         limit,
         Math.round((Math.random() * baseGoal + baseGoal / 1.5) * multiplayer),
@@ -49,28 +51,51 @@ class QuestManager {
   }
 
   static init({ user, quest }) {
-    user.data.quest = quest;
-    return quest;
-  }
-
-  static checkAvailable({ user }) {
-    const { quest } = user.data;
-    if (!quest) {
-      const quest = this.generate({ user });
-      this.init({ quest, user });
+    const event = new Event(Actions.beforeDailyQuestInit);
+    user.action(Actions.beforeDailyQuestInit, { quest, event });
+    if (event.defaultPrevented) {
       return;
     }
 
-    const { currentDay } = DataManager.data.bot;
-    if (quest.day !== currentDay) {
-      if (!quest.isCompleted) {
-        user.action(Actions.dailyQuestSkiped, { quest });
-      }
+    this._init({ user, quest });
+    user.action(Actions.dailyQuestInit);
+    return quest;
+  }
 
-      this.init({
-        user,
-        quest: this.generate({ user }),
-      });
+  static _init({ user, quest }) {
+    user.data.quest = quest;
+  }
+
+  static isNeedInstallDailyQuest({ user }) {
+    const { currentDay } = DataManager.data.bot;
+    const { quest } = user.data;
+    return !!(!quest || quest.day !== currentDay);
+  }
+
+  static requestInstallDailyQuest({ user }) {
+    user.data.quest ||= {};
+    user.data.quest.willUpdate = true;
+  }
+
+  static checkAvailable({ user }) {
+    const needUpdate = this.isNeedInstallDailyQuest({ user });
+    if (!needUpdate) {
+      return;
+    }
+
+    const { quest } = user.data;
+    const isExists = !!quest;
+
+    const isCompleted = isExists && quest.isCompleted;
+    this.requestInstallDailyQuest({ user });
+
+    this.init({
+      user,
+      quest: this.generate({ user }),
+    });
+
+    if (isExists && !isCompleted) {
+      user.action(Actions.dailyQuestSkiped, { quest });
     }
   }
 
@@ -175,14 +200,14 @@ class QuestManager {
     if (!(data.dayQuests % 50)) {
       "seed" in data
         ? user.msg({
-            title: `Ваш ${data.dayQuests}-й квест — новые семечки`,
-            description: "🌱",
-          })
+          title: `Ваш ${data.dayQuests}-й квест — новые семечки`,
+          description: "🌱",
+        })
         : user.msg({
-            title: "Ура, ваши первые семечки!",
-            description:
+          title: "Ура, ваши первые семечки!",
+          description:
               "Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера",
-          });
+        });
 
       data.seed = (data.seed ?? 0) + 2;
     }
