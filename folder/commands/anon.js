@@ -518,7 +518,7 @@ class Command {
       `(?:${escapeRegexp(stick)}|${Object.keys(ROMAN_NUMERALS_TABLE).join(
         "|",
       )})+`,
-      "g",
+      "ig",
     );
     expression = expression.replace(numerals, (value) =>
       romanToDigit(value.replaceAll(stick, "I")),
