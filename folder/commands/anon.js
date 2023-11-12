@@ -428,7 +428,7 @@ class Command {
     const { currentTask: task, averageSticksCount: average } = context;
     const { mode } = task;
 
-    const stickSymbol = this.getStickSymbol(task, context);
+    const stickSymbol = this.getStickSymbolOfTask(task, context);
 
     const separator =
       mode === ModesEnum.NoComma || mode === ModesEnum.NoCommaSafe ? "" : ",";
@@ -487,7 +487,7 @@ class Command {
     );
   }
 
-  getStickSymbol(task, context) {
+  getStickSymbolOfTask(task) {
     return task.mode === ModesEnum.BitsOperations ? "\\" : "|";
   }
 
@@ -511,7 +511,7 @@ class Command {
 
   cleanExpression(expression, context) {
     const { currentTask: task } = context;
-    const stick = this.getStickSymbol(task, context);
+    const stick = this.getStickSymbolOfTask(task, context);
     expression = expression.replace(/[\s,.]/g, "");
 
     const numerals = RegExp(
@@ -571,7 +571,7 @@ class Command {
     }
 
     let count = 0;
-    const stick = this.getStickSymbol(task, context);
+    const stick = this.getStickSymbolOfTask(task, context);
 
     for (const symbol of stroke) {
       symbol === stick && count++;
@@ -580,7 +580,7 @@ class Command {
     return count;
   }
 
-  getExpressionOfTask(task, context) {
+  getExpressionOfTask(task) {
     const isExpressionInstead = task.mode === ModesEnum.ExpressionsInstead;
     return isExpressionInstead ? task.userInput : task.data.expression;
   }
@@ -601,7 +601,7 @@ class Command {
   getContentLogicOfResult(expression, task, context) {
     const logic =
       task.mode === ModesEnum.JustCount
-        ? `${this.getStickSymbol(
+        ? `${this.getStickSymbolOfTask(
             task,
             context,
           )} × ${this.justCalculateStickCount(task, context)}`
