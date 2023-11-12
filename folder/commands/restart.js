@@ -1,19 +1,17 @@
 import config from "#config";
 import get from "#lib/child-process-utils.js";
 import { ending } from "@zoodogood/utils/primitives";
-const { run, _npm } = get({ root: process.cwd() });
-
-
+const { run } = get({ root: process.cwd() });
 
 const toANSIBlock = (content) => `\`\`\`ansi\n${content}\`\`\``;
 
 class Command {
-  async onChatInput(msg, interaction) {
+  async onChatInput(_msg, interaction) {
     const COMMANDS = [
       "git pull",
-      `${_npm} run build`,
+      "yarn run build",
       config.pm2.id
-        ? `${_npm} run pm2-please-restart ${config.pm2.id}`
+        ? `yarn run pm2-please-restart ${config.pm2.id}`
         : "echo pm2 not setted",
     ];
 
@@ -23,7 +21,7 @@ class Command {
       description: "**RESTARTING...**",
     };
 
-    const message = await msg.msg(embed);
+    const message = await interaction.channel.msg(embed);
     embed.edit = true;
 
     const updateDescription = (content) => {
