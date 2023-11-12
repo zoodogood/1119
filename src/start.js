@@ -25,7 +25,7 @@ import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 client.on("ready", async () => {
   client.guilds.cache.forEach(
     async (guild) =>
-      (guild.invitesCollection = await guild.invites.fetch().catch(() => {}))
+      (guild.invitesCollection = await guild.invites.fetch().catch(() => {})),
   );
 
   if (config.development) {
@@ -84,7 +84,7 @@ client.on("ready", async () => {
         members.size
       }\nКол-во знакомых боту людей: ${
         members.filter((member) =>
-          DataManager.data.users.some((user) => user.id === member.id)
+          DataManager.data.users.some((user) => user.id === member.id),
         ).size
       }\nПригласил пользователь этого сервера?: ${
         whoAdded && guild.members.resolve(whoAdded) ? "Да" : "Нет"
@@ -119,7 +119,7 @@ client.on("ready", async () => {
 
     let msg = reaction.message;
     let rolesReactions = ReactionsManager.reactData.find(
-      (el) => el.id == msg.id
+      (el) => el.id == msg.id,
     );
     if (!rolesReactions) return;
     switch (rolesReactions.type) {
@@ -127,7 +127,7 @@ client.on("ready", async () => {
         rolesReactions = rolesReactions.reactions;
 
         let role = String(
-          rolesReactions[reaction.emoji.id || reaction.emoji.name]
+          rolesReactions[reaction.emoji.id || reaction.emoji.name],
         );
         if (!role) {
           break;
@@ -150,7 +150,7 @@ client.on("ready", async () => {
   client.on("messageReactionRemove", async (reaction, user) => {
     let msg = reaction.message;
     let rolesReactions = ReactionsManager.reactData.find(
-      (el) => el.id == msg.id
+      (el) => el.id == msg.id,
     );
     if (!rolesReactions) return;
     switch (rolesReactions.type) {
@@ -158,7 +158,7 @@ client.on("ready", async () => {
         rolesReactions = rolesReactions.reactions;
 
         let role = String(
-          rolesReactions[reaction.emoji.id || reaction.emoji.name]
+          rolesReactions[reaction.emoji.id || reaction.emoji.name],
         );
         role = reaction.message.guild.roles.cache.get(role);
         if (!role)
@@ -338,7 +338,7 @@ client.on("ready", async () => {
           text: "Старый аватар",
           iconURL: old.displayAvatarURL({ dynamic: true }),
         },
-      })
+      }),
     );
   });
 });
@@ -360,7 +360,6 @@ async function msg(options, ..._devFixParams) {
       : this instanceof Discord.Message && !options.edit
       ? this.channel
       : this;
-
 
   const message =
     target instanceof BaseInteraction
@@ -422,7 +421,7 @@ async function eventHundler(msg) {
     msg.content
       .toLowerCase()
       .match(
-        /((ухуель|глупый|тупой|дурной|бездарный|дурний) бот)|(бот (ухуель|глупый|тупой|дурной|бездарный|дурний))/i
+        /((ухуель|глупый|тупой|дурной|бездарный|дурний) бот)|(бот (ухуель|глупый|тупой|дурной|бездарный|дурний))/i,
       )
   )
     stupid_bot(user, msg);
@@ -430,7 +429,7 @@ async function eventHundler(msg) {
     msg.content
       .toLowerCase()
       .match(
-        /((классный|умный|хороший|милый) бот)|(бот (классный|умный|хороший|милый))/i
+        /((классный|умный|хороший|милый) бот)|(бот (классный|умный|хороший|милый))/i,
       )
   )
     good_bot(user, msg);
@@ -590,7 +589,7 @@ function filterChat(msg) {
     abuse.forEach((word) => {
       msg.content = msg.content.replace(
         RegExp(`(?<=${word[0]})${word.slice(1)}`, "gi"),
-        (e) => "#".repeat(e.length)
+        (e) => "#".repeat(e.length),
       );
     });
 
@@ -651,7 +650,7 @@ Discord.Message.prototype.awaitReact = async function (options, ...reactions) {
 
   const filter = (reaction, member) => {
     const allowReaction = reactions.includes(
-      reaction.emoji.id ?? reaction.emoji.name
+      reaction.emoji.id ?? reaction.emoji.name,
     );
     const allowUser =
       options.user === "any"
@@ -749,7 +748,7 @@ Discord.Guild.prototype.logSend = async function (message) {
 
 Discord.Guild.prototype.Audit = async function (
   find = false,
-  { limit = 3, before = null, user = null, type = null }
+  { limit = 3, before = null, user = null, type = null },
 ) {
   const audit = await this.fetchAuditLogs({ limit, before, user, type });
 
@@ -767,7 +766,7 @@ Array.prototype.random = function ({ pop, weights } = {}) {
     const thresholds = this.map((element, i) => {
       if (isNaN(element._weight)) {
         throw new Error(
-          `Element at index ${i} returns NaN _weigth. Value: ${element._weight}`
+          `Element at index ${i} returns NaN _weigth. Value: ${element._weight}`,
         );
       }
       return (previousLimit = element._weight + previousLimit);
@@ -797,7 +796,7 @@ BigInt.prototype.toJSON = function () {
 Object.defineProperty(Discord.User.prototype, "guilds", {
   get() {
     let guilds = client.guilds.cache.filter((guild) =>
-      guild.members.cache.get(this.id)
+      guild.members.cache.get(this.id),
     );
     return [...guilds.values()];
   },
@@ -885,7 +884,7 @@ class Command {
       });
       let react = await message.awaitReact(
         { user: "any", removeType: "full", time: 180000 },
-        "〽️"
+        "〽️",
       );
       let quote;
       while (react) {
@@ -916,7 +915,7 @@ class Command {
         await Util.sleep(10000);
         react = await message.awaitReact(
           { user: "any", removeType: "full", time: 180000 },
-          "〽️"
+          "〽️",
         );
       }
       message.delete();
@@ -938,7 +937,7 @@ class ReactionsManager {
     FileSystem.writeFileSync(
       this.constructor.path,
       JSON.stringify(ReactionsManager.reactData),
-      (err, input) => false
+      (err, input) => false,
     );
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
@@ -953,7 +952,7 @@ class ReactionsManager {
   static async getMain() {
     const data = await ReactionsManager.readFile();
     return data.map((react) =>
-      (({ id, type, reactions }) => ({ id, type, reactions }))(react)
+      (({ id, type, reactions }) => ({ id, type, reactions }))(react),
     );
   }
 
@@ -975,7 +974,7 @@ class ReactionsManager {
     FileSystem.writeFileSync(
       this.path,
       JSON.stringify(reactions),
-      (err, input) => false
+      (err, input) => false,
     );
     ReactionsManager.reactData = ReactionsManager.getMain();
   }
@@ -1015,8 +1014,8 @@ console.info(
   Util.timestampToDate(
     (new Date().getHours() < 20
       ? new Date().setHours(20, 0, 0)
-      : new Date(Date.now() + 14500000).setHours(20, 0, 0)) - Date.now()
-  )
+      : new Date(Date.now() + 14500000).setHours(20, 0, 0)) - Date.now(),
+  ),
 );
 
 export { client };
