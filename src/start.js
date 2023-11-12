@@ -119,16 +119,17 @@ client.on("ready", async () => {
 
     let msg = reaction.message;
     let rolesReactions = ReactionsManager.reactData.find(
-      (el) => el.id == msg.id,
+      (target) => target.id === msg.id,
     );
-    if (!rolesReactions) return;
+    if (!rolesReactions) {
+      return;
+    }
+    let role;
     switch (rolesReactions.type) {
       case "reactor":
         rolesReactions = rolesReactions.reactions;
 
-        let role = String(
-          rolesReactions[reaction.emoji.id || reaction.emoji.name],
-        );
+        role = String(rolesReactions[reaction.emoji.id || reaction.emoji.name]);
         if (!role) {
           break;
         }
@@ -150,16 +151,17 @@ client.on("ready", async () => {
   client.on("messageReactionRemove", async (reaction, user) => {
     let msg = reaction.message;
     let rolesReactions = ReactionsManager.reactData.find(
-      (el) => el.id == msg.id,
+      (target) => target.id === msg.id,
     );
-    if (!rolesReactions) return;
+    if (!rolesReactions) {
+      return;
+    }
+    let role;
     switch (rolesReactions.type) {
       case "reactor":
         rolesReactions = rolesReactions.reactions;
 
-        let role = String(
-          rolesReactions[reaction.emoji.id || reaction.emoji.name],
-        );
+        role = String(rolesReactions[reaction.emoji.id || reaction.emoji.name]);
         role = reaction.message.guild.roles.cache.get(role);
         if (!role)
           reaction.message.msg({
@@ -304,7 +306,7 @@ client.on("ready", async () => {
     const message = banInfo
       ? {
           content: `Участник был ${
-            banInfo.action == "MEMBER_KICK" ? "кикнут" : "забанен"
+            banInfo.action === AuditLogEvent.MemberKick ? "кикнут" : "забанен"
           }`,
           description: `${name}\nВыгнавший с сервера: ${
             e.guild.members.resolve(banInfo.executor).displayName
@@ -605,7 +607,9 @@ function filterChat(msg) {
     return true;
   }
 
-  let capsLenght = content.split("").filter((e) => e.toLowerCase() != e).length;
+  let capsLenght = content
+    .split("")
+    .filter((symbol) => symbol.toLowerCase() !== symbol).length;
   if (capsLenght > 4 && capsLenght / content.length > 0.5) {
     let isAdmin =
       msg.guild &&
@@ -902,7 +906,7 @@ class Command {
           e.stack.match(/js:(\d+)/)[1]
         }\n	• **Текст:** \n\`\`\`\n${
           e.message
-        }\nᅠ\`\`\`\n\n• **Команда:** \`!${command}\`\n• **Времени с момента запуска команды:** ${
+        }\nᅠ\`\`\`\n\n• **Команда:** \`!${name}\`\n• **Времени с момента запуска команды:** ${
           Util.timestampToDate(timestamp - msg.createdTimestamp) || "0с"
         }`;
         message.msg({
@@ -928,7 +932,9 @@ class ReactionsManager {
 
   constructor(id, channel, guild, type, reactions) {
     let reactionObject = { id, channel, guild, type, reactions };
-    let isExists = ReactionsManager.reactData.find((e) => e.id == id);
+    let isExists = ReactionsManager.reactData.find(
+      (target) => target.id === id,
+    );
     if (isExists) {
       Object.assign(isExists, reactionObject);
     } else {
