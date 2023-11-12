@@ -5,6 +5,7 @@ env:
 extends: 
   - eslint:recommended
   - prettier
+  - plugin:prettier/recommended
 plugins:
   - prettier
 parserOptions:
@@ -13,20 +14,6 @@ parserOptions:
 rules:
   prettier/prettier:
     - error
-  indent:
-    - error
-    - 2
-    - 
-      SwitchCase: 1
-  linebreak-style:
-    - error
-    - unix
-  quotes:
-    - error
-    - double
-  semi:
-    - error
-    - always
   eqeqeq: 
     - error
     - always
