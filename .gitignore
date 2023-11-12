@@ -2,10 +2,14 @@
 src/config.json.js
 
 node_modules/
-data/
-folder/errors/*.json
 build/
+
+# deprecated
 static/articles/
+folder/data/
+folder/errors/*.json
+
+folder/!localstorage/
 
 folder/SSLSecret/certificate.crt
 folder/SSLSecret/private.key
