@@ -1,8 +1,8 @@
 import { PermissionFlagsBits } from "discord.js";
 
 const CombinedPermissionFlags = {
-	SafeAll: PermissionFlagsBits.AddReactions,
-	...PermissionFlagsBits
-}
+  SafeAll: PermissionFlagsBits.AddReactions,
+  ...PermissionFlagsBits,
+};
 
 export { CombinedPermissionFlags };
