@@ -3,7 +3,7 @@
 import { Collection } from "@discordjs/collection";
 import { DataManager, CurseManager, Properties, ErrorsHandler } from "#lib/modules/mod.js";
 import TimeEventsManager from '#lib/modules/TimeEventsManager.js';
-import { elementsEnum } from "#folder/commands/thing.js";
+import { Elements, elementsEnum } from "#folder/commands/thing.js";
 import { Actions } from '#lib/modules/ActionManager.js';
 import * as Util from '#lib/util.js';
 import { ButtonStyle, ComponentType } from "discord.js";
@@ -452,7 +452,7 @@ class BossEffects {
 					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
 					userStats.heroIsDead = true;
 				},
-				curseEnd: (user, effect, curse) => {
+				curseEnd: (user, effect, {curse}) => {
 					const effectValues = effect.values;
 
 					if (effectValues.targetTimestamp !== curse.timestamp){
@@ -1029,7 +1029,8 @@ class BossManager {
 				return;
 			};
 
-			const collector = context.message.createReactionCollector({filter: (_, user) => !user.bot, time: 3_600_000 * 2});
+			const filter = (reaction, user) => !user.bot && reaction.emoji.id === "637533074879414272";
+			const collector = context.message.createReactionCollector({filter, time: 3_600_000 * 2});
 			collector.on("collect", (_reaction, user) => {
 				const result = BossChest.onCollect(user, context);
 				if (!result){
@@ -1218,7 +1219,7 @@ class BossManager {
 		];
 	}
 
-	static userAttack({boss, user, channel}){
+	static async userAttack({boss, user, channel}){
 		const userStats = BossManager.getUserStats(boss, user.id);
 
 		if (userStats.heroIsDead){
@@ -1249,7 +1250,8 @@ class BossManager {
 			damageMultiplayer: 1,
 			listOfEvents: [],
 			defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
-			eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1)
+			eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1),
+			message: null
 		};
 	
 		
@@ -1262,6 +1264,10 @@ class BossManager {
 			guild: channel.guild,
 			preventDefault(){
 				this.defaultPrevented = true;
+			},
+			message: null,
+			fetchMessage(){
+				return this.message;
 			}
 		};
 
@@ -1323,7 +1329,7 @@ class BossManager {
 			description,
 			footer
 		}
-		channel.msg(embed);
+		data.message = channel.msg(embed);
 	}
 
 
@@ -1392,6 +1398,127 @@ class BossManager {
 				boss.diceDamageMultiplayer += 0.01;
 			},
 			filter: ({boss}) => boss.diceDamageMultiplayer 
+		},
+		superMegaAttack: {
+			weight: 200,
+			id: "superMegaAttack",
+			description: "Супер мега атака",
+			callback: async (parentContext) => {
+				const {user, boss, channel, userStats} = parentContext;
+				const ActionsEnum = {
+					Hit: "hit",
+					Leave: "leave"
+				}
+	
+				channel.sendTyping();
+				await Util.sleep(2000);
+				const executorMessage = await parentContext.fetchMessage();
+
+				const embed = {
+					title: "**~ СУПЕР МЕГА АТАКА**",
+					description: "Требуется совершить выбор :no_pedestrians:",
+					footer: {iconURL: user.avatarURL(), text: "Вы можете проигнорировать это сообщение"},
+					components: {
+						label: "Нанести",
+						type: ComponentType.Button,
+						style: ButtonStyle.Secondary, 
+						customId: ActionsEnum.Hit
+					},
+					color: Elements.at(boss.elementType).color,
+					reference: executorMessage.id
+				}
+
+				/**
+				 * @type import("discord.js").Message
+				 */
+				const message = await channel.msg(embed);
+
+				delete embed.reference;
+	
+				const collectorFilter = (interaction) => user === interaction.user;
+				const interaction = await message.awaitMessageComponent({filter: collectorFilter, time: 60_000});
+				if (!interaction){
+					embed.components = [];
+					message.msg({
+						...embed,
+						edit: true,
+					})
+					return;
+				}
+			
+				const BASE_DAMAGE = 1500;
+				const DAMAGE_PER_LEVEL = 100;
+				const damage = boss.level * DAMAGE_PER_LEVEL + BASE_DAMAGE;
+
+				const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
+				(() => {
+					userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+					const adding = 60_000 * 30;
+					userStats.attackCooldown += adding;
+					userStats.attack_CD += adding;
+				})();
+
+				embed.description = `Нанесено ${ dealt } ед. урона.`;
+
+				(async () => {
+					embed.components = [
+						{label: "Уйти", type: ComponentType.Button, style: ButtonStyle.Secondary, customId: ActionsEnum.Leave},
+						{label: "Нанести", type: ComponentType.Button, style: ButtonStyle.Secondary, customId: ActionsEnum.Hit}
+					];
+					let counter = 0;
+					interaction.msg({...embed, edit: true});
+
+					const collector = message.createMessageComponentCollector({filter: collectorFilter});
+					collector.on("collect", (interaction) => {
+						const { customId } = interaction;
+						if (customId !== ActionsEnum.Hit){
+							collector.stop();
+							return;
+						}
+
+						const {adding} = 
+						(() => {
+							userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
+							const adding = 60_000 * 7.5;
+							userStats.attackCooldown += adding;
+							userStats.attack_CD += adding;
+							return {adding};
+						})();
+
+						if (Util.random(20) === 0){
+							embed.description += `\n~ Перезарядка увеличена ещё на ${ Util.timestampToDate(adding) }`;
+							collector.stop();
+							return;
+						}
+
+						const BASE_DAMAGE = 120;
+						const DAMAGE_PER_ITERATION = 90;
+						const ADDING_DAMAGE = Math.round((Math.random() / 2 + 0.5) * 10);
+						const DAMAGE_PER_LEVEL = 20;
+						const damage = boss.level * DAMAGE_PER_LEVEL + BASE_DAMAGE + ADDING_DAMAGE + DAMAGE_PER_ITERATION * counter;
+
+						const dealt = BossManager.makeDamage(boss, damage, {sourceUser: user});
+						embed.description += `\n~ Нанесено ещё ${ dealt } ед. урона`;
+
+						counter++;
+						if (counter >= 5){
+							collector.stop();
+							return;
+						}
+
+						interaction.msg({...embed, edit: true});
+					});
+					
+					collector.on("end", () => {
+						embed.description += " :drop_of_blood:"
+						embed.components = [];
+						interaction.msg({
+							...embed,
+							edit: true,
+						})
+					});
+				})();
+			}
 		},
 		choiseAttackDefense: {
 			weight: 700,
