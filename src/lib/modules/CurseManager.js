@@ -414,7 +414,8 @@ class CurseManager {
           },
         },
         interactionIsShort: true,
-        reward: 50,
+        interactionIsLong: true,
+        reward: 20,
       },
       {
         _weight: 5,
@@ -720,10 +721,15 @@ class CurseManager {
       const voidReward = getVoidReward();
 
       const getCoinsReward = () => {
-        const BASIC_REWARD = 200;
-        const ADDING_REWARD = 115;
+        const BASIC_REWARD = 120;
+        const ADDING_REWARD = 55;
+        const { interactionIsLong, interactionIsShort } = curseBase;
+        const stable =
+          (BASIC_REWARD + ADDING_REWARD * curseBase.hard) * curseBase.reward;
         return (
-          (BASIC_REWARD + ADDING_REWARD * curseBase.hard) * curseBase.reward
+          stable *
+          (interactionIsLong ? 1.2 : 1) *
+          (interactionIsShort ? 1 / 1.2 : 1)
         );
       };
       const coinsReward = getCoinsReward();
