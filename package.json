@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.7544",
+  "version": "2.0.0-alpha.8270",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -11,7 +11,8 @@
     "site-build": "rollup -c ./src/site/rollup.config.mjs",
     "site-watch": "sirv static --no-clear",
     "createPagesExports": "node ./src/site/scripts/createPagesExports.js",
-    "pm2-please-restart": "pm2 restart --update-env"
+    "pm2-please-restart": "pm2 restart --update-env",
+    "docker": "docker-compose up -d --build && echo 'Hello, do use pm2 list and pm2 logs <id> for the read stdout' && docker-compose exec greenghost /bin/bash"
   },
   "imports": {
     "#root/*": "./*",
@@ -21,7 +22,7 @@
     "#server/*": "./src/server/*",
     "#site/*": "./src/site/src/*",
     "#bot/*": "./src/bot/*",
-    "#constants/*": "./src/lib/constants/*",
+    "#constants/*": "./src/app/constants/*",
     "#lib/*": "./src/lib/*",
     "#folder/*": "./folder/*",
     "#static/*": "./static/*",
