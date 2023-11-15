@@ -29,16 +29,17 @@ class Command {
       const list = getList(data.grempenBoughted || 0);
 
       const buyingItemsContent =
-        data.shopTime === Math.floor(Date.now() / 86400000) && data.grempenBoughted
+        data.shopTime === Math.floor(Date.now() / 86400000) &&
+        data.grempenBoughted
           ? `приобрел ${Util.ending(
-            list.length,
-            "товар",
-            "ов",
-            "",
-            "а",
-          )} под номером: ${Util.joinWithAndSeparator(
-            list.sort(Math.random),
-          )}. Если считать с нуля конечно-же.`
+              list.length,
+              "товар",
+              "ов",
+              "",
+              "а",
+            )} под номером: ${Util.joinWithAndSeparator(
+              list.sort(Math.random),
+            )}. Если считать с нуля конечно-же.`
           : "сегодня ничего не приобретал.\nМожет Вы сами желаете чего-нибудь прикупить?";
 
       const description = `Ох, таки здравствуйте. Человек, о котором Вы спрашиваете ${buyingItemsContent}`;
@@ -51,7 +52,7 @@ class Command {
       return;
     }
 
-    let user = msg.author.data;
+    const user = msg.author.data;
 
     const allItems = [
       {
@@ -102,7 +103,7 @@ class Command {
           }
 
           user.chilli++;
-          return ". \"Готовтесь глупцы, грядёт эра перчиков\"";
+          return '. "Готовтесь глупцы, грядёт эра перчиков"';
         },
       },
       {
@@ -207,7 +208,7 @@ class Command {
         inline: true,
         others: ["шуба", "шубу", "шуба из енота"],
         fn: (product) => {
-          let isFirst = !(
+          const isFirst = !(
             user.questsGlobalCompleted &&
             user.questsGlobalCompleted.includes("beEaten")
           );
@@ -257,13 +258,13 @@ class Command {
         name: "💡 Идея",
         value:
           user.iq &&
-          user.iq % 31 == DataManager.data.bot.dayDate.match(/\d{1,2}/)[0]
+          user.iq % 31 === +DataManager.data.bot.dayDate.match(/\d{1,2}/)[0]
             ? "Бесплатно"
             : 80,
         inline: true,
         others: ["идея", "идею"],
         fn: (product) => {
-          let ideas = [
+          const ideas = [
             "познать мир шаблонов",
             "купить что-то в этой лавке",
             "начать собирать ключики",
@@ -425,8 +426,8 @@ class Command {
       allItems.filter((e, i) =>
         DataManager.data.bot.grempenItems.includes(i.toString(16)),
       );
-    
-    let todayItems = getTodayItems();
+
+    const todayItems = getTodayItems();
 
     if (Math.floor(Date.now() / 86400000) !== user.shopTime) {
       user.grempenBoughted = 0;
@@ -472,7 +473,7 @@ class Command {
         return;
       }
 
-      let phrase = product.fn(product);
+      const phrase = product.fn(product);
 
       if (!isNaN(product.value)) user.coins -= product.value;
 
@@ -517,8 +518,9 @@ class Command {
     }
 
     const productsToFields = () => {
-      const list = todayItems.map((item, i) => {
-        let { name, value } = item;
+      const list = todayItems.map((item) => {
+        const { name } = item;
+        let { value } = item;
 
         if (isBought(item)) {
           value = "Куплено";
@@ -537,7 +539,7 @@ class Command {
       color: "#400606",
       footer: { text: "Только сегодня, самые горячие цены!" },
     };
-    let shop = await msg.msg(embed);
+    const shop = await msg.msg(embed);
 
     let react;
     while (true) {
