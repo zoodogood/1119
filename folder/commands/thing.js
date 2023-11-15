@@ -97,9 +97,12 @@ class Command {
           {
             action: async ({ userData, level, scene }) => {
               if (userData.chilli && !Util.random(5)) {
-                let sellingCount =
+                const sellingCount =
                   Math.min(userData.chilli, 3 + userData.elementLevel) ?? 0;
-                let price = Util.random(sellingCount * 160, sellingCount * 190);
+                const price = Util.random(
+                  sellingCount * 160,
+                  sellingCount * 190,
+                );
                 userData.chilli -= sellingCount;
                 userData.coins += price;
                 scene.phrase = `Вы смогли продать ${Util.ending(
@@ -459,7 +462,7 @@ class Command {
               scene.bonuses = bonuses;
             },
             textOutput:
-              "\"Сыворотка для преобразования клубники в волшебные сундуки\", так вы назвали свой раствор, превратив часть своей клубники в {Util.ending(scene.bonuses, \"бонус\", \"ов\", \"\", \"а\")} сундука",
+              '"Сыворотка для преобразования клубники в волшебные сундуки", так вы назвали свой раствор, превратив часть своей клубники в {Util.ending(scene.bonuses, "бонус", "ов", "", "а")} сундука',
           },
           false,
         ],
@@ -497,7 +500,7 @@ class Command {
               DataManager.data.bot.berrysPrice += scene.random;
             },
             textOutput:
-              "Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, \"коин\", \"ов\", \"\", \"а\")} дороже.",
+              'Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {Util.ending(scene.random, "коин", "ов", "", "а")} дороже.',
           },
           false,
           false,
@@ -566,7 +569,7 @@ class Command {
               userData.void += scene.voids = Util.random(1, 2);
             },
             textOutput:
-              "Преобразуя материальные предметы вы получаете {Util.ending(scene.voids, \"уровн\", \"ей\", \"ь\", \"я\")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег.",
+              'Преобразуя материальные предметы вы получаете {Util.ending(scene.voids, "уровн", "ей", "ь", "я")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег.',
           },
           false,
           {
@@ -630,7 +633,7 @@ class Command {
             action: async ({ userData, level, scene }) =>
               userData.berrys ? userData.berrys-- : false,
             textOutput:
-              "Сражаться с обезьяной и угрожать ей было плохой идеей{context.user.berrys ? \", вы потеряли ещё и пару клубник (1)\" : \"...\"}",
+              'Сражаться с обезьяной и угрожать ей было плохой идеей{context.user.berrys ? ", вы потеряли ещё и пару клубник (1)" : "..."}',
           },
           false,
           false,
@@ -670,7 +673,7 @@ class Command {
           {
             action: async ({ userData, level, scene, channel }) => {
               (async () => {
-                let cloverMessage = await channel.awaitMessage({
+                const cloverMessage = await channel.awaitMessage({
                   userData: false,
                 });
                 let reaction;
@@ -683,7 +686,7 @@ class Command {
 
                 if (reaction && reaction.me) {
                   await Util.sleep(2000);
-                  let author = cloverMessage.author;
+                  const author = cloverMessage.author;
                   author.data.void++;
                   cloverMessage.msg({
                     title: "Нестабилити!",
@@ -1471,7 +1474,7 @@ class Command {
         iconURL: interaction.user.avatarURL(),
       },
       footer: {
-        text: "Вы всегда сможете изменить выбор — \"!штука я\"\nТакже не забывайте улучшать её способности командой \"!штука улучшить\"",
+        text: 'Вы всегда сможете изменить выбор — "!штука я"\nТакже не забывайте улучшать её способности командой "!штука улучшить"',
       },
       fields: Elements.map((elementBase) => ({
         name: `**${elementBase.emoji} ${elementBase.name}**`,
@@ -1696,7 +1699,7 @@ class Command {
     id: 52,
     media: {
       description:
-        "\n\nПовезло-повезло:\n1) Даёт деньги в банк сервера\n2) Абсолютно рандомная и непредсказуемая фигня\n3) Также даёт неплохие бонусы\nПссс, человек, я принимаю идеи по добавлению новых ивентов, надеюсь, ты знаешь где меня искать..\n\n✏️\n```python\n!thing <\"улучшить\" | \"я\">\n```\n\n",
+        '\n\nПовезло-повезло:\n1) Даёт деньги в банк сервера\n2) Абсолютно рандомная и непредсказуемая фигня\n3) Также даёт неплохие бонусы\nПссс, человек, я принимаю идеи по добавлению новых ивентов, надеюсь, ты знаешь где меня искать..\n\n✏️\n```python\n!thing <"улучшить" | "я">\n```\n\n',
     },
     allias: "шутка штука aught аугт нечто штуковина щось річ",
     allowDM: true,
