@@ -108,13 +108,13 @@ class Command {
         },
         display: (element, output, index, _context) => {
           const cup =
-            index == 0
+            index === 0
               ? "<a:cupZ:806813908241350696> "
               : index === 1
-                ? "<a:cupY:806813850745176114> "
-                : index === 2
-                  ? "<a:cupX:806813757832953876> "
-                  : "";
+              ? "<a:cupY:806813850745176114> "
+              : index === 2
+              ? "<a:cupX:806813757832953876> "
+              : "";
           const name = `${cup} ${index + 1}. ${element.username}`;
           const globalQuests = (element.data.questsGlobalCompleted ?? "")
             .split(" ")
@@ -258,8 +258,8 @@ class Command {
       title:
         executorIndex !== -1
           ? `Вы находитесь на ${executorIndex + 1} месте, ${
-            interaction.user.username
-          }`
+              interaction.user.username
+            }`
           : `Вы не числитесь в этом топе, ${interaction.user.username}`,
       fields,
       edit,
