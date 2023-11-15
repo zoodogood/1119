@@ -67,6 +67,7 @@ ${
       executor: user,
       source: "command.casino",
       resource: PropertiesEnum.coins,
+      context: { interaction, isWon },
     });
     userData.coins -= (-1) ** isWon * bet;
     msg.msg(embed);
