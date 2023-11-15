@@ -8,7 +8,7 @@
 			"#server/*": 		["./src/server/*"],
 			"#site/*":   		["./src/site/src/*"],
 			"#bot/*":    	 	["./src/bot/*"],
-			"#constants/*": 	["./src/lib/constants/*"],
+			"#constants/*": 	["./src/app/constants/*"],
 			"#lib/*":    		["./src/lib/*"],
 			"#folder/*": 		["./folder/*"],
 			"#static/*": 		["./static/*"],
