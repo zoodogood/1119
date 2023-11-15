@@ -159,7 +159,7 @@ class Command {
 
     ctx.drawImage(expCanvas, 200, 30);
 
-    let image = canvas.toBuffer("image/png");
+    const image = canvas.toBuffer("image/png");
     msg.msg({
       files: [new AttachmentBuilder(image, { name: "level.png" })],
       delete: 1_000_000,
