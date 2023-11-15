@@ -1,47 +1,51 @@
+import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
 class Command {
-  async onChatInput(msg, interaction) {
-    if (interaction.userData.voidCasino) {
-      msg.msg({
-        title: "Казино закрыто",
-        description:
-          "Казино закрыто. Боюсь что оно больше не откроется.\nЭтого не могло не случится, извините.\n\n — Прощайте. ©️Мэр-Миллиардер Букашка",
-        delete: 20000,
-      });
-      return;
-    }
-
+  parseParams(interaction) {
     let bet = interaction.params.match(/\d+|\+/);
 
     if (bet === null) {
-      msg.msg({
+      interaction.channel.msg({
         title: "Укажите Ставку в числовом виде!",
         color: "#ff0000",
         delete: 3000,
       });
-      return;
+      return null;
     }
     bet = bet[0];
 
-    if (bet === "+") bet = interaction.userData.coins;
+    if (bet === "+") {
+      bet = interaction.userData.coins;
+    }
 
     bet = Math.max(0, Math.floor(bet));
 
-    if (interaction.userData.coins < bet) {
+    return { bet };
+  }
+  async onChatInput(msg, interaction) {
+    const { bet } = this.parseParams(interaction) ?? {};
+    if (bet === null) {
+      return;
+    }
+
+    const { userData, user } = interaction;
+    if (userData.coins < bet) {
       msg.msg({ title: "Недостаточно коинов", color: "#ff0000", delete: 3000 });
       return;
     }
 
     const diceRoll = Util.random(8);
-    const options = {
+    const embed = {
       title: "Лесовитое казино",
       author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-      delete: 20000,
+      delete: 20_000,
       footer: { text: `Ставка: ${bet}` },
     };
     const isWon = diceRoll % 2;
-    options.description = `
+
+    embed.description = `
 **${isWon ? "Вы выиграли." : "Проиграли"}**
 **Кидаем кубик.. выпадает:** \`${diceRoll}\`; ${isWon ? "🦝" : "❌"}
 
@@ -58,8 +62,14 @@ ${
 }
 `;
 
-    interaction.userData.coins -= (-1) ** isWon * bet;
-    msg.msg(options);
+    user.action(Actions.resourceChange, {
+      value: (-1) ** !isWon * bet,
+      executor: user,
+      source: "command.casino",
+      resource: PropertiesEnum.coins,
+    });
+    userData.coins -= (-1) ** isWon * bet;
+    msg.msg(embed);
   }
 
   options = {
