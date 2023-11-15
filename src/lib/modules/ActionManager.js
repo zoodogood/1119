@@ -39,6 +39,7 @@ const ActionsMap = {
   curseTimeEnd: "curseTimeEnd",
   curseBeforeSetProgress: "curseBeforeSetProgress",
   // Other
+  resourceChange: "resourceChange",
   callCommand: "callCommand",
   inputCommandParsed: "inputCommandParsed",
   any: "_any",
