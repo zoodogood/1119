@@ -8,7 +8,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 class Command {
   async onChatInput(msg, interaction) {
     if (interaction.mention) {
-      const data = interaction.mention.data;
+      const mentionUserData = interaction.mention.data;
       const wordNumbers = [
         "ноль",
         "один",
@@ -26,11 +26,11 @@ class Command {
       const getList = (mask) =>
         wordNumbers.filter((word, index) => (2 ** index) & mask);
 
-      const list = getList(data.grempenBoughted || 0);
+      const list = getList(mentionUserData.grempenBoughted || 0);
 
       const buyingItemsContent =
-        data.shopTime === Math.floor(Date.now() / 86400000) &&
-        data.grempenBoughted
+        mentionUserData.shopTime === Math.floor(Date.now() / 86400000) &&
+        mentionUserData.grempenBoughted
           ? `приобрел ${Util.ending(
               list.length,
               "товар",
@@ -52,7 +52,7 @@ class Command {
       return;
     }
 
-    const user = msg.author.data;
+    const userData = interaction.user.data;
 
     const allItems = [
       {
@@ -63,14 +63,14 @@ class Command {
         fn: () => {
           let phrase =
             ".\nВы купили палку. Это самая обычная палка, и вы её выбросили.";
-          if (user.monster) {
+          if (userData.monster) {
             const DENOMINATOR = 0.995;
             const COMMON_VALUE = 3;
 
             const MIN = 5;
 
             const max =
-              (COMMON_VALUE * (1 - DENOMINATOR ** user.monster)) /
+              (COMMON_VALUE * (1 - DENOMINATOR ** userData.monster)) /
                 (1 - DENOMINATOR) +
               MIN;
             const count = Math.ceil(Util.random(MIN, max));
@@ -81,7 +81,7 @@ class Command {
               "",
               "а",
             )}`;
-            user.keys += count;
+            userData.keys += count;
           }
 
           return phrase;
@@ -93,8 +93,8 @@ class Command {
         inline: true,
         others: ["перец", "перчик"],
         fn: () => {
-          if (user.chilli === undefined) {
-            user.chilli = 0;
+          if (userData.chilli === undefined) {
+            userData.chilli = 0;
             msg.msg({
               title: "Окей, вы купили перец, просто бросьте его...",
               description: "Команда броска `!chilli @Пинг`",
@@ -102,7 +102,7 @@ class Command {
             });
           }
 
-          user.chilli++;
+          userData.chilli++;
           return '. "Готовтесь глупцы, грядёт эра перчиков"';
         },
       },
@@ -112,11 +112,11 @@ class Command {
         inline: true,
         others: ["перчатку", "перчатки", "перчатка"],
         fn: () => {
-          if (user.thiefGloves) {
-            user.thiefGloves += 2;
-            delete user.CD_39;
+          if (userData.thiefGloves) {
+            userData.thiefGloves += 2;
+            delete userData.CD_39;
           } else {
-            user.thiefGloves = 2;
+            userData.thiefGloves = 2;
             msg.author.msg({
               title: "Вы купили чудо перчатки?",
               description:
@@ -132,7 +132,7 @@ class Command {
         inline: true,
         others: ["ключ", "ключик", "key"],
         fn: () => {
-          user.keys++;
+          userData.keys++;
           return " и что вы делаете? Нет! Это не Фиксик!";
         },
       },
@@ -144,8 +144,8 @@ class Command {
         fn: (product) => {
           const rand = Util.random(3, 7);
           const LIMIT = 15_000;
-          const flaconPrice = Math.min(Math.ceil(user.coins / rand), LIMIT);
-          user.exp += Math.ceil(flaconPrice * 0.8);
+          const flaconPrice = Math.min(Math.ceil(userData.coins / rand), LIMIT);
+          userData.exp += Math.ceil(flaconPrice * 0.8);
 
           product.value = flaconPrice;
           return `, как дорогущий флакон давший вам целых ${Math.floor(
@@ -155,13 +155,13 @@ class Command {
       },
       {
         name: "🐲 Ручной монстр",
-        value: 1999 + 1000 * Math.ceil((user.monstersBought || 0) / 3),
+        value: 1999 + 1000 * Math.ceil((userData.monstersBought || 0) / 3),
         inline: true,
         others: ["монстр", "монстра"],
         fn: () => {
-          if (user.monster === undefined) {
-            user.monster = 0;
-            user.monstersBought = 0;
+          if (userData.monster === undefined) {
+            userData.monster = 0;
+            userData.monstersBought = 0;
             msg.msg({
               description:
                 "Монстры защищают вас от мелких воришек и больших воров, также они очень любят приносить палку, но не забывайте играть с ними!",
@@ -169,8 +169,8 @@ class Command {
               delete: 5000,
             });
           }
-          user.monster++;
-          user.monstersBought++;
+          userData.monster++;
+          userData.monstersBought++;
           return ", ой, простите зверя*";
         },
       },
@@ -180,11 +180,11 @@ class Command {
         inline: true,
         others: ["консервы", "интеллект"],
         fn: () => {
-          if (user.iq === undefined) {
-            user.iq = Util.random(27, 133);
+          if (userData.iq === undefined) {
+            userData.iq = Util.random(27, 133);
           }
 
-          user.iq += Util.random(3, 7);
+          userData.iq += Util.random(3, 7);
           return ".\nВы едите эти консервы и понимаете, что становитесь умнее. Эта покупка точно была не напрасной...";
         },
       },
@@ -194,11 +194,11 @@ class Command {
         inline: true,
         others: ["бутылка", "бутылку", "глупость", "глупости"],
         fn: () => {
-          if (user.iq === undefined) {
-            user.iq = Util.random(27, 133);
+          if (userData.iq === undefined) {
+            userData.iq = Util.random(27, 133);
           }
 
-          user.iq -= Util.random(3, 7);
+          userData.iq -= Util.random(3, 7);
           return ".\nГу-гу, га-га?... Пора учится...!";
         },
       },
@@ -209,14 +209,14 @@ class Command {
         others: ["шуба", "шубу", "шуба из енота"],
         fn: (product) => {
           const isFirst = !(
-            user.questsGlobalCompleted &&
-            user.questsGlobalCompleted.includes("beEaten")
+            userData.questsGlobalCompleted &&
+            userData.questsGlobalCompleted.includes("beEaten")
           );
-          user.coins += product.value + (isFirst ? 200 : -200);
-          msg.author.action(Actions.globalQuest, { name: "beEaten" });
+          userData.coins += product.value + (isFirst ? 200 : -200);
+          interaction.user.action(Actions.globalQuest, { name: "beEaten" });
 
-          if (user.curses.length > 0) {
-            delete user.curses;
+          if (userData.curses.length > 0) {
+            delete userData.curses;
             return ", как магический артефакт, защитивший вас от проклятия";
           }
 
@@ -226,8 +226,8 @@ class Command {
         },
       },
       {
-        name: user.voidCasino ? "🥂 Casino" : "🎟️ Лотерейный билет",
-        value: user.voidCasino ? Math.floor(user.coins / 3.33) : 130,
+        name: userData.voidCasino ? "🥂 Casino" : "🎟️ Лотерейный билет",
+        value: userData.voidCasino ? Math.floor(userData.coins / 3.33) : 130,
         inline: true,
         others: [
           "билет",
@@ -239,17 +239,17 @@ class Command {
         ],
         fn: () => {
           const coefficient = 220 / 130;
-          const bet = user.voidCasino ? user.coins * 0.3 : 130;
-          const odds = user.voidCasino ? 22 : 21;
+          const bet = userData.voidCasino ? userData.coins * 0.3 : 130;
+          const odds = userData.voidCasino ? 22 : 21;
           if (Util.random(odds) > 8) {
             const victory = Math.ceil(bet * coefficient);
-            user.coins += victory;
-            return user.voidCasino
+            userData.coins += victory;
+            return userData.voidCasino
               ? `. Куш получен! — ${victory}`
               : ", ведь с помощью неё вы выиграли 220 <:coin:637533074879414272>!";
           }
 
-          return user.voidCasino
+          return userData.voidCasino
             ? ". Проигрыш. Возьмёте реванш в следующий раз."
             : ", как бумажка для протирания. Вы проиграли 🤪";
         },
@@ -257,8 +257,8 @@ class Command {
       {
         name: "💡 Идея",
         value:
-          user.iq &&
-          user.iq % 31 === +DataManager.data.bot.dayDate.match(/\d{1,2}/)[0]
+          userData.iq &&
+          userData.iq % 31 === +DataManager.data.bot.dayDate.match(/\d{1,2}/)[0]
             ? "Бесплатно"
             : 80,
         inline: true,
@@ -313,23 +313,23 @@ class Command {
         fn: (product) => {
           const phrase =
             ". Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.";
-          const guild = msg.guild;
-          const data = guild.data;
+          const guild = interaction.guild;
+          const guildData = guild.data;
 
-          if (!data.cloverEffect) {
-            data.cloverEffect = {
+          if (!guildData.cloverEffect) {
+            guildData.cloverEffect = {
               coins: 0,
               timestamp: Date.now(),
               uses: 1,
             };
             TimeEventsManager.create("clover-end", 14400000, [
               guild.id,
-              msg.channel.id,
+              interaction.channel.id,
             ]);
             return phrase;
           }
 
-          const clover = data.cloverEffect;
+          const clover = guildData.cloverEffect;
           clover.uses++;
 
           const increaseTimestamp = (timestamp) => {
@@ -383,17 +383,17 @@ class Command {
             source: "command.grempen.product.ball",
             resource: item,
           });
-          user[item] = (user[item] ?? 0) + 1;
+          userData[item] = (userData[item] ?? 0) + 1;
           return ` как \`gachi-${item}\`, которого у вас прибавилось в количестве один.`;
         },
       },
       {
         name: "🔧 Завоз товаров",
-        value: 312 + user.level * 2,
+        value: 312 + userData.level * 2,
         inline: true,
         others: ["завоз", "завоз товаров"],
         fn: (product) => {
-          user.grempenBoughted = 0;
+          userData.grempenBoughted = 0;
           return " как дорогостоящий завоз товаров. Заходите ко мне через пару минут за новыми товарами";
         },
       },
@@ -403,15 +403,15 @@ class Command {
         inline: true,
         others: ["камень", "проклятие", "камень с глазами"],
         fn: (product) => {
-          if (!user.curses) {
-            user.curses = [];
+          if (!userData.curses) {
+            userData.curses = [];
           }
 
-          const already = user.curses.length;
+          const already = userData.curses.length;
 
-          if (already && !user.voidFreedomCurse) {
-            user.coins += product.value;
-            user.grempenBoughted -= 2 ** todayItems.indexOf(product);
+          if (already && !userData.voidFreedomCurse) {
+            userData.coins += product.value;
+            userData.grempenBoughted -= 2 ** todayItems.indexOf(product);
             return " как ничто. Ведь вы уже были прокляты!";
           }
 
@@ -421,7 +421,7 @@ class Command {
             guild: interaction.guild,
           });
           const curseBase = CurseManager.cursesBase.get(curse.id);
-          CurseManager.init({ user: msg.author, curse });
+          CurseManager.init({ user: interaction.user, curse });
 
           return ` как новое проклятие. Чтобы избавится от бича камня: ${curseBase.description}.`;
         },
@@ -435,16 +435,16 @@ class Command {
 
     const todayItems = getTodayItems();
 
-    if (Math.floor(Date.now() / 86400000) !== user.shopTime) {
-      user.grempenBoughted = 0;
-      user.shopTime = Math.floor(Date.now() / 86400000);
+    if (Math.floor(Date.now() / 86400000) !== userData.shopTime) {
+      userData.grempenBoughted = 0;
+      userData.shopTime = Math.floor(Date.now() / 86400000);
     }
 
     const isBought = (product) => {
       const index = todayItems.indexOf(product);
       if (index === -1) return null;
 
-      return (user.grempenBoughted & (2 ** index)) !== 0;
+      return (userData.grempenBoughted & (2 ** index)) !== 0;
     };
 
     const buyFunc = async (name) => {
@@ -467,11 +467,11 @@ class Command {
         return;
       }
 
-      if (user.coins < (product.value || 0)) {
+      if (userData.coins < (product.value || 0)) {
         await msg.msg({
           title: "<:grempen:753287402101014649> Т-Вы что удумали?",
           description: `Недостаточно коинов, ${product.name} стоит на ${
-            product.value - user.coins
+            product.value - userData.coins
           } дороже`,
           color: "#400606",
           delete: 5000,
@@ -481,15 +481,15 @@ class Command {
 
       const phrase = product.fn(product);
 
-      if (!isNaN(product.value)) user.coins -= product.value;
+      if (!isNaN(product.value)) userData.coins -= product.value;
 
-      user.grempenBoughted += 2 ** todayItems.indexOf(product);
-      msg.author.action(Actions.buyFromGrempen, {
+      userData.grempenBoughted += 2 ** todayItems.indexOf(product);
+      interaction.user.action(Actions.buyFromGrempen, {
         product,
-        channel: msg.channel,
+        channel: interaction.channel,
       });
-      if (user.grempenBoughted === 63) {
-        msg.author.action(Actions.globalQuest, { name: "cleanShop" });
+      if (userData.grempenBoughted === 63) {
+        interaction.user.action(Actions.globalQuest, { name: "cleanShop" });
       }
 
       return msg.msg({
@@ -512,8 +512,8 @@ class Command {
       return;
     }
 
-    if (user.coins < 80) {
-      msg.channel.sendTyping();
+    if (userData.coins < 80) {
+      interaction.channel.sendTyping();
       await Util.sleep(1700);
       return msg.msg({
         title: "<:grempen:753287402101014649>",
@@ -540,12 +540,12 @@ class Command {
 
     let embed = {
       title: "<:grempen:753287402101014649> Зловещая лавка",
-      description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${user.coins}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`,
+      description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${userData.coins}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`,
       fields: productsToFields(),
       color: "#400606",
       footer: { text: "Только сегодня, самые горячие цены!" },
     };
-    const shop = await msg.msg(embed);
+    const shop = await interaction.channel.msg(embed);
 
     let react;
     while (true) {
@@ -553,7 +553,7 @@ class Command {
         .filter(
           (item) =>
             isBought(item) === false &&
-            (isNaN(item.value) || item.value <= user.coins),
+            (isNaN(item.value) || item.value <= userData.coins),
         )
         .map((item) => item.name.split(" ")[0]);
       if (reactions.length === 0) reactions = ["❌"];
@@ -582,7 +582,7 @@ class Command {
       );
       buyFunc(product.name);
 
-      if (user.coins < 80) {
+      if (userData.coins < 80) {
         msg.channel.sendTyping();
         await Util.sleep(1200);
 
@@ -596,7 +596,7 @@ class Command {
       embed = {
         title: "<:grempen:753287402101014649> Зловещая лавка",
         edit: true,
-        description: `У вас есть-остались коины? Отлично! **${user.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`,
+        description: `У вас есть-остались коины? Отлично! **${userData.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`,
         fields: productsToFields(),
         footer: { text: "Приходите ещё, акции каждый день!" },
         color: "#400606",
