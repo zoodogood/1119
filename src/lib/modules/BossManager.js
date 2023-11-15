@@ -1040,10 +1040,10 @@ class BossManager {
 	
 			collector.on("end", () => context.message.delete());
 		},
-		onCollect: (user, {toLevel, message, guild}) => {
+		onCollect: (user, context) => {
+			const {toLevel, message, guild} = context;
 			const boss = guild.data.boss;
 			const userStats = BossManager.getUserStats(boss, user.id);
-			const userData = user.data;
 	
 			if ("chestRewardAt" in userStats){
 				message.msg({title: `Вы уже взяли награду на ур. ${ userStats.chestRewardAt }`, delete: 5000});
@@ -1051,6 +1051,16 @@ class BossManager {
 			};
 
 			const rewardPull = BossManager.BonusesChest.createRewardPull({level: toLevel, userStats, bonuses: true});
+			for (const [resource, value] of Object.entries(rewardPull)) {
+				user.action(Actions.resourceChange, {
+					value,
+					executor: user,
+					source: "bossManager.chest.onCollect",
+					resource,
+					context
+				});	
+			}
+			
 			userStats.chestRewardAt = toLevel;
 			BossManager.BonusesChest.sendReward(user, rewardPull);
 			message.msg({description: `Получено ${  Util.ending(rewardPull.chestBonus, "бонус", "ов", "", "а") } для сундука <a:chest:805405279326961684>, ${ rewardPull.keys } 🔩 и ${ rewardPull.void } <a:void:768047066890895360>`, color: BossManager.BonusesChest.MAIN_COLOR, delete: 7000});
@@ -1111,9 +1121,17 @@ class BossManager {
 		const sendReward = ([id, userStats]) => {
 			const user = usersCache.get(id);
 			const reward = createRewardPull({bonuses: false, userStats, level: boss.level});
+			reward.void = (reward.void || 0) + 1;
+			for (const [resource, value] of Object.entries(rewardPull)) {
+				user.action(Actions.resourceChange, {
+					value,
+					executor: null,
+					source: "bossManager.beforeEnd.sendReward",
+					resource,
+					context: {boss, rewardPull: reward}
+				});	
+			}
 			BossManager.BossChest.sendReward(user, reward);
-
-			user.data.void += 1;
 		};
 
 		const cleanEffects = (user) => {
