@@ -1,3 +1,4 @@
+import { Actions } from "#lib/modules/ActionManager.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
 
@@ -143,7 +144,20 @@ class Command {
       return;
     }
 
+    interaction.user.action(Actions.resourceChange, {
+      value: -num,
+      executor: interaction.user,
+      source: "command.pay",
+      resource,
+    });
     interaction.userData[resource] -= num;
+
+    memb.user.action(Actions.resourceChange, {
+      value: num,
+      executor: interaction.user,
+      source: "command.pay",
+      resource,
+    });
     memb.data[resource] += num;
 
     msg.msg({
