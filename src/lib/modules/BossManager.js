@@ -440,23 +440,18 @@ class BossEffects {
 		deadlyCurse: {
 			id: "deadlyCurse",
 			callback: { 	
-				curseTimeEnd: (user, effect, {curse}) => {
-					if (effect.values.targetTimestamp !== curse.timestamp){
-						return;
-					}
-					const guild = app.client.guilds.cache.get(effect.guildId);
-					
-					if (!BossManager.isArrivedIn(guild)){
-						return;
-					}
-					const userStats = BossManager.getUserStats(guild.data.boss, user.id);
-					userStats.heroIsDead = true;
-				},
-				curseEnd: (user, effect, {curse}) => {
+				curseEnd: (user, effect, {curse, loses}) => {
 					const effectValues = effect.values;
 
 					if (effectValues.targetTimestamp !== curse.timestamp){
 						return;
+					}
+					
+					const guild = app.client.guilds.cache.get(effect.guildId);
+					
+					if (loses && BossManager.isArrivedIn(guild)){
+						const userStats = BossManager.getUserStats(guild.data.boss, user.id);
+						userStats.heroIsDead = true;
 					}
 
 					BossEffects.removeEffect({effect, user});
