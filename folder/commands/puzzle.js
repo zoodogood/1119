@@ -1,8 +1,11 @@
+import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import { AttachmentBuilder } from "discord.js";
 
 class Command {
   async onChatInput(msg, interaction) {
+    return;
     const { default: canvas } = await import("canvas");
 
     let i = 9,
@@ -92,7 +95,7 @@ class Command {
       files: [new AttachmentBuilder(image, { name: "puzzle.png" })],
       color: "#f2fafa",
       author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-      delete: 100_000
+      delete: 100_000,
     });
     const react = await message.awaitReact(
       { user: msg.author, removeType: "all" },
@@ -116,7 +119,15 @@ class Command {
         delete: 5000,
       });
 
-    if (answer == last) {
+    if (answer === String(last)) {
+      interaction.user.action(Actions.resourceChange, {
+        value: reward,
+        executor: interaction.user,
+        source: "command.puzzle",
+        resource: PropertiesEnum.coins,
+        context: { interaction },
+      });
+
       msg.author.data.coins += reward;
       return msg.msg({
         title: "И это... Правильный ответ! Ваша награда уже у вас в карманах!",
