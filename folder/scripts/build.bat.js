@@ -20,10 +20,10 @@
 const root = process.cwd();
 import get from "#lib/child-process-utils.js";
 
-const { run, info, _npm } = get({ root, logger: true });
+const { run, info } = get({ root, logger: true });
 
 const runtime = "node";
-const manager = _npm;
+const manager = "yarn";
 
 await info(`${runtime} version:`);
 await run(runtime, ["-v"]);
