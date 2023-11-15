@@ -149,6 +149,7 @@ class Command {
       executor: interaction.user,
       source: "command.pay",
       resource,
+      context: { interaction },
     });
     interaction.userData[resource] -= num;
 
@@ -157,6 +158,7 @@ class Command {
       executor: interaction.user,
       source: "command.pay",
       resource,
+      context: { interaction },
     });
     memb.data[resource] += num;
 
