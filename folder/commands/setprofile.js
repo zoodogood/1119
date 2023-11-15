@@ -1,12 +1,15 @@
 import * as Util from "#lib/util.js";
 import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import CommandsManager from "#lib/modules/CommandsManager.js";
 
 class Command {
   async onChatInput(msg, interaction) {
-    let user = interaction.userData,
+    const userData = interaction.userData,
       args = interaction.params.split(" "),
-      value = args.splice(1).join(" "),
       item = args[0].toLowerCase();
+
+    let value = args.splice(1).join(" ");
 
     if (
       ![
@@ -24,7 +27,7 @@ class Command {
         "конфиденциальность",
       ].includes(item)
     ) {
-      let problemsMessage = await msg.msg({
+      const problemsMessage = await msg.msg({
         title:
           "<a:who:638649997415677973> Вы не указали то, что вы хотите изменить\nПовторите попытку",
         delete: 10000,
@@ -33,7 +36,7 @@ class Command {
       });
 
       //** Реакция-помощник
-      let react = await problemsMessage.awaitReact(
+      const react = await problemsMessage.awaitReact(
         { user: msg.author, removeType: "all" },
         "❓",
       );
@@ -41,7 +44,12 @@ class Command {
         return;
       }
 
-      let helper = await commands.commandinfo.code(msg, { args: "setprofile" });
+      const helper = await CommandsManager.collection
+        .get("commandinfo")
+        .onChatInput(interaction.message, {
+          ...interaction,
+          params: "setprofile",
+        });
       await Util.sleep(20000);
       helper.delete();
       /**/
@@ -54,56 +62,57 @@ class Command {
       return;
     }
 
+    const data = {};
     switch (item) {
       case "description":
       case "описание":
       case "опис":
       case "осебе":
       case "просебе":
-        let minus = (value.match(/<a?:.+?:\d+?>|\\?!\{.+?\}/g) || []).join(
+        data.minus = (value.match(/<a?:.+?:\d+?>|\\?!\{.+?\}/g) || []).join(
           "",
         ).length;
-        if (value.length - minus > 121)
+        if (value.length - data.minus > 121)
           return msg.msg({
             title: "Длина описания не должна превышать 120 символов",
             delete: 5000,
             color: "#ff0000",
             description: `Ваша длина: ${
-              value.length - minus
+              value.length - data.minus
             }\nТекст:\n${value}`,
           });
-        let line = "";
-        let lineMinus = 0;
-        minus = 0;
+        data.line = "";
+        data.lineMinus = 0;
+        data.minus = 0;
 
-        let words = value.split(" ");
+        data.words = value.split(" ");
         value = "";
-        for (let i = 0; i < words.length; i++) {
-          let e = words[i];
+        for (let i = 0; i < data.words.length; i++) {
+          const e = data.words[i];
 
-          lineMinus += (e.match(/<a?:.+?:\d+?>|\\?!\{.+?\}/g) || []).join(
+          data.lineMinus += (e.match(/<a?:.+?:\d+?>|\\?!\{.+?\}/g) || []).join(
             "",
           ).length;
           let indent;
           if ((indent = e.match(/\n/))) {
-            words.splice(i + 1, 0, e.slice(indent.index + 1));
-            value += `${line} ${e.slice(0, indent.index)}\n`;
-            line = "";
-            lineMinus = 0;
+            data.words.splice(i + 1, 0, e.slice(indent.index + 1));
+            value += `${data.line} ${e.slice(0, indent.index)}\n`;
+            data.line = "";
+            data.lineMinus = 0;
             continue;
           }
 
-          if (line.length - lineMinus + e.length < 30) {
-            line += " " + e;
+          if (data.line.length - data.lineMinus + e.length < 30) {
+            data.line += " " + e;
           } else {
-            value += line + "\n" + e;
-            line = "";
-            lineMinus = 0;
+            value += data.line + "\n" + e;
+            data.line = "";
+            data.lineMinus = 0;
           }
         }
-        value += line;
+        value += data.line;
 
-        user.profile_description = value;
+        userData.profile_description = value;
         msg.msg({ title: "Описание установлено!", delete: 5000 });
         break;
 
@@ -111,109 +120,123 @@ class Command {
       case "цвет":
       case "колір":
         if (value === "0") {
-          delete user.profile_color;
+          delete userData.profile_color;
           msg.msg({
             title: "Готово! Пользовательский цвет удалён",
             delete: 5000,
           });
         }
 
-        let color = value.match(/[abcdef0-9]{6}|[abcdef0-9]{3}/i);
-        if (!color) {
+        data.color = value.match(/[abcdef0-9]{6}|[abcdef0-9]{3}/i);
+        if (!data.color) {
           return msg.msg({
             title: "Неверный формат, введите цвет в формате HEX `#38f913`",
             color: "#ff0000",
             delete: 5000,
           });
         }
-        color = color[0].toLowerCase();
-        color =
-          color.length === 3 ? [...color].map((e) => e + e).join("") : color;
+        data.color = data.color[0].toLowerCase();
+        data.color =
+          data.color.length === 3
+            ? [...data.color].map((hexSymbol) => hexSymbol + hexSymbol).join("")
+            : data.color;
 
-        user.profile_color = color;
+        userData.profile_color = data.color;
         msg.msg({
-          title: `Готово! Пользовательский цвет установлен #${color.toUpperCase()}\nЕсли вы захотите его удалить - установите цвет в значение 0`,
-          color: color,
+          title: `Готово! Пользовательский цвет установлен #${data.color.toUpperCase()}\nЕсли вы захотите его удалить - установите цвет в значение 0`,
+          color: data.color,
           delete: 5000,
         });
         break;
 
       case "birthday":
       case "др":
-        if (user.BDay) {
-          let price = [1200, 3000, 12000][user.chestLevel];
-          let message = await msg.msg({
+        if (userData.BDay) {
+          const price = [1200, 3000, 12000][userData.chestLevel];
+          const message = await msg.msg({
             title: `Вы уже устанавливали дату своего дня рождения, повторная смена будет стоить вам ${price} коинов\nПродолжить?`,
           });
-          let react = await message.awaitReact(
+          const react = await message.awaitReact(
             { user: msg.author, removeType: "all" },
             "685057435161198594",
             "763807890573885456",
           );
 
-          if (react != "685057435161198594") {
+          if (react !== "685057435161198594") {
             return msg.msg({
               title: "Действие отменено",
               color: "#ff0000",
               delete: 4000,
             });
           }
-          if (user.coins < price) {
+          if (userData.coins < price) {
             return msg.msg({
               title: "Недостаточно коинов",
               color: "#ff0000",
               delete: 4000,
             });
           }
-          user.coins -= price;
+          interaction.user.action(Actions.resourceChange, {
+            value: -price,
+            executor: interaction.user,
+            source: "command.setProfile.BDDay.fine",
+            resource: PropertiesEnum.coins,
+            context: { interaction },
+          });
+          userData.coins -= price;
         }
 
-        let day = value.match(/\d\d\.\d\d/);
-        if (!day) {
+        data.day = value.match(/\d\d\.\d\d/);
+        if (!data.day) {
           return msg.msg({
-            title: "Укажите в формате \"19.11\" - день, месяц",
+            title: 'Укажите в формате "19.11" - день, месяц',
             color: "#ff0000",
             delete: 5000,
           });
         }
 
-        day = day[0];
+        data.day = data.day[0];
 
-        const [date, month] = day.split(".").map(Number);
-        if (date > 31 || date < 1 || month < 1 || month > 12) {
+        data.date = data.day.split(".").map(Number);
+        if (
+          data.date.at(0) > 31 ||
+          data.date.at(0) < 1 ||
+          data.date.at(1) < 1 ||
+          data.date.at(1) > 12
+        ) {
           return msg.msg({
-            title: "Укажите в формате \"19.11\" - день, месяц",
+            title: 'Укажите в формате "19.11" - день, месяц',
             color: "#ff0000",
             delete: 5000,
           });
         }
-        user.BDay = day;
+        userData.BDay = data.day;
         msg.author.action(Actions.globalQuest, { name: "setBirthday" });
         msg.msg({ title: "Установлено! 🎉", delete: 3000 });
         break;
 
       case "confidentiality":
       case "конфиденциальность":
-        let message = await msg.msg({
+        data.message = await msg.msg({
           title: `Реж. конфиденциальности ${
-            user.profile_confidentiality
+            userData.profile_confidentiality
               ? "включен, отлючить?"
               : "выключен, включить?"
           }`,
         });
-        let react = await message.awaitReact(
+        data.react = await data.message.awaitReact(
           { user: msg.author, removeType: "all" },
           "685057435161198594",
           "763807890573885456",
         );
-        if (react != "685057435161198594") {
+        if (data.react !== "685057435161198594") {
           return msg.msg({
             title: "Действие отменено",
             color: "#ff0000",
             delete: 4000,
           });
         }
-        user.profile_confidentiality = user.profile_confidentiality
+        userData.profile_confidentiality = userData.profile_confidentiality
           ? false
           : true;
         break;
@@ -225,7 +248,7 @@ class Command {
     id: 20,
     media: {
       description:
-        "\n\nНастройки вашего профиля: Цвет, описание, день рождения и режим конфиденциальности\n\n✏️\n```python\n!setProfile {\"осебе\" | \"цвет\" | \"др\" | \"конфиденциальность\"} {value} #для реж. конфиденциальности аргумент value не нужен\n```\n\n",
+        '\n\nНастройки вашего профиля: Цвет, описание, день рождения и режим конфиденциальности\n\n✏️\n```python\n!setProfile {"осебе" | "цвет" | "др" | "конфиденциальность"} {value} #для реж. конфиденциальности аргумент value не нужен\n```\n\n',
     },
     allias: "настроитьпрофиль about осебе sp нп налаштуватипрофіль",
     allowDM: true,
