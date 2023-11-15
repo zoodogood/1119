@@ -1843,7 +1843,7 @@ class BossManager {
 			id: "powerOfEarth",
 			description: "Вознаграждение за терпение",
 			callback: ({user, boss}) => {
-				const berry = 3 + boss.level;
+				const berry = 3 + Math.ceil(boss.level / 2);
 				user.data.berrys += berry;
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
