@@ -25,7 +25,10 @@ class Route extends BaseRoute {
       return;
     }
 
-    const resources = ChestManager.open({ user });
+    const resources = ChestManager.open({
+      user,
+      context: { request, response },
+    });
     cooldown.install();
     response.json(resources);
   }

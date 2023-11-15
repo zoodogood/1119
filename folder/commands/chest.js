@@ -11,7 +11,7 @@ class Chest {
     return this.getResources({ user, openCount: count });
   }
 
-  static applyTreasures({ user, treasures }) {
+  static applyTreasures({ user, treasures, context }) {
     const userData = user.data;
 
     const apply = (item, quantity) => {
@@ -25,6 +25,7 @@ class Chest {
             executor: user,
             source: "chestManager.applyTreasures",
             resource: PropertiesEnum.thiefGloves,
+            context: { treasures, ...context },
           });
           userData.thiefGloves = (userData.thiefGloves || 0) + quantity;
           break;
@@ -35,6 +36,7 @@ class Chest {
             executor: user,
             source: "chestManager.applyTreasures",
             resource: item,
+            context: { treasures, context },
           });
           userData[item] = (userData[item] || 0) + quantity;
           break;
@@ -110,14 +112,14 @@ class Chest {
 }
 
 class ChestManager {
-  static open({ user }) {
+  static open({ user, context }) {
     const userData = user.data;
     const nowBirthday = userData.BDay === DataManager.data.bot.dayDate;
     nowBirthday && (userData.chestBonus = 30 + (userData.chestBonus || 0));
 
     const { treasures, openCount } = Chest.callOpen({ user });
     delete userData.chestBonus;
-    Chest.applyTreasures({ user, treasures });
+    Chest.applyTreasures({ user, treasures, context });
 
     Object.entries(treasures).forEach((item, quantity) =>
       this.handleTreasure(item, quantity, user),
@@ -178,7 +180,10 @@ class Command {
       color: "#ffda73",
     };
 
-    const { treasures, openCount } = ChestManager.open({ user });
+    const { treasures, openCount } = ChestManager.open({
+      user,
+      context: { interaction },
+    });
 
     let actualOpenCount = openCount;
     const items = [];
