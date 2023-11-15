@@ -593,11 +593,13 @@ class CurseManager {
     };
 
     const success = () => {
-      CurseManager.curseEnd({ lost: false, user, curse });
+      this.curseIndexOnUser({ curse, user }) !== null &&
+        CurseManager.curseEnd({ lost: false, user, curse });
     };
 
     const fail = () => {
-      CurseManager.curseEnd({ lost: true, user, curse });
+      this.curseIndexOnUser({ curse, user }) !== null &&
+        CurseManager.curseEnd({ lost: true, user, curse });
     };
     return {
       incrementProgress,
@@ -608,13 +610,25 @@ class CurseManager {
       success,
     };
   }
+
+  static curseIndexOnUser({ curse, user }) {
+    const index = user.data.curses.indexOf(curse);
+    if (index === -1) {
+      return null;
+    }
+
+    return index;
+  }
   static checkAvailable({ curse, user }) {
     if (!curse) {
       return null;
     }
 
     if (curse.values.progress >= curse.values.goal) {
-      CurseManager.curseEnd({ user, curse, lost: false });
+      this.curseIndexOnUser({ curse, user }) !== null &&
+        CurseManager.curseEnd({ user, curse, lost: false });
+
+      return;
     }
 
     if (
@@ -624,7 +638,10 @@ class CurseManager {
       const event = new Event("curseTimeEnd", { cancelable: true });
       user.action(Actions.curseTimeEnd, { event, curse });
       if (!event.defaultPrevented) {
-        CurseManager.curseEnd({ user, curse, lost: true });
+        this.curseIndexOnUser({ curse, user }) !== null &&
+          CurseManager.curseEnd({ user, curse, lost: true });
+
+        return;
       }
     }
   }
@@ -633,8 +650,8 @@ class CurseManager {
   }
 
   static removeCurse({ user, curse }) {
-    const index = user.data.curses.indexOf(curse);
-    if (index === -1) {
+    const index = this.curseIndexOnUser({ curse, user });
+    if (index === null) {
       return null;
     }
 
