@@ -382,6 +382,7 @@ class Command {
             executor: interaction.user,
             source: "command.grempen.product.ball",
             resource: item,
+            context: { interaction },
           });
           userData[item] = (userData[item] ?? 0) + 1;
           return ` как \`gachi-${item}\`, которого у вас прибавилось в количестве один.`;
