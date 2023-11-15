@@ -377,6 +377,12 @@ class Command {
             "chestBonus",
           ];
           const item = items.random();
+          interaction.user.action(Actions.resourceChange, {
+            value: 1,
+            executor: interaction.user,
+            source: "command.grempen.product.ball",
+            resource: item,
+          });
           user[item] = (user[item] ?? 0) + 1;
           return ` как \`gachi-${item}\`, которого у вас прибавилось в количестве один.`;
         },
