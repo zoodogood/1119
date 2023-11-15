@@ -2,6 +2,7 @@ import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import { BossManager, BossEffects } from "#lib/modules/BossManager.js";
 import { ButtonStyle, ComponentType } from "discord.js";
+import CurseManager from "#lib/modules/CurseManager.js";
 
 class Command {
   createEmbed({ userEffects, userStats, member, boss }) {
@@ -209,7 +210,7 @@ class Command {
       time: 120_000,
     });
 
-    collector.on("collect", (interaction) => {
+    collector.on("collect", async (interaction) => {
       const isAlready = BossManager.getUserStats(
         boss,
         member.id,
@@ -223,7 +224,7 @@ class Command {
         return;
       }
 
-      const user = interaction.user;
+      const { user } = interaction;
       const userStats = BossManager.getUserStats(boss, user.id);
       if (userStats.heroIsDead) {
         interaction.msg({
@@ -237,12 +238,58 @@ class Command {
       const effectBase = BossEffects.effectBases.get("deadlyCurse");
       const values = { keepAliveUserId: member.id };
 
-      BossEffects.applyEffect({ guild, user, effectBase, values });
-      interaction.msg({
+      const effect = BossEffects.applyEffect({
+        guild,
+        user,
+        effectBase,
+        values,
+      });
+      const curseAddedMessage = await interaction.msg({
         description:
           "Примите и избавьтесь от быстродействующего проклятия. Провалите — та же участь под камнем.\n**Предостережение:** его не всегда возможно снять в срок.",
         footer: { text: user.tag, iconURL: user.avatarURL() },
+        thumbnail:
+          "https://media.discordapp.net/attachments/629546680840093696/1174372547941384272/skull.png?ex=65675aaa&is=6554e5aa&hm=7472e327ea98eee13d82ea8eb6035483ea655779e235628771991c40f12b7b34&=",
+        fetchReply: true,
+        components: [
+          {
+            type: ComponentType.Button,
+            style: ButtonStyle.Secondary,
+            emoji: "753916360802959444",
+            customId: "displayCurse",
+          },
+        ],
       });
+
+      message.msg({ edit: true, components: [] });
+
+      (async () => {
+        const collector = curseAddedMessage.createMessageComponentCollector({
+          filter: (interaction) => console.log(interaction) || true,
+          time: 180_000,
+        });
+
+        const curse = user.data.curses.find(
+          (curse) => curse.timestamp === effect.values.targetTimestamp,
+        );
+
+        collector.on("collect", (interaction) => {
+          interaction.msg({
+            ephemeral: true,
+            content: CurseManager.interface({
+              user,
+              curse,
+            }).toString(),
+          });
+        });
+
+        collector.on("end", () => {
+          curseAddedMessage.msg({ edit: true, components: [] });
+        });
+
+        return;
+      })();
+
       collector.stop();
     });
 
