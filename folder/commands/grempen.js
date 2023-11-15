@@ -4,6 +4,7 @@ import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class Command {
   async onChatInput(msg, interaction) {
@@ -212,12 +213,23 @@ class Command {
             userData.questsGlobalCompleted &&
             userData.questsGlobalCompleted.includes("beEaten")
           );
-          userData.coins += product.value + (isFirst ? 200 : -200);
+          const refund = product.value + (isFirst ? 200 : -200);
+          interaction.user.action(Actions.resourceChange, {
+            value: refund,
+            executor: interaction.user,
+            source: "command.grempen.product.coat.refund",
+            resource: PropertiesEnum.coins,
+            context: { interaction, product },
+          });
+          userData.coins += refund;
           interaction.user.action(Actions.globalQuest, { name: "beEaten" });
 
           if (userData.curses.length > 0) {
-            delete userData.curses;
-            return ", как магический артефакт, защитивший вас от проклятия";
+            for (const curse of userData.curses) {
+              curse.values.timer = 0;
+              CurseManager.checkAvailable({ curse, user: interaction.user });
+            }
+            return ", как магический артефакт, снявший с вас все проклятия";
           }
 
           return isFirst
@@ -243,6 +255,13 @@ class Command {
           const odds = userData.voidCasino ? 22 : 21;
           if (Util.random(odds) > 8) {
             const victory = Math.ceil(bet * coefficient);
+            interaction.user.action(Actions.resourceChange, {
+              value: victory,
+              executor: interaction.user,
+              source: "command.grempen.product.casino",
+              resource: PropertiesEnum.coins,
+              context: { interaction, bet },
+            });
             userData.coins += victory;
             return userData.voidCasino
               ? `. Куш получен! — ${victory}`
@@ -411,6 +430,13 @@ class Command {
           const already = userData.curses.length;
 
           if (already && !userData.voidFreedomCurse) {
+            interaction.user.action(Actions.resourceChange, {
+              value: product.value,
+              executor: interaction.user,
+              source: "command.grempen.product.curse.refund",
+              resource: PropertiesEnum.coins,
+              context: { interaction, product },
+            });
             userData.coins += product.value;
             userData.grempenBoughted -= 2 ** todayItems.indexOf(product);
             return " как ничто. Ведь вы уже были прокляты!";
@@ -482,7 +508,16 @@ class Command {
 
       const phrase = product.fn(product);
 
-      if (!isNaN(product.value)) userData.coins -= product.value;
+      if (!isNaN(product.value)) {
+        interaction.user.action(Actions.resourceChange, {
+          value: -product.value,
+          executor: interaction.user,
+          source: "command.grempen.bought",
+          resource: PropertiesEnum.coins,
+          context: { interaction, product },
+        });
+        userData.coins -= product.value;
+      }
 
       userData.grempenBoughted += 2 ** todayItems.indexOf(product);
       interaction.user.action(Actions.buyFromGrempen, {
