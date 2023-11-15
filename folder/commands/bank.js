@@ -2,6 +2,34 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
+class ProfessionsUtils {
+  static removeUnavailableProfessions({ guild, professions }) {
+    for (const id of Object.keys(professions)) {
+      !guild.roles.cache.get(id) && delete professions[id];
+    }
+
+    return professions;
+  }
+
+  static createReports({ guild, professions }) {
+    let expenditure = 0;
+    const salaryTable = {};
+    const record = (member, professionId, salary) => {
+      expenditure += salary;
+      salaryTable[member.id] ||= 0;
+      salaryTable[member.id] += salary;
+    };
+
+    for (const member of guild.members.cache)
+      for (const [professionId, salary] of Object.entries(professions)) {
+        member.roles.cache.has(professionId) &&
+          record(member, professionId, salary);
+      }
+
+    return { expenditure, salaryTable };
+  }
+}
+
 class Command {
   getContext(interaction) {
     const guildData = interaction.guild.data;
@@ -80,6 +108,7 @@ class Command {
         executor: user,
         source: "command.bank.interacted",
         resource: PropertiesEnum.coins,
+        context,
       });
       interaction.userData.coins -= value;
       guildData.coins += value;
@@ -164,6 +193,7 @@ class Command {
         executor: user,
         source: "command.bank.interacted",
         resource: PropertiesEnum.coins,
+        context,
       });
       interaction.userData.coins += value;
       guildData.coins -= value;
@@ -259,38 +289,37 @@ class Command {
           interaction.guild.data.professions ||
           (interaction.guild.data.professions = {});
 
-        data.workers = new Set();
-        data.costs = 0;
         data.workersList = [];
+        data.report = null;
 
         data.workersContent =
           "<a:message:794632668137652225> Здесь пока пусто, также тут может быть ваша реклама";
 
         if (Object.keys(data.professions).length) {
-          // Clean not exists professions
-          Object.keys(data.professions).forEach(([id]) =>
-            interaction.guild.roles.cache.get(id)
-              ? true
-              : delete data.professions[id],
-          );
-
-          interaction.guild.members.cache.each((memb) => {
-            Object.entries(data.professions).forEach(([id, cost]) =>
-              memb.roles.cache.has(id)
-                ? data.workers.add(memb) && (data.costs += +cost)
-                : false,
-            );
+          ProfessionsUtils.removeUnavailableProfessions({
+            guild: interaction.guild,
+            professions: data.professions,
           });
 
+          data.report = ProfessionsUtils.createReports({
+            guild: interaction.guild,
+            professions: data.professions,
+          });
+
+          data.members = Object.keys(data.report.salaryTable).map((userId) =>
+            interaction.guild.members.cache.get(userId),
+          );
+
           data.workersList = Object.entries(data.professions).map(
-            ([id, cost]) => {
-              const allCost = [...data.workers].filter((memb) =>
-                memb.roles.cache.has(id),
+            ([professionId, salary]) => {
+              const getFromThisProfession = [...data.members].filter((member) =>
+                member.roles.cache.has(professionId),
               ).length;
+
               return `${interaction.guild.roles.cache.get(
-                id,
-              )}\n${cost} <:coin:637533074879414272> в день (${Util.ending(
-                allCost,
+                professionId,
+              )}\n${salary} <:coin:637533074879414272> в день (${Util.ending(
+                getFromThisProfession,
                 "Пользовател",
                 "ей",
                 "ь",
@@ -298,16 +327,19 @@ class Command {
               )})`;
             },
           );
-          data.workersContent = data.workersList.filter((e) => e).join("\n");
+          data.workersContent = data.workersList
+            .filter((line) => line)
+            .join("\n");
         }
+
         data.professionManager = await interaction.channel.msg({
           title: "- Работы сервера",
           description: `**Созданные профессии ${
             Object.keys(data.professions).length
           }/20**\n${data.workersContent}\n\n\`\`\`Доходы: ${
             interaction.guild.memberCount * 2
-          }\nРасходы: ${data.costs}\n${Util.ending(
-            data.workers.size,
+          }\nРасходы: ${data.record.expenditure}\n${Util.ending(
+            Object.keys(data.record.salaryTable).length,
             "пользовател",
             "ей",
             "ь",
@@ -491,50 +523,52 @@ class Command {
   }
 
   onDayStats(guild, context) {
-    const workers = new Set();
-    let costs = 0;
-    let entries = Object.entries(guild.data.professions);
+    const { professions } = guild.data.professions;
+    ProfessionsUtils.removeUnavailableProfessions({ guild, professions });
+
+    const entries = Object.entries(professions);
     if (!entries.length) {
       delete guild.data.professions;
       return;
     }
 
-    entries = entries.filter(([id]) =>
-      guild.roles.cache.get(id) ? true : delete guild.data.professions[id],
-    );
-
-    guild.members.cache.each((memb) => {
-      entries.forEach(([id, cost]) =>
-        memb.roles.cache.has(id)
-          ? workers.add(memb) && (costs += +cost)
-          : false,
-      );
+    const { expenditure, salaryTable } = ProfessionsUtils.createReports({
+      guild,
+      professions,
     });
-    if (guild.data.coins < costs) {
+
+    if (guild.data.coins < expenditure) {
       guild.logSend({
         title: `Сегодня не были выданы зарплаты`,
-        description: `В казне сервера слишком мало коинов, лишь ${guild.data.coins}, в то время как на выплаты требуется ${costs} <:coin:637533074879414272>`,
+        description: `В казне сервера слишком мало коинов, лишь ${guild.data.coins}, в то время как на выплаты требуется ${expenditure} <:coin:637533074879414272>`,
         color: "#ffff00",
       });
       return;
     }
 
-    [...workers].forEach((memb) => {
-      entries.forEach(([id, cost]) =>
-        memb.roles.cache.has(id) ? (memb.user.data.coins += +cost) : false,
-      );
-    });
-    guild.data.coins -= costs;
+    for (const [userId, salary] of Object.entries(salaryTable)) {
+      const user = guild.members.cache.get(userId).user;
+      user.action(Actions.resourceChange, {
+        value: salary,
+        executor: null,
+        source: "command.bank.salary",
+        resource: PropertiesEnum.coins,
+        context: { ...context, guild, expenditure, salaryTable },
+      });
+      user.data.coins += salary;
+    }
+
+    guild.data.coins -= expenditure;
     guild.logSend({
       title: `Были выданы зарплаты`,
       description: `С казны было автоматически списано ${Util.ending(
-        costs,
+        expenditure,
         "коин",
         "ов",
         "",
         "а",
       )} на заработные платы пользователям\nИх список вы можете просмотреть в команде \`!банк\`\nУчастников получило коины: ${
-        workers.size
+        Object.keys(salaryTable).length
       }`,
     });
   }
