@@ -3,46 +3,40 @@ import DataManager from "#lib/modules/DataManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
-import client from "#bot/client.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class Chest {
-  static callOpen({ userData }) {
-    const count = this.calculateOpenCount({ userData });
-    return this.getResources({ userData, openCount: count });
+  static callOpen({ user }) {
+    const count = this.calculateOpenCount({ user });
+    return this.getResources({ user, openCount: count });
   }
 
-  static applyTreasures({ userData, treasures }) {
+  static applyTreasures({ user, treasures }) {
+    const userData = user.data;
+
     const apply = (item, quantity) => {
       switch (item) {
-        case "void":
-          userData.void += quantity;
-          break;
-
-        case "keys":
-          userData.keys += quantity;
-          break;
-
-        case "coins":
-          userData.coins += quantity;
-          break;
-
-        case "exp":
-          userData.exp += quantity;
-          break;
-
-        case "berrys":
-          userData.berrys += quantity;
+        case "trash":
           break;
 
         case "gloves":
+          user.action(Actions.resourceChange, {
+            value: quantity,
+            executor: user,
+            source: "chestManager.applyTreasures",
+            resource: PropertiesEnum.thiefGloves,
+          });
           userData.thiefGloves = (userData.thiefGloves || 0) + quantity;
           break;
 
-        case "chilli":
-          userData.chilli = (userData.chilli || 0) + quantity;
-          break;
-
         default:
+          user.action(Actions.resourceChange, {
+            value: quantity,
+            executor: user,
+            source: "chestManager.applyTreasures",
+            resource: item,
+          });
+          userData[item] = (userData[item] || 0) + quantity;
           break;
       }
     };
@@ -52,12 +46,14 @@ class Chest {
     );
   }
 
-  static calculateOpenCount({ userData }) {
-    const bonuses = userData.chestBonus || 0;
+  static calculateOpenCount({ user }) {
+    const bonuses = user.data.chestBonus || 0;
     return 2 + Math.ceil(bonuses / 3);
   }
 
-  static getResources({ userData, openCount }) {
+  static getResources({ user, openCount }) {
+    const userData = user.data;
+
     const pushTreasure = (item, quantity) =>
       (treasures[item] = treasures[item]
         ? quantity + treasures[item]
@@ -114,26 +110,26 @@ class Chest {
 }
 
 class ChestManager {
-  static open({ userData }) {
+  static open({ user }) {
+    const userData = user.data;
     const nowBirthday = userData.BDay === DataManager.data.bot.dayDate;
     nowBirthday && (userData.chestBonus = 30 + (userData.chestBonus || 0));
 
-    const { treasures, openCount } = Chest.callOpen({ userData });
+    const { treasures, openCount } = Chest.callOpen({ user });
     delete userData.chestBonus;
-    Chest.applyTreasures({ userData, treasures });
+    Chest.applyTreasures({ user, treasures });
 
     Object.entries(treasures).forEach((item, quantity) =>
-      this.handleTreasure(item, quantity, userData),
+      this.handleTreasure(item, quantity, user),
     );
 
     return { treasures, openCount };
   }
 
-  static handleTreasure(item, quantity, userData) {
+  static handleTreasure(item, quantity, user) {
     switch (item) {
       case "keys":
         if (quantity > 99) {
-          const user = client.users.cache.get(userData.id);
           user.action(Actions.globalQuest, { name: "bigHungredBonus" });
         }
         break;
@@ -157,7 +153,7 @@ class ChestManager {
 
 class Command {
   async onChatInput(msg, interaction) {
-    const userData = interaction.userData;
+    const { user, userData } = interaction;
 
     const cooldown = ChestManager.cooldown.for(userData);
     if (cooldown.checkYet()) {
@@ -182,7 +178,7 @@ class Command {
       color: "#ffda73",
     };
 
-    const { treasures, openCount } = ChestManager.open({ userData });
+    const { treasures, openCount } = ChestManager.open({ user });
 
     let actualOpenCount = openCount;
     const items = [];
