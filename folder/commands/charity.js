@@ -1,6 +1,8 @@
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import Discord from "discord.js";
+import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class Command {
   async onChatInput(msg, interaction) {
@@ -14,7 +16,11 @@ class Command {
       channel: msg.channel,
       userData: interaction.userData,
     });
-    if (!heAccpet) return;
+    if (!heAccpet) {
+      return;
+    }
+
+    const { guild } = interaction;
 
     let cash = interaction.params.match(/\d+|\+/);
 
@@ -83,17 +89,38 @@ class Command {
 
     const count = countUsers || Util.random(11, 22),
       members = [
-        ...msg.guild.members.cache
-          .filter((e) => !e.user.bot && e.user.id != msg.author.id)
+        ...guild.members.cache
+          .filter(
+            (member) => !member.user.bot && member.user.id !== msg.author.id,
+          )
           .random(count)
-          .filter((e) => e),
+          .filter(Boolean),
       ],
-      sum = Math.floor(cash / members.length);
+      coinsForEvery = Math.floor(cash / members.length);
 
-    members.forEach((e) => (e.user.data.coins += sum));
+    interaction.user.action(Actions.resourceChange, {
+      value: -cash,
+      executor: interaction.user,
+      source: "command.charity",
+      resource: PropertiesEnum.coins,
+      context: { interaction, members, coinsForEvery, countUsers },
+    });
+    for (const member of members) {
+      const { user } = member;
+      user.action(Actions.resourceChange, {
+        value: coinsForEvery,
+        executor: interaction.user,
+        source: "command.charity",
+        resource: PropertiesEnum.coins,
+        context: { interaction, members, coinsForEvery, countUsers },
+      });
+      user.data.coins += coinsForEvery;
+    }
+
     interaction.userData.coins -= cash;
-    msg.guild.data.coins =
-      (msg.guild.data.coins || 0) + cash - sum * members.length;
+
+    guild.data.coins =
+      (guild.data.coins || 0) + cash - coinsForEvery * members.length;
 
     const embed = {
       title: "Вы сотворили Акт благотворительности",
@@ -143,7 +170,7 @@ class Command {
         "https://media.discordapp.net/attachments/629546680840093696/812635351801004052/penguinwalk.gif",
     };
 
-    const message = await msg.msg(embed);
+    await msg.msg(embed);
     msg.react("💚");
   }
 
