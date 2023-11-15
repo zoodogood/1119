@@ -504,7 +504,11 @@ class BossEffects {
 
 						delete targetUserStats.heroIsDead;
 						// to-do оформить
-						targetUser.msg({title: "Оповещение в боссе: вас спасли"});
+						targetUser.msg({
+							title: "Оповещение в боссе: вас спасли",
+							description: `Герой в маске, || ${ user.username } ||, предпочёл выполнить проклятие`,
+							thumbnail: "https://media.discordapp.net/attachments/629546680840093696/1174372547941384272/skull.png?ex=65675aaa&is=6554e5aa&hm=7472e327ea98eee13d82ea8eb6035483ea655779e235628771991c40f12b7b34&="
+						});
 					}
 					
 				}
