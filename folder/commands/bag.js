@@ -385,6 +385,7 @@ class Command {
       executor: interaction.user,
       source: "command.bag",
       resource: item.itemData.key,
+      context,
     });
 
     item.setter({
