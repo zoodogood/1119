@@ -21,7 +21,7 @@ class Command {
 
       let author = await emoji.fetchAuthor();
       const fields = [{name: "Имя:", value: "`" + emoji.name + "`", inline: true}, {name: "Эмодзи добавил:", value: author.tag, inline: true}, {name: "Был добавлен на сервер: ", value: Util.timestampToDate(Date.now() - emoji.createdTimestamp, 4) + " назад."}];
-      msg.msg({title: "О нём:", description: `> ${ emoji.toString() }`, thumbnail: emoji.url, author: {name: `Эмотикон :>\nС сервера ${ emoji.guild.name }`, iconURL: emoji.guild.iconURL()}, footer: {text: `ID: ${ emoji.id }`}, fields});
+      msg.msg({title: "О нём:", description: `> ${ emoji.toString() }`, thumbnail: emoji.imageURL(), author: {name: `Эмотикон :>\nС сервера ${ emoji.guild.name }`, iconURL: emoji.guild.iconURL()}, footer: {text: `ID: ${ emoji.id }`}, fields});
       return;
     }
 
