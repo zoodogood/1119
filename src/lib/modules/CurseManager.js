@@ -6,6 +6,7 @@ import Discord from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class CurseManager {
   static generate({ hard = null, user, guild = null }) {
@@ -751,8 +752,22 @@ class CurseManager {
       };
       const coinsReward = getCoinsReward();
 
-      user.data.coins += coinsReward;
-      user.data.void += voidReward;
+      Util.addResource({
+        user,
+        value: coinsReward,
+        source: "curseManager.curse.onEnd",
+        executor: null,
+        resource: PropertiesEnum.coins,
+        context: { curse },
+      });
+      Util.addResource({
+        user,
+        value: voidReward,
+        source: "curseManager.curse.onEnd",
+        executor: null,
+        resource: PropertiesEnum.void,
+        context: { curse },
+      });
 
       const rewardContent = `${Util.ending(
         coinsReward,
