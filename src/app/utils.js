@@ -18,7 +18,7 @@ function generateInviteFor(client) {
   const scopes = [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands];
   const permissions = [
     PermissionFlagsBits.Administrator,
-    PermissionFlagsBits.ManageEmojisAndStickers,
+    PermissionFlagsBits.ManageGuildExpressions,
   ];
   return client.generateInvite({ scopes, permissions });
 }
@@ -32,7 +32,7 @@ function addResource({ resource, user, value, source, context, executor }) {
     context,
   });
   if (Number.isNaN(value)) {
-    throw new Error(`Add NaN resource count`, {
+    throw new Error(`Add NaN resourse count`, {
       details: { source, resource },
     });
   }
