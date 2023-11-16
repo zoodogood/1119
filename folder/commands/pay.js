@@ -1,4 +1,3 @@
-import { Actions } from "#lib/modules/ActionManager.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
 
@@ -124,15 +123,7 @@ class Command {
       num = 0;
     }
 
-    if (isNaN(interaction.userData[resource])) {
-      interaction.userData[resource] = 0;
-    }
-
-    if (isNaN(memb.data[resource])) {
-      memb.data[resource] = 0;
-    }
-
-    if (interaction.userData[resource] < num) {
+    if ((interaction.userData[resource] || 0) < num) {
       const description = Discord.escapeMarkdown(msg.content);
       msg.msg({
         title: `Нужно ещё ${resourceData.gives(
@@ -144,23 +135,23 @@ class Command {
       return;
     }
 
-    interaction.user.action(Actions.resourceChange, {
+    Util.addResource({
+      user: interaction.user,
       value: -num,
       executor: interaction.user,
       source: "command.pay",
       resource,
       context: { interaction },
     });
-    interaction.userData[resource] -= num;
 
-    memb.action(Actions.resourceChange, {
+    Util.addResource({
+      user: memb,
       value: num,
       executor: interaction.user,
       source: "command.pay",
       resource,
       context: { interaction },
     });
-    memb.data[resource] += num;
 
     msg.msg({
       description:
