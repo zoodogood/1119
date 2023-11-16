@@ -214,14 +214,14 @@ class Command {
             userData.questsGlobalCompleted.includes("beEaten")
           );
           const refund = product.value + (isFirst ? 200 : -200);
-          interaction.user.action(Actions.resourceChange, {
+          Util.addResource({
+            user: interaction.user,
             value: refund,
             executor: interaction.user,
             source: "command.grempen.product.coat.refund",
             resource: PropertiesEnum.coins,
             context: { interaction, product },
           });
-          userData.coins += refund;
           interaction.user.action(Actions.globalQuest, { name: "beEaten" });
 
           if (userData.curses.length > 0) {
@@ -255,14 +255,14 @@ class Command {
           const odds = userData.voidCasino ? 22 : 21;
           if (Util.random(odds) > 8) {
             const victory = Math.ceil(bet * coefficient);
-            interaction.user.action(Actions.resourceChange, {
+            Util.addResource({
+              user: interaction.user,
               value: victory,
               executor: interaction.user,
               source: "command.grempen.product.casino",
               resource: PropertiesEnum.coins,
               context: { interaction, bet },
             });
-            userData.coins += victory;
             return userData.voidCasino
               ? `. Куш получен! — ${victory}`
               : ", ведь с помощью неё вы выиграли 220 <:coin:637533074879414272>!";
@@ -282,7 +282,7 @@ class Command {
             : 80,
         inline: true,
         others: ["идея", "идею"],
-        fn: (product) => {
+        fn: () => {
           const ideas = [
             "познать мир шаблонов",
             "купить что-то в этой лавке",
@@ -329,7 +329,7 @@ class Command {
         value: 400,
         inline: true,
         others: ["клевер", "счастливый", "счастливый клевер", "clover"],
-        fn: (product) => {
+        fn: () => {
           const phrase =
             ". Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.";
           const guild = interaction.guild;
@@ -380,7 +380,7 @@ class Command {
           "ball",
           "всевидящий шар",
         ],
-        fn: (product) => {
+        fn: () => {
           const items = [
             "void",
             "seed",
@@ -396,14 +396,15 @@ class Command {
             "chestBonus",
           ];
           const item = items.random();
-          interaction.user.action(Actions.resourceChange, {
+          Util.addResource({
+            user: interaction.user,
             value: 1,
             executor: interaction.user,
             source: "command.grempen.product.ball",
             resource: item,
             context: { interaction },
           });
-          userData[item] = (userData[item] ?? 0) + 1;
+
           return ` как \`gachi-${item}\`, которого у вас прибавилось в количестве один.`;
         },
       },
@@ -412,7 +413,7 @@ class Command {
         value: 312 + userData.level * 2,
         inline: true,
         others: ["завоз", "завоз товаров"],
-        fn: (product) => {
+        fn: () => {
           userData.grempenBoughted = 0;
           return " как дорогостоящий завоз товаров. Заходите ко мне через пару минут за новыми товарами";
         },
@@ -430,14 +431,15 @@ class Command {
           const already = userData.curses.length;
 
           if (already && !userData.voidFreedomCurse) {
-            interaction.user.action(Actions.resourceChange, {
+            Util.addResource({
+              user: interaction.user,
               value: product.value,
               executor: interaction.user,
               source: "command.grempen.product.curse.refund",
               resource: PropertiesEnum.coins,
               context: { interaction, product },
             });
-            userData.coins += product.value;
+
             userData.grempenBoughted -= 2 ** todayItems.indexOf(product);
             return " как ничто. Ведь вы уже были прокляты!";
           }
@@ -509,14 +511,14 @@ class Command {
       const phrase = product.fn(product);
 
       if (!isNaN(product.value)) {
-        interaction.user.action(Actions.resourceChange, {
+        Util.addResource({
+          user: interaction.user,
           value: -product.value,
           executor: interaction.user,
           source: "command.grempen.bought",
           resource: PropertiesEnum.coins,
           context: { interaction, product },
         });
-        userData.coins -= product.value;
       }
 
       userData.grempenBoughted += 2 ** todayItems.indexOf(product);
