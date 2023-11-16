@@ -1,6 +1,7 @@
-import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
+
+const { addResource } = Util;
 
 class ProfessionsUtils {
   static removeUnavailableProfessions({ guild, professions }) {
@@ -103,14 +104,14 @@ class Command {
         return;
       }
 
-      user.action(Actions.resourceChange, {
+      addResource({
+        user,
         value: -value,
         executor: user,
         source: "command.bank.interacted",
         resource: PropertiesEnum.coins,
         context,
       });
-      interaction.userData.coins -= value;
       guildData.coins += value;
 
       interaction.guild.logSend({
@@ -188,14 +189,14 @@ class Command {
         return;
       }
 
-      user.action(Actions.resourceChange, {
+      addResource({
+        user,
         value,
         executor: user,
         source: "command.bank.interacted",
         resource: PropertiesEnum.coins,
         context,
       });
-      interaction.userData.coins += value;
       guildData.coins -= value;
 
       interaction.guild.logSend({
@@ -548,14 +549,14 @@ class Command {
 
     for (const [userId, salary] of Object.entries(salaryTable)) {
       const user = guild.members.cache.get(userId).user;
-      user.action(Actions.resourceChange, {
+      addResource({
+        user,
         value: salary,
         executor: null,
         source: "command.bank.salary",
         resource: PropertiesEnum.coins,
         context: { ...context, guild, expenditure, salaryTable },
       });
-      user.data.coins += salary;
     }
 
     guild.data.coins -= expenditure;
