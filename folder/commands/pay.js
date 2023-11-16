@@ -153,7 +153,7 @@ class Command {
     });
     interaction.userData[resource] -= num;
 
-    memb.user.action(Actions.resourceChange, {
+    memb.action(Actions.resourceChange, {
       value: num,
       executor: interaction.user,
       source: "command.pay",
