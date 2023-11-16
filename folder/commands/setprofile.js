@@ -176,14 +176,14 @@ class Command {
               delete: 4000,
             });
           }
-          interaction.user.action(Actions.resourceChange, {
+          Util.addResource({
+            user: interaction.user,
             value: -price,
             executor: interaction.user,
             source: "command.setProfile.BDDay.fine",
             resource: PropertiesEnum.coins,
             context: { interaction },
           });
-          userData.coins -= price;
         }
 
         data.day = value.match(/\d\d\.\d\d/);
