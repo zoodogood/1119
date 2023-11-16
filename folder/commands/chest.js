@@ -12,33 +12,31 @@ class Chest {
   }
 
   static applyTreasures({ user, treasures, context }) {
-    const userData = user.data;
-
     const apply = (item, quantity) => {
       switch (item) {
         case "trash":
           break;
 
         case "gloves":
-          user.action(Actions.resourceChange, {
+          Util.addResource({
+            user,
             value: quantity,
             executor: user,
             source: "chestManager.applyTreasures",
             resource: PropertiesEnum.thiefGloves,
             context: { treasures, ...context },
           });
-          userData.thiefGloves = (userData.thiefGloves || 0) + quantity;
           break;
 
         default:
-          user.action(Actions.resourceChange, {
+          Util.addResource({
+            user,
             value: quantity,
             executor: user,
             source: "chestManager.applyTreasures",
             resource: item,
             context: { treasures, context },
           });
-          userData[item] = (userData[item] || 0) + quantity;
           break;
       }
     };
