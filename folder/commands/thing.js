@@ -4,6 +4,10 @@ import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { Collection } from "@discordjs/collection";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import EventsManager from "#lib/modules/EventsManager.js";
+
+const { addResource } = Util;
 
 const Elements = new Collection(
   Object.entries({
@@ -78,7 +82,7 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => {
+            action: async ({ scene }) => {
               scene.phrase =
                 "Вы спокойно " +
                 [
@@ -95,7 +99,9 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
+            action: async (context) => {
+              const { userData, scene, user } = context;
+
               if (userData.chilli && !Util.random(5)) {
                 const sellingCount =
                   Math.min(userData.chilli, 3 + userData.elementLevel) ?? 0;
@@ -103,8 +109,23 @@ class Command {
                   sellingCount * 160,
                   sellingCount * 190,
                 );
-                userData.chilli -= sellingCount;
-                userData.coins += price;
+                addResource({
+                  user,
+                  value: price,
+                  executor: user,
+                  source: "command.thing.event.day.wind.0",
+                  resource: PropertiesEnum.coins,
+                  context,
+                });
+                addResource({
+                  user,
+                  value: -sellingCount,
+                  executor: user,
+                  source: "command.thing.event.day.wind.0",
+                  resource: PropertiesEnum.chilli,
+                  context,
+                });
+
                 scene.phrase = `Вы смогли продать ${Util.ending(
                   sellingCount,
                   "пер",
@@ -133,7 +154,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
+            action: async ({ scene }) => {
               scene.phrase =
                 "Вы разумно вложили своё время" +
                 [
@@ -151,7 +172,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
+            action: async ({ scene }) => {
               scene.phrase =
                 "Вы тратите это время на " +
                 [
@@ -247,7 +268,7 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => false,
+            action: async () => false,
             textOutput: "Вы с друзьями смогли отбиться и даже не поранились!",
           },
           false,
@@ -257,7 +278,17 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => (userData.coins -= 2),
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: -2,
+                executor: user,
+                source: "command.thing.event.weekdays.wind.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+            },
             textOutput:
               "Мы бы сказали, что у вас отжали коины, но это не так, вы сами дали ему 2 монетки <:coin:637533074879414272>",
           },
@@ -268,7 +299,17 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => (userData.coins += 2),
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 2,
+                executor: user,
+                source: "command.thing.event.weekdays.fire.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+            },
             textOutput:
               "Вы вытрялси из него два коина <:coin:637533074879414272> и отпустили.",
           },
@@ -279,7 +320,17 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => (userData.coins -= 2),
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: -2,
+                executor: user,
+                source: "command.thing.event.weekdays.void.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+            },
             textOutput:
               "Он был вооружён, а вы — нет. Разумеется у вас отжали 2 коина.",
           },
@@ -289,7 +340,7 @@ class Command {
           false,
         ],
       ],
-      filter: ({ userData, level, scene }) => level < 2,
+      filter: ({ level }) => level < 2,
     },
     {
       id: "huckster",
@@ -298,61 +349,162 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => false,
+            action: async () => false,
             textOutput: "Вас не смогли заинтересовать его товары",
           },
           false,
           false,
           false,
           {
-            action: async ({ userData, level, scene }) => false,
+            action: async () => false,
             textOutput:
               "Мягко говоря, выглядел он не живым уже как пять минут\nВы истратили все свои силы, чтобы спасти барыгу, но даже сейчас не приняли денег в качестве благодарности.",
           },
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.keys += 1;
-              userData.coins -= 120;
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: -120,
+                executor: user,
+                source: "command.thing.event.hukster.wind.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+              addResource({
+                user,
+                value: 1,
+                executor: user,
+                source: "command.thing.event.hukster.wind.0",
+                resource: PropertiesEnum.keys,
+                context,
+              });
             },
             textOutput: "Вы купили у него ключ всего за 120 коинов!",
           },
           {
-            action: async ({ userData, level, scene }) => {
-              userData.keys += 2;
-              userData.coins -= 210;
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 2,
+                executor: user,
+                source: "command.thing.event.hukster.wind.1",
+                resource: PropertiesEnum.keys,
+                context,
+              });
+              addResource({
+                user,
+                value: -210,
+                executor: user,
+                source: "command.thing.event.hukster.wind.1",
+                resource: PropertiesEnum.coins,
+                context,
+              });
             },
             textOutput: "Вы купили у него два ключа всего за 210 коинов!",
           },
           {
-            action: async ({ userData, level, scene }) => {
-              userData.keys += 4;
-              userData.coins -= 400;
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 4,
+                executor: user,
+                source: "command.thing.event.hukster.wind.2",
+                resource: PropertiesEnum.keys,
+                context,
+              });
+
+              addResource({
+                user,
+                value: -400,
+                executor: user,
+                source: "command.thing.event.hukster.wind.2",
+                resource: PropertiesEnum.coins,
+                context,
+              });
             },
             textOutput: "Вы купили у него 4 ключа всего за 400 коинов!",
           },
           {
-            action: async ({ userData, level, scene }) => {
-              userData.keys += 5;
-              userData.coins -= 490;
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 5,
+                executor: user,
+                source: "command.thing.event.hukster.wind.3",
+                resource: PropertiesEnum.keys,
+                context,
+              });
+              addResource({
+                user,
+                value: -490,
+                executor: user,
+                source: "command.thing.event.hukster.wind.3",
+                resource: PropertiesEnum.coins,
+                context,
+              });
             },
             textOutput: "Вы купили у него 5 ключей всего за 490 коинов!",
           },
           {
-            action: async ({ userData, level, scene }) => {
-              userData.keys += 7;
-              userData.coins -= 630;
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 7,
+                executor: user,
+                source: "command.thing.event.hukster.wind.4",
+                resource: PropertiesEnum.keys,
+                context,
+              });
+              addResource({
+                user,
+                value: -630,
+                executor: user,
+                source: "command.thing.event.hukster.wind.4",
+                resource: PropertiesEnum.coins,
+                context,
+              });
             },
             textOutput: "Вы купили у него 7 ключей всего за 630 коинов!",
           },
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.chilli = (userData.chilli ?? 0) + 1;
-              userData.coins -= 220;
-              userData.coinsPerMessage = (userData.coinsPerMessage ?? 0) + 1;
+            action: async (context) => {
+              const { user } = context;
+              const keys = 1;
+              const price = 220;
+              const coinsBonus = 1;
+              addResource({
+                user,
+                value: keys,
+                executor: user,
+                source: "command.thing.event.hukster.fire.0",
+                resource: PropertiesEnum.keys,
+                context,
+              });
+              addResource({
+                user,
+                value: -price,
+                executor: user,
+                source: "command.thing.event.hukster.fire.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+              addResource({
+                user,
+                value: coinsBonus,
+                executor: user,
+                source: "command.thing.event.hukster.fire.0",
+                resource: PropertiesEnum.coinsPerMessage,
+                context,
+              });
             },
             textOutput:
               "Вы купили у него перец и дали на чай\nВсего пришлось заплатить 220 коинов, но и этим очень порадовали старика.\nТеперь вы получаете на одну монету больше за каждое коин-сообщение",
@@ -364,9 +516,13 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene, coefficient }) => {
+            action: async (context) => {
+              const { level, scene, coefficient, user } = context;
+              const value = (scene.coins = Math.floor(coefficient));
+              let isWin = null;
+
               if (Util.random((level + 1) / 2)) {
-                userData.coins += scene.coins = Math.floor(coefficient);
+                isWin = true;
                 scene.phrase = `Считай, заработали ${Util.ending(
                   scene.coins,
                   "коин",
@@ -375,7 +531,7 @@ class Command {
                   "а",
                 )}`;
               } else {
-                userData.coins -= scene.coins = Math.floor(coefficient);
+                isWin = false;
                 scene.phrase = `Однако, к вашему огромною удивлению дедуля отбил вашу атаку и справедливо отобрал ваши ${Util.ending(
                   scene.coins,
                   "коин",
@@ -384,6 +540,14 @@ class Command {
                   "а",
                 )}`;
               }
+              addResource({
+                user,
+                value: (-1) ** !isWin * value,
+                executor: user,
+                source: "command.thing.event.hukster.void.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
             },
             textOutput:
               "За дерзость вы нагло забрали его товар, который он держал прямо перед вашим лицом\n{scene.phrase}",
@@ -392,8 +556,18 @@ class Command {
           false,
           false,
           {
-            action: async ({ userData, level, scene, coefficient }) =>
-              (userData.coins += scene.coins = Math.floor(coefficient)),
+            action: async (context) => {
+              const { scene, coefficient, user } = context;
+              const value = (scene.coins = Math.floor(coefficient));
+              addResource({
+                user,
+                value,
+                executor: user,
+                source: "command.thing.event.hukster.void.4",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+            },
             textOutput:
               "За дерзость вы убили торговца, забрали его товар и наглумились, подзаработав эдак коинов {scene.coins}",
           },
@@ -407,7 +581,17 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => userData.berrys++,
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 1,
+                executor: user,
+                source: "command.thing.event.berrys.earth.0",
+                resource: PropertiesEnum.berrys,
+                context,
+              });
+            },
             textOutput:
               "И вам удалось её клонировать! Собственно, у вас на одну клубнику больше.",
           },
@@ -418,34 +602,82 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              Util.random(1) ? userData.berrys++ : userData.berrys--,
+            action: async (context) => {
+              const { user } = context;
+              const isIncreased = Util.random(1);
+              addResource({
+                user,
+                value: (-1) ** !isIncreased * 1,
+                executor: user,
+                source: "command.thing.event.berrys.wind.0",
+                resource: PropertiesEnum.berrys,
+                context,
+              });
+            },
             textOutput:
               "Она то-ли увеличилась, то-ли уменьшилась. Никто так и не понял..",
           },
           {
-            action: async ({ userData, level, scene }) =>
-              Util.random(1)
-                ? userData.berrys++
-                : DataManager.data.bot.berrysPrice++,
+            action: async (context) => {
+              const { user } = context;
+              const isBerrysCountIncreased = Util.random(1);
+
+              if (isBerrysCountIncreased)
+                addResource({
+                  user,
+                  value: 1,
+                  executor: user,
+                  source: "command.thing.event.berrys.wind.1",
+                  resource: PropertiesEnum.berrys,
+                  context,
+                });
+
+              !isBerrysCountIncreased && DataManager.data.bot.berrysPrice++;
+            },
             textOutput:
               "Она вроде увеличилась, а вроде увеличилась её цена. Никто так и не понял..",
           },
           false,
           false,
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.berrys += Util.random(2)),
+            action: async (context) => {
+              const value = Util.random(1) + 1;
+              const { user } = context;
+              addResource({
+                user,
+                value,
+                executor: user,
+                source: "command.thing.event.berrys.wind.4",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+            },
             textOutput:
               "Она вроде увеличилась, а вроде ещё раз увеличилась. Вдвойне выгодно.",
           },
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.coinsPerMessage =
-                (userData.coinsPerMessage ?? 0) + 2 + level;
-              userData.berrys--;
+            action: async (context) => {
+              const { level, user } = context;
+              const addingCoinsPerMessage = 2 + level;
+              addResource({
+                user,
+                value: -1,
+                executor: user,
+                source: "command.thing.event.berrys.fire.0",
+                resource: PropertiesEnum.berrys,
+                context,
+              });
+
+              addResource({
+                user,
+                value: addingCoinsPerMessage,
+                executor: user,
+                source: "command.thing.event.berrys.fire.0",
+                resource: PropertiesEnum.coinsPerMessage,
+                context,
+              });
             },
             textOutput:
               "Поглотили её силу и сразу увеличили награду коин-сообщений на {2 + context.level} ед.\nК слову, клубника была действительно вкусной.",
@@ -453,12 +685,27 @@ class Command {
           false,
           false,
           {
-            action: async ({ userData, level, scene }) => {
-              const count = Math.min(userData.berrys, 10);
-              userData.berrys -= count;
+            action: async (context) => {
+              const { userData, user, scene } = context;
+              const berrys = Math.min(userData.berrys, 10);
+              const bonuses = Math.ceil(berrys * Util.random(1.2, 1.4));
+              addResource({
+                user,
+                value: -berrys,
+                executor: user,
+                source: "command.thing.event.berrys.wind.3",
+                resource: PropertiesEnum.berrys,
+                context,
+              });
+              addResource({
+                user,
+                value: bonuses,
+                executor: user,
+                source: "command.thing.event.berrys.wind.3",
+                resource: PropertiesEnum.chestBonus,
+                context,
+              });
 
-              const bonuses = Math.ceil(count * Util.random(1.2, 1.4));
-              userData.chestBonus = (userData.chestBonus ?? 0) + bonuses;
               scene.bonuses = bonuses;
             },
             textOutput:
@@ -468,17 +715,41 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.berrys -= 2),
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: -2,
+                executor: user,
+                source: "command.thing.event.berrys.void.0",
+                resource: PropertiesEnum.berrys,
+                context,
+              });
+            },
             textOutput:
               "В ходе экспериментов две из двух клубник превратились в прах.",
           },
           false,
           false,
           {
-            action: async ({ userData, level, scene }) => {
-              userData.berrys -= 2;
-              userData.coinsPerMessage = (userData.coinsPerMessage ?? 0) + 6;
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: -2,
+                executor: user,
+                source: "command.thing.event.berrys.void.3",
+                resource: PropertiesEnum.berrys,
+                context,
+              });
+              addResource({
+                user,
+                value: 6,
+                executor: user,
+                source: "command.thing.event.berrys.void.3",
+                resource: PropertiesEnum.coinsPerMessage,
+                context,
+              });
             },
             textOutput:
               "В ходе экспериментов вам удалось их оживить, увеличив заработок коин-сообщений на 6 единиц",
@@ -486,7 +757,7 @@ class Command {
           false,
         ],
       ],
-      filter: ({ userData, level, scene }) => userData.berrys > 2,
+      filter: ({ userData }) => userData.berrys > 2,
     },
     {
       id: "unrealCreatures",
@@ -495,7 +766,7 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => {
+            action: async ({ scene }) => {
               scene.random = Util.random(3, 8);
               DataManager.data.bot.berrysPrice += scene.random;
             },
@@ -509,16 +780,21 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              if (Util.random(1)) {
-                userData.coins += 3000;
-                scene.phrase =
-                  "Удача! Вы выиграли 3000 <:coin:637533074879414272> !";
-                return;
-              }
-              userData.coins -= 1000;
-              scene.phrase =
-                "Не повезло, вы проиграли 1000 коинов <:coin:637533074879414272>";
+            action: async (context) => {
+              const isWin = Util.random(0);
+              const { scene, user } = context;
+              addResource({
+                user,
+                value: isWin ? 3000 : -1000,
+                executor: user,
+                source: "command.thing.event.unrealCreatures.wind.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+
+              scene.phrase = isWin
+                ? "Удача! Вы выиграли 3000 <:coin:637533074879414272> !"
+                : "Не повезло, вы проиграли 1000 коинов <:coin:637533074879414272>";
             },
             textOutput:
               "Используя свои способности вы намеренны выиграть Джекпот..\n{scene.phrase}",
@@ -527,18 +803,36 @@ class Command {
           false,
           false,
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.coins += scene.coins = 500 * Util.random(2, 15)),
+            action: async (context) => {
+              const { scene, user } = context;
+              const value = 500 * Util.random(2, 15);
+              addResource({
+                user,
+                value,
+                executor: user,
+                source: "command.thing.event.unrealCreatures.wind.4",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+              scene.coins = value;
+            },
             textOutput:
-              "Повысив удачу вы построили парк развлечений и заработали {scene.coins} <:coin:637533074879414272>",
+              "Повысив удачу, вы построили парк развлечений и заработали {scene.coins} <:coin:637533074879414272>",
           },
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.coinsPerMessage = Math.ceil(
-                (userData.coinsPerMessage ?? 0) * 1.02,
-              )),
+            action: async (context) => {
+              const { user, userData } = context;
+              addResource({
+                user,
+                value: Math.ceil((userData.coinsPerMessage ?? 0) * 0.02),
+                executor: user,
+                source: "command.thing.event.unrealCreatures.fire.0",
+                resource: PropertiesEnum.coinsPerMessage,
+                context,
+              });
+            },
             textOutput:
               "Укрепили силу духа, на том и закончили. Бонус коинов за сообщения увеличен на 2%",
           },
@@ -546,34 +840,90 @@ class Command {
           false,
           false,
           {
-            action: async ({ userData, level, scene }) => true,
+            action: async () => true,
             textOutput:
               "Долго же вы ждали этого момента...\nЭтот день — отличная возможность наведаться в межмировую потасовку..",
           },
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.level -= Util.random(1, 2);
-              userData.void++;
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: -Util.random(1, 2),
+                executor: user,
+                source: "command.thing.event.unrealCreatures.void.0",
+                resource: PropertiesEnum.level,
+                context,
+              });
+
+              addResource({
+                user,
+                value: 1,
+                executor: user,
+                source: "command.thing.event.unrealCreatures.void.0",
+                resource: PropertiesEnum.void,
+                context,
+              });
             },
             textOutput:
               "Вы породили кусок нестабильности <a:void:768047066890895360>, но потеряли много опыта и крошечку рассудка.",
           },
           false,
           {
-            action: async ({ userData, level, scene }) => {
-              userData.keys -= 5;
-              userData.berrys--;
-              userData.coins -= Util.random(300, 700);
-              userData.void += scene.voids = Util.random(1, 2);
+            action: async (context) => {
+              const { user, scene } = context;
+              const voidCount = (scene.voids = Util.random(1, 2));
+              addResource({
+                user,
+                value: -5,
+                executor: user,
+                source: "command.thing.event.unrealCreatures.void.2",
+                resource: PropertiesEnum.keys,
+                context,
+              });
+              addResource({
+                user,
+                value: -1,
+                executor: user,
+                source: "command.thing.event.unrealCreatures.void.2",
+                resource: PropertiesEnum.berrys,
+                context,
+              });
+              addResource({
+                user,
+                value: -Util.random(300, 1400),
+                executor: user,
+                source: "command.thing.event.unrealCreatures.void.2",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+              addResource({
+                user,
+                value: voidCount,
+                executor: user,
+                source: "command.thing.event.unrealCreatures.void.2",
+                resource: PropertiesEnum.void,
+                context,
+              });
             },
             textOutput:
               'Преобразуя материальные предметы вы получаете {Util.ending(scene.voids, "уровн", "ей", "ь", "я")} нестабильности <a:void:768047066890895360>\nЦеной такого ритуала стали 5 обычных старых ключей, клубника и немного прекрасного — денег.',
           },
           false,
           {
-            action: async ({ userData, level, scene }) => (userData.void += 2),
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 2,
+                executor: user,
+                source: "command.thing.event.unrealCreatures.void.4",
+                resource: PropertiesEnum.void,
+                context,
+              });
+            },
             textOutput:
               "Что может быть лучше, чем два камня нестабильности добытых из сердец слуг.. <a:void:768047066890895360>",
           },
@@ -584,19 +934,36 @@ class Command {
       id: "fireMonkey",
       _weight: 15,
       description: "Огненная обезьяна утащила стопку ваших ключей!",
-      onInit: ({ userData, scene }) => {
+      onInit: (context) => {
+        const { user, scene } = context;
         scene.stolenKeys = Util.random(3, 7);
-        userData.keys -= scene.stolenKeys;
+        addResource({
+          user,
+          value: -scene.stolenKeys,
+          executor: user,
+          source: "command.thing.event.fireMonkey.general",
+          resource: PropertiesEnum.keys,
+          context,
+        });
       },
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => false,
+            action: async () => false,
             textOutput: "Ваши попытки договорится не помогли..",
           },
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.keys += scene.stolenKeys),
+            action: async (context) => {
+              const { user, scene } = context;
+              addResource({
+                user,
+                value: scene.stolenKeys,
+                executor: user,
+                source: "command.thing.event.fireMonkey.earth.1",
+                resource: PropertiesEnum.keys,
+                context,
+              });
+            },
             textOutput:
               "Совместно вы убедили товарища обезьяну вернуть ваши ключи",
           },
@@ -606,7 +973,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => false,
+            action: async () => false,
             textOutput: "Тактика догнать и вернуть оказалась провальной...",
           },
           false,
@@ -616,9 +983,18 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
+            action: async (context) => {
+              const { user, scene } = context;
               scene.random = Util.random(15, 45);
-              userData.coins += scene.stolenKeys * scene.random;
+              const value = scene.stolenKeys * scene.random;
+              addResource({
+                user,
+                value,
+                executor: user,
+                source: "command.thing.event.fireMonkey.fire.0",
+                resource: PropertiesEnum.keys,
+                context,
+              });
             },
             textOutput:
               "Вам удалось договорится — обезьяна взамен ключей дала вам {scene.stolenKeys * scene.random} <:coin:637533074879414272>",
@@ -630,8 +1006,18 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              userData.berrys ? userData.berrys-- : false,
+            action: async (context) => {
+              const { user } = context;
+              if (user.data.berrys)
+                addResource({
+                  user,
+                  value: -1,
+                  executor: user,
+                  source: "command.thing.event.fireMonkey.void.0",
+                  resource: PropertiesEnum.berrys,
+                  context,
+                });
+            },
             textOutput:
               'Сражаться с обезьяной и угрожать ей было плохой идеей{context.user.berrys ? ", вы потеряли ещё и пару клубник (1)" : "..."}',
           },
@@ -641,7 +1027,7 @@ class Command {
           false,
         ],
       ],
-      filter: ({ userData, level, scene }) => level > 1 && userData.keys > 30,
+      filter: ({ userData, level }) => level > 1 && userData.keys > 30,
     },
     {
       id: "clover",
@@ -651,11 +1037,13 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene, channel }) => {
+            action: async ({ level, channel }) => {
               const clover = channel.guild.data.cloverEffect;
               const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
+
               const filter = ({ name, params }) =>
                 name === "cloverEnd" && params.includes(channel.guild.id);
+
               const event = TimeEventsManager.at(day).find(filter);
               TimeEventsManager.change(event, {
                 timestamp: clover.timestamp + level * 1_200_000,
@@ -671,10 +1059,11 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene, channel }) => {
+            action: async (context) => {
+              const { user, channel } = context;
               (async () => {
                 const cloverMessage = await channel.awaitMessage({
-                  userData: false,
+                  user: false,
                 });
                 let reaction;
                 let i = 0;
@@ -687,7 +1076,14 @@ class Command {
                 if (reaction && reaction.me) {
                   await Util.sleep(2000);
                   const author = cloverMessage.author;
-                  author.data.void++;
+                  addResource({
+                    user: author,
+                    value: 1,
+                    executor: user,
+                    source: "command.thing.event.clover.wind.0",
+                    resource: PropertiesEnum.void,
+                    context,
+                  });
                   cloverMessage.msg({
                     title: "Нестабилити!",
                     author: {
@@ -713,8 +1109,18 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.coins += scene.coins = Util.random(10, 30)),
+            action: async (context) => {
+              const { user, scene } = context;
+              scene.coins = Util.random(10, 30);
+              addResource({
+                user,
+                value: scene.coins,
+                executor: user,
+                source: "command.thing.event.clover.fire.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+            },
             textOutput:
               "Разумеется, вы не могли упустить такого момента, и заработали {scene.coins} мелочи",
           },
@@ -725,11 +1131,12 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene, channel }) => {
+            action: async ({ channel }) => {
               const clover = channel.guild.data.cloverEffect;
               const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
               const filter = ({ name, params }) =>
                 name === "cloverEnd" && params.includes(channel.guild.id);
+
               const event = TimeEventsManager.at(day).find(filter);
               TimeEventsManager.change(event, {
                 timestamp: clover.timestamp / 2,
@@ -739,12 +1146,15 @@ class Command {
               "Похитили его ради своих нужд, клевер начал погибать, в попытках исправить свою ошибку вернули клевер на его место и дали немного воды... Действие эффекта уменьшено вдвое.",
           },
           false,
-          false,
+          {
+            action: async () => false,
+            textOutput: "Дали клеверу немного воды",
+          },
           false,
           false,
         ],
       ],
-      filter: ({ userData, level, scene, channel }) =>
+      filter: ({ level, channel }) =>
         "cloverEffect" in channel.guild.data && level > 2,
     },
     {
@@ -754,8 +1164,16 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.berrys++;
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 1,
+                executor: user,
+                source: "command.thing.event.school.earth.0",
+                resource: PropertiesEnum.berrys,
+                context,
+              });
               DataManager.data.bot.berrysPrice += 3;
             },
             textOutput:
@@ -768,20 +1186,69 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => (userData.coins -= 2),
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 2,
+                executor: user,
+                source: "command.thing.event.school.wind.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+            },
             textOutput:
               "Школа.. Вспоминать о ней довольно грустно.\nСегодня ваше настроение было не очень весёлым",
           },
           false,
           false,
-          false,
+          {
+            action: async (context) => {
+              const { user, channel } = context;
+              addResource({
+                user,
+                value: -16_000,
+                executor: user,
+                source: "command.thing.event.school.wind.3",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+
+              const counter = 0;
+              const filter = (message) => message.author.id === user.id;
+              const collector = new Util.CustomCollector({
+                target: channel.client,
+                event: "message",
+                filter,
+                time: 600_000,
+              });
+              collector.setCallback((message) => {
+                if (counter >= 15) {
+                  collector.end();
+                }
+                EventsManager.emitter.emit("users/getCoinsFromMessage", {
+                  userData: user.data,
+                  message,
+                });
+              });
+            },
+            textOutput: "Вы передали 16 000 коинов на ремонтные работы",
+          },
           false,
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
+            action: async (context) => {
+              const { user, scene } = context;
               scene.random = Util.random(1, 3);
-              userData.chestBonus = (userData.chestBonus ?? 0) + scene.random;
+              addResource({
+                user,
+                value: scene.random,
+                executor: user,
+                source: "command.thing.event.school.fire.0",
+                resource: PropertiesEnum.chestBonus,
+                context,
+              });
             },
             textOutput:
               "Сундук знаний пополнился — Получено бонус сундука Х{scene.random}",
@@ -793,15 +1260,34 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => (userData.coins -= 2),
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: -2,
+                executor: user,
+                source: "command.thing.school.void.0",
+                resource: PropertiesEnum.coins,
+                context,
+              });
+            },
             textOutput: "Вы с интересом изучали Астрономию.",
           },
           false,
           false,
           false,
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.coins += 782),
+            action: async (context) => {
+              const { user } = context;
+              addResource({
+                user,
+                value: 782,
+                executor: user,
+                source: "command.thing.event.clover.void.4",
+                resource: PropertiesEnum.keys,
+                context,
+              });
+            },
             textOutput:
               "Вы преподаете студентам курс высшей Астраномии.\nНеплохое занятие для того, кто хочет разрушить мир. Сегодня вы заработали 782 коина <:coin:637533074879414272>",
           },
@@ -812,11 +1298,21 @@ class Command {
       id: "aBeautifulFox",
       _weight: 7,
       description: "Вы встретили прекрасного лиса",
+      onInit(context) {
+        const { user } = context;
+        addResource({
+          user,
+          value: 5,
+          executor: user,
+          source: "command.thing.event.aBeautifulFox.general",
+          resource: PropertiesEnum.chestBonus,
+          context,
+        });
+      },
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.chestBonus = (userData.chestBonus ?? 0) + 5),
+            action: async () => true,
             textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено",
           },
           false,
@@ -826,8 +1322,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.chestBonus = (userData.chestBonus ?? 0) + 5),
+            action: async () => true,
             textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено",
           },
           false,
@@ -837,8 +1332,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.chestBonus = (userData.chestBonus ?? 0) + 5),
+            action: async () => true,
             textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено",
           },
           false,
@@ -848,8 +1342,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.chestBonus = (userData.chestBonus ?? 0) + 5),
+            action: async () => true,
             textOutput: "Он одарил Вас сокровищем: 5 бонусов сундука получено",
           },
           false,
@@ -864,13 +1357,23 @@ class Command {
       _weight: 40,
       description:
         "Наверное, это инфляция. Вы не в состоянии уследить за своим богатсвом.",
+      onInit(context) {
+        const { user, userData } = context;
+        addResource({
+          user,
+          value: -Math.floor(userData.coins),
+          executor: user,
+          source: "command.thing.event.curseOfWealth.earth.0",
+          resource: PropertiesEnum.coins,
+          context,
+        });
+      },
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.coins = Math.floor(userData.coins * 0.98)),
+            action: async () => true,
             textOutput:
-              "Даже среди ваших верных друзей нашлись предатели, 2% золота было похищено.",
+              "Даже среди ваших верных друзей нашлись предатели: 2% золота было похищено.",
           },
           false,
           false,
@@ -879,8 +1382,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.coins = Math.floor(userData.coins * 0.98)),
+            action: async () => true,
             textOutput:
               "Ваши богатсва обдирают прямо у вас на глазах. Вы слишком добры, чтобы их останавливать.",
           },
@@ -891,8 +1393,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.coins = Math.floor(userData.coins * 0.98)),
+            action: async () => true,
             textOutput:
               "Вам удается вернуть лишь часть богатсв. Ещё 2% вы таки потеряли.",
           },
@@ -903,8 +1404,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
-              (userData.coins = Math.floor(userData.coins * 0.98)),
+            action: async () => true,
             textOutput: "Вам ведь нет дела до каких-то монеток.",
           },
           false,
@@ -913,7 +1413,7 @@ class Command {
           false,
         ],
       ],
-      filter: ({ userData, level, scene }) => userData.coins > 100_000_000,
+      filter: ({ userData }) => userData.coins > 100_000_000,
     },
     {
       id: "thingNotFound",
@@ -923,7 +1423,7 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Вы ничего не можете с этим поделать",
                 "Не взирая на Вашу силу, это так",
@@ -937,10 +1437,10 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Штука просто штука.",
-                "Так даже лучше",
+                "Штуке тоже нужен отдых",
               ].random()),
             textOutput: "{sceme.phrase}",
           },
@@ -951,10 +1451,11 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Вы слишком сильны дня неё",
                 "Ваша мощь куда больше силы штуки",
+                "Так даже лучше",
               ].random()),
             textOutput: "{scene.phrase}",
           },
@@ -965,7 +1466,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Что вам от неё нужно?!",
                 "Штука была вашим другом",
@@ -978,7 +1479,7 @@ class Command {
           false,
         ],
       ],
-      filter: ({ userData, level, scene }) => userData.voidRituals > 100,
+      filter: ({ userData }) => userData.voidRituals > 100,
     },
     {
       id: "letsMourn",
@@ -987,7 +1488,7 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Говорят, вы никакущий фермер",
                 "Поговаривают, что вы сами непонимаете для чего работаете",
@@ -996,7 +1497,7 @@ class Command {
           },
           false,
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Они хотят, чтобы вы рассказали побольше о своём деле",
                 "Всех интересует вопрос: как..?",
@@ -1004,7 +1505,7 @@ class Command {
             textOutput: "{scene.phrase}",
           },
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Люди думают, вы продали душу ради урожая",
                 "Якобы вы добились всего нечестным путём",
@@ -1015,7 +1516,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Говорят, вы абсолютно легкомысленны",
                 "Поговаривают, что за свою жизнь вы побывали в самых разных абсурдных ситуациях",
@@ -1024,7 +1525,7 @@ class Command {
           },
           false,
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Они хотят, чтобы вы рассказали как оно, быть удачливым",
                 "Всех интересует вопрос: как..?",
@@ -1032,7 +1533,7 @@ class Command {
             textOutput: "{scene.phrase}",
           },
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Люди думают, что вы крадете их удачу",
                 "Якобы вы добились всего нечестным путём",
@@ -1043,7 +1544,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Говорят, вы странный",
                 "Поговаривают самые разные мифы",
@@ -1052,7 +1553,7 @@ class Command {
           },
           false,
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Они хотят, чтобы вы научили их медитации",
                 "Всех интересует вопрос: как..?",
@@ -1060,7 +1561,7 @@ class Command {
             textOutput: "{scene.phrase}",
           },
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Люди думают, что у вас вообще нет эмоций",
                 "Якобы вы избавите этот мир от зла",
@@ -1071,7 +1572,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Говорят самые гадкие вещи про вас",
                 "Поговаривают, что в вас нет ничего святого",
@@ -1080,7 +1581,7 @@ class Command {
           },
           false,
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Они хотят той же мощи, что и у ваас",
                 "Всех интересует вопрос: когда найдется тот, кто даст вам по башке?",
@@ -1088,7 +1589,7 @@ class Command {
             textOutput: "{scene.phrase}",
           },
           {
-            action: async ({ userData, level, scene }) =>
+            action: async ({ scene }) =>
               (scene.phrase = [
                 "Люди думают, что вы их не убиваете только, чтобы творить более ужасные вещи",
                 "Якобы вам никогда нельзя смотреть в глаза",
@@ -1106,8 +1607,16 @@ class Command {
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.coins += (level + 1) * 300;
+            action: async (context) => {
+              const { level, user } = context;
+              addResource({
+                user,
+                value: (level + 1) * 300,
+                executor: user,
+                source: "command.thing.event.curse.earth.0",
+                resource: PropertiesEnum.keys,
+                context,
+              });
             },
             textOutput:
               "— Не рискуйте так, молодой человек. Говорит она Вам. (Несколько монет получено)",
@@ -1119,8 +1628,16 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.coins += (level + 1) * 300;
+            action: async (context) => {
+              const { level, user } = context;
+              addResource({
+                user,
+                value: (level + 1) * 300,
+                executor: user,
+                source: "command.thing.event.curse.wind.0",
+                resource: PropertiesEnum.keys,
+                context,
+              });
             },
             textOutput:
               "— Рискуете то там, то сям, я вас понимаю. Возьмите это на всякий случай, зайдете лавку, а там приоберетете шубу от напастей. (Вы получили немного коинов)",
@@ -1132,8 +1649,16 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.coins += (level + 1) * 300;
+            action: async (context) => {
+              const { level, user } = context;
+              addResource({
+                user,
+                value: (level + 1) * 300,
+                executor: user,
+                source: "command.thing.event.curse.fire.0",
+                resource: PropertiesEnum.keys,
+                context,
+              });
             },
             textOutput:
               "— Угораздило же тебя пойти на такое, вот, возьми. Старушка в помощь дала вам немного монет",
@@ -1145,10 +1670,11 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              const userCurse = CurseManager.userCurse(msg.author);
-              userCurse.incrementProgress(1);
-              CurseManager.checkAvailable(msg.author);
+            action: async (context) => {
+              const { user } = context;
+              const curse = user.curses.at(0);
+              CurseManager.interface({ curse, user }).incrementProgress(1);
+              CurseManager.checkAvailable({ user, curse });
             },
             textOutput: "— Я помогу тебе избавиться от твоего проклятия...",
           },
@@ -1158,19 +1684,28 @@ class Command {
           false,
         ],
       ],
-      filter: ({ userData, level, scene }) => userData.curse,
+      filter: ({ userData }) => userData.curses?.length,
     },
     {
       id: "starsInWindow",
       _weight: 2,
       description:
         "Когда звёзды встанут в ряд, ты прими это как знак, что всё будет в порядке...",
+      onInit(context) {
+        const { user } = context;
+        addResource({
+          user,
+          value: 30,
+          executor: user,
+          source: "command.thing.event.starsInWindow.general",
+          resource: PropertiesEnum.chestBonus,
+          context,
+        });
+      },
       variability: [
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.chestBonus = (userData.chestBonus || 0) + 30;
-            },
+            action: async () => true,
             textOutput: "30 бонусов сундука получено",
           },
           false,
@@ -1180,9 +1715,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.chestBonus = (userData.chestBonus || 0) + 30;
-            },
+            action: async () => true,
             textOutput: "30 бонусов сундука получено",
           },
           false,
@@ -1192,9 +1725,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.chestBonus = (userData.chestBonus || 0) + 30;
-            },
+            action: async () => true,
             textOutput: "30 бонусов сундука получено",
           },
           false,
@@ -1204,9 +1735,7 @@ class Command {
         ],
         [
           {
-            action: async ({ userData, level, scene }) => {
-              userData.chestBonus = (userData.chestBonus || 0) + 30;
-            },
+            action: async () => true,
             textOutput: "30 бонусов сундука получено",
           },
           false,
@@ -1237,7 +1766,8 @@ class Command {
         [
           {
             action: async ({ scene }) => {
-              const value = random(55, 110);
+              const value =
+                Util.random(55, 110) + DataManager.data.bot.berrysPrice / 10;
               DataManager.data.bot.berrysPrice -= value;
               scene.value = value;
             },
@@ -1263,9 +1793,17 @@ class Command {
         ],
         [
           {
-            action: async ({ userData }) => {
+            action: async (context) => {
               DataManager.data.bot.berrysPrice -= 50;
-              userData.berrys -= Math.min(userData.berrys, 5);
+              const { user, userData } = context;
+              addResource({
+                user,
+                value: -Math.min(userData.berrys, 5),
+                executor: user,
+                source: "command.thing.event.peoplesBecomeARich.void.0",
+                resource: PropertiesEnum.keys,
+                context,
+              });
             },
             textOutput:
               "За последние 2с цена клубники упала на 50ед.\nУ вас отбирают клубнику",
@@ -1281,13 +1819,13 @@ class Command {
           },
         ],
       ],
-      filter: () => DataManager.data.bot.berrysPrice >= 1_000,
+      filter: () => DataManager.data.bot.berrysPrice >= 900,
     },
   ];
 
   static BASIC_COINS_COEFFICIENT = 20;
 
-  async run({ user, elementBase, channel, level }) {
+  async run({ user, elementBase, channel, level, interaction }) {
     const guild = channel.guild;
     const userData = user.data;
 
@@ -1304,6 +1842,7 @@ class Command {
       guild,
       userData,
       coefficient,
+      interaction,
     };
 
     const _transformWeightOf = (event) =>
@@ -1579,8 +2118,23 @@ class Command {
         return;
       }
 
-      userData.berrys -= resourcesInfo.berrys;
-      userData.coins -= resourcesInfo.coins;
+      addResource({
+        user,
+        value: -resourcesInfo.berrys,
+        executor: user,
+        source: "command.thing.increaseThingLevel",
+        resource: PropertiesEnum.berrys,
+        context: { interaction, resourcesInfo },
+      });
+      addResource({
+        user,
+        value: -resourcesInfo.coins,
+        executor: user,
+        source: "command.thing.increaseThingLevel",
+        resource: PropertiesEnum.coins,
+        context: { interaction, resourcesInfo },
+      });
+
       userData.elementLevel = (userData.elementLevel || 0) + 1;
       interaction.channel.msg({
         title: `Непослушная сила улучшена до ${
@@ -1662,6 +2216,7 @@ class Command {
       channel: interaction.channel,
       elementBase,
       level: userData.elementLevel ?? 0,
+      interaction,
     });
     userData.CD_52 = Math.max(userData.CD_52 ?? 0, Date.now()) + COOLDOWN;
   }
