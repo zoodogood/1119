@@ -1560,6 +1560,11 @@ class BossManager {
 					const isLucky = Util.random(0, 1);
 					const emoji = reaction.emoji.name;
 		
+					if (!isLucky) {
+						userStats.attack_CD += 60_000 * 20;
+					}
+		
+					
 					if (emoji === "⚔️" && isLucky){
 						const BASE_DAMAGE = 125;
 						const DAMAGE_PER_LEVEL = 15;
@@ -1571,11 +1576,11 @@ class BossManager {
 						message.msg({description: content});
 						return;
 					}
-		
+
+					
 					if (emoji === "⚔️" && !isLucky){
 						const content = "После неудачной контратаки ваше оружие ушло на дополнительную перезарядку";
 						message.msg({description: content});
-						userStats.attack_CD += 3_600_000;
 						return;
 					}
 		
@@ -1593,7 +1598,6 @@ class BossManager {
 					if (emoji === "🛡️" && !isLucky){
 						const content = "После неудачной защиты ваше оружие ушло на дополнительную перезарядку";
 						message.msg({description: content});
-						userStats.attack_CD += 3_600_000;
 						return;
 					}
 				});
