@@ -5,22 +5,22 @@ import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class Command {
   transferCoins(target, source, value, context) {
-    source.action(Actions.resourceChange, {
+    Util.addResource({
+      user: source,
       value: -value,
       executor: source,
       source: "command.rob.transfer",
       resource: PropertiesEnum.coins,
       context,
     });
-    target.action(Actions.resourceChange, {
+    Util.addResource({
+      user: target,
       value: value,
       executor: source,
       source: "command.rob.transfer",
       resource: PropertiesEnum.coins,
       context: { ...context, source, target },
     });
-    source.data.coins -= value;
-    target.data.coins += value;
   }
   async onChatInput(msg, interaction) {
     const memb = interaction.mention;
