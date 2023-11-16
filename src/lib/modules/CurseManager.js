@@ -743,10 +743,10 @@ class CurseManager {
         const { interactionIsLong, interactionIsShort } = curseBase;
         const stable =
           (BASIC_REWARD + ADDING_REWARD * curseBase.hard) * curseBase.reward;
-        return (
+        return Math.ceil(
           stable *
-          (interactionIsLong ? 1.2 : 1) *
-          (interactionIsShort ? 1 / 1.2 : 1)
+            (interactionIsLong ? 1.2 : 1) *
+            (interactionIsShort ? 1 / 1.2 : 1),
         );
       };
       const coinsReward = getCoinsReward();
