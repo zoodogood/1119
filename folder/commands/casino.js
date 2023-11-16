@@ -45,6 +45,11 @@ class Command {
     };
     const isWon = diceRoll % 2;
 
+    user.action(Actions.casinoSession, {
+      isWon,
+      bet,
+    });
+
     embed.description = `
 **${isWon ? "Вы выиграли." : "Проиграли"}**
 **Кидаем кубик.. выпадает:** \`${diceRoll}\`; ${isWon ? "🦝" : "❌"}
@@ -62,14 +67,14 @@ ${
 }
 `;
 
-    user.action(Actions.resourceChange, {
+    Util.addResource({
+      user,
       value: (-1) ** !isWon * bet,
       executor: user,
       source: "command.casino",
       resource: PropertiesEnum.coins,
       context: { interaction, isWon },
     });
-    userData.coins -= (-1) ** isWon * bet;
     msg.msg(embed);
   }
 
