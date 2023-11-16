@@ -1,15 +1,13 @@
-import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import { AttachmentBuilder } from "discord.js";
 
 class Command {
   async onChatInput(msg, interaction) {
-    return;
     const { default: canvas } = await import("canvas");
 
-    let i = 9,
-      canv = canvas.createCanvas(300, i * 30 + 30),
+    let i = 9;
+    const canv = canvas.createCanvas(300, i * 30 + 30),
       ctx = canv.getContext("2d"),
       rules = {
         "!111": "3",
@@ -20,8 +18,9 @@ class Command {
         "!1": "11",
         "!2": "12",
         "!3": "13",
-      },
-      last = String(Util.random(1, 1));
+      };
+
+    let last = String(Util.random(1, 1));
 
     ctx.font = "bold 20px sans-serif";
     ctx.shadowBlur = 2;
@@ -120,7 +119,8 @@ class Command {
       });
 
     if (answer === String(last)) {
-      interaction.user.action(Actions.resourceChange, {
+      Util.addResource({
+        user: interaction.user,
         value: reward,
         executor: interaction.user,
         source: "command.puzzle",
@@ -128,7 +128,6 @@ class Command {
         context: { interaction },
       });
 
-      msg.author.data.coins += reward;
       return msg.msg({
         title: "И это... Правильный ответ! Ваша награда уже у вас в карманах!",
         delete: 5000,
