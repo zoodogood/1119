@@ -1,7 +1,6 @@
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import Discord from "discord.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class Command {
@@ -98,7 +97,8 @@ class Command {
       ],
       coinsForEvery = Math.floor(cash / members.length);
 
-    interaction.user.action(Actions.resourceChange, {
+    Util.addResource({
+      user: interaction.user,
       value: -cash,
       executor: interaction.user,
       source: "command.charity",
@@ -107,17 +107,15 @@ class Command {
     });
     for (const member of members) {
       const { user } = member;
-      user.action(Actions.resourceChange, {
+      Util.addResource({
+        user,
         value: coinsForEvery,
         executor: interaction.user,
         source: "command.charity",
         resource: PropertiesEnum.coins,
         context: { interaction, members, coinsForEvery, countUsers },
       });
-      user.data.coins += coinsForEvery;
     }
-
-    interaction.userData.coins -= cash;
 
     guild.data.coins =
       (guild.data.coins || 0) + cash - coinsForEvery * members.length;
