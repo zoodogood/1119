@@ -1,3 +1,4 @@
+import { Actions } from "#lib/modules/ActionManager.js";
 import { OAuth2Scopes, PermissionFlagsBits } from "discord.js";
 import Path from "path";
 const root = process.cwd();
@@ -22,4 +23,20 @@ function generateInviteFor(client) {
   return client.generateInvite({ scopes, permissions });
 }
 
-export { takePath, ReadPackageJson, generateInviteFor };
+function addResource({ resource, user, value, source, context, executor }) {
+  user.action(Actions.resourceChange, {
+    value,
+    executor,
+    source,
+    resource,
+    context,
+  });
+  if (Number.isNaN(value)) {
+    throw new Error(`Add NaN resource count`, {
+      details: { source, resource },
+    });
+  }
+  user.data[resource] ||= 0;
+  user.data[resource] += value;
+}
+export { addResource, takePath, ReadPackageJson, generateInviteFor };
