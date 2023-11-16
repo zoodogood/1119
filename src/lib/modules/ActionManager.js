@@ -8,6 +8,7 @@ const ActionsMap = {
 
   // User
   beforeProfileDisplay: "beforeProfileDisplay",
+  casinoSession: "casinoSession",
   coinFromMessage: "coinFromMessage",
   likedTheUser: "likedTheUser",
   buyFromGrempen: "buyFromGrempen",
