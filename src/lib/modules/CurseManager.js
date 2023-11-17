@@ -1,5 +1,5 @@
 import { Collection } from "@discordjs/collection";
-import { Actions } from "#lib/modules/ActionManager.js";
+
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
@@ -7,6 +7,7 @@ import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { ActionsMap } from "#constants/actionsMap.js";
 
 class CurseManager {
   static generate({ hard = null, user, guild = null }) {
@@ -57,7 +58,7 @@ class CurseManager {
       TimeEventsManager.create("curse-timeout-end", curse.values.timer, args);
     }
 
-    user.action(Actions.curseInit, { curse });
+    user.action(ActionsMap.curseInit, { curse });
   }
 
   static cursesBase = new Collection(
@@ -454,7 +455,7 @@ class CurseManager {
           timer: () => 60_000 * 8,
         },
         callback: {
-          [Actions.any]: (user, curse, context) => {
+          [ActionsMap.any]: (user, curse, context) => {
             const { progress } = curse.values;
             CurseManager.interface({ user, curse })._setProgress(
               (progress || 0) + 1,
@@ -571,7 +572,7 @@ class CurseManager {
       return curse.values.progress;
     };
     const setProgress = (value) => {
-      user.action(Actions.curseBeforeSetProgress);
+      user.action(ActionsMap.curseBeforeSetProgress);
       _setProgress(value);
     };
 
@@ -637,7 +638,7 @@ class CurseManager {
       Date.now() > curse.timestamp + curse.values.timer
     ) {
       const event = new Event("curseTimeEnd", { cancelable: true });
-      user.action(Actions.curseTimeEnd, { event, curse });
+      user.action(ActionsMap.curseTimeEnd, { event, curse });
       if (!event.defaultPrevented) {
         this.curseIndexOnUser({ curse, user }) !== null &&
           CurseManager.curseEnd({ user, curse, lost: true });
@@ -671,7 +672,7 @@ class CurseManager {
 
   static curseEnd({ lost, user, curse }) {
     this.removeCurse({ user, curse });
-    user.action(Actions.curseEnd, { isLost: lost, curse });
+    user.action(ActionsMap.curseEnd, { isLost: lost, curse });
 
     const curseBase = CurseManager.cursesBase.get(curse.id);
 
