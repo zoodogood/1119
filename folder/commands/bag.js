@@ -48,6 +48,10 @@ const ITEMS = [
       "сундук",
       "бонусов сундука",
       "chestbonus",
+      "bonus",
+      "bonuses",
+      "chest",
+      "chests",
     ],
     ending: (count) =>
       `<a:chest:805405279326961684> ${Util.ending(
@@ -64,6 +68,7 @@ const ITEMS = [
       "нестабильности",
       "нестабильность",
       "void",
+      "voids",
       "камень",
       "камней",
       "камня",
@@ -88,7 +93,6 @@ const ITEMS = [
       "ягод",
       "ягода",
       "berry",
-      "berrys",
     ],
     ending: (count) =>
       `<:berry:756114492055617558> ${Util.ending(
