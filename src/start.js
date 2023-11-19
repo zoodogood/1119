@@ -21,6 +21,7 @@ import app from "#app";
 import FileSystem from "fs";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 client.on("ready", async () => {
   client.guilds.cache.forEach(
@@ -61,7 +62,7 @@ client.on("ready", async () => {
   });
 
   client.on("inviteCreate", async (invite) => {
-    let guild = invite.guild;
+    const guild = invite.guild;
     guild.invitesCollection = await guild.invites.fetch();
   });
 
@@ -70,7 +71,7 @@ client.on("ready", async () => {
   });
 
   client.on("guildCreate", async (guild) => {
-    let members = guild.members.cache.filter((e) => !e.user.bot);
+    const members = guild.members.cache.filter((e) => !e.user.bot);
     let whoAdded = await guild.Audit((e) => e.target.id === client.user.id, {
       type: AuditLogEvent.BotAdd,
     });
@@ -117,7 +118,7 @@ client.on("ready", async () => {
       });
     }
 
-    let msg = reaction.message;
+    const msg = reaction.message;
     let rolesReactions = ReactionsManager.reactData.find(
       (target) => target.id === msg.id,
     );
@@ -149,7 +150,7 @@ client.on("ready", async () => {
   });
 
   client.on("messageReactionRemove", async (reaction, user) => {
-    let msg = reaction.message;
+    const msg = reaction.message;
     let rolesReactions = ReactionsManager.reactData.find(
       (target) => target.id === msg.id,
     );
@@ -175,7 +176,7 @@ client.on("ready", async () => {
   });
 
   client.on("guildMemberAdd", async (e) => {
-    let guild = e.guild;
+    const guild = e.guild;
     let roles;
 
     let leaveRoles =
@@ -191,10 +192,10 @@ client.on("ready", async () => {
     }
 
     if (e.user.bot) {
-      let whoAdded = await guild.Audit((audit) => audit.target.id === e.id, {
+      const whoAdded = await guild.Audit((audit) => audit.target.id === e.id, {
         type: AuditLogEvent.BotAdd,
       });
-      let permissions =
+      const permissions =
         e.permissions
           .toArray()
           .map((e) => Command.permissions[e])
@@ -248,7 +249,7 @@ client.on("ready", async () => {
     }
 
     if (guild.data.hi && guild.data.hiChannel) {
-      let channel = guild.channels.cache.get(guild.data.hiChannel);
+      const channel = guild.channels.cache.get(guild.data.hiChannel);
       if (!channel) {
         return;
       }
@@ -290,7 +291,7 @@ client.on("ready", async () => {
     }
     e.guild.data.leave_roles[e.user.id] = Array.from(e.roles.cache.keys());
 
-    let banInfo =
+    const banInfo =
       (await e.guild.Audit((audit) => audit.target.id === e.id, {
         limit: 50,
         type: AuditLogEvent.MemberBanAdd,
@@ -387,57 +388,67 @@ async function msg(options, ..._devFixParams) {
 
 //---------------------------------{Functions from events--}------------------------------                            #ff0
 
-async function eventHundler(msg) {
-  let author = msg.author,
-    user = author.data,
-    server = msg.guild ? msg.guild.data : {};
+async function eventHundler(message) {
+  const user = message.author,
+    userData = user.data,
+    server = message.guild ? message.guild.data : {};
 
   // ANTI-SPAM
-  author.CD_msg = Math.max(author.CD_msg || 0, Date.now()) + 2000;
+  user.CD_msg = Math.max(user.CD_msg || 0, Date.now()) + 2000;
 
   // 120000 = 8000 * 15
-  if (Date.now() + 120000 > author.CD_msg) {
-    author.CD_msg += 8000 - 200 * (user.voidCooldown ?? 0);
+  if (Date.now() + 120000 > user.CD_msg) {
+    user.CD_msg += 8000 - 200 * (userData.voidCooldown ?? 0);
 
-    if (Util.random(1, 85 * 0.9 ** user.voidCoins) === 1) {
+    if (Util.random(1, 85 * 0.9 ** userData.voidCoins) === 1) {
       EventsManager.emitter.emit("users/getCoinsFromMessage", {
-        userData: user,
-        message: msg,
+        userData: userData,
+        message: message,
       });
     }
 
-    user.exp++;
-    if (user.exp >= user.level * LEVELINCREASE_EXPERIENCE_PER_LEVEL) {
-      EventsManager.emitter.emit("users/levelIncrease", { user, message: msg });
+    Util.addResource({
+      user,
+      source: "events.messageCreate.getExperienceFromMessage",
+      value: 1,
+      executor: user,
+      resource: PropertiesEnum.exp,
+      context: { message },
+    });
+    if (userData.exp >= userData.level * LEVELINCREASE_EXPERIENCE_PER_LEVEL) {
+      EventsManager.emitter.emit("users/levelIncrease", {
+        user: userData,
+        message: message,
+      });
     }
 
     server.day_msg++;
   }
-  user.last_online = Date.now();
+  userData.last_online = Date.now();
 
   if (server.boss && server.boss.isArrived) {
-    BossManager.onMessage.call(BossManager, msg);
+    BossManager.onMessage.call(BossManager, message);
   }
 
   if (
-    msg.content
+    message.content
       .toLowerCase()
       .match(
         /((ухуель|глупый|тупой|дурной|бездарный|дурний) бот)|(бот (ухуель|глупый|тупой|дурной|бездарный|дурний))/i,
       )
   )
-    stupid_bot(user, msg);
+    stupid_bot(userData, message);
   if (
-    msg.content
+    message.content
       .toLowerCase()
       .match(
         /((классный|умный|хороший|милый) бот)|(бот (классный|умный|хороший|милый))/i,
       )
   )
-    good_bot(user, msg);
+    good_bot(userData, message);
 
-  if (!msg.guild) return;
-  if (msg.guild.data.chatFilter) filterChat(msg);
+  if (!message.guild) return;
+  if (message.guild.data.chatFilter) filterChat(message);
 }
 
 async function stupid_bot(user, msg) {
@@ -522,7 +533,7 @@ function filterChat(msg) {
   let content = msg.content;
   content = content.replace(/\\/g, "");
 
-  let abuse = [
+  const abuse = [
     "хуйло",
     "пидорас",
     "шалава",
@@ -607,11 +618,11 @@ function filterChat(msg) {
     return true;
   }
 
-  let capsLenght = content
+  const capsLenght = content
     .split("")
     .filter((symbol) => symbol.toLowerCase() !== symbol).length;
   if (capsLenght > 4 && capsLenght / content.length > 0.5) {
-    let isAdmin =
+    const isAdmin =
       msg.guild &&
       !msg.guild.members.resolve(msg.author).wastedPermissions(8)[0];
     if (isAdmin) {
@@ -714,19 +725,19 @@ Discord.BaseChannel.prototype.awaitMessage = async function (options) {
 };
 
 Discord.GuildMember.prototype.wastedPermissions = function (bit, channel) {
-  let permissions = channel
+  const permissions = channel
     ? channel.permissionsFor(this).missing(bit)
     : this.permissions.missing(bit);
   return permissions[0] ? permissions : false;
 };
 
 Discord.Guild.prototype.chatSend = async function (message) {
-  let id = this.data.chatChannel;
+  const id = this.data.chatChannel;
   if (!id) {
     return false;
   }
 
-  let channel = this.channels.cache.get(id);
+  const channel = this.channels.cache.get(id);
   if (!channel) {
     delete this.data.chatChannel;
     return;
@@ -736,12 +747,12 @@ Discord.Guild.prototype.chatSend = async function (message) {
 };
 
 Discord.Guild.prototype.logSend = async function (message) {
-  let id = this.data.logChannel;
+  const id = this.data.logChannel;
   if (!id) {
     return false;
   }
 
-  let channel = this.channels.cache.get(id);
+  const channel = this.channels.cache.get(id);
   if (!channel) {
     delete this.data.logChannel;
     return;
@@ -756,7 +767,7 @@ Discord.Guild.prototype.Audit = async function (
 ) {
   const audit = await this.fetchAuditLogs({ limit, before, user, type });
 
-  let auditLog = find ? audit.entries.find(find) : audit.entries.first();
+  const auditLog = find ? audit.entries.find(find) : audit.entries.first();
   if (!audit) {
     return null;
   }
@@ -780,7 +791,7 @@ Array.prototype.random = function ({ pop, weights } = {}) {
     index = thresholds.findIndex((threshold) => threshold >= line);
   } else index = Math.floor(Math.random() * this.length);
 
-  let input = this[index];
+  const input = this[index];
   if (pop) this.splice(index, 1);
   return input;
 };
@@ -799,7 +810,7 @@ BigInt.prototype.toJSON = function () {
 
 Object.defineProperty(Discord.User.prototype, "guilds", {
   get() {
-    let guilds = client.guilds.cache.filter((guild) =>
+    const guilds = client.guilds.cache.filter((guild) =>
       guild.members.cache.get(this.id),
     );
     return [...guilds.values()];
@@ -858,7 +869,7 @@ class Command {
     cmd = Object.assign({}, cmd);
 
     const code = async (msg) => {
-      let embed = { scope: { args: args, command: name } };
+      const embed = { scope: { args: args, command: name } };
 
       if (cmd.title) {
         embed.description = cmd.message;
@@ -880,8 +891,8 @@ class Command {
       });
     } catch (e) {
       console.error(e);
-      let timestamp = Date.now();
-      let message = await msg.msg({
+      const timestamp = Date.now();
+      const message = await msg.msg({
         title: "Произошла ошибка 🙄",
         color: "#f0cc50",
         delete: 180000,
@@ -900,7 +911,7 @@ class Command {
           "Когда неприятель делает ошибку, не следует ему мешать. Это невежливо.",
           "Хватит повторять старые ошибки, время совершать новые!",
         ].random();
-        let errorContext = `**Сведения об ошибке:**\n• **Имя:** ${
+        const errorContext = `**Сведения об ошибке:**\n• **Имя:** ${
           e.name
         }\n• **Номер строки:** #${
           e.stack.match(/js:(\d+)/)[1]
@@ -931,8 +942,8 @@ class ReactionsManager {
   static path = "./data/reactions.json";
 
   constructor(id, channel, guild, type, reactions) {
-    let reactionObject = { id, channel, guild, type, reactions };
-    let isExists = ReactionsManager.reactData.find(
+    const reactionObject = { id, channel, guild, type, reactions };
+    const isExists = ReactionsManager.reactData.find(
       (target) => target.id === id,
     );
     if (isExists) {
@@ -963,14 +974,14 @@ class ReactionsManager {
   }
 
   static async handle() {
-    let reactions = [];
+    const reactions = [];
     const reactionsData = await ReactionsManager.readFile();
     for (const data of reactionsData) {
       const { guild: guildId, channel: channelId, id: messageId } = data;
 
       const guild = client.guilds.cache.get(guildId);
       const channel = guild.channels.cache.get(channelId);
-      let message = await channel.messages.fetch(messageId);
+      const message = await channel.messages.fetch(messageId);
       if (!message) {
         continue;
       }
