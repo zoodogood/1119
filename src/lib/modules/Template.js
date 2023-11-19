@@ -293,10 +293,20 @@ class Template {
   static ModulesScope = new Collection(
     Object.entries({
       interaction: {
-        getContent: (context) => context,
+        getContent: (context) => {
+          return context;
+        },
         name: "interaction",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+        },
+      },
+      constants: {
+        getContent: async () => (await import("#constants/mod.js")).Constants,
+        name: "contants",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.USER,
           investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
@@ -327,7 +337,7 @@ class Template {
         filter: (context) => "user" in context,
       },
       Util: {
-        getContent: (context) =>
+        getContent: () =>
           Util.omit(Util, (key) =>
             [
               "GlitchText",
@@ -350,7 +360,7 @@ class Template {
         },
       },
       CommandsManager: {
-        getContent: (context) => CommandsManager,
+        getContent: () => CommandsManager,
         name: "CommandsManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
@@ -358,7 +368,7 @@ class Template {
         },
       },
       EventsManager: {
-        getContent: (context) => EventsManager,
+        getContent: () => EventsManager,
         name: "EventsManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
@@ -366,7 +376,7 @@ class Template {
         },
       },
       BossManager: {
-        getContent: (context) => BossManager,
+        getContent: () => BossManager,
         name: "BossManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.USER,
@@ -374,7 +384,7 @@ class Template {
         },
       },
       CurseManager: {
-        getContent: (context) => CurseManager,
+        getContent: () => CurseManager,
         name: "CurseManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.USER,
@@ -382,7 +392,7 @@ class Template {
         },
       },
       DataManager: {
-        getContent: (context) => DataManager,
+        getContent: () => DataManager,
         name: "DataManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
@@ -390,7 +400,7 @@ class Template {
         },
       },
       TimeEventsManager: {
-        getContent: (context) => TimeEventsManager,
+        getContent: () => TimeEventsManager,
         name: "TimeEventsManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
@@ -398,7 +408,7 @@ class Template {
         },
       },
       ActionManager: {
-        getContent: (context) => ActionManager,
+        getContent: () => ActionManager,
         name: "ActionManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
@@ -406,7 +416,7 @@ class Template {
         },
       },
       QuestManager: {
-        getContent: (context) => QuestManager,
+        getContent: () => QuestManager,
         name: "QuestManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.USER,
@@ -414,7 +424,7 @@ class Template {
         },
       },
       GuildVariablesManager: {
-        getContent: (context) => GuildVariablesManager,
+        getContent: () => GuildVariablesManager,
         name: "GuildVariablesManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
@@ -438,7 +448,7 @@ class Template {
         },
       },
       Discord: {
-        getContent: (context) => Discord,
+        getContent: () => Discord,
         name: "Discord",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
@@ -446,7 +456,7 @@ class Template {
         },
       },
       client: {
-        getContent: (context) => client,
+        getContent: () => client,
         name: "client",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
@@ -454,14 +464,14 @@ class Template {
         },
       },
       process: {
-        getContent: (context) => process,
+        getContent: () => process,
         name: "process",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       FileSystem: {
-        getContent: (context) => FileSystem,
+        getContent: () => FileSystem,
         name: "FileSystem",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
