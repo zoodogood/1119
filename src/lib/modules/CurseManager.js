@@ -146,7 +146,7 @@ class CurseManager {
         hard: 1,
         values: {
           goal: () => 1,
-          timer: (user, curse) => {
+          timer: () => {
             const now = new Date();
             const tomorrow = new Date(
               now.getFullYear(),
@@ -191,7 +191,7 @@ class CurseManager {
         hard: 0,
         values: {
           goal: () => 1,
-          timer: (user, curse) => {
+          timer: () => {
             const now = new Date();
             const tomorrow = new Date(
               now.getFullYear(),
@@ -368,7 +368,7 @@ class CurseManager {
         description: "Нанесите боссу вот столько-вот урона",
         hard: 2,
         values: {
-          goal: (user) => 80_000,
+          goal: () => 80_000,
           timer: (user) => {
             const guilds = user.guilds.filter(
               (guild) => guild.data.boss?.isArrived,
@@ -426,7 +426,7 @@ class CurseManager {
           "Вы не можете класть ресурсы в сумку, как и извлекать их из неё. Проклятие будет засчитано по окончании таймера",
         hard: 0,
         values: {
-          goal: (user) => 1,
+          goal: () => 1,
           timer: () => 3_600_000 * 24,
         },
         callback: {
@@ -438,7 +438,7 @@ class CurseManager {
             data.event.preventDefault();
             CurseManager.interface({ user, curse }).success();
           },
-          beforeBagInteracted: (user, curse, context) => {
+          beforeBagInteracted: (context) => {
             context.preventDefault();
           },
         },
@@ -451,11 +451,11 @@ class CurseManager {
         description: "Сделайте что-нибудь",
         hard: 0,
         values: {
-          goal: (user) => 195 + Util.random(9) * 5,
+          goal: () => 195 + Util.random(9) * 5,
           timer: () => 60_000 * 8,
         },
         callback: {
-          [ActionsMap.any]: (user, curse, context) => {
+          [ActionsMap.any]: (user, curse) => {
             const { progress } = curse.values;
             CurseManager.interface({ user, curse })._setProgress(
               (progress || 0) + 1,
@@ -479,7 +479,7 @@ class CurseManager {
           "Выполняйте сегодняшний квест до 10-ти раз. Вы провалите проклятие, если не выполните хотя бы 3-х",
         hard: 1,
         values: {
-          goal: (user) => 0,
+          goal: () => 0,
           timer: () => {
             const now = new Date();
             const tomorrow = new Date(
