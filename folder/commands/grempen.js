@@ -229,7 +229,7 @@ class Command {
               curse.values.timer = 0;
               CurseManager.checkAvailable({ curse, user: interaction.user });
             }
-            return ", как магический артефакт, снявший с вас все проклятия";
+            return ", как магический артефакт, досрочно завершивший ваши проклятия";
           }
 
           return isFirst
