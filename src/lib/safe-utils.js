@@ -7,6 +7,7 @@ import {
   GlitchText,
   rangeToArray,
   getRandomElementFromArray,
+  DotNotatedInterface
 } from "@zoodogood/utils/objectives";
 import dayjs from "dayjs";
 import yaml from "yamljs";
@@ -362,6 +363,7 @@ export {
   ending,
   omit,
   CustomCollector,
+  DotNotatedInterface,
   GlitchText,
   TimeAuditor,
   dayjs,
