@@ -226,9 +226,10 @@ class Command {
 
           if (userData.curses.length > 0) {
             for (const curse of userData.curses) {
-              curse.values.timer = 0;
+              curse.values.timer = -1;
               CurseManager.checkAvailable({ curse, user: interaction.user });
             }
+            CurseManager.checkAvailableAll(interaction.user);
             return ", как магический артефакт, досрочно завершивший ваши проклятия";
           }
 
