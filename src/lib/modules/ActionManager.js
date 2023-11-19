@@ -1,7 +1,7 @@
 import { User as DiscordUser } from "discord.js";
 import { CurseManager, QuestManager, ErrorsHandler } from "#lib/modules/mod.js";
 import { BossEffects } from "#lib/modules/BossManager.js";
-import { ActionsMap } from "#constants/actionsMap.js";
+import { ActionsMap } from "#constants/enums/actionsMap.js";
 
 class ActionManager {
   static Actions = ActionsMap;

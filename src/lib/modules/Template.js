@@ -22,6 +22,7 @@ import * as PropertiesManager from "#lib/modules/Properties.js";
 import { client } from "#bot/client.js";
 import FileSystem from "fs";
 import Discord from "discord.js";
+import { Constants } from "#constants/mod.js";
 
 function isConstruct(fn) {
   try {
@@ -303,7 +304,7 @@ class Template {
         },
       },
       constants: {
-        getContent: async () => (await import("#constants/mod.js")).Constants,
+        getContent: () => Constants,
         name: "contants",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.USER,

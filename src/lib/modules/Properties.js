@@ -1,5 +1,5 @@
 import * as Util from "#lib/util.js";
-import { GeneralPropertiesmap } from "#constants/GeneralPropertiesMap.js";
+import { GeneralPropertiesmap } from "#constants/enums/generalPropertiesMap.js";
 
 const ProperiesList = {
   berrysPrice: {},
