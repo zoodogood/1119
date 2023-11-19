@@ -32,7 +32,7 @@ function addResource({ resource, user, value, source, context, executor }) {
     context,
   });
   if (Number.isNaN(value)) {
-    throw new Error(`Add NaN resourse count`, {
+    throw new Error(`Add NaN resource count`, {
       details: { source, resource },
     });
   }
