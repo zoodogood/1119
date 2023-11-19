@@ -6,7 +6,7 @@ import config from "#config";
 
 import { escapeCodeBlock, WebhookClient } from "discord.js";
 
-const DEFAULT_CODE_CONTENT = "module(\"userData\")";
+const DEFAULT_CODE_CONTENT = 'module("userData")';
 
 class Command {
   async onChatInput(msg, interaction) {
@@ -24,8 +24,9 @@ class Command {
     };
 
     const codeContent =
-      (await fetchReferense(msg.reference)) || interaction.params || DEFAULT_CODE_CONTENT;
-      
+      (await fetchReferense(msg.reference)) ||
+      interaction.params ||
+      DEFAULT_CODE_CONTENT;
 
     Object.assign(interaction, {
       launchTimestamp: Date.now(),
@@ -55,30 +56,30 @@ class Command {
     interaction.leadTime = Date.now() - interaction.launchTimestamp;
 
     switch (true) {
-    case output === undefined:
-      interaction.description = "```{Пусто}```";
-      interaction.emojiByType = "753916360802959444";
-      break;
-    case output instanceof Error:
-      interaction.description = `Ошибка (${output.name}):\n${output.message}`;
-      interaction.emojiByType = "753916394135093289";
-      break;
-    case typeof output === "object":
-      interaction.description = `\`\`\`json\n${escapeCodeBlock(
-        JSON.stringify(output, null, "\t")
-      )}\`\`\``;
-      interaction.emojiByType = "753916315755872266";
-      break;
-    default:
-      interaction.description = String(output);
-      interaction.emojiByType = "753916145177722941";
+      case output === undefined:
+        interaction.description = "```{Пусто}```";
+        interaction.emojiByType = "753916360802959444";
+        break;
+      case output instanceof Error:
+        interaction.description = `Ошибка (${output.name}):\n${output.message}`;
+        interaction.emojiByType = "753916394135093289";
+        break;
+      case typeof output === "object":
+        interaction.description = `\`\`\`json\n${escapeCodeBlock(
+          JSON.stringify(output, null, "\t"),
+        )}\`\`\``;
+        interaction.emojiByType = "753916315755872266";
+        break;
+      default:
+        interaction.description = String(output);
+        interaction.emojiByType = "753916145177722941";
     }
 
     this.loggerProtocol({ interaction });
 
-    let react = await msg.awaitReact(
+    const react = await msg.awaitReact(
       { user: msg.author, removeType: "one", time: 20000 },
-      interaction.emojiByType
+      interaction.emojiByType,
     );
     if (!react) {
       return;
@@ -101,7 +102,7 @@ class Command {
           "символ",
           "ов",
           "у",
-          "ам"
+          "ам",
         );
         msg.msg({
           title: "Лимит символов",
