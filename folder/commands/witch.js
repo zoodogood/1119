@@ -1,29 +1,40 @@
 import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class Command {
   bonusesBase = [
     {
       emoji: "🌀",
+      id: "cooldownDecrease",
       description: "Уменьшает кулдаун получения опыта за сообщение на 0.2с",
       MAX_LEVEL: 20,
       MAX_WEIGHT: 100,
-      _weight(user, _interaction) {
+      _weight(user) {
         return (
           this.MAX_WEIGHT -
           (user.data.voidCooldown * (this.MAX_WEIGHT / this.MAX_LEVEL) || 0)
         );
       },
-      filter(user, _interaction) {
+      filter(user) {
         return user.data.voidCooldown < this.MAX_LEVEL;
       },
-      action(user, _interaction) {
-        return (user.data.voidCooldown = ++user.data.voidCooldown || 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.cooldownDecrease",
+          resource: PropertiesEnum.voidCooldown,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "🔅",
+      id: "creatureBonuses",
       LIMIT: 2_000,
       BONUSES_PER_RITUAL: 18,
       BASIC: 38,
@@ -36,86 +47,138 @@ class Command {
           this.LIMIT,
         );
       },
-      description(user, _interaction) {
+      description(user) {
         return `Мгновенно получите бонус сундука в размере \`${this.calculate(
           user,
         )}\``;
       },
       _weight: 50,
-      action(user, _interaction) {
-        return (user.data.chestBonus =
-          (user.data.chestBonus || 0) + this.calculate(user));
+      action(user, interaction) {
+        const value = this.calculate(user);
+        Util.addResource({
+          user,
+          value,
+          executor: user,
+          source: "command.witch.event.creatureBonuses",
+          resource: PropertiesEnum.chestBonus,
+          context: { interaction },
+        });
       },
     },
     {
       emoji: "⚜️",
+      id: "decreaseWitchPrice",
       MAX_LEVEL: 3,
-      description(user, _interaction) {
+      description() {
         return `Уменьшает цену нестабильности для розжыга котла. (Макс. на ${
           this.MAX_LEVEL * 10
         }%)`;
       },
       _weight: 5,
-      filter(user, _interaction) {
+      filter(user) {
         return user.data.voidPrice < this.MAX_LEVEL;
       },
-      action(user, _interaction) {
-        return (user.data.voidPrice = ++user.data.voidPrice || 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.decreaseWitchPrice",
+          resource: PropertiesEnum.voidPrice,
+          executor: user,
+          context: { interaction },
+        });
       },
     },
     {
       emoji: "🃏",
+      id: "oddsToRestoreVoid",
       description:
         "Даёт 9%-й шанс не потерять уровни нестабильности во время ритуала.",
       _weight: 3,
-      filter(user, _interaction) {
+      filter(user) {
         return !user.data.voidDouble;
       },
-      action(user, _interaction) {
-        return (user.data.voidDouble = 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.cooldownDecrease",
+          resource: PropertiesEnum.voidDouble,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "🔱",
+      id: "hardQuests",
       MAX_LEVEL: 5,
       description:
         "Делает ежедневные квесты на 15% сложнее, однако также увеличивает их награду на 30%",
       _weight: 10,
-      filter(user, _interaction) {
+      filter(user) {
         return user.data.voidQuests < this.MAX_LEVEL;
       },
-      action(user, _interaction) {
-        return (user.data.voidQuests = ++user.data.voidQuests || 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.hardQuests",
+          resource: PropertiesEnum.voidQuests,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "✨",
+      id: "starsCoinsMessages",
       BASIC: 20,
       BONUS_PER_RITUAL: 7,
-      description(user, _interaction) {
-        return `Увеличивает награду коин-сообщений на ${
-          this.BASIC + user.data.voidRituals * this.BONUS_PER_RITUAL
-        } ед.`;
+      calculate(user) {
+        return this.BASIC + user.data.voidRituals * this.BONUS_PER_RITUAL;
+      },
+      description(user) {
+        const value = this.calculate(user);
+        return `Увеличивает награду коин-сообщений на ${value} ед.`;
       },
       _weight: 35,
-      action(user, _interaction) {
-        return (user.data.coinsPerMessage =
-          (user.data.coinsPerMessage || 0) +
-          this.BASIC +
-          user.data.voidRituals * this.BONUS_PER_RITUAL);
+      action(user, interaction) {
+        const value = this.calculate(user);
+        Util.addResource({
+          user,
+          value,
+          source: "command.witch.event.starsCoinsMessages",
+          resource: PropertiesEnum.coinsPerMessage,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "💠",
+      id: "robTrasures",
       description:
         "Даёт \\*бонуы сундука* каждый раз, когда с помощью перчаток вам удается кого-то ограбить.",
       _weight: 20,
-      action(user, _interaction) {
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.robTreasures",
+          resource: PropertiesEnum.voidThief,
+          executor: user,
+          context: { interaction },
+        });
         return (user.data.voidThief = ++user.data.voidThief || 1);
       },
     },
     {
       emoji: "😈",
+      id: "smile",
       BASIC: 7,
       PER_RITUAL: 5,
       calculate(user) {
@@ -124,162 +187,276 @@ class Command {
           Math.floor(this.PER_RITUAL * user.data.voidRituals ** 0.5)
         );
       },
-      description(user, _interaction) {
+      description(user) {
         return `Создайте экономических хаос, изменив стоимость клубники на рынке! ${this.calculate(
           user,
         )} коинов в случайную сторону.`;
       },
       _weight: 10,
-      action(user, _interaction) {
+      action(user) {
         return (DataManager.data.bot.berrysPrice +=
           this.calculate(user) * (-1) ** Util.random(1));
       },
     },
     {
       emoji: "🍵",
+      id: "updateCloverEffect",
       description: `Удваивает для вас всякий бонус клевера\nНесколько бонусов складываются`,
       _weight: 2,
-      action(user, _interaction) {
-        return (user.data.voidMysticClover = ++user.data.voidMysticClover || 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.updateCloverEffect",
+          resource: PropertiesEnum.voidMysticClover,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "📿",
+      id: "transformKeys",
       KEYS_PER_VOID: 100,
-      description(user, _interaction) {
-        return `Получите ${Math.floor(
-          user.data.keys / this.KEYS_PER_VOID,
-        )} ур. нестабильности взамен ${
-          user.data.keys - (user.data.keys % this.KEYS_PER_VOID)
-        } ключей.`;
+      calculate(user) {
+        const voids = Math.floor(user.data.keys / this.KEYS_PER_VOID);
+        const keys = user.data.keys - (user.data.keys % this.KEYS_PER_VOID);
+        return { voids, keys };
+      },
+      description(user) {
+        const { voids, keys } = this.calculate(user);
+        return `Получите ${voids} ур. нестабильности взамен ${keys} ключей.`;
       },
       _weight: 30,
-      filter(user, _interaction) {
+      filter(user) {
         return user.data.keys >= this.KEYS_PER_VOID && user.data.chestLevel;
       },
-      action(user, _interaction) {
-        user.data.void += Math.floor(user.data.keys / this.KEYS_PER_VOID);
-        user.data.keys = user.data.keys % this.KEYS_PER_VOID;
+      action(user, interaction) {
+        const { keys, voids } = this.calculate(user);
+        Util.addResource({
+          user,
+          value: -keys,
+          source: "command.witch.event.transformKeys",
+          resource: PropertiesEnum.keys,
+          executor: user,
+          context: { interaction },
+        });
+        Util.addResource({
+          user,
+          value: voids,
+          source: "command.witch.event.transformKeys",
+          resource: PropertiesEnum.void,
+          executor: user,
+          context: { interaction },
+        });
         return;
       },
     },
     {
       emoji: "♦️",
+      id: "luckyCoinOdds",
       MAX_LEVEL: 7,
       description: `Увеличивает вероятность коин-сообщения на 10%!`,
       _weight: 15,
-      filter(user, _interaction) {
+      filter(user) {
         return user.data.voidCoins < this.MAX_LEVEL;
       },
-      action(user, _interaction) {
-        return (user.data.voidCoins = ~~user.data.voidCoins + 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.luckyCoinOdds",
+          resource: PropertiesEnum.voidCoins,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "🏵️",
+      id: "chestLevelIncrease",
       KEYS_FOR_FIRST_UPGRADE: 150,
       KEYS_FOR_SECOND_UPGRADE: 500,
-      DESCRIPTION_OFFSET: 2,
-      description(user, _interaction) {
+      DESCRIPTION_VALUE_OFFSET: 2,
+      getPrice(user) {
+        return user.data.chestLevel
+          ? this.KEYS_FOR_SECOND_UPGRADE
+          : this.KEYS_FOR_FIRST_UPGRADE;
+      },
+      description(user) {
+        const price = this.getPrice(user);
         return `Улучшает сундук до ${
-          user.data.chestLevel + this.DESCRIPTION_OFFSET
-        } уровня. Требует ${
-          user.data.chestLevel
-            ? this.KEYS_FOR_SECOND_UPGRADE
-            : this.KEYS_FOR_FIRST_UPGRADE
-        } ключей.`;
+          user.data.chestLevel + this.DESCRIPTION_VALUE_OFFSET
+        } уровня. Требует ${price} ключей.`;
       },
       _weight: Infinity,
-      filter(user, _interaction) {
+      filter(user) {
         return (
-          user.data.chestLevel != 2 &&
-          user.data.keys >=
-            (user.data.chestLevel
-              ? this.KEYS_FOR_SECOND_UPGRADE
-              : this.KEYS_FOR_FIRST_UPGRADE)
+          user.data.chestLevel !== 2 && user.data.keys >= this.getPrice(user)
         );
       },
-      action(user, _interaction) {
-        return (user.data.keys -= user.data.chestLevel++
-          ? this.KEYS_FOR_SECOND_UPGRADE
-          : this.KEYS_FOR_FIRST_UPGRADE);
+      action(user, interaction) {
+        const price = this.getPrice(user);
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.chestLevelIncrease",
+          resource: PropertiesEnum.chestLevel,
+          executor: user,
+          context: { interaction },
+        });
+        Util.addResource({
+          user,
+          value: -price,
+          source: "command.witch.event.chestLevelIncrease",
+          resource: PropertiesEnum.keys,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "💖",
+      id: "strongMonsters",
       description: `Ваши монстры будут защищать вас от ограблений Воров`,
       _weight: 3,
-      filter(user, _interaction) {
+      filter(user) {
         return user.data.monster && !user.data.voidMonster;
       },
-      action(user, _interaction) {
-        return (user.data.voidMonster = 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.strongMonsters",
+          resource: PropertiesEnum.voidMonster,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "📕",
+      id: "treeFarm",
       description: `Вы можете брать на одну клубнику больше с дерева. Также при сборе повышает её цену на рынке`,
       _weight: 20,
-      filter(user, _interaction) {
+      filter(user) {
         return "seed" in user.data;
       },
-      action(user, _interaction) {
-        return (user.data.voidTreeFarm = ~~user.data.voidTreeFarm + 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.treeFarm",
+          resource: PropertiesEnum.voidTreeFarm,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "🥂",
+      id: "royaltyCasino",
       description: "Лотерейный билетик из Лавки заменяется настоящим казино",
       _weight: 3,
-      filter(user, _interaction) {
+      filter(user) {
         return !user.data.voidCasino;
       },
-      action(user, _interaction) {
-        return (user.data.voidCasino = 1);
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.royaltyCasino",
+          resource: PropertiesEnum.voidCasino,
+          executor: user,
+          context: { interaction },
+        });
+        return;
       },
     },
     {
       emoji: "🧵",
+      id: "tinThreadOfVoid",
+      DECREASE_RITUALS_COUNT: 2,
       description(_user, interaction) {
         return `Получите случайное количество нестабильности: 1–${
           interaction.minusVoids * 2
-        }; Снижает уровень котла на 2.\nЕсли Ваш уровень кратен двум, Вы получите одну дополнительную нестабильность.`;
+        }; Снижает уровень котла на ${
+          this.DECREASE_RITUALS_COUNT
+        }.\nЕсли Ваш уровень кратен двум, Вы получите одну дополнительную нестабильность.`;
       },
       _weight: 15,
-      filter(user, _interaction) {
+      filter(user) {
         return user.data.voidRituals > 4 && user.data.voidRituals < 20;
       },
       action(user, interaction) {
         const voids =
           Util.random(1, interaction.minusVoids * 2) + !(user.data.level % 2);
-        user.data.void += voids;
-        user.data.voidRituals -= 3;
+
+        Util.addResource({
+          user,
+          value: voids,
+          source: "command.witch.event.tinThreadOfVoid",
+          resource: PropertiesEnum.voidDouble,
+          executor: user,
+          context: { interaction },
+        });
+        Util.addResource({
+          user,
+          value: -(this.DECREASE_RITUALS_COUNT + 1),
+          source: "command.witch.event.tinThreadOfVoid",
+          resource: PropertiesEnum.voidRituals,
+          executor: user,
+          context: { interaction },
+        });
         return;
       },
     },
     {
       emoji: "🪸",
-      description: `Позволяет иметь более более одного проклятия`,
+      id: "freedomCurse",
+      description: `Позволяет иметь более одного проклятия`,
       _weight: 40,
-      filter(user, _interaction) {
+      filter(user) {
         return user.data.cursesEnded > 4 && !user.data.voidFreedomCurse;
       },
-      action(user, _interaction) {
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.freedomCurse",
+          resource: PropertiesEnum.voidFreedomCurse,
+          executor: user,
+          context: { interaction },
+        });
         return (user.data.voidFreedomCurse = 1);
       },
     },
     {
       emoji: "❄️",
+      id: "getVoidIce",
       // Хладнокровное одиночество
       description: `Вы получаете на 50% больше опыта и возможность грабить без рисков до момента, пока вас не похвалят, НО вас больше никто не сможет похвалить.`,
       _weight: 1,
-      filter(user, _interaction) {
+      filter(user) {
         return (
           (!user.data.voidIce && !user.data.praiseMe) ||
           !user.data.praiseMe.length
         );
       },
-      action(user, _interaction) {
+      action(user, interaction) {
+        Util.addResource({
+          user,
+          value: 1,
+          source: "command.witch.event.getVoidIce",
+          resource: PropertiesEnum.voidIce,
+          executor: user,
+          context: { interaction },
+        });
         user.action(Actions.globalQuest, { name: "coolingSenses" });
         return;
       },
@@ -384,7 +561,7 @@ class Command {
     return Math.floor(basic * multiplayer);
   }
 
-  async boilerChoise({ userData, interaction, boiler }) {
+  async boilerChoise({ interaction, boiler }) {
     const user = interaction.user;
 
     const getWeight = (bonus) =>
@@ -472,6 +649,10 @@ class Command {
     return Math.max(0.97716 ** userData.voidRituals, 0.01);
   }
 
+  getContext(interaction) {
+    return { interaction };
+  }
+
   async onChatInput(msg, interaction) {
     // <a:void:768047066890895360> <a:placeForVoid:780051490357641226> <a:cotik:768047054772502538>
 
@@ -553,8 +734,23 @@ class Command {
       interaction.minusVoids = 0;
     }
 
-    userData.void -= interaction.minusVoids;
-    userData.voidRituals++;
+    Util.addResource({
+      user: interaction.user,
+      value: -interaction.minusVoids,
+      source: "command.witch.ritual",
+      resource: PropertiesEnum.void,
+      executor: interaction.user,
+      context: { interaction },
+    });
+
+    Util.addResource({
+      user: interaction.user,
+      value: 1,
+      source: "command.witch.ritual",
+      resource: PropertiesEnum.voidRituals,
+      executor: interaction.user,
+      context: { interaction },
+    });
 
     await this.boilerChoise({ userData, interaction, boiler: boilerMessage });
 
