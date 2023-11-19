@@ -102,6 +102,9 @@ class DataManager {
     },
   };
 
+  /**
+   * @type {import("#constants/Schema.js").DataManager}
+   */
   static data = {};
 }
 
