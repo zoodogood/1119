@@ -101,7 +101,7 @@ class Template {
         const remove = () => context.nesting.pop();
         return brackets.length === 1 ? context.exitCode : remove();
       },
-      "\"": (context) => (context.inQuotes = "\""),
+      '"': (context) => (context.inQuotes = '"'),
       "'": (context) => (context.inQuotes = "'"),
       "`": (context) => (context.inQuotes = "`"),
       "\\": (context) => (context.skipOnce = true),
@@ -490,9 +490,9 @@ class Template {
 
   async getFromScope(regular) {
     let func;
-    let base = regular.template.base;
+    const base = regular.template.base;
 
-    let way = regular.reg.match(
+    const way = regular.reg.match(
       /(?:[^.]+?\(.+?\))($|(?=\.))|([a-z0-9]+)(?!=[(])/gim,
     );
     if (!way) return `\\!{${regular.reg}}`;
