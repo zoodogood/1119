@@ -24,6 +24,12 @@ function generateInviteFor(client) {
 }
 
 function addResource({ resource, user, value, source, context, executor }) {
+  if (Number.isNaN(value)) {
+    throw new Error(`Add NaN resource count`, {
+      details: { source, resource },
+    });
+  }
+
   user.action(Actions.resourceChange, {
     value,
     executor,
@@ -31,11 +37,6 @@ function addResource({ resource, user, value, source, context, executor }) {
     resource,
     context,
   });
-  if (Number.isNaN(value)) {
-    throw new Error(`Add NaN resource count`, {
-      details: { source, resource },
-    });
-  }
   user.data[resource] ||= 0;
   user.data[resource] += value;
 }
