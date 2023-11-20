@@ -244,12 +244,12 @@ class Command {
   }
 
   parseParams(params) {
-    const action = params.match(/взять|take|положить|put/)?.[0];
+    const action = params.match(/взять|take|get|положить|put|set/)?.[0];
     const count = params.match(/\d+|\+/)?.[0];
     let item = null;
     let rawItem = null;
-    const isPutAction = ["положить", "put"].includes(action);
-    const isReceiveAction = ["взять", "take"].includes(action);
+    const isReceiveAction = ["взять", "take", "get"].includes(action);
+    const isPutAction = ["положить", "put", "set"].includes(action);
 
     if (action && count) {
       params = params.replace(action, "");
