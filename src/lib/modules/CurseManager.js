@@ -683,7 +683,7 @@ class CurseManager {
     const toString = () => {
       const curseBase = CurseManager.cursesBase.get(curse.id);
 
-      if ("toString" in curseBase) {
+      if (Object.hasOwnProperty.call(curseBase, "toString")) {
         return curseBase.toString(user, curse);
       }
 
