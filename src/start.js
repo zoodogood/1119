@@ -699,9 +699,17 @@ Discord.Message.prototype.awaitReact = async function (options, ...reactions) {
     return false;
   }
 
-  if (options.removeType === "all") this.reactions.removeAll();
-  if (options.removeType === "one") reaction.users.remove(options.user);
-  if (options.removeType === "full") reaction.remove();
+  if (options.removeType === "all") this.reactions.removeAll().catch(() => {});
+  if (options.removeType === "one")
+    reaction.users
+      .remove(options.user)
+      .removeAll()
+      .catch(() => {});
+  if (options.removeType === "full")
+    reaction
+      .remove()
+      .removeAll()
+      .catch(() => {});
 
   return reaction.emoji.id ?? reaction.emoji.name;
 };
