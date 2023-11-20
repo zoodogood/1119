@@ -10,7 +10,7 @@ import {
   DotNotatedInterface,
 } from "@zoodogood/utils/objectives";
 import dayjs from "dayjs";
-import yaml from "yamljs";
+import yaml from "yaml";
 import Path from "path";
 
 function toLocaleDeveloperString(value) {

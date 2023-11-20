@@ -1,4 +1,4 @@
-import yaml from 'yamljs';
+import yaml from 'yaml';
 
 class MarkdownMetadata {
 	static regex = /(?<open>(?:\s\t)*^---(?:\s\t)*\n)(?<content>.*?)(?<close>(?:\s\t)*^---(?:\s\t)*\n)/sm;

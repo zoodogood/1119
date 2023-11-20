@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.8278",
+  "version": "2.0.0-alpha.8801",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -56,6 +56,7 @@
     "svelte-meta-tags": "^2.7.0",
     "svelte-notifications": "^0.9.98",
     "vm2": "^3.9.19",
+    "yaml": "^2.3.4",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
