@@ -26,6 +26,10 @@ function toLocaleDeveloperString(value) {
     return value;
   }
 
+  if (typeof value === "function") {
+    return "fn()";
+  }
+
   if (typeof value === "object") {
     const keys = Object.keys(value);
     return `Объект(${keys.length}) <${value.constructor.name}>`;
