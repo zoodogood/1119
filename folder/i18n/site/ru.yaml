@@ -17,6 +17,8 @@ frames:
         label: Отправлено сообщений 
       riches:
         label: Богатство
+      boss:
+        label: По боссу
     SectionManager:
       footerLabels:
         general: "Общие"
