@@ -2,12 +2,12 @@ import { Collection } from "@discordjs/collection";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import * as Util from "#lib/util.js";
-import Discord from "discord.js";
+import Discord, { AttachmentBuilder } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { ActionsMap } from "#constants/actionsMap.js";
+import { ActionsMap } from "#constants/enums/actionsMap.js";
 
 class CurseManager {
   static generate({ hard = null, user, guild = null }) {
@@ -542,6 +542,104 @@ class CurseManager {
         },
         reward: 15,
       },
+      {
+        _weight: 1,
+        id: "iDidntAgreeToIt",
+        hard: 0,
+        description:
+          "Мы собираем о вас данные и позднее отправим их вам. Проклятие будет выполнено автоматически",
+        toString(_user, curse) {
+          const endTimestamp = curse.timestamp + curse.values.timer;
+          const stamp = Math.floor(endTimestamp / 1000);
+          return `${this.description}: <t:${stamp}:>`;
+        },
+        values: {
+          timer: () => 3_600_000 * 24,
+          goal: () => 1,
+          audit: () => [],
+          counter: () => 0,
+        },
+        callback: {
+          curseTimeEnd: (user, curse, data) => {
+            if (data.curse !== curse) {
+              return;
+            }
+
+            data.event.preventDefault();
+
+            const audit = {};
+            const auditInterface = new Util.DotNotatedInterface(audit);
+
+            audit.setItem("actions", curse.values.counter);
+
+            for (const entry of curse.values.audit) {
+              const { value, source, executor, resource } = entry;
+              const box = auditInterface.setItem(
+                `resources.${source}.${resource}`,
+                (prev) => prev || [],
+              );
+              const executorContent =
+                executor === user
+                  ? "You"
+                  : executor === null
+                  ? "null"
+                  : "NotYou";
+
+              const splited = box.find(
+                (splited) =>
+                  splited.executorContent === executorContent &&
+                  Math.sign(source.value) === Math.sign(value),
+              );
+              if (splited) {
+                splited.value += value;
+              } else {
+                box.push({
+                  executorContent,
+                  value,
+                });
+              }
+            }
+            CurseManager.interface({ user, curse }).success();
+            const buffer = Buffer.from(Util.yaml.stringify(audit, null, 3));
+            user.msg({
+              content: "https://jsonformatter.org/yaml-formatter",
+              files: [new AttachmentBuilder(buffer, { name: "audit.yaml" })],
+            });
+          },
+          resourceChange: (_user, curse, data) => {
+            const { value, source, executor, resource } = data;
+            curse.values.audit.push({ value, source, executor, resource });
+          },
+          [ActionsMap.any]: (_user, curse) => {
+            curse.values.counter++;
+          },
+        },
+        reward: 15,
+        interactionIsLong: true,
+      },
+      {
+        _weight: 1,
+        id: "notKind",
+        hard: 1,
+        description: (user, curse) => {
+          const valueContent = new Intl.NumberFormat("ru-RU").format(
+            curse.values.maximum,
+          );
+          return `Не получайте больше, чем ${valueContent} коинов, ни из какого источника`;
+        },
+        toString(_user, curse) {
+          const endTimestamp = curse.timestamp + curse.values.timer;
+          const stamp = Math.floor(endTimestamp / 1000);
+          return `${this.description}: <t:${stamp}:>`;
+        },
+        values: {
+          timer: () => 3_600_000 * 0.2,
+          goal: () => 1,
+          maximum: () => 7_000,
+        },
+        callback: {},
+        reward: 15,
+      },
       // {
       //   _weight: 5,
       //   id: "__example",
@@ -745,6 +843,7 @@ class CurseManager {
         const { interactionIsLong, interactionIsShort } = curseBase;
         const stable =
           (BASIC_REWARD + ADDING_REWARD * curseBase.hard) * curseBase.reward;
+
         return Math.ceil(
           stable *
             (interactionIsLong ? 1.2 : 1) *
