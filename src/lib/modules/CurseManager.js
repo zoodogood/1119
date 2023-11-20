@@ -543,7 +543,7 @@ class CurseManager {
         reward: 15,
       },
       {
-        _weight: 1,
+        _weight: 0.5,
         id: "iDidntAgreeToIt",
         hard: 0,
         description:
@@ -551,13 +551,13 @@ class CurseManager {
         toString(_user, curse) {
           const endTimestamp = curse.timestamp + curse.values.timer;
           const stamp = Math.floor(endTimestamp / 1000);
-          return `${this.description}: <t:${stamp}:>`;
+          return `${this.description}: <t:${stamp}:R>`;
         },
         values: {
           timer: () => 3_600_000 * 24,
           goal: () => 1,
           audit: () => [],
-          counter: () => 0,
+          counter: () => 1,
         },
         callback: {
           curseTimeEnd: (user, curse, data) => {
@@ -570,16 +570,16 @@ class CurseManager {
             const audit = {};
             const auditInterface = new Util.DotNotatedInterface(audit);
 
-            audit.setItem("actions", curse.values.counter);
+            auditInterface.setItem("actions", curse.values.counter);
 
             for (const entry of curse.values.audit) {
               const { value, source, executor, resource } = entry;
               const box = auditInterface.setItem(
-                `resources.${source}.${resource}`,
+                `resources.${source}`,
                 (prev) => prev || [],
               );
               const executorContent =
-                executor === user
+                executor === user.id
                   ? "You"
                   : executor === null
                   ? "null"
@@ -588,26 +588,32 @@ class CurseManager {
               const splited = box.find(
                 (splited) =>
                   splited.executorContent === executorContent &&
-                  Math.sign(source.value) === Math.sign(value),
+                  Math.sign(splited.value) === Math.sign(value) &&
+                  splited.resource === resource,
               );
               if (splited) {
                 splited.value += value;
               } else {
                 box.push({
+                  resource,
                   executorContent,
                   value,
                 });
               }
+              box.sortBy("resource");
             }
-            CurseManager.interface({ user, curse }).success();
-            const buffer = Buffer.from(Util.yaml.stringify(audit, null, 3));
+            const document = new Util.yaml.Document(audit);
+
+            const buffer = Buffer.from(document.toString({ indent: 3 }));
             user.msg({
-              content: "https://jsonformatter.org/yaml-formatter",
               files: [new AttachmentBuilder(buffer, { name: "audit.yaml" })],
             });
+            CurseManager.interface({ user, curse }).success();
           },
           resourceChange: (_user, curse, data) => {
-            const { value, source, executor, resource } = data;
+            const { value, source, resource } = data;
+            const executor = data.executor?.id ?? null;
+
             curse.values.audit.push({ value, source, executor, resource });
           },
           [ActionsMap.any]: (_user, curse) => {
