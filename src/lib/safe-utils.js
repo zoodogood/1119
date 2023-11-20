@@ -7,7 +7,7 @@ import {
   GlitchText,
   rangeToArray,
   getRandomElementFromArray,
-  DotNotatedInterface
+  DotNotatedInterface,
 } from "@zoodogood/utils/objectives";
 import dayjs from "dayjs";
 import yaml from "yamljs";
@@ -44,7 +44,7 @@ function sleep(ms) {
 
 function random(...params) {
   let lastArgument = params.splice(-1).at(-1);
-  let options = { round: true };
+  const options = { round: true };
 
   if (typeof lastArgument === "object") {
     Object.assign(options, lastArgument);
@@ -63,7 +63,7 @@ function random(...params) {
 
 function match(string = "", regular, flags) {
   const reg = RegExp(regular, flags);
-  let find = string.match(reg);
+  const find = string.match(reg);
   return find ? find[0] : null;
 }
 
