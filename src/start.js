@@ -409,7 +409,7 @@ async function eventHundler(message) {
 
     Util.addResource({
       user,
-      source: "events.messageCreate.getExperienceFromMessage",
+      source: "event.messageCreate.getExperienceFromMessage",
       value: 1,
       executor: user,
       resource: PropertiesEnum.exp,
