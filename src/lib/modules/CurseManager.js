@@ -677,7 +677,16 @@ class CurseManager {
     const toString = () => {
       const curseBase = CurseManager.cursesBase.get(curse.id);
 
-      const description = curseBase.description;
+      if ("toString" in curseBase) {
+        return curseBase.toString(user, curse);
+      }
+
+      const description = (() => {
+        const { description } = curseBase;
+        return typeof description === "function"
+          ? description(user, curse)
+          : description;
+      })();
       const progressContent = curse.values.goal
         ? `Прогресс: ${curse.values.progress || 0}/${curse.values.goal}`
         : `Прогресс: ${curse.values.progress || 0}`;
