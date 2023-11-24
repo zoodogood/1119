@@ -27,7 +27,7 @@ class ActionManager {
         }
 
         if (
-          QuestManager.questsBase.get(userData.quest.id).handler === actionName
+          QuestManager.questsBase.get(userData.quest.id)?.handler === actionName
         ) {
           const questId = userData.quest.id;
           const questBase = QuestManager.questsBase.get(questId);
