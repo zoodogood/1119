@@ -701,15 +701,8 @@ Discord.Message.prototype.awaitReact = async function (options, ...reactions) {
 
   if (options.removeType === "all") this.reactions.removeAll().catch(() => {});
   if (options.removeType === "one")
-    reaction.users
-      .remove(options.user)
-      .removeAll()
-      .catch(() => {});
-  if (options.removeType === "full")
-    reaction
-      .remove()
-      .removeAll()
-      .catch(() => {});
+    reaction.users.remove(options.user).catch(() => {});
+  if (options.removeType === "full") reaction.remove().catch(() => {});
 
   return reaction.emoji.id ?? reaction.emoji.name;
 };
