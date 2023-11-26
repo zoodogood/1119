@@ -17,5 +17,8 @@
 		"*.json.example": "json",
 		"*.jsonc.example": "jsonc",
 		"*.backup": "jsonc"
-	 },
+	},
+	"[yaml]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
 }
