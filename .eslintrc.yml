@@ -17,3 +17,9 @@ rules:
   eqeqeq: 
     - error
     - always
+  no-constant-condition:
+    - off
+  prefer-const: 
+    - error
+  no-fallthrough: 
+    - off
