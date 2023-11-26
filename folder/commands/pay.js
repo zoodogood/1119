@@ -1,29 +1,92 @@
+import { ActionsMap } from "#constants/enums/actionsMap.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
 
 class Command {
-  async onChatInput(msg, interaction) {
-    const memb = interaction.mention;
-    interaction.params = interaction.params.replace(
-      new RegExp(`<@!?${memb.id}>`),
-      "",
-    );
+  RESOURCES_MAP = [
+    {
+      resource: "coins",
+      names: "coins coin коин коинов коина коины монет монету монеты монета",
+      gives: (n) =>
+        `${Util.ending(n, "коин", "ов", "", "а")} <:coin:637533074879414272>`,
+    },
 
-    let num = interaction.params.match(/\d+|\+/);
+    {
+      resource: "void",
+      names:
+        "void камень камня камней нестабильность камни нестабильности нест н",
+      gives: (n) =>
+        `${Util.ending(n, "кам", "ней", "ень", "ня")} нестабильности`,
+    },
 
-    if (!num) {
-      msg.msg({
+    {
+      resource: "chestBonus",
+      names:
+        "bonus chest бонус бонусов бонуса бонусы сундук сундука сундуки сундуков б с",
+      gives: (n) => `${Util.ending(n, "бонус", "ов", "", "а")} сундука`,
+    },
+
+    {
+      resource: "chilli",
+      names: "chilli перец перца перцев перцы",
+      gives: (n) => Util.ending(n, "пер", "цев", "ец", "ца"),
+    },
+
+    {
+      resource: "keys",
+      names: "keys key ключ ключей ключа ключи k к",
+      gives: (n) => Util.ending(n, "ключ", "ей", "", "а"),
+    },
+
+    {
+      resource: "berrys",
+      names: "клубника клубник клубники berrys berry ягод ягода ягоды",
+      gives: (n) => Util.ending(n, "клубник", "", "а", "и"),
+    },
+
+    {
+      resource: "monster",
+      names: "monster монстр монстра монстров монстры",
+      gives: (n) => Util.ending(n, "монстр", "ов", "", "а"),
+    },
+  ];
+
+  getContext(interaction) {
+    let { params } = interaction;
+    const { mention } = interaction;
+    params = params.replace(new RegExp(`<@!?${mention.id}>`), "");
+
+    const event = new Event("command.pay", { cancelable: true });
+    const numeric = params.match(/\d+|\+/)?.[0];
+    if (!numeric) {
+      interaction.channel.msg({
         title: "Вы не ввели значение. Ожидается сумма передачи.",
         color: "#ff0000",
       });
-      return;
+      return null;
     }
 
-    num = num[0];
-    interaction.params = interaction.params.replace(num, "").trim();
+    params = params.replace(numeric, "").trim();
+    const [itemName, ...messageParam] = params.split(" ");
+    const missive = messageParam;
 
-    const [itemName, ...messageParam] = interaction.params.split(" ");
-    let message = messageParam;
+    const context = {
+      event,
+      interaction,
+      itemNameRaw: itemName,
+      missiveRaw: missive,
+      numericRaw: numeric,
+      memb: mention,
+    };
+    return context;
+  }
+
+  async onChatInput(msg, interaction) {
+    const context = this.getContext(interaction);
+    if (!context) {
+      return;
+    }
+    const { missiveRaw, itemNameRaw, numericRaw, memb } = context;
 
     if (memb.bot) {
       msg.msg({ title: "Вы не можете передать что-либо боту" });
@@ -42,76 +105,41 @@ class Command {
 
     if (memb === interaction.user) {
       msg.msg({
-        title: `${msg.author.username} попытался наколдовать немного ресурсов (${num} ❔) — безуспешно.`,
+        title: `${msg.author.username} попытался наколдовать немного ресурсов (${numeric} ❔) — безуспешно.`,
       });
       return;
     }
 
-    const RESOURCES = [
-      {
-        resource: "coins",
-        names: "coins coin коин коинов коина коины монет монету монеты монета",
-        gives: (n) =>
-          `${Util.ending(n, "коин", "ов", "", "а")} <:coin:637533074879414272>`,
-      },
+    const resourcesMap = this.RESOURCES_MAP;
+    let missive = missiveRaw;
+    const item =
+      resourcesMap.find((obj) =>
+        obj.names.split(" ").includes(itemNameRaw.toLowerCase()),
+      ) ||
+      (() => {
+        const DEFAULT = 0;
+        missive = [itemNameRaw, ...missive];
+        return resourcesMap[DEFAULT];
+      })();
 
-      {
-        resource: "void",
-        names:
-          "void камень камня камней нестабильность камни нестабильности нест н",
-        gives: (n) =>
-          `${Util.ending(n, "кам", "ней", "ень", "ня")} нестабильности`,
-      },
+    const resource = item.resource;
 
-      {
-        resource: "chestBonus",
-        names:
-          "bonus chest бонус бонусов бонуса бонусы сундук сундука сундуки сундуков б с",
-        gives: (n) => `${Util.ending(n, "бонус", "ов", "", "а")} сундука`,
-      },
+    missive = missive.join(" ");
 
-      {
-        resource: "chilli",
-        names: "chilli перец перца перцев перцы",
-        gives: (n) => Util.ending(n, "пер", "цев", "ец", "ца"),
-      },
+    const numeric = (() => {
+      let value = numericRaw;
+      if (numericRaw === "+") {
+        value = +interaction.userData[resource];
+      }
+      value = Math.floor(value);
 
-      {
-        resource: "keys",
-        names: "keys key ключ ключей ключа ключи k к",
-        gives: (n) => Util.ending(n, "ключ", "ей", "", "а"),
-      },
+      if (isNaN(value)) {
+        value = 0;
+      }
+      return value;
+    })();
 
-      {
-        resource: "berrys",
-        names: "клубника клубник клубники berrys berry ягод ягода ягоды",
-        gives: (n) => Util.ending(n, "клубник", "", "а", "и"),
-      },
-
-      {
-        resource: "monster",
-        names: "monster монстр монстра монстров монстры",
-        gives: (n) => Util.ending(n, "монстр", "ов", "", "а"),
-      },
-    ];
-
-    let resourceData = RESOURCES.find((obj) =>
-      obj.names.split(" ").includes(itemName.toLowerCase()),
-    );
-    if (!resourceData) {
-      message = [itemName, ...message];
-      resourceData = RESOURCES[0];
-    }
-    const resource = resourceData.resource;
-
-    message = message.join(" ");
-
-    if (num === "+") {
-      num = +interaction.userData[resource];
-    }
-    num = Math.floor(num);
-
-    if (num < 0) {
+    if (numeric < 0) {
       msg.msg({
         title:
           "Введено отрицательное значение.\n<:grempen:753287402101014649> — Укушу.",
@@ -119,15 +147,11 @@ class Command {
       return;
     }
 
-    if (isNaN(num)) {
-      num = 0;
-    }
-
-    if ((interaction.userData[resource] || 0) < num) {
+    if ((interaction.userData[resource] || 0) < numeric) {
       const description = Discord.escapeMarkdown(msg.content);
       msg.msg({
-        title: `Нужно ещё ${resourceData.gives(
-          num - interaction.userData[resource],
+        title: `Нужно ещё ${item.gives(
+          numeric - interaction.userData[resource],
         )}`,
         description,
         delete: 12000,
@@ -135,30 +159,42 @@ class Command {
       return;
     }
 
+    interaction.user.action(ActionsMap.beforeResourcePayed, context);
+    memb.action(ActionsMap.beforeResourcePayed, context);
+
+    if (context.event.defaultPrevented) {
+      interaction.channel.msg({
+        description:
+          "Сделка заблокированна внешним эффектом, применнёным на одного из участников.\nСписок эффектов может быть просмотрен с около базовыми навыками работы с !eval",
+        color: "#ff0000",
+      });
+      return;
+    }
+
     Util.addResource({
       user: interaction.user,
-      value: -num,
+      value: -numeric,
       executor: interaction.user,
       source: "command.pay",
       resource,
-      context: { interaction },
+      context: { interaction, context },
     });
 
     Util.addResource({
       user: memb,
-      value: num,
+      value: numeric,
       executor: interaction.user,
       source: "command.pay",
       resource,
-      context: { interaction },
+      context: { interaction, context },
     });
 
     msg.msg({
       description:
-        `${msg.author.username} отправил ${resourceData.gives(
-          num,
+        `${msg.author.username} отправил ${item.gives(
+          numeric,
         )} для ${memb.toString()}` +
-        (message ? `\nС сообщением:\n${message}` : ""),
+        (missive ? `\nС сообщением:\n${missive}` : ""),
       author: { name: "Передача", iconURL: msg.author.avatarURL() },
     });
   }
