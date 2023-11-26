@@ -1125,7 +1125,7 @@ class BossManager {
 		const sendReward = ([id, userStats]) => {
 			const user = usersCache.get(id);
 			const rewardPull = createRewardPull({bonuses: false, userStats, level: boss.level});
-			reward.void = (reward.void || 0) + 1;
+			rewardPull.void = (rewardPull.void || 0) + 1;
 			for (const [resource, value] of Object.entries(rewardPull)) {
 				user.action(Actions.resourceChange, {
 					value,
