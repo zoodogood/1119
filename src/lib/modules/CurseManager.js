@@ -428,7 +428,7 @@ class CurseManager {
         hard: 0,
         values: {
           goal: () => 1,
-          timer: () => 3_600_000 * 24,
+          timer: () => 86_400_000,
         },
         callback: {
           curseTimeEnd: (user, curse, data) => {
@@ -439,7 +439,7 @@ class CurseManager {
             data.event.preventDefault();
             CurseManager.interface({ user, curse }).success();
           },
-          beforeBagInteracted: (context) => {
+          beforeBagInteracted: (user, curse, context) => {
             context.preventDefault();
           },
         },
@@ -775,6 +775,59 @@ class CurseManager {
               context: { curse, data },
               source: "curseManager.events.greedyChest",
             });
+          },
+        },
+        reward: 15,
+        interactionIsShort: true,
+      },
+      {
+        _weight: 1,
+        id: "independent",
+        hard: 1,
+        description: "Накопите коины, передача ресурсов заблокирована",
+        values: {
+          timer: () => 86_400_000,
+          progress: (user) => user.data.coins,
+          goal: (user) => user.data.coins + 2000,
+        },
+        callback: {
+          resourceChange: (user, curse, data) => {
+            if (data.resource !== PropertiesEnum.coins) {
+              return;
+            }
+            const { coins } = user.data;
+            CurseManager.interface({ curse, user }).setProgress(coins);
+          },
+          beforeResourcePayed: (user, curse, context) => {
+            context.event.preventDefault();
+          },
+          berryBarter: (user, curse, context) => {
+            context.event.preventDefault();
+          },
+        },
+        reward: 15,
+        interactionIsShort: true,
+      },
+      {
+        _weight: 1,
+        id: "itAllBag",
+        hard: 1,
+        description:
+          "По завершении проклятия вы потеряете все свои коины, опыт, ключи",
+        values: {
+          timer: () => 86_400_000,
+        },
+        callback: {
+          curseTimeEnd: (user, curse, target) => {
+            if (target.curse !== curse) {
+              return;
+            }
+            const userData = user.data;
+            userData.coins = 0;
+            userData.keys = 0;
+            userData.exp = 0;
+            target.event.preventDefault();
+            CurseManager.removeCurse({ user, curse });
           },
         },
         reward: 15,
