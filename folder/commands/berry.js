@@ -95,7 +95,7 @@ class Command {
     context.marketPrice = DataManager.data.bot.berrysPrice = Math.max(
       DataManager.data.bot.berrysPrice +
         quantity * context.INFLATION * negativeCoefficient,
-      0
+      0,
     );
     interaction.channel.msg({
       title:
@@ -109,7 +109,7 @@ class Command {
       interaction,
       isBuying,
       price,
-      channel: interaction.channel
+      channel: interaction.channel,
     });
   }
 
@@ -121,7 +121,7 @@ class Command {
     interaction.channel.msg({
       title: "Клубника пользователя",
       description: `Клубничек — **${berrys}** <:berry:756114492055617558>\nРыночная цена — **${Math.round(
-        marketPrice
+        marketPrice,
       )}** <:coin:637533074879414272>`,
       author: {
         name: user.tag,
@@ -131,7 +131,7 @@ class Command {
         text: `Общая цена ягодок: ${Command.calculatePrice(
           berrys,
           marketPrice,
-          -1
+          -1,
         )}`,
       },
     });
@@ -162,10 +162,10 @@ class Command {
       description: `У вас клубничек — **${
         userData.berrys
       }** <:berry:756114492055617558>\nРыночная цена — **${Math.round(
-        marketPrice
+        marketPrice,
       )}** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${Command.calculatePrice(
         userData.berrys,
-        marketPrice
+        marketPrice,
       )} (с учётом налога ${
         context.TAX * 100
       }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`,
@@ -217,58 +217,58 @@ class Command {
       const react = await message.awaitReact(
         { user: msg.author, removeType: "all" },
         "📥",
-        "📤"
+        "📤",
       );
       let answer, _questionMessage, maxCount;
 
       switch (react) {
-      case "📥":
-        if (userData.berrys >= context.MAX_LIMIT) {
-          interaction.channel.msg({
-            title: `Вы не можете купить больше. Лимит ${context.MAX_LIMIT}`,
-            color: "#ff0000",
-            delete: 5000,
-          });
-          break;
-        }
+        case "📥":
+          if (userData.berrys >= context.MAX_LIMIT) {
+            interaction.channel.msg({
+              title: `Вы не можете купить больше. Лимит ${context.MAX_LIMIT}`,
+              color: "#ff0000",
+              delete: 5000,
+            });
+            break;
+          }
 
-        maxCount = Command.getMaxCountForBuy(
-          userData.coins,
-          context.marketPrice
-        );
+          maxCount = Command.getMaxCountForBuy(
+            userData.coins,
+            context.marketPrice,
+          );
 
-        maxCount = Math.min(maxCount, context.MAX_LIMIT - userData.berrys);
-        _questionMessage = await interaction.channel.msg({
-          title: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(
-            2
-          )}) ед. <:berry:756114492055617558>`,
-          description:
+          maxCount = Math.min(maxCount, context.MAX_LIMIT - userData.berrys);
+          _questionMessage = await interaction.channel.msg({
+            title: `Сколько клубник вы хотите купить?\nПо нашим расчётам, вы можете приобрести до (${maxCount.toFixed(
+              2,
+            )}) ед. <:berry:756114492055617558>`,
+            description:
               "[Посмотреть способ расчёта](https://pastebin.com/t7DerPQm)",
-        });
-        answer = await msg.channel.awaitMessage({ user: msg.author });
-        _questionMessage.delete();
+          });
+          answer = await msg.channel.awaitMessage({ user: msg.author });
+          _questionMessage.delete();
 
-        if (!answer) {
+          if (!answer) {
+            break;
+          }
+
+          this.exchanger(context, answer.content, true);
           break;
-        }
+        case "📤":
+          _questionMessage = await interaction.channel.msg({
+            title: "Укажите колич-во клубничек на продажу",
+          });
+          answer = await msg.channel.awaitMessage({ user: msg.author });
+          _questionMessage.delete();
 
-        this.exchanger(context, answer.content, true);
-        break;
-      case "📤":
-        _questionMessage = await interaction.channel.msg({
-          title: "Укажите колич-во клубничек на продажу",
-        });
-        answer = await msg.channel.awaitMessage({ user: msg.author });
-        _questionMessage.delete();
+          if (!answer) {
+            break;
+          }
 
-        if (!answer) {
+          this.exchanger(context, answer.content, false);
           break;
-        }
-
-        this.exchanger(context, answer.content, false);
-        break;
-      default:
-        return message.delete();
+        default:
+          return message.delete();
       }
     }
   }
@@ -278,7 +278,7 @@ class Command {
     id: 27,
     media: {
       description:
-        "\n\nКлубника — яркий аналог золотых слитков, цена которых зависит от спроса.\nЧерез эту команду осуществляется её покупка и продажа, тут-же можно увидеть курс.\n\n✏️\n```python\n!berry <\"продать\" | \"купить\"> <count>\n```\n\n",
+        '\n\nКлубника — яркий аналог золотых слитков, цена которых зависит от спроса.\nЧерез эту команду осуществляется её покупка и продажа, тут-же можно увидеть курс.\n\n✏️\n```python\n!berry <"продать" | "купить"> <count>\n```\n\n',
     },
     allias: "клубника клубнички ягода ягоды berrys берри полуниця полуниці",
     allowDM: true,
