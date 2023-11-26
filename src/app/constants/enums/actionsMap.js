@@ -4,6 +4,7 @@ const ActionsMap = {
 
   // User
   beforeProfileDisplay: "beforeProfileDisplay",
+  beforeResourcePayed: "beforeResourcePayed",
   casinoSession: "casinoSession",
   coinFromMessage: "coinFromMessage",
   likedTheUser: "likedTheUser",
