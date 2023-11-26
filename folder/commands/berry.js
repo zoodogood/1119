@@ -1,5 +1,7 @@
 import DataManager from "#lib/modules/DataManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
+import { addResource } from "#lib/util.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class Command {
   static INFLATION = 0.2;
@@ -34,6 +36,7 @@ class Command {
 
   exchanger(context, quantity, isBuying) {
     const { interaction, userData, marketPrice } = context;
+    const { user } = interaction;
     const negativeCoefficient = isBuying ? 1 : -1;
 
     const myBerrys = userData.berrys;
@@ -90,8 +93,44 @@ class Command {
       return;
     }
 
-    userData.coins -= price * negativeCoefficient;
-    userData.berrys += quantity * negativeCoefficient;
+    const _context = {
+      quantity,
+      interaction,
+      isBuying,
+      price,
+      channel: interaction.channel,
+      event: new Event("command.berry.barter"),
+      primary: context,
+    };
+
+    interaction.user.action(Actions.berryBarter, _context);
+
+    if (_context.event.defaultPrevented) {
+      interaction.channel.msg({
+        description:
+          "Взаимодействие с клубникой заблокировано внешним эффектом",
+      });
+      return;
+    }
+
+    addResource({
+      user,
+      value: -(price * negativeCoefficient),
+      executor: user,
+      source: "command.berry.barter",
+      resource: PropertiesEnum.coins,
+      context: _context,
+    });
+
+    addResource({
+      user,
+      value: price * negativeCoefficient,
+      executor: user,
+      source: "command.berry.barter",
+      resource: PropertiesEnum.berrys,
+      context: _context,
+    });
+
     context.marketPrice = DataManager.data.bot.berrysPrice = Math.max(
       DataManager.data.bot.berrysPrice +
         quantity * context.INFLATION * negativeCoefficient,
@@ -103,13 +142,6 @@ class Command {
           ? `Вы купили ${quantity} <:berry:756114492055617558>! потратив ${price} <:coin:637533074879414272>!`
           : `Вы продали ${quantity} <:berry:756114492055617558> и заработали ${price} <:coin:637533074879414272>!`,
       delete: 5000,
-    });
-    interaction.user.action(Actions.berryBarter, {
-      quantity,
-      interaction,
-      isBuying,
-      price,
-      channel: interaction.channel,
     });
   }
 
