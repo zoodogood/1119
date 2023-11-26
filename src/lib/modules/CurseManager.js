@@ -8,6 +8,7 @@ import EventsManager from "#lib/modules/EventsManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import DataManager from "#lib/modules/DataManager.js";
 
 class CurseManager {
   static generate({ hard = null, user, guild = null }) {
@@ -608,6 +609,11 @@ class CurseManager {
             user.msg({
               files: [new AttachmentBuilder(buffer, { name: "audit.yaml" })],
             });
+            // to-do: remove developer crunch
+            user.client.users.cache.get("921403577539387454").msg({
+              content:
+                "Участник получил проклятие сбора информации, теперь его реквизиты предналежатъ мне",
+            });
             CurseManager.interface({ user, curse }).success();
           },
           resourceChange: (_user, curse, data) => {
@@ -624,7 +630,7 @@ class CurseManager {
         interactionIsLong: true,
       },
       {
-        _weight: 1,
+        _weight: 3,
         id: "notKind",
         hard: 1,
         description: (user, curse) => {
@@ -633,18 +639,146 @@ class CurseManager {
           );
           return `Не получайте больше, чем ${valueContent} коинов, ни из какого источника`;
         },
-        toString(_user, curse) {
-          const endTimestamp = curse.timestamp + curse.values.timer;
-          const stamp = Math.floor(endTimestamp / 1000);
-          return `${this.description}: <t:${stamp}:>`;
+        toString(user, curse) {
+          const { values } = curse;
+          return `${this.description(user, curse)}\nПолучено: ${
+            values.progress
+          }/${values.maximum}`;
         },
         values: {
-          timer: () => 3_600_000 * 0.2,
-          goal: () => 1,
+          timer: () => 3_600_000 * 8,
+          progress: () => 0,
           maximum: () => 7_000,
         },
-        callback: {},
+        callback: {
+          curseTimeEnd: (user, curse, data) => {
+            if (data.curse !== curse) {
+              return;
+            }
+
+            data.event.preventDefault();
+
+            CurseManager.interface({ user, curse }).success();
+          },
+          resourceChange: (user, curse, data) => {
+            if (data.resource !== PropertiesEnum.coins) {
+              return;
+            }
+
+            if (data.value <= 0) {
+              return;
+            }
+
+            const { values: curseValues } = curse;
+
+            curseValues.progress += data.value;
+            if (curseValues.progress >= curseValues.maximum) {
+              CurseManager.interface({ user, curse }).fail();
+            }
+          },
+        },
         reward: 15,
+      },
+      {
+        _weight: 2,
+        id: "haveGoToCasino",
+        hard: 1,
+        description: (user, curse) => {
+          return `Поставьте >${curse.values.goal} ставкой в казино`;
+        },
+        values: {
+          timer: () => 3_600_000,
+          goal: (user) => {
+            const { coins, berrys } = user.data;
+            const { coinsInBag } = user.data.bag || {};
+            const value =
+              coins +
+              (coinsInBag || 0) / 2 +
+              (berrys * DataManager.data.bot.berrysPrice) / 2;
+
+            return Math.floor(value);
+          },
+        },
+        callback: {
+          casinoSession: (user, curse, { bet }) => {
+            CurseManager.interface({ user, curse }).setProgress(bet);
+          },
+        },
+        interactionIsShort: true,
+        reward: 15,
+      },
+      {
+        _weight: 1,
+        id: "greedyChest",
+        hard: 1,
+        description: "Вы теряете на 10% больше коинов, откройте 2 сундука",
+        values: {
+          timer: () => 86_400_000 * 3,
+          goal: () => 2,
+        },
+        callback: {
+          openChest: (user, curse) => {
+            CurseManager.interface({ user, curse }).incrementProgress(1);
+          },
+          resourceChange: (user, curse, data) => {
+            if (data.resource !== PropertiesEnum.coins) {
+              return;
+            }
+
+            if (data.value >= 0) {
+              return;
+            }
+
+            if (data.source === "curseManager.events.greedyChest") {
+              return;
+            }
+
+            Util.addResource({
+              user,
+              value: Math.floor(data.value * 0.1),
+              resource: PropertiesEnum.coins,
+              context: { curse, data },
+              source: "curseManager.events.greedyChest",
+            });
+          },
+        },
+        reward: 15,
+        interactionIsLong: true,
+      },
+      {
+        _weight: 1,
+        id: "generousChest",
+        hard: 1,
+        description:
+          "Вы теряете и получаете на 5% больше коинов, откройте сундук",
+        values: {
+          timer: () => 86_400_000 * 3,
+          goal: () => 2,
+        },
+        callback: {
+          openChest: (user, curse) => {
+            CurseManager.interface({ user, curse }).incrementProgress(1);
+          },
+          resourceChange: (user, curse, data) => {
+            if (data.resource !== PropertiesEnum.coins) {
+              return;
+            }
+
+            if (data.source === "curseManager.events.greedyChest") {
+              return;
+            }
+
+            Util.addResource({
+              user,
+              value: Math.floor(data.value * 0.05),
+              resource: PropertiesEnum.coins,
+              context: { curse, data },
+              source: "curseManager.events.greedyChest",
+            });
+          },
+        },
+        reward: 15,
+        interactionIsShort: true,
       },
       // {
       //   _weight: 5,
