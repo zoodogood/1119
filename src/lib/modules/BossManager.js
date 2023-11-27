@@ -465,7 +465,7 @@ class BossEffects {
 					const guild = app.client.guilds.cache.get(effect.guildId);
 
 					const isShortCurse = curseBase => curseBase.interactionIsShort;
-					const curseBase = CurseManager.getGeneratePull(user)
+					const curseBase = CurseManager.getGeneratePull(user, guild ?? null)
 						.filter(isShortCurse)
 						.random({_weights: true});
 
