@@ -59,7 +59,12 @@ class ActionManager {
             const curseBase = CurseManager.cursesBase.get(curse.id);
             try {
               if (actionName in curseBase.callback)
-                curseBase.callback[actionName].call(null, this, curse, data);
+                curseBase.callback[actionName].call(
+                  curseBase,
+                  this,
+                  curse,
+                  data,
+                );
             } catch (error) {
               ErrorsHandler.Audit.push(error, {
                 actionName,
