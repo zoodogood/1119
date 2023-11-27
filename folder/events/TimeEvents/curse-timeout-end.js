@@ -1,34 +1,31 @@
-import { client } from '#bot/client.js';
-import {CurseManager} from '#lib/modules/mod.js';
-
+import { client } from "#bot/client.js";
+import { CurseManager } from "#lib/modules/mod.js";
 
 class Event {
+  run(isLost, userId, timestamp) {
+    const user = client.users.cache.get(userId);
+    if (!user) {
+      return;
+    }
 
-	run(isLost, userId, timestamp){
-		const user = client.users.cache.get(userId);
-		if (!user){
-			return;
-		}
-		
-		const curses = user.data.curses;
-		if (!curses){
-			return;
-		}
-		
-		const compare = curse => curse.timestamp === timestamp;
-		const curse = curses.find(compare);
+    const curses = user.data.curses;
+    if (!curses) {
+      return;
+    }
 
-		if (!curse){
-			return;
-		}
-		
-		CurseManager.checkAvailable({user, curse});
-	}
+    const compare = (curse) => curse.timestamp === timestamp;
+    const curse = curses.find(compare);
 
+    if (!curse) {
+      return;
+    }
 
-	options = {
-		name: "TimeEvent/curse-timeout-end"
-	}
+    CurseManager.checkAvailable({ user, curse });
+  }
+
+  options = {
+    name: "TimeEvent/curse-timeout-end",
+  };
 }
 
 export default Event;
