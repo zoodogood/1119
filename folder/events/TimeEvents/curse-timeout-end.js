@@ -1,4 +1,5 @@
 import { client } from "#bot/client.js";
+import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { CurseManager } from "#lib/modules/mod.js";
 
 class Event {
@@ -9,6 +10,17 @@ class Event {
     }
 
     const curses = user.data.curses;
+    const event = new globalThis.Event("timeEventCurseTimeoutEnd", {
+      cancelable: true,
+    });
+    user.action(ActionsMap.timeEventCurseTimeoutEnd, {
+      isLost,
+      timestamp,
+      event,
+    });
+    if (event.defaultPrevented) {
+      return;
+    }
     if (!curses) {
       return;
     }
