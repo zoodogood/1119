@@ -40,13 +40,11 @@ class Command {
       BASIC: 38,
       MULTIPLAYER: 1.5,
       calculate(user) {
-        const value = (user.data.chestBonus * this.MULTIPLAYER || 0) +
+        const value =
+          (user.data.chestBonus * this.MULTIPLAYER || 0) +
           user.data.voidRituals * this.BONUSES_PER_RITUAL +
           this.BASIC;
-        return Math.min(
-          Math.round(value),
-          this.LIMIT,
-        );
+        return Math.min(Math.round(value), this.LIMIT);
       },
       description(user) {
         return `Мгновенно получите бонус сундука в размере \`${this.calculate(
