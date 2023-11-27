@@ -4,6 +4,20 @@ import { Actions } from "#lib/modules/ActionManager.js";
 class Event {
   run(isLost, userId, timestamp) {
     const user = client.users.cache.get(userId);
+    if (!user) {
+      return;
+    }
+    const event = new globalThis.Event("timeEventCurseTimeoutEnd", {
+      cancelable: true,
+    });
+    user.action(Actions.timeEventBossEffectTimeoutEnd, {
+      isLost,
+      timestamp,
+      event,
+    });
+    if (event.defaultPrevented) {
+      return;
+    }
     const effects = user.data.bossEffects;
 
     const compare = (effect) => effect.timestamp === timestamp;
