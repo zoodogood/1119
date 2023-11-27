@@ -36,6 +36,9 @@ const ActionsMap = {
   curseEnd: "curseEnd",
   curseTimeEnd: "curseTimeEnd",
   curseBeforeSetProgress: "curseBeforeSetProgress",
+  // TimeEventsManager
+  timeEventBossEffectTimeoutEnd: "timeEventBossEffectTimeoutEnd",
+  timeEventCurseTimeoutEnd: "timeEventCurseTimeoutEnd",
   // Other
   resourceChange: "resourceChange",
   callCommand: "callCommand",
