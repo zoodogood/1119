@@ -4,46 +4,55 @@ import { Guild, User } from "discord.js";
 import FileSystem from "fs";
 
 class DataManager {
+  static userToDefaultData(user, id) {
+    return {
+      id: user?.id ?? id,
+      name: user?.username ?? null,
+      coins: 50,
+      level: 1,
+      exp: 0,
+      berrys: 1,
+      chestLevel: 0,
+      void: 0,
+      keys: 0,
+      voidRituals: 0,
+      voidCoins: 0,
+    };
+  }
+
   static getUser(id) {
     const createUser = (id) => {
       const user = app.client.users.cache.get(id);
-      const data = {
-        id: id,
-        name: user?.username ?? null,
-        coins: 50,
-        level: 1,
-        exp: 0,
-        berrys: 1,
-        chestLevel: 0,
-        void: 0,
-        keys: 0,
-        voidRituals: 0,
-        voidCoins: 0,
-      };
+      const data = this.userToDefaultData(user, id);
       this.data.users.push(data);
       return data;
     };
 
-    return this.data.users.find((e) => e.id === id) ?? createUser(id);
+    return this.data.users.find((user) => user.id === id) ?? createUser(id);
   }
+
+  static guildToDefaultData(guild, id) {
+    return {
+      id,
+      name: guild?.name ?? null,
+      day_msg: 0,
+      msg_total: 0,
+      days: 0,
+      commandsLaunched: 0,
+      coins: 0,
+      commandsUsed: {},
+    };
+  }
+
   static getGuild(id) {
     const createGuild = (id) => {
       const guild = app.client.guilds.cache.get(id);
-      const data = {
-        id: id,
-        name: guild?.name ?? null,
-        day_msg: 0,
-        msg_total: 0,
-        days: 0,
-        commandsLaunched: 0,
-        coins: 0,
-        commandsUsed: {},
-      };
+      const data = this.guildToDefaultData(guild, id);
       this.data.guilds.push(data);
       return data;
     };
 
-    return this.data.guilds.find((e) => e.id === id) ?? createGuild(id);
+    return this.data.guilds.find((guild) => guild.id === id) ?? createGuild(id);
   }
   static extendsGlobalPrototypes() {
     const manager = this;
