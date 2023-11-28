@@ -10,6 +10,7 @@ import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { BossEffects } from "#lib/modules/BossManager.js";
+import { RanksUtils } from "#folder/commands/top.js";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -970,40 +971,59 @@ class CurseManager {
         },
         values: {
           timer: () => 86_400_000,
+          goal: () => 1,
           guildId: (_user, _curse, data) => data.guild.id,
+          previousRank: () => null,
         },
         callback: {
           curseTimeEnd(user, curse, target) {
             if (curse !== target.curse) {
               return;
             }
-
-            const userData = user.data;
-            const puppet = userData[this.EFFECT_ID];
-            for (const key of Object.keys(userData)) {
-              delete userData[key];
-            }
-            Object.assign(userData, puppet);
             target.event.preventDefault();
-            CurseManager.interface({ user, curse }).success();
+
+            const { client } = user;
+            const guild = client.guilds.cache.get(curse.values.guildId);
+            const { value: resolver } =
+              RanksUtils.leaderboardTypes.get("coins");
+
+            const pull = RanksUtils.createPullWithResolver(
+              [...guild.members.cache.values()].map((member) => member.user),
+              resolver,
+            );
+
+            const index = RanksUtils.sortAndFilterPullMutable(pull).findIndex(
+              ([target]) => target.id === user.id,
+            );
+
+            if (index === 0) {
+              CurseManager.interface({ curse, user }).success();
+              return;
+            }
+
+            if (index === -1 || curse.values.previousRank <= index) {
+              CurseManager.interface({ curse, user }).fail();
+              return;
+            }
+            CurseManager.interface({ curse, user }).success();
           },
           curseInit(user, curse, target) {
             if (curse !== target.curse) {
               return;
             }
-
-            const userData = user.data;
-            const puppet = { ...userData };
-            const defaults = DataManager.userToDefaultData(user, user.id);
-            for (const key of Object.keys(userData)) {
-              delete userData[key];
-            }
-            Object.assign(userData, defaults);
-            userData.curses ||= [];
-            userData.curses.push(curse);
-            userData.cursesCallbackMap ||= {};
-            userData.cursesCallbackMap.curseTimeEnd = true;
-            userData[this.EFFECT_ID] = puppet;
+            const { client } = user;
+            const guild = client.guilds.cache.get(curse.values.guildId);
+            const { value: resolver } =
+              RanksUtils.leaderboardTypes.get("coins");
+            const pull = RanksUtils.createPullWithResolver(
+              [...guild.members.cache.values()].map((member) => member.user),
+              resolver,
+            );
+            const index = RanksUtils.sortAndFilterPullMutable(pull).findIndex(
+              ([target]) => target.id === user.id,
+            );
+            curse.values.previousRank =
+              index === -1 ? Number.MAX_SAFE_INTEGER : index;
           },
         },
         reward: 15,
