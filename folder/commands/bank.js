@@ -5,6 +5,9 @@ const { addResource } = Util;
 
 class ProfessionsUtils {
   static removeUnavailableProfessions({ guild, professions }) {
+    if (!professions) {
+      return null;
+    }
     for (const id of Object.keys(professions)) {
       !guild.roles.cache.get(id) && delete professions[id];
     }
@@ -339,8 +342,8 @@ class Command {
             Object.keys(data.professions).length
           }/20**\n${data.workersContent}\n\n\`\`\`Доходы: ${
             interaction.guild.memberCount * 2
-          }\nРасходы: ${data.record.expenditure}\n${Util.ending(
-            Object.keys(data.record.salaryTable).length,
+          }\nРасходы: ${data.report.expenditure}\n${Util.ending(
+            Object.keys(data.report.salaryTable).length,
             "пользовател",
             "ей",
             "ь",
