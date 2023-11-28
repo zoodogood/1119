@@ -1135,7 +1135,7 @@ class BossManager {
 					context: {boss, rewardPull}
 				});	
 			}
-			BossManager.BossChest.sendReward(user, rewardPull);
+			BossManager.BonusesChest.sendReward(user, rewardPull);
 		};
 
 		const cleanEffects = (user) => {
