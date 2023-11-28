@@ -9,10 +9,8 @@ import { CreateModal } from "@zoodogood/utils/discordjs";
 import { CustomCollector } from "@zoodogood/utils/objectives";
 import QuestManager from "#lib/modules/QuestManager.js";
 
-class Command {
-  PAGE_SIZE = 15;
-
-  leaderboardTypes = new Collection(
+class RanksUtils {
+  static leaderboardTypes = new Collection(
     Object.entries({
       level: {
         key: "level",
@@ -21,13 +19,13 @@ class Command {
           label: "Уровень",
           emoji: "763767958559391795",
         },
-        value: (element, _context) => {
+        value: (element) => {
           return (
             (element.data.level - 1) * 22.5 * element.data.level +
             element.data.exp
           );
         },
-        display: (element, output, index, _context) => {
+        display: (element, output, index) => {
           const name = `${index + 1}. ${element.username}`;
           const value = `Уровень: **${
             element.data.level
@@ -42,13 +40,13 @@ class Command {
           label: "По богатству",
           emoji: "637533074879414272",
         },
-        value: (element, _context) => {
+        value: (element) => {
           return (
             element.data.coins +
             element.data.berrys * DataManager.data.bot.berrysPrice
           );
         },
-        display: (element, output, index, _context) => {
+        display: (element, output, index) => {
           const name = `${index + 1}. ${element.username}`;
           const value = `— ${element.data.coins} (${Util.NumberFormatLetterize(
             output,
@@ -63,10 +61,10 @@ class Command {
           label: "Количество полученных похвал",
           emoji: "630463177314009115",
         },
-        value: (element, _context) => {
+        value: (element) => {
           return element.data.praiseMe?.length;
         },
-        display: (element, output, index, _context) => {
+        display: (element, output, index) => {
           const name = `${index + 1}. ${element.username}`;
           const value = `— Был похвален ${Util.ending(
             output,
@@ -85,10 +83,10 @@ class Command {
           label: "По грабежам",
           emoji: "🧤",
         },
-        value: (element, _context) => {
+        value: (element) => {
           return element.data.thiefCombo + ~~element.data.thiefWins / 5;
         },
-        display: (element, output, index, _context) => {
+        display: (element, output, index) => {
           const name = `${index + 1}. ${element.username}`;
           const value = `Состояние перчаток: \`${element.data.thiefGloves}|${
             element.data.thiefCombo || 0
@@ -103,10 +101,10 @@ class Command {
           label: "Достижения",
           emoji: "📜",
         },
-        value: (element, _context) => {
+        value: (element) => {
           return element.data.dayQuests;
         },
-        display: (element, output, index, _context) => {
+        display: (element, output, index) => {
           const cup =
             index === 0
               ? "<a:cupZ:806813908241350696> "
@@ -132,7 +130,7 @@ class Command {
           label: "Использования котла",
           emoji: "⚜️",
         },
-        value: (element, _context) => {
+        value: (element) => {
           return element.data.voidRituals;
         },
         display: (element, output, index, context) => {
@@ -178,10 +176,10 @@ class Command {
           label: "Количество бонусов сундука",
           emoji: "805405279326961684",
         },
-        value: (element, context) => {
+        value: (element) => {
           return element.data.chestBonus;
         },
-        display: (element, output, index, context) => {
+        display: (element, output, index) => {
           const name = `${index + 1}. ${element.username}`;
           const value = `0b${output.toString(2)} (${output})`;
           return { name, value };
@@ -189,6 +187,23 @@ class Command {
       },
     }),
   );
+
+  static createPull(users) {
+    return users.map((user) => [user, null]);
+  }
+
+  static createPullWithResolver(users, resolver) {
+    return users.map((user) => [user, resolver(user)]);
+  }
+
+  static sortAndFilterPullMutable(pull) {
+    pull.sortBy("1", true);
+    return pull.filter(([_, value]) => value);
+  }
+}
+
+class Command {
+  PAGE_SIZE = 15;
 
   onComponent(params) {}
 
@@ -222,7 +237,7 @@ class Command {
       [
         {
           type: ComponentType.StringSelect,
-          options: this.leaderboardTypes
+          options: RanksUtils.leaderboardTypes
             .filter(
               (leaderboard) =>
                 !leaderboard.filter || leaderboard.filter(context),
@@ -274,15 +289,14 @@ class Command {
 
   createValuesMap(context) {
     const pull = (context.sortedPull =
-      context.sortedPull ?? context.users.map((user) => [user]));
+      context.sortedPull ?? RanksUtils.createPull(context.users));
 
+    const resolver = context.selected.value;
     for (const entrie of pull) {
-      entrie[1] = context.selected.value(entrie[0], context);
+      entrie[1] = resolver(entrie[0], context);
     }
 
-    pull.sort((a, b) => b.at(1) - a.at(1));
-
-    return pull.filter(([_user, value]) => value);
+    return RanksUtils.sortAndFilterPullMutable(pull);
   }
 
   async onCollect(interaction, context) {
@@ -346,7 +360,7 @@ class Command {
     },
     selectFilter: (interaction, context, responseTo) => {
       const value = interaction.values.at(0);
-      context.selected = this.leaderboardTypes.find(
+      context.selected = RanksUtils.leaderboardTypes.find(
         (leaderboard) => leaderboard.component.value === value,
       );
       context.values = this.createValuesMap(context);
@@ -372,7 +386,7 @@ class Command {
       page: 0,
       guild: interaction.guild,
       boss: interaction.guild.data.boss ?? {},
-      selected: this.leaderboardTypes.at(0),
+      selected: RanksUtils.leaderboardTypes.at(0),
       values: null,
     };
 
@@ -417,3 +431,4 @@ class Command {
 }
 
 export default Command;
+export { RanksUtils };
