@@ -315,7 +315,7 @@ class Command {
       const curse = CurseManager.generate({
         hard: null,
         user: interaction.user,
-        guild: interaction.guild,
+        context: { guild: interaction.guild, interaction },
       });
 
       CurseManager.init({ user: interaction.user, curse });
