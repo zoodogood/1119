@@ -9,29 +9,30 @@ import QuestManager from "#lib/modules/QuestManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import DataManager from "#lib/modules/DataManager.js";
+import { BossEffects } from "#lib/modules/BossManager.js";
 
 class CurseManager {
-  static generate({ hard = null, user, guild = null }) {
+  static generate({ hard = null, user, context }) {
     const MAXIMAL_HARD = 2;
     if (hard > MAXIMAL_HARD) {
       hard = MAXIMAL_HARD;
     }
 
-    const curseBase = this.getGeneratePull(user, guild)
+    const curseBase = this.getGeneratePull(user, context)
       .filter((curseBase) => hard === null || curseBase.hard === hard)
       .random({ weights: true });
 
-    const curse = this.generateOfBase({ user, curseBase });
+    const curse = this.generateOfBase({ user, curseBase, context });
     return curse;
   }
 
-  static getGeneratePull(user, guild = null) {
+  static getGeneratePull(user, context) {
     return [...CurseManager.cursesBase.values()].filter(
-      (curseBase) => !curseBase.filter || curseBase.filter(user, guild),
+      (curseBase) => !curseBase.filter || curseBase.filter(user, context),
     );
   }
 
-  static generateOfBase({ curseBase, user }) {
+  static generateOfBase({ curseBase, user, context }) {
     const curse = {
       id: curseBase.id,
       values: {},
@@ -39,7 +40,7 @@ class CurseManager {
     };
 
     Object.entries(curseBase.values).forEach(
-      ([key, callback]) => (curse.values[key] = callback(user, curse)),
+      ([key, callback]) => (curse.values[key] = callback(user, curse, context)),
     );
 
     return curse;
@@ -739,6 +740,7 @@ class CurseManager {
               resource: PropertiesEnum.coins,
               context: { curse, data },
               source: "curseManager.events.greedyChest",
+              executor: null,
             });
           },
         },
@@ -774,6 +776,7 @@ class CurseManager {
               resource: PropertiesEnum.coins,
               context: { curse, data },
               source: "curseManager.events.greedyChest",
+              executor: null,
             });
           },
         },
@@ -823,15 +826,189 @@ class CurseManager {
               return;
             }
             const userData = user.data;
-            userData.coins = 0;
-            userData.keys = 0;
-            userData.exp = 0;
+            for (const resource of [
+              PropertiesEnum.coins,
+              PropertiesEnum.keys,
+              PropertiesEnum.exp,
+            ]) {
+              Util.addResource({
+                user,
+                value: -userData[resource],
+                resource,
+                executor: null,
+                source: "curseManager.events.itAllBag",
+              });
+            }
             target.event.preventDefault();
             CurseManager.removeCurse({ user, curse });
           },
         },
         reward: 15,
         interactionIsShort: true,
+      },
+      {
+        _weight: 1,
+        id: "pointOfNoReturn",
+        hard: 2,
+        description:
+          "Таймер трёх проклятий должен пройти. В случае провала, вы теряете все ресурсы",
+        values: {
+          timer: () => 86_400_000 * 100,
+          goal: () => 3,
+        },
+        callback: {
+          curseTimeEnd: (user, curse, target) => {
+            if (target.curse !== curse) {
+              CurseManager.interface({ curse, user }).incrementProgress(1);
+              return;
+            }
+
+            const userData = user.data;
+            for (const resource of [
+              PropertiesEnum.coins,
+              PropertiesEnum.keys,
+              PropertiesEnum.exp,
+              PropertiesEnum.level,
+              PropertiesEnum.berrys,
+              PropertiesEnum.void,
+              PropertiesEnum.chestBonus,
+            ]) {
+              Util.addResource({
+                user,
+                value: -userData[resource],
+                resource,
+                executor: null,
+                source: "curseManager.events.pointOfNoReturn",
+              });
+            }
+          },
+        },
+        reward: 15,
+        filter: (user) => user.data.voidFreedomCurse,
+      },
+      {
+        _weight: 1,
+        id: "pacifier",
+        hard: 1,
+        EFFECT_ID: "curseManager.events.pacifier",
+        description: "На время заменяет ваш профиль пустышкой",
+        values: {
+          timer: () => 86_400_000,
+        },
+        callback: {
+          curseTimeEnd(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+
+            const userData = user.data;
+            const puppet = userData[this.EFFECT_ID];
+            for (const key of Object.keys(userData)) {
+              delete userData[key];
+            }
+            Object.assign(userData, puppet);
+            target.event.preventDefault();
+            CurseManager.interface({ user, curse }).success();
+          },
+          curseInit(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+
+            const userData = user.data;
+            const puppet = { ...userData };
+            const defaults = DataManager.userToDefaultData(user, user.id);
+            for (const key of Object.keys(userData)) {
+              delete userData[key];
+            }
+            Object.assign(userData, defaults);
+            userData.curses ||= [];
+            userData.curses.push(curse);
+            userData.cursesCallbackMap ||= {};
+            userData.cursesCallbackMap.curseTimeEnd = true;
+            userData[this.EFFECT_ID] = puppet;
+          },
+          timeEventBossEffectTimeoutEnd(user, curse, data) {
+            const userData = user.data;
+            const puppet = userData[this.EFFECT_ID];
+
+            const compare = (effect) => effect.timestamp === data.timestamp;
+            const target = (puppet.bossEffects || []).find(compare);
+            if (!curse) {
+              return;
+            }
+            BossEffects.removeEffect({ effect: target, user });
+            data.event.preventDefault();
+          },
+          timeEventCurseTimeoutEnd: (user, curse, data) => {
+            if (curse.timestamp === data.timestamp) {
+              return;
+            }
+            const userData = user.data;
+            const puppet = userData[this.EFFECT_ID];
+
+            const compare = (curse) => curse.timestamp === data.timestamp;
+            const target = (puppet.curses || []).find(compare);
+            if (!curse) {
+              return;
+            }
+            CurseManager.removeCurse({ user, curse: target });
+            data.event.preventDefault();
+          },
+        },
+        reward: 15,
+        filter: (user) => user.data.level > 30,
+      },
+      {
+        _weight: 1,
+        id: "toTheTop",
+        hard: 1,
+        description: (user, curse) => {
+          const { client } = user;
+          const { name } = client.guilds.cache.get(curse.values.guildId);
+          return `Поднимитесь в топе по богатству на "${name}" хотя бы на один ранг и дождитесь конца проклятия`;
+        },
+        values: {
+          timer: () => 86_400_000,
+          guildId: (_user, _curse, data) => data.guild.id,
+        },
+        callback: {
+          curseTimeEnd(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+
+            const userData = user.data;
+            const puppet = userData[this.EFFECT_ID];
+            for (const key of Object.keys(userData)) {
+              delete userData[key];
+            }
+            Object.assign(userData, puppet);
+            target.event.preventDefault();
+            CurseManager.interface({ user, curse }).success();
+          },
+          curseInit(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+
+            const userData = user.data;
+            const puppet = { ...userData };
+            const defaults = DataManager.userToDefaultData(user, user.id);
+            for (const key of Object.keys(userData)) {
+              delete userData[key];
+            }
+            Object.assign(userData, defaults);
+            userData.curses ||= [];
+            userData.curses.push(curse);
+            userData.cursesCallbackMap ||= {};
+            userData.cursesCallbackMap.curseTimeEnd = true;
+            userData[this.EFFECT_ID] = puppet;
+          },
+        },
+        reward: 15,
+        interactionIsShort: true,
+        filter: (user, guild) => guild,
       },
       // {
       //   _weight: 5,
