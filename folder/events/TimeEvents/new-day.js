@@ -22,12 +22,13 @@ class DailyAudit {
       riches:
         Data.users.reduce((acc, { coins }) => acc + ~~coins, 0) +
         Data.guilds.reduce((acc, { coins }) => acc + ~~coins, 0),
+      bossDamageToday: Data.bot.bossDamageToday,
     };
   }
 
   static assign(day, data) {
-    const Data = DataManager.data;
-    Data.dailyAudit[day] = data;
+    const Data = DataManager.data.audit;
+    Data.daily[day] = data;
   }
 
   static update() {
@@ -39,11 +40,11 @@ class DailyAudit {
   }
 
   static cleanProtocol() {
-    const Data = DataManager.data;
+    const Data = DataManager.data.audit;
     const currentDay = Data.bot.currentDay;
-    Object.keys(Data.dailyAudit)
+    Object.keys(Data.daily)
       .filter((day) => currentDay - day > this.AUDIT_LINIT_IN_DAYS)
-      .forEach((day) => delete Data.dailyAudit[day]);
+      .forEach((day) => delete Data.daily[day]);
   }
 
   static cleanDataCollectors() {
@@ -68,7 +69,7 @@ class Event {
       return;
     }
 
-    let next = dayjs().endOf("date").add(1, "second") - Date.now();
+    const next = dayjs().endOf("date").add(1, "second") - Date.now();
     TimeEventsManager.create("new-day", next);
 
     DailyAudit.update();
@@ -78,7 +79,7 @@ class Event {
     Data.bot.currentDay = Util.timestampDay(Date.now());
 
     Data.bot.grempenItems = "";
-    let arr = [
+    const arr = [
       "0",
       "1",
       "2",
@@ -99,12 +100,12 @@ class Event {
       DataManager.data.bot.grempenItems += arr.random({ pop: true });
     }
 
-    let berryRandom = [
+    const berryRandom = [
       { _weight: 10, price: 1 },
       { _weight: 1, price: -7 },
       { _weight: 5, price: 3 },
     ].random({ weights: true }).price;
-    let berryTarget = Math.sqrt(client.users.cache.size / 3) * 7 + 200;
+    const berryTarget = Math.sqrt(client.users.cache.size / 3) * 7 + 200;
     Data.bot.berrysPrice += Math.round(
       (berryTarget - Data.bot.berrysPrice) / 30 + berryRandom,
     );
