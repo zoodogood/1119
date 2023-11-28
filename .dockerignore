@@ -1,13 +1,18 @@
-.env
-src/config.json.js
+# .env
+# src/config.json.js
 
 node_modules/
-data/
-folder/errors/*.json
 build/
-static/articles/
 
-folder/SSLSecret/certificate.crt
-folder/SSLSecret/private.key
-folder/SSLSecret/ca_bundle.crt
+# deprecated
+# static/articles/
+# folder/data/
+# folder/errors/*.json
 
+# folder/!localstorage/
+
+# folder/SSLSecret/certificate.crt
+# folder/SSLSecret/private.key
+# folder/SSLSecret/ca_bundle.crt
+
+yarn-error.log

@@ -1,18 +1,14 @@
-FROM node:19
-ENV DOCKER=1
+FROM node:20
 
 WORKDIR /app
 COPY . .
 
-# RUN curl -fsSL https://bun.sh/install | bash
+ENV IN_CONTAINER=1
 
-RUN npm install -g bun
+RUN yarn
+RUN yarn global add pm2
+RUN yarn build
 
-RUN ls
+CMD [ "pm2-runtime", "start", "index.js", "--output", "./pm2logs", "--error", "./pm2errors", "--name", "1119" ]
 
-RUN cp 
-RUN bun run build
-
-
-CMD [ "bun", "start" ]
 
