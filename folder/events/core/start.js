@@ -71,10 +71,13 @@ class Event extends BaseEvent {
     Data.site.entersToPagesToday ||= 0;
     Data.site.enterToAPI ||= {};
     Data.site.entersToAPI ||= 0;
-    Data.site.entersToPagesAPI ||= 0;
+    Data.site.entersToAPIToday ||= 0;
     Data.bot.bossDamageToday ||= 0;
 
-    Data.dailyAudit ||= {};
+    Data.audit ||= {
+      daily: {},
+      resourcesChanges: {},
+    };
 
     const now = Date.now();
     Data.users.forEach((userData) =>
