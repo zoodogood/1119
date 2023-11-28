@@ -1,5 +1,10 @@
 import { User as DiscordUser } from "discord.js";
-import { CurseManager, QuestManager, ErrorsHandler } from "#lib/modules/mod.js";
+import {
+  CurseManager,
+  QuestManager,
+  ErrorsHandler,
+  DataManager,
+} from "#lib/modules/mod.js";
 import { BossEffects } from "#lib/modules/BossManager.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 
@@ -73,6 +78,14 @@ class ActionManager {
               });
             }
           }
+
+        if (actionName === ActionsMap.resourceChange) {
+          const { source, value } = data;
+          const target = (DataManager.data.audit.resourcesChanges[source] ||=
+            {});
+          target[Math.sign(value)] ||= 0;
+          target[Math.sign(value)] += value;
+        }
 
         /** generalize */
         if (actionName !== ActionManager.Actions.any) {
