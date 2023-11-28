@@ -6,6 +6,16 @@ const Schema = {
     bot: {
       berrysPrice: 0,
       grempenItems: "",
+      commandsUsed: {
+        "": 0,
+      },
+      dayDate: "",
+      currentDay: 0,
+      commandsLaunched: 0,
+      newGuildTimestamp: 0,
+      messagesToday: 0,
+      commandsUsedToday: 0,
+      bossDamageToday: 0,
     },
     guilds: [
       {
@@ -95,6 +105,26 @@ const Schema = {
         cursesCallbackMap: {},
       },
     ],
+    site: {
+      enterToPages: {},
+      entersToPages: 0,
+      entersToPagesToday: 0,
+      enterToAPI: {},
+      entersToAPI: 0,
+      entersToAPIToday: 0,
+    },
+    audit: {
+      daily: {
+        "": {
+          enterToPages: 0,
+          enterToAPI: 0,
+          messages: 0,
+          commandsUsed: 0,
+          riches: 0,
+        },
+        resourcesChanges: {},
+      },
+    },
   },
 };
 
@@ -109,12 +139,27 @@ const Schema = {
  * @property {bot} bot
  * @property {guilds[]} guilds
  * @property {users[]} users
+ * @property {site} site
+ * @property {audit} audit
  */
 
 /**
  * @typedef {object} bot
  * @property {number} berrysPrice
  * @property {string} grempenItems
+ * @property {commandsUsed} commandsUsed
+ * @property {string} dayDate
+ * @property {number} currentDay
+ * @property {number} commandsLaunched
+ * @property {number} newGuildTimestamp
+ * @property {number} messagesToday
+ * @property {number} commandsUsedToday
+ * @property {number} bossDamageToday
+ */
+
+/**
+ * @typedef {object} commandsUsed
+ * @property {number}
  */
 
 /**
@@ -367,6 +412,51 @@ const Schema = {
 
 /**
 * @typedef {object} cursesCallbackMap
+
+*/
+
+/**
+ * @typedef {object} site
+ * @property {enterToPages} enterToPages
+ * @property {number} entersToPages
+ * @property {number} entersToPagesToday
+ * @property {enterToAPI} enterToAPI
+ * @property {number} entersToAPI
+ * @property {number} entersToAPIToday
+ */
+
+/**
+* @typedef {object} enterToPages
+
+*/
+
+/**
+* @typedef {object} enterToAPI
+
+*/
+
+/**
+ * @typedef {object} audit
+ * @property {daily} daily
+ */
+
+/**
+ * @typedef {object} daily
+ * @property {}
+ * @property {resourcesChanges} resourcesChanges
+ */
+
+/**
+ * @typedef {object}
+ * @property {number} enterToPages
+ * @property {number} enterToAPI
+ * @property {number} messages
+ * @property {number} commandsUsed
+ * @property {number} riches
+ */
+
+/**
+* @typedef {object} resourcesChanges
 
 */
 
