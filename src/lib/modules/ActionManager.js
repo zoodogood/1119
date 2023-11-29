@@ -80,9 +80,11 @@ class ActionManager {
           }
 
         if (actionName === ActionsMap.resourceChange) {
-          const { source, value } = data;
-          const target = (DataManager.data.audit.resourcesChanges[source] ||=
-            {});
+          const { source, value, resource } = data;
+          const sourceTarget = (DataManager.data.audit.resourcesChanges[
+            source
+          ] ||= {});
+          const target = (sourceTarget[resource] ||= {});
           target[Math.sign(value)] ||= 0;
           target[Math.sign(value)] += value;
         }
