@@ -51,6 +51,50 @@ class Command {
     },
   ];
 
+  pay(context) {
+    const { interaction, memb } = context;
+    interaction.user.action(ActionsMap.beforeResourcePayed, context);
+    memb.action(ActionsMap.beforeResourcePayed, context);
+
+    const { resource, missive, numeric, item } = context;
+
+    if (context.event.defaultPrevented) {
+      interaction.channel.msg({
+        description:
+          "Сделка заблокированна внешним эффектом, применнёным на одного из участников.\nСписок эффектов может быть просмотрен с около базовыми навыками работы с !eval",
+        color: "#ff0000",
+      });
+      return;
+    }
+
+    Util.addResource({
+      user: interaction.user,
+      value: -numeric,
+      executor: interaction.user,
+      source: "command.pay",
+      resource,
+      context: { interaction, context },
+    });
+
+    Util.addResource({
+      user: memb,
+      value: numeric,
+      executor: interaction.user,
+      source: "command.pay",
+      resource,
+      context: { interaction, context },
+    });
+
+    interaction.channel.msg({
+      description:
+        `${interaction.user.username} отправил ${item.gives(
+          numeric,
+        )} для ${memb.toString()}` +
+        (missive ? `\nС сообщением:\n${missive}` : ""),
+      author: { name: "Передача", iconURL: interaction.user.avatarURL() },
+    });
+  }
+
   getContext(interaction) {
     let { params } = interaction;
     const { mention } = interaction;
@@ -159,44 +203,14 @@ class Command {
       return;
     }
 
-    interaction.user.action(ActionsMap.beforeResourcePayed, context);
-    memb.action(ActionsMap.beforeResourcePayed, context);
-
-    if (context.event.defaultPrevented) {
-      interaction.channel.msg({
-        description:
-          "Сделка заблокированна внешним эффектом, применнёным на одного из участников.\nСписок эффектов может быть просмотрен с около базовыми навыками работы с !eval",
-        color: "#ff0000",
-      });
-      return;
-    }
-
-    Util.addResource({
-      user: interaction.user,
-      value: -numeric,
-      executor: interaction.user,
-      source: "command.pay",
+    Object.assign(context, {
+      item,
+      numeric,
+      missive,
       resource,
-      context: { interaction, context },
     });
 
-    Util.addResource({
-      user: memb,
-      value: numeric,
-      executor: interaction.user,
-      source: "command.pay",
-      resource,
-      context: { interaction, context },
-    });
-
-    msg.msg({
-      description:
-        `${msg.author.username} отправил ${item.gives(
-          numeric,
-        )} для ${memb.toString()}` +
-        (missive ? `\nС сообщением:\n${missive}` : ""),
-      author: { name: "Передача", iconURL: msg.author.avatarURL() },
-    });
+    this.pay(context);
   }
 
   options = {
