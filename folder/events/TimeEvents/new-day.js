@@ -40,8 +40,8 @@ class DailyAudit {
   }
 
   static cleanProtocol() {
-    const Data = DataManager.data.audit;
-    const currentDay = Data.bot.currentDay;
+    const { audit: Data, bot } = DataManager.data;
+    const currentDay = bot.currentDay;
     Object.keys(Data.daily)
       .filter((day) => currentDay - day > this.AUDIT_LINIT_IN_DAYS)
       .forEach((day) => delete Data.daily[day]);
