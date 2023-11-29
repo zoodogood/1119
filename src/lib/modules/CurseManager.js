@@ -230,7 +230,7 @@ class CurseManager {
               : null,
         },
         interactionIsLong: true,
-        reward: 15,
+        reward: 12,
       },
       {
         _weight: 10,
@@ -263,7 +263,7 @@ class CurseManager {
           },
         },
         interactionIsShort: true,
-        reward: 4,
+        reward: 5,
       },
       {
         _weight: 1,
@@ -363,7 +363,7 @@ class CurseManager {
             CurseManager.interface({ user, curse }).success();
           },
         },
-        reward: 7,
+        reward: 1,
       },
       {
         _weight: 5,
@@ -391,9 +391,9 @@ class CurseManager {
             CurseManager.interface({ user, curse }).incrementProgress(damage);
           },
         },
-        filter: (_user, guild) => guild && guild.data.boss?.isArrived,
+        filter: (_user, { guild }) => guild && guild.data.boss?.isArrived,
         interactionIsLong: true,
-        reward: 15,
+        reward: 10,
       },
       {
         _weight: 5,
@@ -420,7 +420,7 @@ class CurseManager {
         },
         interactionIsShort: true,
         interactionIsLong: true,
-        reward: 20,
+        reward: 15,
       },
       {
         _weight: 5,
@@ -446,7 +446,7 @@ class CurseManager {
           },
         },
         interactionIsLong: false,
-        reward: 15,
+        reward: 3,
       },
       {
         _weight: 5,
@@ -458,7 +458,11 @@ class CurseManager {
           timer: () => 60_000 * 8,
         },
         callback: {
-          [ActionsMap.any]: (user, curse) => {
+          [ActionsMap.any]: (user, curse, { actionsName, data }) => {
+            if (actionsName === ActionsMap.curseEnd && curse === data.curse) {
+              return;
+            }
+
             const { progress } = curse.values;
             CurseManager.interface({ user, curse })._setProgress(
               (progress || 0) + 1,
@@ -472,7 +476,7 @@ class CurseManager {
             CurseManager.interface({ curse, user }).fail();
           },
         },
-        reward: 15,
+        reward: 5,
         interactionIsShort: true,
       },
       {
@@ -543,7 +547,7 @@ class CurseManager {
             QuestManager.init({ user, quest: newQuest });
           },
         },
-        reward: 15,
+        reward: 5,
       },
       {
         _weight: 0.5,
@@ -628,7 +632,7 @@ class CurseManager {
             curse.values.counter++;
           },
         },
-        reward: 15,
+        reward: 10,
         interactionIsLong: true,
       },
       {
@@ -679,7 +683,7 @@ class CurseManager {
             }
           },
         },
-        reward: 15,
+        reward: 5,
       },
       {
         _weight: 2,
@@ -707,7 +711,7 @@ class CurseManager {
           },
         },
         interactionIsShort: true,
-        reward: 15,
+        reward: 5,
       },
       {
         _weight: 1,
@@ -745,7 +749,7 @@ class CurseManager {
             });
           },
         },
-        reward: 15,
+        reward: 5,
         interactionIsLong: true,
       },
       {
@@ -781,7 +785,7 @@ class CurseManager {
             });
           },
         },
-        reward: 15,
+        reward: 5,
         interactionIsShort: true,
       },
       {
@@ -809,7 +813,7 @@ class CurseManager {
             context.event.preventDefault();
           },
         },
-        reward: 15,
+        reward: 5,
         interactionIsShort: true,
       },
       {
@@ -844,7 +848,7 @@ class CurseManager {
             CurseManager.removeCurse({ user, curse });
           },
         },
-        reward: 15,
+        reward: 3,
         interactionIsShort: true,
       },
       {
@@ -884,7 +888,7 @@ class CurseManager {
             }
           },
         },
-        reward: 15,
+        reward: 5,
         filter: (user) => user.data.voidFreedomCurse,
       },
       {
@@ -957,7 +961,7 @@ class CurseManager {
             data.event.preventDefault();
           },
         },
-        reward: 15,
+        reward: 5,
         filter: (user) => user.data.level > 30,
       },
       {
@@ -1026,9 +1030,90 @@ class CurseManager {
               index === -1 ? Number.MAX_SAFE_INTEGER : index;
           },
         },
-        reward: 15,
+        reward: 7,
         interactionIsShort: true,
-        filter: (user, guild) => guild,
+        filter: (user, { guild }) => guild,
+      },
+      {
+        _weight: 0.25,
+        id: "buggyProggy",
+        hard: 0,
+        description: "Переживите багги",
+        values: {
+          timer: () => 3_600_000,
+          goal: () => 1,
+          addable: () => null,
+        },
+        callback: {
+          curseTimeEnd(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+            target.event.preventDefault();
+            CurseManager.interface({ curse, user }).success();
+          },
+          curseEnd(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+            console.log(curse.values.addable);
+            Util.addResource({
+              user,
+              value: -curse.values.addable,
+              source: "curseManager.events.buggyProggy",
+              executor: null,
+              context: { curse, target },
+              resource: PropertiesEnum.coins,
+            });
+          },
+          curseInit(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+
+            const TARGET_VALUE = 99_999;
+            const adding = TARGET_VALUE - user.data.coins;
+            curse.values.addable = adding;
+            Util.addResource({
+              user,
+              value: adding,
+              source: "curseManager.events.buggyProggy",
+              executor: null,
+              context: { curse, target },
+              resource: PropertiesEnum.coins,
+            });
+          },
+          beforeResourcePayed(user, curse, context) {
+            const { interaction, resource } = context;
+            if (interaction.user !== user) {
+              return;
+            }
+
+            if (resource !== PropertiesEnum.coins) {
+              return;
+            }
+
+            const realCount = user.data.coins - curse.values.addable;
+            context.numeric = Math.min(realCount, context.numeric);
+
+            CurseManager.interface({ user, curse }).success();
+          },
+          resourceChange(user, curse, { executor, resource, value }) {
+            if (executor !== user) {
+              return;
+            }
+            if (resource !== PropertiesEnum.coins) {
+              return;
+            }
+            if (value > 0) {
+              return;
+            }
+
+            CurseManager.interface({ user, curse }).success();
+          },
+        },
+        reward: 3,
+        filter: (user) => user.data.coins < 50_000,
       },
       // {
       //   _weight: 5,
@@ -1168,8 +1253,8 @@ class CurseManager {
   }
 
   static curseEnd({ lost, user, curse }) {
-    this.removeCurse({ user, curse });
     user.action(ActionsMap.curseEnd, { isLost: lost, curse });
+    this.removeCurse({ user, curse });
 
     const curseBase = CurseManager.cursesBase.get(curse.id);
 
