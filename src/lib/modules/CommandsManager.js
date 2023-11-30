@@ -37,6 +37,7 @@ function parseInputCommandFromMessage(message) {
   const params = words.join(" ");
 
   const commandContext = {
+    commandBase,
     command: CommandsManager.callMap.get(commandBase),
     client: message.client,
     params,
