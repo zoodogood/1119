@@ -58,6 +58,8 @@ const GeneralPropertiesmap = {
   chestbonus: "chestbonus",
   voidCooldown: "voidCooldown",
   remainedQuest: "remainedQuest",
+  presents: "presents",
+  lollipops: "lollipops",
   bossEffects: "bossEffects",
   bossEffectsCallbackMap: "bossEffectsCallbackMap",
   cursesCallbackMap: "cursesCallbackMap",

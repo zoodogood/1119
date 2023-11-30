@@ -79,27 +79,29 @@ const Schema = {
         invites: {},
         iq: 0,
         cursesEnded: 0,
-        voidCasino: {},
         element: {},
         coinsPerMessage: 0,
-        voidPrice: {},
         elementLevel: 0,
         bag: {},
         seed: 0,
-        voidTreeFarm: {},
-        voidDouble: {},
+        voidCasino: 0,
+        voidPrice: 0,
+        voidTreeFarm: 0,
+        voidDouble: 0,
+        voidThief: 0,
+        voidMysticClover: 0,
+        voidFreedomCurse: 0,
+        voidCooldown: 0,
         CD_$: 0,
         leave_roles: {},
         profile_confidentiality: {},
         voidQuests: {},
-        monster: {},
-        monstersBought: {},
-        voidThief: {},
+        monster: 0,
+        monstersBought: 0,
         thiefWins: {},
-        voidMysticClover: {},
-        voidFreedomCurse: {},
-        voidCooldown: {},
         remainedQuest: {},
+        presents: 0,
+        lollipops: 0,
         bossEffects: {},
         bossEffectsCallbackMap: {},
         cursesCallbackMap: {},
@@ -209,27 +211,29 @@ const Schema = {
  * @property {invites} invites
  * @property {number} iq
  * @property {number} cursesEnded
- * @property {voidCasino} voidCasino
  * @property {element} element
  * @property {number} coinsPerMessage
- * @property {voidPrice} voidPrice
  * @property {number} elementLevel
  * @property {bag} bag
  * @property {number} seed
- * @property {voidTreeFarm} voidTreeFarm
- * @property {voidDouble} voidDouble
+ * @property {number} voidCasino
+ * @property {number} voidPrice
+ * @property {number} voidTreeFarm
+ * @property {number} voidDouble
+ * @property {number} voidThief
+ * @property {number} voidMysticClover
+ * @property {number} voidFreedomCurse
+ * @property {number} voidCooldown
  * @property {number} CD_$
  * @property {leave_roles} leave_roles
  * @property {profile_confidentiality} profile_confidentiality
  * @property {voidQuests} voidQuests
- * @property {monster} monster
- * @property {monstersBought} monstersBought
- * @property {voidThief} voidThief
+ * @property {number} monster
+ * @property {number} monstersBought
  * @property {thiefWins} thiefWins
- * @property {voidMysticClover} voidMysticClover
- * @property {voidFreedomCurse} voidFreedomCurse
- * @property {voidCooldown} voidCooldown
  * @property {remainedQuest} remainedQuest
+ * @property {number} presents
+ * @property {number} lollipops
  * @property {bossEffects} bossEffects
  * @property {bossEffectsCallbackMap} bossEffectsCallbackMap
  * @property {cursesCallbackMap} cursesCallbackMap
@@ -316,32 +320,12 @@ const Schema = {
 */
 
 /**
-* @typedef {object} voidCasino
-
-*/
-
-/**
 * @typedef {object} element
 
 */
 
 /**
-* @typedef {object} voidPrice
-
-*/
-
-/**
 * @typedef {object} bag
-
-*/
-
-/**
-* @typedef {object} voidTreeFarm
-
-*/
-
-/**
-* @typedef {object} voidDouble
 
 */
 
@@ -361,37 +345,7 @@ const Schema = {
 */
 
 /**
-* @typedef {object} monster
-
-*/
-
-/**
-* @typedef {object} monstersBought
-
-*/
-
-/**
-* @typedef {object} voidThief
-
-*/
-
-/**
 * @typedef {object} thiefWins
-
-*/
-
-/**
-* @typedef {object} voidMysticClover
-
-*/
-
-/**
-* @typedef {object} voidFreedomCurse
-
-*/
-
-/**
-* @typedef {object} voidCooldown
 
 */
 
