@@ -9,6 +9,11 @@ import * as Util from '#lib/util.js';
 import { ButtonStyle, ComponentType } from "discord.js";
 import app from "#app";
 
+const EffectInfluenceEnum = {
+	Negative: "Negative",
+	Neutral: "Neutral",
+	Positive: "Positive"
+}
 
 class BossShop {
 
@@ -344,7 +349,7 @@ class BossEffects {
 				power: () => 1 / 100_000,
 				lastAttackTimestamp: () => Date.now()
 			},
-			influence: "positive"
+			influence: EffectInfluenceEnum.Positive
 		},
 		increaseDamageByBossCurrentHealthPoints: {
 			id: "increaseDamageByBossCurrentHealthPoints",
@@ -362,7 +367,7 @@ class BossEffects {
 			values: {
 				power: () => 0.001
 			},
-			influence: "positive"
+			influence: EffectInfluenceEnum.Positive
 		},
 		increaseAttackEventsCount: {
 			id: "increaseAttackEventsCount",
@@ -376,7 +381,7 @@ class BossEffects {
 			values: {
 				power: () => 1
 			},
-			influence: "positive"
+			influence: EffectInfluenceEnum.Positive
 		},
 		increaseDamageForBoss: {
 			id: "increaseDamageForBoss",
@@ -391,7 +396,7 @@ class BossEffects {
 			values: {
 				power: () => 1 / 100_000
 			},
-			influence: "positive"
+			influence: EffectInfluenceEnum.Positive
 		},
 		increaseDamageWhenStrictlyMessageChallenge: {
 			id: "increaseDamageWhenStrictlyMessageChallenge",
@@ -435,7 +440,7 @@ class BossEffects {
 				goal: () => 30,
 				hours: () => {}
 			},
-			influence: "positive"
+			influence: EffectInfluenceEnum.Positive
 		},
 		deadlyCurse: {
 			id: "deadlyCurse",
@@ -516,16 +521,17 @@ class BossEffects {
 			values: {
 				time: () => 60_000 * 5
 			},
-			influence: "negative",
+			influence: EffectInfluenceEnum.Negative,
 			canPrevented: false
 		},
-		preventNegativeEffects: {
-			id: "preventNegativeEffects",
+		preventEffects: {
+			id: "preventEffects",
 			callback: {
 				bossBeforeEffectInit: (user, effect, context) => {
 					const target = context.effect;
+					const { values } = effect;
 					const effectBase = CurseManager.cursesBase.get(target.id);
-					if (effectBase.influence !== "negative" && effectBase.influence !== "neutral"){
+					if (values.influence && !values.influence.includes(effectBase.influence)){
 						return;
 					}
 
@@ -533,7 +539,7 @@ class BossEffects {
 						return;
 					}
 
-					effect.values.count--;
+					values.count--;
 					context.preventDefault();
 					if (!effect.values.count){
 						BossEffects.removeEffect({user, effect});
@@ -543,7 +549,7 @@ class BossEffects {
 			values: {
 				count: () => 1
 			},
-			influence: "positive"
+			influence: EffectInfluenceEnum.Positive
 		},
 		increaseAttackDamage: {
 			id: "increaseAttackDamage",
@@ -561,7 +567,7 @@ class BossEffects {
 				power: 2,
 				duration: 1
 			},
-			influence: "positive"
+			influence: EffectInfluenceEnum.Positive
 		}
 	}));
 }
@@ -1890,25 +1896,35 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.darkness
 		},
 		powerOfEarthRare: {
-			weight: 100,
+			weight: 50,
 			id: "powerOfEarthRare",
-			description: "Вы получаете защиту от двух следующих негативных или нейтальных эффектов",
-			callback: ({user, boss}) => {
-				// to-do: need realese
+			description: "Вы получаете защиту от двух следующих негативных или нейтральных эффектов",
+			callback: ({user, guild}) => {
+				const effectBase = BossEffects.effectBases.get();
+				const values = {
+					influence: [
+						EffectInfluenceEnum.Negative,
+						EffectInfluenceEnum.Neutral,
+					],
+					count: 2,
+          	};
+				const effect = BossEffects.applyEffect({ effectBase, user, guild, values });
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.earth
 		},
 		powerOfWindRare: {
-			weight: 100,
+			weight: 50,
 			id: "powerOfWindRare",
-			description: "",
-			callback: ({user, boss}) => {
-				// to-do: need idea
+			description: "Получено проклятие удачного коина",
+			callback: ({ user }) => {
+				const curseBase = CurseManager.cursesBase.get("coinFever");
+				const curse = CurseManager.generateOfBase({ curseBase, user });
+				CurseManager.init({ curse, user });
 			},
 			filter: ({boss}) => boss.elementType === elementsEnum.wind
 		},
 		powerOfFireRare: {
-			weight: 100,
+			weight: 50,
 			id: "powerOfFireRare",
 			description: "Ваши прямые атаки наносят гораздо больше урона по боссу",
 			callback: ({user, boss, userStats}) => {
@@ -1921,7 +1937,7 @@ class BossManager {
 			filter: ({boss}) => boss.elementType === elementsEnum.fire
 		},
 		powerOfDarknessRare: {
-			weight: 100,
+			weight: 50,
 			id: "powerOfDarknessRare",
 			description: "Получена нестабильность. Перезарядка атаки свыше 8 ч.",
 			callback: ({user, boss, userStats}) => {
@@ -1957,7 +1973,6 @@ class BossManager {
 			},
 			repeats: false,
 			filter: ({boss}) => boss.level >= 3,
-			repeats: false,
 		},
 		theRarestEvent: {
 			weight: 1,
