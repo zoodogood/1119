@@ -1115,6 +1115,110 @@ class CurseManager {
         reward: 3,
         filter: (user) => user.data.coins < 50_000,
       },
+      {
+        _weight: Infinity,
+        id: "happySnowy",
+        hard: 2,
+        description: "Собирайте снежинки: и открывайте !подарок, с наступающим",
+        values: {
+          timer: () => {
+            const now = new Date();
+            const tomorrow = new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate() + 1,
+            ).getTime();
+            return Math.floor(tomorrow - now);
+          },
+          progress: () => 0,
+        },
+        callback: {
+          coinFromMessage(user, curse) {
+            CurseManager.interface({ user, curse }).incrementProgress(5);
+          },
+          messageCreate(user, curse, message) {
+            const userData = user.data;
+            if (Util.random(15) === 0) {
+              EventsManager.emitter.emit("users/getCoinsFromMessage", {
+                userData,
+                message,
+              });
+            }
+          },
+          inputCommandParsed(user, curse, context) {
+            const { commandBase } = context;
+            const targetKeywords = new Map(
+              [
+                "present",
+                "presents",
+                "подарок",
+                "подарки",
+                "подарунок",
+                "подарунки",
+              ].map((key) => [key, true]),
+            );
+
+            if (!targetKeywords.has(commandBase)) {
+              return;
+            }
+            const { progress: snowflakes } = curse.values;
+            const SNOWFLAKES_TO_PRESENT = 100;
+
+            const presentsAdd = Math.floor(snowflakes / SNOWFLAKES_TO_PRESENT);
+
+            (() => {
+              Util.addResource({
+                user,
+                source: "curseManager.events.happySnowy.present",
+                resource: PropertiesEnum.presents,
+                value: presentsAdd,
+                executor: user,
+                context: { curse, primary: context },
+              });
+              curse.values.progress -= SNOWFLAKES_TO_PRESENT * presentsAdd;
+            })();
+
+            const currentPresents = user.data.presents;
+
+            const snoflakesContent = `У вас снежинок \${ curse.values.progress % SNOWFLAKES_TO_PRESENT } (${
+              snowflakes % SNOWFLAKES_TO_PRESENT
+            }/${SNOWFLAKES_TO_PRESENT}) :snowflake:, — это не баг, здесь действительно должны быть фигурные скобки`;
+            const presentsContent = presentsAdd
+              ? `\nПолучено ${Util.ending(
+                  presentsAdd,
+                  "подар",
+                  "ков",
+                  "ок",
+                  "а",
+                )} :gift:`
+              : "";
+            const content = `${snoflakesContent}${presentsContent}`;
+
+            const presentEmbed = (() => {
+              const components = Util.justButtonComponents(
+                { label: "Открыть сейчас" },
+                { emoji: "1068072988492189726" },
+              );
+
+              return {
+                description: "Почему мне это так напоминает сундук",
+                // https://pngtree.com/freepng/gift-box-vector-isolated-in-white_5589030.html
+                components,
+              };
+            })();
+
+            context.message.channel.msg({
+              content,
+              ...(currentPresents ? presentEmbed : {}),
+            });
+          },
+        },
+        reward: 3,
+        filter: (user) =>
+          DataManager.data.bot.dayDate === "31.12" &&
+          !user.curses.some((curse) => curse.id === "happySnowy"),
+      },
+
       // {
       //   _weight: 5,
       //   id: "__example",
