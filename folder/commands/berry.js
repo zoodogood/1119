@@ -20,7 +20,6 @@ class Command {
   }
 
   static calculatePrice = (quantity, marketPrice, isBuying = false) => {
-    const negativeCoefficient = isBuying ? 1 : -1;
     quantity = isBuying
       ? quantity
       : Math.min(marketPrice / this.INFLATION, quantity);
@@ -28,7 +27,7 @@ class Command {
     // Налог
     const tax = isBuying ? 1 : 1 - this.TAX;
     // Инфляция
-    const inflation = ((quantity * this.INFLATION) / 2) * negativeCoefficient;
+    const inflation = ((quantity * this.INFLATION) / 2) * (-1) ** !isBuying;
 
     const price = Math.round((marketPrice + inflation) * quantity * tax);
     return price;
@@ -37,7 +36,6 @@ class Command {
   exchanger(context, quantity, isBuying) {
     const { interaction, userData, marketPrice } = context;
     const { user } = interaction;
-    const negativeCoefficient = isBuying ? 1 : -1;
 
     const myBerrys = userData.berrys;
 
@@ -115,7 +113,7 @@ class Command {
 
     addResource({
       user,
-      value: -(price * negativeCoefficient),
+      value: price * (-1) ** isBuying,
       executor: user,
       source: "command.berry.barter",
       resource: PropertiesEnum.coins,
@@ -124,7 +122,7 @@ class Command {
 
     addResource({
       user,
-      value: quantity * negativeCoefficient,
+      value: quantity * (-1) ** !isBuying,
       executor: user,
       source: "command.berry.barter",
       resource: PropertiesEnum.berrys,
@@ -133,7 +131,7 @@ class Command {
 
     context.marketPrice = DataManager.data.bot.berrysPrice = Math.max(
       DataManager.data.bot.berrysPrice +
-        quantity * context.INFLATION * negativeCoefficient,
+        quantity * context.INFLATION * (-1) ** !isBuying,
       0,
     );
     interaction.channel.msg({
