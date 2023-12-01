@@ -1,7 +1,9 @@
 import { ExpressionParser } from "#lib/ExpressionParser.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
+  addResource,
   escapeRegexp,
   getRandomElementFromArray,
   match,
@@ -214,7 +216,8 @@ class Command {
     context.isEnd = true;
     this.updateMessageInterface(context);
 
-    const userData = context.interaction.user.data;
+    const { user } = context.interaction;
+    const userData = user.data;
     const { coinOdds, experience, bonuses } = this.calculateReward(context);
 
     if (random(Math.floor(99 / coinOdds)) === 0) {
@@ -224,7 +227,22 @@ class Command {
       });
     }
 
-    userData.exp += experience;
+    addResource({
+      user,
+      value: experience,
+      resource: PropertiesEnum.exp,
+      executor: user,
+      source: "command.anon.end",
+      context,
+    });
+    addResource({
+      user,
+      value: bonuses,
+      resource: PropertiesEnum.chestBonus,
+      executor: user,
+      source: "command.anon.end",
+      context,
+    });
 
     this.displayReward(context, { coinOdds, experience, bonuses });
 
