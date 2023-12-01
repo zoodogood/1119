@@ -1258,6 +1258,7 @@ class BossManager {
         level: boss.level,
       });
       rewardPull.void = (rewardPull.void || 0) + 1;
+
       for (const [resource, value] of Object.entries(rewardPull)) {
         user.action(Actions.resourceChange, {
           value,
