@@ -2,7 +2,7 @@ console.clear();
 
 import "dotenv/config";
 
-import Discord, { AuditLogEvent, BaseInteraction } from "discord.js";
+import Discord, { AuditLogEvent } from "discord.js";
 
 import * as Util from "#lib/util.js";
 import {
@@ -13,7 +13,7 @@ import {
   ActionManager,
   EventsManager,
 } from "#lib/modules/mod.js";
-import { CreateMessage } from "@zoodogood/utils/discordjs";
+import { justSendMessage } from "@zoodogood/utils/discordjs";
 import client from "#bot/client.js";
 import config from "#config";
 
@@ -356,7 +356,6 @@ async function msg(options, ..._devFixParams) {
 
   options.color ||= config.development ? "#000100" : "#23ee23";
 
-  const messagePayload = CreateMessage(options);
   const target =
     this instanceof Discord.InteractionResponse
       ? this.interaction
@@ -364,24 +363,7 @@ async function msg(options, ..._devFixParams) {
       ? this.channel
       : this;
 
-  const message =
-    target instanceof BaseInteraction
-      ? await (options.edit
-          ? target.replied
-            ? target.editReply(messagePayload)
-            : target.update(messagePayload)
-          : target.reply(messagePayload))
-      : await (options.edit
-          ? target.edit(messagePayload)
-          : target.send(messagePayload));
-
-  if (options.delete) {
-    setTimeout(() => message.delete(), options.delete);
-  }
-
-  if (options.reactions) {
-    options.reactions.filter(Boolean).forEach((react) => message.react(react));
-  }
+  const message = await justSendMessage(target, options);
 
   return message;
 }
