@@ -87,6 +87,7 @@ ${
     },
     allias: "казино bet ставка",
     cooldown: 300_000,
+    expectParams: true,
     allowDM: true,
     type: "other",
   };
