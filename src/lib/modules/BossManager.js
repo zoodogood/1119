@@ -537,7 +537,12 @@ class BossEffects {
               .filter(isShortCurse)
               .random({ _weights: true });
 
-            const curse = CurseManager.generateOfBase({ curseBase, user });
+            const context = { guild };
+            const curse = CurseManager.generateOfBase({
+              curseBase,
+              user,
+              context,
+            });
             curse.values.timer = effect.values.time;
             CurseManager.init({ curse, user });
 
@@ -1568,7 +1573,7 @@ class BossManager {
           const curse = CurseManager.generate({
             user,
             hard,
-            guild: channel.guild,
+            context: { guild: channel.guild },
           });
           CurseManager.init({ user, curse });
         },
@@ -2187,9 +2192,15 @@ class BossManager {
         weight: 50,
         id: "powerOfWindRare",
         description: "Получено проклятие удачного коина",
-        callback: ({ user }) => {
+        callback: (primary) => {
+          const { user, guild } = primary;
           const curseBase = CurseManager.cursesBase.get("coinFever");
-          const curse = CurseManager.generateOfBase({ curseBase, user });
+          const context = { guild, primary };
+          const curse = CurseManager.generateOfBase({
+            curseBase,
+            user,
+            context,
+          });
           CurseManager.init({ curse, user });
         },
         filter: ({ boss }) => boss.elementType === elementsEnum.wind,

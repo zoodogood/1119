@@ -425,9 +425,7 @@ class Command {
         inline: true,
         others: ["камень", "проклятие", "камень с глазами"],
         fn: (product) => {
-          if (!userData.curses) {
-            userData.curses = [];
-          }
+          userData.curses ||= [];
 
           const already = userData.curses.length;
 
@@ -448,7 +446,7 @@ class Command {
           const curse = CurseManager.generate({
             hard: null,
             user: interaction.user,
-            guild: interaction.guild,
+            context: { guild: interaction.guild },
           });
           const curseBase = CurseManager.cursesBase.get(curse.id);
           CurseManager.init({ user: interaction.user, curse });

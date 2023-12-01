@@ -2,7 +2,7 @@ import { Collection } from "@discordjs/collection";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import * as Util from "#lib/util.js";
-import Discord, { AttachmentBuilder } from "discord.js";
+import Discord, { AttachmentBuilder, Emoji } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
@@ -11,6 +11,7 @@ import { ActionsMap } from "#constants/enums/actionsMap.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { BossEffects } from "#lib/modules/BossManager.js";
 import { RanksUtils } from "#folder/commands/top.js";
+import { justButtonComponents } from "@zoodogood/utils/discordjs";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -1195,14 +1196,14 @@ class CurseManager {
             const content = `${snoflakesContent}${presentsContent}`;
 
             const presentEmbed = (() => {
-              const components = Util.justButtonComponents(
+              const components = justButtonComponents([
                 { label: "Открыть сейчас" },
-                { emoji: "1068072988492189726" },
-              );
+                { emoji: "👀" },
+              ]);
 
               return {
-                description: "Почему мне это так напоминает сундук",
-                // https://pngtree.com/freepng/gift-box-vector-isolated-in-white_5589030.html
+                image:
+                  "https://media.discordapp.net/attachments/629546680840093696/1180210287014576248/presentbox_.png?ex=657c977b&is=656a227b&hm=cfb15e12d3b7ea6e34c9d5f0d724f3e94fd128f6fdd11bb2f23a4d8dec8c07e4&=&format=webp&quality=lossless&width=677&height=677",
                 components,
               };
             })();
