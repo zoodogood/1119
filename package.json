@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.9070",
+  "version": "2.0.0-alpha.9186",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -35,7 +35,7 @@
     "@discordjs/collection": "^1.5.0",
     "@rollup/plugin-replace": "^5.0.2",
     "@zoodogood/import-directory": "1.5.1",
-    "@zoodogood/utils": "^1.0.7-change.903",
+    "@zoodogood/utils": "^1.0.9-change.946",
     "body-parser": "^1.20.2",
     "canvas": "^2.11.2",
     "cors": "^2.8.5",
