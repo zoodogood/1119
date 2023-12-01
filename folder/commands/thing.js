@@ -1266,7 +1266,7 @@ class Command {
                 user,
                 value: -2,
                 executor: user,
-                source: "command.thing.school.void.0",
+                source: "command.thing.event.school.void.0",
                 resource: PropertiesEnum.coins,
                 context,
               });
