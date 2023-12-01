@@ -124,7 +124,7 @@ class Command {
 
     addResource({
       user,
-      value: price * negativeCoefficient,
+      value: quantity * negativeCoefficient,
       executor: user,
       source: "command.berry.barter",
       resource: PropertiesEnum.berrys,
