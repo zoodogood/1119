@@ -3,34 +3,29 @@ import { CommandsManager, Executor } from "#lib/modules/mod.js";
 import { client } from "#bot/client.js";
 
 class Event extends BaseEvent {
-  constructor(){
+  constructor() {
     const EVENT = "interactionCreate";
     super(client, EVENT);
-
-		
   }
 
-	
-  async run(interaction){
+  async run(interaction) {
     const customId = interaction.customId;
 
-    if (interaction.isCommand()){
+    if (interaction.isCommand()) {
       const name = interaction.name;
       const command = CommandsManager.callMap.get(name);
       CommandsManager.execute(command, interaction);
       return;
     }
-    if (customId.startsWith("@")){
+    if (customId.startsWith("@")) {
       const [type, target, params] = Executor.parseCustomId(customId) ?? [];
-      type && Executor.emit(type, target, {params, interaction});
+      type && Executor.emit(type, target, { params, interaction });
       return;
     }
-
-
   }
 
   options = {
-    name: "client/interactionCreate"
+    name: "client/interactionCreate",
   };
 }
 
