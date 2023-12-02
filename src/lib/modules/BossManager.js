@@ -11,6 +11,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import * as Util from "#lib/util.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 import app from "#app";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 const EffectInfluenceEnum = {
   Negative: "Negative",
@@ -2222,11 +2223,20 @@ class BossManager {
         weight: 50,
         id: "powerOfDarknessRare",
         description: "Получена нестабильность. Перезарядка атаки свыше 8 ч.",
-        callback: ({ user, boss, userStats }) => {
+        callback: (primary) => {
           const adding = 3_600_000 * 8;
+          const { user, userStats } = primary;
           userStats.attackCooldown += adding;
           userStats.attack_CD += adding;
-          user.data.void++;
+
+          Util.addResource({
+            user,
+            value: 1,
+            resource: PropertiesEnum.void,
+            executor: user,
+            source: "bossManager.attack.events.powerOfDarknessRare",
+            context: primary,
+          });
         },
         filter: ({ boss }) => boss.elementType === elementsEnum.darkness,
       },
