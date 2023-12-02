@@ -156,6 +156,7 @@ class ErrorsHandler {
     const { fileOfError, strokeOfError, stack } =
       this.parseErrorStack(error.stack, { node_modules: false }) ?? {};
 
+    
     if (stack.length >= 1900) {
       stack.length = 1900;
     }
@@ -206,6 +207,8 @@ class ErrorsHandler {
     } catch (error) {
       stack = `!decodeError of stack\n${stack}`;
     }
+
+    stack ||= "null";
 
     const projectPath = process.cwd().replaceAll("\\", "/");
     const regular = new RegExp(
