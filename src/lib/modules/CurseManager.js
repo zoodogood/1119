@@ -2,7 +2,7 @@ import { Collection } from "@discordjs/collection";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import * as Util from "#lib/util.js";
-import Discord, { AttachmentBuilder, Emoji } from "discord.js";
+import Discord, { AttachmentBuilder } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
@@ -12,6 +12,7 @@ import DataManager from "#lib/modules/DataManager.js";
 import { BossEffects } from "#lib/modules/BossManager.js";
 import { RanksUtils } from "#folder/commands/top.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
+import Executor from "#lib/modules/Executor.js";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -459,8 +460,9 @@ class CurseManager {
           timer: () => 60_000 * 8,
         },
         callback: {
-          [ActionsMap.any]: (user, curse, { actionsName, data }) => {
-            if (actionsName === ActionsMap.curseEnd && curse === data.curse) {
+          [ActionsMap.any]: (user, curse, { actionName, data }) => {
+            console.log(actionName);
+            if (actionName === ActionsMap.curseEnd && curse === data.curse) {
               return;
             }
 
@@ -1117,7 +1119,7 @@ class CurseManager {
         filter: (user) => user.data.coins < 50_000,
       },
       {
-        _weight: Infinity,
+        _weight: 0,
         id: "happySnowy",
         hard: 2,
         description: "Собирайте снежинки: и открывайте !подарок, с наступающим",
@@ -1132,6 +1134,46 @@ class CurseManager {
             return Math.floor(tomorrow - now);
           },
           progress: () => 0,
+        },
+        onComponent({ params, interaction }) {
+          const [target, ...parsed] = params;
+          this.componentsActions[target].call(this, {
+            params: parsed,
+            interaction,
+          });
+        },
+        componentsActions: {
+          info({ interaction }) {
+            interaction.msg({
+              ephemeral: true,
+              description: `Время собрать весь снег и передать его снеговику :snowman: 
+А после залезть: из коробки кричать "ура!" :star2:
+Вытряхнув всякую мелочь: сверкающие камни и сундуки;
+Обнаружьте два эксклюзивных предмета;
+И услышьте цитату из интернета,
+
+— откройте коробку сейчас или подарите другу!
+Пусть тоже залезет
+`,
+            });
+          },
+          openNow({ params, interaction }) {
+            const { client } = interaction;
+            const [id] = params;
+            const user = client.users.cache.get(id);
+            if (user !== interaction.user) {
+              interaction.msg({
+                ephemeral: true,
+                content:
+                  "Это взаимодействие доступно только владельцу подарка. Отправляйте сообщения, чтобы получать снежинки и используйте команду !подарок, чтобы вызвать это меню",
+              });
+              return;
+            }
+
+            interaction.msg({
+              content: "Распаковка подарка: 03 м : 00 с",
+            });
+          },
         },
         callback: {
           coinFromMessage(user, curse) {
@@ -1190,15 +1232,21 @@ class CurseManager {
                   "подар",
                   "ков",
                   "ок",
-                  "а",
+                  "ка",
                 )} :gift:`
               : "";
             const content = `${snoflakesContent}${presentsContent}`;
 
             const presentEmbed = (() => {
               const components = justButtonComponents([
-                { label: "Открыть сейчас" },
-                { emoji: "👀" },
+                {
+                  label: "Открыть сейчас",
+                  customId: `@curseManager/events/happySnowy:openNow:${user.id}`,
+                },
+                {
+                  emoji: "👀",
+                  customId: `@curseManager/events/happySnowy:info`,
+                },
               ]);
 
               return {
@@ -1490,4 +1538,13 @@ class CurseManager {
   }
 }
 
+Executor.bind("curseManager", (target, { params, interaction }) => {
+  if (target === "events") {
+    const [event, ...parsed] = params.split(":");
+    const base = CurseManager.cursesBase.get(event);
+    base.onComponent.call(base, { interaction, params: parsed });
+
+    return;
+  }
+});
 export default CurseManager;
