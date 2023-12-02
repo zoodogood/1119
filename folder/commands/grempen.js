@@ -57,11 +57,12 @@ class Command {
 
     const allItems = [
       {
+        id: "stick",
         name: "🦴 Просто палка",
         value: 244,
         inline: true,
         others: ["палка", "палку"],
-        fn: () => {
+        fn: (product) => {
           let phrase =
             ".\nВы купили палку. Это самая обычная палка, и вы её выбросили.";
           if (userData.monster) {
@@ -74,6 +75,7 @@ class Command {
               (COMMON_VALUE * (1 - DENOMINATOR ** userData.monster)) /
                 (1 - DENOMINATOR) +
               MIN;
+
             const count = Math.ceil(Util.random(MIN, max));
             phrase += `\nВаши ручные Монстры, погнавшись за ней, нашли ${Util.ending(
               count,
@@ -82,6 +84,15 @@ class Command {
               "",
               "а",
             )}`;
+
+            Util.addResource({
+              user: interaction.user,
+              value: count,
+              source: "command.grempen.product.stick",
+              executor: interaction.user,
+              resource: PropertiesEnum.keys,
+              context: { interaction, product },
+            });
             userData.keys += count;
           }
 
@@ -89,13 +100,13 @@ class Command {
         },
       },
       {
+        id: "chilli",
         name: "🌶️ Жгучий перчик",
         value: 160,
         inline: true,
         others: ["перец", "перчик"],
-        fn: () => {
+        fn: (product) => {
           if (userData.chilli === undefined) {
-            userData.chilli = 0;
             msg.msg({
               title: "Окей, вы купили перец, просто бросьте его...",
               description: "Команда броска `!chilli @Пинг`",
@@ -103,41 +114,64 @@ class Command {
             });
           }
 
-          userData.chilli++;
+          Util.addResource({
+            user: interaction.user,
+            value: 1,
+            source: "command.grempen.product.chilli",
+            executor: interaction.user,
+            resource: PropertiesEnum.chilli,
+            context: { interaction, product },
+          });
           return '. "Готовтесь глупцы, грядёт эра перчиков"';
         },
       },
       {
+        id: "gloves",
         name: "🧤 Перчатки перчатника",
         value: 700,
         inline: true,
         others: ["перчатку", "перчатки", "перчатка"],
-        fn: () => {
-          if (userData.thiefGloves) {
-            userData.thiefGloves += 2;
-            delete userData.CD_39;
-          } else {
-            userData.thiefGloves = 2;
+        fn: (product) => {
+          !userData.thiefGloves &&
             msg.author.msg({
               title: "Вы купили чудо перчатки?",
               description:
                 "Отлично, теперь вам доступна команда `!rob`.\n**Правила просты:**\nВаши перчатки позволяют ограбить участника, при условии, что он онлайн.\nВ течении 2-х минут у ограбленного есть возможность догнать вас и вернуть деньги.\nЕсли попадётесь дважды, то перчатки нужно покупать заново — эдакий риск.\nНужно быть осторожным и умным, искать момент.\nА пользователи должны быть хитры, если кто-то спалил, что у вас есть перчатки.\nЦель участников подло заставить Вас на них напасть, а вор, то есть Вы, должен выждать момент и совершить атаку.",
             });
-          }
+
+          Util.addResource({
+            user: interaction.user,
+            value: 2,
+            source: "command.grempen.product.gloves",
+            executor: interaction.user,
+            resource: PropertiesEnum.thiefGloves,
+            context: { interaction, product },
+          });
+          delete userData.CD_39;
+
           return ". _Режим воровитости активирован._";
         },
       },
       {
+        id: "nut",
         name: "🔩 Старый ключ",
         value: 15,
         inline: true,
         others: ["ключ", "ключик", "key"],
-        fn: () => {
-          userData.keys++;
+        fn: (product) => {
+          Util.addResource({
+            user: interaction.user,
+            value: 1,
+            source: "command.grempen.product.nut",
+            executor: interaction.user,
+            resource: PropertiesEnum.keys,
+            context: { interaction, product },
+          });
           return " и что вы делаете? Нет! Это не Фиксик!";
         },
       },
       {
+        id: "exp",
         name: "🧪 Бутылёк опыта",
         value: "???",
         inline: true,
@@ -146,20 +180,27 @@ class Command {
           const rand = Util.random(3, 7);
           const LIMIT = 15_000;
           const flaconPrice = Math.min(Math.ceil(userData.coins / rand), LIMIT);
-          userData.exp += Math.ceil(flaconPrice * 0.8);
+          const value = Math.ceil(flaconPrice * 0.8);
+          Util.addResource({
+            user: interaction.user,
+            value,
+            source: "command.grempen.product.exp",
+            executor: interaction.user,
+            resource: PropertiesEnum.exp,
+            context: { interaction, product },
+          });
 
           product.value = flaconPrice;
-          return `, как дорогущий флакон давший вам целых ${Math.floor(
-            flaconPrice * 0.8,
-          )} <:crys:637290406958202880>`;
+          return `, как дорогущий флакон давший вам целых ${value} <:crys:637290406958202880>`;
         },
       },
       {
+        id: "monster",
         name: "🐲 Ручной монстр",
         value: 1999 + 1000 * Math.ceil((userData.monstersBought || 0) / 3),
         inline: true,
         others: ["монстр", "монстра"],
-        fn: () => {
+        fn: (product) => {
           if (userData.monster === undefined) {
             userData.monster = 0;
             userData.monstersBought = 0;
@@ -170,40 +211,73 @@ class Command {
               delete: 5000,
             });
           }
-          userData.monster++;
-          userData.monstersBought++;
+          Util.addResource({
+            user: interaction.user,
+            value: 1,
+            source: "command.grempen.product.monster",
+            executor: interaction.user,
+            resource: PropertiesEnum.monster,
+            context: { interaction, product },
+          });
+          Util.addResource({
+            user: interaction.user,
+            value: 1,
+            source: "command.grempen.product.monster",
+            executor: interaction.user,
+            resource: PropertiesEnum.monstersBought,
+            context: { interaction, product },
+          });
           return ", ой, простите зверя*";
         },
       },
       {
+        id: "cannedFood",
         name: "🥫 Консервы Интеллекта",
         value: 1200,
         inline: true,
         others: ["консервы", "интеллект"],
-        fn: () => {
+        fn: (product) => {
           if (userData.iq === undefined) {
             userData.iq = Util.random(27, 133);
           }
 
-          userData.iq += Util.random(3, 7);
+          const value = Util.random(3, 7);
+          Util.addResource({
+            user: interaction.user,
+            value,
+            source: "command.grempen.product.cannedFood",
+            executor: interaction.user,
+            resource: PropertiesEnum.iq,
+            context: { interaction, product },
+          });
+
           return ".\nВы едите эти консервы и понимаете, что становитесь умнее. Эта покупка точно была не напрасной...";
         },
       },
       {
+        id: "bottle",
         name: "🍼 Бутылка глупости",
         value: 400,
         inline: true,
         others: ["бутылка", "бутылку", "глупость", "глупости"],
-        fn: () => {
+        fn: (product) => {
           if (userData.iq === undefined) {
             userData.iq = Util.random(27, 133);
           }
-
-          userData.iq -= Util.random(3, 7);
+          const value = Util.random(3, 7);
+          Util.addResource({
+            user: interaction.user,
+            value: -value,
+            source: "command.grempen.product.bottle",
+            executor: interaction.user,
+            resource: PropertiesEnum.iq,
+            context: { interaction, product },
+          });
           return ".\nГу-гу, га-га?... Пора учится...!";
         },
       },
       {
+        id: "coat",
         name: "👜 Шуба из енота",
         value: 3200,
         inline: true,
@@ -239,6 +313,7 @@ class Command {
         },
       },
       {
+        id: "casinoTicket",
         name: userData.voidCasino ? "🥂 Casino" : "🎟️ Лотерейный билет",
         value: userData.voidCasino ? Math.floor(userData.coins / 3.33) : 130,
         inline: true,
@@ -250,7 +325,7 @@ class Command {
           "casino",
           "лотерейный билет",
         ],
-        fn: () => {
+        fn: (product) => {
           const coefficient = 220 / 130;
           const bet = userData.voidCasino ? userData.coins * 0.3 : 130;
           const odds = userData.voidCasino ? 22 : 21;
@@ -262,7 +337,7 @@ class Command {
               executor: interaction.user,
               source: "command.grempen.product.casino",
               resource: PropertiesEnum.coins,
-              context: { interaction, bet },
+              context: { interaction, bet, product },
             });
             return userData.voidCasino
               ? `. Куш получен! — ${victory}`
@@ -275,6 +350,7 @@ class Command {
         },
       },
       {
+        id: "idea",
         name: "💡 Идея",
         value:
           userData.iq &&
@@ -326,6 +402,7 @@ class Command {
         },
       },
       {
+        id: "clover",
         name: "☘️ Счастливый клевер",
         value: 400,
         inline: true,
@@ -370,6 +447,7 @@ class Command {
         },
       },
       {
+        id: "ball",
         name: "🔮 Всевидящий шар",
         value: 8000,
         inline: true,
@@ -410,6 +488,7 @@ class Command {
         },
       },
       {
+        id: "renewal",
         name: "🔧 Завоз товаров",
         value: 312 + userData.level * 2,
         inline: true,
@@ -420,6 +499,7 @@ class Command {
         },
       },
       {
+        id: "curseStone",
         name: "👀 Камень с глазами",
         value: 600,
         inline: true,
@@ -514,7 +594,7 @@ class Command {
           user: interaction.user,
           value: -product.value,
           executor: interaction.user,
-          source: "command.grempen.bought",
+          source: `command.grempen.bought.${product.id}`,
           resource: PropertiesEnum.coins,
           context: { interaction, product },
         });
