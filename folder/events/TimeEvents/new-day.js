@@ -7,6 +7,7 @@ import {
   EventsManager,
 } from "#lib/modules/mod.js";
 import { dayjs } from "#lib/util.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class DailyAudit {
   static AUDIT_LINIT_IN_DAYS = 365;
@@ -139,6 +140,19 @@ class Event {
       0,
     );
     Data.bot.commandsLaunched = commandsLaunched;
+
+    if (today === "31.12") {
+      for (const user of client.users.cache().values()) {
+        Util.addResource({
+          user,
+          value: 1,
+          executor: null,
+          source: "timeEventsManager.event.new-day.happySnowy",
+          resource: PropertiesEnum.presents,
+          context: { isLost },
+        });
+      }
+    }
 
     const dayStatsEventIsExists = TimeEventsManager.findEventInRange(
       ({ name }) => name === "day-stats",
