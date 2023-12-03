@@ -1,6 +1,7 @@
 import { Actions } from "#lib/modules/ActionManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
 class Event extends BaseEvent {
@@ -34,13 +35,14 @@ class Event extends BaseEvent {
     return k;
   }
 
-  async onGetCoinsFromMessage({ userData, message }) {
-    message.author.action(Actions.coinFromMessage, {
+  async onGetCoinsFromMessage({ user, message }) {
+    const userData = user.data;
+    user.action(Actions.coinFromMessage, {
       channel: message.channel,
     });
 
     let reaction = "637533074879414272";
-    const k = this.calculateMultiplayer({ userData, message });
+    const k = this.calculateMultiplayer({ user, message });
     if (DataManager.data.bot.dayDate === "31.12") {
       reaction = "❄️";
     }
@@ -51,8 +53,22 @@ class Event extends BaseEvent {
     }
 
     const coins = Math.round((35 + (userData.coinsPerMessage ?? 0)) * k);
-    userData.coins += coins;
-    userData.chestBonus = (userData.chestBonus ?? 0) + 5;
+    Util.addResource({
+      user,
+      executor: user,
+      value: coins,
+      source: "eventsManager.event.users.getCoinsFromMessage",
+      resource: PropertiesEnum.coins,
+      context: { message },
+    });
+    Util.addResource({
+      user,
+      executor: user,
+      value: 5,
+      source: "eventsManager.event.users.getCoinsFromMessage",
+      resource: PropertiesEnum.chestBonus,
+      context: { message },
+    });
 
     const react = await message.awaitReact(
       { user: message.author, removeType: "full", time: 20000 },
@@ -75,8 +91,8 @@ class Event extends BaseEvent {
     message.msg({ content: messageContent, delete: 3_000 });
   }
 
-  async run({ userData, message }) {
-    this.onGetCoinsFromMessage({ userData, message });
+  async run({ user, message }) {
+    this.onGetCoinsFromMessage({ user, message });
   }
 
   options = {
