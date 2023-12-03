@@ -461,7 +461,6 @@ class CurseManager {
         },
         callback: {
           [ActionsMap.any]: (user, curse, { actionName, data }) => {
-            console.log(actionName);
             if (actionName === ActionsMap.curseEnd && curse === data.curse) {
               return;
             }
