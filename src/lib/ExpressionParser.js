@@ -20,18 +20,21 @@ class ExpressionParser {
   static Tokens = {
     Digit: {
       key: "Digit",
+      symbol: "0",
       validate: () => true,
       type: TokenTypeEnum.Digit,
       regexp: "(?:\\d|\\.)+",
     },
     PositiveDigit: {
       key: "PositiveDigit",
+      symbol: "+0",
       validate: () => true,
       type: TokenTypeEnum.Digit,
       regexp: "(?<!\\d)\\+(?:\\d|\\.)+",
     },
     Plus: {
       key: "Plus",
+      symbol: "+",
       validate: ({ nextToken, previousToken }) =>
         [
           undefined,
@@ -61,12 +64,14 @@ class ExpressionParser {
     },
     NegativeDigit: {
       key: "NegativeDigit",
+      symbol: "-0",
       validate: () => true,
       type: TokenTypeEnum.Digit,
       regexp: "(?<!\\d)-(?:\\d|\\.)+",
     },
     Minus: {
       key: "Minus",
+      symbol: "-",
       validate: ({ nextToken, previousToken }) =>
         [
           undefined,
@@ -95,6 +100,7 @@ class ExpressionParser {
     },
     Divide: {
       key: "Divide",
+      symbol: "/",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\/",
@@ -118,6 +124,7 @@ class ExpressionParser {
     },
     Power: {
       key: "Power",
+      symbol: "**",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\*\\*",
@@ -133,6 +140,7 @@ class ExpressionParser {
     },
     Multiply: {
       key: "Multiply",
+      symbol: "*",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\*",
@@ -148,6 +156,7 @@ class ExpressionParser {
     },
     Modulo: {
       key: "Modulo",
+      symbol: "%",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "%",
@@ -163,6 +172,7 @@ class ExpressionParser {
     },
     LogicalOR: {
       key: "LogicalOR",
+      symbol: "||",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\|\\|",
@@ -178,6 +188,7 @@ class ExpressionParser {
     },
     LogicalAND: {
       key: "LogicalAND",
+      symbol: "&&",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "&&",
@@ -194,6 +205,7 @@ class ExpressionParser {
 
     LogicalNOT: {
       key: "LogicalNOT",
+      symbol: "!",
       validate: ({ previousToken, nextToken }) => {
         const previousValide =
           !previousToken ||
@@ -221,6 +233,7 @@ class ExpressionParser {
     },
     LessThan: {
       key: "LessThan",
+      symbol: "<",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "<",
@@ -236,6 +249,7 @@ class ExpressionParser {
     },
     GreaterThan: {
       key: "GreaterThan",
+      symbol: ">",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: ">",
@@ -251,6 +265,7 @@ class ExpressionParser {
     },
     StrictEqual: {
       key: "StrictEqual",
+      symbol: "===",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "===",
@@ -266,6 +281,7 @@ class ExpressionParser {
     },
     BitwiseXOR: {
       key: "BitwiseXOR",
+      symbol: "^",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\^",
@@ -281,6 +297,7 @@ class ExpressionParser {
     },
     BitwiseAND: {
       key: "BitwiseAND",
+      symbol: "&",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "&",
@@ -296,6 +313,7 @@ class ExpressionParser {
     },
     BitwiseOR: {
       key: "BitwiseOR",
+      symbol: "|",
       validate: generalOperatorValidation,
       type: TokenTypeEnum.Operator,
       regexp: "\\|",
@@ -312,6 +330,7 @@ class ExpressionParser {
 
     Tilde: {
       key: "Tilde",
+      symbol: "~",
       validate: ({ previousToken, nextToken }) => {
         const previousValide =
           !previousToken ||
@@ -339,12 +358,14 @@ class ExpressionParser {
     },
     OpenBracket: {
       key: "OpenBracket",
+      symbol: "(",
       validate: () => true,
       type: TokenTypeEnum.OpenBracket,
       regexp: "\\(",
     },
     CloseBracket: {
       key: "CloseBracket",
+      symbol: ")",
       validate: () => true,
       type: TokenTypeEnum.CloseBracket,
       regexp: "\\)",
@@ -547,3 +568,4 @@ class ExpressionParser {
 }
 
 export { ExpressionParser };
+export { TokenTypeEnum };
