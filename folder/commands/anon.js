@@ -217,12 +217,11 @@ class Command {
     this.updateMessageInterface(context);
 
     const { user } = context.interaction;
-    const userData = user.data;
     const { coinOdds, experience, bonuses } = this.calculateReward(context);
 
     if (random(Math.floor(99 / coinOdds)) === 0) {
       EventsManager.emitter.emit("users/getCoinsFromMessage", {
-        userData,
+        user,
         message: context.lastAnswer,
       });
     }

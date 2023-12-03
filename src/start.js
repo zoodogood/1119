@@ -384,7 +384,7 @@ async function eventHundler(message) {
 
     if (Util.random(1, 85 * 0.9 ** userData.voidCoins) === 1) {
       EventsManager.emitter.emit("users/getCoinsFromMessage", {
-        userData: userData,
+        user,
         message: message,
       });
     }

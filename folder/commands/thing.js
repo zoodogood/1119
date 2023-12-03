@@ -1227,7 +1227,7 @@ class Command {
                   collector.end();
                 }
                 EventsManager.emitter.emit("users/getCoinsFromMessage", {
-                  userData: user.data,
+                  user,
                   message,
                 });
               });

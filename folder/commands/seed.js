@@ -395,8 +395,8 @@ class Command {
   }
 
   becomeCoinMessage({ user }) {
-    const become = async (userData) => {
-      const filter = (message) => message.author.id === userData.id;
+    const become = async (user) => {
+      const filter = (message) => message.author.id === user.id;
       const collector = new Util.CustomCollector({
         target: client,
         event: "message",
@@ -406,13 +406,13 @@ class Command {
       collector.setCallback((message) => {
         collector.end();
         EventsManager.emitter.emit("users/getCoinsFromMessage", {
-          userData,
+          user,
           message,
         });
       });
     };
 
-    !Util.random(0, 5) && become(user.data);
+    !Util.random(0, 5) && become(user);
   }
 
   options = {

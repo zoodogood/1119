@@ -348,7 +348,7 @@ class CurseManager {
             const previousCoins = data.coins;
 
             EventsManager.emitter.emit("users/getCoinsFromMessage", {
-              userData: data,
+              user,
               message,
             });
             const difference = data.coins - previousCoins;
@@ -1179,10 +1179,9 @@ class CurseManager {
             CurseManager.interface({ user, curse }).incrementProgress(5);
           },
           messageCreate(user, curse, message) {
-            const userData = user.data;
             if (Util.random(15) === 0) {
               EventsManager.emitter.emit("users/getCoinsFromMessage", {
-                userData,
+                user,
                 message,
               });
             }
