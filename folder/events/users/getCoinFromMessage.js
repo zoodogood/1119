@@ -12,7 +12,8 @@ class Event extends BaseEvent {
 
   snowyEvent() {}
 
-  calculateMultiplayer({ userData, message }) {
+  calculateMultiplayer({ user, message }) {
+    const userData = user.data;
     let k = 1;
 
     if (DataManager.data.bot.dayDate === "31.12") {
