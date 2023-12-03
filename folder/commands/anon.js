@@ -1,4 +1,4 @@
-import { ExpressionParser } from "#lib/ExpressionParser.js";
+import { ExpressionParser, TokenTypeEnum } from "#lib/ExpressionParser.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
@@ -552,6 +552,34 @@ class Command {
 
   getGuidancePagesContent() {
     return [
+      "Решайте запачканые уравнения",
+      'Стандартные операторы:\n` "+" ` — сложение\n` "-" ` — вычитание\n` "*" ` — умножение\n` "/" ` — деление\n` "%" ` — остаток от деления',
+      `Приоритет операторов:\n${(() => {
+        const tokens = Object.values(ExpressionParser.Tokens).filter(
+          (token) => token.type === TokenTypeEnum.Operator,
+        );
+
+        const prioritySet = [
+          ...new Set(tokens.map((token) => token.operatorPriority || 0)),
+        ]
+          .sort()
+          .map(String);
+
+        const tokensTable = new Array(prioritySet.length).fill("");
+        for (const token of tokens) {
+          tokensTable[token.operatorPriority] += `\n${token.symbol}`;
+        }
+        const builder = new TextTableBuilder()
+          .addRowWithElements(prioritySet, { align: CellAlignEnum.Center })
+          .addRowSeparator()
+          .addMultilineRowWithElements(tokensTable, {
+            removeNextSeparator: true,
+            gapLeft: 2,
+            gapRight: 2,
+          });
+
+        return `\`\`\`⠀\n${builder.generateTextContent()}\`\`\``;
+      })()},\n — где операция степени всегда будет выполняться первой, а логические — последними. В случае, если приоритет операторов одинаковый, операции выполняются последовательно`,
       "\\*мотивирующая речь\\*",
       "Руководство к команде !анон, +полезно ли оно?",
       `Режим ${ModesData[ModesEnum.Default].label}\n> ${
