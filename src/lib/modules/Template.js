@@ -357,7 +357,7 @@ class Template {
         name: "Util",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: this.PERMISSIONS_MASK_ENUM.USER,
         },
       },
       CommandsManager: {
