@@ -471,6 +471,13 @@ class Template {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
+      fetch: {
+        getContent: () => fetch,
+        name: "fetch",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+        },
+      },
       FileSystem: {
         getContent: () => FileSystem,
         name: "FileSystem",
