@@ -31,7 +31,8 @@ class CurseManager {
 
   static getGeneratePull(user, context) {
     return [...CurseManager.cursesBase.values()].filter(
-      (curseBase) => !curseBase.filter || curseBase.filter(user, context),
+      (curseBase) =>
+        !curseBase.filter || curseBase.filter.call(curseBase, user, context),
     );
   }
 
@@ -43,7 +44,8 @@ class CurseManager {
     };
 
     Object.entries(curseBase.values).forEach(
-      ([key, callback]) => (curse.values[key] = callback(user, curse, context)),
+      ([key, callback]) =>
+        (curse.values[key] = callback.call(curseBase, user, curse, context)),
     );
 
     return curse;
@@ -591,8 +593,8 @@ class CurseManager {
                 executor === user.id
                   ? "You"
                   : executor === null
-                  ? "null"
-                  : "NotYou";
+                    ? "null"
+                    : "NotYou";
 
               const splited = box.find(
                 (splited) =>
@@ -897,7 +899,7 @@ class CurseManager {
         _weight: 1,
         id: "pacifier",
         hard: 1,
-        EFFECT_ID: "curseManager.events.pacifier",
+        EFFECT_ID: "curseManager.event.pacifier",
         description: "На время заменяет ваш профиль пустышкой",
         values: {
           timer: () => 86_400_000,
@@ -1259,11 +1261,101 @@ class CurseManager {
               ...(currentPresents ? presentEmbed : {}),
             });
           },
+          curseTimeEnd(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+
+            curse.values["h0-h0-h0"] = "Эта музыка не спешит заканчиваться";
+          },
         },
         reward: 3,
-        filter: (user) =>
-          DataManager.data.bot.dayDate === "31.12" &&
-          !user.curses.some((curse) => curse.id === "happySnowy"),
+        filter: () => false,
+      },
+      {
+        _weight: 1,
+        id: "candyFactory",
+        hard: 2,
+        EFFECT_ID: "curseManager.event.candyFactory",
+        description:
+          "Вам становится доступна команда !клик, заработайте конфеты",
+        values: {
+          timer(user) {
+            const userData = user.data;
+            const defaults = 20 * 60_000;
+            const candyData = userData[this.EFFECT_ID] || {};
+            return defaults * (candyData.level || 1);
+          },
+          goal(user) {
+            const userData = user.data;
+            const defaults = 7;
+            const candyData = userData[this.EFFECT_ID] || {};
+            return defaults * (candyData.level || 1) * userData.level;
+          },
+          progress: () => 0,
+        },
+        onComponent({ params, interaction }) {
+          const [userId] = params;
+          interaction.msg({
+            ephemeral: true,
+            content: `Привет, ${userId}`,
+          });
+        },
+        calculateCandiesPerRest({ timeDiff }) {
+          const secondsRemind = timeDiff / 1_000;
+          return Math.floor(secondsRemind / 100);
+        },
+        callback: {
+          async inputCommandParsed(user, curse, context) {
+            const { commandBase } = context;
+            const targetKeywords = new Map(
+              ["click", "клик"].map((key) => [key, true]),
+            );
+
+            if (!targetKeywords.has(commandBase)) {
+              return;
+            }
+
+            const userData = user.data;
+            const candyData = (userData[this.EFFECT_ID] ||= {});
+            candyData.candies ||= 0;
+
+            const timeDiff = Date.now() - (candyData.receiveAt ?? Date.now());
+            const _context = {
+              user,
+              curse,
+              context,
+              candyData,
+              timeDiff,
+            };
+            const value =
+              Util.random(1, userData.level) +
+              this.calculateCandiesPerRest(_context);
+
+            candyData.candies += value;
+
+            candyData.receiveAt = Date.now();
+            const { channel } = context;
+            const message = await channel.msg({
+              color: "#65dbeb",
+              description: `+ ${value} :candy:`,
+              components: justButtonComponents([
+                {
+                  emoji: "🍬",
+                  customId: `@curseManager/events/candyFactory:${user.id}`,
+                },
+              ]),
+            });
+
+            CurseManager.interface({ user, curse }).setProgress(
+              candyData.candies,
+            );
+
+            await Util.sleep(7_000);
+            Util.random(1) ? context.message.delete() : message.delete();
+          },
+        },
+        reward: 5,
       },
 
       // {
