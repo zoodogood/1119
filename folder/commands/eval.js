@@ -4,7 +4,7 @@ import { client } from "#bot/client.js";
 import Template from "#lib/modules/Template.js";
 import config from "#config";
 
-import { escapeCodeBlock, WebhookClient } from "discord.js";
+import { escapeCodeBlock, escapeMarkdown, WebhookClient } from "discord.js";
 
 const DEFAULT_CODE_CONTENT = 'module("userData")';
 
@@ -107,7 +107,9 @@ class Command {
         msg.msg({
           title: "Лимит символов",
           color: "#1f2022",
-          description: `Не удалось отправить сообщение, его длина равна ${lengthContent}\nСодержимое ошибки:\n${err}`,
+          description: `Не удалось отправить сообщение, ведь его длина ${lengthContent}\nСодержимое ошибки:\n${err}\n\n${escapeMarkdown(
+            Util.toLocaleDeveloperString(output).slice(0, 1000),
+          )}`,
         });
       });
   }
