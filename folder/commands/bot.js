@@ -1,4 +1,4 @@
-import { getAddress, timestampToDate, ending } from "#lib/util.js";
+import { getAddress, timestampToDate, ending, dayjs } from "#lib/util.js";
 import { client } from "#bot/client.js";
 import config from "#config";
 import DataManager from "#lib/modules/DataManager.js";
@@ -149,7 +149,11 @@ class Command {
     },
     getUptime(interaction) {
       const ms = process.uptime() * 1_000;
-      const content = `Аптайм: ${timestampToDate(ms)}`;
+      const formatted = dayjs
+        .duration(ms)
+        .format("DD д., HH ч. : mm м. : ss с.");
+
+      const content = `Аптайм: ${formatted}, — бот запущен и работал без перезапусков именно столько.`;
       interaction.msg({ content, delete: 15_000 });
     },
     commands(interaction) {
