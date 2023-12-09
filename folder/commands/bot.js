@@ -67,11 +67,11 @@ class Command {
         1024 /
         1024
       ).toFixed(2)} МБ\``,
-      errors: `Ошибок за текущий сеанс: ${ErrorsHandler.Audit.collection.reduce(
+      errors: `Паник за текущий сеанс: ${ErrorsHandler.Audit.collection.reduce(
         (acc, errors) => acc + errors.length,
         0,
       )}`,
-      uniqueErrors: `Уникальных ошибок: ${ErrorsHandler.Audit.collection.size}`,
+      uniqueErrors: `Уникальных паник: ${ErrorsHandler.Audit.collection.size}`,
     };
 
     const embed = {
@@ -153,7 +153,7 @@ class Command {
         .duration(ms)
         .format("DD д., HH ч. : mm м. : ss с.");
 
-      const content = `Аптайм: ${formatted}, — бот запущен и работал без перезапусков именно столько.`;
+      const content = `Аптайм: [${formatted}], — бот запущен и работал без перезапусков именно столько.`;
       interaction.msg({ content, delete: 15_000 });
     },
     commands(interaction) {
@@ -166,7 +166,7 @@ class Command {
           type: ComponentType.TextInput,
           customId: "content",
           style: TextInputStyle.Paragraph,
-          label: "Введите сообщение: вопрос, отзыв или веселую шутку",
+          label: "Введите вопрос, отзыв или веселую шутку",
           maxLength: 2000,
         },
       ];
