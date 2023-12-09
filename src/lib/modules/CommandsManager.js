@@ -257,36 +257,45 @@ class CommandsManager {
     return false;
   }
 
-  static async execute(command, interaction, { preventCooldown = false } = {}) {
+  static EXECUTION_TYPES = {
+    slash: {
+      type: "slash",
+      call: async (command, interaction) => {
+        return await command.onSlashCommand(interaction);
+      },
+      condition: (interaction) => interaction instanceof CommandInteraction,
+    },
+    input: {
+      type: "input",
+      call: async (command, interaction) => {
+        command.options.removeCallMessage ? interaction.message.delete() : null;
+        const output = await command.onChatInput(
+          interaction.message,
+          interaction,
+        );
+        return output;
+      },
+      condition: (interaction) => "message" in interaction,
+    },
+  };
+
+  static getExecuteContext(primary) {
+    const { command, interaction } = primary;
     const options = command.options;
-
-    const typesBase = {
-      slash: {
-        type: "slash",
-        call: async (command, interaction) => {
-          return await command.onSlashCommand(interaction);
-        },
-        condition: (interaction) => interaction instanceof CommandInteraction,
-      },
-      input: {
-        type: "input",
-        call: async (command, interaction) => {
-          command.options.removeCallMessage
-            ? interaction.message.delete()
-            : null;
-          const output = await command.onChatInput(
-            interaction.message,
-            interaction,
-          );
-          return output;
-        },
-        condition: (interaction) => "message" in interaction,
-      },
-    };
-
-    const typeBase = Object.values(typesBase).find(({ condition }) =>
+    const typeBase = Object.values(this.EXECUTION_TYPES).find(({ condition }) =>
       condition(interaction),
     );
+
+    return { ...primary, typeBase, options };
+  }
+
+  static async execute(command, interaction, { preventCooldown = false } = {}) {
+    const context = this.getExecuteContext({
+      command,
+      interaction,
+      preventCooldown,
+    });
+    const { options, typeBase } = context;
 
     try {
       interaction.user.action(Actions.callCommand, { command, interaction });
@@ -302,7 +311,7 @@ class CommandsManager {
         }).call();
 
       await whenCommandEnd;
-      this.statistics.increase(interaction);
+      this.statistics.increase(context);
     } catch (error) {
       ErrorsHandler.Audit.push(error, {
         userId: interaction.user.id,
@@ -319,11 +328,11 @@ class CommandsManager {
   }
 
   static statistics = {
-    increase: (interaction) => {
-      const commandOptions = interaction.command.options;
+    increase: ({ guild, command }) => {
+      const commandOptions = command.options;
 
       const botData = DataManager.data.bot;
-      const guildData = interaction.guild?.data;
+      const guildData = guild?.data;
 
       if (guildData) {
         guildData.commandsUsed ||= {};
