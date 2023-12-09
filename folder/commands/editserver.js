@@ -14,9 +14,9 @@ class Command {
   }
 
   async onChatInput(msg, interaction) {
-    let guild = msg.guild;
-    let server = guild.data;
-    let settingsAll = [
+    const guild = msg.guild;
+    const server = guild.data;
+    const settingsAll = [
       [
         "description",
         "🪧 Настроить описание сервера",
@@ -32,7 +32,7 @@ class Command {
       //["globalXp", "📯 Опыт участников только с этого сервера", "Вы видите настоящий опыт всех участников!"]
     ];
 
-    let channelsContent = this.getChannelsContent(interaction);
+    const channelsContent = this.getChannelsContent(interaction);
     let settings = settingsAll.map((e) =>
       server[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
     );
@@ -101,7 +101,7 @@ class Command {
           bot_msg = await msg.msg({
             title: "Включить фильтр чата?",
             description:
-              "Подразумивается удаление сообщений которые содержат: рекламу, нецензурную лексику, капс и т.д.\nСейчас эта функция является \"сырой\" и будет продолжать развиваться со временем",
+              'Подразумивается удаление сообщений которые содержат: рекламу, нецензурную лексику, капс и т.д.\nСейчас эта функция является "сырой" и будет продолжать развиваться со временем',
           });
           answer = await bot_msg.awaitReact(
             { user: msg.author, removeType: "all" },
@@ -169,7 +169,7 @@ class Command {
               },
             ],
           });
-          let channel = await bot_msg.awaitReact(
+          const channel = await bot_msg.awaitReact(
             { user: msg.author, removeType: "all" },
             "🔥",
             "📒",
