@@ -10,9 +10,35 @@ class Event extends BaseEvent {
     super(EventsManager.emitter, EVENT);
   }
 
-  snowyEvent() {}
+  snowyEvent({ user, message }) {
+    if (DataManager.data.bot.currentDay !== "31.12") {
+      return;
+    }
+    const PHRASES = [
+      () => "Хо-хо-хо",
+      () => "Звёздочка, сияй",
+      () => "Отправляйте сообщения, чтобы получить проклятие бота",
+    ];
+    const { guild } = message;
+    guild.data.snowyEvent ||= { preGlow: 0 };
+    const { snowyEvent } = guild.data;
+    if (snowyEvent.preGlow >= PHRASES.length) {
+      if (user.curses.some((curse) => curse.id === "snowyEvent")) {
+        return;
+      }
+      message.react("🌲");
+      return;
+    }
+    message.msg({
+      referense: message.id,
+      content: PHRASES.at(snowyEvent.preGlow),
+    });
+    message.react("🌲");
+    snowyEvent.preGlow += 1;
+  }
 
   calculateMultiplayer({ user, message }) {
+    const { guild } = message;
     const userData = user.data;
     let k = 1;
 
@@ -20,12 +46,12 @@ class Event extends BaseEvent {
       k += 0.2;
     }
 
-    if (message.guild && "cloverEffect" in message.guild.data) {
+    if (guild && "cloverEffect" in guild.data) {
       const CLOVER_MIN_EFFECT = 0.08;
       const INCREASE_BY_CLOVER = 0.07;
       const WEAKING_FOR_CLOVER = 0.9242;
       const reduced =
-        WEAKING_FOR_CLOVER ** message.guild.data.cloverEffect.uses /
+        WEAKING_FOR_CLOVER ** guild.data.cloverEffect.uses /
         (1 - WEAKING_FOR_CLOVER);
       const value = CLOVER_MIN_EFFECT + INCREASE_BY_CLOVER * (1 - reduced);
 
@@ -94,6 +120,7 @@ class Event extends BaseEvent {
 
   async run({ user, message }) {
     this.onGetCoinsFromMessage({ user, message });
+    this.snowyEvent({ user, message });
   }
 
   options = {
