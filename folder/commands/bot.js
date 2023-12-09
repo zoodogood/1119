@@ -81,9 +81,9 @@ class Command {
         text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${
           DataManager.data.bot.newGuildTimestamp
             ? timestampToDate(
-              Date.now() - DataManager.data.bot.newGuildTimestamp,
-              2,
-            )
+                Date.now() - DataManager.data.bot.newGuildTimestamp,
+                2,
+              )
             : "Вечность"
         }`,
       },
