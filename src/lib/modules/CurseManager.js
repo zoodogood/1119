@@ -486,8 +486,8 @@ class CurseManager {
       {
         _weight: 2,
         id: "spiritOfTheDailyQuest",
-        description:
-          "Выполняйте сегодняшний квест до 10-ти раз. Вы провалите проклятие, если не выполните хотя бы 3-х",
+        description: (user, { values }) =>
+          `Выполняйте сегодняшний квест до ${values.maximumProgress}-ти раз. Вы провалите проклятие, если не выполните хотя бы ${values.minimalProgress}-х`,
         hard: 1,
         values: {
           goal: () => 0,
@@ -501,6 +501,7 @@ class CurseManager {
             return Math.floor(tomorrow - now);
           },
           minimalProgress: () => 3,
+          maximumProgress: () => 10,
           goalAddingMultiplayerPerQuest: () => 0.3,
         },
         callback: {
@@ -536,6 +537,11 @@ class CurseManager {
           dailyQuestComplete: (user, curse) => {
             const { quest } = user.data;
             CurseManager.interface({ curse, user }).incrementProgress(1);
+
+            if (curse.values.progress >= curse.values.maximumProgress) {
+              CurseManager.interface({ user, curse }).success();
+              return;
+            }
 
             const base = QuestManager.questsBase.get(quest.id);
             const context = {
@@ -1060,7 +1066,6 @@ class CurseManager {
             if (curse !== target.curse) {
               return;
             }
-            console.log(curse.values.addable);
             Util.addResource({
               user,
               value: -curse.values.addable,
@@ -1147,6 +1152,8 @@ class CurseManager {
           info({ interaction }) {
             interaction.msg({
               ephemeral: true,
+              image:
+                "https://cdn.discordapp.com/attachments/926144032785195059/1180876446672101446/4075c2de34d3e71e0967971d70805b0555ad82327810079.png?ex=657f03e4&is=656c8ee4&hm=7cab7a87e37056aa01819b79c61552630240ef877d52ab2f4e79e8dca4760db3&",
               description: `Время собрать весь снег и передать его снеговику :snowman: 
 А после залезть: из коробки кричать "ура!" :star2:
 Вытряхнув всякую мелочь: сверкающие камни и сундуки;
@@ -1303,7 +1310,7 @@ class CurseManager {
         },
         calculateCandiesPerRest({ timeDiff }) {
           const secondsRemind = timeDiff / 1_000;
-          return Math.floor(secondsRemind / 100);
+          return Math.floor(secondsRemind / 300);
         },
         callback: {
           async inputCommandParsed(user, curse, context) {
@@ -1451,7 +1458,7 @@ class CurseManager {
       return null;
     }
 
-    if (curse.values.progress >= curse.values.goal) {
+    if (curse.values.goal && curse.values.progress >= curse.values.goal) {
       this.curseIndexOnUser({ curse, user }) !== null &&
         CurseManager.curseEnd({ user, curse, lost: false });
 
