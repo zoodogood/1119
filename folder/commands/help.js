@@ -35,7 +35,7 @@ class Command {
         name: "Управление сервером <a:diamond:725600667586134138>",
         value: commands
           .filter(
-            (command) => command.options.type === "guild" && !isHidden(command)
+            (command) => command.options.type === "guild" && !isHidden(command),
           )
           .map(design)
           .join(" "),
@@ -44,7 +44,7 @@ class Command {
         name: "Пользователи <:berry:756114492055617558>",
         value: commands
           .filter(
-            (command) => command.options.type === "user" && !isHidden(command)
+            (command) => command.options.type === "user" && !isHidden(command),
           )
           .map(design)
           .join(" "),
@@ -53,7 +53,7 @@ class Command {
         name: "Бот <:piggeorg:758711403027759106>",
         value: commands
           .filter(
-            (command) => command.options.type === "bot" && !isHidden(command)
+            (command) => command.options.type === "bot" && !isHidden(command),
           )
           .map(design)
           .join(" "),
@@ -63,7 +63,7 @@ class Command {
         name: "Другое <:coin:637533074879414272>",
         value: commands
           .filter(
-            (command) => command.options.type === "other" && !isHidden(command)
+            (command) => command.options.type === "other" && !isHidden(command),
           )
           .map(design)
           .join(" "),
@@ -124,6 +124,7 @@ class Command {
     id: 4,
     slash: {
       name: "help",
+      description: "Have a nice {{advanced}}",
     },
     media: {
       description:
