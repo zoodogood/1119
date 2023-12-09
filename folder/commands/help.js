@@ -101,6 +101,9 @@ class Command {
   }
 
   async onSlashCommand(interaction) {
+    await interaction.msg({
+      description: ":green_book:",
+    });
     this.run(interaction);
   }
 
