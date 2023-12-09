@@ -22,6 +22,7 @@ class ActionManager {
         if (QuestManager.isNeedInstallDailyQuest({ user: this })) {
           if (!this.data.quest?.willUpdate) {
             QuestManager.requestInstallDailyQuest({ user: this });
+            QuestManager.checkAvailable({ user: this });
           }
         }
 
