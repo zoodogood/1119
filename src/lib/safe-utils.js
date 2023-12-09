@@ -10,6 +10,8 @@ import {
   DotNotatedInterface,
 } from "@zoodogood/utils/objectives";
 import dayjs from "dayjs";
+dayjs.extend((await import("dayjs/plugin/duration.js")).default);
+
 import yaml from "yaml";
 import Path from "path";
 
