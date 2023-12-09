@@ -12,8 +12,8 @@ class Event extends BaseEvent {
     const customId = interaction.customId;
 
     if (interaction.isCommand()) {
-      const name = interaction.name;
-      const command = CommandsManager.callMap.get(name);
+      const { commandName } = interaction;
+      const command = CommandsManager.callMap.get(commandName);
       CommandsManager.execute(command, interaction);
       return;
     }
