@@ -346,8 +346,9 @@ function escapeRegexp(value) {
   return value.replace(regExpSyntaxCharacter, (character) => `\\${character}`);
 }
 
-function calculateExpressionResult(expression, options = {}) {
-  return 2;
+function uid() {
+  const now = Date.now();
+  return `${now}-${~~Math.random(now)}`;
 }
 
 class TimeAuditor {
@@ -386,7 +387,7 @@ export {
   getSimilar,
   joinWithAndSeparator,
   NumberFormatLetterize,
-  calculateExpressionResult,
+  uid,
   toDayDate,
   timestampDay,
   timestampToDate,
