@@ -9,7 +9,7 @@ build/
 # folder/data/
 # folder/errors/*.json
 
-# folder/!localstorage/
+# folder/!localStorage/
 
 # folder/SSLSecret/certificate.crt
 # folder/SSLSecret/private.key

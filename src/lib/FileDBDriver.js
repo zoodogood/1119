@@ -2,7 +2,7 @@ import FileSystem from "fs/promises";
 import Path from "path";
 
 class FileDBDriver {
-  static root = `${process.cwd()}/folder/!localstorage`;
+  static root = `${process.cwd()}/folder/!localStorage`;
   async init() {
     return this;
   }
