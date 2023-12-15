@@ -1,10 +1,10 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
 
-function provideTunnel(target, sourceUser, effectsToHear = {}) {
-  UserEffectManager.justEffect({
+function provideTunnel(target, sourceUser, effectsToHear = {}, values = {}) {
+  return UserEffectManager.justEffect({
     user: target,
-    values: { source: sourceUser.id, heared: effectsToHear },
+    values: { source: sourceUser.id, heared: effectsToHear, ...values },
   });
 }
 
@@ -28,12 +28,15 @@ export default {
         resumeAlive() {
           this.pong = true;
         },
-        closeTunnel() {
+        requestTunnelClose() {
           this.pong = false;
+          UserEffectManager.removeEffect({ effect, user: targetUser });
         },
       };
       sourceUser.action(ActionsMap.tunnelMessageReceive, context);
-      if (context.pong !== true) {
+
+      const hasResponse = context.pong === true;
+      if (!hasResponse) {
         UserEffectManager.removeEffect({ effect, user: targetUser });
       }
     },
