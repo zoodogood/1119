@@ -2,7 +2,7 @@ console.clear();
 
 import "dotenv/config";
 
-import Discord, { AuditLogEvent } from "discord.js";
+import Discord, { ActivityType, AuditLogEvent } from "discord.js";
 
 import * as Util from "#lib/util.js";
 import {
@@ -31,7 +31,7 @@ client.on("ready", async () => {
 
   if (config.development) {
     client.user.setActivity("Кабзец тебе, Хозяин", {
-      type: "STREAMING",
+      type: ActivityType.Streaming,
       url: "https://www.twitch.tv/monstercat",
     });
   } else {
@@ -360,8 +360,8 @@ async function msg(options, ..._devFixParams) {
     this instanceof Discord.InteractionResponse
       ? this.interaction
       : this instanceof Discord.Message && !options.edit
-      ? this.channel
-      : this;
+        ? this.channel
+        : this;
 
   const message = await justSendMessage(target, options);
 
@@ -804,39 +804,6 @@ Object.defineProperty(Discord.User.prototype, "guilds", {
 //---------------------------------{#Classes--}------------------------------                            #0f0
 
 class Command {
-  static permissions = {
-    SPEAK: "Говорить",
-    MUTE_MEMBERS: "Отключать участникам микрофон",
-    CONNECT: "Подключаться",
-    DEAFEN_MEMBERS: "Заглушать",
-    VIEW_CHANNEL: "Видеть каналы",
-    EMBED_LINKS: "Встраивать ссылки",
-    ATTACH_FILES: "Встраивать файлы",
-    BAN_MEMBERS: "Банить участников",
-    MANAGE_ROLES: "Управлять ролями",
-    KICK_MEMBERS: "Кикать участников",
-    MANAGE_EMOJIS: "Управлять эмодзи",
-    MENTION_EVERYONE: "Упоминать всех",
-    MANAGE_GUILD: "Управлять сервером",
-    ADD_REACTIONS: "Добавлять реакции",
-    USE_VAD: "Использовать режим рации",
-    MOVE_MEMBERS: "Перемещать участников",
-    SEND_MESSAGES: "Отправлять сообщения",
-    MANAGE_CHANNELS: "Управлять каналами",
-    PRIORITY_SPEAKER: "Быть приоритетным",
-    MANAGE_WEBHOOKS: "Управлять вебхуками",
-    CHANGE_NICKNAME: "Изменять свой никнейм",
-    MANAGE_NICKNAMES: "Управлять никнеймами",
-    MANAGE_MESSAGES: "Управлять сообщениями",
-    ADMINISTRATOR: "Администратор",
-    SEND_TTS_MESSAGES: "Отправлять TTS сообщения",
-    VIEW_AUDIT_LOG: "Просматривать журнал аудита",
-    CREATE_INSTANT_INVITE: "Создавать приглашения",
-    READ_MESSAGE_HISTORY: "Читать историю сообщений",
-    USE_EXTERNAL_EMOJIS: "Использовать внешние эмодзи",
-    VIEW_GUILD_INSIGHTS: "Просматривать аналитику сервера",
-  };
-
   static async CustomCommand(msg, name, args) {
     const guildData = DataManager.getGuild(msg.guild.id);
     let cmd = guildData.commands[name];
