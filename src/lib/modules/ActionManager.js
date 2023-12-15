@@ -5,8 +5,8 @@ import {
   ErrorsHandler,
   DataManager,
 } from "#lib/modules/mod.js";
-import { BossEffects } from "#lib/modules/BossManager.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { UserEffectManager } from "#lib/modules/EffectsManager.js";
 
 class ActionManager {
   static Actions = ActionsMap;
@@ -40,20 +40,26 @@ class ActionManager {
           QuestManager.onAction({ user: this, questBase, data });
         }
 
-        if (actionName in (userData.bossEffectsCallbackMap ?? {}))
-          for (const effect of [...userData.bossEffects]) {
+        /** Effects */
+        if (actionName in (userData.effectsCallbackMap ?? {}))
+          for (const effect of [...userData.effects]) {
             if (data.guild && effect.guildId !== data.guild.id) {
               continue;
             }
 
-            const effectBase = BossEffects.effectBases.get(effect.id);
+            const effectBase = UserEffectManager.store.get(effect.id);
             try {
               if (actionName in effectBase.callback)
-                effectBase.callback[actionName].call(null, this, effect, data);
+                effectBase.callback[actionName].call(
+                  effectBase,
+                  this,
+                  effect,
+                  data,
+                );
             } catch (error) {
               ErrorsHandler.Audit.push(error, {
                 actionName,
-                source: "BossEffectAction",
+                source: "EffectAction",
                 effectId: effect.id,
               });
             }
@@ -80,15 +86,17 @@ class ActionManager {
             }
           }
 
+        const { audit } = DataManager.data;
         if (actionName === ActionsMap.resourceChange) {
           const { source, value, resource } = data;
-          const sourceTarget = (DataManager.data.audit.resourcesChanges[
-            source
-          ] ||= {});
+          const sourceTarget = (audit.resourcesChanges[source] ||= {});
           const target = (sourceTarget[resource] ||= {});
           target[Math.sign(value)] ||= 0;
           target[Math.sign(value)] += value;
         }
+
+        audit.actions[actionName] ||= 0;
+        audit.actions[actionName]++;
 
         /** generalize */
         if (actionName !== ActionManager.Actions.any) {
