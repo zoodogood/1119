@@ -141,24 +141,24 @@ class Command {
       if (!userStats.alreadyKeepAliveRitualBy) {
         return null;
       }
-      const member = guild.members.cache.get(
+      const aliver = guild.members.cache.get(
         userStats.alreadyKeepAliveRitualBy,
       );
-      if (!member) {
+      if (!aliver) {
         delete userStats.alreadyKeepAliveRitualBy;
         return null;
       }
 
-      const memberStats = BossManager.getUserStats(guild.data.boss, member.id);
-      const memberData = member.user.data;
+      const aliverStats = BossManager.getUserStats(guild.data.boss, aliver.id);
+      const aliverData = aliver.user.data;
 
-      if (memberStats.heroIsDead) {
+      if (aliverStats.heroIsDead) {
         delete userStats.alreadyKeepAliveRitualBy;
         return null;
       }
 
-      const deadlyCurseEffect = memberData.bossEffects?.find(
-        ({ id, guildId, values: { keepAliveUserId } }) =>
+      const deadlyCurseEffect = aliverData.effects?.find(
+        ({ id, values: { guildId, keepAliveUserId } }) =>
           id === "deadlyCurse" &&
           guildId === guild.id &&
           keepAliveUserId === interaction.user.id,
@@ -169,7 +169,7 @@ class Command {
         return null;
       }
 
-      const curse = memberData.curses?.find(
+      const curse = aliverData.curses?.find(
         ({ timestamp }) =>
           timestamp === deadlyCurseEffect.values.targetTimestamp,
       );
@@ -177,12 +177,12 @@ class Command {
         delete userStats.alreadyKeepAliveRitualBy;
         BossEffects.removeEffect({
           effect: deadlyCurseEffect,
-          user: member.user,
+          user: aliver.user,
         });
         return null;
       }
 
-      return member;
+      return aliver;
     })();
     const embed = {
       description: `${contents.level}\n${contents.joined}\n\n${contents.heroStatus}`,
@@ -235,13 +235,13 @@ class Command {
         return;
       }
 
-      const effectBase = BossEffects.effectBases.get("deadlyCurse");
+      const effectId = "deadlyCurse";
       const values = { keepAliveUserId: member.id };
 
       const effect = BossEffects.applyEffect({
         guild,
         user,
-        effectBase,
+        effectId,
         values,
       });
       const curseAddedMessage = await interaction.msg({
