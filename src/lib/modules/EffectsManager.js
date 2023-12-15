@@ -90,6 +90,7 @@ class Core {
 
   static removeEffect({ effect, user }) {
     const index = user.data.effects.indexOf(effect);
+    console.log(index);
     if (index === -1) {
       return null;
     }
@@ -103,6 +104,7 @@ class UserEffectManager {
   static removeEffects({ list, user }) {
     for (const effect of list) {
       this._removeEffect({ effect, user });
+      console.log(effect);
     }
 
     this.cleanCallbackMap(user);
@@ -146,11 +148,6 @@ class UserEffectManager {
     for (const effect of effects) {
       this.registerEffect(effect);
     }
-  }
-
-  static removeAllOf({ user }) {
-    const list = this.effectsOf({ user });
-    this.removeEffects({ list, user });
   }
 
   static _removeEffect = Core.removeEffect;
