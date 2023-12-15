@@ -7,13 +7,13 @@ export default {
   id: "boss.deadlyCurse",
   callback: {
     curseEnd: (user, effect, { curse, loses }) => {
-      const effectValues = effect.values;
-
-      if (effectValues.targetTimestamp !== curse.timestamp) {
+      if (values.targetTimestamp !== curse.timestamp) {
         return;
       }
+      const { values } = effect;
+      const { guildId } = values;
 
-      const guild = app.client.guilds.cache.get(effect.guildId);
+      const guild = app.client.guilds.cache.get(guildId);
 
       if (loses && BossManager.isArrivedIn(guild)) {
         const userStats = BossManager.getUserStats(guild.data.boss, user.id);
@@ -22,13 +22,13 @@ export default {
 
       BossEffects.removeEffect({ effect, user });
     },
-    bossEffectInit: (user, effect, initedEffect) => {
-      const effectValues = effect.values;
-
-      if (initedEffect.timestamp !== effect.timestamp) {
+    effectInit: (user, effect, { effect: target }) => {
+      if (target.uid !== effect.uid) {
         return;
       }
-      const guild = app.client.guilds.cache.get(effect.guildId);
+      const { values } = effect;
+      const { guildId } = values;
+      const guild = app.client.guilds.cache.get(guildId);
 
       const isShortCurse = (curseBase) => curseBase.interactionIsShort;
       const curseBase = CurseManager.getGeneratePull(user, guild ?? null)
@@ -41,39 +41,38 @@ export default {
         user,
         context,
       });
-      curse.values.timer = effect.values.time;
+      curse.values.timer = values.time;
       CurseManager.init({ curse, user });
 
-      effect.values.targetTimestamp = curse.timestamp;
+      values.targetTimestamp = curse.timestamp;
 
-      if (effectValues.keepAliveUserId) {
+      if (values.keepAliveUserId) {
         const userStats = BossManager.getUserStats(
           guild.data.boss,
-          effectValues.keepAliveUserId,
+          values.keepAliveUserId,
         );
         userStats.alreadyKeepAliveRitualBy = user.id;
       }
     },
-    bossEffectEnd: (user, effect, target) => {
-      if (effect.timestamp !== target.timestamp) {
+    effectEnd: (user, effect, { effect: target }) => {
+      if (effect.uid !== target.uid) {
         return;
       }
 
-      const effectValues = effect.values;
+      const { values } = effect;
+      const { guildId } = values;
+      const guild = app.client.guilds.cache.get(guildId);
 
-      const guild = app.client.guilds.cache.get(effect.guildId);
       if (!BossManager.isArrivedIn(guild)) {
         return;
       }
       const userStats = BossManager.getUserStats(guild.data.boss, user.id);
 
-      if (effectValues.keepAliveUserId) {
-        const targetUser = app.client.users.cache.get(
-          effectValues.keepAliveUserId,
-        );
+      if (values.keepAliveUserId) {
+        const targetUser = app.client.users.cache.get(values.keepAliveUserId);
         const targetUserStats = BossManager.getUserStats(
           guild.data.boss,
-          effectValues.keepAliveUserId,
+          values.keepAliveUserId,
         );
         delete targetUserStats.alreadyKeepAliveRitualBy;
         if (userStats.heroIsDead) {
