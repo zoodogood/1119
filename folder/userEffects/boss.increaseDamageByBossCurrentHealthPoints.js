@@ -5,6 +5,15 @@ export default {
   id: "boss.increaseDamageByBossCurrentHealthPoints",
   callback: {
     bossBeforeAttack: (user, effect, data) => {
+      const {
+        values: { guildId },
+      } = effect;
+
+      const { guild } = data;
+      if (guild.id !== guildId) {
+        return;
+      }
+
       const { attackContext, boss } = data;
       const { power } = effect.values;
 
@@ -18,6 +27,7 @@ export default {
   },
   values: {
     power: () => 0.001,
+    guild: ({ guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,
 };
