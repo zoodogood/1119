@@ -91,6 +91,7 @@ export default {
   },
   values: {
     time: () => 60_000 * 5,
+    guildId: ({ guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Scary,
   canPrevented: false,
