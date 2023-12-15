@@ -1384,7 +1384,7 @@ class CurseManager {
   );
   static interface({ curse, user }) {
     const incrementProgress = (value) => {
-      setProgress((curse.values.progress || 0) + value);
+      setProgress((+curse.values.progress || 0) + value);
       CurseManager.checkAvailable({ curse, user });
       return curse.values.progress;
     };
@@ -1457,18 +1457,20 @@ class CurseManager {
     if (!curse) {
       return null;
     }
+    const { values } = curse;
 
-    if (curse.values.goal && curse.values.progress >= curse.values.goal) {
+    if (
+      values.goal &&
+      !isNaN(values.process) &&
+      values.progress >= values.goal
+    ) {
       this.curseIndexOnUser({ curse, user }) !== null &&
         CurseManager.curseEnd({ user, curse, lost: false });
 
       return;
     }
 
-    if (
-      curse.values.timer &&
-      Date.now() > curse.timestamp + curse.values.timer
-    ) {
+    if (values.timer && Date.now() > curse.timestamp + values.timer) {
       const event = new Event("curseTimeEnd", { cancelable: true });
       user.action(ActionsMap.curseTimeEnd, { event, curse });
       if (!event.defaultPrevented) {
