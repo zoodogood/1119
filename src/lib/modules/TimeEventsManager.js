@@ -58,23 +58,9 @@ class TimeEventsManager {
   static remove(event) {
     const day = this.Util.timestampDay(event.timestamp);
     if (!this.data[day]) {
-      // developer crunch
-      const _data = this.data;
-
       this.data = {};
-      const _events = Object.values(_data).reduce(
-        (acc, array) => acc.concat(...array),
-        [],
-      );
-
-      for (const _ev of _events) {
-        this.create(
-          _ev.name,
-          _ev.timestamp - Date.now(),
-          _ev.params ? JSON.parse(_ev.params) : undefined,
-        );
-      }
     }
+
     const index = this.data[day].indexOf(event);
 
     if (~index === 0) {
@@ -190,7 +176,7 @@ class TimeEventsManager {
 
     const data = {
       name: event.name,
-      isLost: Date.now() - event.timestamp < -10000,
+      isLost: Date.now() - event.timestamp < -10_000,
       params: event.params ? JSON.parse(event.params) : undefined,
     };
     this.emitter.emit("event", data);
