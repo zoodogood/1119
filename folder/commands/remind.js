@@ -1,6 +1,9 @@
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
+import { dayjs, timestampDay } from "#lib/util.js";
 
 class Command {
+  EVENT_NAME = "remind";
+
   getContext(interaction) {
     const parseParams = (params) => {
       params = params.split(" ");
@@ -20,19 +23,12 @@ class Command {
       (letter) => letter.toUpperCase(),
     );
 
-    return { stamps, phraseRaw, phrase };
+    const userData = interaction.user.data;
+
+    return { stamps, phraseRaw, phrase, userData, interaction };
   }
 
-  async onChatInput(msg, interaction) {
-    const context = this.getContext(interaction);
-    const { phrase, stamps } = context;
-
-    const userData = msg.author.data;
-    if (stamps.length === 0) {
-      this.displayUserRemindsInterface(interaction, context);
-      return;
-    }
-
+  stampsToTime(stamps) {
     let timeTo = 0;
     stamps.forEach((stamp) => {
       switch (stamp.slice(-1)) {
@@ -54,11 +50,24 @@ class Command {
           break;
       }
     });
+    return timeTo;
+  }
+
+  async run(interaction) {
+    const context = this.getContext(interaction);
+    const { phrase, stamps, userData } = context;
+
+    if (stamps.length === 0) {
+      this.displayUserRemindsInterface(context);
+      return;
+    }
+
+    const timeTo = this.stampsToTime(stamps);
 
     const LIMIT = 86_400_000 * 365 * 30;
 
     if (timeTo > LIMIT) {
-      msg.msg({
+      interaction.channel.msg({
         color: "#ff0000",
         title: "Максимальный период — 30 лет",
         delete: 8_000,
@@ -67,67 +76,82 @@ class Command {
       return;
     }
 
-    const event = TimeEventsManager.create("remind", timeTo, [
-      msg.author.id,
-      msg.channel.id,
+    const event = TimeEventsManager.create(this.EVENT_NAME, timeTo, [
+      interaction.user.id,
+      interaction.channel.id,
       phrase,
     ]);
 
     userData.reminds ||= [];
     userData.reminds.push(event.timestamp);
-    msg.msg({
+    interaction.channel.msg({
       title: "Напомнинание создано",
       description: `— ${phrase}`,
       timestamp: event.timestamp,
-      footer: { iconURL: msg.author.avatarURL(), text: msg.author.username },
+      footer: {
+        iconURL: interaction.user.avatarURL(),
+        text: interaction.user.username,
+      },
     });
   }
 
-  async displayUserRemindsInterface(interaction, context) {
-    const userData = interaction.userData;
+  async onChatInput(msg, interaction) {
+    this.run(interaction);
+  }
 
-    const filter = (event, remindTimestamp) =>
-      event.name === "remind" &&
-      JSON.parse(event.params).at(0) === interaction.user.id &&
-      event.timestamp === remindTimestamp;
+  findUserRemindEvents(context) {
+    const { userData, interaction } = context;
+    const userId = interaction.user.id;
+    const compare = ({ name, params, timestamp }, targetTimestamp) =>
+      timestamp === targetTimestamp &&
+      name === this.EVENT_NAME &&
+      JSON.parse(params).at(0) === userId;
 
-    const userRemindEvents = (userData.reminds ?? [])
-      .map((timestamp) => {
-        const day = TimeEventsManager.Util.timestampDay(timestamp);
+    const events = [];
+    for (const timestamp of userData.reminds ?? []) {
+      const day = timestampDay(timestamp);
+      const dayEvents = TimeEventsManager.at(day);
+      const event = dayEvents?.find((event) => compare(event, timestamp));
 
-        const event = TimeEventsManager.at(day)?.find((event) =>
-          filter(event, timestamp),
-        );
+      if (!event) {
+        const index = userData.reminds.indexOf(timestamp);
+        userData.reminds.splice(index, 1);
+        interaction.channel.msg({
+          description: `Паника: напоминание (${dayjs(+timestamp).format(
+            "DD.MM HH:mm",
+          )}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`,
+          delete: 60_000,
+          color: "#ff0000",
+        });
+        throw new Error("This behavior is not normal");
+      }
+      events.push(event);
+    }
+    return events;
+  }
 
-        if (!event) {
-          const index = userData.reminds.indexOf(timestamp);
-          userData.reminds.splice(index, 1);
-        }
-        return event ?? null;
-      })
-      .filter(Boolean);
-
-    const userRemindsContentRaw = userRemindEvents.map(
-      ({ params, timestamp }) => {
-        const [_authorId, _channelId, phrase] = JSON.parse(params);
-        return `• <t:${Math.floor(timestamp / 1_000)}:R> — ${phrase}.`;
-      },
-    );
-
-    const remindsContent = userRemindEvents.length
-      ? `\n\nВаши напоминания:\n${userRemindsContentRaw
-        .join("\n\n")
-        .slice(0, 100)}`
+  async displayUserRemindsInterface(context) {
+    const { userData, interaction } = context;
+    const remindEvents = this.findUserRemindEvents(context);
+    const userRemindsContentRaw = remindEvents.map(({ params, timestamp }) => {
+      /* eslint-disable-next-line no-unused-vars */
+      const [_authorId, _channelId, phrase] = JSON.parse(params);
+      return `• <t:${Math.floor(timestamp / 1_000)}:R> — ${phrase}.`;
+    });
+    const remindsContent = userData.reminds.length
+      ? `\n\nВаши напоминания: ${
+          userData.reminds.length
+        }\n${userRemindsContentRaw.join("\n\n").slice(0, 100)}`
       : "";
 
     const description = `Пример:\n!напомни 1ч 7м ${context.phrase}${remindsContent}`;
     const message = await interaction.channel.msg({
       title: "Вы не указали время, через какое нужно напомнить..",
       color: "#ff0000",
-      delete: 50000,
+      delete: 60_000,
       description,
     });
-    if (userRemindEvents.length) {
+    if (remindEvents.length) {
       const createRemoveRemindInterface = async () => {
         const react = await message.awaitReact(
           { user: interaction.user, removeType: "one" },
@@ -138,9 +162,8 @@ class Command {
         }
 
         const questionMessage = await interaction.channel.msg({
-          title: `Переличите номера от 1 до ${userRemindEvents.length} через пробел, чтобы удалить 🗑️ напоминания. Или введите любое другое содержимое, чтобы отменить`,
+          title: `Для удаления, укажите индексы от 1 до ${remindEvents.length} через пробел, чтобы удалить 🗑️ напоминания. Чтобы отменить, введите любое не числовое значение`,
         });
-
         const answer = await message.channel.awaitMessage({
           user: interaction.user,
         });
@@ -148,24 +171,21 @@ class Command {
         if (!answer) {
           return;
         }
-
         const numbers = [...new Set(answer.content.split(" ").filter(Boolean))];
         if (
           numbers.some(isNaN) ||
-          numbers.some(
-            (number) => number <= 0 || number > userRemindEvents.length,
-          )
+          numbers.some((number) => number <= 0 || number > remindEvents.length)
         ) {
           return interaction.channel.msg({
             title: "🗑️ Отменено.",
-            delete: 5000,
+            delete: 5_000,
           });
         }
 
         const willRemoved = numbers.map((index) => userData.reminds[index - 1]);
         for (const timestamp of willRemoved) {
-          const event = userRemindEvents.find((event) =>
-            filter(event, timestamp),
+          const event = remindEvents.find(
+            (event) => event.timestamp === timestamp,
           );
           TimeEventsManager.remove(event);
           const index = userData.reminds.indexOf(timestamp);
@@ -192,7 +212,7 @@ class Command {
       description:
         "\n\nСоздаёт напоминание, например, выключить суп, ну или что ещё вам напомнить надо :rolling_eyes:\n\n✏️\n```python\n!remind {time} {text} #Время в формате 1ч 2д 18м\n```\n\n",
     },
-    allias: "напомни напоминание напомнить нагадай нагадування",
+    allias: "напомни напоминание напомнить нагадай нагадування нап rem",
     allowDM: true,
     cooldown: 8_000,
     cooldownTry: 5,
