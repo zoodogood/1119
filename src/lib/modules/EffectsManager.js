@@ -113,7 +113,7 @@ class UserEffectManager {
   }
 
   static indexOf({ user, effect }) {
-    return this.effectsOf(user).indexOf(effect);
+    return this.effectsOf({ user }).indexOf(effect);
   }
 
   static effectsOf({ user }) {
