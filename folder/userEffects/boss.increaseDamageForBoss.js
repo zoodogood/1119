@@ -4,6 +4,15 @@ export default {
   id: "boss.increaseDamageForBoss",
   callback: {
     bossBeforeAttack: (user, effect, data) => {
+      const {
+        values: { guildId },
+      } = effect;
+
+      const { guild } = data;
+      if (guild.id !== guildId) {
+        return;
+      }
+
       const { boss } = data;
       const { power } = effect.values;
       boss.legendaryWearonDamageMultiplayer ||= 1;
@@ -12,6 +21,7 @@ export default {
   },
   values: {
     power: () => 1 / 100_000,
+    guild: ({ guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,
 };
