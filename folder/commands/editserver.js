@@ -1,3 +1,5 @@
+import CommandsManager from "#lib/modules/CommandsManager.js";
+
 class Command {
   getChannelsContent(interaction) {
     const { guild } = interaction;
@@ -14,8 +16,8 @@ class Command {
   }
 
   async onChatInput(msg, interaction) {
-    const guild = msg.guild;
-    const server = guild.data;
+    const { guild } = interaction;
+    const guildData = guild.data;
     const settingsAll = [
       [
         "description",
@@ -34,11 +36,11 @@ class Command {
 
     const channelsContent = this.getChannelsContent(interaction);
     let settings = settingsAll.map((e) =>
-      server[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
+      guildData[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
     );
 
-    let randomEmoji = ["🔧", "🔨", "💣", "🛠️", "🔏"].random(),
-      message = await msg.msg({
+    const randomEmoji = ["🔧", "🔨", "💣", "🛠️", "🔏"].random();
+    let message = await msg.msg({
         title: "Идёт Настройка сервера... " + randomEmoji,
         description: settings.join("\n"),
         footer: { text: "🔂 - отобразить все действия" },
@@ -67,7 +69,7 @@ class Command {
 
           bot_msg.delete();
           if (answer.content) {
-            server.description = answer.content;
+            guildData.description = answer.content;
             msg.msg({ title: "Описание установлено! Юху!", delete: 3000 });
           } else
             msg.msg({
@@ -87,7 +89,7 @@ class Command {
           answer = answer.content || null;
           bot_msg.delete();
           if (answer && answer.startsWith("http")) {
-            server.banner = answer;
+            guildData.banner = answer;
             msg.msg({ title: "Баннер установлен!", delete: 3000 });
           } else
             msg.msg({
@@ -111,23 +113,18 @@ class Command {
           bot_msg.delete();
 
           if (answer == "685057435161198594") {
-            server.chatFilter = 1;
+            guildData.chatFilter = 1;
             msg.msg({ title: "Фильтр включён", delete: 3000 });
           } else if (answer == "763804850508136478") {
-            server.chatFilter = 0;
+            guildData.chatFilter = 0;
             msg.msg({ title: "Фильтр выключен", delete: 3000 });
           }
           break;
 
         case "👋":
-          await commands["sethello"].code(msg, interaction);
-          channels = [server.chatChannel, server.logChannel, server.hiChannel]
-            .map((e) =>
-              e
-                ? guild.channels.cache.get(e).toString() || "не найден"
-                : "не установлен",
-            )
-            .map((e, i) => ["Чат: ", "Для логов: ", "Для приветсвий: "][i] + e);
+          await CommandsManager.callMap
+            .get("sethello")
+            .onChatInput(msg, interaction);
           break;
 
         case "📯":
@@ -142,10 +139,10 @@ class Command {
             "763804850508136478",
           );
           if (answer == "685057435161198594") {
-            server.globalXp = 0;
+            guildData.globalXp = 0;
             msg.msg({ title: "Готово.", delete: 3000 });
           } else if (answer == "763804850508136478") {
-            server.globalXp = 1;
+            guildData.globalXp = 1;
             msg.msg({ title: "Ограничение снято!", delete: 3000 });
           }
           break;
@@ -155,7 +152,11 @@ class Command {
             fields: [
               {
                 name: "Каналы",
-                value: [server.chatChannel, server.logChannel, server.hiChannel]
+                value: [
+                  guildData.chatChannel,
+                  guildData.logChannel,
+                  guildData.hiChannel,
+                ]
                   .map((e) =>
                     e
                       ? guild.channels.cache.get(e).toString() || "не найден"
@@ -186,14 +187,18 @@ class Command {
             guild.channels.cache.get(bot_msg.content);
 
           if (answer) {
-            server[
+            guildData[
               channel == "🔥"
                 ? "chatChannel"
                 : channel == "📒"
                   ? "logChannel"
                   : "hiChannel"
             ] = answer.id;
-            channels = [server.chatChannel, server.logChannel, server.hiChannel]
+            channels = [
+              guildData.chatChannel,
+              guildData.logChannel,
+              guildData.hiChannel,
+            ]
               .map((e) =>
                 e
                   ? guild.channels.cache.get(e).toString() || "не найден"
@@ -219,7 +224,7 @@ class Command {
           return;
       }
       settings = settingsAll.map((e) =>
-        server[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
+        guildData[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
       );
       message = await message.msg({
         title: "Идёт Настройка сервера... " + randomEmoji,
@@ -252,7 +257,7 @@ class Command {
     allias: "настроитьсервер серватиус servatius налагодитисервер серватіус",
     allowDM: true,
     type: "guild",
-    Permissions: 32,
+    Permissions: 32n,
   };
 }
 
