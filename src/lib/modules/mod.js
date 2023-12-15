@@ -16,10 +16,26 @@ import Executor from "./Executor.js";
 import I18nManager from "./I18nManager.js";
 import StorageManager from "./StorageManager.js";
 import APIPointAuthorizationManager from "./APIPointAuthorization.js";
+import UserEffectManager from "./EffectsManager.js";
 
 export {
-  DataManager, Template, CurseManager, BossManager, TimeEventsManager,
-  CommandsManager, QuestManager, ActionManager, CounterManager, ErrorsHandler,
-  EventsManager, GuildVariablesManager, CooldownManager, 
-  Properties, Executor, I18nManager, StorageManager, APIPointAuthorizationManager
+  DataManager,
+  Template,
+  CurseManager,
+  BossManager,
+  TimeEventsManager,
+  CommandsManager,
+  QuestManager,
+  ActionManager,
+  CounterManager,
+  ErrorsHandler,
+  EventsManager,
+  GuildVariablesManager,
+  CooldownManager,
+  Properties,
+  Executor,
+  I18nManager,
+  StorageManager,
+  APIPointAuthorizationManager,
+  UserEffectManager,
 };
