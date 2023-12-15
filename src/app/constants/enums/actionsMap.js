@@ -23,6 +23,11 @@ const ActionsMap = {
   globalQuest: "globalQuest",
   dailyQuestInit: "dailyQuestInit",
   beforeDailyQuestInit: "beforeDailyQuestInit",
+  // Effects
+  beforeEffectInit: "beforeEffectInit",
+  effectInit: "effectInit",
+  effectRemove: "effectRemove",
+  effectTimeEnd: "effectTimeEnd",
   // Boss
   bossAfterAttack: "bossAfterAttack",
   bossBeforeAttack: "bossBeforeAttack",
@@ -37,12 +42,13 @@ const ActionsMap = {
   curseTimeEnd: "curseTimeEnd",
   curseBeforeSetProgress: "curseBeforeSetProgress",
   // TimeEventsManager
-  timeEventBossEffectTimeoutEnd: "timeEventBossEffectTimeoutEnd",
   timeEventCurseTimeoutEnd: "timeEventCurseTimeoutEnd",
+  timeEventEffectTimeoutEnd: "timeEventEffectTimeoutEnd",
   // Other
   resourceChange: "resourceChange",
   callCommand: "callCommand",
   inputCommandParsed: "inputCommandParsed",
+  tunnelMessageReceive: "tunnelMessageReceive",
   any: "_any",
 };
 
