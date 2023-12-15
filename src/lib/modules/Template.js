@@ -305,7 +305,7 @@ class Template {
       },
       constants: {
         getContent: () => Constants,
-        name: "contants",
+        name: "constants",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.USER,
           investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
