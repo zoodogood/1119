@@ -40,6 +40,7 @@ const GeneralPropertiesmap = {
   elementLevel: "elementLevel",
   bag: "bag",
   curses: "curses",
+  effects: "effects",
   seed: "seed",
   voidTreeFarm: "voidTreeFarm",
   voidDouble: "voidDouble",
@@ -60,8 +61,7 @@ const GeneralPropertiesmap = {
   remainedQuest: "remainedQuest",
   presents: "presents",
   lollipops: "lollipops",
-  bossEffects: "bossEffects",
-  bossEffectsCallbackMap: "bossEffectsCallbackMap",
+  effectsCallbackMap: "effectsCallbackMap",
   cursesCallbackMap: "cursesCallbackMap",
 };
 

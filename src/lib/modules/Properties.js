@@ -55,6 +55,7 @@ const ProperiesList = {
   voidPrice: {},
   elementLevel: {},
   bag: {},
+  effects: {},
   curses: {},
   seed: {},
   voidTreeFarm: {},
@@ -73,8 +74,7 @@ const ProperiesList = {
   chestbonus: {},
   voidCooldown: {},
   remainedQuest: {},
-  bossEffects: {},
-  bossEffectsCallbackMap: {},
+  effectsCallbackMap: {},
   cursesCallbackMap: {},
 };
 
