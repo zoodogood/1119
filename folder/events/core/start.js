@@ -9,6 +9,8 @@ import {
   CounterManager,
   EventsManager,
   StorageManager,
+  BossManager,
+  UserEffectManager,
 } from "#lib/modules/mod.js";
 import { client } from "#bot/client.js";
 
@@ -35,6 +37,8 @@ class Event extends BaseEvent {
 
     await CommandsManager.importCommands();
     CommandsManager.createCallMap();
+    await UserEffectManager.importEffects();
+    BossManager.BossEffects.updateBasesFromManager();
 
     TimeEventsManager.handle();
 
@@ -74,10 +78,10 @@ class Event extends BaseEvent {
     Data.site.entersToAPIToday ||= 0;
     Data.bot.bossDamageToday ||= 0;
 
-    Data.audit ||= {
-      daily: {},
-      resourcesChanges: {},
-    };
+    Data.audit ||= {};
+    Data.audit.daily ||= {};
+    Data.audit.resourcesChanges ||= {};
+    Data.audit.actions ||= {};
 
     const now = Date.now();
     Data.users.forEach((userData) =>
