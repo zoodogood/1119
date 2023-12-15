@@ -236,7 +236,8 @@ class Template {
     if (availableList[moduleName] === false) {
       const mask = this.getPermissionsMask();
       const missing = Object.entries(this.constructor.PERMISSIONS_MASK_ENUM)
-        .filter(([_key, bit]) => permissions.scope === bit && !(mask & bit))
+        /* eslint-disable-next-line no-unused-vars*/
+        .filter(([_, bit]) => permissions.scope === bit && !(mask & bit))
         .map(([key]) => key)
         .join(", ");
 
@@ -513,102 +514,6 @@ class Template {
     const output = await vm.run(regular);
 
     return String(output);
-  }
-
-  async getFromScope(regular) {
-    let func;
-    const base = regular.template.base;
-
-    const way = regular.reg.match(
-      /(?:[^.]+?\(.+?\))($|(?=\.))|([a-z0-9]+)(?!=[(])/gim,
-    );
-    if (!way) return `\\!{${regular.reg}}`;
-
-    let scope = await this.openScope(regular);
-    let last = scope;
-
-    try {
-      // if
-      for (let i = 0; i < way.length; i++) {
-        regular.args = null;
-        if (typeof last === "function") {
-          // function
-          args = way[i].match(/\(.+?\)/);
-          if (!args) {
-            base.msg("Шаблон функция", {
-              description: `Свойство \`${way[i]}\` - функция()\nScope:/${way
-                .slice(0, i + 1)
-                .join(" -> ")}\nПовторите попытку указав аргумент: \`${
-                scope.false_func
-              }\``,
-            });
-            return "[шаблон Фунция]";
-          }
-          regular.args = way[i]
-            .slice(args.index + 1, -1)
-            .split(/(?<!\\)\,/)
-            .map((e) => e.replace("\\,", ",").trim());
-          way[i] = way[i].slice(0, func.index);
-        }
-        scope = await scope[way[i]];
-        if (scope === undefined && !regular.args) scope = this.options[way[i]];
-
-        if (scope === undefined) {
-          if (typeof last === "object" && last instanceof Array == false)
-            base.msg("Шаблон 404", {
-              description:
-                "В вашем шаблоне не найдено свойство `" +
-                way[i] +
-                "` по пути: \nScope:/" +
-                way.slice(0, i + 1).join(" -> ") +
-                "\nДоступные свойства: `" +
-                (Object.keys(last).length < 10
-                  ? Object.keys(last).join("`/`")
-                  : Object.keys(last).slice(0, 7).join("`/`") + "``/...") +
-                "`",
-            });
-          else
-            base.msg("Шаблон 404", {
-              description: `В вашем шаблоне возникла ошибка: по пути:\n${way
-                .slice(0, i + 1)
-                .join(" -> ")}\nЗначение ${last} не имеет свойств.`,
-              delete: 20000,
-            });
-          return "[шаблон Шаблон]";
-        }
-
-        if (scope.false_func) {
-        }
-        last = scope;
-      }
-
-      if (typeof scope === "object") {
-        Object.assign(this.options, scope);
-        base.msg(
-          "Свойство `" +
-            way.at(-1) +
-            "` — объект, для получения примитивных значений попробуйте обратиться к его свойствам",
-          {
-            description:
-              "Доступные свойства: `" +
-              (Object.keys(scope).length < 20
-                ? Object.keys(scope).join("`/`")
-                : Object.keys(scope).slice(0, 15).join("`/`") + "``/...") +
-              "`",
-          },
-        );
-        return `[шаблон Объект(${Object.keys(scope).length})]`;
-      }
-
-      if (scope.length > 99) return "[шаблон Превышен лимит]";
-
-      return scope;
-    } catch (e) {
-      base.msg("В шаблоне произошла ошибка", { description: e.message });
-      console.error("Внутришаблонная ошибка");
-      console.error(e);
-      return "[ошибка Шаблона]";
-    }
   }
 }
 
