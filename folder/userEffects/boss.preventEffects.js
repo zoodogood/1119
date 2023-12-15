@@ -6,7 +6,7 @@ export default {
   id: "boss.preventEffects",
   callback: {
     bossBeforeEffectInit: (user, effect, context) => {
-      const target = context.effect;
+      const { effect: target } = context;
       const { values } = effect;
       const effectBase = CurseManager.cursesBase.get(target.id);
       if (
@@ -16,7 +16,7 @@ export default {
         return;
       }
 
-      if (effectBase.canPrevented) {
+      if (effectBase.canPrevented === false) {
         return;
       }
 
