@@ -23,7 +23,7 @@ export default {
   values: {
     power: () => 1 / 100_000,
     lastAttackTimestamp: () => Date.now(),
-    guild: ({ guild }) => guild?.id,
+    guildId: (user, effect, { guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,
 };
