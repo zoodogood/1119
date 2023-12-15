@@ -55,7 +55,7 @@ export default {
     basic: () => 2,
     goal: () => 30,
     hours: () => {},
-    guild: ({ guild }) => guild?.id,
+    guildId: (user, effect, { guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,
 };
