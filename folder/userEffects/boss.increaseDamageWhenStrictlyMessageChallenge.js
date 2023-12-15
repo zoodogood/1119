@@ -5,6 +5,14 @@ export default {
   id: "boss.increaseDamageWhenStrictlyMessageChallenge",
   callback: {
     messageCreate: (user, effect, message) => {
+      const {
+        values: { guildId },
+      } = effect;
+
+      const { guild } = message;
+      if (guild.id !== guildId) {
+        return;
+      }
       const values = effect.values;
       const userStats = BossManager.getUserStats(
         message.guild.data.boss,
@@ -47,6 +55,7 @@ export default {
     basic: () => 2,
     goal: () => 30,
     hours: () => {},
+    guild: ({ guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,
 };
