@@ -21,7 +21,7 @@ export default {
   },
   values: {
     power: () => 1 / 100_000,
-    guild: ({ guild }) => guild?.id,
+    guildId: (user, effect, { guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,
 };
