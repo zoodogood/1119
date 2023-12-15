@@ -2,6 +2,10 @@ import { BossEffects } from "#lib/modules/BossManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 
+function isBossEffect(effect) {
+  return effect.id.startsWith("boss.");
+}
+
 export default {
   id: "boss.preventEffects",
   callback: {
@@ -13,6 +17,10 @@ export default {
         values.influence &&
         !values.influence.includes(effectBase.influence)
       ) {
+        return;
+      }
+
+      if (!isBossEffect(effect)) {
         return;
       }
 
