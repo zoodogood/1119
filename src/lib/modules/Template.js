@@ -15,6 +15,7 @@ import {
   QuestManager,
   GuildVariablesManager,
   StorageManager,
+  ErrorsHandler,
 } from "#lib/modules/mod.js";
 
 import * as PropertiesManager from "#lib/modules/Properties.js";
@@ -358,6 +359,14 @@ class Template {
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.USER,
           investigate: this.PERMISSIONS_MASK_ENUM.USER,
+        },
+      },
+      ErrorsHandler: {
+        getContent: () => ErrorsHandler,
+        name: "ErrorsHandler",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.USER,
+          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       CommandsManager: {
