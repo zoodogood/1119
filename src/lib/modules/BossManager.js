@@ -345,7 +345,7 @@ class BossEffects {
       return null;
     }
 
-    user.action(Actions.bossEffectEnd, effect);
+    user.action(Actions.bossEffectEnd, { effect, index });
     UserEffectManager.removeEffect({ effect, user });
   }
 
@@ -360,7 +360,6 @@ class BossEffects {
    */
   static effectBases;
 }
-
 
 class BossRelics {
   static collection = new Collection(
