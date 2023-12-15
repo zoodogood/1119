@@ -59,6 +59,14 @@ const Schema = {
             timestamp: 0,
           },
         ],
+        effects: [
+          {
+            id: "",
+            uid: "",
+            createdAt: 0,
+            values: {},
+          },
+        ],
         questReward: {},
         questTime: {},
         last_online: 0,
@@ -102,8 +110,7 @@ const Schema = {
         remainedQuest: {},
         presents: 0,
         lollipops: 0,
-        bossEffects: {},
-        bossEffectsCallbackMap: {},
+        effectsCallbackMap: {},
         cursesCallbackMap: {},
       },
     ],
@@ -124,8 +131,9 @@ const Schema = {
           commandsUsed: 0,
           riches: 0,
         },
-        resourcesChanges: {},
       },
+      resourcesChanges: {},
+      actions: {},
     },
   },
 };
@@ -191,6 +199,7 @@ const Schema = {
  * @property {number} voidCoins
  * @property {quest} quest
  * @property {curses[]} curses
+ * @property {effects[]} effects
  * @property {questReward} questReward
  * @property {questTime} questTime
  * @property {number} last_online
@@ -234,8 +243,7 @@ const Schema = {
  * @property {remainedQuest} remainedQuest
  * @property {number} presents
  * @property {number} lollipops
- * @property {bossEffects} bossEffects
- * @property {bossEffectsCallbackMap} bossEffectsCallbackMap
+ * @property {effectsCallbackMap} effectsCallbackMap
  * @property {cursesCallbackMap} cursesCallbackMap
  */
 
@@ -258,10 +266,16 @@ const Schema = {
  */
 
 /**
- * @typedef {object} values
- * @property {number} goal
- * @property {number} progress
- * @property {number} timer
+* @typedef {object} values
+
+*/
+
+/**
+ * @typedef {object} effects
+ * @property {string} id
+ * @property {string} uid
+ * @property {number} createdAt
+ * @property {values} values
  */
 
 /**
@@ -355,12 +369,7 @@ const Schema = {
 */
 
 /**
-* @typedef {object} bossEffects
-
-*/
-
-/**
-* @typedef {object} bossEffectsCallbackMap
+* @typedef {object} effectsCallbackMap
 
 */
 
@@ -392,12 +401,13 @@ const Schema = {
 /**
  * @typedef {object} audit
  * @property {daily} daily
+ * @property {resourcesChanges} resourcesChanges
+ * @property {actions} actions
  */
 
 /**
  * @typedef {object} daily
  * @property {}
- * @property {resourcesChanges} resourcesChanges
  */
 
 /**
@@ -411,6 +421,11 @@ const Schema = {
 
 /**
 * @typedef {object} resourcesChanges
+
+*/
+
+/**
+* @typedef {object} actions
 
 */
 
