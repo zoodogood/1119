@@ -43,10 +43,6 @@ class ActionManager {
         /** Effects */
         if (actionName in (userData.effectsCallbackMap ?? {}))
           for (const effect of [...userData.effects]) {
-            if (data.guild && effect.guildId !== data.guild.id) {
-              continue;
-            }
-
             const effectBase = UserEffectManager.store.get(effect.id);
             try {
               if (actionName in effectBase.callback)
