@@ -4,7 +4,8 @@ import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 export default {
   id: "boss.increaseAttackDamage",
   callback: {
-    bossBeforeAttack: (user, effect, { guild, attackContext }) => {
+    bossBeforeAttack: (user, effect, data) => {
+      const { guild, attackContext } = data;
       const {
         values: { guildId },
       } = effect;
@@ -23,7 +24,7 @@ export default {
   values: {
     power: 2,
     duration: 1,
-    guildId: ({ guild }) => guild?.id,
+    guildId: (user, effect, { guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,
 };
