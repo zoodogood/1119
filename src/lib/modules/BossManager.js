@@ -296,7 +296,7 @@ class BossEffects {
     );
   }
 
-  static applyEffect({ effectId, guild, user, values = {} }) {
+  static applyEffect({ effectId, guild = null, user, values = {} }) {
     const effectBase = this.effectBases.get(effectId);
 
     const effect = UserEffectManager.createOfBase({
@@ -308,6 +308,7 @@ class BossEffects {
     Object.assign(effect.values, values);
 
     const context = {
+      guild,
       effect,
       defaultPrevented: false,
       preventDefault() {
@@ -316,7 +317,12 @@ class BossEffects {
     };
     user.action(Actions.bossBeforeEffectInit, context);
 
-    context.applyContext = UserEffectManager.applyEffect({ effect, user });
+    context.applyContext = UserEffectManager.applyEffect({
+      effect,
+      effectBase,
+      user,
+      context,
+    });
     if (context.applyContext.defaultPrevented) {
       context.defaultPrevented = true;
       return context;
@@ -351,7 +357,8 @@ class BossEffects {
 
   static effectsOf({ boss, user }) {
     return UserEffectManager.effectsOf({ user }).filter(
-      (effect) => effect.values.guildId === boss.guildId,
+      (effect) =>
+        effect.id.startsWith("boss.") && effect.values.guildId === boss.guildId,
     );
   }
 
