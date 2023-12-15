@@ -10,6 +10,14 @@ export default {
   id: "boss.preventEffects",
   callback: {
     bossBeforeEffectInit: (user, effect, context) => {
+      const {
+        values: { guildId },
+      } = effect;
+
+      const { guild } = context;
+      if (guild.id !== guildId) {
+        return;
+      }
       const { effect: target } = context;
       const { values } = effect;
       const effectBase = CurseManager.cursesBase.get(target.id);
@@ -37,6 +45,7 @@ export default {
   },
   values: {
     count: () => 1,
+    guild: ({ guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,
 };
