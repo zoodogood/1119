@@ -9,9 +9,11 @@ class Command {
     const currentHealthPointPercent =
       1 - boss.damageTaken / boss.healthThresholder;
 
+    const toFixed = Math.ceil(boss.level / 30);
+
     const contents = {
       currentHealth: BossManager.isElite(boss)
-        ? Math.max(currentHealthPointPercent * 100, 0.1).toFixed(1)
+        ? Math.max(currentHealthPointPercent * 100, 0.1).toFixed(toFixed)
         : Math.ceil(currentHealthPointPercent * 100),
 
       leaveDay: `Уйдет ${
