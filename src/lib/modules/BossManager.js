@@ -441,7 +441,7 @@ const LegendaryWearonList = new Collection(
   Object.entries({
     afkPower: {
       description: "Урон ваших атак будет расти за время простоя",
-      effect: "increaseDamageByAfkTime",
+      effect: "boss.increaseDamageByAfkTime",
       emoji: "❄️",
       values: {
         power: () => 1 / (60_000 * 10),
@@ -449,7 +449,7 @@ const LegendaryWearonList = new Collection(
     },
     percentDamage: {
       description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
-      effect: "increaseDamageByBossCurrentHealthPoints",
+      effect: "boss.increaseDamageByBossCurrentHealthPoints",
       emoji: "🩸",
       values: {
         power: () => 0.0005,
@@ -457,7 +457,7 @@ const LegendaryWearonList = new Collection(
     },
     manyEvent: {
       description: "Увеличивает количество событий атаки на 3",
-      effect: "increaseAttackEventsCount",
+      effect: "boss.increaseAttackEventsCount",
       emoji: "✨",
       values: {
         power: () => 3,
@@ -466,7 +466,7 @@ const LegendaryWearonList = new Collection(
     togetherWeAre: {
       description:
         "Каждая ваша атака увеличивает урон по боссу независимо от кубика",
-      effect: "increaseDamageForBoss",
+      effect: "boss.increaseDamageForBoss",
       emoji: "💧",
       values: {
         power: () => 0.0005,
@@ -475,7 +475,7 @@ const LegendaryWearonList = new Collection(
     complexWork: {
       description:
         "Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону",
-      effect: "increaseDamageWhenStrictlyMessageChallenge",
+      effect: "boss.increaseDamageWhenStrictlyMessageChallenge",
       emoji: "🎈",
       values: {
         power: () => 1.1,
@@ -1257,7 +1257,7 @@ class BossManager {
         id: "increaseAttackCooldown",
         description: "Урон следующих двух атак был увеличен",
         callback: ({ guild, user }) => {
-          const effectId = "increaseAttackDamage";
+          const effectId = "boss.increaseAttackDamage";
           const values = { duration: 2, power: 3 };
           BossEffects.applyEffect({ values, guild, user, effectId });
         },
@@ -1889,7 +1889,7 @@ class BossManager {
             count: 2,
           };
           BossEffects.applyEffect({
-            effectId: "preventEffects",
+            effectId: "boss.preventEffects",
             user,
             guild,
             values,
