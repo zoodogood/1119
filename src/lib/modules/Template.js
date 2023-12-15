@@ -16,6 +16,7 @@ import {
   GuildVariablesManager,
   StorageManager,
   ErrorsHandler,
+  UserEffectManager,
 } from "#lib/modules/mod.js";
 
 import * as PropertiesManager from "#lib/modules/Properties.js";
@@ -381,6 +382,14 @@ class Template {
       EventsManager: {
         getContent: () => EventsManager,
         name: "EventsManager",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+        },
+      },
+      UserEffectManager: {
+        getContent: () => UserEffectManager,
+        name: "UserEffectManager",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
           investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
