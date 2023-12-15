@@ -148,6 +148,11 @@ class UserEffectManager {
     }
   }
 
+  static removeAllOf({ user }) {
+    const list = this.effectsOf({ user });
+    this.removeEffects({ list, user });
+  }
+
   static _removeEffect = Core.removeEffect;
   static createOfBase = Core.createOfBase;
   static applyEffect = Core.applyEffect;
