@@ -13,6 +13,7 @@ import { BossEffects } from "#lib/modules/BossManager.js";
 import { RanksUtils } from "#folder/commands/top.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import Executor from "#lib/modules/Executor.js";
+import UserEffectManager from "#lib/modules/EffectsManager.js";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -943,16 +944,16 @@ class CurseManager {
             userData.cursesCallbackMap.curseTimeEnd = true;
             userData[this.EFFECT_ID] = puppet;
           },
-          timeEventBossEffectTimeoutEnd(user, curse, data) {
+          timeEventEffectTimeoutEnd(user, curse, data) {
             const userData = user.data;
             const puppet = userData[this.EFFECT_ID];
 
-            const compare = (effect) => effect.timestamp === data.timestamp;
-            const target = (puppet.bossEffects || []).find(compare);
-            if (!curse) {
+            const compare = (effect) => effect.uid === data.uid;
+            const target = (puppet.effects || []).find(compare);
+            if (!target) {
               return;
             }
-            BossEffects.removeEffect({ effect: target, user });
+            UserEffectManager.removeEffect({ effect: target, user });
             data.event.preventDefault();
           },
           timeEventCurseTimeoutEnd: (user, curse, data) => {
