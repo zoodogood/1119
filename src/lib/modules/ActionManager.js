@@ -74,7 +74,7 @@ class ActionManager {
                   data,
                 );
             } catch (error) {
-              ErrorsHandler.Audit.push(error, {
+              ErrorsHandler.onErrorReceive(error, {
                 actionName,
                 source: "CurseAction",
                 curseId: curse.id,
