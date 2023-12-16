@@ -67,7 +67,8 @@ function inspectStructure(structure) {
 
 class Template {
   constructor(source, context) {
-    source.executer = context.client.users.resolve(source.executer);
+    const { client } = context;
+    source.executer = client.users.resolve(source.executer);
 
     this.source = source;
     this.context = context;
@@ -148,7 +149,8 @@ class Template {
 
     const vm = new VM({ timeout: MAX_TIMEOUT });
     this.makeSandbox(vm);
-    return vm;
+    this.vm = vm;
+    return this;
   }
 
   getPermissionsMask() {
@@ -518,12 +520,53 @@ class Template {
     guildCommand: "guildCommand",
   };
 
-  async getRegular(regular) {
-    const vm = this.vm ?? this.createVM();
-    const output = await vm.run(regular);
+  provideRegularProxy(regular) {
+    return new RegularProxy().with({ regular }).process();
+  }
 
+  async run(regular) {
+    const vm = this.vm ?? this.createVM().vm;
+    regular = this.provideRegularProxy(regular);
+    console.log(regular);
+    const output = await vm.run(regular);
     return String(output);
   }
 }
 
+class RegularProxy {
+  with(data) {
+    Object.assign(this, data);
+    return this;
+  }
+  process() {
+    this.processMacroses();
+    return this.regular;
+  }
+
+  processMacroses() {
+    const regex = /(\w+)'([^\s]*)/;
+    while (true) {
+      const macro = this.regular.match(regex);
+      if (!macro) {
+        return;
+      }
+
+      this.regular = this.regular.replace(regex, (full, macro, value) =>
+        this.onMacro({ macro, value }),
+      );
+    }
+  }
+
+  onMacro(context) {
+    const { macro } = context;
+    return this.macroses[macro].call(this, context);
+  }
+
+  macroses = {
+    m: (context) => {
+      const { value } = context;
+      return `module("${value}")`;
+    },
+  };
+}
 export default Template;
