@@ -17,11 +17,15 @@ class StorageManager {
 
     await this.driver.init();
   }
+
   static async write(name, content) {
     await this.driver.writeFile(name, content);
   }
   static async read(name) {
     await this.driver.readFile(name);
+  }
+  static async keys() {
+    await this.driver.keys();
   }
 }
 
