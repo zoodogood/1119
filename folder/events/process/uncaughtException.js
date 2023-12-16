@@ -8,7 +8,7 @@ class Event extends BaseEvent {
   }
 
   async run(error) {
-    ErrorsHandler.Audit.push(error, { uncaughtException: true });
+    ErrorsHandler.onErrorReceive(error, { uncaughtException: true });
     EventsManager.emitter.emit("beforeExit");
   }
 
