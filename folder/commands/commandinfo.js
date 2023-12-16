@@ -5,71 +5,55 @@ import Discord from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 
 class Command {
-  async onChatInput(msg, interaction) {
-    const __inServer = msg.channel.id === "753687864302108913";
+  getContext(interaction) {
     const params = interaction.params
       .toLowerCase()
       .replace(/[^a-zа-яёьъ0-9]/g, "")
       .trim();
-    const command = CommandsManager.callMap.get(params);
 
-    const typesEnum = {
-      dev: "Команда в разработке или доступна только разработчику",
-      delete: "Команда была удалена",
-      guild: "Управление сервером",
-      user: "Пользователи",
-      bot: "Бот",
-      other: "Другое",
+    const command = CommandsManager.callMap.get(params);
+    const meta = command ? this.fetchCommandMetadata(command) : null;
+    return {
+      command,
+      params,
+      meta,
+      interaction,
     };
+  }
+
+  async onChatInput(msg, interaction) {
+    const __inServer = msg.channel.id === "753687864302108913";
+
+    const context = this.getContext(interaction);
+    const { meta, command } = context;
 
     if (!command) {
-      const helpMessage = await msg.msg({
-        title: "Не удалось найти команду",
-        description: `Не существует вызова \`!${interaction.params}\`\nВоспользуйтесь командой !хелп или нажмите реакцию ниже для получения списка команд.\nНа сервере бота Вы можете предложить псевдонимы для вызова одной из существующих команд.`,
-      });
-      //** Реакция-помощник
-      const react = await helpMessage.awaitReact(
-        { user: msg.author, removeType: "all" },
-        "❓",
-      );
-      if (!react) {
-        return;
-      }
-
-      await CommandsManager.callMap.get("help").onChatInput(msg, interaction);
-      /**/
+      this.sendHelpMessage(context);
       return;
     }
 
-    const originalName = command.options.name;
-    const namesList = command.options.allias.split(" ");
-    const guideDescription =
-      command.options.media?.description ||
-      "Описание для этой команды пока отсуствует...";
-    const poster = command.options.media?.poster;
+    const {
+      alliases,
+      commandNameId,
+      guide,
+      poster,
+      usedCount,
+      githubURL,
+      id,
+      category,
+    } = meta;
 
-    const usedCount =
-      DataManager.data.bot.commandsUsed[command.options.id] || 0;
-    const usedPercent =
-      +(
-        (usedCount /
-          Object.values(DataManager.data.bot.commandsUsed).reduce(
-            (acc, count) => acc + count,
-            0,
-          )) *
-        100
-      ).toFixed(1) + "%";
+    const commandUsedTotally = this.calculateCommandsUsedTotally();
 
-    const githubURL = Util.resolveGithubPath(
-      `./folder/commands/${originalName}.js`,
-    );
+    const usedPercentage =
+      +((usedCount / commandUsedTotally) * 100).toFixed(1) + "%";
 
     const embed = {
-      title: `— ${originalName.toUpperCase()}`,
+      title: `— ${commandNameId.toUpperCase()}`,
       description:
-        guideDescription.trim() +
+        guide.trim() +
         (__inServer
-          ? `\nДругие названия:\n${namesList
+          ? `\nДругие названия:\n${alliases
               .map((name) => `!${name}`)
               .join(" ")}`
           : ""),
@@ -85,28 +69,92 @@ class Command {
             {
               name: "Другие способы вызова:",
               value: Discord.escapeMarkdown(
-                namesList.map((name) => `!${name}`).join(" "),
+                alliases.map((name) => `!${name}`).join(" "),
               ),
             },
             // To-do
             {
               name: "Категория:",
-              value: `${typesEnum[command.options.type]}${
+              value: `${this.CategoriesEnum[category]}${
                 githubURL ? `\n[Просмотреть в Github ~](${githubURL})` : ""
               }`,
             },
             { name: "Необходимые права", value: "to-do" },
             {
               name: "Количество использований",
-              value: `${usedCount} (${usedPercent})`,
+              value: `${usedCount} (${usedPercentage})`,
             },
           ],
       footer: __inServer
         ? null
-        : { text: `Уникальный идентификатор команды: ${command.options.id}` },
+        : { text: `Уникальный идентификатор команды: ${id}` },
     };
     const message = await msg.msg(embed);
     return message;
+  }
+
+  CategoriesEnum = {
+    dev: "Команда в разработке или доступна только разработчику",
+    delete: "Команда была удалена",
+    guild: "Управление сервером",
+    user: "Пользователи",
+    bot: "Бот",
+    other: "Другое",
+  };
+
+  resolveGithubPathOf(commandNameId) {
+    return Util.resolveGithubPath(`./folder/commands/${commandNameId}.js`);
+  }
+
+  fetchCommandMetadata(command) {
+    const commandNameId = command.options.name;
+    const category = command.options.type;
+    const alliases = command.options.allias.split(" ");
+    const poster = command.options.media?.poster;
+    const githubURL = this.resolveGithubPathOf(commandNameId);
+    const guide =
+      command.options.media?.description ||
+      "Описание для этой команды пока отсуствует...";
+    const usedCount =
+      DataManager.data.bot.commandsUsed[command.options.id] || 0;
+
+    return {
+      ...command.options,
+      category,
+      commandNameId,
+      alliases,
+      guide,
+      poster,
+      usedCount,
+      githubURL,
+    };
+  }
+
+  calculateCommandsUsedTotally() {
+    const used = Object.values(DataManager.data.bot.commandsUsed);
+    return used.reduce((acc, count) => acc + count, 0);
+  }
+  async sendHelpMessage(context) {
+    const { interaction } = context;
+    const { channel, user } = interaction;
+    const helpMessage = await channel.msg({
+      title: "Не удалось найти команду",
+      description: `Не существует вызова \`!${interaction.params}\`\nВоспользуйтесь командой !хелп или нажмите реакцию ниже для получения списка команд.\nНа сервере бота Вы можете предложить псевдонимы для вызова одной из существующих команд.`,
+    });
+    //** Реакция-помощник
+    const react = await helpMessage.awaitReact(
+      { user, removeType: "all" },
+      "❓",
+    );
+    if (!react) {
+      return;
+    }
+
+    await CommandsManager.callMap
+      .get("help")
+      .onChatInput(interaction.message, interaction);
+
+    return;
   }
 
   options = {
