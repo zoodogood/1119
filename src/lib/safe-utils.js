@@ -10,7 +10,7 @@ import {
   DotNotatedInterface,
 } from "@zoodogood/utils/objectives";
 import dayjs from "dayjs";
-import FlattedJSON from "flatted";
+import * as FlattedJSON from "flatted";
 dayjs.extend((await import("dayjs/plugin/duration.js")).default);
 
 import yaml from "yaml";
