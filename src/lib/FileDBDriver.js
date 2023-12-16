@@ -38,6 +38,21 @@ class FileDBDriver {
       throw error;
     }
   }
+  async keys(path = "") {
+    const { root } = this.constructor;
+    const fullpath = `${root}/${path}`;
+    try {
+      const result = await FileSystem.readdir(fullpath);
+      return result;
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        this._createDeepFolder(Path.resolve(fullpath, "../"));
+        const result = await this.keys(path);
+        return result;
+      }
+      throw error;
+    }
+  }
 
   async _createDeepFolder(path) {
     FileSystem.mkdir(path, { recursive: true });
