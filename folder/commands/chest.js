@@ -48,7 +48,7 @@ class Chest {
 
   static calculateOpenCount({ user }) {
     const bonuses = user.data.chestBonus || 0;
-    return 2 + Math.ceil(bonuses / 3);
+    return Util.random(2) + Math.ceil(bonuses / 3);
   }
 
   static getResources({ user, openCount }) {
