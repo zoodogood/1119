@@ -791,6 +791,14 @@ BigInt.prototype.toJSON = function () {
   return this.toString();
 };
 
+Set.prototype.toJSON = function () {
+  return [...this.values()];
+};
+
+Map.prototype.toJSON = function () {
+  return [...this.entries()];
+};
+
 Object.defineProperty(Discord.User.prototype, "guilds", {
   get() {
     const guilds = client.guilds.cache.filter((guild) =>
