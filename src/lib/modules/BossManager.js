@@ -1259,7 +1259,7 @@ class BossManager {
         },
       },
       increaseNextTwoAttacksDamage: {
-        weight: 100000000,
+        weight: 1_000,
         repeats: true,
         id: "increaseAttackCooldown",
         description: "Урон следующих двух атак был увеличен",
