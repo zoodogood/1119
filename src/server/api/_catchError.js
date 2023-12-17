@@ -13,7 +13,7 @@ class Route extends BaseRoute {
   }
 
   async catch(error, request, response, next) {
-    ErrorsHandler.Audit.push(error, {
+    ErrorsHandler.onErrorReceive(error, {
       path: request.originalUrl,
       source: "API",
     });
