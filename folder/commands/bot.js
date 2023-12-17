@@ -68,8 +68,12 @@ class Command {
         1024
       ).toFixed(2)} МБ\``,
 
-      errors: `Паник за текущий сеанс: ${ErrorsHandler.session.metadata.errorsCount}`,
-      uniqueErrors: `Уникальных паник: ${ErrorsHandler.session.metadata.uniqueErrors.size}`,
+      errors: `Паник за текущий сеанс: ${
+        ErrorsHandler.session().metadata.errorsCount
+      }`,
+      uniqueErrors: `Уникальных паник: ${
+        ErrorsHandler.session().metadata.uniqueErrors.size
+      }`,
     };
 
     const embed = {
