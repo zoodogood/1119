@@ -17,7 +17,7 @@ class Event extends BaseEvent {
       await DataManager.file.write();
       await TimeEventsManager.file.write();
       await CounterManager.file.write();
-      await ErrorsHandler.Audit.createLog();
+      await ErrorsHandler.sessionWriteFile();
     } catch (error) {
       console.error(error);
     }
