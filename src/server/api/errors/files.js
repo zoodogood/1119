@@ -1,20 +1,23 @@
 const PREFIX = "/errors/files";
-import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
-import { BaseRoute } from '#server/router.js';
-
+import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
+import { BaseRoute } from "#server/router.js";
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+  prefix = PREFIX;
 
-	constructor(express){
-		super();
-	}
+  constructor(express) {
+    super();
+  }
 
-	async get(request, response){
-		const list = await ErrorsHandler.Audit.fetchLogs();
-		const metadata = ErrorsHandler.CacheData.getBulk();
-		response.json({list, metadata});
-	}
+  async get(request, response) {
+    const list = await ErrorsHandler.Core.filesList;
+    const cacheManager = ErrorsHandler.Core.cache;
+    const metadata = [];
+    for (const key of list) {
+      metadata.push(await cacheManager.fetch(key));
+    }
+    response.json({ list, metadata });
+  }
 }
 
 export default Route;
