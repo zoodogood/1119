@@ -43,6 +43,9 @@ class ActionManager {
         /** Effects */
         if (actionName in (userData.effectsCallbackMap ?? {}))
           for (const effect of [...userData.effects]) {
+            if (effect.isDisabled) {
+              continue;
+            }
             const effectBase = UserEffectManager.store.get(effect.id);
             try {
               if (actionName in effectBase.callback)
