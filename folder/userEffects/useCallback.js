@@ -7,6 +7,7 @@ export default {
     [ActionsMap.any](user, effect, { actionName, data }) {
       const { callback } = effect.values;
       if (typeof callback !== "function") {
+        UserEffectManager.interface({ effect, user }).setDisabled(true);
         UserEffectManager.removeEffect({ effect, user });
         return;
       }
