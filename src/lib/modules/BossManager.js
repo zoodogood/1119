@@ -2033,12 +2033,11 @@ class BossManager {
         TIMEOUT: 60_000 * 10,
         description: "Возглас лидера",
         async callback(context) {
-          console.log(this);
           await Util.sleep(1000);
           const { guild, channel, boss, user } = context;
           const message = await context.fetchMessage();
           channel.sendTyping();
-          await Util.sleep(5000);
+          await Util.sleep(4000);
 
           const owner = (await guild.fetchOwner())?.user ?? user;
 
@@ -2087,7 +2086,7 @@ class BossManager {
             return;
           }
           const { baseDamage, damageSourceType } = data;
-          const { damageDealt } = BossManager.makeDamage(
+          const damageDealt = BossManager.makeDamage(
             boss,
             baseDamage * MULTIPLAYER,
             {
