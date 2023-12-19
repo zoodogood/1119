@@ -3,42 +3,58 @@ import DataManager from "#lib/modules/DataManager.js";
 import Discord from "discord.js";
 
 class Command {
+  removeAllUserPraises(context) {
+    const { userData, user } = context;
+    const names = [];
+    const currentPraises = userData.praise || [];
+
+    currentPraises.forEach((id) => {
+      const target = client.users.cache.get(id);
+      if (!target) {
+        return;
+      }
+
+      names.push(target.username);
+
+      const targetPraisesList = target.data.praiseMe;
+      const index = targetPraisesList.indexOf(user.id);
+      if (index === -1) {
+        return;
+      }
+
+      targetPraisesList.splice(index, 1);
+    });
+
+    userData.praise = [];
+    return { names };
+  }
+
+  getContext(interaction) {
+    const userData = interaction.user.data;
+    const { user } = interaction;
+    return { userData, user, interaction, questionMessage: null };
+  }
+
   async onChatInput(msg, interaction) {
-    const context = {
-      questionMessage: null,
-    };
+    const context = this.getContext(interaction);
 
     if (interaction.params === "+") {
-      const data = msg.author.data;
-
-      const currentPraises = data.praise || [];
-      const currentLength = currentPraises.length;
-
-      currentPraises.forEach((id) => {
-        const target = client.users.cache.get(id).data.praiseMe;
-        if (!target) return;
-
-        const index = target.indexOf(msg.author.id);
-        if (index === -1) return;
-
-        target.splice(index, 1);
-      });
-
-      data.praise = [];
-
+      const { names } = this.removeAllUserPraises(context);
       msg.msg({
-        description: `Использован параметр "+" — все похвалы были удалены (${currentLength})`,
-        delete: 10000,
+        description: `Использован параметр "+" — все похвалы были удалены (${
+          names.length
+        })\n${names.join(", ")}`,
+        delete: 30_000,
       });
     }
 
-    let memb =
+    const memb =
         interaction.mention ||
         msg.guild.members.cache.get(interaction.params) ||
         msg.author,
       user = memb.data,
-      isAuthor = memb == msg.author,
-      iPraise =
+      isAuthor = memb === msg.author;
+    let iPraise =
         user.praise && user.praise.length
           ? user.praise
               .map(
