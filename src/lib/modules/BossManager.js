@@ -16,6 +16,14 @@ import {
   UserEffectManager,
 } from "#lib/modules/EffectsManager.js";
 
+class BossUtils {
+  static damageTypeLabel(value) {
+    const numeric =
+      typeof value === "string" ? BossManager.DAMAGE_SOURCES[value] : value;
+    return BossManager.DAMAGE_SOURCES[numeric].label;
+  }
+}
+
 class BossShop {
   static async createShop({ guild, channel, user }) {
     const boss = guild.data.boss;
@@ -1188,7 +1196,7 @@ class BossManager {
       }
 
       try {
-        event.callback(data);
+        event.callback.call(event, data);
       } catch (error) {
         ErrorsHandler.onErrorReceive(error, { source: "BossAttackAction" });
         channel.msg({
@@ -2016,6 +2024,87 @@ class BossManager {
         },
         filter: ({ boss, userStats }) => {
           return BossManager.isElite(boss) && !userStats.relicIsTaked;
+        },
+      },
+      leaderRoar: {
+        weight: 200000,
+        id: "leaderRoar",
+        MULTIPLAYER: 15,
+        TIMEOUT: 60_000 * 10,
+        description: "Возглас лидера",
+        async callback(context) {
+          console.log(this);
+          await Util.sleep(1000);
+          const { guild, channel, boss, user } = context;
+          const message = await context.fetchMessage();
+          channel.sendTyping();
+          await Util.sleep(5000);
+
+          const owner = (await guild.fetchOwner())?.user ?? user;
+
+          const TIMEOUT = this.TIMEOUT;
+          const MULTIPLAYER = this.MULTIPLAYER;
+          const whenOwnerMakeDamage = new Promise((resolve) => {
+            const callback = (_user, effect, { actionName, data }) => {
+              if (actionName !== Actions.bossMakeDamage) {
+                return;
+              }
+
+              return resolve({ effect, data });
+            };
+            const { effect } = UserEffectManager.justEffect({
+              effectId: "useCallback",
+              user: owner,
+              values: {
+                callback,
+              },
+            });
+
+            const outTimeout = () => resolve({ effect, data: null });
+            setTimeout(outTimeout, TIMEOUT);
+          });
+
+          const embed = {
+            reference: message.id,
+            description: `Ждем до ${
+              TIMEOUT / 60_000
+            } м., пока ${owner.toString()} нанесёт урон боссу. Вы нанесёте в ${Util.ending(
+              MULTIPLAYER,
+              "раз",
+              "",
+              "",
+              "а",
+            )} больше от этого значения`,
+          };
+
+          const showsMessage = await channel.msg(embed);
+
+          const { effect, data } = await whenOwnerMakeDamage;
+          UserEffectManager.removeEffect({ effect, user: owner });
+          if (!data) {
+            embed.description += "\n\nНе дождались...";
+            showsMessage.msg({ ...embed, edit: true });
+            return;
+          }
+          const { baseDamage, damageSourceType } = data;
+          const { damageDealt } = BossManager.makeDamage(
+            boss,
+            baseDamage * MULTIPLAYER,
+            {
+              sourceUser: user,
+              damageSourceType,
+            },
+          );
+          embed.description += `\n\nДождались.., — наносит ${baseDamage} базового урона от источника ${BossUtils.damageTypeLabel(
+            damageSourceType,
+          )}.\nВы наносите в ${Util.ending(
+            MULTIPLAYER,
+            "раз",
+            "",
+            "",
+            "а",
+          )} больше: ${damageDealt} ед. урона`;
+          showsMessage.msg({ ...embed, edit: true });
         },
       },
       // ______e4example: {
