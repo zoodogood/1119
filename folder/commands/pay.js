@@ -49,6 +49,18 @@ class Command {
       names: "monster монстр монстра монстров монстры",
       gives: (n) => Util.ending(n, "монстр", "ов", "", "а"),
     },
+
+    {
+      resource: "seed",
+      names: "seed семян семечек семечко семечка seeds",
+      gives: (n) => Util.ending(n, "сем", "ечек", "ечко", "ечка"),
+    },
+
+    {
+      resource: "presents",
+      names: "presents подарок подарка подарков present",
+      gives: (n) => Util.ending(n, "подар", "ков", "ок", "ка"),
+    },
   ];
 
   pay(context) {
