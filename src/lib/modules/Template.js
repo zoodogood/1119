@@ -25,6 +25,7 @@ import { client } from "#bot/client.js";
 import FileSystem from "fs";
 import Discord from "discord.js";
 import { Constants } from "#constants/mod.js";
+import { MINUTE } from "#constants/globals/time.js";
 
 function isConstruct(fn) {
   try {
@@ -506,6 +507,29 @@ class Template {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
+      addEvaluateTemplateEffect: {
+        getContent: (context) => {
+          return ({ timer, template, hear } = {}) => {
+            if (!hear) {
+              throw new Error(
+                "Nothing to hear: Example hear: [(m'ActionsManager).Actions.coinFromMessage]",
+              );
+            }
+            timer ||= MINUTE * 3;
+            timer = Math.min(timer, MINUTE * 3);
+            return UserEffectManager.justEffect({
+              user: context.user,
+              effectId: "evaluateTemplate",
+              values: { template, timer, hear },
+            });
+          };
+        },
+        name: "addEvaluateTemplateEffect",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.USER,
+          investigate: this.PERMISSIONS_MASK_ENUM.USER,
+        },
+      },
     }),
   );
 
@@ -544,7 +568,7 @@ class RegularProxy {
   }
 
   processMacroses() {
-    const regex = /(\w+)'([^\s]*)/;
+    const regex = /(\w+)'(\w*)/;
     while (true) {
       const macro = this.regular.match(regex);
       if (!macro) {
@@ -570,6 +594,9 @@ class RegularProxy {
     id: ({ primary }) => {
       const { executer } = primary.source;
       return executer.id;
+    },
+    "3q": () => {
+      return "```";
     },
   };
 }
