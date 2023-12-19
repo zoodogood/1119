@@ -69,7 +69,7 @@ function inspectStructure(structure) {
 class Template {
   constructor(source, context) {
     const { client } = context;
-    source.executer = client.users.resolve(source.executer);
+    source.executor = client.users.resolve(source.executor);
 
     this.source = source;
     this.context = context;
@@ -163,13 +163,13 @@ class Template {
     const context = this.context;
     const permissionsEnum = this.constructor.PERMISSIONS_MASK_ENUM;
 
-    const isUser = !!source.executer;
+    const isUser = !!source.executor;
     const isGuildManager =
       context.guild &&
       context.guild.members
-        .resolve(source.executer)
+        .resolve(source.executor)
         .permissions.has(PermissionsBitField.Flags.ManageGuild);
-    const isDelevoper = config.developers.includes(source.executer.id);
+    const isDelevoper = config.developers.includes(source.executor.id);
 
     const mask =
       (isDelevoper * permissionsEnum.DEVELOPER) |
@@ -250,7 +250,7 @@ class Template {
       );
     }
 
-    const content = moduleEntity.getContent(this.context);
+    const content = moduleEntity.getContent(this.context, this.source);
 
     vm.sandbox[moduleName] = this.restrictContent(content, permissions);
     return vm.sandbox[moduleName];
@@ -508,19 +508,20 @@ class Template {
         },
       },
       addEvaluateTemplateEffect: {
-        getContent: (context) => {
+        getContent: (context, source) => {
           return ({ timer, template, hear } = {}) => {
             if (!hear) {
               throw new Error(
-                "Nothing to hear: Example hear: [(m'ActionsManager).Actions.coinFromMessage]",
+                "Nothing to hear: Example hear: {[(m'ActionsManager).Actions.coinFromMessage]: true}",
               );
             }
             timer ||= MINUTE * 3;
             timer = Math.min(timer, MINUTE * 3);
+            const executorId = source.executor.id;
             return UserEffectManager.justEffect({
               user: context.user,
               effectId: "evaluateTemplate",
-              values: { template, timer, hear },
+              values: { template, timer, hear, executorId },
             });
           };
         },
@@ -530,11 +531,38 @@ class Template {
           investigate: this.PERMISSIONS_MASK_ENUM.USER,
         },
       },
+      ___: {
+        getContent: (context, source) => {
+          return {
+            confirm: "Это тестовое поле и всё ещё может сильно изменится",
+            sendMessage(messagePayload) {
+              const { user, channel, guild } = context;
+              const target = guild ? channel : user;
+              target.msg({
+                ...messagePayload,
+                footer: {
+                  iconURL: source.executor.avatarURL(),
+                  text: `Это сообщение сгенерировано от ${source.executor.id}`,
+                },
+              });
+            },
+            guild: {
+              confirm: "Вам нужно обладать правами в гильдии",
+              removeGuild() {},
+            },
+          };
+        },
+        name: "___",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.USER,
+          investigate: this.PERMISSIONS_MASK_ENUM.USER,
+        },
+      },
     }),
   );
 
   static sourceTypes = {
-    /** Can be called independently from executer */
+    /** Can be called independently from executor */
     involuntarily: "involuntarily",
     /** user directly call */
     call: "call",
@@ -542,6 +570,8 @@ class Template {
     counter: "counter",
     /** From guild command */
     guildCommand: "guildCommand",
+    /** From userEffect/evaluateTemplate */
+    evaluateEffect: "evaluateEffect",
   };
 
   provideRegularProxy(regular) {
@@ -592,8 +622,8 @@ class RegularProxy {
       return `module("${value}")`;
     },
     id: ({ primary }) => {
-      const { executer } = primary.source;
-      return executer.id;
+      const { executor } = primary.source;
+      return executor.id;
     },
     "3q": () => {
       return "```";
