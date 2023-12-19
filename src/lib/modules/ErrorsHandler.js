@@ -4,19 +4,43 @@ import StorageManager from "#lib/modules/StorageManager.js";
 
 const { stringify, parse } = JSON;
 
-class FileMetadata {
+class Metadata {
   updateRequested = false;
+
+  constructor() {
+    const { defaults } = this.constructor;
+    Object.assign(this, defaults);
+  }
+
+  static defaults = {};
 
   requestUpdate() {
     this.updateRequested = true;
   }
+
+  appendMetadata() {
+    throw new Error("Must be implemented");
+  }
+
+  static from(props) {
+    return Object.assign(Object.create(this.prototype), props);
+  }
+}
+
+class SessionMetadata extends Metadata {
+  static defaults = {
+    commentsCount: null,
+    uniqueTags: new Set(),
+    errorsCount: null,
+    uniqueErrors: new Set(),
+  };
+
   appendCommentsCount(value) {
     this.commentsCount = value;
   }
 
-  appendTags(tags) {
-    this.uniqueTags ||= new Set();
-    this.uniqueTags.add(...tags);
+  appendTags(uniqueTags) {
+    this.uniqueTags.add(...uniqueTags);
   }
 
   appendErrorsCount(value) {
@@ -24,20 +48,19 @@ class FileMetadata {
   }
 
   appendUniqueErrors(messages) {
-    this.uniqueErrors ||= new Set();
     this.uniqueErrors.add(...messages);
   }
 
-  appendMetadata({ commentsCount, tags, errorsCount }) {
+  appendMetadata({ commentsCount, uniqueTags, errorsCount, uniqueErrors }) {
     commentsCount && this.appendCommentsCount(commentsCount);
-    tags && this.appendTags(tags);
+    uniqueTags && this.appendTags(uniqueTags);
     errorsCount && this.appendErrorsCount(errorsCount);
+    uniqueErrors && this.appendUniqueErrors(uniqueErrors);
   }
 }
 
-class GroupMetadata {
+class GroupMetadata extends Metadata {
   appendComment(data) {
-    this.comments ||= [];
     this.comments.push(data);
   }
 
@@ -137,7 +160,7 @@ class Group {
   }
 }
 
-class FilesMetadataCache {
+class SessionsMetadataCache {
   #cache = new Map();
 
   async fetch(key) {
@@ -188,21 +211,38 @@ class Core {
   /** 
    @typedef {object} ICoreStore
    @property {Map<string, Group>} errorGroups
-   @property { FileMetadata } meta
+   @property { SessionMetadata } meta
   */
   /**@type {ICoreStore} */
   static session = {
     errorGroups: new Map(),
-    meta: new FileMetadata(),
+    meta: new SessionMetadata(),
   };
 
-  static updateSessionMeta() {
-    const meta = this.session.meta;
-    meta.appendMetadata({});
+  static updateSessionMeta({ force = false } = {}) {
+    const { errorGroups, meta } = this.session;
+    if (!force && !meta.updateRequested) {
+      return;
+    }
+
+    const groups = [...errorGroups.values()];
+
+    meta.appendMetadata({
+      uniqueTags: groups.reduce(
+        (acc, { metadata }) => (acc.concat(...metadata.tags), acc),
+        [],
+      ),
+      commentsCount: groups.reduce(
+        (acc, { metadata }) => acc + (metadata.comments?.length ?? 0),
+        0,
+      ),
+      errorsCount: groups.reduce((acc, { errors }) => acc + errors.length, 0),
+      uniqueErrors: Object.keys(groups),
+    });
     meta.updateRequested = false;
   }
 
-  static cache = new FilesMetadataCache();
+  static cache = new SessionsMetadataCache();
   static filesList = [];
 
   static async importFileErrorsList() {
