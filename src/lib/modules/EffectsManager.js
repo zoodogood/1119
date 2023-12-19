@@ -89,8 +89,9 @@ class Core {
   }
 
   static removeEffect({ effect, user }) {
+    Core.setRemoved(effect, true);
+
     const index = user.data.effects.indexOf(effect);
-    console.log(index);
     if (index === -1) {
       return null;
     }
@@ -98,13 +99,43 @@ class Core {
     user.action(ActionsMap.effectRemove, { effect, index });
     user.data.effects.splice(index, 1);
   }
+
+  setRemoved(effect, value) {
+    effect.isRemoved = value;
+  }
+
+  setDisabled(effect, value) {
+    effect.isDisabled = value;
+  }
+}
+
+class EffectInterface {
+  setDisabled(value) {
+    Core.setDisabled(this.effect, value);
+  }
+
+  setRemoved(value) {
+    Core.setRemoved(this.effect, value);
+  }
+
+  remove() {
+    const { user, effect } = this;
+    Core.removeEffect({ effect, user });
+  }
+
+  static from(data) {
+    return Object.assign(Object.create(EffectInterface.prototype), data);
+  }
 }
 
 class UserEffectManager {
+  static interface({ user, effect }) {
+    return new EffectInterface.from({ user, effect });
+  }
+
   static removeEffects({ list, user }) {
     for (const effect of list) {
       this._removeEffect({ effect, user });
-      console.log(effect);
     }
 
     this.cleanCallbackMap(user);
@@ -137,7 +168,7 @@ class UserEffectManager {
     const effectBase = this.store.get(effectId);
     const effect = this.createOfBase({ effectBase, user, context });
     Object.assign(effect.values, values);
-    return call && this.applyEffect({ effect, effectBase, user });
+    return call && this.applyEffect({ effect, effectBase, user, context });
   }
 
   static async importEffects() {
