@@ -130,6 +130,11 @@ const ITEMS = [
     ending: (count) => `🌱 ${Util.ending(count, "Сем", "ян", "ечко", "ечка")}`,
   },
   {
+    key: "presents",
+    names: ["подарок", "подарка", "подарков", "present"],
+    ending: (count) => `🎁 ${Util.ending(count, "Подар", "ков", "ок", "ка")}`,
+  },
+  {
     key: "cheese",
     names: ["сыр", "сыра", "сыров", "cheese", "cheses"],
     ending: (count) => `🧀 ${Util.ending(count, "Сыр", "ов", "", "а")}`,
