@@ -264,6 +264,11 @@ class Manager {
     return Core.session;
   }
 
+  static actualSessionMeta() {
+    Core.updateSessionMeta();
+    return Core.session.meta;
+  }
+
   static onErrorReceive(error, context) {
     const errorData = new ErrorData(error, context);
     this.pushToSessionErrors(errorData, context);
