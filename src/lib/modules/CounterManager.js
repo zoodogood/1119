@@ -82,7 +82,7 @@ class CounterManager {
         .channels.cache.get(counter.channelId);
       const context = { client, counter, channel };
       const templater = new Template(
-        { executer: counter.authorId, type: Template.sourceTypes.counter },
+        { executor: counter.authorId, type: Template.sourceTypes.counter },
         context,
       );
 
