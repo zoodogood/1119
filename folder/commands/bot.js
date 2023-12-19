@@ -50,7 +50,6 @@ class Command {
       Math.floor((new Date().getMonth() + 1) / 3) % 4
     ];
     const version = app.version ?? "0.0.0";
-    ErrorsHandler.Core.updateSessionMeta();
 
     const contents = {
       ping: `<:online:637544335037956096> Пинг: ${client.ws.ping}`,
@@ -70,10 +69,10 @@ class Command {
       ).toFixed(2)} МБ\``,
 
       errors: `Паник за текущий сеанс: ${Number(
-        ErrorsHandler.session().meta.errorsCount,
+        ErrorsHandler.actualSessionMeta().errorsCount,
       )}`,
       uniqueErrors: `Уникальных паник: ${
-        ErrorsHandler.session().meta.uniqueErrors.size
+        ErrorsHandler.actualSessionMeta().uniqueErrors.size
       }`,
     };
 
