@@ -1,206 +1,92 @@
-import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import { dayjs, resolveGithubPath } from "#lib/util.js";
-import Path from "path";
-import FileSystem from "fs";
-import { Collection } from "@discordjs/collection";
-import { stringify, parse } from "flatted";
+import { mapGetOrInsert } from "#lib/util.js";
 import config from "#config";
 import StorageManager from "#lib/modules/StorageManager.js";
 
-class ErrorsDataCache {
-  #cache = new Map();
-  constructor(Audit) {
-    this.Audit = Audit;
-    this.update();
+const { stringify, parse } = JSON;
+
+class FileMetadata {
+  updateRequested = false;
+
+  requestUpdate() {
+    this.updateRequested = true;
+  }
+  appendCommentsCount(value) {
+    this.commentsCount = value;
   }
 
-  async update() {
-    const files = await this.Audit.fetchLogs();
-    for (const name of files) {
-      this.#addToCache(name);
-    }
+  appendTags(tags) {
+    this.uniqueTags ||= new Set();
+    this.uniqueTags.add(...tags);
   }
 
-  getBulk() {
-    return Object.fromEntries([...this.#cache.entries()]);
+  appendErrorsCount(value) {
+    this.errorsCount = value;
   }
 
-  async get(name) {
-    const cache = this.#cache;
-    name = this.normalizeName(name);
-    !cache.has(name) && (await this.#addToCache(name));
-
-    return cache.get(name);
+  appendUniqueErrors(messages) {
+    this.uniqueErrors ||= new Set();
+    this.uniqueErrors.add(...messages);
   }
 
-  normalizeName(name) {
-    if (name.endsWith(".json")) {
-      name = name.replace(/\.json$/, "");
-    }
-    return name;
-  }
-
-  parseMetadata(data) {
-    const errors = data.map((errorData) => errorData.at(0));
-
-    const uniqueTags = (() => {
-      const tags = data
-        .map((errorData) => errorData.at(1))
-        .map((errors) => errors.filter((error) => error.context))
-        .map((errors) => errors.map((error) => parse(error.context)))
-        .map((contextList) =>
-          contextList.map((context) => Object.keys(context)),
-        )
-        .flat();
-
-      return [...new Set(...tags)];
-    })();
-    return { messages: errors, uniqueTags };
-  }
-
-  async #addToCache(name) {
-    name = this.normalizeName(name);
-    const data = JSON.parse(await this.Audit.readFile(`${name}.json`));
-    const metadata = this.parseMetadata(data);
-    this.#cache.set(name, metadata);
+  appendMetadata({ commentsCount, tags, errorsCount }) {
+    commentsCount && this.appendCommentsCount(commentsCount);
+    tags && this.appendTags(tags);
+    errorsCount && this.appendErrorsCount(errorsCount);
   }
 }
 
-class ErrorsAudit {
-  collection = new Collection();
-
-  static file = {
-    directory: `${process.cwd()}/folder/data/errors`,
-    async write(data) {
-      const date = dayjs().format("DD-MM-HH-mm");
-      const path = `${this.directory}/${date}.json`;
-
-      data = JSON.stringify(data);
-      // to-do @deprecated. will be removed
-      FileSystem.writeFileSync(path, data);
-      await StorageManager.write(`errors/${date}.json`, data);
-    },
-    async readFile(fileName) {
-      const path = `${this.directory}/${fileName}`;
-      return await FileSystem.promises.readFile(path);
-    },
-    async getFilesList() {
-      return await FileSystem.promises.readdir(this.directory);
-    },
-  };
-
-  listOf(key) {
-    if (!this.collection.has(key)) {
-      this.collection.set(key, []);
-    }
-    return this.collection.get(key);
+class GroupMetadata {
+  appendComment(data) {
+    this.comments ||= [];
+    this.comments.push(data);
   }
 
-  push(error, context) {
-    const list = this.listOf(error.message);
+  appendTags(tags) {
+    this.uniqueTags ||= new Set();
+    this.uniqueTags.add(...tags);
+  }
+
+  appendErrorsCount(value) {
+    this.errorsCount = value;
+  }
+
+  appendMetadata({ comments, tags, errorsCount }) {
+    comments && this.appendComment(comments);
+    tags && this.appendTags(tags);
+    errorsCount && this.appendErrorsCount(errorsCount);
+  }
+}
+
+class ErrorData {
+  constructor(error, context) {
     context &&= stringify(context);
-    const stack = error.stack;
-    list.push({ stack, context, timestamp: Date.now() });
-
-    config.development && console.error(error);
+    this.error = error;
+    this.createdAt = Date.now();
+    this.context = context ?? null;
   }
 
-  async createLog() {
-    if (this.collection.size === 0) {
-      return false;
-    }
-
-    await this.constructor.file.write(this.toJSON());
+  get stack() {
+    return this.error.stack;
   }
 
-  toJSON() {
-    return [...this.collection.entries()];
+  get message() {
+    return this.error.message;
   }
 
-  async fetchLogs() {
-    const suffix = ".json";
-    const fileNames = (await this.constructor.file.getFilesList()).filter(
-      (name) => name.endsWith(suffix),
-    );
-
-    const toDate = (name) => {
-      const [day, month, hour, minute] = name.replace(suffix, "").split("-");
-
-      return dayjs()
-        .set("D", day)
-        .set("M", month - 1)
-        .set("H", hour)
-        .set("m", minute)
-        .toDate();
-    };
-
-    fileNames.sort((a, b) => toDate(a).getTime() - toDate(b).getTime());
-    return fileNames;
+  get tags() {
+    return Object.keys(this.context);
   }
 
-  async readFile(name) {
-    return this.constructor.file.readFile(name);
-  }
-}
-
-class ErrorsHandler {
-  static Audit = new ErrorsAudit();
-  static CacheData = new ErrorsDataCache(this.Audit);
-
-  static async sendErrorInfo({
-    channel,
-    error,
-    interaction = {},
-    description = "",
-  }) {
-    const { fileOfError, strokeOfError, stack } =
-      this.parseErrorStack(error.stack, { node_modules: false }) ?? {};
-
-    if (stack.length >= 1900) {
-      stack.length = 1900;
-    }
-
-    const components = [
-      {
-        type: ComponentType.Button,
-        style: ButtonStyle.Secondary,
-        label: "Получить отчёт",
-        customId: "getErrorInfo",
-        emoji: "〽️",
-      },
-      {
-        type: ComponentType.Button,
-        style: ButtonStyle.Link,
-        label: "В Github",
-        url: resolveGithubPath(
-          Path.relative(process.cwd(), fileOfError ?? "."),
-          strokeOfError,
-        ),
-        disabled: !fileOfError,
-      },
-    ];
-    const embed = {
-      title: "— Данные об панике 🙄",
-      description: `> ${error.message}\n\n${description}`,
-      color: "#f0cc50",
-      components,
-      reference: interaction.message?.id ?? null,
-    };
-    const message = await channel.msg(embed);
-
-    const collector = message.createMessageComponentCollector({
-      time: 3_600_000,
-    });
-    collector.on("collect", async (interaction) => {
-      interaction.msg({
-        ephemeral: true,
-        content: `\`\`\`js\n${stack}\`\`\``,
-      });
-    });
-    collector.on("end", () => message.edit({ components: [] }));
+  static from(data) {
+    return Object.assign(Object.create(ErrorData.prototype), data);
   }
 
-  static parseErrorStack(stack, { node_modules }) {
+  static fromError(error, context) {
+    new ErrorData(error, context);
+  }
+
+  static parseErrorStack({ node_modules }) {
+    let stack = this.error.stack;
     try {
       stack = decodeURI(stack).replaceAll("\\", "/");
     } catch (error) {
@@ -208,25 +94,167 @@ class ErrorsHandler {
     }
 
     stack ||= "null";
-
     const projectPath = process.cwd().replaceAll("\\", "/");
     const regular = new RegExp(
       `(?<fileOfError>${projectPath}/.+?\\.js):(?<strokeOfError>\\d+)`,
     );
     const groups = stack.match(regular)?.groups;
-
     if (!groups) {
       return undefined;
     }
-
     const { fileOfError } = groups;
-
     if (node_modules === false && fileOfError.includes("node_modules")) {
       return null;
     }
-
     return { ...groups, stack };
   }
 }
 
-export default ErrorsHandler;
+class Group {
+  constructor(key) {
+    this.metadata = new GroupMetadata();
+    this.errors = [];
+    this.key = key;
+  }
+
+  pushError(errorData) {
+    this.errors.push(errorData);
+  }
+
+  onErrorReceive(errorData) {
+    this.pushError(errorData);
+
+    this.metadata.appendMetadata({
+      tags: errorData.tags,
+      errorsCount: this.errors.length,
+    });
+  }
+
+  addComment({ responseText, id }) {
+    const meta = this.metadata;
+    const comment = { responseText, id };
+    meta.appendComment(comment);
+  }
+}
+
+class FilesMetadataCache {
+  #cache = new Map();
+
+  async fetch(key) {
+    const cache = this.#cache;
+    !cache.has(key) && (await this._fetchAndSet(key));
+
+    return cache.get(key);
+  }
+
+  async _fetchAndSet(key) {
+    const json = await FileUtils.readFile(key);
+    this.#cache.set(key, json.meta);
+  }
+}
+
+class FileUtils {
+  static normalizeName(name) {
+    if (name.endsWith(".json")) {
+      name = name.replace(/\.json$/, "");
+    }
+    return name;
+  }
+
+  static directory = `errors`;
+  static async write(fileName, data) {
+    const path = `${this.directory}/${fileName}.json`;
+
+    data = stringify(data);
+    await StorageManager.write(path, data);
+  }
+
+  static async readFile(file) {
+    const path = `${this.directory}/${file}.json`;
+    const data = await StorageManager.read(path);
+    return parse(data);
+  }
+
+  static async keys() {
+    const files = await StorageManager.keys(this.directory);
+    const suffix = ".json";
+    const filtered = files.filter((name) => name.endsWith(suffix));
+    const keys = filtered.map((name) => name.replace(suffix, ""));
+    return keys;
+  }
+}
+
+class Core {
+  /** 
+   @typedef {object} ICoreStore
+   @property {Map<string, Group>} errorGroups
+   @property { FileMetadata } meta
+  */
+  /**@type {ICoreStore} */
+  static session = {
+    errorGroups: new Map(),
+    meta: new FileMetadata(),
+  };
+
+  static updateSessionMeta() {
+    const meta = this.session.meta;
+    meta.appendMetadata({});
+    meta.updateRequested = false;
+  }
+
+  static cache = new FilesMetadataCache();
+  static filesList = [];
+
+  static async importFileErrorsList() {
+    return await FileUtils.keys();
+  }
+
+  static toJSON() {
+    const { errorGroups, meta } = this.session;
+    const groups = [...errorGroups.values()];
+    return { groups, meta };
+  }
+}
+
+class Manager {
+  static Core = Core;
+  static File = FileUtils;
+
+  static session() {
+    return Core.session;
+  }
+
+  static onErrorReceive(error, context) {
+    const errorData = new ErrorData(error, context);
+    this.pushToSessionErrors(errorData, context);
+    config.development && console.error(error);
+
+    const meta = Core.session.meta;
+    meta.requestUpdate();
+  }
+
+  /**
+   *
+   * @param {string} key
+   * @returns {Group}
+   */
+  static getErrorsGroupBy(key) {
+    return mapGetOrInsert(Core.session.errorGroups, key, new Group(key));
+  }
+
+  static pushToSessionErrors(errorData, context) {
+    const { message: key } = errorData;
+    const group = this.getErrorsGroupBy(key);
+    group.onErrorReceive(errorData, context);
+  }
+
+  static async sessionWriteFile() {
+    const data = stringify(Core.toJSON());
+    const timestamp = Date.now();
+    return await FileUtils.write(timestamp, data);
+  }
+}
+
+export default Manager;
+export { GroupMetadata, ErrorData, Group };
+export { Manager as ErrorsHandler };
