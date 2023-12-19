@@ -118,7 +118,7 @@ class Command {
 
       if (user.profile_description) {
         const source = {
-          executer: interaction.user,
+          executor: interaction.user,
           type: Template.sourceTypes.involuntarily,
         };
         const about = await new Template(source, interaction).replaceAll(
