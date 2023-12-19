@@ -521,7 +521,8 @@ class Template {
   };
 
   provideRegularProxy(regular) {
-    return new RegularProxy().with({ regular }).process();
+    const context = { primary: this.context, source: this.source };
+    return new RegularProxy().with({ regular, context }).process();
   }
 
   async run(regular) {
@@ -551,7 +552,7 @@ class RegularProxy {
       }
 
       this.regular = this.regular.replace(regex, (full, macro, value) =>
-        this.onMacro({ macro, value }),
+        this.onMacro({ macro, value, primary: this.context }),
       );
     }
   }
@@ -565,6 +566,10 @@ class RegularProxy {
     m: (context) => {
       const { value } = context;
       return `module("${value}")`;
+    },
+    id: ({ primary }) => {
+      const { executer } = primary.source;
+      return executer.id;
     },
   };
 }
