@@ -527,9 +527,8 @@ class Template {
   async run(regular) {
     const vm = this.vm ?? this.createVM().vm;
     regular = this.provideRegularProxy(regular);
-    console.log(regular);
     const output = await vm.run(regular);
-    return String(output);
+    return output;
   }
 }
 
