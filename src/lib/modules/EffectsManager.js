@@ -100,11 +100,11 @@ class Core {
     user.data.effects.splice(index, 1);
   }
 
-  setRemoved(effect, value) {
+  static setRemoved(effect, value) {
     effect.isRemoved = value;
   }
 
-  setDisabled(effect, value) {
+  static setDisabled(effect, value) {
     effect.isDisabled = value;
   }
 }
@@ -130,7 +130,7 @@ class EffectInterface {
 
 class UserEffectManager {
   static interface({ user, effect }) {
-    return new EffectInterface.from({ user, effect });
+    return EffectInterface.from({ user, effect });
   }
 
   static removeEffects({ list, user }) {
