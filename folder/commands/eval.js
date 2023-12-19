@@ -41,7 +41,7 @@ class Command {
     const getOutput = async (interaction) => {
       try {
         const source = {
-          executer: interaction.user,
+          executor: interaction.user,
           type: Template.sourceTypes.call,
         };
         return await new Template(source, interaction)
