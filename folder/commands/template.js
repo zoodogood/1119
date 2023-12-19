@@ -3,7 +3,7 @@ import Template from '#lib/modules/Template.js';
 class Command {
 
 	async onChatInput(msg, interaction){
-		const source = {executer: interaction.user, type: Template.sourceTypes.call};
+		const source = {executor: interaction.user, type: Template.sourceTypes.call};
     	const content = await new Template(source, interaction).replaceAll(interaction.params);
     	await msg.msg({content: `**${ content }**`});
 
