@@ -12,6 +12,7 @@ import CooldownManager from "#lib/modules/CooldownManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 
 import { ImportDirectory } from "@zoodogood/import-directory";
+import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 
 const COMMANDS_PATH = "./folder/commands";
 
@@ -313,13 +314,13 @@ class CommandsManager {
       await whenCommandEnd;
       this.statistics.increase(context);
     } catch (error) {
-      ErrorsHandler.Audit.push(error, {
+      ErrorsHandler.onErrorReceive(error, {
         userId: interaction.user.id,
         type: typeBase.type,
         command: command.options.name,
         source: "Command",
       });
-      ErrorsHandler.sendErrorInfo({
+      sendErrorInfo({
         channel: interaction.channel,
         error,
         interaction,
