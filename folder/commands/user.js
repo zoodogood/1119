@@ -204,6 +204,7 @@ class Command {
         `${user.chilli ? "🌶️" + user.chilli : ""}`,
         `${user.monster ? "🐲" + user.monster : ""}`,
         `${user.seed ? "🌱" + user.seed : ""}`,
+        `${user.presents ? "🎁" + user.presents : ""}`,
         `${user.cheese ? "🧀" + user.cheese : ""}`,
       ];
 
