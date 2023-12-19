@@ -1,9 +1,10 @@
 import FileSystem from "fs";
-import { Template, ErrorsHandler, StorageManager } from "#lib/modules/mod.js";
+import { Template, StorageManager } from "#lib/modules/mod.js";
 
 import { Collection } from "@discordjs/collection";
 import { sleep } from "#src/lib/util.js";
 import app from "#app";
+import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 
 class CounterManager {
   static async create(counter) {
@@ -38,7 +39,7 @@ class CounterManager {
     const description = `Во время обработки счётчика в канале ${channel.toString()} произошло исключение.\n\nЗапускаемый счётчик заморожен до ручного возобновления. Узнать больше информации — через команду \`!счётчики\`.\nОн был создан/изменён пользователем:\n${
       user.tag
     } (ID: ${user.id}).`;
-    ErrorsHandler.sendErrorInfo({ channel: target, error, description });
+    sendErrorInfo({ channel: target, error, description });
   }
 
   static resume(counter) {
