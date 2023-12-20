@@ -11,6 +11,60 @@ import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import config from "#config";
 
+class Event {
+  async run(isLost) {
+    if (this.todayIsAlreadyLaunched()) {
+      return;
+    }
+    const context = {
+      isLost,
+      today: null,
+      currentDay: null,
+    };
+
+    DailyAudit.update();
+    Object.assign(context, this.setTheClock());
+    DailyEvents.updateGrempenProducts();
+    DailyEvents.updateBerrysPrice();
+    await DailyEvents.checkDayStatsEvent();
+
+    if (isLost) {
+      return;
+    }
+
+    DailyEvents.distributePresents(context);
+    DailyEvents.askTheBoss();
+    DailyEvents.checkBirthDays();
+    DailyEvents.updateCommandsLaunchedData();
+  }
+
+  static setTheClock() {
+    const Data = DataManager.data;
+    const today = Util.toDayDate(Date.now());
+    const currentDay = Util.timestampDay(Date.now());
+    Data.bot.dayDate = today;
+    Data.bot.currentDay = currentDay;
+    return { today, currentDay };
+  }
+
+  static calculateTimeForNextCall() {
+    return dayjs().endOf("date").add(1, "second") - Date.now();
+  }
+
+  static createNextCall() {
+    const next = this.calculateTimeForNextCall();
+    TimeEventsManager.create("new-day", next);
+  }
+
+  todayIsAlreadyLaunched() {
+    return DataManager.data.bot.dayDate === Util.toDayDate(Date.now());
+  }
+
+  options = {
+    name: "TimeEvent/new-day",
+  };
+}
+
 class DailyAudit {
   static AUDIT_LINIT_IN_DAYS = 365;
 
@@ -59,60 +113,6 @@ class DailyAudit {
     Data.bot.messagesToday = 0;
     Data.bot.bossDamageToday = 0;
   }
-}
-
-class Event {
-  static setTheClock() {
-    const Data = DataManager.data;
-    const today = Util.toDayDate(Date.now());
-    const currentDay = Util.timestampDay(Date.now());
-    Data.bot.dayDate = today;
-    Data.bot.currentDay = currentDay;
-    return { today, currentDay };
-  }
-
-  static calculateTimeForNextCall() {
-    return dayjs().endOf("date").add(1, "second") - Date.now();
-  }
-
-  static createNextCall() {
-    const next = this.calculateTimeForNextCall();
-    TimeEventsManager.create("new-day", next);
-  }
-
-  todayIsAlreadyLaunched() {
-    return DataManager.data.bot.dayDate === Util.toDayDate(Date.now());
-  }
-
-  async run(isLost) {
-    if (this.todayIsAlreadyLaunched()) {
-      return;
-    }
-    const context = {
-      isLost,
-      today: null,
-      currentDay: null,
-    };
-
-    DailyAudit.update();
-    Object.assign(context, this.setTheClock());
-    DailyEvents.updateGrempenProducts();
-    DailyEvents.updateBerrysPrice();
-    await DailyEvents.checkDayStatsEvent();
-
-    if (isLost) {
-      return;
-    }
-
-    DailyEvents.distributePresents(context);
-    DailyEvents.askTheBoss();
-    DailyEvents.checkBirthDays();
-    DailyEvents.updateCommandsLaunchedData();
-  }
-
-  options = {
-    name: "TimeEvent/new-day",
-  };
 }
 
 class DailyEvents {
