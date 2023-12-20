@@ -1,4 +1,6 @@
+import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
+import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
@@ -10,31 +12,47 @@ class Event extends BaseEvent {
     super(EventsManager.emitter, EVENT);
   }
 
-  snowyEvent({ user, message }) {
-    if (DataManager.data.bot.currentDay !== "31.12") {
+  async snowyEvent({ user, message }) {
+    if (DataManager.data.bot.dayDate !== NEW_YEAR_DAY_DATE) {
       return;
     }
     const PHRASES = [
+      () => "Эта музыка не спешит заканчиваться",
       () => "Хо-хо-хо",
-      () => "Звёздочка, сияй",
-      () => "Отправляйте сообщения, чтобы получить проклятие бота",
+      () => "Отправляйте сообщения, чтобы получить проклятие зимнего праздника",
     ];
     const { guild } = message;
-    guild.data.snowyEvent ||= { preGlow: 0 };
+    guild.data.snowyEvent ||= { preGlowExplorers: [] };
+
     const { snowyEvent } = guild.data;
-    if (snowyEvent.preGlow >= PHRASES.length) {
-      if (user.curses.some((curse) => curse.id === "snowyEvent")) {
+    if (snowyEvent.preGlowExplorers.length < PHRASES.length) {
+      if (snowyEvent.preGlowExplorers.includes(user.id)) {
         return;
       }
       message.react("🌲");
+      snowyEvent.preGlowExplorers.push(user.id);
+      await Util.sleep(2_500);
+      message.msg({
+        reference: message.id,
+        content: PHRASES.at(snowyEvent.preGlowExplorers.length - 1)(),
+      });
       return;
     }
-    message.msg({
-      referense: message.id,
-      content: PHRASES.at(snowyEvent.preGlow),
-    });
+
+    const userData = user.data;
+    if (userData.curses?.some((curse) => curse.id === "happySnowy")) {
+      return;
+    }
+
     message.react("🌲");
-    snowyEvent.preGlow += 1;
+    const curseBase = CurseManager.cursesBase.get("happySnowy");
+    const curse = CurseManager.generateOfBase({
+      curseBase,
+      user,
+      context: { message, guild },
+    });
+    CurseManager.init({ curse, user });
+    return;
   }
 
   calculateMultiplayer({ user, message }) {
@@ -42,7 +60,7 @@ class Event extends BaseEvent {
     const userData = user.data;
     let k = 1;
 
-    if (DataManager.data.bot.dayDate === "31.12") {
+    if (DataManager.data.bot.dayDate === NEW_YEAR_DAY_DATE) {
       k += 0.2;
     }
 
@@ -50,10 +68,10 @@ class Event extends BaseEvent {
       const CLOVER_MIN_EFFECT = 0.08;
       const INCREASE_BY_CLOVER = 0.07;
       const WEAKING_FOR_CLOVER = 0.9242;
-      const reduced =
-        WEAKING_FOR_CLOVER ** guild.data.cloverEffect.uses /
-        (1 - WEAKING_FOR_CLOVER);
-      const value = CLOVER_MIN_EFFECT + INCREASE_BY_CLOVER * (1 - reduced);
+      const reduce = 1 - WEAKING_FOR_CLOVER ** guild.data.cloverEffect.uses;
+      const value =
+        CLOVER_MIN_EFFECT +
+        (INCREASE_BY_CLOVER * reduce) / (1 - WEAKING_FOR_CLOVER);
 
       const multiplier = value * 2 ** (userData.voidMysticClover ?? 0);
       k += multiplier;
@@ -70,7 +88,7 @@ class Event extends BaseEvent {
 
     let reaction = "637533074879414272";
     const k = this.calculateMultiplayer({ user, message });
-    if (DataManager.data.bot.dayDate === "31.12") {
+    if (DataManager.data.bot.dayDate === NEW_YEAR_DAY_DATE) {
       reaction = "❄️";
     }
 
