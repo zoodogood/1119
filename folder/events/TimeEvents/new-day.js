@@ -34,11 +34,11 @@ class Event {
 
     DailyEvents.distributePresents(context);
     DailyEvents.askTheBoss();
-    DailyEvents.checkBirthDays();
+    DailyEvents.checkBirthDays(context);
     DailyEvents.updateCommandsLaunchedData();
   }
 
-  static setTheClock() {
+  setTheClock() {
     const Data = DataManager.data;
     const today = Util.toDayDate(Date.now());
     const currentDay = Util.timestampDay(Date.now());
@@ -47,11 +47,11 @@ class Event {
     return { today, currentDay };
   }
 
-  static calculateTimeForNextCall() {
+  calculateTimeForNextCall() {
     return dayjs().endOf("date").add(1, "second") - Date.now();
   }
 
-  static createNextCall() {
+  createNextCall() {
     const next = this.calculateTimeForNextCall();
     TimeEventsManager.create("new-day", next);
   }
@@ -66,7 +66,7 @@ class Event {
 }
 
 class DailyAudit {
-  static AUDIT_LINIT_IN_DAYS = 365;
+  static AUDIT_LIMIT_IN_DAYS = 365;
 
   static createData() {
     const Data = DataManager.data;
@@ -100,7 +100,7 @@ class DailyAudit {
     const { audit: Data, bot } = DataManager.data;
     const currentDay = bot.currentDay;
     Object.keys(Data.daily)
-      .filter((day) => currentDay - day > this.AUDIT_LINIT_IN_DAYS)
+      .filter((day) => currentDay - day > this.AUDIT_LIMIT_IN_DAYS)
       .forEach((day) => delete Data.daily[day]);
   }
 
@@ -146,7 +146,7 @@ class DailyEvents {
   static checkBirthDays({ today }) {
     const birthdaysToday = client.users.cache.filter(
       (memb) => !memb.bot && memb.data.BDay === today,
-    ).length;
+    ).size;
 
     if (!birthdaysToday) {
       return;
