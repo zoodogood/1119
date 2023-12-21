@@ -199,9 +199,7 @@ class RanksUtils {
   }
 
   static sortMutableAndFilterPull(pull) {
-    console.log(pull);
     pull.sortBy("1", true);
-    console.log(pull);
     // eslint-disable-next-line no-unused-vars
     return pull.filter(([_, value]) => value);
   }
@@ -296,7 +294,7 @@ class Command {
 
     const resolver = context.selected.value;
     for (const entrie of pull) {
-      entrie[1] = resolver(entrie[0], context);
+      entrie[1] = resolver(entrie[0], context) ?? 0;
     }
 
     return RanksUtils.sortMutableAndFilterPull(pull);
@@ -398,6 +396,7 @@ class Command {
       boss: interaction.guild.data.boss ?? {},
       selected: RanksUtils.leaderboardTypes.at(0),
       values: null,
+      user: interaction.user,
     };
 
     context.values = this.createValuesMap(context);
