@@ -12,6 +12,8 @@ class App {
 
   svelte = null;
 
+  i18n = null;
+
   async launch() {
     PagesRouter.resolvePages(PagesURLs);
   }
