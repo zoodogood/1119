@@ -77,8 +77,7 @@ client.on("ready", async () => {
     });
     whoAdded = whoAdded ? whoAdded.target : null;
 
-    const DEVELOPER_CHAT_ID = "763637440174227506";
-    const developerChat = client.channels.cache.get(DEVELOPER_CHAT_ID);
+    const developerChat = client.channels.cache.get(config.guild.logChannelId);
     if (developerChat) {
       const title = `Бот присоеденился к серверу ${guild.name}!`;
       const description = `Участников: ${
@@ -98,7 +97,7 @@ client.on("ready", async () => {
     }
 
     guild.invitesCollection = await guild.invites.fetch();
-    DataManager.data.bot.newGuildTimestamp = Date.now();
+    DataManager.data.bot.addToNewGuildAt = Date.now();
   });
 
   client.on("guildDelete", async (guild) => {
