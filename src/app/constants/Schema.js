@@ -12,7 +12,7 @@ const Schema = {
       dayDate: "",
       currentDay: 0,
       commandsLaunched: 0,
-      newGuildTimestamp: 0,
+      addToNewGuildAt: 0,
       messagesToday: 0,
       commandsUsedToday: 0,
       bossDamageToday: 0,
@@ -161,7 +161,7 @@ const Schema = {
  * @property {string} dayDate
  * @property {number} currentDay
  * @property {number} commandsLaunched
- * @property {number} newGuildTimestamp
+ * @property {number} addToNewGuildAt
  * @property {number} messagesToday
  * @property {number} commandsUsedToday
  * @property {number} bossDamageToday
