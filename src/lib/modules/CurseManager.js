@@ -9,7 +9,6 @@ import QuestManager from "#lib/modules/QuestManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import DataManager from "#lib/modules/DataManager.js";
-import { BossEffects } from "#lib/modules/BossManager.js";
 import { RanksUtils } from "#folder/commands/top.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import Executor from "#lib/modules/Executor.js";
@@ -1007,7 +1006,7 @@ class CurseManager {
               resolver,
             );
 
-            const index = RanksUtils.sortAndFilterPullMutable(pull).findIndex(
+            const index = RanksUtils.sortMutableAndFilterPull(pull).findIndex(
               ([target]) => target.id === user.id,
             );
 
@@ -1034,7 +1033,7 @@ class CurseManager {
               [...guild.members.cache.values()].map((member) => member.user),
               resolver,
             );
-            const index = RanksUtils.sortAndFilterPullMutable(pull).findIndex(
+            const index = RanksUtils.sortMutableAndFilterPull(pull).findIndex(
               ([target]) => target.id === user.id,
             );
             curse.values.previousRank =
@@ -1274,7 +1273,9 @@ class CurseManager {
               return;
             }
 
-            curse.values["h0-h0-h0"] = "Эта музыка не спешит заканчиваться";
+            curse.values["h0-h0-h0"] = "❤️‍🔥";
+            CurseManager.interface({ user, curse }).success();
+            target.event.preventDefault();
           },
         },
         reward: 3,
