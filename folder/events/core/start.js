@@ -11,6 +11,7 @@ import {
   StorageManager,
   BossManager,
   UserEffectManager,
+  I18nManager,
 } from "#lib/modules/mod.js";
 import { client } from "#bot/client.js";
 
@@ -40,15 +41,8 @@ class Event extends BaseEvent {
     await UserEffectManager.importEffects();
     BossManager.BossEffects.updateBasesFromManager();
 
-    TimeEventsManager.handle();
-
-    const needUpdate =
-      DataManager.data.bot.currentDay !== timestampDay(Date.now());
-    if (needUpdate) {
-      await EventsManager.collection.get("TimeEvent/new-day").run(true);
-    }
-
     app.client = client;
+    app.i18n = new I18nManager();
     client.login(process.env.DISCORD_TOKEN);
   }
 
