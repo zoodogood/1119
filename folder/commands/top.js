@@ -8,6 +8,7 @@ import BossManager from "#lib/modules/BossManager.js";
 import { CreateModal } from "@zoodogood/utils/discordjs";
 import { CustomCollector } from "@zoodogood/utils/objectives";
 import QuestManager from "#lib/modules/QuestManager.js";
+import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 
 class RanksUtils {
   static leaderboardTypes = new Collection(
@@ -20,8 +21,9 @@ class RanksUtils {
           emoji: "763767958559391795",
         },
         value: (element) => {
+          const perLevel = LEVELINCREASE_EXPERIENCE_PER_LEVEL / 2;
           return (
-            (element.data.level - 1) * 22.5 * element.data.level +
+            (element.data.level - 1) * perLevel * element.data.level +
             element.data.exp
           );
         },
@@ -109,10 +111,10 @@ class RanksUtils {
             index === 0
               ? "<a:cupZ:806813908241350696> "
               : index === 1
-              ? "<a:cupY:806813850745176114> "
-              : index === 2
-              ? "<a:cupX:806813757832953876> "
-              : "";
+                ? "<a:cupY:806813850745176114> "
+                : index === 2
+                  ? "<a:cupX:806813757832953876> "
+                  : "";
           const name = `${cup} ${index + 1}. ${element.username}`;
           const globalQuests = (element.data.questsGlobalCompleted ?? "")
             .split(" ")
@@ -196,16 +198,17 @@ class RanksUtils {
     return users.map((user) => [user, resolver(user)]);
   }
 
-  static sortAndFilterPullMutable(pull) {
+  static sortMutableAndFilterPull(pull) {
+    console.log(pull);
     pull.sortBy("1", true);
+    console.log(pull);
+    // eslint-disable-next-line no-unused-vars
     return pull.filter(([_, value]) => value);
   }
 }
 
 class Command {
   PAGE_SIZE = 15;
-
-  onComponent(params) {}
 
   createComponents(context) {
     return [
@@ -296,11 +299,18 @@ class Command {
       entrie[1] = resolver(entrie[0], context);
     }
 
-    return RanksUtils.sortAndFilterPullMutable(pull);
+    return RanksUtils.sortMutableAndFilterPull(pull);
   }
 
   async onCollect(interaction, context) {
-    const responseTo = (replitableInteraction = interaction) => {
+    if (interaction.user !== context.user) {
+      interaction.msg({
+        ephemeral: true,
+        content: `Это взаимодействие доступно участнику ${context.user.toString()}, открывшему его. Используйте команду !топ`,
+      });
+      return;
+    }
+    const updateMessage = (replitableInteraction = interaction) => {
       context.pages = this.calculatePages(context.values.length);
       const embed = this.createEmbed({
         interaction: context.interaction,
@@ -312,7 +322,7 @@ class Command {
     await this.componentsCallbacks[interaction.customId](
       interaction,
       context,
-      responseTo,
+      updateMessage,
     );
   }
 
@@ -359,9 +369,9 @@ class Command {
       });
     },
     selectFilter: (interaction, context, responseTo) => {
-      const value = interaction.values.at(0);
+      const leaderboardId = interaction.values.at(0);
       context.selected = RanksUtils.leaderboardTypes.find(
-        (leaderboard) => leaderboard.component.value === value,
+        (leaderboard) => leaderboard.component.value === leaderboardId,
       );
       context.values = this.createValuesMap(context);
 
@@ -396,10 +406,7 @@ class Command {
     const embed = this.createEmbed({ interaction, context, edit: false });
 
     context.message = await interaction.channel.msg(embed);
-    const filter = (interaction) =>
-      interaction.user === context.interaction.user;
     const collector = context.message.createMessageComponentCollector({
-      filter,
       time: 180_000,
     });
     collector.on("collect", (interaction) =>
