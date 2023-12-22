@@ -218,7 +218,7 @@ class CurseManager {
         reward: 7,
       },
       {
-        _weight: 10,
+        _weight: 3,
         id: "usefulChest",
         description:
           "В сундуке, который Вы откроете должна оказаться нестабильность",
