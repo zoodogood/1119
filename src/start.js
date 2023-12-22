@@ -2,12 +2,7 @@ console.clear();
 
 import "dotenv/config";
 
-import Discord, {
-  ActivityType,
-  AuditLogEvent,
-  PermissionFlagsBits,
-  UserFlags,
-} from "discord.js";
+import Discord, { ActivityType, AuditLogEvent } from "discord.js";
 
 import * as Util from "#lib/util.js";
 import {
@@ -27,7 +22,6 @@ import FileSystem from "fs";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { PermissionFlags } from "#constants/enums/discord/permissions.js";
 
 client.on("ready", async () => {
   client.guilds.cache.forEach(
@@ -177,109 +171,6 @@ client.on("ready", async () => {
           });
         reaction.message.guild.members.resolve(user).roles.remove(role);
         break;
-    }
-  });
-
-  client.on("guildMemberAdd", async (member) => {
-    const guild = member.guild;
-    let roles;
-
-    let leaveRoles =
-      guild.data.leave_roles && guild.data.leave_roles[member.user.id];
-    if (leaveRoles) {
-      roles = leaveRoles
-        .map((el) => guild.roles.cache.get(el))
-        .filter((el) => el);
-      member.roles.add(roles);
-      delete guild.data.leave_roles[member.user.id];
-
-      leaveRoles = true;
-    }
-
-    if (member.user.bot) {
-      const whoAdded = await guild.Audit(
-        (audit) => audit.target.id === member.id,
-        {
-          type: AuditLogEvent.BotAdd,
-        },
-      );
-      const permissions =
-        member.permissions
-          .toArray()
-          .map((permission) => PermissionFlags[PermissionFlagsBits[permission]])
-          .join(", ") || "Отсуствуют";
-
-      guild.logSend({
-        title: "Добавлен бот",
-        author: { iconURL: member.user.avatarURL(), name: member.user.tag },
-        description: `Название: ${member.user.username}\n${
-          member.user.flags.has(UserFlags.VerifiedBot)
-            ? "Верифицирован 👌"
-            : "Ещё не верифицирован ❗"
-        }\nКоличество серверов: \`неизвестно\`\n\n${
-          whoAdded ? `Бота добавил: ${whoAdded.executor.username}` : ""
-        }`,
-        footer: {
-          text: `Предоставленные права: ${
-            permissions[0] + permissions.slice(1).toLowerCase()
-          }`,
-        },
-      });
-      return;
-    }
-
-    const guildInvites = await guild.invites.fetch();
-
-    const cached = guild.invitesCollection;
-    const invite = guildInvites.find(
-      (invite) => cached.get(invite.code).uses < invite.uses,
-    );
-    
-    guild.invitesCollection = guildInvites;
-    if (invite) {
-      const inviter = invite.inviter;
-      guild.logSend({
-        title: "Новый участник!",
-        description:
-          "Имя: " +
-          member.user.tag +
-          "\nИнвайтнул: " +
-          inviter.tag +
-          "\nПриглашение использовано: " +
-          invite.uses,
-        footer: { text: "Приглашение создано: " },
-        timestamp: invite.createdTimestamp,
-      });
-
-      if (member.id !== inviter.id)
-        inviter.action(Actions.globalQuest, { name: "inviteFriend" });
-
-      inviter.data.invites = (inviter.data.invites ?? 0) + 1;
-    }
-
-    if (guild.data.hi && guild.data.hiChannel) {
-      const channel = guild.channels.cache.get(guild.data.hiChannel);
-      if (!channel) {
-        return;
-      }
-
-      channel.sendTyping();
-      await Util.sleep(3500);
-      await channel.msg({
-        title: "На сервере появился новый участник!",
-        color: guild.data.hi.color,
-        image: guild.data.hi.image,
-        description: guild.data.hi.message,
-        scope: { tag: member.user.toString(), name: member.user.username },
-      });
-      channel.msg({ content: "👋", delete: 180_000 });
-
-      if (guild.data.hi.rolesId && !leaveRoles) {
-        roles = guild.data.hi.rolesId
-          .map((id) => guild.roles.cache.get(id))
-          .filter((role) => role);
-        member.roles.add(roles);
-      }
     }
   });
 
