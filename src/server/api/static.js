@@ -1,8 +1,7 @@
-import path from 'path';
-import FileSystem from 'fs';
-import config from '#config';
-import { BaseRoute } from '#server/router.js';
-import ErrorsHandler from '#lib/modules/ErrorsHandler.js';
+import path from "path";
+import FileSystem from "fs";
+import config from "#config";
+import { BaseRoute } from "#server/router.js";
 
 const ROOT = config.server.paths.static;
 const root = path.join(process.cwd(), ROOT);
@@ -10,174 +9,146 @@ const root = path.join(process.cwd(), ROOT);
 const PREFIX = /\/static+?/;
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+  prefix = PREFIX;
 
-	constructor(express){
-		super();
-	}
+  constructor(express) {
+    super();
+  }
 
-	async get(request, response){
-		const controller = new PathControll();
-		const data = controller.suggest(request.url);
+  async get(request, response) {
+    const controller = new PathControll();
+    const data = controller.suggest(request.url);
 
-		const byBoolean = {
-			NOT_FOUND: data === null,
-			ERROR: data instanceof Error,
-			FILES_LIST: data instanceof Array,
-			SEND_FILE: typeof data === "string",
-			DEFAULT: true
-		}
-		const code = Object.entries(byBoolean)
-			.find(([code, value]) => value)
-			.at(0);
-		
-		this.responseByCode(code, {data, response, request});
-	}
+    const byBoolean = {
+      NOT_FOUND: data === null,
+      ERROR: data instanceof Error,
+      FILES_LIST: data instanceof Array,
+      SEND_FILE: typeof data === "string",
+      DEFAULT: true,
+    };
+    const code = Object.entries(byBoolean)
+      .find(([code, value]) => value)
+      .at(0);
 
-	responseByCode(code, {data, response, request}){
-		switch (code) {
-			case "NOT_FOUND":
-				response.redirect("/static/special/i-love-404");
-				break;
+    this.responseByCode(code, { data, response, request });
+  }
 
-			case "ERROR":
-				(() => {
-					const queries = {
-						from: request.url,
-						error: error.message
-					};
+  responseByCode(code, { data, response, request }) {
+    switch (code) {
+      case "NOT_FOUND":
+        response.redirect("/static/special/i-love-404");
+        break;
 
-					const queriesContent = Object.entries(queries)
-						.map(([k, v]) => `${ k }=${ v }`)
-						.join("&");
+      case "ERROR":
+        (() => {
+          const queries = {
+            from: request.url,
+            error: error.message,
+          };
 
-					response.redirect(`/static/special/display-error?${ queriesContent }`);
-				})();
-				break;
+          const queriesContent = Object.entries(queries)
+            .map(([k, v]) => `${k}=${v}`)
+            .join("&");
 
-			case "FILES_LIST":
-				(() => {
-					const queries = {
-						from: request.url
-					};
+          response.redirect(`/static/special/display-error?${queriesContent}`);
+        })();
+        break;
 
-					const queriesContent = Object.entries(queries)
-						.map(([k, v]) => `${ k }=${ v }`)
-						.join("&");
+      case "FILES_LIST":
+        (() => {
+          const queries = {
+            from: request.url,
+          };
 
-					response.redirect(`/static/special/you-go-to-folder?${ queriesContent }`);
-				})();
-				break;
+          const queriesContent = Object.entries(queries)
+            .map(([k, v]) => `${k}=${v}`)
+            .join("&");
 
-			case "SEND_FILE": 
-				response.sendFile(data);
-				break;
+          response.redirect(
+            `/static/special/you-go-to-folder?${queriesContent}`,
+          );
+        })();
+        break;
 
-			case "DEFAULT":
-				throw new Error("Unknown response");
-				break;
-			
-		}
-	}
+      case "SEND_FILE":
+        response.sendFile(data);
+        break;
 
-
-
+      case "DEFAULT":
+        throw new Error("Unknown response");
+        break;
+    }
+  }
 }
-
-
-
-
 
 class PathControll {
-	suggest(url){
-		const [folderChunk, targetChunk] = this.parseURL(url);
+  suggest(url) {
+    const [folderChunk, targetChunk] = this.parseURL(url);
 
+    const files = this.getFiles(folderChunk);
+    if (files === null) {
+      return null;
+    }
 
-		const files = this.getFiles(folderChunk);
-		if (files === null){
-			return null;
-		}
+    const target = this.getTarget({ files, targetChunk });
+    if (target === null) {
+      return files;
+    }
 
-		const target = this.getTarget({files, targetChunk});
-		if (target === null){
-			return files;
-		}
+    return this.createResponse({ folderChunk, target });
+  }
 
-		return this.createResponse({folderChunk, target});
-	}
+  parseURL(url) {
+    const way = url.split("/").filter(Boolean).slice(1);
 
-	parseURL(url){
-		const way = (url)
-			.split("/")
-			.filter(Boolean)
-			.slice(1);
+    const folderChunk = way.slice(0, -1);
+    const target = way.at(-1);
 
-		const folderChunk = way.slice(0, -1);
-		const target = way.at(-1);
+    return [folderChunk, target];
+  }
 
-		return [folderChunk, target];
-	}
+  getFiles(folderPath) {
+    const pathToDirectory = path.join(root, folderPath.join("/"));
 
-	getFiles(folderPath){
-		const pathToDirectory = path.join(
-			root,
-			folderPath.join("/")
-		);
+    try {
+      return FileSystem.readdirSync(pathToDirectory);
+    } catch {
+      return null;
+    }
+  }
 
-		try {
-			return FileSystem.readdirSync(pathToDirectory);
-		}
-		catch {
-			return null;
-		}
-	}
+  getTarget({ files, targetChunk }) {
+    const exact = (name) => name === targetChunk;
+    const include = (name) => name.includes(targetChunk);
+    const isIndex = (name) => name === "index.html";
 
-	getTarget({files, targetChunk}){
+    if (!targetChunk) {
+      return files.find(isIndex) ?? null;
+    }
 
-		const exact   = (name) => name === targetChunk;
-		const include = (name) => name.includes(targetChunk);
-		const isIndex = (name) => name === "index.html";
+    return files.find(exact) ?? files.find(include) ?? null;
+  }
 
-		if (!targetChunk){
-			return files.find(isIndex) ?? null;
-		}
+  createResponse({ folderChunk, target }) {
+    const pathToFile = path.join(root, folderChunk.join("/"), target);
 
-		return files.find(exact) ?? files.find(include) ?? null;
-	}
+    let stats;
+    try {
+      stats = FileSystem.lstatSync(pathToFile);
+    } catch (err) {
+      return err;
+    }
 
+    if (stats.isFile()) {
+      return pathToFile;
+    }
 
-	createResponse({folderChunk, target}){
-		
-		const pathToFile = path.join(
-			root,
-			folderChunk.join("/"),
-			target
-		);
-
-
-		let stats;
-		try {
-			stats = FileSystem.lstatSync(pathToFile);
-		}
-		catch (err){
-			return err;
-		}
-		
-		if (stats.isFile()){
-			return pathToFile;
-		}
-
-		if (stats.isDirectory()){
-			const files = this.getFiles(pathToFile);
-			const target = this.getTarget({files, targetChunk: "index.html"});
-			return target ? 
-				path.join(pathToFile, target) :
-				files;
-		}
-			
-	}
-
-
+    if (stats.isDirectory()) {
+      const files = this.getFiles(pathToFile);
+      const target = this.getTarget({ files, targetChunk: "index.html" });
+      return target ? path.join(pathToFile, target) : files;
+    }
+  }
 }
 
-export default Route;	
+export default Route;
