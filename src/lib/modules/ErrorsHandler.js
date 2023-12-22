@@ -61,6 +61,7 @@ class SessionMetadata extends Metadata {
 
 class GroupMetadata extends Metadata {
   appendComment(data) {
+    this.comments ||= [];
     this.comments.push(data);
   }
 
