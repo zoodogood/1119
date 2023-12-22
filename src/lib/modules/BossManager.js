@@ -2027,7 +2027,7 @@ class BossManager {
         },
       },
       leaderRoar: {
-        weight: 200000,
+        weight: 70,
         id: "leaderRoar",
         MULTIPLAYER: 15,
         TIMEOUT: 60_000 * 10,
