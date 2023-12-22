@@ -170,7 +170,7 @@ class UserInterfaceUtil {
 
         const selectionInteract = await message
           .awaitMessageComponent({ time: 120_000 })
-          .catch();
+          .catch(() => {});
 
         if (!selectionInteract) {
           message.delete();
