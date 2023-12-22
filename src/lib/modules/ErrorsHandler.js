@@ -172,7 +172,8 @@ class SessionsMetadataCache {
   }
 
   async _fetchAndSet(key) {
-    const json = await FileUtils.readFile(key);
+    const plain = await FileUtils.readFile(key);
+    const json = JSON.parse(plain);
     this.#cache.set(key, json.meta);
   }
 }
@@ -246,10 +247,6 @@ class Core {
   static cache = new SessionsMetadataCache();
   static filesList = [];
 
-  static async importFileErrorsList() {
-    return await FileUtils.keys();
-  }
-
   static toJSON() {
     const { errorGroups, meta } = this.session;
     const groups = [...errorGroups.values()];
@@ -298,6 +295,13 @@ class Manager {
     const data = stringify(Core.toJSON());
     const timestamp = Date.now();
     return await FileUtils.write(timestamp, data);
+  }
+
+  static async importFileErrorsList() {
+    const keys = (await FileUtils.keys()).filter(
+      (key) => !Core.filesList.includes(key),
+    );
+    return Core.filesList.push(...keys);
   }
 }
 
