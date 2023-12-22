@@ -1,8 +1,10 @@
 import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
 
-import Discord from "discord.js";
+import Discord, { PermissionFlagsBits, PermissionsBitField } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
+import { PermissionFlags } from "#constants/enums/discord/permissions.js";
+import app from "#app";
 
 class Command {
   getContext(interaction) {
@@ -43,6 +45,8 @@ class Command {
       category,
     } = meta;
 
+    const locale = interaction.user.data.locale;
+
     const commandUsedTotally = this.calculateCommandsUsedTotally();
 
     const usedPercentage =
@@ -72,14 +76,18 @@ class Command {
                 alliases.map((name) => `!${name}`).join(" "),
               ),
             },
-            // To-do
             {
               name: "Категория:",
               value: `${this.CategoriesEnum[category]}${
                 githubURL ? `\n[Просмотреть в Github ~](${githubURL})` : ""
               }`,
             },
-            { name: "Необходимые права", value: "to-do" },
+            {
+              name: "Необходимые права",
+              value:
+                this.permissionsToLocaledArray(meta.permissions, locale) ||
+                "Нет",
+            },
             {
               name: "Количество использований",
               value: `${usedCount} (${usedPercentage})`,
@@ -104,6 +112,18 @@ class Command {
 
   resolveGithubPathOf(commandNameId) {
     return Util.resolveGithubPath(`./folder/commands/${commandNameId}.js`);
+  }
+
+  permissionsToLocaledArray(permissions, locale) {
+    const keys = new PermissionsBitField(permissions).toArray();
+    const strings = keys.map((key) => {
+      const bits = PermissionFlagsBits[key];
+      const string = PermissionFlags[bits];
+      const localed = app.i18n.format(string, { locale });
+      return localed.toLowerCase();
+    });
+
+    return Util.capitalize(Util.joinWithAndSeparator(strings));
   }
 
   fetchCommandMetadata(command) {
@@ -134,6 +154,7 @@ class Command {
     const used = Object.values(DataManager.data.bot.commandsUsed);
     return used.reduce((acc, count) => acc + count, 0);
   }
+
   async sendHelpMessage(context) {
     const { interaction } = context;
     const { channel, user } = interaction;
@@ -141,7 +162,6 @@ class Command {
       title: "Не удалось найти команду",
       description: `Не существует вызова \`!${interaction.params}\`\nВоспользуйтесь командой !хелп или нажмите реакцию ниже для получения списка команд.\nНа сервере бота Вы можете предложить псевдонимы для вызова одной из существующих команд.`,
     });
-    //** Реакция-помощник
     const react = await helpMessage.awaitReact(
       { user, removeType: "all" },
       "❓",
@@ -164,7 +184,7 @@ class Command {
       description:
         "Показывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение\n\n✏️\n```python\n!commandInfo {command}\n```\n\n",
     },
-    allias: "command команда ",
+    allias: "command команда",
     allowDM: true,
     expectParams: true,
     cooldown: 5_000,
