@@ -1,6 +1,6 @@
 import { BaseEvent } from "#lib/modules/EventsManager.js";
 import { assert } from "console";
-import { omit, timestampDay } from "#src/lib/util.js";
+import { omit } from "#src/lib/util.js";
 
 import {
   DataManager,
@@ -12,6 +12,7 @@ import {
   BossManager,
   UserEffectManager,
   I18nManager,
+  ErrorsHandler,
 } from "#lib/modules/mod.js";
 import { client } from "#bot/client.js";
 
@@ -33,6 +34,7 @@ class Event extends BaseEvent {
     await TimeEventsManager.file.load();
     // await ReactionsManager.loadReactionsFromFile();
     await CounterManager.file.load();
+    await ErrorsHandler.importFileErrorsList();
 
     this.checkDataManagerFullset();
 
