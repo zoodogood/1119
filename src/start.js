@@ -24,10 +24,13 @@ import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 client.on("ready", async () => {
-  client.guilds.cache.forEach(
-    async (guild) =>
-      (guild.invitesCollection = await guild.invites.fetch().catch(() => {})),
-  );
+  for (const guild of client.guilds.cache.values()) {
+    const invites = await guild.invites.fetch().catch(() => {});
+    if (!invites) {
+      continue;
+    }
+    guild.invitesUsesCache = invites.mapValues((invite) => invite.uses);
+  }
 
   if (config.development) {
     client.user.setActivity("Кабзец тебе, Хозяин", {
@@ -62,8 +65,8 @@ client.on("ready", async () => {
   });
 
   client.on("inviteCreate", async (invite) => {
-    const guild = invite.guild;
-    guild.invitesCollection = await guild.invites.fetch();
+    const { guild } = invite;
+    guild.invitesUsesCache.set(invite.code, invite.uses);
   });
 
   client.on("inviteDelete", async (invite) => {
@@ -96,7 +99,9 @@ client.on("ready", async () => {
       });
     }
 
-    guild.invitesCollection = await guild.invites.fetch();
+    guild.invitesUsesCache = (await guild.invites.fetch()).mapValues(
+      (invite) => invite.uses,
+    );
     DataManager.data.bot.addToNewGuildAt = Date.now();
   });
 
