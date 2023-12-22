@@ -2,7 +2,12 @@ console.clear();
 
 import "dotenv/config";
 
-import Discord, { ActivityType, AuditLogEvent } from "discord.js";
+import Discord, {
+  ActivityType,
+  AuditLogEvent,
+  PermissionFlagsBits,
+  UserFlags,
+} from "discord.js";
 
 import * as Util from "#lib/util.js";
 import {
@@ -22,6 +27,7 @@ import FileSystem from "fs";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { PermissionFlags } from "#constants/enums/discord/permissions.js";
 
 client.on("ready", async () => {
   client.guilds.cache.forEach(
@@ -174,38 +180,40 @@ client.on("ready", async () => {
     }
   });
 
-  client.on("guildMemberAdd", async (e) => {
-    const guild = e.guild;
+  client.on("guildMemberAdd", async (member) => {
+    const guild = member.guild;
     let roles;
 
     let leaveRoles =
-      guild.data.leave_roles && guild.data.leave_roles[e.user.id];
+      guild.data.leave_roles && guild.data.leave_roles[member.user.id];
     if (leaveRoles) {
       roles = leaveRoles
         .map((el) => guild.roles.cache.get(el))
         .filter((el) => el);
-      e.roles.add(roles);
-      delete guild.data.leave_roles[e.user.id];
+      member.roles.add(roles);
+      delete guild.data.leave_roles[member.user.id];
 
       leaveRoles = true;
     }
 
-    if (e.user.bot) {
-      const whoAdded = await guild.Audit((audit) => audit.target.id === e.id, {
-        type: AuditLogEvent.BotAdd,
-      });
+    if (member.user.bot) {
+      const whoAdded = await guild.Audit(
+        (audit) => audit.target.id === member.id,
+        {
+          type: AuditLogEvent.BotAdd,
+        },
+      );
       const permissions =
-        e.permissions
+        member.permissions
           .toArray()
-          .map((e) => Command.permissions[e])
+          .map((permission) => PermissionFlags[PermissionFlagsBits[permission]])
           .join(", ") || "Отсуствуют";
-      // to-do fix
-      return;
+
       guild.logSend({
         title: "Добавлен бот",
-        author: { iconURL: e.user.avatarURL(), name: e.user.tag },
-        description: `Название: ${e.user.username}\n${
-          e.user.flags.has("VERIFIED_BOT")
+        author: { iconURL: member.user.avatarURL(), name: member.user.tag },
+        description: `Название: ${member.user.username}\n${
+          member.user.flags.has(UserFlags.VerifiedBot)
             ? "Верифицирован 👌"
             : "Ещё не верифицирован ❗"
         }\nКоличество серверов: \`неизвестно\`\n\n${
@@ -222,17 +230,19 @@ client.on("ready", async () => {
 
     const guildInvites = await guild.invites.fetch();
 
-    const old = guild.invitesCollection;
+    const cached = guild.invitesCollection;
+    const invite = guildInvites.find(
+      (invite) => cached.get(invite.code).uses < invite.uses,
+    );
+    
     guild.invitesCollection = guildInvites;
-    const invite = guildInvites.find((i) => old.get(i.code).uses < i.uses);
-
     if (invite) {
       const inviter = invite.inviter;
       guild.logSend({
         title: "Новый участник!",
         description:
           "Имя: " +
-          e.user.tag +
+          member.user.tag +
           "\nИнвайтнул: " +
           inviter.tag +
           "\nПриглашение использовано: " +
@@ -241,7 +251,7 @@ client.on("ready", async () => {
         timestamp: invite.createdTimestamp,
       });
 
-      if (e.id !== inviter.id)
+      if (member.id !== inviter.id)
         inviter.action(Actions.globalQuest, { name: "inviteFriend" });
 
       inviter.data.invites = (inviter.data.invites ?? 0) + 1;
@@ -260,48 +270,39 @@ client.on("ready", async () => {
         color: guild.data.hi.color,
         image: guild.data.hi.image,
         description: guild.data.hi.message,
-        scope: { tag: e.user.toString(), name: e.user.username },
+        scope: { tag: member.user.toString(), name: member.user.username },
       });
-      channel.msg({ content: "👋", delete: 150000 });
+      channel.msg({ content: "👋", delete: 180_000 });
 
       if (guild.data.hi.rolesId && !leaveRoles) {
         roles = guild.data.hi.rolesId
-          .map((el) => guild.roles.cache.get(el))
-          .filter((el) => el);
-        // let attempts = 0;
-        // let acceptedRules = false;
-        // while (attempts < 100){
-        //   if (e.roles.cache.find(e => e.name === "everyone")){
-        //     acceptRules = true;
-        //     break;
-        //   }
-        //   await Util.sleep(3000);
-        // }
-        //
-        // if (acceptedRules)
-        e.roles.add(roles);
+          .map((id) => guild.roles.cache.get(id))
+          .filter((role) => role);
+        member.roles.add(roles);
       }
     }
   });
 
-  client.on("guildMemberRemove", async (e) => {
-    if (!e.guild.data.leave_roles) {
-      e.guild.data.leave_roles = {};
+  client.on("guildMemberRemove", async (member) => {
+    if (!member.guild.data.leave_roles) {
+      member.guild.data.leave_roles = {};
     }
-    e.guild.data.leave_roles[e.user.id] = Array.from(e.roles.cache.keys());
+    member.guild.data.leave_roles[member.user.id] = Array.from(
+      member.roles.cache.keys(),
+    );
 
     const banInfo =
-      (await e.guild.Audit((audit) => audit.target.id === e.id, {
+      (await member.guild.Audit((audit) => audit.target.id === member.id, {
         limit: 50,
         type: AuditLogEvent.MemberBanAdd,
       })) ||
-      (await e.guild.Audit((audit) => audit.target.id === e.id, {
+      (await member.guild.Audit((audit) => audit.target.id === member.id, {
         limit: 50,
         type: AuditLogEvent.MemberKick,
       }));
     const reason = () => (banInfo.reason ? `\nПричина: ${banInfo.reason}` : "");
 
-    const name = `Имя: ${e.user.tag}${e.user.bot ? " BOT" : ""}`;
+    const name = `Имя: ${member.user.tag}${member.user.bot ? " BOT" : ""}`;
 
     const message = banInfo
       ? {
@@ -309,15 +310,15 @@ client.on("ready", async () => {
             banInfo.action === AuditLogEvent.MemberKick ? "кикнут" : "забанен"
           }`,
           description: `${name}\nВыгнавший с сервера: ${
-            e.guild.members.resolve(banInfo.executor).displayName
-          } ${JSON.stringify(reason()).slice(0, 1000)}`,
+            member.guild.members.resolve(banInfo.executor).displayName
+          } ${reason().slice(0, 1000)}`,
         }
       : {
           content: "Участник покинул сервер",
           description: `${name}\nНадеемся, он скоро вернётся`,
         };
 
-    e.guild.logSend({
+    member.guild.logSend({
       title: message.content,
       description: message.description,
       color: banInfo ? "#ff0000" : "#00ff00",
