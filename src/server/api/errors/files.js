@@ -10,9 +10,10 @@ class Route extends BaseRoute {
   }
 
   async get(request, response) {
-    const list = await ErrorsHandler.Core.filesList;
+    const list = ErrorsHandler.Core.filesList;
     const cacheManager = ErrorsHandler.Core.cache;
     const metadata = [];
+
     for (const key of list) {
       metadata.push(await cacheManager.fetch(key));
     }
