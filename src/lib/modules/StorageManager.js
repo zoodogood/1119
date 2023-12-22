@@ -19,13 +19,13 @@ class StorageManager {
   }
 
   static async write(name, content) {
-    await this.driver.writeFile(name, content);
+    return await this.driver.writeFile(name, content);
   }
   static async read(name) {
-    await this.driver.readFile(name);
+    return await this.driver.readFile(name);
   }
   static async keys() {
-    await this.driver.keys();
+    return await this.driver.keys();
   }
 }
 
