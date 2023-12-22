@@ -1,24 +1,35 @@
 {
-	"editor.defaultFormatter": "dbaeumer.vscode-eslint",
-	"javascript.preferences.importModuleSpecifierEnding": "js",
-	"[javascript]": {
-		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
-	},
-	"runOnSave.commands": [
-		{
-		  "runIn": "backend",
-		  "match": "git",
-		  "finishStatusMessage": "Ok ${cwd}",
-		  "command": "npm version --force --no-git-tag-version prerelease"
-		}
-	 ],
-	 "files.associations": {
-		"*.js.example": "JavaScript",
-		"*.json.example": "json",
-		"*.jsonc.example": "jsonc",
-		"*.backup": "jsonc"
-	},
-	"[yaml]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "runOnSave.commands": [
+    {
+      "runIn": "backend",
+      "match": "git",
+      "finishStatusMessage": "Ok ${cwd}",
+      "command": "npm version --force --no-git-tag-version prerelease"
+    }
+  ],
+  "files.associations": {
+    "*.js.example": "JavaScript",
+    "*.json.example": "json",
+    "*.jsonc.example": "jsonc",
+    "*.backup": "jsonc"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "html",
+    "vue",
+    "markdown",
+    "svelte"
+  ],
+  "eslint.validate": ["svelte"]
 }
