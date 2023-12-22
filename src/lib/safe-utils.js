@@ -9,9 +9,8 @@ import {
   getRandomElementFromArray,
   DotNotatedInterface,
 } from "@zoodogood/utils/objectives";
-import dayjs from "dayjs";
 import * as FlattedJSON from "flatted";
-dayjs.extend((await import("dayjs/plugin/duration.js")).default);
+import { dayjs } from "#lib/dayjs.js";
 
 import yaml from "yaml";
 import Path from "path";
@@ -398,7 +397,7 @@ export {
   parsePagesPath,
   parseLocationBase,
   fetchFromInnerApi,
-  FlattedJSON
+  FlattedJSON,
 };
 
 export { relativeSiteRoot } from "#site/lib/util.js";
