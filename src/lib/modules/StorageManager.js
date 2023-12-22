@@ -24,8 +24,8 @@ class StorageManager {
   static async read(name) {
     return await this.driver.readFile(name);
   }
-  static async keys() {
-    return await this.driver.keys();
+  static async keys(path) {
+    return await this.driver.keys(path);
   }
 }
 
