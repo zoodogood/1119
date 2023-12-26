@@ -15,6 +15,16 @@ import {
   EffectInfluenceEnum,
   UserEffectManager,
 } from "#lib/modules/EffectsManager.js";
+import { MONTH } from "#constants/globals/time.js";
+
+class Speacial {
+  static AVATAR_OF_SNOW_QUEEN =
+    "https://media.discordapp.net/attachments/924298354152857670/1189235293572829355/images.png?ex=659d6cac&is=658af7ac&hm=4c791fa61d86e31022f329cb74c8e2c830cc82b32adf9d4325bc63fb751884f7&=&format=webp&quality=lossless";
+
+  static isSnowQueen(boss) {
+    return boss.avatarURL === Speacial.AVATAR_OF_SNOW_QUEEN;
+  }
+}
 
 class BossUtils {
   static damageTypeLabel(value) {
@@ -506,38 +516,28 @@ class BossManager {
   static BOSS_DURATION_IN_DAYS = 3;
   static MAXIMUM_LEVEL = 100;
 
-  static async bossApparance(guild) {
-    const TWO_MONTH = 5_259_600_000;
+  static summonBoss(guild) {
+    const boss = (guild.data.boss ||= {});
+    boss.endingAtDay = this.generateEndDate();
+    delete boss.apparanceAtDay;
 
-    if (guild.members.me.joinedTimestamp > Date.now() + TWO_MONTH) return;
+    BossManager.initBossData(boss, guild);
+    return boss;
+  }
+
+  static async bossApparance(guild) {
+    if (guild.members.me.joinedTimestamp > Date.now() + MONTH * 2) {
+      return;
+    }
 
     const guildData = guild.data;
-    const now = new Date();
-
-    const generateEndDate = () => {
-      const days = DataManager.data.bot.currentDay;
-      guildData.boss.endingAtDay = days + this.BOSS_DURATION_IN_DAYS;
-    };
-
-    const generateNextApparance = () => {
-      // the boss cannot spawn on other days
-      const MIN = 1;
-      const MAX = 28;
-      const date = new Date(
-        now.getFullYear(),
-        now.getMonth() + 1,
-        Util.random(MIN, MAX),
-      );
-      const days = Math.floor(date.getTime() / 86_400_000);
-      guildData.boss.apparanceAtDay = days;
-    };
 
     if (
       !guildData.boss ||
       (!guildData.boss.isArrived && !guildData.boss.apparanceAtDay)
     ) {
       guildData.boss = {};
-      generateNextApparance();
+      guildData.boss.apparanceAtDay = this.comeUpApparanceDay();
     }
 
     if (guildData.boss.endingAtDay <= DataManager.data.bot.currentDay) {
@@ -547,11 +547,26 @@ class BossManager {
     }
 
     if (guildData.boss.apparanceAtDay <= DataManager.data.bot.currentDay) {
-      generateEndDate();
-      delete guildData.boss.apparanceAtDay;
-
-      BossManager.initBossData(guildData.boss, guild);
+      BossManager.summonBoss(guild);
     }
+  }
+
+  static comeUpApparanceDay() {
+    const now = new Date();
+    const MIN = 1;
+    const MAX = 28;
+    const date = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      Util.random(MIN, MAX),
+    );
+    return Util.timestampDay(date.getTime());
+  }
+
+  static generateEndDate(customDuration) {
+    const duration = customDuration || this.BOSS_DURATION_IN_DAYS;
+    const today = DataManager.data.bot.currentDay;
+    return today + duration;
   }
 
   static isArrivedIn(guild) {
@@ -2106,6 +2121,15 @@ class BossManager {
           showsMessage.msg({ ...embed, edit: true });
         },
       },
+      refrigerator: {
+        _weight: 100,
+        id: "refrigerator",
+        description: "Стужа",
+        callback(content) {
+          content.attackContext.damageMultiplayer = 0;
+        },
+        filter: ({ boss }) => Speacial.isSnowQueen(boss),
+      },
       // ______e4example: {
       //   _weight: 2,
       //   id: "______e4example",
@@ -2167,7 +2191,15 @@ class BossManager {
   static BossEvents = BossEvents;
   static BossRelics = BossRelics;
   static BossEffects = BossEffects;
+  static Speacial = Speacial;
 }
 
-export { BossManager, BossShop, BossEvents, BossEffects, LegendaryWearonList };
+export {
+  BossManager,
+  BossShop,
+  BossEvents,
+  BossEffects,
+  LegendaryWearonList,
+  Speacial as BossSpecial,
+};
 export default BossManager;
