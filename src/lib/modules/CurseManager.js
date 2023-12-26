@@ -765,6 +765,7 @@ class CurseManager {
       {
         _weight: 1,
         id: "generousChest",
+        EFFECT_ID: "curseManager.events.greedyChest",
         hard: 1,
         description:
           "Вы теряете и получаете на 5% больше коинов, откройте сундук",
@@ -781,7 +782,7 @@ class CurseManager {
               return;
             }
 
-            if (data.source === "curseManager.events.greedyChest") {
+            if (data.source === this.EFFECT_ID) {
               return;
             }
 
@@ -790,7 +791,7 @@ class CurseManager {
               value: Math.floor(data.value * 0.05),
               resource: PropertiesEnum.coins,
               context: { curse, data },
-              source: "curseManager.events.greedyChest",
+              source: this.EFFECT_ID,
               executor: null,
             });
           },
