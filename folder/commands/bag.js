@@ -1,26 +1,24 @@
 import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
 class Item {
-  constructor(itemData) {
-    this.itemData = itemData;
-    const { key, names, ending } = itemData;
-    Object.assign(this, { key, names, ending });
+  static from(itemData) {
+    return Object.assign(Object.create(this.prototype), itemData);
   }
   display(...args) {
-    return this.itemData.ending(...args);
+    return this.ending(...args);
   }
-
   // Default getter
   getter({ target }) {
-    return target[this.itemData.key];
+    return target[this.key];
   }
   setter({ target, count }) {
-    return (target[this.itemData.key] = count);
+    return (target[this.key] = count);
   }
 
   getLimit() {
-    return this.itemData.limit || null;
+    return this.limit || null;
   }
 }
 
@@ -30,6 +28,13 @@ const ITEMS = [
     names: ["коина", "коины", "коин", "коинов", "coins", "coin", "c", "к"],
     ending: (count) =>
       `<:coin:637533074879414272> ${Util.ending(count, "Коин", "ов", "", "а")}`,
+    onUse({ count, context, usingContext }) {
+      usingContext.phrase = `Вы вернули свои ${this.findItemByKey(
+        PropertiesEnum.coins,
+      ).ending(count)}`;
+
+      return;
+    },
   },
   {
     key: "exp",
@@ -73,6 +78,27 @@ const ITEMS = [
       "камней",
       "камня",
     ],
+    onUse({ count, context, usingContext }) {
+      usingContext.used = count;
+
+      const MULTIPLAYER = 2;
+      const randomized = Util.random(1);
+      const { user } = context;
+      if (randomized === 1) {
+        Util.addResource({
+          resource: PropertiesEnum.void,
+          user,
+          context,
+          executor: user,
+          source: "command.bag.item.use.void",
+          value: count * MULTIPLAYER,
+        });
+      }
+      usingContext.phrase = `Шаурма ты. ${randomized ? "+" : "-"} ${
+        randomized ? count * MULTIPLAYER : count
+      }`;
+      return;
+    },
     ending: (count) =>
       `<a:void:768047066890895360> ${Util.ending(
         count,
@@ -229,16 +255,120 @@ const ITEMS = [
     ending: (count) => `🥂 ${Util.ending(count, "Бонус", "ов", "", "а")}`,
     display: (count) => `🥂 Бонус "Казино" ${count}/1`,
   },
+  {
+    key: "voidCasino",
+    names: ["казино", "voidcasino"],
+    limit: 1,
+    ending: (count) => `🥂 ${Util.ending(count, "Бонус", "ов", "", "а")}`,
+    display: (count) => `🥂 Бонус "Казино" ${count}/1`,
+  },
+  {
+    key: PropertiesEnum.lollipops,
+    names: [
+      "lollipops",
+      "lolipops",
+      "lollipop",
+      "lolipop",
+      "леденец",
+      "леденцы",
+      "леденцов",
+    ],
+    ending: (count) => `🍭 ${Util.ending(count, "Леден", "цов", "ец", "ца")}`,
+    async onUse({ context, count, usingContext }) {
+      const { guild } = context;
+      const today = Util.timestampDay(Date.now());
+      const boss = guild.data.boss;
+
+      const BossManager = (await import("#lib/modules/BossManager.js")).default;
+      if (BossManager.isArrivedIn(guild) || boss?.apparanceAtDay - 3 > today) {
+        usingContext.phrase =
+          "Вы можете применить этот предмет в момент отсутствия босса на сервере, но не за 3 дня до его появления";
+        return;
+      }
+
+      usingContext.used = 1;
+      usingContext.phrase =
+        "Использован леденец, чтобы вызвать босса на одни сутки";
+
+      ((previous) => {
+        const previousApparanceDate = previous?.apparanceAtDay;
+        const boss = BossManager.summonBoss(guild);
+        boss.endingAtDay = today + 1;
+        boss.apparanceAtDay = previousApparanceDate || boss.apparanceAtDay;
+        boss.avatarURL = BossManager.Speacial.AVATAR_OF_SNOW_QUEEN;
+        boss.elementType = BossManager.BOSS_TYPES.get("wind").type;
+        boss.level = Util.random(5, 30);
+        boss.healthThresholder = BossManager.calculateHealthPointThresholder(
+          boss.level,
+        );
+      })(boss);
+    },
+  },
 ];
 
+class CommandUtil {
+  static summarizeInInventoryAndBag({ user, key }) {
+    const userData = user.data;
+    return (+userData[key] || 0) + (+userData.bag?.[key] || 0);
+  }
+
+  static isPointerAll(target) {
+    return target === "+";
+  }
+
+  static addResourceAndMoveToBag({
+    user,
+    resource,
+    count,
+    source,
+    executor,
+    context,
+  }) {
+    Util.addResource({
+      resource,
+      user,
+      value: count,
+      source,
+      context,
+      executor,
+    });
+
+    this.moveToBagBrute({ key: resource, count, user });
+  }
+
+  static moveToBagBrute({ key, count, user }) {
+    const bag = CommandUtil.getBagTargetOf(user);
+    bag[key] ||= 0;
+    bag[key] += count;
+  }
+
+  static getBagTargetOf(user) {
+    const userData = user.data;
+    userData.bag ||= {};
+    return userData.bag;
+  }
+}
+
 class Command {
+  static CommandUtil = CommandUtil;
+
   constructor() {
-    this.items = ITEMS.map((itemData) => new Item(itemData));
+    this.items = ITEMS.map((itemData) => Item.from(itemData));
+  }
+
+  findItemByAllias(allias) {
+    return this.items.find((item) => item.names.includes(allias));
+  }
+
+  findItemByKey(key) {
+    return this.items.find((item) => item.key === key);
   }
 
   getContext(interaction) {
     return {
       interaction,
+      user: interaction.user,
+      guild: interaction.guild,
       userData: interaction.userData,
       defaultPrevented: false,
       preventDefault() {
@@ -248,24 +378,109 @@ class Command {
     };
   }
 
+  async onActionUseItem(context) {
+    const { item, interaction, userData, user } = context;
+    if (!item.onUse) {
+      interaction.channel.msg({
+        reference: interaction.message.id,
+        content: "У этого предмета нет использования через сумку",
+      });
+      return;
+    }
+
+    const { key } = item;
+    const userResourceCount = CommandUtil.summarizeInInventoryAndBag({
+      user,
+      key,
+    });
+    const count = CommandUtil.isPointerAll(context.count)
+      ? userResourceCount
+      : context.count;
+
+    if (count > userResourceCount) {
+      interaction.channel.msg({
+        reference: interaction.message.id,
+        content: `Сэр::: В вашей сумке + инвентаре — :::недостаточно этого ресурса для использования: Вы хотите использовать ${count}, в то время как в инветаре = ${
+          userData[key] ?? 0
+        }; в сумке = ${
+          userData.bag?.[key] ?? 0
+        }\n(${userResourceCount} - ${count}), — AAAAAAAAAA`,
+      });
+      return;
+    }
+
+    const usingContext = {
+      used: 0,
+      phrase: "\\*Стандартная фраза использования предмета*",
+    };
+
+    await item.onUse.call(this, {
+      context,
+      count,
+      usingContext,
+    });
+
+    if (usingContext.used > userData[key]) {
+      this._moveItem({
+        isToBag: false,
+        user,
+        count: usingContext.used - userData[key],
+        context,
+        item,
+      });
+    }
+
+    if (usingContext.used) {
+      Util.addResource({
+        user,
+        executor: user,
+        resource: item.key,
+        value: -usingContext.used,
+        context,
+        source: "command.bag.usingItem",
+      });
+    }
+
+    interaction.channel.msg({
+      description: `Использовано ${usingContext.used} ед. предмета\n${usingContext.phrase}`,
+    });
+  }
+
   parseParams(params) {
-    const action = params.match(/взять|take|get|положить|put|set/)?.[0];
-    const count = params.match(/\d+|\+/)?.[0];
+    const action = params.match(
+      /взять|take|get|положить|put|set|использовать|use|використати/,
+    )?.[0];
+    const count = params.match(/\d+|\+/)?.[0] ?? 1;
     let item = null;
     let rawItem = null;
     const isReceiveAction = ["взять", "take", "get"].includes(action);
     const isPutAction = ["положить", "put", "set"].includes(action);
+    const isUseAction = ["использовать", "use", "використати"].includes(action);
 
     if (action && count) {
       params = params.replace(action, "");
       params = params.replace(count, "");
       rawItem = params = params.trim().toLowerCase();
 
-      item = this.items.find(({ itemData }) =>
-        itemData.names.includes(rawItem),
-      );
+      item = this.findItemByAllias(rawItem);
     }
-    return { action, count, item, isReceiveAction, isPutAction, rawItem };
+    return {
+      action,
+      count,
+      item,
+      isReceiveAction,
+      isPutAction,
+      isUseAction,
+      rawItem,
+    };
+  }
+
+  getMoveTargetsOf({ user, isToBag }) {
+    const userData = user.data;
+    const bagData = CommandUtil.getBagTargetOf(user);
+    const targetFrom = isToBag ? userData : bagData;
+    const targetTo = isToBag ? bagData : userData;
+    return { targetTo, targetFrom };
   }
 
   async onChatInput(msg, interaction) {
@@ -294,6 +509,11 @@ class Command {
       return;
     }
 
+    if (context.isUseAction) {
+      this.onActionUseItem(context);
+      return;
+    }
+
     if (action && count) {
       if (!item) {
         const list = this.items.reduce(
@@ -315,7 +535,7 @@ class Command {
     if (item) {
       const isToBag = context.isPutAction;
 
-      if (!userData.bag) userData.bag = {};
+      userData.bag ||= {};
 
       this.moveItem(context, item.key, count, isToBag);
       return;
@@ -329,12 +549,12 @@ class Command {
     const { userData, interaction } = context;
     const items = Object.entries(userData.bag || {})
       .map(([key, count]) => ({
-        itemData: this.items.find((item) => item.key === key),
+        item: this.items.find((item) => item.key === key),
         count,
       }))
-      .filter(({ itemData }) => itemData !== undefined)
-      .map(({ itemData, count }) => itemData.display(count))
-      .map((str) => `– ${str}`);
+      .filter(({ item }) => item !== undefined)
+      .map(({ item, count }) => item.display(count))
+      .map((line) => `– ${line}`);
 
     const description = items.length
       ? items.join("\n")
@@ -352,13 +572,32 @@ class Command {
     return;
   }
 
-  moveItem(context, key, count, isToBag) {
-    const { userData, interaction } = context;
-    const item = this.items.find((item) => item.key === key);
-    const targetFrom = isToBag ? userData : userData.bag;
-    const targetTo = isToBag ? userData.bag : userData;
+  _moveItem({ user, isToBag, count, item, context }) {
+    const { targetTo, targetFrom } = this.getMoveTargetsOf({ isToBag, user });
+    user.action(Actions.resourceChange, {
+      value: isToBag ? -count : count,
+      executor: user,
+      source: "command.bag",
+      resource: item.key,
+      context,
+    });
 
-    if (count === "+") {
+    item.setter({
+      target: targetFrom,
+      count: item.getter({ target: targetFrom }) - count,
+    });
+    item.setter({
+      target: targetTo,
+      count: item.getter({ target: targetTo }) + count,
+    });
+  }
+
+  moveItem(context, key, count, isToBag) {
+    const { userData, interaction, user } = context;
+    const item = this.items.find((item) => item.key === key);
+    const { targetTo, targetFrom } = this.getMoveTargetsOf({ user, isToBag });
+
+    if (CommandUtil.isPointerAll(count)) {
       const value = item.getter({ target: targetFrom });
       count = value || 0;
     }
@@ -389,21 +628,12 @@ class Command {
       count = Math.min(count, limit - current);
     }
 
-    interaction.user.action(Actions.resourceChange, {
-      value: isToBag ? -count : count,
-      executor: interaction.user,
-      source: "command.bag",
-      resource: item.itemData.key,
+    this._moveItem({
+      user: interaction.user,
+      isToBag,
+      count,
+      item,
       context,
-    });
-
-    item.setter({
-      target: targetFrom,
-      count: item.getter({ target: targetFrom }) - count,
-    });
-    item.setter({
-      target: targetTo,
-      count: item.getter({ target: targetTo }) + count,
     });
 
     const bagDescription = isToBag
