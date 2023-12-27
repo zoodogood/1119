@@ -19,7 +19,7 @@ import { MONTH } from "#constants/globals/time.js";
 
 class Speacial {
   static AVATAR_OF_SNOW_QUEEN =
-    "https://media.discordapp.net/attachments/924298354152857670/1189235293572829355/images.png?ex=659d6cac&is=658af7ac&hm=4c791fa61d86e31022f329cb74c8e2c830cc82b32adf9d4325bc63fb751884f7&=&format=webp&quality=lossless";
+    "https://media.discordapp.net/attachments/926144032785195059/1189474240974565436/b9183b53bdf18835d4c337f06761d95d_1400x790-q-85_1_1.webp?ex=659e4b36&is=658bd636&hm=0889765cc144e316843ab5ad88144db1ae96f9c21f4747f303860d647200cf00&=&format=webp";
 
   static isSnowQueen(boss) {
     return boss.avatarURL === Speacial.AVATAR_OF_SNOW_QUEEN;
@@ -1247,12 +1247,15 @@ class BossManager {
     const description = `Нанесено урона с прямой атаки: ${Util.NumberFormatLetterize(
       dealt,
     )} ед.\n\n${eventsContent}`;
-    const embed = {
-      title: `⚔️ За сервер ${channel.guild.name}!`,
-      description,
-      footer,
-    };
-    data.message = channel.msg(embed);
+    (() => {
+      const emoji = "⚔️";
+      const embed = {
+        title: `${emoji} За сервер ${channel.guild.name}!`,
+        description,
+        footer,
+      };
+      data.message = channel.msg(embed);
+    })();
   }
 
   static eventBases = new Collection(
@@ -2122,7 +2125,7 @@ class BossManager {
         },
       },
       refrigerator: {
-        _weight: 100,
+        weight: 100,
         id: "refrigerator",
         description: "Стужа",
         callback(content) {
