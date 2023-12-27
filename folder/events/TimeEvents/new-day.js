@@ -36,6 +36,7 @@ class Event {
     DailyEvents.askTheBoss();
     DailyEvents.checkBirthDays(context);
     DailyEvents.updateCommandsLaunchedData();
+    DailyEvents.removeSnowyEventIfExists();
   }
 
   setTheClock() {
@@ -225,6 +226,12 @@ class DailyEvents {
     ]; //0123456789abcdef
     for (let i = 1; i < 7; i++) {
       botData.grempenItems += arr.random({ pop: true });
+    }
+  }
+
+  static removeSnowyEventIfExists() {
+    for (const guildData of DataManager.data.guilds) {
+      delete guildData.snowyEvent;
     }
   }
 }
