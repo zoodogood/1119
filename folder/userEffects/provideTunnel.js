@@ -1,10 +1,10 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
 
-function provideTunnel(target, sourceUser, effectsToHear = {}, values = {}) {
+function provideTunnel(target, sourceUser, actionsToHear = {}, values = {}) {
   return UserEffectManager.justEffect({
     user: target,
-    values: { source: sourceUser.id, heared: effectsToHear, ...values },
+    values: { source: sourceUser.id, heared: actionsToHear, ...values },
   });
 }
 
