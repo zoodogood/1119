@@ -3,6 +3,7 @@ import { UserEffectManager } from "#lib/modules/EffectsManager.js";
 
 function provideTunnel(target, sourceUser, actionsToHear = {}, values = {}) {
   return UserEffectManager.justEffect({
+    effectId: "provideTunnel",
     user: target,
     values: { source: sourceUser.id, heared: actionsToHear, ...values },
   });
