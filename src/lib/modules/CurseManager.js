@@ -13,6 +13,9 @@ import { RanksUtils } from "#folder/commands/top.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import Executor from "#lib/modules/Executor.js";
 import UserEffectManager from "#lib/modules/EffectsManager.js";
+import { DAY } from "#constants/globals/time.js";
+import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
+import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -1285,7 +1288,7 @@ class CurseManager {
       {
         _weight: 1,
         id: "candyFactory",
-        hard: 2,
+        hard: 0,
         EFFECT_ID: "curseManager.event.candyFactory",
         description:
           "Вам становится доступна команда !клик, заработайте конфеты",
@@ -1366,6 +1369,64 @@ class CurseManager {
           },
         },
         reward: 5,
+      },
+      {
+        _weight: 5,
+        id: "learnTogether",
+        description:
+          "Упомяните до 5 участников, вместе вы должны получить опыта",
+        hard: 1,
+        values: {
+          goal: (user) => user.data.level * LEVELINCREASE_EXPERIENCE_PER_LEVEL,
+          timer: () => DAY,
+          listOfUsers: () => [],
+        },
+        callback: {
+          messageCreate(user, curse, message) {
+            const { content } = message;
+            const mentionId = content.match(
+              Discord.MessageMentions.UsersPattern,
+            )?.[1];
+
+            if (!mentionId) {
+              return;
+            }
+
+            const target = message.client.users.cache.get(mentionId);
+            if (target.id === user.id || target.bot) {
+              return;
+            }
+
+            const list = curse.values.listOfUsers || [];
+
+            if (list.includes(target.id) || list.length >= 5) {
+              message.react("❌");
+              return;
+            }
+
+            message.react("💀");
+
+            list.push(target.id);
+            const effectsToHear = Object.fromEntries(
+              [ActionsMap.resourceChange].map((action) => [action, true]),
+            );
+            provideTunnel(target, user, effectsToHear);
+          },
+          resourceChange(user, curse, context) {
+            const { value, resource } = context;
+            if (resource !== PropertiesEnum.exp) {
+              return;
+            }
+            CurseManager.interface({ user, curse }).incrementProgress(value);
+          },
+          tunnelMessageReceive(user, curse, context) {
+            const { data } = context;
+            context.resumeAlive();
+            this.callback.resourceChange.call(this, user, curse, data);
+          },
+        },
+        interactionIsLong: true,
+        reward: 12,
       },
 
       // {
