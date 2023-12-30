@@ -279,12 +279,7 @@ async function eventHundler(message) {
   user.CD_msg =
     Math.max(user.CD_msg || 0, Date.now()) + MESSAGES_SPAM_FILTER_TARGET_ALWAYS;
 
-  if (
-    Date.now() +
-      MESSAGES_SPAM_FILTER_ALLOWED_IN_SUCCESSION *
-        MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED >
-    user.CD_msg
-  ) {
+  if (Util.overTheMessageSpamLimit(user)) {
     const perEffect = MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED / 20 / 2;
     user.CD_msg +=
       MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED -
