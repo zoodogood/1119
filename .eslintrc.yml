@@ -31,3 +31,5 @@ rules:
     - error
   no-fallthrough: 
     - off
+  no-async-promise-executor:
+    - off
