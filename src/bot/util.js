@@ -1,3 +1,7 @@
+import {
+  MESSAGES_SPAM_FILTER_ALLOWED_IN_SUCCESSION,
+  MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
+} from "#constants/users/events.js";
 import Discord from "discord.js";
 
 async function awaitUserAccept({ name, message, channel, userData }) {
@@ -58,6 +62,15 @@ function awaitReactOrMessage({
     );
     resolve(some);
   });
+}
+
+export function overTheMessageSpamLimit(user) {
+  return (
+    Date.now() +
+      MESSAGES_SPAM_FILTER_ALLOWED_IN_SUCCESSION *
+        MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED >
+    user.CD_msg
+  );
 }
 
 export { awaitUserAccept, awaitReactOrMessage };
