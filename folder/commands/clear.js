@@ -124,10 +124,10 @@ class Command {
       const mode = referenceId
         ? `До указанного сообщения`
         : userId
-        ? `Сообщения пользователя <@${userId}>`
-        : limit
-        ? "Количественная выборка"
-        : "Все сообщения";
+          ? `Сообщения пользователя <@${userId}>`
+          : limit
+            ? "Количественная выборка"
+            : "Все сообщения";
       const isCancel = !!(toDelete - current);
       const description = `В канале: ${channel.toString()}\nУдалил: ${msg.author.toString()}\nТип чистки: ${mode}${
         isCancel ? "\n\nЧистка была отменена" : ""
