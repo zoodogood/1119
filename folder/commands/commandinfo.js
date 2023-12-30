@@ -1,10 +1,9 @@
 import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
 
-import Discord, { PermissionFlagsBits, PermissionsBitField } from "discord.js";
+import Discord from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
-import { PermissionFlags } from "#constants/enums/discord/permissions.js";
-import app from "#app";
+import { permissionsBitsToI18nArray } from "#lib/permissions.js";
 
 class Command {
   getContext(interaction) {
@@ -85,7 +84,7 @@ class Command {
             {
               name: "Необходимые права",
               value:
-                this.permissionsToLocaledArray(meta.permissions, locale) ||
+                this.permissionsToLocaledArray(meta.Permissions, locale) ||
                 "Нет",
             },
             {
@@ -115,15 +114,12 @@ class Command {
   }
 
   permissionsToLocaledArray(permissions, locale) {
-    const keys = new PermissionsBitField(permissions).toArray();
-    const strings = keys.map((key) => {
-      const bits = PermissionFlagsBits[key];
-      const string = PermissionFlags[bits];
-      const localed = app.i18n.format(string, { locale });
-      return localed.toLowerCase();
+    const strings = permissionsBitsToI18nArray(permissions, locale);
+    const formatted = strings.map((permission) => {
+      return permission.toLowerCase();
     });
 
-    return Util.capitalize(Util.joinWithAndSeparator(strings));
+    return Util.capitalize(Util.joinWithAndSeparator(formatted));
   }
 
   fetchCommandMetadata(command) {
