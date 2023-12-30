@@ -17,9 +17,10 @@ class Event extends BaseEvent {
       return;
     }
     const PHRASES = [
-      () => "Эта музыка не спешит заканчиваться",
-      () => "Хо-хо-хо",
-      () => "Отправляйте сообщения, чтобы получить проклятие зимнего праздника",
+      () => "Эта музыка не спешит заканчиваться :notes:",
+      () => "Хо-хо-хо :robot:",
+      () =>
+        "**Хо-хо-хо, @everyone, Отправляйте сообщения, чтобы получить проклятие зимнего праздника :snowflake: !**",
     ];
     const { guild } = message;
     guild.data.snowyEvent ||= { preGlowExplorers: [] };
@@ -31,10 +32,12 @@ class Event extends BaseEvent {
       }
       message.react("🌲");
       snowyEvent.preGlowExplorers.push(user.id);
+      message.channel.sendTyping();
       await Util.sleep(2_500);
-      message.msg({
+      const content = PHRASES.at(snowyEvent.preGlowExplorers.length - 1)();
+      message.channel.msg({
         reference: message.id,
-        content: PHRASES.at(snowyEvent.preGlowExplorers.length - 1)(),
+        content,
       });
       return;
     }
