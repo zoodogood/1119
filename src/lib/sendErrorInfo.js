@@ -8,6 +8,7 @@ import { CreateModal } from "@zoodogood/utils/discordjs";
 import { resolveGithubPath, uid } from "#lib/util.js";
 import Path from "path";
 import config from "#config";
+import client from "#bot/client.js";
 
 class UserInterfaceUtil {
   static async sendErrorInfo({
@@ -187,9 +188,12 @@ class UserInterfaceUtil {
           components: [],
         });
 
-        // .msg({
-        //   title: `Дан комментарий ошибки с срочностью: ${selectionInteract.values[0]} и текстом ${responseText} for \`\`\`${error.message}\`\`\``,
-        // });
+        client.channels.cache.get(config.guild.logChannelId).msg({
+          title: `Дан комментарий ошибки с срочностью: ${selectionInteract.values[0]} и для \`\`\`${error.message}\`\`\``,
+          description: responseText,
+          color: "#d8bb40",
+          footer: { text: interaction.user.id },
+        });
       })();
       return;
     },
