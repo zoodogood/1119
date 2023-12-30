@@ -13,8 +13,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 
 import { ImportDirectory } from "@zoodogood/import-directory";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
-import { PermissionFlags } from "#constants/enums/discord/permissions.js";
-import app from "#app";
+import { permissionRawToI18n } from "#lib/permissions.js";
 
 const COMMANDS_PATH = "./folder/commands";
 
@@ -122,13 +121,11 @@ class CommandsManager {
         interaction.channel,
       );
     if (clientWastedChannelPermissions) {
-      const { locale } = interaction.user;
-      const permissions = clientWastedChannelPermissions.map(
-        (permission) => PermissionFlags[permission],
+      const { locale } = interaction.user.data;
+      const permissions = clientWastedChannelPermissions.map((string) =>
+        permissionRawToI18n(string, locale),
       );
-      const content = Util.joinWithAndSeparator(
-        permissions.map((flag) => app.i18n.f(flag, { locale })),
-      );
+      const content = Util.joinWithAndSeparator(permissions);
       problems.push(
         `Боту необходимы следующие права в этом канале: ${content}`,
       );
@@ -139,13 +136,11 @@ class CommandsManager {
       options.myPermissions &&
       interaction.guild.members.me.wastedPermissions(options.myPermissions);
     if (clientWastedGuildPermissions) {
-      const { locale } = interaction.user;
-      const permissions = clientWastedGuildPermissions.map(
-        (permission) => PermissionFlags[permission],
+      const { locale } = interaction.user.data;
+      const permissions = clientWastedGuildPermissions.map((string) =>
+        permissionRawToI18n(string, locale),
       );
-      const content = Util.joinWithAndSeparator(
-        permissions.map((flag) => app.i18n.f(flag, { locale })),
-      );
+      const content = Util.joinWithAndSeparator(permissions);
       problems.push(
         `Боту необходимы следующие права в этой гильдии: ${content} `,
       );
@@ -159,13 +154,11 @@ class CommandsManager {
         interaction.channel,
       );
     if (userWastedChannelPermissions) {
-      const { locale } = interaction.user;
-      const permissions = userWastedChannelPermissions.map(
-        (permission) => PermissionFlags[permission],
+      const { locale } = interaction.user.data;
+      const permissions = userWastedChannelPermissions.map((string) =>
+        permissionRawToI18n(string, locale),
       );
-      const content = Util.joinWithAndSeparator(
-        permissions.map((flag) => app.i18n.f(flag, { locale })),
-      );
+      const content = Util.joinWithAndSeparator(permissions);
       problems.push(
         `Вам необходимо обладать следующими правами внутри текущего канала: ${content} `,
       );
@@ -176,13 +169,11 @@ class CommandsManager {
       options.Permissions &&
       interaction.member.wastedPermissions(options.Permissions);
     if (userWastedGuildPermissions) {
-      const { locale } = interaction.user;
-      const permissions = userWastedGuildPermissions.map(
-        (permission) => PermissionFlags[permission],
+      const { locale } = interaction.user.data;
+      const permissions = userWastedGuildPermissions.map((string) =>
+        permissionRawToI18n(string, locale),
       );
-      const content = Util.joinWithAndSeparator(
-        permissions.map((flag) => app.i18n.f(flag, { locale })),
-      );
+      const content = Util.joinWithAndSeparator(permissions);
       problems.push(
         `Вам необходимо обладать следующими правами внутри гильдии: ${content} `,
       );
