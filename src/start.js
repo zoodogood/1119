@@ -607,7 +607,7 @@ Discord.GuildMember.prototype.wastedPermissions = function (bit, channel) {
   const permissions = channel
     ? channel.permissionsFor(this).missing(bit)
     : this.permissions.missing(bit);
-  return permissions[0] ? permissions : false;
+  return permissions.length ? permissions : false;
 };
 
 Discord.Guild.prototype.chatSend = async function (message) {
