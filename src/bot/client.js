@@ -5,6 +5,7 @@ const client = new Client({
   messageCacheMaxSize: 110,
   intents: [...Object.values(GatewayIntentBits)],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
+  allowedMentions: { repliedUser: true, parse: ["users"] },
 });
 
 export default client;
