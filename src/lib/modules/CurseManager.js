@@ -2,7 +2,7 @@ import { Collection } from "@discordjs/collection";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import * as Util from "#lib/util.js";
-import Discord, { AttachmentBuilder } from "discord.js";
+import Discord, { AttachmentBuilder, Message } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
@@ -13,9 +13,10 @@ import { RanksUtils } from "#folder/commands/top.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import Executor from "#lib/modules/Executor.js";
 import UserEffectManager from "#lib/modules/EffectsManager.js";
-import { DAY } from "#constants/globals/time.js";
+import { DAY, MINUTE, SECOND } from "#constants/globals/time.js";
 import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { Emoji } from "#constants/emojis.js";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -1152,6 +1153,167 @@ class CurseManager {
             interaction,
           });
         },
+        getPresentsList() {
+          return Util.transformToCollectionUsingKey([
+            {
+              weights: 5,
+              key: "lollipop",
+              async callback(context) {
+                const { user } = context;
+                const { CommandUtil } = (
+                  await import("#folder/commands/bag.js")
+                ).default;
+                CommandUtil.addResourceAndMoveToBag({
+                  resource: PropertiesEnum.lollipops,
+                  user,
+                  context,
+                  executor: user,
+                  value: 1,
+                  source: "curseManager.events.happySnowy.presents.lollipop",
+                });
+              },
+              emoji: Emoji.lollipops,
+              description:
+                "Леденец. Используйте леденец в сумке !bag use lollipop, чтобы призвать босса на сервер",
+            },
+            {
+              weights: 15,
+              key: "snowyTree",
+              callback(context) {
+                const { user } = context;
+                Util.addResource({
+                  resource: PropertiesEnum.snowyTree,
+                  user,
+                  context,
+                  executor: user,
+                  value: 1,
+                  source: "curseManager.events.happySnowy.presents.snowyTree",
+                });
+              },
+              emoji: Emoji.snowyTree,
+              description:
+                "Символ дерево - эмблема. Этот редкий предмет останется с вами ещё надолго",
+            },
+            {
+              weights: 5,
+              key: "presentsPack",
+              callback(context) {
+                const { user } = context;
+                Util.addResource({
+                  resource: PropertiesEnum.presents,
+                  user,
+                  context,
+                  executor: user,
+                  value: 3,
+                  source:
+                    "curseManager.events.happySnowy.presents.presentsPack",
+                });
+              },
+              emoji: Emoji.presentsPack,
+              description:
+                "Коробка подарков. Уже распаковано — три подарка получено",
+            },
+            {
+              weights: 15,
+              key: "bonuses",
+              callback(context) {
+                const { user } = context;
+                Util.addResource({
+                  resource: PropertiesEnum.chestBonus,
+                  user,
+                  context,
+                  executor: user,
+                  value: 90,
+                  source: "curseManager.events.happySnowy.presents.bonuses",
+                });
+              },
+              emoji: Emoji.chestBonus,
+              description: "90 сундуков. В подарке было 90 сундуков",
+            },
+            {
+              weights: 20,
+              key: "multiVoid",
+              callback(context) {
+                const { user } = context;
+                Util.addResource({
+                  resource: PropertiesEnum.void,
+                  user,
+                  context,
+                  executor: user,
+                  value: 3,
+                  source: "curseManager.events.happySnowy.presents.multiVoid",
+                });
+              },
+              emoji: Emoji.void,
+              description: "3 нестабильности. В подарке было 3 нестабильности",
+            },
+            {
+              weights: 10,
+              key: "snowyQuote",
+              async callback(context) {
+                context.provideComponents(
+                  justButtonComponents([
+                    {
+                      label: "Читать",
+                    },
+                  ]),
+                );
+
+                context.onComponent = async (interaction) => {
+                  const { getNewYearQuote } = await import(
+                    "#lib/getNewYearQuote.js"
+                  );
+                  await Util.sleep(1000);
+                  interaction.msg({
+                    description: getNewYearQuote(),
+                    footer: {
+                      text: "Большинство цитат взяты отсюда: https://citaty.info/topic/novyi-god, они так же могут быть получены по API",
+                    },
+                  });
+
+                  context.componentsCollector.stop();
+                };
+              },
+              emoji: Emoji.plain_scroll,
+              description:
+                "Новогодняя цитата. Бот хочет отправить вам одну из доступных цитат",
+            },
+            {
+              weights: 20,
+              key: "coins",
+              callback(context) {
+                const { user } = context;
+                Util.addResource({
+                  resource: PropertiesEnum.coins,
+                  user,
+                  context,
+                  executor: user,
+                  value: 9_000,
+                  source: "curseManager.events.happySnowy.presents.coins",
+                });
+              },
+              emoji: Emoji.coins,
+              description: "9 000 коинов. В подарке 9 000 коинов",
+            },
+            {
+              weights: 10,
+              key: "oneVoid",
+              callback(context) {
+                const { user } = context;
+                Util.addResource({
+                  resource: PropertiesEnum.void,
+                  user,
+                  context,
+                  executor: user,
+                  value: 1,
+                  source: "curseManager.events.happySnowy.presents.oneVoid",
+                });
+              },
+              emoji: Emoji.void,
+              description: "Нестабильность. Получите нестабильность!",
+            },
+          ]);
+        },
         componentsActions: {
           info({ interaction }) {
             interaction.msg({
@@ -1169,7 +1331,7 @@ class CurseManager {
 `,
             });
           },
-          openNow({ params, interaction }) {
+          async openNow({ params, interaction }) {
             const { client } = interaction;
             const [id] = params;
             const user = client.users.cache.get(id);
@@ -1181,10 +1343,115 @@ class CurseManager {
               });
               return;
             }
+            const userData = user.data;
 
-            interaction.msg({
-              content: "Распаковка подарка: 03 м : 00 с",
+            if (userData.presents <= 0) {
+              interaction.channel.msg({
+                description:
+                  "Опс, в вашем инвентаре сейчас нет подарков. Получить их можно отправляя больше сообщений",
+                color: "#ff0000",
+              });
+              return;
+            }
+
+            const OPEN_TIME = SECOND * 3;
+            const context = {
+              interaction,
+              user: interaction.user,
+              channel: interaction.channel,
+              openStartsAt: Date.now(),
+              openProcessMessage: null,
+              provideComponents(components) {
+                this.openedPresentComponents.push(components);
+              },
+              openedPresentComponents: [],
+              openedMessage: null,
+              componentsCollector: null,
+              onComponent: null,
+            };
+
+            await new Promise(async (resolve) => {
+              const isMessage = (target) => target instanceof Message;
+              context.openProcessMessage ||= interaction;
+              const embedDefaults = {
+                color: "#40f7f5",
+                fetchReply: true,
+              };
+              while (true) {
+                const timediff = Math.max(
+                  0,
+                  context.openStartsAt + OPEN_TIME - Date.now(),
+                );
+                context.openProcessMessage =
+                  await context.openProcessMessage.msg({
+                    ...embedDefaults,
+                    edit: isMessage(context.openProcessMessage),
+                    description: `Распаковка подарка: ${Util.dayjs
+                      .duration(timediff)
+                      .format("mm м : ss с")} ${
+                      Math.ceil(timediff / (MINUTE * 0.25)) % 2 ? "⏳" : "⌛"
+                    }\nПожалуйста, подождите...`,
+                  });
+
+                const sleep =
+                  timediff < 5_000 ? timediff : Util.random(1_500, 3_000);
+                Util.sleep(sleep);
+
+                if (timediff <= 0) {
+                  break;
+                }
+              }
+
+              resolve(true);
             });
+
+            if (userData.presents <= 0) {
+              interaction.channel.msg({
+                description:
+                  "Опс, в вашем инвентаре сейчас нет подарка. Объяснение ситуации: основная проверка на наличие подарков производится после таймера. Это необходимо для того, чтобы они не пропали из инвентаря в случае перезапуска бота\nСкорее всего вы попытались открыть сразу несколько подарков",
+                color: "#ff0000",
+              });
+              return;
+            }
+
+            const presents = [...this.getPresentsList().values()];
+            const present = Util.getRandomElementFromArray(presents, {
+              associatedWeights: presents.map(
+                Util.factoryGetPropertyValue("weights"),
+              ),
+            });
+            await present.callback.call(this, context);
+
+            Util.addResource({
+              user,
+              executor: user,
+              value: -1,
+              resource: PropertiesEnum.presents,
+              source: "curseManager.events.happySnowy.present.onOpen",
+              context,
+            });
+
+            context.openedMessage = await interaction.channel.msg({
+              color: "#40f7f5",
+              description: `:gift: ${present.emoji.toString()} Вы запрыгнули в коробку`,
+              footer: { text: present.description },
+              components: context.openedPresentComponents,
+            });
+
+            if (context.onComponent) {
+              context.componentsCollector =
+                context.openedMessage.createMessageComponentCollector({
+                  time: MINUTE * 3,
+                });
+
+              context.componentsCollector.on("collect", (interaction) =>
+                context.onComponent.call(this, interaction),
+              );
+
+              context.componentsCollector.on("end", () => {
+                context.openedMessage.msg({ edit: true, components: [] });
+              });
+            }
           },
         },
         callback: {
@@ -1192,6 +1459,9 @@ class CurseManager {
             CurseManager.interface({ user, curse }).incrementProgress(5);
           },
           messageCreate(user, curse, message) {
+            if (Util.overTheMessageSpamLimit(user)) {
+              return;
+            }
             if (Util.random(15) === 0) {
               EventsManager.emitter.emit("users/getCoinsFromMessage", {
                 user,
@@ -1216,7 +1486,7 @@ class CurseManager {
               return;
             }
             const { progress: snowflakes } = curse.values;
-            const SNOWFLAKES_TO_PRESENT = 100;
+            const SNOWFLAKES_TO_PRESENT = 300;
 
             const presentsAdd = Math.floor(snowflakes / SNOWFLAKES_TO_PRESENT);
 
@@ -1234,11 +1504,11 @@ class CurseManager {
 
             const currentPresents = user.data.presents;
 
-            const snoflakesContent = `У вас снежинок \${ curse.values.progress % SNOWFLAKES_TO_PRESENT } (${
+            const snoflakesContent = `У вас снежинок: \`\${ curse.values.progress % SNOWFLAKES_TO_PRESENT }\` (${
               snowflakes % SNOWFLAKES_TO_PRESENT
             }/${SNOWFLAKES_TO_PRESENT}) :snowflake:, — это не баг, здесь действительно должны быть фигурные скобки`;
             const presentsContent = presentsAdd
-              ? `\nПолучено ${Util.ending(
+              ? `\nПолучено из снежинок: ${Util.ending(
                   presentsAdd,
                   "подар",
                   "ков",
