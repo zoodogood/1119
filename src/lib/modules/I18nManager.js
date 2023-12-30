@@ -1,9 +1,9 @@
 class I18nManager {
-  f(params) {
+  f(...params) {
     return this.format(...params);
   }
 
-  format(key, { locale, values }) {
+  format(key, { locale, values } = {}) {
     locale = I18nManager.resolveLocale(locale);
     const string =
       this.getRaw(key, locale) || this.getRaw(key, I18nManager.DEFAULT_LOCALE);
