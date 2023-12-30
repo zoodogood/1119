@@ -20,7 +20,12 @@ import config from "#config";
 import app from "#app";
 import FileSystem from "fs";
 import { Actions } from "#lib/modules/ActionManager.js";
-import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import {
+  LEVELINCREASE_EXPERIENCE_PER_LEVEL,
+  MESSAGES_SPAM_FILTER_ALLOWED_IN_SUCCESSION,
+  MESSAGES_SPAM_FILTER_TARGET_ALWAYS,
+  MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
+} from "#constants/users/events.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 client.on("ready", async () => {
@@ -37,8 +42,6 @@ client.on("ready", async () => {
       type: ActivityType.Streaming,
       url: "https://www.twitch.tv/monstercat",
     });
-  } else {
-    client.user.setActivity("намана", { type: "WATCHING" });
   }
 
   //----------------------------------{Events and intervals--}------------------------------                            #0bf
@@ -272,11 +275,20 @@ async function eventHundler(message) {
     server = message.guild ? message.guild.data : {};
 
   // ANTI-SPAM
-  user.CD_msg = Math.max(user.CD_msg || 0, Date.now()) + 2000;
 
-  // 120000 = 8000 * 15
-  if (Date.now() + 120000 > user.CD_msg) {
-    user.CD_msg += 8000 - 200 * (userData.voidCooldown ?? 0);
+  user.CD_msg =
+    Math.max(user.CD_msg || 0, Date.now()) + MESSAGES_SPAM_FILTER_TARGET_ALWAYS;
+
+  if (
+    Date.now() +
+      MESSAGES_SPAM_FILTER_ALLOWED_IN_SUCCESSION *
+        MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED >
+    user.CD_msg
+  ) {
+    const perEffect = MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED / 20 / 2;
+    user.CD_msg +=
+      MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED -
+      perEffect * (userData.voidCooldown ?? 0);
 
     if (Util.random(1, 85 * 0.9 ** userData.voidCoins) === 1) {
       EventsManager.emitter.emit("users/getCoinsFromMessage", {
