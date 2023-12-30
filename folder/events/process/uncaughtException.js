@@ -8,7 +8,10 @@ class Event extends BaseEvent {
   }
 
   async run(error) {
-    ErrorsHandler.onErrorReceive(error, { uncaughtException: true });
+    ErrorsHandler.onErrorReceive(error, {
+      uncaughtException: true,
+      critical: true,
+    });
     EventsManager.emitter.emit("beforeExit");
   }
 
