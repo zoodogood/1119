@@ -22,7 +22,6 @@ import FileSystem from "fs";
 import { Actions } from "#lib/modules/ActionManager.js";
 import {
   LEVELINCREASE_EXPERIENCE_PER_LEVEL,
-  MESSAGES_SPAM_FILTER_ALLOWED_IN_SUCCESSION,
   MESSAGES_SPAM_FILTER_TARGET_ALWAYS,
   MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
 } from "#constants/users/events.js";
@@ -41,6 +40,10 @@ client.on("ready", async () => {
     client.user.setActivity("Кабзец тебе, Хозяин", {
       type: ActivityType.Streaming,
       url: "https://www.twitch.tv/monstercat",
+    });
+  } else {
+    client.user.setActivity("намана", {
+      type: ActivityType.Watching,
     });
   }
 
