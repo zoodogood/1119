@@ -177,7 +177,7 @@ const ITEMS = [
   },
   {
     key: "cheese",
-    names: ["сыр", "сыра", "сыров", "cheese", "cheses"],
+    names: ["сыр", "сыра", "сыров", "cheese", "cheeses"],
     ending: (count) => `🧀 ${Util.ending(count, "Сыр", "ов", "", "а")}`,
   },
   {
