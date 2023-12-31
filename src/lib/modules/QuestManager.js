@@ -104,7 +104,14 @@ class QuestManager {
 
     const quest = user.data.quest;
     if (questBase.id === quest.id) {
-      quest.progress += data.count ?? 1;
+      const progress =
+        questBase.calculateProgressIncrease?.call(
+          questBase,
+          user,
+          quest,
+          data,
+        ) ?? 1;
+      quest.progress += progress;
       this.checkAvailable({ user });
 
       if (quest.progress >= quest.goal && !quest.isCompleted) {
@@ -390,6 +397,9 @@ class QuestManager {
         isGlobal: false,
         reward: 1,
         baseGoal: 2,
+        calculateProgressIncrease(user, quest, data) {
+          return Math.abs(data.quantity);
+        },
       },
     }),
   );
