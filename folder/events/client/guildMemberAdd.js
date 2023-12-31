@@ -71,7 +71,7 @@ class WelcomerUtil {
 
   static installWelcomeRoles(member) {
     const { guild } = member;
-    const rolesId = guild.data.hi.rolesId;
+    const rolesId = guild.data.hi?.rolesId;
     if (!rolesId) {
       return;
     }
