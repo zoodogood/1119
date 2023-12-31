@@ -23,6 +23,9 @@ class Event extends BaseEvent {
         "**Хо-хо-хо, @everyone, Отправляйте сообщения, чтобы получить проклятие зимнего праздника :snowflake: !**",
     ];
     const { guild } = message;
+    if (!guild) {
+      return;
+    }
     guild.data.snowyEvent ||= { preGlowExplorers: [] };
 
     const { snowyEvent } = guild.data;
