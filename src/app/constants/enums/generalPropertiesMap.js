@@ -61,6 +61,7 @@ const GeneralPropertiesmap = {
   remainedQuest: "remainedQuest",
   presents: "presents",
   lollipops: "lollipops",
+  snowyTree: "snowyTree",
   effectsCallbackMap: "effectsCallbackMap",
   cursesCallbackMap: "cursesCallbackMap",
 };
