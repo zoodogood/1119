@@ -1486,7 +1486,7 @@ class CurseManager {
               return;
             }
             const { progress: snowflakes } = curse.values;
-            const SNOWFLAKES_TO_PRESENT = 300;
+            const SNOWFLAKES_TO_PRESENT = 200;
 
             const presentsAdd = Math.floor(snowflakes / SNOWFLAKES_TO_PRESENT);
 
