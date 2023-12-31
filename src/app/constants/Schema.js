@@ -110,6 +110,7 @@ const Schema = {
         remainedQuest: {},
         presents: 0,
         lollipops: 0,
+        wnowyTree: 0,
         effectsCallbackMap: {},
         cursesCallbackMap: {},
       },
@@ -243,6 +244,7 @@ const Schema = {
  * @property {remainedQuest} remainedQuest
  * @property {number} presents
  * @property {number} lollipops
+ * @property {number} wnowyTree
  * @property {effectsCallbackMap} effectsCallbackMap
  * @property {cursesCallbackMap} cursesCallbackMap
  */
