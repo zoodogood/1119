@@ -1,11 +1,19 @@
+import { Emoji } from "#constants/emojis.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
 class Item {
   static from(itemData) {
-    return Object.assign(Object.create(this.prototype), itemData);
+    const item = Object.assign(Object.create(this.prototype), itemData);
+    this.normalize(item);
+    return item;
   }
+
+  static normalize(item) {
+    item.names = [...item.names].map((allias) => allias.toLowerCase());
+  }
+
   display(...args) {
     return this.ending(...args);
   }
@@ -152,7 +160,7 @@ const ITEMS = [
   },
   {
     key: "seed",
-    names: ["семечко", "семечек", "семян", "семечка", "семячек", "seed"],
+    names: ["семечко", "семечек", "семян", "семечка", "семячек"],
     ending: (count) => `🌱 ${Util.ending(count, "Сем", "ян", "ечко", "ечка")}`,
   },
   {
@@ -166,13 +174,22 @@ const ITEMS = [
     ending: (count) => `🧀 ${Util.ending(count, "Сыр", "ов", "", "а")}`,
   },
   {
+    key: "snowyTree",
+    names: ["snowy", "новогоднее"],
+    ending: (count) => `${Emoji.snowyTree.toString()} ${count} SnowyTree`,
+  },
+  {
     key: "iq",
     names: ["iq", "icq", "iqbanana", "айкью"],
     ending: (count) => `<a:iq:768047041053196319> ${count} IQ`,
   },
   {
     key: "coinsPerMessage",
-    names: ["коинов за сообщение", "награда коин-сообщений", "coinsPerMessage"],
+    names: [
+      "коинов за сообщение",
+      "награда коин-сообщений",
+      "coinsPerMessages",
+    ],
     ending: (count) =>
       `✨ ${Util.ending(count, "Коин", "ов", "", "а")} за сообщение`,
   },
@@ -274,7 +291,7 @@ const ITEMS = [
       "леденцов",
     ],
     ending: (count) => `🍭 ${Util.ending(count, "Леден", "цов", "ец", "ца")}`,
-    async onUse({ context, count, usingContext }) {
+    async onUse({ context, usingContext }) {
       const { guild } = context;
       const today = Util.timestampDay(Date.now());
       const boss = guild.data.boss;
@@ -357,11 +374,17 @@ class Command {
   }
 
   findItemByAllias(allias) {
-    return this.items.find((item) => item.names.includes(allias));
+    return this.items.find((item) => item.names.includes(allias.toLowerCase()));
   }
 
   findItemByKey(key) {
-    return this.items.find((item) => item.key === key);
+    return this.items.find(
+      (item) => item.key.toLowerCase() === key.toLowerCase(),
+    );
+  }
+
+  findItem(item) {
+    return this.findItemByKey(item) || this.findItemByAllias(item);
   }
 
   getContext(interaction) {
@@ -462,7 +485,7 @@ class Command {
       params = params.replace(count, "");
       rawItem = params = params.trim().toLowerCase();
 
-      item = this.findItemByAllias(rawItem);
+      item = this.findItem(rawItem);
     }
     return {
       action,
