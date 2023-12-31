@@ -1,7 +1,7 @@
 import * as Util from "#lib/util.js";
 import { GeneralPropertiesmap } from "#constants/enums/generalPropertiesMap.js";
 
-const ProperiesList = {
+const PropertiesList = {
   berrysPrice: {},
   grempen: {},
 
@@ -13,18 +13,38 @@ const ProperiesList = {
       base: "коин",
       suffixes: ["ов", "", "а"],
     },
+    allias: "coins coin коин коинов коина коины монет монету монеты монета",
   },
   level: {},
   exp: {},
-  berrys: {},
+  berrys: {
+    allias: "клубника клубник клубники berrys berry ягод ягода ягоды",
+  },
   chestLevel: {},
-  void: {},
+  void: {
+    allias:
+      "void камень камня камней нестабильность камни нестабильности нест н",
+  },
   keys: {
     label: "Ключ",
     labelMeta: {
       base: "ключ",
       suffixes: ["ей", "", "а"],
     },
+    allias: "keys key ключ ключей ключа ключи k к",
+  },
+  chestBonus: {
+    allias:
+      "bonus chest бонус бонусов бонуса бонусы сундук сундука сундуки сундуков б с",
+  },
+  presents: {
+    allias: "presents подарок подарка подарков present",
+  },
+  snowyTree: {
+    allias: "snowy новогоднее",
+  },
+  lollipops: {
+    allias: "lollipops lolipops lollipop lolipop леденец леденцы леденцов",
   },
   voidRituals: {},
   voidCoins: {},
@@ -33,7 +53,6 @@ const ProperiesList = {
   questReward: {},
   questTime: {},
   last_online: {},
-  chestBonus: {},
   praiseMe: {},
   BDay: {},
   questsGlobalCompleted: {},
@@ -45,7 +64,9 @@ const ProperiesList = {
   questLast: {},
   dayQuests: {},
   thiefGloves: {},
-  chilli: {},
+  chilli: {
+    allias: "chilli перец перца перцев перцы",
+  },
   invites: {},
   iq: {},
   cursesEnded: {},
@@ -57,15 +78,19 @@ const ProperiesList = {
   bag: {},
   effects: {},
   curses: {},
-  seed: {},
+  seed: {
+    allias: "seed семян семечек семечко семечка seeds",
+  },
   voidTreeFarm: {},
   voidDouble: {},
   CD_$: {},
   leave_roles: {},
   profile_confidentiality: {},
   voidQuests: {},
-  monster: 0,
-  monstersBought: 0,
+  monster: {
+    allias: "monster монстр монстра монстров монстры",
+  },
+  monstersBought: {},
   voidThief: {},
   thiefWins: {},
   quest: {},
@@ -80,7 +105,7 @@ const ProperiesList = {
 
 class Properties {
   static endingOf(property, quantity) {
-    const item = ProperiesList[property];
+    const item = PropertiesList[property];
     if (!item) {
       return undefined;
     }
@@ -100,5 +125,5 @@ class Properties {
   }
 }
 
-export { Properties, GeneralPropertiesmap as PropertiesEnum, ProperiesList };
+export { Properties, GeneralPropertiesmap as PropertiesEnum, PropertiesList };
 export default Properties;
