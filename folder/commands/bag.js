@@ -1,4 +1,5 @@
 import { Emoji } from "#constants/emojis.js";
+import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
@@ -36,12 +37,12 @@ const ITEMS = [
     names: ["коина", "коины", "коин", "коинов", "coins", "coin", "c", "к"],
     ending: (count) =>
       `<:coin:637533074879414272> ${Util.ending(count, "Коин", "ов", "", "а")}`,
-    onUse({ count, context, usingContext }) {
-      usingContext.phrase = `Вы вернули свои ${this.findItemByKey(
+    onUse({ count }) {
+      const phrase = `Вы вернули свои ${this.findItemByKey(
         PropertiesEnum.coins,
       ).ending(count)}`;
 
-      return;
+      return { phrase };
     },
   },
   {
@@ -86,8 +87,8 @@ const ITEMS = [
       "камней",
       "камня",
     ],
-    onUse({ count, context, usingContext }) {
-      usingContext.used = count;
+    onUse({ count, context }) {
+      const used = count;
 
       const MULTIPLAYER = 2;
       const randomized = Util.random(1);
@@ -102,10 +103,10 @@ const ITEMS = [
           value: count * MULTIPLAYER,
         });
       }
-      usingContext.phrase = `Шаурма ты. ${randomized ? "+" : "-"} ${
+      const phrase = `Шаурма ты. ${randomized ? "+" : "-"} ${
         randomized ? count * MULTIPLAYER : count
       }`;
-      return;
+      return { phrase, used };
     },
     ending: (count) =>
       `<a:void:768047066890895360> ${Util.ending(
@@ -167,6 +168,12 @@ const ITEMS = [
     key: "presents",
     names: ["подарок", "подарка", "подарков", "present"],
     ending: (count) => `🎁 ${Util.ending(count, "Подар", "ков", "ок", "ка")}`,
+    onUse({ context }) {
+      const { interaction } = context;
+      interaction.channel.msg({
+        content: `Введите !подарок, чтобы открыть, только при наличии праздничного проклятия, иначе ничего не получится. Это проклятие можно получить ${NEW_YEAR_DAY_DATE}, отправляя сообщения`,
+      });
+    },
   },
   {
     key: "cheese",
@@ -291,21 +298,20 @@ const ITEMS = [
       "леденцов",
     ],
     ending: (count) => `🍭 ${Util.ending(count, "Леден", "цов", "ец", "ца")}`,
-    async onUse({ context, usingContext }) {
+    async onUse({ context }) {
       const { guild } = context;
       const today = Util.timestampDay(Date.now());
       const boss = guild.data.boss;
 
       const BossManager = (await import("#lib/modules/BossManager.js")).default;
       if (BossManager.isArrivedIn(guild) || boss?.apparanceAtDay - 3 > today) {
-        usingContext.phrase =
+        const phrase =
           "Вы можете применить этот предмет в момент отсутствия босса на сервере, но не за 3 дня до его появления";
-        return;
+        return { phrase };
       }
 
-      usingContext.used = 1;
-      usingContext.phrase =
-        "Использован леденец, чтобы вызвать босса на одни сутки";
+      const used = 1;
+      const phrase = "Использован леденец, чтобы вызвать босса на одни сутки";
 
       ((previous) => {
         const previousApparanceDate = previous?.apparanceAtDay;
@@ -319,6 +325,8 @@ const ITEMS = [
           boss.level,
         );
       })(boss);
+
+      return { used, phrase };
     },
   },
 ];
@@ -432,40 +440,38 @@ class Command {
       return;
     }
 
-    const usingContext = {
-      used: 0,
-      phrase: "\\*Стандартная фраза использования предмета*",
-    };
+    const {
+      used = 0,
+      phrase = "\\*Стандартная фраза использования предмета*",
+    } =
+      (await item.onUse.call(this, {
+        context,
+        count,
+      })) ?? {};
 
-    await item.onUse.call(this, {
-      context,
-      count,
-      usingContext,
-    });
-
-    if (usingContext.used > userData[key]) {
+    if (used > userData[key]) {
       this._moveItem({
         isToBag: false,
         user,
-        count: usingContext.used - userData[key],
+        count: used - userData[key],
         context,
         item,
       });
     }
 
-    if (usingContext.used) {
+    if (used) {
       Util.addResource({
         user,
         executor: user,
         resource: item.key,
-        value: -usingContext.used,
+        value: -used,
         context,
         source: "command.bag.usingItem",
       });
     }
 
     interaction.channel.msg({
-      description: `Использовано ${usingContext.used} ед. предмета\n${usingContext.phrase}`,
+      description: `Использовано ${used} ед. предмета\n${phrase}`,
     });
   }
 
