@@ -1456,7 +1456,9 @@ class CurseManager {
         },
         callback: {
           coinFromMessage(user, curse) {
-            CurseManager.interface({ user, curse }).incrementProgress(10);
+            CurseManager.interface({ user, curse }).incrementProgress(
+              Util.random(1, 4) * 5,
+            );
           },
           messageCreate(user, curse, message) {
             if (Util.overTheMessageSpamLimit(user)) {
