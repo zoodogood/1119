@@ -317,6 +317,14 @@ class Template {
           investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
+      config: {
+        getContent: () => config,
+        name: "config",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+        },
+      },
       CurrentGuildSpace: {
         getContent: (context) => new GuildVariablesManager(context.guild.data),
         name: "CurrentGuildSpace",
