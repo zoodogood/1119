@@ -1,3 +1,4 @@
+import client from "#bot/client.js";
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 import {
   DataManager,
@@ -5,6 +6,7 @@ import {
   ErrorsHandler,
   CounterManager,
 } from "#lib/modules/mod.js";
+import { ActivityType } from "discord.js";
 
 class Event extends BaseEvent {
   constructor() {
@@ -14,6 +16,11 @@ class Event extends BaseEvent {
 
   async run() {
     try {
+      client.user.setActivity("Перезапускаюсь", {
+        type: ActivityType.Streaming,
+        url: "https://www.twitch.tv/monstercat",
+      });
+
       await DataManager.file.write();
       await TimeEventsManager.file.write();
       await CounterManager.file.write();
