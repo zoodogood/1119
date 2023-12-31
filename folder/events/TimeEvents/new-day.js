@@ -193,7 +193,7 @@ class DailyEvents {
     }
 
     const users = DataManager.data.users;
-    client.channels.cache.get(config.guild.logChannelId).msg({
+    client.channels.cache.get(config.guild.logChannelId)?.msg({
       content: `${Util.ending(
         usersCache.size,
         "пользовател",
