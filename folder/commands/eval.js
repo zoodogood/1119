@@ -129,7 +129,7 @@ class Command {
       description: `\`\`\`js\n${interaction.codeContent}\`\`\``,
       color: "#1f2022",
       footer: {
-        iconURL: client.emojis.cache.get(interaction.emojiByType).url,
+        iconURL: client.emojis.cache.get(interaction.emojiByType).imageURL(),
         text: "Вызвана команда !eval",
       },
     });
