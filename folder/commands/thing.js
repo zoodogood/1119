@@ -1614,7 +1614,7 @@ class Command {
                 value: (level + 1) * 300,
                 executor: user,
                 source: "command.thing.event.curse.earth.0",
-                resource: PropertiesEnum.keys,
+                resource: PropertiesEnum.coins,
                 context,
               });
             },
