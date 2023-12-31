@@ -1879,7 +1879,14 @@ class CurseManager {
     };
 
     if (lost) {
-      user.data.level = Math.max(1, user.data.level - 1);
+      Util.addResource({
+        user,
+        executor: null,
+        value: user.data.level > 1 ? -1 : 0,
+        resource: PropertiesEnum.level,
+        source: "curseManager.curse.onEnd.lost",
+        context: { curse },
+      });
       const fields = getDefaultFields();
       const image =
         "https://media.discordapp.net/attachments/629546680840093696/1014076170364534805/penguinwalk.gif";
