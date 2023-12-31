@@ -1795,7 +1795,7 @@ class CurseManager {
 
     if (
       values.goal &&
-      !isNaN(values.process) &&
+      !isNaN(values.progress) &&
       values.progress >= values.goal
     ) {
       this.curseIndexOnUser({ curse, user }) !== null &&
