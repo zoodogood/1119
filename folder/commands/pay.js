@@ -1,4 +1,5 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { PropertiesList, PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
 
@@ -60,6 +61,18 @@ class Command {
       resource: "presents",
       names: "presents подарок подарка подарков present",
       gives: (n) => Util.ending(n, "подар", "ков", "ок", "ка"),
+    },
+
+    {
+      resource: PropertiesEnum.lollipops,
+      names: PropertiesList.lollipops.allias,
+      gives: (n) => Util.ending(n, "леден", "цов", "ец", "ца"),
+    },
+
+    {
+      resource: PropertiesEnum.snowyTree,
+      names: PropertiesList.snowyTree.allias,
+      gives: (n) => `${n} snowyTree`,
     },
   ];
 
