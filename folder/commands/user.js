@@ -6,6 +6,7 @@ import QuestManager from "#lib/modules/QuestManager.js";
 
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { Actions } from "#lib/modules/ActionManager.js";
+import { Emoji } from "#constants/emojis.js";
 
 class Command {
   async onChatInput(msg, interaction) {
@@ -73,8 +74,8 @@ class Command {
         31556926000000 < lastOnline
           ? "более года"
           : lastOnline > 2629743000
-          ? "более месяца"
-          : Util.timestampToDate(lastOnline);
+            ? "более месяца"
+            : Util.timestampToDate(lastOnline);
       const dateContent = user.profile_confidentiality ? "" : getDateContent();
       interaction.status = `<:offline:637544283737686027> Не в сети ${dateContent}`;
     }
@@ -194,7 +195,6 @@ class Command {
       };
 
       const contents = [];
-
       const inventory = [
         `🔩${user.keys}`,
         `<a:void:768047066890895360>${user.void}`,
@@ -204,6 +204,8 @@ class Command {
         `${user.chilli ? "🌶️" + user.chilli : ""}`,
         `${user.monster ? "🐲" + user.monster : ""}`,
         `${user.seed ? "🌱" + user.seed : ""}`,
+        `${user.snowyTree ? `${Emoji.snowyTree}${user.snowyTree}` : ""}`,
+        `${user.lollipops ? `${Emoji.lollipops}${user.lollipops}` : ""}`,
         `${user.presents ? "🎁" + user.presents : ""}`,
         `${user.cheese ? "🧀" + user.cheese : ""}`,
       ];
