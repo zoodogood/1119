@@ -5,6 +5,7 @@ import {
   BossManager,
   DataManager,
   EventsManager,
+  ErrorsHandler,
 } from "#lib/modules/mod.js";
 import { dayjs } from "#lib/util.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
@@ -32,11 +33,24 @@ class Event {
       return;
     }
 
-    DailyEvents.distributePresents(context);
-    DailyEvents.askTheBoss();
-    DailyEvents.checkBirthDays(context);
-    DailyEvents.updateCommandsLaunchedData();
-    DailyEvents.removeSnowyEventIfExists();
+    const events = [
+      DailyEvents.distributePresents,
+      DailyEvents.askTheBoss,
+      DailyEvents.checkBirthDays,
+      DailyEvents.updateCommandsLaunchedData,
+      DailyEvents.removeSnowyEventIfExists,
+    ];
+    for (const event of events) {
+      try {
+        event.call(DailyEvents, context);
+      } catch (error) {
+        ErrorsHandler.onErrorReceive(error, {
+          newDayEventIndex: events.indexOf(event),
+        });
+      }
+    }
+
+    this.createNextCall();
   }
 
   setTheClock() {
