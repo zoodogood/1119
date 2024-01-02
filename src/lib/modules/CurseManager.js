@@ -13,7 +13,7 @@ import { RanksUtils } from "#folder/commands/top.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import Executor from "#lib/modules/Executor.js";
 import UserEffectManager from "#lib/modules/EffectsManager.js";
-import { DAY, MINUTE, SECOND } from "#constants/globals/time.js";
+import { DAY, MINUTE } from "#constants/globals/time.js";
 import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { Emoji } from "#constants/emojis.js";
@@ -1354,7 +1354,7 @@ class CurseManager {
               return;
             }
 
-            const OPEN_TIME = SECOND * 3;
+            const OPEN_TIME = MINUTE * 3;
             const context = {
               interaction,
               user: interaction.user,
