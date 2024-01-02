@@ -1,7 +1,7 @@
 import { Emoji } from "#constants/emojis.js";
 import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { PropertiesEnum, PropertiesList } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
 class Item {
@@ -34,7 +34,7 @@ class Item {
 const ITEMS = [
   {
     key: "coins",
-    names: ["коина", "коины", "коин", "коинов", "coins", "coin", "c", "к"],
+    names: PropertiesList.coins.allias.split(" "),
     ending: (count) =>
       `<:coin:637533074879414272> ${Util.ending(count, "Коин", "ов", "", "а")}`,
     onUse({ count }) {
@@ -47,26 +47,13 @@ const ITEMS = [
   },
   {
     key: "exp",
-    names: ["опыта", "опыт", "опытов", "exp", "experience"],
+    names: PropertiesList.exp.allias.split(" "),
     ending: (count) =>
       `<:crys2:763767958559391795> ${Util.ending(count, "Опыт", "а", "", "а")}`,
   },
   {
     key: "chestBonus",
-    names: [
-      "бонусов",
-      "бонус",
-      "бонуса",
-      "сундука",
-      "сундуков",
-      "сундук",
-      "бонусов сундука",
-      "chestbonus",
-      "bonus",
-      "bonuses",
-      "chest",
-      "chests",
-    ],
+    names: PropertiesList.chestBonus.allias.split(" "),
     ending: (count) =>
       `<a:chest:805405279326961684> ${Util.ending(
         count,
@@ -78,15 +65,7 @@ const ITEMS = [
   },
   {
     key: "void",
-    names: [
-      "нестабильности",
-      "нестабильность",
-      "void",
-      "voids",
-      "камень",
-      "камней",
-      "камня",
-    ],
+    names: PropertiesList.void.allias.split(" "),
     onUse({ count, context }) {
       const used = count;
 
@@ -119,16 +98,7 @@ const ITEMS = [
   },
   {
     key: "berrys",
-    names: [
-      "клубник",
-      "клубники",
-      "клубника",
-      "клубниу",
-      "ягоды",
-      "ягод",
-      "ягода",
-      "berry",
-    ],
+    names: PropertiesList.berrys.allias.split(" "),
     ending: (count) =>
       `<:berry:756114492055617558> ${Util.ending(
         count,
@@ -140,33 +110,33 @@ const ITEMS = [
   },
   {
     key: "chilli",
-    names: ["перец", "перцев", "перца", "chilli"],
+    names: PropertiesList.chilli.allias.split(" "),
     ending: (count) => `🌶️ ${Util.ending(count, "Пер", "цев", "ец", "ца")}`,
   },
   {
     key: "monster",
-    names: ["монстр", "монстров", "монстра", "monster"],
+    names: PropertiesList.monster.allias.split(" "),
     ending: (count) => `🐲 ${Util.ending(count, "Монстр", "ов", "", "а")}`,
   },
   {
     key: "thiefGloves",
-    names: ["перчатки", "перчатку", "перчатка", "перчаток", "glove", "gloves"],
+    names: PropertiesList.thiefGloves.allias.split(" "),
     ending: (count) => `🧤 ${Util.ending(count, "Перчат", "ки", "у", "ки")}`,
     display: (count) => `🧤 Перчатки ${count}шт.`,
   },
   {
     key: "keys",
-    names: ["ключ", "ключей", "ключа", "ключи", "key"],
+    names: PropertiesList.keys.allias.split(" "),
     ending: (count) => `🔩 ${Util.ending(count, "Ключ", "ей", "", "а")}`,
   },
   {
     key: "seed",
-    names: ["семечко", "семечек", "семян", "семечка", "семячек"],
+    names: PropertiesList.seed.allias.split(" "),
     ending: (count) => `🌱 ${Util.ending(count, "Сем", "ян", "ечко", "ечка")}`,
   },
   {
     key: "presents",
-    names: ["подарок", "подарка", "подарков", "present"],
+    names: PropertiesList.presents.allias.split(" "),
     ending: (count) => `🎁 ${Util.ending(count, "Подар", "ков", "ок", "ка")}`,
     onUse({ context }) {
       const { interaction } = context;
@@ -177,7 +147,7 @@ const ITEMS = [
   },
   {
     key: "cheese",
-    names: ["сыр", "сыра", "сыров", "cheese", "cheeses"],
+    names: PropertiesList.cheese.allias.split(" "),
     ending: (count) => `🧀 ${Util.ending(count, "Сыр", "ов", "", "а")}`,
   },
   {
@@ -288,15 +258,7 @@ const ITEMS = [
   },
   {
     key: PropertiesEnum.lollipops,
-    names: [
-      "lollipops",
-      "lolipops",
-      "lollipop",
-      "lolipop",
-      "леденец",
-      "леденцы",
-      "леденцов",
-    ],
+    names: PropertiesList.lollipops.allias.split(" "),
     ending: (count) => `🍭 ${Util.ending(count, "Леден", "цов", "ец", "ца")}`,
     async onUse({ context }) {
       const { guild } = context;
@@ -344,7 +306,7 @@ class CommandUtil {
   static addResourceAndMoveToBag({
     user,
     resource,
-    count,
+    value,
     source,
     executor,
     context,
@@ -352,17 +314,18 @@ class CommandUtil {
     Util.addResource({
       resource,
       user,
-      value: count,
+      value,
       source,
       context,
       executor,
     });
 
-    this.moveToBagBrute({ key: resource, count, user });
+    this.moveToBagBrute({ key: resource, count: value, user });
   }
 
   static moveToBagBrute({ key, count, user }) {
     const bag = CommandUtil.getBagTargetOf(user);
+    user.data[key] -= count;
     bag[key] ||= 0;
     bag[key] += count;
   }
