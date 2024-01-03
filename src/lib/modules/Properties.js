@@ -16,7 +16,9 @@ const PropertiesList = {
     allias: "coins coin коин коинов коина коины монет монету монеты монета",
   },
   level: {},
-  exp: {},
+  exp: {
+    allias: "опыта опыт опытов exp experience",
+  },
   berrys: {
     allias: "клубника клубник клубники berrys berry ягод ягода ягоды",
   },
@@ -46,6 +48,9 @@ const PropertiesList = {
   lollipops: {
     allias: "lollipops lolipops lollipop lolipop леденец леденцы леденцов",
   },
+  cheese: {
+    allias: "сыр сыра сыров cheese cheeses",
+  },
   voidRituals: {},
   voidCoins: {},
   questProgress: {},
@@ -63,7 +68,9 @@ const PropertiesList = {
   profile_description: {},
   questLast: {},
   dayQuests: {},
-  thiefGloves: {},
+  thiefGloves: {
+    allias: "перчатки перчатку перчатка перчаток glove gloves",
+  },
   chilli: {
     allias: "chilli перец перца перцев перцы",
   },
