@@ -294,7 +294,7 @@ class Command {
           (interaction.guild.data.professions = {});
 
         data.workersList = [];
-        data.report = null;
+        data.report = { extenditure: 0, salaryTable: {} };
 
         data.workersContent =
           "<a:message:794632668137652225> Здесь пока пусто, также тут может быть ваша реклама";
@@ -493,8 +493,8 @@ class Command {
         guildData.coins - startsCoinsCount === 0
           ? "не изменилось"
           : guildData.coins - startsCoinsCount > 0
-          ? "увеличилось на " + (guildData.coins - startsCoinsCount)
-          : "уменьшилось на " + (startsCoinsCount - guildData.coins)
+            ? "увеличилось на " + (guildData.coins - startsCoinsCount)
+            : "уменьшилось на " + (startsCoinsCount - guildData.coins)
       } <:coin:637533074879414272>`;
     }
   }
