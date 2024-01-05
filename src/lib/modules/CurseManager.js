@@ -660,10 +660,15 @@ class CurseManager {
           return `Не получайте больше, чем ${valueContent} коинов, ни из какого источника`;
         },
         toString(user, curse) {
-          const { values } = curse;
-          return `${this.description(user, curse)}\nПолучено: ${
-            values.progress
-          }/${values.maximum}`;
+          const { values, timestamp } = curse;
+          const { timer, progress, maximum } = values;
+          const endAtContent = `<t:${Math.floor(
+            (timestamp + timer) / 1_000,
+          )}:R>`;
+          return `${this.description(
+            user,
+            curse,
+          )}\nПолучено: ${progress}/${maximum}\nДо спокойного конца: ${endAtContent}`;
         },
         values: {
           timer: () => 3_600_000 * 8,
