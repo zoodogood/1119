@@ -292,7 +292,7 @@ class Manager {
   }
 
   static async sessionWriteFile() {
-    const data = stringify(Core.toJSON());
+    const data = Core.toJSON();
     const timestamp = Date.now();
     return await FileUtils.write(timestamp, data);
   }
