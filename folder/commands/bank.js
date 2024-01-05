@@ -294,7 +294,7 @@ class Command {
           (interaction.guild.data.professions = {});
 
         data.workersList = [];
-        data.report = { extenditure: 0, salaryTable: {} };
+        data.report = { expenditure: 0, salaryTable: {} };
 
         data.workersContent =
           "<a:message:794632668137652225> Здесь пока пусто, также тут может быть ваша реклама";
