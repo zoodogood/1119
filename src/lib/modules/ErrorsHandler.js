@@ -5,7 +5,15 @@ import StorageManager from "#lib/modules/StorageManager.js";
 const { stringify, parse } = JSON;
 
 class Metadata {
-  updateRequested = false;
+  #updateRequested = false;
+
+  get updateRequested() {
+    return this.#updateRequested;
+  }
+
+  set updateRequested(value) {
+    this.#updateRequested = value;
+  }
 
   constructor() {
     const { defaults } = this.constructor;
@@ -15,7 +23,7 @@ class Metadata {
   static defaults = {};
 
   requestUpdate() {
-    this.updateRequested = true;
+    this.#updateRequested = true;
   }
 
   appendMetadata() {
@@ -40,7 +48,9 @@ class SessionMetadata extends Metadata {
   }
 
   appendTags(uniqueTags) {
-    this.uniqueTags.add(...uniqueTags);
+    for (const tag of uniqueTags) {
+      this.uniqueTags.add(tag);
+    }
   }
 
   appendErrorsCount(value) {
@@ -48,7 +58,9 @@ class SessionMetadata extends Metadata {
   }
 
   appendUniqueErrors(messages) {
-    this.uniqueErrors.add(...messages);
+    for (const message of messages) {
+      this.uniqueErrors.add(message);
+    }
   }
 
   appendMetadata({ commentsCount, uniqueTags, errorsCount, uniqueErrors }) {
@@ -67,7 +79,9 @@ class GroupMetadata extends Metadata {
 
   appendTags(tags) {
     this.uniqueTags ||= new Set();
-    this.uniqueTags.add(...tags);
+    for (const tag of tags) {
+      this.uniqueTags.add(tag);
+    }
   }
 
   appendErrorsCount(value) {
@@ -83,8 +97,14 @@ class GroupMetadata extends Metadata {
 
 class ErrorData {
   constructor(error, context) {
+    this.tags = Object.keys(context ?? {});
     context &&= stringify(context);
     this.error = error;
+    try {
+      this.stackData = this.parseErrorStack();
+    } catch (error) {
+      console.log(error);
+    }
     this.createdAt = Date.now();
     this.context = context ?? null;
   }
@@ -97,10 +117,6 @@ class ErrorData {
     return this.error.message;
   }
 
-  get tags() {
-    return Object.keys(this.context);
-  }
-
   static from(data) {
     return Object.assign(Object.create(ErrorData.prototype), data);
   }
@@ -109,7 +125,7 @@ class ErrorData {
     new ErrorData(error, context);
   }
 
-  static parseErrorStack({ node_modules }) {
+  parseErrorStack({ node_modules } = {}) {
     let stack = this.error.stack;
     try {
       stack = decodeURI(stack).replaceAll("\\", "/");
@@ -227,10 +243,9 @@ class Core {
     }
 
     const groups = [...errorGroups.values()];
-
     meta.appendMetadata({
       uniqueTags: groups.reduce(
-        (acc, { metadata }) => (acc.concat(...metadata.uniqueTags), acc),
+        (acc, { metadata }) => (acc.push(...metadata.uniqueTags), acc),
         [],
       ),
       commentsCount: groups.reduce(
@@ -238,7 +253,7 @@ class Core {
         0,
       ),
       errorsCount: groups.reduce((acc, { errors }) => acc + errors.length, 0),
-      uniqueErrors: Object.keys(groups),
+      uniqueErrors: [...errorGroups.keys()],
     });
     meta.updateRequested = false;
   }
@@ -267,12 +282,17 @@ class Manager {
   }
 
   static onErrorReceive(error, context) {
-    const errorData = new ErrorData(error, context);
-    this.pushToSessionErrors(errorData, context);
-    config.development && this.errorLogger(error);
+    try {
+      const errorData = new ErrorData(error, context);
+      this.pushToSessionErrors(errorData, context);
+      config.development && this.errorLogger(error);
 
-    const meta = Core.session.meta;
-    meta.requestUpdate();
+      const meta = Core.session.meta;
+      meta.requestUpdate();
+    } catch (error) {
+      console.error(error);
+      process.exit();
+    }
   }
 
   static errorLogger(error) {
@@ -295,6 +315,7 @@ class Manager {
   }
 
   static async sessionWriteFile() {
+    Core.updateSessionMeta();
     const data = Core.toJSON();
     const timestamp = Date.now();
     return await FileUtils.write(timestamp, data);
