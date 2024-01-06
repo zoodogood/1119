@@ -16,7 +16,7 @@ class Event extends BaseEvent {
 
   async run() {
     try {
-      client.user.setActivity("Перезапускаюсь", {
+      client.user?.setActivity("Перезапускаюсь", {
         type: ActivityType.Streaming,
         url: "https://www.twitch.tv/monstercat",
       });
