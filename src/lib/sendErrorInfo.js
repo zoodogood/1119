@@ -18,7 +18,10 @@ class UserInterfaceUtil {
     description = "",
   }) {
     const { fileOfError, strokeOfError, stack } =
-      ErrorData.parseErrorStack.call({ error }, { node_modules: false }) ?? {};
+      ErrorData.prototype.parseErrorStack.call(
+        { error },
+        { node_modules: false },
+      ) ?? {};
 
     if (stack?.length >= 1900) {
       stack.length = 1900;
