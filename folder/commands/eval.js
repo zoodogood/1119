@@ -48,7 +48,7 @@ class Command {
           .createVM()
           .run(interaction.codeContent);
       } catch (error) {
-        config.developers && console.info(error);
+        config.development && console.info(error);
         return error;
       }
     };
