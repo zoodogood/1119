@@ -208,7 +208,7 @@ class QuestManager {
       value: expReward,
       executor: null,
       source: "questManager.onCompleteQuest",
-      context: { primary: context, channel },
+      context: { primary: context, channel, quest },
     });
     addResource({
       resource: PropertiesEnum.chestBonus,
@@ -216,7 +216,7 @@ class QuestManager {
       value: chestBonusReward,
       executor: null,
       source: "questManager.onCompleteQuest",
-      context: { primary: context, channel },
+      context: { primary: context, channel, quest },
     });
     quest.isCompleted = true;
 
@@ -229,7 +229,15 @@ class QuestManager {
       author: { iconURL: user.avatarURL(), name: user.username },
     });
 
-    userData.dayQuests = (userData.dayQuests ?? 0) + 1;
+    addResource({
+      resource: PropertiesEnum.dayQuests,
+      user,
+      value: 1,
+      executor: null,
+      source: "questManager.onCompleteQuest",
+      context: { primary: context, channel, quest },
+    });
+
     if (userData.dayQuests === 100) {
       user.action(Actions.globalQuest, { name: "day100" });
     }
@@ -246,7 +254,14 @@ class QuestManager {
               "Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера",
           });
 
-      userData.seed = (userData.seed ?? 0) + 2;
+      addResource({
+        resource: PropertiesEnum.seed,
+        user,
+        value: 2,
+        executor: null,
+        source: "questManager.onCompleteQuest.receiveSeed",
+        context: { primary: context, channel, quest },
+      });
     }
 
     user.action(Actions.dailyQuestComplete, {
