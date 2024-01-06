@@ -1,4 +1,4 @@
-import { mapGetOrInsert } from "#lib/util.js";
+import { dayjs, mapGetOrInsert } from "#lib/util.js";
 import config from "#config";
 import StorageManager from "#lib/modules/StorageManager.js";
 
@@ -231,7 +231,7 @@ class Core {
 
     meta.appendMetadata({
       uniqueTags: groups.reduce(
-        (acc, { metadata }) => (acc.concat(...metadata.tags), acc),
+        (acc, { metadata }) => (acc.concat(...metadata.uniqueTags), acc),
         [],
       ),
       commentsCount: groups.reduce(
@@ -270,10 +270,14 @@ class Manager {
   static onErrorReceive(error, context) {
     const errorData = new ErrorData(error, context);
     this.pushToSessionErrors(errorData, context);
-    config.development && console.error(error);
+    config.development && this.errorLogger(error);
 
     const meta = Core.session.meta;
     meta.requestUpdate();
+  }
+
+  static errorLogger(error) {
+    console.error(`[${dayjs().format("HH:mm")}]`, error);
   }
 
   /**
