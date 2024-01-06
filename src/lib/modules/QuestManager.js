@@ -1,6 +1,8 @@
 import { DataManager } from "#lib/modules/mod.js";
 import { Collection } from "discord.js";
 import { Actions } from "#lib/modules/ActionManager.js";
+import { addResource } from "#lib/util.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class QuestManager {
   static generate({ user }) {
@@ -115,27 +117,26 @@ class QuestManager {
       this.checkAvailable({ user });
 
       if (quest.progress >= quest.goal && !quest.isCompleted) {
-        user.action(Actions.dailyQuestComplete, { quest });
-        this.completeQuest({ user, quest, context: { channel: data.channel } });
+        this.completeQuest({ user, quest, context: data });
       }
     }
 
     if (questBase.isGlobal) {
-      this.completeGlobalQuest({ user, questBase });
+      this.completeGlobalQuest({ user, questBase, context: data });
     }
   }
 
-  static completeGlobalQuest({ user, questBase }) {
+  static completeGlobalQuest({ user, questBase, context }) {
     if (questBase.isRemoved) {
       return;
     }
 
-    const data = user.data;
-    data.questsGlobalCompleted ||= "";
+    const userData = user.data;
+    userData.questsGlobalCompleted ||= "";
 
     const SEPARATOR = " ";
 
-    const completed = data.questsGlobalCompleted
+    const completed = userData.questsGlobalCompleted
       .split(SEPARATOR)
       .filter(Boolean);
 
@@ -147,10 +148,24 @@ class QuestManager {
     const DEFAULT_CHEST_BONUS = 10;
 
     completed.push(questBase.id);
-    data.questsGlobalCompleted = completed.join(SEPARATOR);
+    userData.questsGlobalCompleted = completed.join(SEPARATOR);
 
-    user.exp += questBase.reward;
-    user.chestBonus = (user.chestBonus ?? 0) + DEFAULT_CHEST_BONUS;
+    addResource({
+      resource: PropertiesEnum.exp,
+      user,
+      value: questBase.reward,
+      executor: null,
+      source: "questManager.onCompleteGlobalQuest",
+      context: { questBase, primary: context },
+    });
+    addResource({
+      resource: PropertiesEnum.chestBonus,
+      user,
+      value: DEFAULT_CHEST_BONUS,
+      executor: null,
+      source: "questManager.onCompleteGlobalQuest",
+      context: { questBase, primary: context },
+    });
 
     const percentOfMade =
       (
@@ -173,21 +188,36 @@ class QuestManager {
     });
   }
 
-  static completeQuest({ user, quest, context: { channel } }) {
+  static completeQuest({ user, quest, context }) {
     const DEFAULT_REWARD_MULTIPLAYER = 1.4;
     const DEFAULT_CHEST_REWARD = 4;
     const EXPERIENCE_REWARD_MULTIPLAYER = 3;
     const multiplayer = DEFAULT_REWARD_MULTIPLAYER * quest.reward;
 
-    const data = user.data;
+    const userData = user.data;
     const questBase = this.questsBase.get(quest.id);
+    const { channel } = context;
 
     const expReward = Math.round(
-      (data.level + EXPERIENCE_REWARD_MULTIPLAYER) * multiplayer,
+      (userData.level + EXPERIENCE_REWARD_MULTIPLAYER) * multiplayer,
     );
     const chestBonusReward = Math.ceil(multiplayer * DEFAULT_CHEST_REWARD) + 1;
-    data.exp += expReward;
-    data.chestBonus = (data.chestBonus ?? 0) + chestBonusReward;
+    addResource({
+      resource: PropertiesEnum.exp,
+      user,
+      value: expReward,
+      executor: null,
+      source: "questManager.onCompleteQuest",
+      context: { primary: context, channel },
+    });
+    addResource({
+      resource: PropertiesEnum.chestBonus,
+      user,
+      value: chestBonusReward,
+      executor: null,
+      source: "questManager.onCompleteQuest",
+      context: { primary: context, channel },
+    });
     quest.isCompleted = true;
 
     const MEDIA_URL =
@@ -199,15 +229,15 @@ class QuestManager {
       author: { iconURL: user.avatarURL(), name: user.username },
     });
 
-    data.dayQuests = (data.dayQuests ?? 0) + 1;
-    if (data.dayQuests === 100) {
+    userData.dayQuests = (userData.dayQuests ?? 0) + 1;
+    if (userData.dayQuests === 100) {
       user.action(Actions.globalQuest, { name: "day100" });
     }
 
-    if (!(data.dayQuests % 50)) {
-      "seed" in data
+    if (!(userData.dayQuests % 50)) {
+      "seed" in userData
         ? user.msg({
-            title: `Ваш ${data.dayQuests}-й квест — новые семечки`,
+            title: `Ваш ${userData.dayQuests}-й квест — новые семечки`,
             description: "🌱",
           })
         : user.msg({
@@ -216,8 +246,14 @@ class QuestManager {
               "Вы будете получать по два, выполняя каждый 50-й ежедневный квест. Его можно использовать для улучшения дерева или его посадки, которое даёт клубнику участникам сервера",
           });
 
-      data.seed = (data.seed ?? 0) + 2;
+      userData.seed = (userData.seed ?? 0) + 2;
     }
+
+    user.action(Actions.dailyQuestComplete, {
+      quest,
+      primary: context,
+      channel,
+    });
   }
 
   static questsBase = new Collection(
