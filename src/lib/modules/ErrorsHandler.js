@@ -7,6 +7,11 @@ const { stringify, parse } = JSON;
 class Metadata {
   #updateRequested = false;
 
+  constructor() {
+    const { defaults } = this.constructor;
+    Object.assign(this, defaults);
+  }
+
   get updateRequested() {
     return this.#updateRequested;
   }
@@ -15,13 +20,6 @@ class Metadata {
     this.#updateRequested = value;
   }
 
-  constructor() {
-    const { defaults } = this.constructor;
-    Object.assign(this, defaults);
-  }
-
-  static defaults = {};
-
   requestUpdate() {
     this.#updateRequested = true;
   }
@@ -29,6 +27,7 @@ class Metadata {
   appendMetadata() {
     throw new Error("Must be implemented");
   }
+  static defaults = {};
 
   static from(props) {
     return Object.assign(Object.create(this.prototype), props);
