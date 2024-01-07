@@ -530,7 +530,7 @@ class Command {
     const { professions } = guild.data.professions;
     ProfessionsUtils.removeUnavailableProfessions({ guild, professions });
 
-    const entries = Object.entries(professions);
+    const entries = Object.entries(professions ?? {});
     if (!entries.length) {
       delete guild.data.professions;
       return;
