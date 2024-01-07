@@ -4,6 +4,8 @@ import {
 } from "#constants/users/events.js";
 import Discord from "discord.js";
 
+import { Collection } from "@discordjs/collection";
+
 async function awaitUserAccept({ name, message, channel, userData }) {
   const prefix = "userAccept_";
   if (`${prefix}${name}` in userData) {
@@ -71,6 +73,11 @@ export function overTheMessageSpamLimit(user) {
         MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED >
     user.CD_msg
   );
+}
+
+export function transformToCollectionUsingKey(array) {
+  const entries = array.map((object) => [object.key, object]);
+  return new Collection(entries);
 }
 
 export { awaitUserAccept, awaitReactOrMessage };

@@ -14,7 +14,6 @@ import { dayjs } from "#lib/dayjs.js";
 
 import yaml from "yaml";
 import Path from "path";
-import { Collection } from "discord.js";
 
 function toLocaleDeveloperString(value) {
   if (!value) {
@@ -367,11 +366,6 @@ class TimeAuditor {
   }
 }
 
-function transformToCollectionUsingKey(array) {
-  const entries = array.map((object) => [object.key, object]);
-  return new Collection(entries);
-}
-
 export {
   ending,
   omit,
@@ -404,7 +398,6 @@ export {
   parseLocationBase,
   fetchFromInnerApi,
   FlattedJSON,
-  transformToCollectionUsingKey,
 };
 
 export { relativeSiteRoot } from "#site/lib/util.js";
