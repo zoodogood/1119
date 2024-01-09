@@ -753,8 +753,8 @@ class Command {
       await code(msg).catch((e) => {
         throw e;
       });
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       const timestamp = Date.now();
       const message = await msg.msg({
         title: "Произошла ошибка 🙄",
@@ -776,11 +776,11 @@ class Command {
           "Хватит повторять старые ошибки, время совершать новые!",
         ].random();
         const errorContext = `**Сведения об ошибке:**\n• **Имя:** ${
-          e.name
+          error.name
         }\n• **Номер строки:** #${
-          e.stack.match(/js:(\d+)/)[1]
+          error.stack.match(/js:(\d+)/)[1]
         }\n	• **Текст:** \n\`\`\`\n${
-          e.message
+          error.message
         }\nᅠ\`\`\`\n\n• **Команда:** \`!${name}\`\n• **Времени с момента запуска команды:** ${
           Util.timestampToDate(timestamp - msg.createdTimestamp) || "0с"
         }`;
