@@ -45,7 +45,7 @@ class TimeEventsManager {
   }
 
   static getEventsInRange(range) {
-    const days = Util.rangeToArray(range);
+    const days = [...Util.rangeToArray(range)];
     const events = [];
     for (const day of days) {
       const todayEvents = this.at(day);
