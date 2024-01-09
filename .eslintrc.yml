@@ -2,13 +2,13 @@ env:
   browser: true
   es2021: true
   node: true
-overrides: 
+overrides:
   - files: ["*.svelte"]
     parser: "svelte-eslint-parser"
     extends: ["plugin:svelte/prettier"]
-    rules: 
+    rules:
       prettier/prettier': off
-extends: 
+extends:
   - eslint:recommended
   - plugin:svelte/prettier
   - prettier
@@ -22,14 +22,14 @@ parserOptions:
 rules:
   prettier/prettier:
     - error
-  eqeqeq: 
+  eqeqeq:
     - error
     - always
   no-constant-condition:
     - off
-  prefer-const: 
+  prefer-const:
     - error
-  no-fallthrough: 
+  no-fallthrough:
     - off
   no-async-promise-executor:
     - off
