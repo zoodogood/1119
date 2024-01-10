@@ -67,24 +67,26 @@ const Schema = {
             values: {},
           },
         ],
-        questReward: {},
-        questTime: {},
+        questReward: 0,
+        questTime: 0,
         last_online: 0,
         chestBonus: 0,
         praiseMe: [""],
         BDay: "",
         questsGlobalCompleted: {},
         grempenBoughted: 0,
-        shopTime: {},
+        shopTime: 0,
         first_$: true,
         praise: [""],
-        profile_color: {},
-        profile_description: {},
-        questLast: {},
-        dayQuests: {},
-        thiefGloves: {},
-        chilli: {},
-        invites: {},
+        profile_color: "",
+        profile_description: "",
+        questLast: "",
+        dayQuests: 0,
+        thiefGloves: 0,
+        thiefCombo: 0,
+        thiefWins: 0,
+        chilli: 0,
+        invites: 0,
         iq: 0,
         cursesEnded: 0,
         element: {},
@@ -101,16 +103,14 @@ const Schema = {
         voidFreedomCurse: 0,
         voidCooldown: 0,
         CD_$: 0,
-        leave_roles: {},
-        profile_confidentiality: {},
+        profile_confidentiality: true,
         voidQuests: {},
         monster: 0,
         monstersBought: 0,
-        thiefWins: {},
         remainedQuest: {},
         presents: 0,
         lollipops: 0,
-        wnowyTree: 0,
+        snowyTree: 0,
         effectsCallbackMap: {},
         cursesCallbackMap: {},
       },
@@ -201,24 +201,26 @@ const Schema = {
  * @property {quest} quest
  * @property {curses[]} curses
  * @property {effects[]} effects
- * @property {questReward} questReward
- * @property {questTime} questTime
+ * @property {number} questReward
+ * @property {number} questTime
  * @property {number} last_online
  * @property {number} chestBonus
  * @property {string[]} praiseMe
  * @property {string} BDay
  * @property {questsGlobalCompleted} questsGlobalCompleted
  * @property {number} grempenBoughted
- * @property {shopTime} shopTime
+ * @property {number} shopTime
  * @property {boolean} first_$
  * @property {string[]} praise
- * @property {profile_color} profile_color
- * @property {profile_description} profile_description
- * @property {questLast} questLast
- * @property {dayQuests} dayQuests
- * @property {thiefGloves} thiefGloves
- * @property {chilli} chilli
- * @property {invites} invites
+ * @property {string} profile_color
+ * @property {string} profile_description
+ * @property {string} questLast
+ * @property {number} dayQuests
+ * @property {number} thiefGloves
+ * @property {number} thiefCombo
+ * @property {number} thiefWins
+ * @property {number} chilli
+ * @property {number} invites
  * @property {number} iq
  * @property {number} cursesEnded
  * @property {element} element
@@ -235,16 +237,14 @@ const Schema = {
  * @property {number} voidFreedomCurse
  * @property {number} voidCooldown
  * @property {number} CD_$
- * @property {leave_roles} leave_roles
- * @property {profile_confidentiality} profile_confidentiality
+ * @property {boolean} profile_confidentiality
  * @property {voidQuests} voidQuests
  * @property {number} monster
  * @property {number} monstersBought
- * @property {thiefWins} thiefWins
  * @property {remainedQuest} remainedQuest
  * @property {number} presents
  * @property {number} lollipops
- * @property {number} wnowyTree
+ * @property {number} snowyTree
  * @property {effectsCallbackMap} effectsCallbackMap
  * @property {cursesCallbackMap} cursesCallbackMap
  */
@@ -281,57 +281,7 @@ const Schema = {
  */
 
 /**
-* @typedef {object} questReward
-
-*/
-
-/**
-* @typedef {object} questTime
-
-*/
-
-/**
 * @typedef {object} questsGlobalCompleted
-
-*/
-
-/**
-* @typedef {object} shopTime
-
-*/
-
-/**
-* @typedef {object} profile_color
-
-*/
-
-/**
-* @typedef {object} profile_description
-
-*/
-
-/**
-* @typedef {object} questLast
-
-*/
-
-/**
-* @typedef {object} dayQuests
-
-*/
-
-/**
-* @typedef {object} thiefGloves
-
-*/
-
-/**
-* @typedef {object} chilli
-
-*/
-
-/**
-* @typedef {object} invites
 
 */
 
@@ -346,22 +296,7 @@ const Schema = {
 */
 
 /**
-* @typedef {object} leave_roles
-
-*/
-
-/**
-* @typedef {object} profile_confidentiality
-
-*/
-
-/**
 * @typedef {object} voidQuests
-
-*/
-
-/**
-* @typedef {object} thiefWins
 
 */
 
