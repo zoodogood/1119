@@ -132,7 +132,7 @@ class Command {
         inline: true,
         others: ["перчатку", "перчатки", "перчатка"],
         fn: (product) => {
-          !userData.thiefGloves &&
+          userData.thiefGloves === undefined &&
             msg.author.msg({
               title: "Вы купили чудо перчатки?",
               description:
