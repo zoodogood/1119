@@ -28,6 +28,7 @@ class Event {
     DailyEvents.updateGrempenProducts();
     DailyEvents.updateBerrysPrice();
     await DailyEvents.checkDayStatsEvent();
+    this.createNextCall();
 
     if (isLost) {
       return;
@@ -49,8 +50,6 @@ class Event {
         });
       }
     }
-
-    this.createNextCall();
   }
 
   setTheClock() {
