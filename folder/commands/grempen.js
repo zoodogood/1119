@@ -180,7 +180,7 @@ class Command {
           const rand = Util.random(3, 7);
           const LIMIT = 15_000;
           const flaconPrice = Math.min(Math.ceil(userData.coins / rand), LIMIT);
-          const value = Math.ceil(flaconPrice * 0.8);
+          const value = Math.ceil(flaconPrice * 0.2);
           Util.addResource({
             user: interaction.user,
             value,
