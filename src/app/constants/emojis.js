@@ -17,10 +17,22 @@ const Emoji = {
       return "🍭";
     },
   },
+  presents: {
+    id: null,
+    toString() {
+      return "🎁";
+    },
+  },
   snowyTree: {
     id: null,
     toString() {
       return "🌲";
+    },
+  },
+  snowyEvent: {
+    id: "null",
+    toString() {
+      return "❄️";
     },
   },
   /* special */
@@ -40,6 +52,12 @@ const Emoji = {
     id: "805405279326961684",
     toString() {
       return "<a:chest:805405279326961684>";
+    },
+  },
+  curse: {
+    id: null,
+    toString() {
+      return "💀";
     },
   },
 };
