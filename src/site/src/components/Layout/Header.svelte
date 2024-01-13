@@ -79,6 +79,7 @@
         </button>
       </section>
     {:else}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <section
         class="user"
         on:click={() =>
