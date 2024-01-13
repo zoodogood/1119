@@ -9,6 +9,7 @@ import { CreateModal } from "@zoodogood/utils/discordjs";
 import { CustomCollector } from "@zoodogood/utils/objectives";
 import QuestManager from "#lib/modules/QuestManager.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { Emoji } from "#constants/emojis.js";
 
 class RanksUtils {
   static leaderboardTypes = new Collection(
@@ -125,6 +126,27 @@ class RanksUtils {
           return { name, value };
         },
       },
+      curses: {
+        key: "curses",
+        component: {
+          value: "curses",
+          label: "Пережитых проклятий",
+          emoji: Emoji.curse.toString(),
+        },
+        value: (element) => {
+          return element.data.cursesEnded ?? 0;
+        },
+        display: (element, ended, index) => {
+          const currentCount = element.curses?.length;
+          const name = `${index + 1}. ${
+            currentCount ? Emoji.curse.toString() : ""
+          } ${element.username}`;
+          const value = `Пережито проклятий: ${ended} ${
+            currentCount ? ` | Текущие: ${currentCount}` : ""
+          }`;
+          return { name, value };
+        },
+      },
       witch: {
         key: "witch",
         component: {
@@ -184,6 +206,51 @@ class RanksUtils {
         display: (element, output, index) => {
           const name = `${index + 1}. ${element.username}`;
           const value = `0b${output.toString(2)} (${output})`;
+          return { name, value };
+        },
+      },
+      snowyEvent: {
+        key: "snowyEvent",
+        component: {
+          value: "snowyEvent",
+          label: "Количество бонусов сундука",
+          emoji: Emoji.snowyEvent.toString(),
+        },
+        filter: (snowyEvent) => snowyEvent?.isArrived,
+        value: (element) => {
+          const curse = element.data.curses?.find(
+            (curse) => curse.id === "happySnowy",
+          );
+          if (curse) {
+            return 0;
+          }
+
+          const snowflakes = curse.values.progress;
+          return snowflakes;
+        },
+        display: (element, snowflakes, index) => {
+          const name = `${index + 1}. ${element.username}`;
+          const presents = element.data.presents;
+          const presentsContent = presents
+            ? `${Util.ending(
+                presents,
+                "подар",
+                "ков",
+                "ок",
+                "ка",
+              )} ${Emoji.presents.toString()}`
+            : null;
+          const snowflakesContent = `${Util.ending(
+            presents,
+            "снежин",
+            "ок",
+            "ка",
+            "ки",
+          )} ${Emoji.snowyEvent.toString()}`;
+          const value = `${Util.joinWithAndSeparator([
+            snowflakesContent,
+            presentsContent,
+          ])}`;
           return { name, value };
         },
       },
@@ -386,17 +453,20 @@ class Command {
           (!user.bot && !user.data.profile_confidentiality),
       );
 
+    const { guild, user } = interaction;
+
     const context = {
       interaction,
       sortedPull: null,
       users,
       pages: null,
       page: 0,
-      guild: interaction.guild,
-      boss: interaction.guild.data.boss ?? {},
+      guild,
+      boss: guild.data.boss ?? {},
+      snowyEvent: guild.data.snowyEvent ?? {},
       selected: RanksUtils.leaderboardTypes.at(0),
       values: null,
-      user: interaction.user,
+      user,
     };
 
     context.values = this.createValuesMap(context);
