@@ -2,6 +2,7 @@ import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2, KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 } from "#constants/users/commands.js";
 
 class Command {
   bonusesBase = [
@@ -276,8 +277,8 @@ class Command {
     {
       emoji: "🏵️",
       id: "chestLevelIncrease",
-      KEYS_FOR_FIRST_UPGRADE: 150,
-      KEYS_FOR_SECOND_UPGRADE: 500,
+      KEYS_FOR_FIRST_UPGRADE: KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
+      KEYS_FOR_SECOND_UPGRADE: KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
       DESCRIPTION_VALUE_OFFSET: 2,
       getPrice(user) {
         return user.data.chestLevel
