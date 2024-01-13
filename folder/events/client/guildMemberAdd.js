@@ -125,9 +125,9 @@ class BotLoggerUtil {
         whoAdded ? `Бота добавил: ${whoAdded.executor.username}` : ""
       }`,
       footer: {
-        text: `Предоставленные права: ${
-          permissions[0] + permissions.slice(1).toLowerCase()
-        }`,
+        text: `Предоставленные права: ${Util.capitalize(
+          permissions ?? "Отсутсвуют",
+        )}`,
       },
     });
     return;
@@ -136,9 +136,9 @@ class BotLoggerUtil {
 
 class EnterLoggerUtil {
   static async processNewMember(member) {
-    const { invite, inviter } = await this.fetchInviter(member);
+    const { invite, inviter } = (await this.fetchInviter(member)) ?? {};
     this.writeLog({ invite, inviter, member });
-    this.processInviter({ invite, inviter, member });
+    invite && this.processInviter({ invite, inviter, member });
   }
 
   static async fetchInviter(member) {
@@ -150,6 +150,10 @@ class EnterLoggerUtil {
       (invite) => cached.get(invite.code) < invite.uses,
     );
 
+    if (!invite) {
+      return null;
+    }
+
     const { inviter } = invite;
 
     return { invite, inviter };
@@ -157,13 +161,13 @@ class EnterLoggerUtil {
 
   static writeLog({ inviter, member, invite }) {
     const { guild } = member;
-    const description = `Имя: ${member.user.tag}\nПригласивший: ${inviter.tag}\nПриглашение использовано: ${invite.uses}`;
+    const description = `Имя: ${member.user.tag}\nПригласивший: ${inviter?.tag}\nПриглашение использовано: ${invite?.uses}`;
 
     guild.logSend({
       title: "Новый участник!",
       description,
       footer: { text: "Приглашение создано: " },
-      timestamp: invite.createdTimestamp,
+      timestamp: invite?.createdTimestamp,
     });
   }
 
