@@ -4,6 +4,10 @@ import CurseManager from "#lib/modules/CurseManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import {
+  KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
+  KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
+} from "#constants/users/commands.js";
 
 class Chest {
   static callOpen({ user }) {
@@ -330,8 +334,7 @@ class Command {
     name: "chest",
     id: 32,
     media: {
-      description:
-        "\n\nЕжедневный-обычный сундук, ничем не примечательный...\nПожалуйста, не пытайтесь в него заглядывать 20 раз в сутки.\n\n❓ Может быть улучшен:\nУлучшение происходит через проведение ритуала в котле при достаточном количестве ресурса, Ключей.\nДля улучшения сундука до второго надо 150 ключей, и 500 до третьего.\n\n✏️\n```python\n!chest #без аргументов\n```\n\n",
+      description: `\n\nЕжедневный-обычный сундук, ничем не примечательный...\nПожалуйста, не пытайтесь в него заглядывать 20 раз в сутки.\n\n❓ Может быть улучшен:\nУлучшение происходит через проведение ритуала в котле при достаточном количестве ресурса, Ключей.\nДля улучшения сундука до второго надо ${KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2} ключей, и ${KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3} до третьего.\n\n✏️\n\`\`\`python\n!chest #без аргументов\n\`\`\`\n\n`,
     },
     allias: "сундук daily скриня скринька",
     allowDM: true,
