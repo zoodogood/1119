@@ -1,64 +1,15 @@
 import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
+import * as SnowyEvent from "#lib/snowyEvent.js";
 
 class Event extends BaseEvent {
   constructor() {
     const EVENT = "users/getCoinsFromMessage";
     super(EventsManager.emitter, EVENT);
-  }
-
-  async snowyEvent({ user, message }) {
-    if (DataManager.data.bot.dayDate !== NEW_YEAR_DAY_DATE) {
-      return;
-    }
-    const PHRASES = [
-      () => "Эта музыка не спешит заканчиваться :notes:",
-      () => "Хо-хо-хо :robot:",
-      () =>
-        "**Хо-хо-хо, @everyone, Отправляйте сообщения, чтобы получить проклятие зимнего праздника :snowflake: !**",
-    ];
-    const { guild } = message;
-    if (!guild) {
-      return;
-    }
-    guild.data.snowyEvent ||= { preGlowExplorers: [] };
-
-    const { snowyEvent } = guild.data;
-    if (snowyEvent.preGlowExplorers.length < PHRASES.length) {
-      if (snowyEvent.preGlowExplorers.includes(user.id)) {
-        return;
-      }
-      message.react("🌲");
-      snowyEvent.preGlowExplorers.push(user.id);
-      message.channel.sendTyping();
-      await Util.sleep(2_500);
-      const content = PHRASES.at(snowyEvent.preGlowExplorers.length - 1)();
-      message.channel.msg({
-        reference: message.id,
-        content,
-      });
-      return;
-    }
-
-    const userData = user.data;
-    if (userData.curses?.some((curse) => curse.id === "happySnowy")) {
-      return;
-    }
-
-    message.react("🌲");
-    const curseBase = CurseManager.cursesBase.get("happySnowy");
-    const curse = CurseManager.generateOfBase({
-      curseBase,
-      user,
-      context: { message, guild },
-    });
-    CurseManager.init({ curse, user });
-    return;
   }
 
   calculateMultiplayer({ user, message }) {
@@ -144,7 +95,7 @@ class Event extends BaseEvent {
 
   async run({ user, message }) {
     this.onGetCoinsFromMessage({ user, message });
-    this.snowyEvent({ user, message });
+    SnowyEvent.onGetCoinsFromMessage({ user, message });
   }
 
   options = {
