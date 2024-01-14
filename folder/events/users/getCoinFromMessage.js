@@ -1,6 +1,4 @@
-import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
@@ -17,7 +15,7 @@ class Event extends BaseEvent {
     const userData = user.data;
     let k = 1;
 
-    if (DataManager.data.bot.dayDate === NEW_YEAR_DAY_DATE) {
+    if (SnowyEvent.checkAvailableIn(guild)) {
       k += 0.2;
     }
 
@@ -39,19 +37,20 @@ class Event extends BaseEvent {
 
   async onGetCoinsFromMessage({ user, message }) {
     const userData = user.data;
+    const { guild } = message;
     user.action(Actions.coinFromMessage, {
       channel: message.channel,
     });
 
     let reaction = "637533074879414272";
     const k = this.calculateMultiplayer({ user, message });
-    if (DataManager.data.bot.dayDate === NEW_YEAR_DAY_DATE) {
+    if (SnowyEvent.checkAvailableIn(guild)) {
       reaction = "❄️";
     }
 
-    if (message.guild && "cloverEffect" in message.guild.data) {
+    if (guild && "cloverEffect" in guild.data) {
       reaction = "☘️";
-      message.guild.data.cloverEffect.coins++;
+      guild.data.cloverEffect.coins++;
     }
 
     const coins = Math.round((35 + (userData.coinsPerMessage ?? 0)) * k);
@@ -61,7 +60,7 @@ class Event extends BaseEvent {
       value: coins,
       source: "eventsManager.event.users.getCoinsFromMessage",
       resource: PropertiesEnum.coins,
-      context: { message },
+      context: { message, guild },
     });
     Util.addResource({
       user,
@@ -69,7 +68,7 @@ class Event extends BaseEvent {
       value: 5,
       source: "eventsManager.event.users.getCoinsFromMessage",
       resource: PropertiesEnum.chestBonus,
-      context: { message },
+      context: { message, guild },
     });
 
     const react = await message.awaitReact(
