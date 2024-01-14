@@ -324,7 +324,18 @@ class Manager {
     const keys = (await FileUtils.keys()).filter(
       (key) => !Core.filesList.includes(key),
     );
-    return Core.filesList.push(...keys);
+    Core.filesList.push(...keys);
+    return Core.filesList;
+  }
+
+  static async fetchManyMetadata() {
+    const current = Core.session.meta;
+    const cache = [
+      ...(
+        await Promise.all(Core.filesList.map((key) => Core.cache.fetch(key)))
+      ).values(),
+    ];
+    return { current, cache };
   }
 }
 
