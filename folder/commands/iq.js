@@ -44,7 +44,7 @@ class Command {
       description:
         "\n\nХотя мы не знаем ваш настоящий IQ, можем предложить наш собственный..\nВозможно, когда-то у нас появится тест на ICQ\n\n✏️\n```python\n!iq <memb>\n```\n\n",
     },
-    allias: "iqmeme icq айкю айкью iqbanana iqmonkey",
+    alias: "iqmeme icq айкю айкью iqbanana iqmonkey",
     allowDM: true,
     cooldown: 15_000,
     type: "user",

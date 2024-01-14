@@ -65,13 +65,13 @@ class Command {
 
     {
       resource: PropertiesEnum.lollipops,
-      names: PropertiesList.lollipops.allias,
+      names: PropertiesList.lollipops.alias,
       gives: (n) => Util.ending(n, "леден", "цов", "ец", "ца"),
     },
 
     {
       resource: PropertiesEnum.snowyTree,
-      names: PropertiesList.snowyTree.allias,
+      names: PropertiesList.snowyTree.alias,
       gives: (n) => `${n} snowyTree`,
     },
   ];
@@ -245,7 +245,7 @@ class Command {
       description:
         '\n\nИспользуйте, чтобы передать коины другому пользователю в качестве доброго подарка или оплаты за помощь :wink:\n\n✏️\n```python\n!pay {memb} {coinsCount | "+"} <message> #аргументы можно указывать в любом порядке. "+" обозначает "Все коины, которые у вас есть"\n```\n\n',
     },
-    allias: "give дать передать заплатить дати заплатити передати",
+    alias: "give дать передать заплатить дати заплатити передати",
     expectMention: true,
     allowDM: true,
     cooldown: 7_000,

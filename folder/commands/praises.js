@@ -304,7 +304,7 @@ class Command {
       description:
         "\n\nОтображает список людей, которых вы похвалили и которые похвалили вас.\n\n✏️\n```python\n!praises <memb>\n```\n\n",
     },
-    allias: "похвалы похвали лайки likes",
+    alias: "похвалы похвали лайки likes",
     allowDM: true,
     cooldown: 2_00_00,
     type: "user",

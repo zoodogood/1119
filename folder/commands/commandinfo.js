@@ -34,7 +34,7 @@ class Command {
     }
 
     const {
-      alliases,
+      aliases,
       commandNameId,
       guide,
       poster,
@@ -56,7 +56,7 @@ class Command {
       description:
         guide.trim() +
         (__inServer
-          ? `\nДругие названия:\n${alliases
+          ? `\nДругие названия:\n${aliases
               .map((name) => `!${name}`)
               .join(" ")}`
           : ""),
@@ -72,7 +72,7 @@ class Command {
             {
               name: "Другие способы вызова:",
               value: Discord.escapeMarkdown(
-                alliases.map((name) => `!${name}`).join(" "),
+                aliases.map((name) => `!${name}`).join(" "),
               ),
             },
             {
@@ -125,7 +125,7 @@ class Command {
   fetchCommandMetadata(command) {
     const commandNameId = command.options.name;
     const category = command.options.type;
-    const alliases = command.options.allias.split(" ");
+    const aliases = command.options.alias.split(" ");
     const poster = command.options.media?.poster;
     const githubURL = this.resolveGithubPathOf(commandNameId);
     const guide =
@@ -138,7 +138,7 @@ class Command {
       ...command.options,
       category,
       commandNameId,
-      alliases,
+      aliases,
       guide,
       poster,
       usedCount,
@@ -180,7 +180,7 @@ class Command {
       description:
         "Показывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение\n\n✏️\n```python\n!commandInfo {command}\n```\n\n",
     },
-    allias: "command команда",
+    alias: "command команда",
     allowDM: true,
     expectParams: true,
     cooldown: 5_000,

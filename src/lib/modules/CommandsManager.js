@@ -364,7 +364,7 @@ class CommandsManager {
     const createList = (command) =>
       [
         command.options.name,
-        ...command.options.allias.split(" "),
+        ...command.options.alias.split(" "),
         command.options.slash?.name,
         String(command.options.id),
       ].filter(Boolean);

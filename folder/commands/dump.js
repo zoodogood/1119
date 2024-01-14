@@ -21,7 +21,7 @@ class Command {
 	  	"media": {
 	   	"description": ""
 	  	},
-	  	"allias": "дамп",
+	  	"alias": "дамп",
 		"allowDM": true,
 		"cooldown": 1_00_000,
 		"type": "dev"

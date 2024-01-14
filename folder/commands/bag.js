@@ -12,7 +12,7 @@ class Item {
   }
 
   static normalize(item) {
-    item.names = [...item.names].map((allias) => allias.toLowerCase());
+    item.names = [...item.names].map((alias) => alias.toLowerCase());
   }
 
   display(...args) {
@@ -34,7 +34,7 @@ class Item {
 const ITEMS = [
   {
     key: "coins",
-    names: PropertiesList.coins.allias.split(" "),
+    names: PropertiesList.coins.alias.split(" "),
     ending: (count) =>
       `<:coin:637533074879414272> ${Util.ending(count, "Коин", "ов", "", "а")}`,
     onUse({ count }) {
@@ -47,13 +47,13 @@ const ITEMS = [
   },
   {
     key: "exp",
-    names: PropertiesList.exp.allias.split(" "),
+    names: PropertiesList.exp.alias.split(" "),
     ending: (count) =>
       `<:crys2:763767958559391795> ${Util.ending(count, "Опыт", "а", "", "а")}`,
   },
   {
     key: "chestBonus",
-    names: PropertiesList.chestBonus.allias.split(" "),
+    names: PropertiesList.chestBonus.alias.split(" "),
     ending: (count) =>
       `<a:chest:805405279326961684> ${Util.ending(
         count,
@@ -65,7 +65,7 @@ const ITEMS = [
   },
   {
     key: "void",
-    names: PropertiesList.void.allias.split(" "),
+    names: PropertiesList.void.alias.split(" "),
     onUse({ count, context }) {
       const used = count;
 
@@ -98,7 +98,7 @@ const ITEMS = [
   },
   {
     key: "berrys",
-    names: PropertiesList.berrys.allias.split(" "),
+    names: PropertiesList.berrys.alias.split(" "),
     ending: (count) =>
       `<:berry:756114492055617558> ${Util.ending(
         count,
@@ -110,33 +110,33 @@ const ITEMS = [
   },
   {
     key: "chilli",
-    names: PropertiesList.chilli.allias.split(" "),
+    names: PropertiesList.chilli.alias.split(" "),
     ending: (count) => `🌶️ ${Util.ending(count, "Пер", "цев", "ец", "ца")}`,
   },
   {
     key: "monster",
-    names: PropertiesList.monster.allias.split(" "),
+    names: PropertiesList.monster.alias.split(" "),
     ending: (count) => `🐲 ${Util.ending(count, "Монстр", "ов", "", "а")}`,
   },
   {
     key: "thiefGloves",
-    names: PropertiesList.thiefGloves.allias.split(" "),
+    names: PropertiesList.thiefGloves.alias.split(" "),
     ending: (count) => `🧤 ${Util.ending(count, "Перчат", "ки", "у", "ки")}`,
     display: (count) => `🧤 Перчатки ${count}шт.`,
   },
   {
     key: "keys",
-    names: PropertiesList.keys.allias.split(" "),
+    names: PropertiesList.keys.alias.split(" "),
     ending: (count) => `🔩 ${Util.ending(count, "Ключ", "ей", "", "а")}`,
   },
   {
     key: "seed",
-    names: PropertiesList.seed.allias.split(" "),
+    names: PropertiesList.seed.alias.split(" "),
     ending: (count) => `🌱 ${Util.ending(count, "Сем", "ян", "ечко", "ечка")}`,
   },
   {
     key: "presents",
-    names: PropertiesList.presents.allias.split(" "),
+    names: PropertiesList.presents.alias.split(" "),
     ending: (count) => `🎁 ${Util.ending(count, "Подар", "ков", "ок", "ка")}`,
     onUse({ context }) {
       const { interaction } = context;
@@ -147,7 +147,7 @@ const ITEMS = [
   },
   {
     key: "cheese",
-    names: PropertiesList.cheese.allias.split(" "),
+    names: PropertiesList.cheese.alias.split(" "),
     ending: (count) => `🧀 ${Util.ending(count, "Сыр", "ов", "", "а")}`,
   },
   {
@@ -258,7 +258,7 @@ const ITEMS = [
   },
   {
     key: PropertiesEnum.lollipops,
-    names: PropertiesList.lollipops.allias.split(" "),
+    names: PropertiesList.lollipops.alias.split(" "),
     ending: (count) => `🍭 ${Util.ending(count, "Леден", "цов", "ец", "ца")}`,
     async onUse({ context }) {
       const { guild } = context;
@@ -344,8 +344,8 @@ class Command {
     this.items = ITEMS.map((itemData) => Item.from(itemData));
   }
 
-  findItemByAllias(allias) {
-    return this.items.find((item) => item.names.includes(allias.toLowerCase()));
+  findItemByalias(alias) {
+    return this.items.find((item) => item.names.includes(alias.toLowerCase()));
   }
 
   findItemByKey(key) {
@@ -355,7 +355,7 @@ class Command {
   }
 
   findItem(item) {
-    return this.findItemByKey(item) || this.findItemByAllias(item);
+    return this.findItemByKey(item) || this.findItemByalias(item);
   }
 
   getContext(interaction) {
@@ -649,7 +649,7 @@ class Command {
       description:
         '\n\nНикто кроме владельца не может просматривать содержимое сумки. В неё можно положить любой предмет будь то нестабильность, клубника и даже бонусы\nСумка это альтернатива использования казны как личного хранилища. При этом она всегда под рукой!\n\n✏️\n```python\n!bag <"take" | "put"> <item> <count | "+"> # аргументы могут быть указаны в любом порядке\n```\n\n',
     },
-    allias: "сумка рюкзак",
+    alias: "сумка рюкзак",
     allowDM: true,
     type: "user",
   };

@@ -12,8 +12,8 @@
 						<img src = { command.media.poster } alt="poster" fetchpriority = "low" loading = "lazy">
 					{/if}
 					<h6>
-						{#each command.allias.split(" ") as allias}
-							<span>!{ allias }</span>
+						{#each command.alias.split(" ") as alias}
+							<span>!{ alias }</span>
 						{/each}
 					</h6>
 				</footer>

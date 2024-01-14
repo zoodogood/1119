@@ -533,7 +533,7 @@ class Command {
       poster:
         "https://static.tumblr.com/3f31d88965fd2e42728392a079958659/ngjf4de/g0np1hy8q/tumblr_static_filename_2048_v2.gif",
     },
-    allias: "ограбить роб украсть вкрасти крадіжка",
+    alias: "ограбить роб украсть вкрасти крадіжка",
     expectMention: true,
     allowDM: true,
     cooldown: 3_000,

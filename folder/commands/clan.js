@@ -51,7 +51,7 @@ class Command {
 		"media": {
 		  "description": "пока тут пусто"
 		},
-		"allias": "клан",
+		"alias": "клан",
 		 "type": "other"
   };
 };

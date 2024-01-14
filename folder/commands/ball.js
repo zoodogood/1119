@@ -37,7 +37,7 @@ class Command {
       poster:
         "https://media.discordapp.net/attachments/769566192846635010/872442452152307762/ball.gif",
     },
-    allias: "8ball шар куля",
+    alias: "8ball шар куля",
     allowDM: true,
     expectParams: true,
     cooldown: 3_000,

@@ -60,7 +60,7 @@ class Command {
 	  "media": {
 	    "description": "\n\nМут наоборот — снимает ограничения на общение в чатах для пользователей.\n\n✏️\n```python\n!unmute {memb}\n```\n\n"
 	  },
-	  "allias": "анмут анмьют відглушити",
+	  "alias": "анмут анмьют відглушити",
 		"expectMention": true,
 		"allowDM": true,
 		"type": "guild",

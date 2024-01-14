@@ -113,7 +113,7 @@ class Command {
       description:
         "\n\nОтправляет список смайликов на сервере или подробную информацию об одном из них.\n\n✏️\n```python\n!emojis <emoji|emojiID>\n```\n\n",
     },
-    allias: "emoji смайлики эмодзи эмоджи емодзі",
+    alias: "emoji смайлики эмодзи эмоджи емодзі",
     allowDM: true,
     cooldown: 7_000,
     type: "other",

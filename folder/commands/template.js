@@ -18,7 +18,7 @@ class Command {
 	    "description": "Отправляет ваше сообщение от имени призрака. Также это отличная команда для тестирования шаблонов.\nЛичная просьба: Используя команду при разговоре, не нарушайте каноничность характера бота, это действительно важно в первую очередь для меня. Спасибо за понимание :green_heart:\n\n✏️\n```python\n!c {text}\n```",
 	    "poster": "https://cdn.discordapp.com/attachments/769566192846635010/872441895215824916/send.gif"
 	  },
-	  "allias": "с c сенд s template шаблон",
+	  "alias": "с c сенд s template шаблон",
 		"allowDM": true,
 		"expectParams": true,
 		"type": "dev"

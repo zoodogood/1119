@@ -29,7 +29,7 @@ class Command {
 	  "media": {
 	    "description": "\n\nВыдаёт формальное предупреждение пользователю — —\n\n✏️\n```python\n!warn {memb}\n```\n\n"
 	  },
-	  "allias": "пред варн попередити",
+	  "alias": "пред варн попередити",
 		"expectMention": true,
 		"allowDM": true,
 		"cooldown": 120_000,

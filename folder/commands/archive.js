@@ -44,7 +44,7 @@ class Command {
 	  "media": {
 	    "description": "\n\nАрхивирует сообщения в канале и отправляет содержимое пользователю в виде файла.\n\n✏️\n```python\n!archive #без аргументов\n```\n\n"
 	  },
-	  "allias": "arhive архив архів",
+	  "alias": "arhive архив архів",
 		"allowDM": true,
 		"cooldown": 36_00_000,
 		"type": "delete",

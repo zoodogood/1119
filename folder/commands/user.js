@@ -353,7 +353,7 @@ class Command {
       description:
         "\n\nОтображает профиль пользователя — ежедневный квест, количество коинов, уровень, содержимое инвентаря и тому подобное.\n\n✏️\n```python\n!user <memb>\n```\n\n",
     },
-    allias: "юзер u ю profile профиль користувач",
+    alias: "юзер u ю profile профиль користувач",
     allowDM: true,
     cooldown: 20_000,
     cooldownTry: 3,

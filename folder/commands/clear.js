@@ -199,7 +199,7 @@ class Command {
       poster:
         "https://media.discordapp.net/attachments/769566192846635010/872526568965177385/clear.gif",
     },
-    allias: "очистить очисти очисть клир клиар клір очистити",
+    alias: "очистить очисти очисть клир клиар клір очистити",
     allowDM: true,
     cooldown: 15_000,
     type: "guild",

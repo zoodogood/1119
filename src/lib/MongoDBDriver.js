@@ -27,6 +27,10 @@ class MongoDBDriver {
   async readFile(name) {
     return await this.files.findOne({ name });
   }
+
+  async keys(path) {
+    this.files.listIndexes();
+  }
 }
 
 export { MongoDBDriver };

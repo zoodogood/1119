@@ -13,20 +13,20 @@ const PropertiesList = {
       base: "коин",
       suffixes: ["ов", "", "а"],
     },
-    allias:
+    alias:
       "coins coin коин коинов коина коины монет монету монеты монета монеток",
   },
   level: {},
   exp: {
-    allias: "опыта опыт опытов exp experience",
+    alias: "опыта опыт опытов exp experience",
   },
   berrys: {
-    allias:
+    alias:
       "клубника клубник клубники клубничка клубничек клубнички berrys berry ягод ягода ягоды ягодок",
   },
   chestLevel: {},
   void: {
-    allias:
+    alias:
       "void камушков камешек камушка voids камень камня камней нестабильность камни нестабильности нест н",
   },
   keys: {
@@ -35,23 +35,23 @@ const PropertiesList = {
       base: "ключ",
       suffixes: ["ей", "", "а"],
     },
-    allias: "keys key ключ ключей ключа ключи ключики ключик ключиков k к",
+    alias: "keys key ключ ключей ключа ключи ключики ключик ключиков k к",
   },
   chestBonus: {
-    allias:
+    alias:
       "bonus bonuses chest бонус бонусов бонуса бонусы сундук сундука сундуки сундуков б с",
   },
   presents: {
-    allias: "presents подарок подарка подарков present",
+    alias: "presents подарок подарка подарков present",
   },
   snowyTree: {
-    allias: "snowy новогоднее",
+    alias: "snowy новогоднее",
   },
   lollipops: {
-    allias: "lollipops lolipops lollipop lolipop леденец леденцы леденцов",
+    alias: "lollipops lolipops lollipop lolipop леденец леденцы леденцов",
   },
   cheese: {
-    allias: "сыр сыра сыров cheese cheeses",
+    alias: "сыр сыра сыров cheese cheeses",
   },
   voidRituals: {},
   voidCoins: {},
@@ -71,10 +71,10 @@ const PropertiesList = {
   questLast: {},
   dayQuests: {},
   thiefGloves: {
-    allias: "перчатки перчатку перчатка перчаток glove gloves",
+    alias: "перчатки перчатку перчатка перчаток glove gloves",
   },
   chilli: {
-    allias: "chilli перец перца перцев перцы",
+    alias: "chilli перец перца перцев перцы",
   },
   invites: {},
   iq: {},
@@ -88,7 +88,7 @@ const PropertiesList = {
   effects: {},
   curses: {},
   seed: {
-    allias: "seed семян семечек семечко семечка seeds",
+    alias: "seed семян семечек семечко семечка seeds",
   },
   voidTreeFarm: {},
   voidDouble: {},
@@ -97,7 +97,7 @@ const PropertiesList = {
   profile_confidentiality: {},
   voidQuests: {},
   monster: {
-    allias: "monster монстр монстра монстров монстры",
+    alias: "monster монстр монстра монстров монстры",
   },
   monstersBought: {},
   voidThief: {},

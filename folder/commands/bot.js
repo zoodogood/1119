@@ -347,7 +347,7 @@ class Command {
       description:
         "\n\nПоказывает интересную информацию о боте. Именно здесь находится ссылка для приглашения его на сервер.\n\n✏️\n```python\n!bot #без аргументов\n```\n\n",
     },
-    allias: "бот stats статс ping пинг стата invite пригласить",
+    alias: "бот stats статс ping пинг стата invite пригласить",
     allowDM: true,
     cooldown: 10_000,
     type: "bot",

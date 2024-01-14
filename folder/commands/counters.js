@@ -88,7 +88,7 @@ class Command {
 	  "media": {
 	    "description": "\n\nОтображает список существующих счётчиков на сервере. См. команду `!counter`\n\n✏️\n```python\n!counters #без аргументов\n```\n\n"
 	  },
-	  "allias": "счётчики счетчики рахівники",
+	  "alias": "счётчики счетчики рахівники",
 		"allowDM": false,
 		"cooldown": 10_000_000,
 		"type": "guild"

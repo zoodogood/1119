@@ -54,7 +54,7 @@ class Command {
     media: {
       description: "Перезапускает процесс",
     },
-    allias: "перезапустить перезапуск рестарт",
+    alias: "перезапустить перезапуск рестарт",
     allowDM: true,
     cooldown: 100_000,
     cooldownTry: 5,

@@ -85,7 +85,7 @@ ${
       description:
         '\n\nМеня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки\n\n✏️\n```python\n!casino {coinsBet | "+"}\n```\n\n',
     },
-    allias: "казино bet ставка",
+    alias: "казино bet ставка",
     cooldown: 300_000,
     expectParams: true,
     allowDM: true,

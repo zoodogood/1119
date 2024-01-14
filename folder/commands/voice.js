@@ -20,7 +20,7 @@ class Command {
 	  "media": {
 	    "description": "\n\nСтарые тестирования муз. команд.\n\n✏️\n```python\n!voice #без аргументов\n```\n\n"
 	  },
-	  "allias": "войс голосовий",
+	  "alias": "войс голосовий",
 		"allowDM": true,
 		"type": "dev"
 	};

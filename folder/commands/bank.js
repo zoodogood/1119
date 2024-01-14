@@ -586,7 +586,7 @@ class Command {
       poster:
         "https://cdn.discordapp.com/attachments/769566192846635010/872463081672949890/bank.gif",
     },
-    allias: "cash банк казна скарбниця",
+    alias: "cash банк казна скарбниця",
     allowDM: true,
     cooldown: 5_00_00,
     type: "guild",
