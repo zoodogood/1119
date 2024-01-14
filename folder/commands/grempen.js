@@ -523,15 +523,22 @@ class Command {
             return " как ничто. Ведь вы уже были прокляты!";
           }
 
+          const { user, guild } = interaction;
+          const context = { guild };
+
           const curse = CurseManager.generate({
             hard: null,
-            user: interaction.user,
-            context: { guild: interaction.guild },
+            user,
+            context,
           });
-          const curseBase = CurseManager.cursesBase.get(curse.id);
-          CurseManager.init({ user: interaction.user, curse });
+          const { description } = CurseManager.cursesBase.get(curse.id);
+          CurseManager.init({ user, curse });
+          const descriptionContent =
+            typeof description === "function"
+              ? description(user, curse, context)
+              : description;
 
-          return ` как новое проклятие. Чтобы избавится от бича камня: ${curseBase.description}.`;
+          return ` как новое проклятие. Чтобы избавится от бича камня: ${descriptionContent}.`;
         },
       },
     ];
