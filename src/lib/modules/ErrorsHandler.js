@@ -151,7 +151,7 @@ class ErrorData {
 
 class Group {
   constructor(key) {
-    this.metadata = new GroupMetadata();
+    this.meta = new GroupMetadata();
     this.errors = [];
     this.key = key;
   }
@@ -163,14 +163,14 @@ class Group {
   onErrorReceive(errorData) {
     this.pushError(errorData);
 
-    this.metadata.appendMetadata({
+    this.meta.appendMetadata({
       tags: errorData.tags,
       errorsCount: this.errors.length,
     });
   }
 
   addComment({ responseText, id }) {
-    const meta = this.metadata;
+    const meta = this.meta;
     const comment = { responseText, id };
     meta.appendComment(comment);
   }
@@ -235,7 +235,7 @@ class Core {
     meta: new SessionMetadata(),
   };
 
-  static updateSessionMeta({ force = false } = {}) {
+  static updateSessionMetadata({ force = false } = {}) {
     const { errorGroups, meta } = this.session;
     if (!force && !meta.updateRequested) {
       return;
@@ -244,11 +244,11 @@ class Core {
     const groups = [...errorGroups.values()];
     meta.appendMetadata({
       uniqueTags: groups.reduce(
-        (acc, { metadata }) => (acc.push(...metadata.uniqueTags), acc),
+        (acc, { meta }) => (acc.push(...meta.uniqueTags), acc),
         [],
       ),
       commentsCount: groups.reduce(
-        (acc, { metadata }) => acc + (metadata.comments?.length ?? 0),
+        (acc, { meta }) => acc + (meta.comments?.length ?? 0),
         0,
       ),
       errorsCount: groups.reduce((acc, { errors }) => acc + errors.length, 0),
@@ -275,8 +275,8 @@ class Manager {
     return Core.session;
   }
 
-  static actualSessionMeta() {
-    Core.updateSessionMeta();
+  static actualSessionMetadata() {
+    Core.updateSessionMetadata();
     return Core.session.meta;
   }
 
@@ -314,7 +314,7 @@ class Manager {
   }
 
   static async sessionWriteFile() {
-    Core.updateSessionMeta();
+    Core.updateSessionMetadata();
     const data = Core.toJSON();
     const timestamp = Date.now();
     return await FileUtils.write(timestamp, data);
@@ -329,7 +329,7 @@ class Manager {
   }
 
   static async fetchManyMetadata() {
-    const current = Core.session.meta;
+    const current = this.actualSessionMetadata();
     const cache = [
       ...(
         await Promise.all(Core.filesList.map((key) => Core.cache.fetch(key)))
