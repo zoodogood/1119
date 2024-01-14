@@ -24,7 +24,7 @@ class ProfessionsUtils {
       salaryTable[member.id] += salary;
     };
 
-    for (const member of guild.members.cache)
+    for (const member of guild.members.cache.values())
       for (const [professionId, salary] of Object.entries(professions)) {
         member.roles.cache.has(professionId) &&
           record(member, professionId, salary);
