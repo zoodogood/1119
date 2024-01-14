@@ -284,7 +284,7 @@ class Manager {
     try {
       const errorData = new ErrorData(error, context);
       this.pushToSessionErrors(errorData, context);
-      config.development && this.errorLogger(error);
+      this.errorLogger(error);
 
       const meta = Core.session.meta;
       meta.requestUpdate();
