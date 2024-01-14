@@ -69,10 +69,10 @@ class Command {
       ).toFixed(2)} МБ\``,
 
       errors: `Паник за текущий сеанс: ${Number(
-        ErrorsHandler.actualSessionMeta().errorsCount,
+        ErrorsHandler.actualSessionMetadata().errorsCount,
       )}`,
       uniqueErrors: `Уникальных паник: ${
-        ErrorsHandler.actualSessionMeta().uniqueErrors.size
+        ErrorsHandler.actualSessionMetadata().uniqueErrors.size
       }`,
     };
 
