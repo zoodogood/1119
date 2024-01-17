@@ -95,7 +95,7 @@ class Command {
       const clover = guild.data.cloverEffect;
       const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
       const filter = ({ name, params }) =>
-        name === "cloverEnd" && params.includes(msg.guild.id);
+        name === "clover-end" && params.includes(msg.guild.id);
       const event = TimeEventsManager.at(day).find(filter);
 
       if (!event) {
