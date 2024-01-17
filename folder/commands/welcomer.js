@@ -3,11 +3,11 @@ import * as Util from "#lib/util.js";
 
 class Command {
   async onChatInput(msg, interaction) {
-    let guild = msg.guild;
+    const guild = msg.guild;
     let answer;
 
     if (guild.data.hi) {
-      let early = await msg.msg({
+      const early = await msg.msg({
         title: "Ранее установленное приветствие:",
         color: guild.data.hi.color,
         image: guild.data.hi.image,
@@ -15,7 +15,7 @@ class Command {
         scope: { tag: msg.author.toString(), name: msg.author.username },
         footer: { text: "Нажмите реакцию, чтобы продолжить редактирование" },
       });
-      let react = await early.awaitReact(
+      const react = await early.awaitReact(
         { user: msg.author, removeType: "all", time: 20000 },
         "✏️",
       );
@@ -23,21 +23,21 @@ class Command {
       if (!react) return;
     }
 
-    let whatMessage = await msg.msg({
+    const whatMessage = await msg.msg({
       title:
         "Введите сообщение с которым бот будет встречать новых пользователей!",
       description:
-        "Используйте шаблонные строки {module(\"context\").name}, они знатно вам помогут!",
+        'Используйте шаблонные строки {module("context").name}, они знатно вам помогут!',
     });
     answer = await msg.channel.awaitMessage({ user: msg.author });
     if (!answer) {
       return;
     }
 
-    let message = answer.content;
+    const message = answer.content;
     whatMessage.delete();
 
-    let whatColor = await msg.msg({
+    const whatColor = await msg.msg({
       title: "Укажите цвет в формате HEX `#38f913`",
       description: "Используйте реакцию ❌, чтобы пропустить этот пункт",
     });
@@ -51,10 +51,10 @@ class Command {
       return;
     }
 
-    let color = answer.content ? answer.content.replace("#", "") : null;
+    const color = answer.content ? answer.content.replace("#", "") : null;
     whatColor.delete();
 
-    let whatImage = await msg.msg({
+    const whatImage = await msg.msg({
       title: "Укажите ссылку на изображение",
       description: "Или пропустите этот пункт",
     });
@@ -67,7 +67,7 @@ class Command {
       return;
     }
 
-    let image = answer.content || null;
+    const image = answer.content || null;
     whatImage.delete();
     if (image && !image.startsWith("http"))
       return msg.msg({
@@ -77,7 +77,7 @@ class Command {
       });
 
     let rolesId;
-    let whatRoles = await msg.msg({
+    const whatRoles = await msg.msg({
       title:
         "Вы можете указать айди ролей через пробел, они будут выдаваться всем новым пользователям",
       description: "Этот пункт тоже можно пропустить",
@@ -91,7 +91,7 @@ class Command {
     whatRoles.delete();
     if (answer.content) {
       rolesId = answer.content.split(" ");
-      let roles = rolesId
+      const roles = rolesId
         .map((el) => msg.guild.roles.cache.get(el))
         .filter((el) => el);
       if (rolesId.length !== roles.length)
@@ -104,7 +104,7 @@ class Command {
         });
     } else rolesId = false;
 
-    let whatChannel = await msg.msg({
+    const whatChannel = await msg.msg({
       title: "Упомяните канал для отправки приветсвий или...",
       color: "#ffff00",
       description: `📥 - Установить в этом канале ${
@@ -165,7 +165,7 @@ class Command {
     alias: "установитьприветствие sethello приветствие привітання",
     allowDM: true,
     type: "guild",
-    Permissions: 32,
+    Permissions: 32n,
   };
 }
 
