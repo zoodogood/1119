@@ -92,6 +92,10 @@ class Command {
         name === "cloverEnd" && params.includes(msg.guild.id);
       const event = TimeEventsManager.at(day).find(filter);
 
+      if (!event) {
+        throw new Error(`effect no finded on day ${ day } and name cloverEnd`);
+      }
+
       const timeTo = event.timestamp - Date.now();
       const multiplier =
         1.08 + 0.07 * ((1 - 0.9242 ** clover.uses) / (1 - 0.9242));
