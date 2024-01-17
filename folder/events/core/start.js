@@ -45,6 +45,7 @@ class Event extends BaseEvent {
 
     app.client = client;
     app.i18n = new I18nManager();
+    await app.i18n.load();
     client.login(process.env.DISCORD_TOKEN);
   }
 
