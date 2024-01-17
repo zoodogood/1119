@@ -12,6 +12,7 @@ class App {
 
   svelte = null;
 
+  /**@type {import("#lib/modules/I18nManager.js").I18nManager} */
   i18n = null;
 
   async launch() {
