@@ -8,7 +8,6 @@ class Event extends BaseEvent {
   }
 
   async run(error) {
-    console.info(`Message: ${error.message}`);
     const ignoreMessages = [
       "Cannot execute action on a DM channel",
       "Unknown Message",
