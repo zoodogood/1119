@@ -124,7 +124,8 @@ class Command {
 
   calculateRobValue(context) {
     const { userData, memb } = context;
-    const membWins = (memb.data.thiefWins ||= 0);
+    const combo = userData.thiefCombo || 0;
+    const membWins = memb.data.thiefWins || 0;
     let k =
       1 + (membWins > 0 ? membWins * 1.2 : Math.max(membWins, -10) * 0.07);
 
@@ -133,7 +134,7 @@ class Command {
     }
 
     return (
-      Math.floor(Util.random(21, 49) * (userData.thiefCombo / 10 + 1) * k) +
+      Math.floor(Util.random(21, 49) * (combo / 10 + 1) * k) +
       memb.data.level * 3
     );
   }
@@ -208,7 +209,7 @@ class Command {
     }
   }
 
-  didplayRobMessage(context) {
+  displayRobMessage(context) {
     const { channel, robCoinsValue, memb, userData, user } = context;
     channel.msg({
       title: "Ограблено и украдено, теперь бежать",
@@ -248,7 +249,7 @@ class Command {
     this.transferCoins(user, memb, robCoinsValue, context);
     interaction.userData.CD_39 += 7_200_000;
 
-    this.didplayRobMessage(context);
+    this.displayRobMessage(context);
     const react = await mailYouAreRobbed.awaitReact(
       { user: memb, removeType: "none", time: 60_000 },
       "❗",
