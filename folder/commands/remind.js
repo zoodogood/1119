@@ -25,7 +25,14 @@ class Command {
 
     const userData = interaction.user.data;
 
-    return { stamps, phraseRaw, phrase, userData, interaction };
+    return {
+      stamps,
+      phraseRaw,
+      phrase,
+      userData,
+      interaction,
+      now: Date.now(),
+    };
   }
 
   stampsToTime(stamps) {
@@ -99,6 +106,28 @@ class Command {
     this.run(interaction);
   }
 
+  removeByTimestampIfEnded(timestamp, context) {
+    const { now } = context;
+    if (timestamp > now) {
+      return;
+    }
+    this.removeRemindFieldOfUserReminds(timestamp, context);
+  }
+
+  removeRemindFieldOfUserReminds(timestamp, context) {
+    const { userData } = context;
+    const { reminds } = userData;
+    if (!reminds) {
+      return;
+    }
+    const index = reminds.indexOf("" + timestamp);
+    if (~index === 0) {
+      return;
+    }
+
+    reminds.splice(index, 1);
+  }
+
   findUserRemindEvents(context) {
     const { userData, interaction } = context;
     const userId = interaction.user.id;
@@ -109,17 +138,17 @@ class Command {
 
     const events = [];
     for (const timestamp of userData.reminds ?? []) {
+      this.removeByTimestampIfEnded(timestamp, context);
       const day = timestampDay(timestamp);
       const dayEvents = TimeEventsManager.at(day);
       const event = dayEvents?.find((event) => compare(event, timestamp));
 
       if (!event) {
-        const index = userData.reminds.indexOf(timestamp);
-        userData.reminds.splice(index, 1);
+        this.removeByTimestampIfEnded(timestamp, context);
         interaction.channel.msg({
           description: `Паника: напоминание (${dayjs(+timestamp).format(
             "DD.MM HH:mm",
-          )}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`,
+          )}, ${timestamp}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`,
           delete: 60_000,
           color: "#ff0000",
         });
@@ -188,12 +217,7 @@ class Command {
             (event) => event.timestamp === timestamp,
           );
           TimeEventsManager.remove(event);
-          const index = userData.reminds.indexOf(timestamp);
-          if (~index === 0) {
-            continue;
-          }
-
-          userData.reminds.splice(index, 1);
+          this.removeByTimestampIfEnded(timestamp, context);
           if (userData.reminds.length === 0) {
             delete userData.reminds;
           }
@@ -212,7 +236,8 @@ class Command {
       description:
         "\n\nСоздаёт напоминание, например, выключить суп, ну или что ещё вам напомнить надо :rolling_eyes:\n\n✏️\n```python\n!remind {time} {text} #Время в формате 1ч 2д 18м\n```\n\n",
     },
-    alias: "напомни напоминание напомнить нагадай нагадування нагадайко нап rem",
+    alias:
+      "напомни напоминание напомнить нагадай нагадування нагадайко нап rem",
     allowDM: true,
     cooldown: 8_000,
     cooldownTry: 5,
