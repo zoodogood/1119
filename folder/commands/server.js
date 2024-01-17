@@ -1,7 +1,7 @@
 import * as Util from "#lib/util.js";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import { ChannelType } from "discord.js";
+import { ChannelType, PresenceUpdateStatus } from "discord.js";
 
 class Command {
   async onChatInput(msg, interaction) {
@@ -12,40 +12,46 @@ class Command {
         msgs: `За сегодня: ${guild.data.day_msg}`,
         msgsAll: `Всего: ${guild.data.day_msg + guild.data.msg_total}`,
         around: `В среднем: ${Math.round(
-          (guild.data.day_msg + guild.data.msg_total) / guild.data.days
+          (guild.data.day_msg + guild.data.msg_total) / guild.data.days,
         )}`,
         record: `Рекорд: ${Util.ending(
           guild.data.day_max,
           "сообщени",
           "й",
           "е",
-          "я"
+          "я",
         )}\n`,
         commands: `Использовано команд: ${Object.values(
-          guild.data.commandsUsed
+          guild.data.commandsUsed,
         ).reduce((acc, count) => acc + count, 0)}`,
         todayCommands: `Сегодня: ${
-          Object.values(guild.data.commandsUsed).reduce(
+          Object.values(guild.data.commandsUsed || {}).reduce(
             (acc, count) => acc + count,
-            0
-          ) - guild.data.commandsLaunched
+            0,
+          ) - (guild.data.commandsLaunched || 0)
         }`,
       },
       members: {
         count: `Всего: ${guild.memberCount}`,
         online: `Онлайн: ${
-          guild.members.cache.filter((member) => member.presence && member.presence.status !== "offline")
-            .size
+          guild.members.cache.filter(
+            (member) =>
+              member.presence &&
+              member.presence.status !== PresenceUpdateStatus.Offline,
+          ).size
         }`,
         offline: `Оффлайн: ${
-          guild.members.cache.filter((member) => !member.presence || member.presence.status === "offline")
-            .size
+          guild.members.cache.filter(
+            (member) =>
+              !member.presence ||
+              member.presence.status === PresenceUpdateStatus.Offline,
+          ).size
         }`,
       },
       channels: {
         categories: `Категорий: ${
           guild.channels.cache.filter(
-            (e) => e.type === ChannelType.GuildCategory
+            (e) => e.type === ChannelType.GuildCategory,
           ).size
         }`,
         texted: `Текстовых: ${
@@ -57,11 +63,11 @@ class Command {
       },
     };
 
-    let stats = Object.values(values.stats).join("\n");
-    let members = Object.values(values.members).join("\n");
-    let channels = Object.values(values.channels).join("\n");
+    const stats = Object.values(values.stats).join("\n");
+    const members = Object.values(values.members).join("\n");
+    const channels = Object.values(values.channels).join("\n");
 
-    let verification = [
+    const verification = [
       "Отсуствует",
       "Низкий",
       "Средний",
@@ -69,7 +75,7 @@ class Command {
       "Слишком высокий",
     ];
 
-    let fields = [
+    const fields = [
       { name: "Участники:", value: members, inline: true },
       { name: "Каналы:", value: channels, inline: true },
       { name: "**Статистика сообщений:**", value: stats },
@@ -93,7 +99,7 @@ class Command {
       const event = TimeEventsManager.at(day).find(filter);
 
       if (!event) {
-        throw new Error(`effect no finded on day ${ day } and name cloverEnd`);
+        throw new Error(`effect no finded on day ${day} and name`);
       }
 
       const timeTo = event.timestamp - Date.now();
@@ -103,9 +109,9 @@ class Command {
       fields.unshift({
         name: "🍀 Действие Клевера",
         value: `Осталось времени: ${+(timeTo / 3600000).toFixed(
-          2
+          2,
         )}ч.\nКлевер был запущен: <t:${Math.floor(
-          clover.timestamp / 1_000
+          clover.timestamp / 1_000,
         )}>;\nНаград получено: ${
           clover.coins
         }\nТекущий множетель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${
