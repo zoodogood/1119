@@ -239,6 +239,11 @@ class Command {
         userData.profile_confidentiality = userData.profile_confidentiality
           ? false
           : true;
+
+        msg.msg({
+          title: `Режим конфиденциальность переключен в значение ${userData.profile_confidentiality}`,
+          delete: 7000,
+        });
         break;
     }
   }
