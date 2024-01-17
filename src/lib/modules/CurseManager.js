@@ -1547,6 +1547,34 @@ class CurseManager {
         interactionIsLong: true,
         reward: 12,
       },
+      {
+        _weight: 2,
+        id: "collectDino",
+        description: "Соберите 20 монстров",
+        hard: 1,
+        values: {
+          goal: () => 20,
+          timer: () => DAY,
+          progress: (user) => user.data.monster,
+        },
+        callback: {
+          resourceChange(user, curse, context) {
+            const { resource } = context;
+            if (resource !== PropertiesEnum.monster) {
+              return;
+            }
+
+            const value = user.data.monster;
+            CurseManager.interface({ user, curse }).setProgress(value);
+          },
+          beforeProfileDisplay(user, curse) {
+            const value = user.data.monster ?? 0;
+            CurseManager.interface({ user, curse }).setProgress(value);
+          },
+        },
+        interactionIsShort: true,
+        reward: 15,
+      },
 
       // {
       //   _weight: 5,
