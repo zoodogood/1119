@@ -468,7 +468,7 @@ class ExpressionParser {
     return null;
   }
 
-  static calculate(expression) {
+  static toNumber(expression) {
     while (true) {
       const position = this.findBracketBorders(expression);
       if (!position) {
@@ -497,59 +497,64 @@ class ExpressionParser {
     return bases;
   }
 
+  static getTokenOperationsPriorities() {
+    return [
+      ...new Set(
+        this.getSortedTokensBase()
+          .filter((base) => "operatorPriority" in base)
+          .map((base) => base.operatorPriority),
+      ),
+    ];
+  }
+
+  static processTokenAtIndex(tokens, index) {
+    const base = this.Tokens[tokens.at(index).key];
+
+    const token = tokens[index];
+    const previousToken = index === 0 ? null : tokens.at(index - 1);
+    const nextToken = index === tokens.length - 1 ? null : tokens.at(index + 1);
+    const newTokens = base
+      .merge({
+        token,
+        previousToken,
+        nextToken,
+      })
+      .filter(Boolean);
+
+    tokens.splice(
+      index !== 0 ? index - 1 : 0,
+      index !== 0 ? 3 : 2,
+      ...newTokens,
+    );
+
+    return true;
+  }
+
   static foldTokens(_tokens) {
     const tokens = [..._tokens];
+    if (!tokens.length) {
+      throw new Error("No tokens to parse");
+    }
 
     while (tokens.length > 1) {
-      const hasResult = [
-        ...new Set(
-          this.getSortedTokensBase()
-            .filter((base) => "operatorPriority" in base)
-            .map((base) => base.operatorPriority),
-        ),
-      ].find((searchedWithOperatorPriority) => {
-        const indexOfOperator = tokens.findIndex(
-          (element) =>
-            this.Tokens[element.key].operatorPriority ===
-            searchedWithOperatorPriority,
-        );
+      this.getTokenOperationsPriorities().find(
+        (searchedWithOperatorPriority) => {
+          const indexOfOperator = tokens.findIndex(
+            (element) =>
+              this.Tokens[element.key].operatorPriority ===
+              searchedWithOperatorPriority,
+          );
 
-        if (indexOfOperator === -1) {
-          return false;
-        }
-        const base = this.Tokens[tokens.at(indexOfOperator).key];
-
-        const token = tokens[indexOfOperator];
-        const previousToken =
-          indexOfOperator === 0 ? null : tokens.at(indexOfOperator - 1);
-        const nextToken =
-          indexOfOperator === tokens.length - 1
-            ? null
-            : tokens.at(indexOfOperator + 1);
-        const newTokensSet = base
-          .merge({
-            token,
-            previousToken,
-            nextToken,
-          })
-          .filter(Boolean);
-
-        tokens.splice(
-          indexOfOperator !== 0 ? indexOfOperator - 1 : 0,
-          indexOfOperator !== 0 ? 3 : 2,
-          ...newTokensSet,
-        );
-
-        return true;
-      });
-
-      if (hasResult === undefined) {
-        throw new Error();
-      }
+          if (indexOfOperator === -1) {
+            return false;
+          }
+          this.processTokenAtIndex(tokens, indexOfOperator);
+        },
+      );
     }
     if (!tokens.length) {
       throw new Error(
-        `tokens length is 0 in last step of parse tokens ${_tokens
+        `tokens length is 0 of parse ${_tokens
           .map((token) => token.raw)
           .join("")}`,
       );
@@ -563,7 +568,7 @@ class ExpressionParser {
   }
 
   static toDigit(expression) {
-    return +this.calculate(this.normalizeExpression(expression));
+    return +this.toNumber(this.normalizeExpression(expression));
   }
 }
 
