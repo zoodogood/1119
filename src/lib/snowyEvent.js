@@ -45,6 +45,7 @@ export function getOrInitSnowyEventIn(guild) {
 }
 
 export async function onGetCoinsFromMessage({ user, message }) {
+  return
   if (!getSnowyEventIn(guild)) {
     return;
   }
