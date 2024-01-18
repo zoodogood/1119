@@ -7,6 +7,7 @@ import QuestManager from "#lib/modules/QuestManager.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { Emoji } from "#constants/emojis.js";
+import { PresenceUpdateStatus } from "discord.js";
 
 class Command {
   async onChatInput(msg, interaction) {
@@ -64,7 +65,8 @@ class Command {
     }
 
     if (
-      (member?.presence && member.presence.status !== "offline") ||
+      (member?.presence &&
+        member.presence.status !== PresenceUpdateStatus.Offline) ||
       target === msg.author
     ) {
       interaction.status = "<:online:637544335037956096> В сети";
@@ -331,7 +333,7 @@ class Command {
       switch (react) {
         case "640449848050712587":
           interaction.currentCurseView =
-            interaction.currentCurseView + (1 % (user.curses?.length || 1));
+            (interaction.currentCurseView + 1) % (user.curses?.length || 1);
           await controller.message.msg(await createEmbedAtFirstPage());
           controller.reactions = ["640449832799961088"];
           break;
