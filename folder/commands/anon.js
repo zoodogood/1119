@@ -13,6 +13,7 @@ import {
   TimeAuditor,
   timestampToDate,
 } from "#lib/util.js";
+import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { getRandomNumberInRange } from "@zoodogood/utils/objectives";
 import {
   TextTableBuilder,
@@ -90,53 +91,80 @@ class Command {
   TIME_FOR_RESPONSE_ON_TASK = 600_000;
   EXPERIENCE_FOR_STICK = 0.3;
 
+  async onLoopFrame(context) {
+    const task = this.createTask(context);
+    const { interaction } = context;
+
+    context.timeAuditor.start();
+
+    await this.updateMessageInterface(context);
+    const answer = await interaction.channel.awaitMessage({
+      user: interaction.user,
+      time: this.TIME_FOR_RESPONSE_ON_TASK,
+    });
+
+    answer && (context.lastAnswer = answer);
+
+    context.auditor.push({
+      count: this.justCalculateStickCount(task, context),
+      task,
+      timeResult: context.timeAuditor.getDifference(),
+    });
+
+    if (!answer) {
+      return this.end(context);
+    }
+
+    const answerValue = this.parseUserInput(context);
+
+    task.userInput = answerValue;
+
+    if (this.checkUserInput(context, answerValue) === false) {
+      interaction.channel.msg({
+        reference: answer.id,
+        content: this.generateTextContentOnFail(context),
+      });
+
+      return this.end(context);
+    }
+
+    interaction.user.action(Actions.anonTaskResolve, { task, context });
+
+    setTimeout(() => answer.delete(), 9_000);
+    task.isResolved = true;
+    context.userScore += this.calculateScore(context);
+
+    this.increaseAverageSticksCount(context);
+  }
+
   async onChatInput(msg, interaction) {
     const context = this.getContext(interaction);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const task = this.setCurrentTask(context);
-
-      context.timeAuditor.start();
-
-      await this.updateMessageInterface(context);
-      const answer = await interaction.channel.awaitMessage({
-        user: interaction.user,
-        time: this.TIME_FOR_RESPONSE_ON_TASK,
-      });
-
-      answer && (context.lastAnswer = answer);
-
-      context.auditor.push({
-        count: this.justCalculateStickCount(task, context),
-        task,
-        timeResult: context.timeAuditor.getDifference(),
-      });
-
-      if (!answer) {
-        return this.end(context);
+      if (context.isEnd) {
+        return;
       }
-
-      const answerValue = this.parseUserInput(context);
-
-      task.userInput = answerValue;
-
-      if (this.checkUserInput(context, answerValue) === false) {
-        msg.msg({
-          reference: answer.id,
-          content: this.generateTextContentOnFail(context),
+      try {
+        await this.onLoopFrame(context);
+      } catch (error) {
+        const prompt = await interaction.channel.msg({
+          title: "Команда завершена некоректно, нажмите чтобы продолжить",
+          description: error.message,
+          components: justButtonComponents([{ label: "Продолжить" }]),
+        });
+        const needResume = await prompt.awaitMessageComponent({
+          time: 20_000,
+          filter: ({ user }) => interaction.user.id === user.id,
         });
 
+        prompt.delete();
+        if (needResume) {
+          continue;
+        }
+
         return this.end(context);
       }
-
-      interaction.user.action(Actions.anonTaskResolve, { task, context });
-
-      setTimeout(() => answer.delete(), 9_000);
-      task.isResolved = true;
-      context.userScore += this.calculateScore(context);
-
-      this.increaseAverageSticksCount(context);
     }
   }
 
@@ -408,7 +436,7 @@ class Command {
     });
   }
 
-  setCurrentTask(context) {
+  createTask(context) {
     const mode = this.generateRandomMode();
     const task = {
       isResolved: false,
