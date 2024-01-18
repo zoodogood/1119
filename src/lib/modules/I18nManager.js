@@ -10,7 +10,6 @@ class StorageUtils {
 class I18nManager {
   async load() {
     this.data = await StorageUtils.readLocales();
-    console.log(this.data);
   }
 
   f(...params) {
