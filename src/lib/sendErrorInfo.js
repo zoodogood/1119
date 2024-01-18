@@ -128,7 +128,6 @@ class UserInterfaceUtil {
       }
 
       const responseText = response.fields.getField(`${modalId}-content`).value;
-      console.log(responseText);
 
       const StatusEnum = {
         Dang: "dang",
@@ -137,6 +136,27 @@ class UserInterfaceUtil {
         Quie: "quie",
       };
 
+      const options = [
+        {
+          label: "Опасно",
+          value: StatusEnum.Dang,
+          description: "Имеет последствия",
+        },
+        {
+          label: "Необходимо",
+          value: StatusEnum.Urge,
+        },
+        {
+          label: "Мешает",
+          value: StatusEnum.Desi,
+          description: "Является преградой",
+        },
+        {
+          label: "Живёт себе спокойно",
+          value: StatusEnum.Quie,
+          description: "Эту ошибку можно обойти",
+        },
+      ];
       (async () => {
         const message = await response.msg({
           ephemeral: true,
@@ -147,27 +167,7 @@ class UserInterfaceUtil {
             {
               type: ComponentType.StringSelect,
               customId: `${modalId}-select`,
-              options: [
-                {
-                  label: "Опасно",
-                  value: StatusEnum.Dang,
-                  description: "Имеет последствия",
-                },
-                {
-                  label: "Необходимо",
-                  value: StatusEnum.Urge,
-                },
-                {
-                  label: "Мешает",
-                  value: StatusEnum.Desi,
-                  description: "Является преградой",
-                },
-                {
-                  label: "Живёт себе спокойно",
-                  value: StatusEnum.Quie,
-                  description: "Эту ошибку можно обойти",
-                },
-              ],
+              options,
             },
           ],
         });
@@ -192,7 +192,10 @@ class UserInterfaceUtil {
         });
 
         client.channels.cache.get(config.guild.logChannelId).msg({
-          title: `Дан комментарий ошибки с срочностью: ${selectionInteract.values[0]} и для \`\`\`${error.message}\`\`\``,
+          title: `Дан комментарий ошибки с срочностью ${
+            options.find(({ value }) => value === selectionInteract.values[0])
+              .label
+          }\n\`\`\`${error.message}\`\`\``,
           description: responseText,
           color: "#d8bb40",
           footer: { text: interaction.user.id },
