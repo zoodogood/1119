@@ -654,12 +654,14 @@ Discord.Guild.prototype.Audit = async function (
   find = false,
   { limit = 3, before = null, user = null, type = null },
 ) {
-  const audit = await this.fetchAuditLogs({ limit, before, user, type });
+  const audit = await this.fetchAuditLogs({ limit, before, user, type }).catch(
+    () => {},
+  );
 
-  const auditLog = find ? audit.entries.find(find) : audit.entries.first();
   if (!audit) {
     return null;
   }
+  const auditLog = find ? audit.entries.find(find) : audit.entries.first();
   return auditLog;
 };
 
