@@ -150,12 +150,26 @@ class Command {
     return context;
   }
 
+  parseNumericRaw(context) {
+    const { numericRaw, resource, interaction } = context;
+    let value = numericRaw;
+    if (numericRaw === "+") {
+      value = +interaction.userData[resource];
+    }
+    value = Math.floor(value);
+
+    if (isNaN(value)) {
+      value = 0;
+    }
+    return value;
+  }
+
   async onChatInput(msg, interaction) {
     const context = this.getContext(interaction);
     if (!context) {
       return;
     }
-    const { missiveRaw, itemNameRaw, numericRaw, memb } = context;
+    const { missiveRaw, itemNameRaw, memb } = context;
 
     if (memb.bot) {
       msg.msg({ title: "Вы не можете передать что-либо боту" });
@@ -172,13 +186,6 @@ class Command {
     });
     if (!heAccpet) return;
 
-    if (memb === interaction.user) {
-      msg.msg({
-        title: `${msg.author.username} попытался наколдовать немного ресурсов (${numeric} ❔) — безуспешно.`,
-      });
-      return;
-    }
-
     const resourcesMap = this.RESOURCES_MAP;
     let missive = missiveRaw;
     const item =
@@ -191,27 +198,23 @@ class Command {
         return resourcesMap[DEFAULT];
       })();
 
-    const resource = item.resource;
-
+    context.resource = item.resource;
+    context.numeric = this.parseNumericRaw(context);
     missive = missive.join(" ");
-
-    const numeric = (() => {
-      let value = numericRaw;
-      if (numericRaw === "+") {
-        value = +interaction.userData[resource];
-      }
-      value = Math.floor(value);
-
-      if (isNaN(value)) {
-        value = 0;
-      }
-      return value;
-    })();
+    const { resource, numeric } = context;
 
     if (numeric < 0) {
       msg.msg({
         title:
           "Введено отрицательное значение.\n<:grempen:753287402101014649> — Укушу.",
+      });
+      return;
+    }
+
+    if (memb === interaction.user) {
+      const title = `${msg.author.username} попытался наколдовать немного ресурсов (${numeric} ❔) — безуспешно.`;
+      interaction.channel.msg({
+        title,
       });
       return;
     }
