@@ -34,7 +34,7 @@ class Command {
 
   async onChatInput(msg, interaction) {
     const { bet } = this.parseParams(interaction) ?? {};
-    if (bet === null) {
+    if (!bet) {
       return;
     }
 
