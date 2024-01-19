@@ -33,7 +33,7 @@ class Command {
         msgs: `За сегодня: ${guild.data.day_msg}`,
         msgsAll: `Всего: ${guild.data.day_msg + guild.data.msg_total}`,
         around: `В среднем: ${Math.round(
-          (guild.data.day_msg + guild.data.msg_total) / guild.data.days,
+          (guild.data.day_msg + guild.data.msg_total) / (guild.data.days + 1),
         )}`,
         record: `Рекорд: ${Util.ending(
           guild.data.day_max,
