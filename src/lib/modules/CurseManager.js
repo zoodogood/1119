@@ -1381,6 +1381,7 @@ class CurseManager {
         },
         interactionIsShort: true,
         reward: 15,
+        filter: (user) => user.data.monster >= 3,
       },
 
       // {
