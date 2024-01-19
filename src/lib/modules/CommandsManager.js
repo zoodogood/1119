@@ -288,7 +288,6 @@ class CommandsManager {
 
   static async execute(command, interaction, { preventCooldown = false } = {}) {
     const context = this.getExecuteContext({
-      ...interaction,
       command,
       interaction,
       preventCooldown,
