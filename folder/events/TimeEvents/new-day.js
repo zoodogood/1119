@@ -134,14 +134,14 @@ class DailyEvents {
     const { guilds, bot } = DataManager.data;
     for (const guildData of guilds) {
       const total = Object.values(guildData.commandsUsed).reduce(
-        Util.factorySummarize,
+        Util.factorySummarize(),
         0,
       );
       guildData.commandsLaunched = total;
     }
 
     const total = Object.values(bot.commandsUsed).reduce(
-      Util.factorySummarize,
+      Util.factorySummarize(),
       0,
     );
     bot.commandsLaunched = total;
