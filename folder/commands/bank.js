@@ -444,6 +444,7 @@ class Command {
         data.professionManager.delete();
         break;
       default:
+        context.isEnd = true;
         return data.message.delete();
     }
   }
@@ -483,6 +484,9 @@ class Command {
       );
 
       await this.onReaction({ react, embed, message }, context);
+      if (context.isEnd) {
+        return;
+      }
 
       embed.description += `\n\nВ хранилище: ${Util.ending(
         guildData.coins,
