@@ -2,7 +2,10 @@ import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2, KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 } from "#constants/users/commands.js";
+import {
+  KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
+  KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
+} from "#constants/users/commands.js";
 
 class Command {
   bonusesBase = [

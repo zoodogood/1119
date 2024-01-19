@@ -75,8 +75,8 @@ class Command {
               speedGrowth > 100
                 ? { metric: "минуту", count: speedGrowth / 1440 }
                 : speedGrowth > 10
-                ? { metric: "час", count: speedGrowth / 24 }
-                : { metric: "день", count: speedGrowth };
+                  ? { metric: "час", count: speedGrowth / 24 }
+                  : { metric: "день", count: speedGrowth };
             const contents = {
               speed: `Клубники выростает ${count} в ${metric}`,
               ready: `Готово для сбора: ${Math.floor(guildData.berrys)}`,
@@ -130,8 +130,8 @@ class Command {
                 ? "Дерево восстанавливается"
                 : "Следите, чтобы дерево не засохло"
               : messagesNeed <= guildData.day_msg
-              ? "Дерево счастливо"
-              : "Дерево радуется";
+                ? "Дерево счастливо"
+                : "Дерево радуется";
 
             const value =
               messagesNeed <= guildData.day_msg

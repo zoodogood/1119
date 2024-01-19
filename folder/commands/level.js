@@ -124,8 +124,8 @@ class Command {
       ctx.measureText(displayName).actualBoundingBoxAscent +
       ctx.measureText(displayName).actualBoundingBoxDescent;
 
-    let expCanvas = canvasModule.createCanvas(670, 165);
-    let ctx2 = expCanvas.getContext("2d");
+    const expCanvas = canvasModule.createCanvas(670, 165);
+    const ctx2 = expCanvas.getContext("2d");
 
     ctx2.textBaseline = "middle";
     ctx2.fillStyle = "#b0b4b0";

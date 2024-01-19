@@ -110,7 +110,7 @@ class Command {
       footer: { iconURL: FOOTER_EMOJI, text: "Безудержный перчик™" },
     });
     addName(guildMembers.resolve(memb));
-    let ms = Util.random(30, 37) * 1000;
+    const ms = Util.random(30, 37) * 1000;
 
     chilli = {
       timestamp: Date.now() + ms,

@@ -1,122 +1,159 @@
-import * as Util from '#lib/util.js';
-import GuildVariablesManager from '#lib/modules/GuildVariablesManager.js';
-import { escapeMarkdown } from 'discord.js';
+import * as Util from "#lib/util.js";
+import GuildVariablesManager from "#lib/modules/GuildVariablesManager.js";
+import { escapeMarkdown } from "discord.js";
 
 class Command {
-
   static MAIN_COLOR = "#ffc135";
 
-  displayListOf({interaction, targetName, entries}){
+  displayListOf({ interaction, targetName, entries }) {
+    const listContent = entries.length
+      ? entries
+          .map(
+            ([name, value]) =>
+              `${name}・${
+                value.length > 20 ? `${value.slice(0, 15)}..` : value
+              }`,
+          )
+          .join("\n")
+      : "Здесь пусто";
 
-      const listContent = entries.length ?
-        entries.map(([name, value]) => `${ name }・${ value.length > 20 ? `${ value.slice(0, 15) }..` : value }`).join("\n") :
-        "Здесь пусто"
-
-      interaction.message.msg({
-        color: this.constructor.MAIN_COLOR,
-        description: `> Переменные ${ targetName }\n${ escapeMarkdown(listContent) }`,
-        footer: {text: `Создано (${ entries.length }/${ GuildVariablesManager.LIMIT })`}
-      });
-      return;
+    interaction.message.msg({
+      color: this.constructor.MAIN_COLOR,
+      description: `> Переменные ${targetName}\n${escapeMarkdown(listContent)}`,
+      footer: {
+        text: `Создано (${entries.length}/${GuildVariablesManager.LIMIT})`,
+      },
+    });
+    return;
   }
 
-  displayGetValue({interaction, targetName, name, value}){
+  displayGetValue({ interaction, targetName, name, value }) {
     interaction.message.msg({
       title: "Значение переменной",
-      description: `Переменная ${ targetName }, \`${ name }\` сейчас установлена в значении ${ value ?? "void (не существует)" }.\n🙊`,
-      color: this.constructor.MAIN_COLOR
+      description: `Переменная ${targetName}, \`${name}\` сейчас установлена в значении ${
+        value ?? "void (не существует)"
+      }.\n🙊`,
+      color: this.constructor.MAIN_COLOR,
     });
   }
 
-  displaySetValue({interaction, targetName, name, value}){
+  displaySetValue({ interaction, targetName, name, value }) {
     interaction.message.msg({
       title: "Значение переменной изменено",
-      description: `Переменная ${ targetName }, \`${ name }\` успешно уставновлена в значение ${ value }.\n🐵`,
-      color: this.constructor.MAIN_COLOR
+      description: `Переменная ${targetName}, \`${name}\` успешно уставновлена в значение ${value}.\n🐵`,
+      color: this.constructor.MAIN_COLOR,
     });
   }
 
-  parseParams(params){
+  parseParams(params) {
     params = params.split(" ");
     const targetId = params.at(0).match(/\d{17,19}/);
-    if (targetId){
+    if (targetId) {
       params.splice(0, 1);
     }
 
     const name = params.splice(0, 1).at(0);
     const value = params.join(" ");
-    return {targetId, name, value};
+    return { targetId, name, value };
   }
 
-  takeNameFor(targetId, interaction){
-    return targetId === interaction.guild.id ? "Сервера" : `Пользователя <@${ targetId }>`;
+  takeNameFor(targetId, interaction) {
+    return targetId === interaction.guild.id
+      ? "Сервера"
+      : `Пользователя <@${targetId}>`;
   }
 
-	async onChatInput(msg, interaction){
+  async onChatInput(msg, interaction) {
     const manager = new GuildVariablesManager(msg.guild.data);
     const isAdmin = !interaction.member?.wastedPermissions(32)[0];
 
-    if (interaction.params){
+    if (interaction.params) {
       const params = this.parseParams(interaction.params);
-
-      
 
       const targetId = params.targetId ?? interaction.guild.id;
       const targetName = this.takeNameFor(targetId, interaction);
 
-      if (!params.name && !params.value){
+      if (!params.name && !params.value) {
         const entries = manager.interface.entriesOf(targetId);
-        this.displayListOf({interaction, targetName, entries});
+        this.displayListOf({ interaction, targetName, entries });
         return;
       }
 
-      if (!valueParameter){
+      if (!valueParameter) {
         const value = manager.interface.get(targetId, params.name);
-        this.displayGetValue({interaction, targetName, name: params.name, value});
+        this.displayGetValue({
+          interaction,
+          targetName,
+          name: params.name,
+          value,
+        });
         return;
       }
 
-      if (params.name && params.value){
-        
+      if (params.name && params.value) {
+        const needIncrease =
+          params.value.startsWith("+") || params.value.startsWith("-");
 
-        const needIncrease = params.value.startsWith("+") || params.value.startsWith("-");
-        
-        const method = needIncrease ?
-          manager.interface.increase : manager.interface.set;
+        const method = needIncrease
+          ? manager.interface.increase
+          : manager.interface.set;
 
-        const value = method.apply(manager.interface, [targetId, params.name, params.value]);
-        this.displaySetValue({interaction, targetName, name: params.name, value});
+        const value = method.apply(manager.interface, [
+          targetId,
+          params.name,
+          params.value,
+        ]);
+        this.displaySetValue({
+          interaction,
+          targetName,
+          name: params.name,
+          value,
+        });
         return;
       }
     }
 
-    
-   
-    return this.createController({interaction, manager});
+    return this.createController({ interaction, manager });
   }
 
-  async createController({interaction, manager}){
+  async createController({ interaction, manager }) {
     const isAdmin = !interaction.member?.wastedPermissions(32)[0];
 
     const data = manager.data;
 
-    const count = Object.values(data).reduce((acc, target) => acc + Object.keys(target).length, 0);
+    const count = Object.values(data).reduce(
+      (acc, target) => acc + Object.keys(target).length,
+      0,
+    );
     const countOfYou = manager.interface.entriesOf(interaction.user.id).length;
     const embed = {
       title: "Окно управления переменными сервера",
-      description: `Количество переменных сервера: ${ count }${ countOfYou ? `\nУ вас свойств: ${ countOfYou }` : ""}\n\n${ this.constructor.actionsList.map(({emoji, description}) => `${ emoji } ${ description }`).join("\n") }`,
+      description: `Количество переменных сервера: ${count}${
+        countOfYou ? `\nУ вас свойств: ${countOfYou}` : ""
+      }\n\n${this.constructor.actionsList
+        .map(({ emoji, description }) => `${emoji} ${description}`)
+        .join("\n")}`,
       color: this.constructor.MAIN_COLOR,
-      reactions: this.constructor.actionsList.filter(action => !action.checkPermission || isAdmin === true).map(({emoji}) => emoji)
+      reactions: this.constructor.actionsList
+        .filter((action) => !action.checkPermission || isAdmin === true)
+        .map(({ emoji }) => emoji),
     };
     interaction.controllerMessage = await interaction.channel.msg(embed);
     const filter = (reaction, user) => user === interaction.user && reaction.me;
-    const collector = interaction.controllerMessage.createReactionCollector({filter, time: 100_000});
+    const collector = interaction.controllerMessage.createReactionCollector({
+      filter,
+      time: 100_000,
+    });
     collector.on("collect", (reaction) => {
-      const action = this.constructor.actionsList.find(action => action.emoji === reaction.emoji.name);
+      const action = this.constructor.actionsList.find(
+        (action) => action.emoji === reaction.emoji.name,
+      );
       action.callback.call(this, interaction, manager);
     });
 
-    collector.on("end", () => interaction.controllerMessage.reactions.removeAll());
+    collector.on("end", () =>
+      interaction.controllerMessage.reactions.removeAll(),
+    );
   }
 
   static actionsList = [
@@ -125,17 +162,19 @@ class Command {
       emoji: "🐵",
       description: "Установить новую переменную.",
       checkPermission: true,
-      callback: async function(interaction, manager){
+      callback: async function (interaction, manager) {
         const channel = interaction.channel;
         const questionMessage = await channel.msg({
           title: "Для установки...",
-          description: `Упомяните пользователя, укажите имя переменной и её значение в указанном порядке. Пропустите первый аргумент, чтобы установить переменную глобально. Её имя должно состоять из одного слова.`
+          description: `Упомяните пользователя, укажите имя переменной и её значение в указанном порядке. Пропустите первый аргумент, чтобы установить переменную глобально. Её имя должно состоять из одного слова.`,
         });
-        
-        const answer = (await channel.awaitMessage({user: interaction.user, remove: true}))?.content;
-        
+
+        const answer = (
+          await channel.awaitMessage({ user: interaction.user, remove: true })
+        )?.content;
+
         questionMessage.delete();
-        if (!answer){
+        if (!answer) {
           return;
         }
 
@@ -143,88 +182,119 @@ class Command {
         const targetId = params.targetId ?? interaction.guild.id;
         const targetName = this.takeNameFor(targetId, interaction);
 
-        const needIncrease = params.value.startsWith("+") || params.value.startsWith("-");
-        
-        const method = needIncrease ?
-          manager.interface.increase : manager.interface.set;
+        const needIncrease =
+          params.value.startsWith("+") || params.value.startsWith("-");
 
-        const value = method.apply(manager.interface, [targetId, params.name, params.value]);
-        this.displaySetValue({interaction, targetName, name: params.name, value});
+        const method = needIncrease
+          ? manager.interface.increase
+          : manager.interface.set;
+
+        const value = method.apply(manager.interface, [
+          targetId,
+          params.name,
+          params.value,
+        ]);
+        this.displaySetValue({
+          interaction,
+          targetName,
+          name: params.name,
+          value,
+        });
         return;
-      }
+      },
     },
     {
       id: "get",
       emoji: "🙊",
       description: "Получить значение.\n",
       checkPermission: false,
-      callback: async function(interaction, manager){
+      callback: async function (interaction, manager) {
         const channel = interaction.channel;
         const questionMessage = await channel.msg({
           title: "Для получения...",
-          description: `Упомяните пользователя и укажите имя переменной в указанном порядке. Пропустите первый аргумент, чтобы получить переменную установленную глобально. Её имя должно состоять из одного слова.`
+          description: `Упомяните пользователя и укажите имя переменной в указанном порядке. Пропустите первый аргумент, чтобы получить переменную установленную глобально. Её имя должно состоять из одного слова.`,
         });
-        
-        const answer = (await channel.awaitMessage({user: interaction.user, remove: true}))?.content;
-        
+
+        const answer = (
+          await channel.awaitMessage({ user: interaction.user, remove: true })
+        )?.content;
+
         questionMessage.delete();
-        if (!answer){
+        if (!answer) {
           return;
         }
 
         const params = this.parseParams(answer);
         const targetId = params.targetId ?? interaction.guild.id;
         const targetName = this.takeNameFor(targetId, interaction);
-        
+
         const value = manager.interface.get(targetId, params.name);
-        this.displayGetValue({interaction, targetName, name: params.name, value});
+        this.displayGetValue({
+          interaction,
+          targetName,
+          name: params.name,
+          value,
+        });
         return;
-      }
+      },
     },
     {
       id: "list",
       emoji: "🐭",
       description: "Открыть Список.",
       checkPermission: false,
-      callback: async function(interaction, manager){
+      callback: async function (interaction, manager) {
         const list = {};
         const increase = (key) => (list[key] ||= 0) & list[key]++;
 
         for (const target of Object.values(manager.data))
-        for (const key in target)
-        increase(key);
+          for (const key in target) increase(key);
 
         const description = Object.entries(list)
-          .map(([key, count]) => `${ escapeMarkdown(key) }・${ Util.ending(count, "раз", "", "", "а") }`)
+          .map(
+            ([key, count]) =>
+              `${escapeMarkdown(key)}・${Util.ending(
+                count,
+                "раз",
+                "",
+                "",
+                "а",
+              )}`,
+          )
           .join("\n");
 
         await interaction.controllerMessage.msg({
           title: "🐭 Окно управления переменными сервера",
-          description: `Каждая переменная встречается..\n${ description || "Ой, а здесь тоже пусто" }`,
+          description: `Каждая переменная встречается..\n${
+            description || "Ой, а здесь тоже пусто"
+          }`,
           edit: true,
-          color: this.constructor.MAIN_COLOR
+          color: this.constructor.MAIN_COLOR,
         });
-      }
+      },
     },
     {
       id: "find",
       emoji: "🦞",
       description: "Провести поиск по имени и отсортировать.",
       checkPermission: false,
-      callback: async function(interaction, manager){
+      callback: async function (interaction, manager) {
         const channel = interaction.channel;
         const questionMessage = await channel.msg({
-          title: "Введите имя переменной, для её поиска среди пользователей"
+          title: "Введите имя переменной, для её поиска среди пользователей",
         });
-        
-        const answer = (await channel.awaitMessage({user: interaction.user, remove: true}))?.content;
-        
-        questionMessage.delete();
-        if (!answer){
-          return;
-        };
 
-        const toString = ([id, value]) => `${ id === interaction.guild.id ? "Сервер" : `<@${ id }>` }・${ value }`
+        const answer = (
+          await channel.awaitMessage({ user: interaction.user, remove: true })
+        )?.content;
+
+        questionMessage.delete();
+        if (!answer) {
+          return;
+        }
+
+        const toString = ([id, value]) =>
+          `${id === interaction.guild.id ? "Сервер" : `<@${id}>`}・${value}`;
 
         const param = answer.split(" ").at(0);
         const description = Object.entries(manager.data)
@@ -238,45 +308,50 @@ class Command {
           title: "🦞 Окно управления переменными сервера",
           description,
           edit: true,
-          color: this.constructor.MAIN_COLOR
+          color: this.constructor.MAIN_COLOR,
         });
-      }
+      },
     },
     {
       id: "random",
       emoji: "🐣",
       description: "Просто дайте мне случайную переменную.",
       checkPermission: false,
-      callback: async function(interaction, manager){
+      callback: async function (interaction, manager) {
         const targetId = manager.interface.keys().random();
         const entries = manager.interface.entriesOf(targetId);
 
         const [name, value] = entries.random();
-        const description = `Переменная ${ this.takeNameFor(targetId, interaction) } — \`${ escapeMarkdown(name) }\`・${ escapeMarkdown(value) }` 
+        const description = `Переменная ${this.takeNameFor(
+          targetId,
+          interaction,
+        )} — \`${escapeMarkdown(name)}\`・${escapeMarkdown(value)}`;
 
         await interaction.controllerMessage.msg({
           title: "🐣 Ваша случайная переменная",
           description,
-          color: this.constructor.MAIN_COLOR
+          color: this.constructor.MAIN_COLOR,
         });
-      }
+      },
     },
     {
       id: "remove",
       emoji: "🐲",
       description: "Убрать.",
       checkPermission: true,
-      callback: async function(interaction, manager){
+      callback: async function (interaction, manager) {
         const channel = interaction.channel;
         const questionMessage = await channel.msg({
           title: "Для очистки...",
-          description: `Упомяните пользователя и укажите имя переменной. Пропустите первый аргумент, удалить переменную у всех пользователей*!. Укажите айди гильдии вместо упоминания, чтобы очистить только глобально установленную.`
+          description: `Упомяните пользователя и укажите имя переменной. Пропустите первый аргумент, удалить переменную у всех пользователей*!. Укажите айди гильдии вместо упоминания, чтобы очистить только глобально установленную.`,
         });
-        
-        const answer = (await channel.awaitMessage({user: interaction.user, remove: true}))?.content;
-        
+
+        const answer = (
+          await channel.awaitMessage({ user: interaction.user, remove: true })
+        )?.content;
+
         questionMessage.delete();
-        if (!answer){
+        if (!answer) {
           return;
         }
 
@@ -284,47 +359,48 @@ class Command {
         const targetId = params.targetId ?? null;
 
         const willRemoved = [targetId].filter(Boolean);
-        if (targetId === null){
+        if (targetId === null) {
           const list = Object.entries(manager.data)
             .filter(([_id, targetData]) => params.name in targetData)
             .map(([id]) => id);
 
           willRemoved.push(...list);
-        };
+        }
 
-        willRemoved
-          .forEach(id => manager.interface.remove(id, params.name));
+        willRemoved.forEach((id) => manager.interface.remove(id, params.name));
 
-        const description = `Была произведена очистка ${ Util.ending(willRemoved.length, "элемент", "ов", "а", "ов") }`;
+        const description = `Была произведена очистка ${Util.ending(
+          willRemoved.length,
+          "элемент",
+          "ов",
+          "а",
+          "ов",
+        )}`;
 
         await interaction.controllerMessage.msg({
           title: "🐲 Результат очистки",
           description,
-          color: this.constructor.MAIN_COLOR
+          color: this.constructor.MAIN_COLOR,
         });
-      }
-    }
-  ]
+      },
+    },
+  ];
 
-	options = {
-	  "name": "variables",
-	  "id": 35,
-	  "media": {
-	    "description": "\n\nВы можете присваивать пользователям информацию, удобно изменять её и просматривать.\nЭто полезная и универсальная функция для РП серверов, хотя для большенства она может оказаться бесполезной.\n\n✏️\n```python\n!variables <memb | \"сервер\"> <propertyName> <properyValue> # propery переводится как: \"свойство\"\n```\n\n"
-	  },
-	  "alias": "variable вар var переменная переменные змінні",
-		"allowDM": true,
-		"type": "guild",
-		"Permissions": 256
-	};
-};
+  options = {
+    name: "variables",
+    id: 35,
+    media: {
+      description:
+        '\n\nВы можете присваивать пользователям информацию, удобно изменять её и просматривать.\nЭто полезная и универсальная функция для РП серверов, хотя для большенства она может оказаться бесполезной.\n\n✏️\n```python\n!variables <memb | "сервер"> <propertyName> <properyValue> # propery переводится как: "свойство"\n```\n\n',
+    },
+    alias: "variable вар var переменная переменные змінні",
+    allowDM: true,
+    type: "guild",
+    Permissions: 256,
+  };
+}
 
 export default Command;
-
-
-
-
-
 
 // let youre = manager.variables[msg.author.id] ? Object.keys(manager.variables[msg.author.id]) : [];
 //     manager.embed = {
@@ -449,7 +525,6 @@ export default Command;
 //           output = manager.remove(answer.content, target);
 //           fields = [{name: "Удалено", value: `Удалено ${ Util.ending(+output, "свойств", "", "о", "а")} с названием ${answer.content}`}];
 //           break;
-
 
 //         default: return;
 //       }

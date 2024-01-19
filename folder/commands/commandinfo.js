@@ -56,9 +56,7 @@ class Command {
       description:
         guide.trim() +
         (__inServer
-          ? `\nДругие названия:\n${aliases
-              .map((name) => `!${name}`)
-              .join(" ")}`
+          ? `\nДругие названия:\n${aliases.map((name) => `!${name}`).join(" ")}`
           : ""),
       color: __inServer ? null : "#1f2022",
       image:

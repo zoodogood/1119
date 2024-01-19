@@ -8,8 +8,6 @@ class Command {
     const guild = interaction.guild;
     const guildMember = guild.members.resolve(interaction.mention);
     let role;
-    
-    
 
     if (interaction.mention === msg.author)
       return msg.msg({
@@ -57,9 +55,9 @@ class Command {
     let timeToEnd = 0;
 
     while (true) {
-      let regBase = "(\\d+?)\\s*(d|д|h|ч|m|м|s|с)[a-zA-Zа-яА-Я]*";
+      const regBase = "(\\d+?)\\s*(d|д|h|ч|m|м|s|с)[a-zA-Zа-яА-Я]*";
       const reg = RegExp(`^${regBase}|${regBase}$`);
-      let matched = interaction.params.match(reg);
+      const matched = interaction.params.match(reg);
 
       if (!matched) {
         break;
@@ -70,7 +68,7 @@ class Command {
         matched[2] = matched[4];
       }
 
-      let [value, timeType] = [matched[1], matched[2]];
+      const [value, timeType] = [matched[1], matched[2]];
 
       interaction.params = interaction.params.replace(matched[0], "").trim();
       timeToEnd +=
@@ -87,7 +85,7 @@ class Command {
         }[timeType];
     }
 
-    let cause = interaction.params;
+    const cause = interaction.params;
 
     // find muted role
     if (guild.data.mute_role)
@@ -96,7 +94,7 @@ class Command {
     if (!role) {
       role =
         guild.roles.cache.find((e) =>
-          "mute muted замучен мьют мут замьючен".includes(e.name.toLowerCase())
+          "mute muted замучен мьют мут замьючен".includes(e.name.toLowerCase()),
         ) ||
         (await guild.roles.create({
           name: "MUTED",
@@ -129,7 +127,7 @@ class Command {
 
     await Util.sleep(700);
 
-    let embed = {
+    const embed = {
       description: `Пользователь ${guildMember} был замучен.${
         cause ? `\nПричина: ${cause}` : ""
       }${
