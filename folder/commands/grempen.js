@@ -741,6 +741,7 @@ class Command {
     allowDM: true,
     cooldown: 10_000,
     type: "other",
+    myChannelPermissions: 8256n,
   };
 }
 
