@@ -171,7 +171,7 @@ class Command {
         react,
         "<a:yes:763371572073201714>",
       );
-      if (description != message.embeds[0].description)
+      if (description !== message.embeds[0].description)
         message.msg({
           title: "🌲 Создание раздачи",
           edit: true,
