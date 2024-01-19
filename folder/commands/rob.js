@@ -512,7 +512,9 @@ class Command {
   displayCurrentCombo(context) {
     const { user, userData } = context;
     user.msg({
-      title: `Всё прошло успешно — вы скрылись и вас не узнали!\nТекущее комбо: ${userData.thiefCombo}`,
+      title: `Всё прошло успешно — вы скрылись и вас не узнали!\nТекущее комбо: ${
+        userData.thiefCombo || 0
+      }`,
     });
   }
 
