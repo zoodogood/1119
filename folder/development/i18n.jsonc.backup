@@ -22,7 +22,7 @@
     "PermissionFlagsBits.ManageWebhooks": "Управлять вебхуками",
     "PermissionFlagsBits.ChangeNickname": "Изменять свой никнейм",
     "PermissionFlagsBits.ManageNicknames": "Управлять никнеймами",
-    "PermissionFlagsBits.ManageMessages": "Управлять сообщениями",
+    "PermissionFlagsBits.ManageMessages": "Управлять сообщениями и реакциями",
     "PermissionFlagsBits.Administrator": "Администратор",
     "PermissionFlagsBits.SendTTSMessages": "Отправлять TTS сообщения",
     "PermissionFlagsBits.ViewAuditLog": "Просматривать журнал аудита",
