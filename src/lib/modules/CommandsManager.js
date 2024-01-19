@@ -246,7 +246,7 @@ class CommandsManager {
           ...interaction,
           params: options.name,
         });
-      await Util.sleep(20000);
+      await Util.sleep(30_000);
       helper.delete();
     };
     helpMessage();
