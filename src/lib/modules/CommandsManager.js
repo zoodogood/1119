@@ -288,6 +288,7 @@ class CommandsManager {
 
   static async execute(command, interaction, { preventCooldown = false } = {}) {
     const context = this.getExecuteContext({
+      ...interaction,
       command,
       interaction,
       preventCooldown,
@@ -325,7 +326,7 @@ class CommandsManager {
   }
 
   static statistics = {
-    increase: ({ guild, command }) => {
+    increase: ({ interaction: { guild }, command }) => {
       const commandOptions = command.options;
 
       const botData = DataManager.data.bot;
