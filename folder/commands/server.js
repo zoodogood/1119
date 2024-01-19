@@ -4,8 +4,29 @@ import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ChannelType, PresenceUpdateStatus } from "discord.js";
 
 class Command {
+  getUsedCommandsCountOfGuild(guild) {
+    return Object.values(guild.data.commandsUsed).reduce(
+      (acc, count) => acc + count,
+      0,
+    );
+  }
+
+  getCommandsLaunchedOfPreviousDaysInGuild(guild) {
+    return guild.data.commandsLaunched || 0;
+  }
+
+  getContext(interaction) {
+    const { guild } = interaction;
+    return {
+      guild,
+      commandsUsed: this.getUsedCommandsCountOfGuild(guild),
+      commandsUsedOfPreviousDays:
+        this.getCommandsLaunchedOfPreviousDaysInGuild(guild),
+    };
+  }
   async onChatInput(msg, interaction) {
-    const guild = interaction.guild;
+    const context = this.getContext(interaction);
+    const { guild } = context;
 
     const values = {
       stats: {
@@ -21,14 +42,9 @@ class Command {
           "е",
           "я",
         )}\n`,
-        commands: `Использовано команд: ${Object.values(
-          guild.data.commandsUsed,
-        ).reduce((acc, count) => acc + count, 0)}`,
+        commands: `Использовано команд: ${context.commandsUsed}`,
         todayCommands: `Сегодня: ${
-          Object.values(guild.data.commandsUsed || {}).reduce(
-            (acc, count) => acc + count,
-            0,
-          ) - (guild.data.commandsLaunched || 0)
+          context.commandsUsed - context.commandsUsedOfPreviousDays
         }`,
       },
       members: {
@@ -141,7 +157,7 @@ class Command {
   }
 
   options = {
-    name: "server",
+    name: "server guild гильдия",
     id: 28,
     media: {
       description:
