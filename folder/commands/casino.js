@@ -1,4 +1,5 @@
 import { Actions } from "#lib/modules/ActionManager.js";
+import CooldownManager from "#lib/modules/CooldownManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
@@ -24,6 +25,13 @@ class Command {
 
     return { bet };
   }
+  setCooldown(user) {
+    const COOLDOWN = 300_000;
+    const { id } = this.options;
+    const key = `CD_${id}`;
+    CooldownManager.api(user.data, key, { perCall: COOLDOWN }).call();
+  }
+
   async onChatInput(msg, interaction) {
     const { bet } = this.parseParams(interaction) ?? {};
     if (bet === null) {
@@ -75,6 +83,7 @@ ${
       resource: PropertiesEnum.coins,
       context: { interaction, isWon },
     });
+    this.setCooldown(user);
     msg.msg(embed);
   }
 
@@ -86,9 +95,9 @@ ${
         '\n\nМеня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки\n\n✏️\n```python\n!casino {coinsBet | "+"}\n```\n\n',
     },
     alias: "казино bet ставка",
-    cooldown: 300_000,
     expectParams: true,
     allowDM: true,
+    cooldown: true,
     type: "other",
   };
 }
