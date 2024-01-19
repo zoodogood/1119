@@ -135,7 +135,7 @@ class Command {
     alias: "счётчик счетчик count рахівник",
     allowDM: true,
     type: "guild",
-    Permissions: 16,
+    Permissions: 16n,
   };
 }
 

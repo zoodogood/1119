@@ -61,7 +61,7 @@ class Command {
     allowDM: true,
     cooldown: 36_00_000,
     type: "delete",
-    Permissions: 16,
+    Permissions: 16n,
   };
 }
 

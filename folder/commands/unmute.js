@@ -87,8 +87,8 @@ class Command {
     expectMention: true,
     allowDM: true,
     type: "guild",
-    myPermissions: 268435456,
-    Permissions: 4194304,
+    myPermissions: 268435456n,
+    Permissions: 4194304n,
   };
 }
 

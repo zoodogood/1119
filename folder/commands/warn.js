@@ -58,7 +58,7 @@ class Command {
     allowDM: true,
     cooldown: 120_000,
     type: "guild",
-    Permissions: 4194304,
+    Permissions: 4194304n,
   };
 }
 

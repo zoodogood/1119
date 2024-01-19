@@ -415,7 +415,7 @@ class Command {
     allowDM: true,
     cooldown: 3_00_00,
     type: "guild",
-    ChannelPermissions: 16384,
+    ChannelPermissions: 16384n,
   };
 }
 

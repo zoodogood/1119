@@ -396,7 +396,7 @@ class Command {
     alias: "variable вар var переменная переменные змінні",
     allowDM: true,
     type: "guild",
-    Permissions: 256,
+    Permissions: 256n,
   };
 }
 

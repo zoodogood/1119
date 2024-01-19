@@ -189,7 +189,7 @@ class Command {
       "guildcommands createcommand командасерверу командасервера customcommand",
     allowDM: true,
     type: "guild",
-    Permissions: 8,
+    Permissions: 8n,
   };
 }
 

@@ -62,7 +62,7 @@ class Command {
     expectParams: true,
     cooldown: 18_00_000,
     type: "delete",
-    myChannelPermissions: 536870912,
+    myChannelPermissions: 536870912n,
   };
 }
 

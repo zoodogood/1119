@@ -31,7 +31,7 @@ class Command {
     allowDM: true,
     expectParams: true,
     type: "other",
-    myChannelPermissions: 8192,
+    myChannelPermissions: 8192n,
   };
 }
 
