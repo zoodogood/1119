@@ -58,7 +58,7 @@ class Command {
     alias: "ютуб ютубвместе youtubetogether ютьюб",
     allowDM: true,
     type: "other",
-    myPermissions: 1,
+    myPermissions: 1n,
   };
 }
 
