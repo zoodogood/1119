@@ -28,7 +28,7 @@ class Command {
       } ${iq} ${commandName.toUpperCase()}`;
     } else {
       iq = ++memb.data.iq;
-      description = `Удивительно у ${name} айкью вырос на одну единицу! Сейчас ${commandName.toUpperCase()} === ${iq}`;
+      description = `Удивительно, у ${name} айкью вырос на одну единицу! Сейчас ${commandName.toUpperCase()} === ${iq}`;
     }
     msg.msg({
       title: "<a:iq:768047041053196319> + <a:iq:768047041053196319> = ICQ²",
