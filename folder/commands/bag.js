@@ -342,6 +342,7 @@ class Command extends BaseCommand {
   static CommandUtil = CommandUtil;
 
   constructor() {
+    super();
     this.items = ITEMS.map((itemData) => Item.from(itemData));
   }
 

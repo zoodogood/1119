@@ -5,6 +5,7 @@ import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 
 class Command extends BaseCommand {
   constructor() {
+    super();
     this.#init();
   }
   #FONT_FAMILY = "VAG World";
