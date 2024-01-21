@@ -1,4 +1,5 @@
-import { Collection, CommandInteraction, User } from "discord.js";
+// @ts-check
+import { Collection, CommandInteraction } from "discord.js";
 import config from "#config";
 
 import * as Util from "#lib/util.js";
@@ -17,6 +18,21 @@ import { permissionRawToI18n } from "#lib/permissions.js";
 
 const COMMANDS_PATH = "./folder/commands";
 
+/**
+ * @returns {{
+ *  commandBase: typeof import("#lib/BaseCommand.js").BaseCommand,
+ *  command: import("#lib/BaseCommand.js").BaseCommand,
+ *  client: import("discord.js").Client,
+ *  params: string,
+ *  message: import("discord.js").Message,
+ *  userData: import("#constants/Schema.js").users,
+ *  user: import("discord.js").User,
+ *  channel: import("discord.js").Channel
+ *  guild: import("discord.js").Guild,
+ *  member: import("discord.js").GuildMember,
+ *  mention: import("discord.js").User
+ * }}
+ */
 function parseInputCommandFromMessage(message) {
   const content = message.content.trim();
   const PREFIX = "!";
@@ -38,24 +54,23 @@ function parseInputCommandFromMessage(message) {
   const commandBase = spliceCommandBase(words);
   const params = words.join(" ");
 
+  const command = CommandsManager.callMap.get(commandBase);
+  const { client, author: user, channel, guild } = message;
+  const userData = user.data;
+
   const commandContext = {
     commandBase,
-    command: CommandsManager.callMap.get(commandBase),
-    client: message.client,
+    command,
+    client,
     params,
     message,
-  };
-
-  Object.assign(commandContext, {
-    user: message.author,
-    userData: message.author.data,
-    channel: message.channel,
-    guild: message.guild,
-    member: message.guild
-      ? message.guild.members.resolve(message.author)
-      : null,
+    userData,
+    user,
+    channel,
+    guild,
+    member: guild ? guild.members.resolve(user) : null,
     mention: message.mentions.users.first() ?? null,
-  });
+  };
 
   commandContext.user.action(Actions.inputCommandParsed, commandContext);
 
@@ -379,4 +394,5 @@ Executor.bind("command", (target, params) =>
   CommandsManager.callMap.get(target).onComponent(params),
 );
 
+export { parseInputCommandFromMessage };
 export default CommandsManager;
