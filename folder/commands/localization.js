@@ -1,7 +1,8 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { MongoDBDriver } from "#lib/MongoDBDriver.js";
 import { MessagePayload } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     Promise.reject(new Error("Resource not yet loaded!"));
     throw new Error("i18n is not defined");

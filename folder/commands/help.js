@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 
@@ -14,7 +15,7 @@ class Guidances {
   ];
 }
 
-class Command {
+class Command extends BaseCommand {
   run(interaction) {
     const guildCommands = [];
     const commands = CommandsManager.collection;

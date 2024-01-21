@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import GuildVariablesManager from "#lib/modules/GuildVariablesManager.js";
 import { escapeMarkdown } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   static MAIN_COLOR = "#ffc135";
 
   displayListOf({ interaction, targetName, entries }) {

@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const userData = interaction.userData,
       args = interaction.params.split(" "),

@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
 import CounterManager from "#lib/modules/CounterManager.js";
 
-class Command {
+class Command extends BaseCommand {
   fetchCountersInGuild(guild) {
     return CounterManager.data.filter(
       (counter) => counter.guildId === guild.id,

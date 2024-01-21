@@ -1,10 +1,11 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import { BossManager, BossEffects } from "#lib/modules/BossManager.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 
-class Command {
+class Command extends BaseCommand {
   createEmbed({ userEffects, userStats, member, boss }) {
     const currentHealthPointPercent =
       1 - boss.damageTaken / boss.healthThresholder;

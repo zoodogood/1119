@@ -1,7 +1,8 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const memb = interaction.mention,
       userData = interaction.userData,

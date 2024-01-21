@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 //@ts-check
 
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 
-class Command {
+class Command extends BaseCommand {
   async askChannel(interaction) {
     let answer = await Util.awaitUserAccept({
       name: "reactor",

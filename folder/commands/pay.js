@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { PropertiesList, PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   RESOURCES_MAP = [
     {
       resource: "coins",

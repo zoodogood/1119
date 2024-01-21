@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { ExpressionParser, TokenTypeEnum } from "#lib/ExpressionParser.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
@@ -87,7 +88,7 @@ const ModesData = {
   },
 };
 
-class Command {
+class Command extends BaseCommand {
   TIME_FOR_RESPONSE_ON_TASK = 600_000;
   EXPERIENCE_FOR_STICK = 0.3;
 

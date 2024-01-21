@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
-class Command {
+class Command extends BaseCommand {
   parseParams(interaction) {
     let bet = interaction.params.match(/\d+|\+/);
 

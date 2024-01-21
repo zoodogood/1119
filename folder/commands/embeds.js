@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import Discord from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     let answer = await Util.awaitUserAccept({
       name: "embeds",

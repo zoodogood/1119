@@ -1,6 +1,7 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     if (interaction.mention) {
       const member = msg.guild.members.resolve(interaction.mention);

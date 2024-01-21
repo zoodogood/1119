@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import Discord from "discord.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const heAccpet = await Util.awaitUserAccept({
       name: "charity",

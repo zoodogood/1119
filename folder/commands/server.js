@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ChannelType, PresenceUpdateStatus } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   getUsedCommandsCountOfGuild(guild) {
     return Object.values(guild.data.commandsUsed).reduce(
       (acc, count) => acc + count,

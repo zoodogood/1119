@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import { AttachmentBuilder } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const { default: canvas } = await import("canvas");
 

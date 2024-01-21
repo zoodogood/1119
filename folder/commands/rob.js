@@ -1,10 +1,11 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { PresenceUpdateStatus } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   transferCoins(target, source, value, context) {
     Util.addResource({
       user: source,

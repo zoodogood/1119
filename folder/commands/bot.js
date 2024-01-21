@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { getAddress, timestampToDate, ending, dayjs } from "#lib/util.js";
 import { client } from "#bot/client.js";
 import config from "#config";
@@ -10,7 +11,7 @@ import { CreateModal } from "@zoodogood/utils/discordjs";
 import { ButtonStyle, ComponentType, TextInputStyle } from "discord.js";
 import { generateInviteFor } from "#lib/util.js";
 
-class Command {
+class Command extends BaseCommand {
   onComponent({ params: rawParams, interaction }) {
     const [target, ...params] = rawParams.split(":");
     this.componentsCallbacks[target].call(this, interaction, ...params);

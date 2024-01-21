@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 //@ts-check
 import * as Util from "#lib/util.js";
 import { MessageMentions } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   getTieRoles(guild) {
     return (guild.data.tieRoles ||= {});
   }

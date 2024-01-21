@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import config from "#config";
 import get from "#lib/child-process-utils.js";
 import { ending } from "@zoodogood/utils/primitives";
@@ -5,7 +6,7 @@ const { run } = get({ root: process.cwd() });
 
 const toANSIBlock = (content) => `\`\`\`ansi\n${content}\`\`\``;
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(_msg, interaction) {
     const COMMANDS = [
       "git pull",

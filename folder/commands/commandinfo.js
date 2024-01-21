@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
 
@@ -5,7 +6,7 @@ import Discord from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import { permissionsBitsToI18nArray } from "#lib/permissions.js";
 
-class Command {
+class Command extends BaseCommand {
   getContext(interaction) {
     const params = interaction.params
       .toLowerCase()

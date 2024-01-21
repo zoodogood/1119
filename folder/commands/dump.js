@@ -1,6 +1,7 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import DataManager from "#lib/modules/DataManager.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     DataManager.file.write();
     const message = await msg.channel.send({

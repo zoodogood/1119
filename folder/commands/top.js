@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 "use strict";
 
 import * as Util from "#lib/util.js";
@@ -272,7 +273,7 @@ class RanksUtils {
   }
 }
 
-class Command {
+class Command extends BaseCommand {
   PAGE_SIZE = 15;
 
   createComponents(context) {

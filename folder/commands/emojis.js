@@ -1,7 +1,8 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     if (interaction.params) {
       const id = Util.match(interaction.params, /\d{17,21}/);

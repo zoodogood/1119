@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
@@ -35,7 +36,7 @@ class ProfessionsUtils {
   }
 }
 
-class Command {
+class Command extends BaseCommand {
   getContext(interaction) {
     const guildData = interaction.guild.data;
     const isAdmin = !interaction.member.wastedPermissions(32n)[0];

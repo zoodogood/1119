@@ -1,6 +1,8 @@
+// @ts-check
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { client } from "#bot/client.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     if (msg.member.voice.channel) {
       const request = {

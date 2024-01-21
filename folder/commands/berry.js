@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { addResource } from "#lib/util.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 
-class Command {
+class Command extends BaseCommand {
   static INFLATION = 0.2;
   static BERRYS_LIMIT = 35_000;
   static TAX = 0.02;

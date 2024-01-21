@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import CurseManager from "#lib/modules/CurseManager.js";
@@ -6,7 +7,7 @@ import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     if (interaction.mention) {
       const mentionUserData = interaction.mention.data;

@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { client } from "#bot/client.js";
 import DataManager from "#lib/modules/DataManager.js";
 import Discord from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   removeAllUserPraises(context) {
     const { userData, user } = context;
     const names = [];

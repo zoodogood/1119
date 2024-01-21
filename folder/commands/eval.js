@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 
 import { client } from "#bot/client.js";
@@ -8,7 +9,7 @@ import { escapeCodeBlock, escapeMarkdown, WebhookClient } from "discord.js";
 
 const DEFAULT_CODE_CONTENT = 'module("userData")';
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const fetchReferense = async (reference) => {
       if (!reference) {

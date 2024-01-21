@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { Emoji } from "#constants/emojis.js";
 import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
@@ -337,7 +338,7 @@ class CommandUtil {
   }
 }
 
-class Command {
+class Command extends BaseCommand {
   static CommandUtil = CommandUtil;
 
   constructor() {

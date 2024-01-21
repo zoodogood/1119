@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
@@ -61,7 +62,7 @@ const elementsEnum = Object.fromEntries(
   [...Elements.entries()].map(([key, { index }]) => [key, index]),
 );
 
-class Command {
+class Command extends BaseCommand {
   static Elements = Elements;
 
   static EVENTS_LIST = [

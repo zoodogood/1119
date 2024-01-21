@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
 import { dayjs, timestampDay } from "#lib/util.js";
 
-class Command {
+class Command extends BaseCommand {
   EVENT_NAME = "remind";
 
   getContext(interaction) {

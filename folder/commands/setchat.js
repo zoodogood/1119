@@ -1,4 +1,5 @@
-class Command {
+import { BaseCommand } from "#lib/BaseCommand.js";
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const type = "chatChannel";
     const guild = msg.guild;

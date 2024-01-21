@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { PermissionFlagsBits } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const guild = interaction.guild;
     const guildMember = guild.members.resolve(interaction.mention);

@@ -1,6 +1,7 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import Discord from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     let channel = msg.channel,
       sum_messages = [],

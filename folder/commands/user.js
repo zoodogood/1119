@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import CurseManager from "#lib/modules/CurseManager.js";
@@ -9,7 +10,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import { Emoji } from "#constants/emojis.js";
 import { PresenceUpdateStatus } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const target = interaction.params
         ? interaction.mention ??

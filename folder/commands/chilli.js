@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import { Actions } from "#lib/modules/ActionManager.js";
@@ -6,7 +7,7 @@ export const REASON_FOR_CHANGE_NICKNAME = "Special: in chilli game";
 const FOOTER_EMOJI =
   "https://media.discordapp.net/attachments/629546680840093696/1158272956812759050/hot-pepper-2179.png?ex=651ba540&is=651a53c0&hm=9cf4a793a57fb7d37d1f3a935fc6b39ad00b015df7ec500d548d4d4920801e64&=";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const memb = interaction.mention;
     let chilli =

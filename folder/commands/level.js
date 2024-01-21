@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { client } from "#bot/client.js";
 import { AttachmentBuilder } from "discord.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 
-class Command {
+class Command extends BaseCommand {
   constructor() {
     this.#init();
   }

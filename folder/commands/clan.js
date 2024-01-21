@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   createEmbed({}) {
     const contents = {};
 

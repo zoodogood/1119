@@ -1,8 +1,9 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const message = await msg.msg({
       title: "🌲 Создание раздачи",

@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import CounterManager from "#lib/modules/CounterManager.js";
 import { ButtonStyle, ComponentType, escapeMarkdown } from "discord.js";
 import { CommandsManager } from "#lib/modules/mod.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     if (
       CounterManager.data.filter(

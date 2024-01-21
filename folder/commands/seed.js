@@ -1,10 +1,11 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import DataManager from "#lib/modules/DataManager.js";
 import BerryCommand from "#folder/commands/berry.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const guildData = msg.guild.data;
     Object.assign(interaction, {

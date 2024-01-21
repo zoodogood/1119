@@ -1,6 +1,7 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 
-class Command {
+class Command extends BaseCommand {
   getChannelsContent(interaction) {
     const { guild } = interaction;
     const guildData = interaction.guild.data;

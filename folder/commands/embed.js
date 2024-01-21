@@ -1,9 +1,10 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 //@ts-check
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import { EmbedBuilder } from "discord.js";
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const context = {
       questionMessage: null,

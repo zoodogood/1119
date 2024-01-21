@@ -1,3 +1,4 @@
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
@@ -155,7 +156,7 @@ class ChestManager {
   };
 }
 
-class Command {
+class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const { user, userData } = interaction;
 
