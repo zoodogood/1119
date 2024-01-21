@@ -4,6 +4,7 @@ import { client } from "#bot/client.js";
 import { BossManager, BossEffects } from "#lib/modules/BossManager.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 import CurseManager from "#lib/modules/CurseManager.js";
+import { DAY } from "#constants/globals/time.js";
 
 class Command extends BaseCommand {
   createEmbed({ userEffects, userStats, member, boss }) {
@@ -61,7 +62,7 @@ class Command extends BaseCommand {
 
     if (!boss.isArrived) {
       const description = boss.apparanceAtDay
-        ? `Прибудет лишь ${Util.toDayDate(boss.apparanceAtDay * 86_400_000)}`
+        ? `Прибудет лишь ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`
         : "Момент появления босса пока неизвестен";
 
       msg.msg({ description, color: "#000000" });
