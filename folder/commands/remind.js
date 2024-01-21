@@ -1,4 +1,5 @@
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
+import { ParserTime } from "#lib/parsers.js";
 import { dayjs, timestampDay } from "#lib/util.js";
 
 class Command {
@@ -6,17 +7,22 @@ class Command {
 
   getContext(interaction) {
     const parseParams = (params) => {
-      params = params.split(" ");
+      const timeParser = new ParserTime();
+      const regex = RegExp(`^${timeParser.regex.source}`);
 
-      const stamps = [];
-      while (params.at(0)?.match(/\d+(?:д|d|ч|h|м|m|с|s)/)) {
-        stamps.push(...params.splice(0, 1));
+      let match;
+      while ((match = params.match(regex))) {
+        const { groups } = match;
+        const key = ParserTime._getActiveGroupName(groups);
+        const item = { key, value: groups[key] };
+        timeParser.pushItem(item);
+        params = params.replace(match[0], "").trim();
       }
-      const phrase = params.join(" ");
-      return [stamps, phrase];
+      const phrase = params;
+      return { timeParser, phrase };
     };
 
-    const [stamps, phraseRaw] = parseParams(interaction.params);
+    const { timeParser, phrase: phraseRaw } = parseParams(interaction.params);
 
     const phrase = (phraseRaw || "Без описания").replace(
       /[a-zа-яъёь]/i,
@@ -26,50 +32,30 @@ class Command {
     const userData = interaction.user.data;
 
     return {
-      stamps,
+      timeParser,
       phraseRaw,
       phrase,
       userData,
       interaction,
       now: Date.now(),
+      problems: [],
     };
   }
 
-  stampsToTime(stamps) {
-    let timeTo = 0;
-    stamps.forEach((stamp) => {
-      switch (stamp.slice(-1)) {
-        case "d":
-        case "д":
-          timeTo += 86400000 * stamp.slice(0, -1);
-          break;
-        case "h":
-        case "ч":
-          timeTo += 3600000 * stamp.slice(0, -1);
-          break;
-        case "m":
-        case "м":
-          timeTo += 60000 * stamp.slice(0, -1);
-          break;
-        case "s":
-        case "с":
-          timeTo += 1000 * stamp.slice(0, -1);
-          break;
-      }
-    });
-    return timeTo;
+  stampsToTime(parser) {
+    return parser.summarizeItems();
   }
 
   async run(interaction) {
     const context = this.getContext(interaction);
-    const { phrase, stamps, userData } = context;
+    const { phrase, timeParser, userData } = context;
 
-    if (stamps.length === 0) {
+    if (timeParser.items.length === 0) {
       this.displayUserRemindsInterface(context);
       return;
     }
 
-    const timeTo = this.stampsToTime(stamps);
+    const timeTo = this.stampsToTime(timeParser);
 
     const LIMIT = 86_400_000 * 365 * 30;
 
@@ -108,7 +94,7 @@ class Command {
 
   removeByTimestampIfEnded(timestamp, context) {
     const { now } = context;
-    if (timestamp > now) {
+    if (+timestamp > now) {
       return;
     }
     this.removeRemindFieldOfUserReminds(timestamp, context);
@@ -120,7 +106,7 @@ class Command {
     if (!reminds) {
       return;
     }
-    const index = reminds.indexOf("" + timestamp);
+    const index = reminds.indexOf(timestamp);
     if (~index === 0) {
       return;
     }
@@ -145,18 +131,18 @@ class Command {
 
       if (!event) {
         this.removeByTimestampIfEnded(timestamp, context);
-        interaction.channel.msg({
-          description: `Паника: напоминание (${dayjs(+timestamp).format(
-            "DD.MM HH:mm",
-          )}, ${timestamp}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`,
-          delete: 60_000,
-          color: "#ff0000",
-        });
-        throw new Error("This behavior is not normal");
+        const problem = `Паника: напоминание (${dayjs(+timestamp).format(
+          "DD.MM HH:mm",
+        )}, ${timestamp}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`;
+        this.contextPushProblem(context, problem);
       }
       events.push(event);
     }
     return events;
+  }
+
+  contextPushProblem(context, problem) {
+    context.problems.push(problem);
   }
 
   async displayUserRemindsInterface(context) {
