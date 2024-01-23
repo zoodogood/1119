@@ -334,6 +334,9 @@ class BossEffects {
       },
     };
     user.action(Actions.bossBeforeEffectInit, context);
+    if (context.defaultPrevented) {
+      return context;
+    }
 
     context.applyContext = UserEffectManager.applyEffect({
       effect,
