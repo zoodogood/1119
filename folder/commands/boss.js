@@ -267,11 +267,9 @@ class Command extends BaseCommand {
 
       (async () => {
         const collector = curseAddedMessage.createMessageComponentCollector({
-          filter: (interaction) => console.log(interaction) || true,
           time: 180_000,
         });
 
-        console.log(effect);
         const curse = user.data.curses.find(
           (curse) => curse.timestamp === effect.values.targetTimestamp,
         );
