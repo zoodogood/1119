@@ -1373,10 +1373,13 @@ class BossManager {
           delete embed.reference;
 
           const collectorFilter = (interaction) => user === interaction.user;
-          const interaction = await message.awaitMessageComponent({
-            filter: collectorFilter,
-            time: 60_000,
-          });
+          const interaction = await message
+            .awaitMessageComponent({
+              filter: collectorFilter,
+              time: 60_000,
+            })
+            .catch(() => {});
+
           if (!interaction) {
             embed.components = [];
             message.msg({
