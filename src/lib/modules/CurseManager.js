@@ -864,6 +864,7 @@ class CurseManager {
               });
             }
             target.event.preventDefault();
+            CurseManager.interface({ user, curse }).silentEnd();
             CurseManager.removeCurse({ user, curse });
           },
         },
@@ -1454,6 +1455,11 @@ class CurseManager {
       this.curseIndexOnUser({ curse, user }) !== null &&
         CurseManager.curseEnd({ lost: true, user, curse });
     };
+
+    const silentEnd = () => {
+      this.curseIndexOnUser({ curse, user }) !== null &&
+        CurseManager._curseEnd({ lost: false, user, curse });
+    };
     return {
       incrementProgress,
       setProgress,
@@ -1461,6 +1467,7 @@ class CurseManager {
       toString,
       fail,
       success,
+      silentEnd,
     };
   }
 
@@ -1523,9 +1530,13 @@ class CurseManager {
       .forEach((key) => delete callbackMap[key]);
   }
 
-  static curseEnd({ lost, user, curse }) {
+  static _curseEnd({ lost, user, curse }) {
     user.action(ActionsMap.curseEnd, { isLost: lost, curse });
     this.removeCurse({ user, curse });
+  }
+
+  static curseEnd({ lost, user, curse }) {
+    this._curseEnd({ lost, user, curse });
 
     const curseBase = CurseManager.cursesBase.get(curse.id);
 
