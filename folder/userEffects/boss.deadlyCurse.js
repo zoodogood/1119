@@ -52,7 +52,7 @@ export default {
       );
       userStats.alreadyKeepAliveRitualBy = user.id;
     },
-    effectEnd: (user, effect, { effect: target }) => {
+    effectRemove: (user, effect, { effect: target }) => {
       if (effect.uid !== target.uid) {
         return;
       }
@@ -72,6 +72,7 @@ export default {
         values.keepAliveUserId,
       );
       delete targetUserStats.alreadyKeepAliveRitualBy;
+
       if (userStats.heroIsDead) {
         return;
       }
