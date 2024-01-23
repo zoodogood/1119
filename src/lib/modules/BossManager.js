@@ -1240,6 +1240,7 @@ class BossManager {
     BossEvents.afterAttacked(boss, data);
 
     boss.stats.userAttacksCount++;
+    userStats.attacksCount = (userStats.attacksCount || 0) + 1;
 
     const eventsContent = attackContext.listOfEvents
       .map((event) => `・ ${event.description}.`)
@@ -1556,10 +1557,11 @@ class BossManager {
         },
       },
       selectLegendaryWearon: {
-        weight: 100,
+        weight: ({ userStats }) => (userStats.attacksCount || 0) * 10,
         id: "selectLegendaryWearon",
         description: "Требуется совершить выбор",
-        callback: async ({ user, boss, channel, userStats, guild }) => {
+        callback: async (context) => {
+          const { user, channel, userStats, guild } = context;
           const reactions = [...LegendaryWearonList.values()].map(
             ({ emoji }) => emoji,
           );
@@ -1597,7 +1599,12 @@ class BossManager {
               throw new Error("Unexpected Exception");
             }
 
-            const values = wearon.values;
+            const values = Object.fromEntries(
+              Object.entries(wearon.values).map((key, value) => [
+                key,
+                value(context),
+              ]),
+            );
             BossEffects.applyEffect({
               guild,
               user,
@@ -1615,7 +1622,7 @@ class BossManager {
             collector.stop();
           });
 
-          collector.on("end", () => message.delete());
+          collector.on("end", () => message.reactions.removeAll());
         },
 
         filter: ({ userStats, boss }) =>
