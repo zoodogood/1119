@@ -31,7 +31,7 @@ export default {
       const guild = app.client.guilds.cache.get(guildId);
 
       const isShortCurse = (curseBase) => curseBase.interactionIsShort;
-      const curseBase = CurseManager.getGeneratePull(user, guild ?? null)
+      const curseBase = CurseManager.getGeneratePull(user, { guild })
         .filter(isShortCurse)
         .random({ _weights: true });
 
