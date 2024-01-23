@@ -6,7 +6,7 @@ import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 export default {
   id: "boss.deadlyCurse",
   callback: {
-    curseEnd: (user, effect, { curse, loses }) => {
+    curseEnd: (user, effect, { curse, isLost }) => {
       const { values } = effect;
       if (values.targetTimestamp !== curse.timestamp) {
         return;
@@ -15,7 +15,7 @@ export default {
 
       const guild = app.client.guilds.cache.get(guildId);
 
-      if (loses && BossManager.isArrivedIn(guild)) {
+      if (isLost && BossManager.isArrivedIn(guild)) {
         const userStats = BossManager.getUserStats(guild.data.boss, user.id);
         userStats.heroIsDead = true;
       }
@@ -46,13 +46,11 @@ export default {
 
       values.targetTimestamp = curse.timestamp;
 
-      if (values.keepAliveUserId) {
-        const userStats = BossManager.getUserStats(
-          guild.data.boss,
-          values.keepAliveUserId,
-        );
-        userStats.alreadyKeepAliveRitualBy = user.id;
-      }
+      const userStats = BossManager.getUserStats(
+        guild.data.boss,
+        values.keepAliveUserId,
+      );
+      userStats.alreadyKeepAliveRitualBy = user.id;
     },
     effectEnd: (user, effect, { effect: target }) => {
       if (effect.uid !== target.uid) {
@@ -68,25 +66,23 @@ export default {
       }
       const userStats = BossManager.getUserStats(guild.data.boss, user.id);
 
-      if (values.keepAliveUserId) {
-        const targetUser = app.client.users.cache.get(values.keepAliveUserId);
-        const targetUserStats = BossManager.getUserStats(
-          guild.data.boss,
-          values.keepAliveUserId,
-        );
-        delete targetUserStats.alreadyKeepAliveRitualBy;
-        if (userStats.heroIsDead) {
-          return;
-        }
-
-        delete targetUserStats.heroIsDead;
-        targetUser.msg({
-          title: "Оповещение в боссе: вас спасли",
-          description: `Герой в маске, || ${user.username} ||, предпочёл выполнить проклятие`,
-          thumbnail:
-            "https://media.discordapp.net/attachments/629546680840093696/1174372547941384272/skull.png?ex=65675aaa&is=6554e5aa&hm=7472e327ea98eee13d82ea8eb6035483ea655779e235628771991c40f12b7b34&=",
-        });
+      const targetUser = app.client.users.cache.get(values.keepAliveUserId);
+      const targetUserStats = BossManager.getUserStats(
+        guild.data.boss,
+        values.keepAliveUserId,
+      );
+      delete targetUserStats.alreadyKeepAliveRitualBy;
+      if (userStats.heroIsDead) {
+        return;
       }
+
+      delete targetUserStats.heroIsDead;
+      targetUser.msg({
+        title: "Оповещение в боссе: вас спасли",
+        description: `Герой в маске, || ${user.username} ||, предпочёл выполнить проклятие`,
+        thumbnail:
+          "https://media.discordapp.net/attachments/629546680840093696/1174372547941384272/skull.png?ex=65675aaa&is=6554e5aa&hm=7472e327ea98eee13d82ea8eb6035483ea655779e235628771991c40f12b7b34&=",
+      });
     },
   },
   values: {
