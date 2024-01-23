@@ -51,6 +51,7 @@ export default {
         values.keepAliveUserId,
       );
       userStats.alreadyKeepAliveRitualBy = user.id;
+      console.log(userStats);
     },
     effectRemove: (user, effect, { effect: target }) => {
       if (effect.uid !== target.uid) {
