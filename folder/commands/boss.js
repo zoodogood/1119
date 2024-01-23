@@ -239,7 +239,7 @@ class Command extends BaseCommand {
         return;
       }
 
-      const effectId = "deadlyCurse";
+      const effectId = "boss.deadlyCurse";
       const values = { keepAliveUserId: member.id };
 
       const effect = BossEffects.applyEffect({
