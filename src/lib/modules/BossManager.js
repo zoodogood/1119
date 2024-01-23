@@ -323,7 +323,7 @@ class BossEffects {
       context: { guild },
     });
 
-    Object.assign(effect.values, values);
+    Object.assign(effect.values, values, { guildId: guild.id });
 
     const context = {
       guild,
