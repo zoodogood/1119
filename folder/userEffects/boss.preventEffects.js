@@ -1,6 +1,6 @@
 import { BossEffects } from "#lib/modules/BossManager.js";
-import CurseManager from "#lib/modules/CurseManager.js";
-import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
+import UserEffectManager, { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
+
 
 function isBossEffect(effect) {
   return effect.id.startsWith("boss.");
@@ -20,7 +20,7 @@ export default {
       }
       const { effect: target } = context;
       const { values } = effect;
-      const effectBase = CurseManager.cursesBase.get(target.id);
+      const effectBase = UserEffectManager.store.get(target.id);
       if (
         values.influence &&
         !values.influence.includes(effectBase.influence)
