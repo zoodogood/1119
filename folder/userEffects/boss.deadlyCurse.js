@@ -7,10 +7,10 @@ export default {
   id: "boss.deadlyCurse",
   callback: {
     curseEnd: (user, effect, { curse, loses }) => {
+      const { values } = effect;
       if (values.targetTimestamp !== curse.timestamp) {
         return;
       }
-      const { values } = effect;
       const { guildId } = values;
 
       const guild = app.client.guilds.cache.get(guildId);
