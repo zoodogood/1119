@@ -825,6 +825,10 @@ class CurseManager {
             const { coins } = user.data;
             CurseManager.interface({ curse, user }).setProgress(coins);
           },
+          beforeProfileDisplay: (user, curse) => {
+            const { coins } = user.data;
+            CurseManager.interface({ curse, user }).setProgress(coins);
+          },
           beforeResourcePayed: (user, curse, context) => {
             context.event.preventDefault();
           },
