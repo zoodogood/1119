@@ -302,8 +302,8 @@ class CurseManager {
             if (!user.curses) {
               user.curses = [];
             }
-            const haveCurse = user.data.curses.length;
-            if (haveCurse && user.data.voidFreedomCurse) {
+            const haveCurse = target.data.curses.length;
+            if (haveCurse && target.data.voidFreedomCurse) {
               message.react("❌");
               return;
             }
