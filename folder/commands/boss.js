@@ -163,7 +163,7 @@ class Command extends BaseCommand {
 
       const deadlyCurseEffect = aliverData.effects?.find(
         ({ id, values: { guildId, keepAliveUserId } }) =>
-          id === "deadlyCurse" &&
+          id === "boss.deadlyCurse" &&
           guildId === guild.id &&
           keepAliveUserId === interaction.user.id,
       );
@@ -242,7 +242,7 @@ class Command extends BaseCommand {
       const effectId = "boss.deadlyCurse";
       const values = { keepAliveUserId: member.id };
 
-      const effect = BossEffects.applyEffect({
+      const { effect } = BossEffects.applyEffect({
         guild,
         user,
         effectId,
@@ -273,6 +273,7 @@ class Command extends BaseCommand {
           time: 180_000,
         });
 
+        console.log(effect);
         const curse = user.data.curses.find(
           (curse) => curse.timestamp === effect.values.targetTimestamp,
         );
