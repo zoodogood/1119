@@ -162,10 +162,8 @@ class Command extends BaseCommand {
       }
 
       const deadlyCurseEffect = aliverData.effects?.find(
-        ({ id, values: { guildId, keepAliveUserId } }) =>
-          id === "boss.deadlyCurse" &&
-          guildId === guild.id &&
-          keepAliveUserId === interaction.user.id,
+        ({ id, values: { guildId } }) =>
+          id === "boss.deadlyCurse" && guildId === guild.id,
       );
 
       if (!deadlyCurseEffect) {
