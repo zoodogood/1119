@@ -327,7 +327,7 @@ class CurseManager {
             list.push(target.id);
             createdCurse.values.listOfUsers = list;
 
-            CurseManager.interface({ user, curse }).incrementProgress(1);
+            CurseManager.interface({ user, curse }).setProgress(list.length);
           },
         },
         interactionIsShort: true,
