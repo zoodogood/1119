@@ -154,10 +154,12 @@ class Command extends BaseCommand {
           description: error.message,
           components: justButtonComponents([{ label: "Продолжить" }]),
         });
-        const needResume = await prompt.awaitMessageComponent({
-          time: 20_000,
-          filter: ({ user }) => interaction.user.id === user.id,
-        });
+        const needResume = await prompt
+          .awaitMessageComponent({
+            time: 20_000,
+            filter: ({ user }) => interaction.user.id === user.id,
+          })
+          .catch(() => {});
 
         prompt.delete();
         if (needResume) {
