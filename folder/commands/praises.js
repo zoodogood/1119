@@ -307,7 +307,8 @@ class Command extends BaseCommand {
     },
     alias: "похвалы похвали лайки likes",
     allowDM: true,
-    cooldown: 2_00_00,
+    cooldown: 20_000,
+    cooldownTry: 2,
     type: "user",
   };
 }
