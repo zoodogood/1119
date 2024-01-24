@@ -1615,7 +1615,7 @@ class BossManager {
             }
 
             const values = Object.fromEntries(
-              Object.entries(wearon.values).map((key, value) => [
+              Object.entries(wearon.values).map(([key, value]) => [
                 key,
                 value(context),
               ]),
