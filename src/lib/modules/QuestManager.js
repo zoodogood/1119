@@ -408,7 +408,7 @@ class QuestManager {
         description: "Отправьте сообщения",
         _weight: 1,
         isGlobal: false,
-        reward: 4,
+        reward: 7,
         baseGoal: 280,
       },
       likeTheFriend: {
