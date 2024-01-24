@@ -979,6 +979,14 @@ class BossManager {
     await guild.chatSend(embed);
   }
 
+  static rewardToBank(guild) {
+    const REWARD_PER_LEVEL = 1_000;
+    const guildData = guild.data;
+    guildData.coins ||= 0;
+    const { boss } = guildData;
+    guildData.coins += boss.level * REWARD_PER_LEVEL;
+  }
+
   static async beforeEnd(guild) {
     const boss = guild.data.boss;
     const usersCache = guild.client.users.cache;
@@ -1017,6 +1025,7 @@ class BossManager {
     };
 
     const usersStatsEntries = Object.entries(boss.users);
+    this.rewardToBank(guild);
 
     usersStatsEntries
       .filter(
@@ -2010,7 +2019,7 @@ class BossManager {
         filter: ({ boss }) => boss.level >= 10,
       },
       death: {
-        weight: 70,
+        weight: 10000000, //70,
         id: "death",
         description: "Смэрть",
         callback: ({ userStats }) => {
