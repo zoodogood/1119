@@ -1304,7 +1304,7 @@ class BossManager {
         description: "Урон следующих двух атак был увеличен",
         callback: ({ guild, user }) => {
           const effectId = "boss.increaseAttackDamage";
-          const values = { duration: 2, power: 3 };
+          const values = { duration: 2, power: 2.5 };
           BossEffects.applyEffect({ values, guild, user, effectId });
         },
       },
@@ -1494,7 +1494,7 @@ class BossManager {
         },
       },
       choiseAttackDefense: {
-        weight: 700,
+        weight: 800,
         id: "choiseAttackDefense",
         description: "Требуется совершить выбор",
         callback: async ({ user, boss, channel, userStats }) => {
@@ -1890,7 +1890,7 @@ class BossManager {
         id: "powerOfEarth",
         description: "Вознаграждение за терпение",
         callback: ({ user, boss }) => {
-          const berry = 3 + Math.ceil(boss.level / 2);
+          const berry = 2 + Math.ceil(boss.level / 4);
           user.data.berrys += berry;
         },
         filter: ({ boss }) => boss.elementType === elementsEnum.earth,
@@ -1924,7 +1924,7 @@ class BossManager {
         description: "Вознагражение за настойчивость",
         callback: ({ user, boss }) => {
           const userData = user.data;
-          userData.keys += 5 + boss.level * 2;
+          userData.keys += 3 + boss.level * 2;
           userData.chestBonus = (userData.chestBonus || 0) + 2 + boss.level;
           userData.coins += 20 + 15 * boss.level;
         },
@@ -2154,6 +2154,23 @@ class BossManager {
           content.attackContext.damageMultiplayer = 0;
         },
         filter: ({ boss }) => Speacial.isSnowQueen(boss),
+      },
+      preventPositiveEffects: {
+        weight: 50,
+        id: "preventPositiveEffects",
+        description: "Предотвращает два следующих позитивных эффекта",
+        callback: ({ user, guild }) => {
+          const values = {
+            influence: [EffectInfluenceEnum.Positive],
+            count: 2,
+          };
+          BossEffects.applyEffect({
+            effectId: "boss.preventEffects",
+            user,
+            guild,
+            values,
+          });
+        },
       },
       // ______e4example: {
       //   _weight: 2,
