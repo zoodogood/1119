@@ -109,23 +109,11 @@ class Command extends BaseCommand {
     ];
     //* CLOVER
     if (guild.data.cloverEffect) {
-      const clover = guild.data.cloverEffect;
-      const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
-      const filter = ({ name, params }) =>
-        name === "clover-end" && params.includes(msg.guild.id);
-      const event = TimeEventsManager.at(day).find(filter);
-
-      if (!event) {
-        throw new Error(`effect no finded on day ${day} and name`);
-      }
-
-      const timeTo = event.timestamp - Date.now();
-      const multiplier =
-        1.08 + 0.07 * ((1 - 0.9242 ** clover.uses) / (1 - 0.9242));
+      const { timeToEnd, multiplier, clover } = this.getCloverData(guild);
 
       fields.unshift({
         name: "🍀 Действие Клевера",
-        value: `Осталось времени: ${+(timeTo / 3600000).toFixed(
+        value: `Осталось времени: ${+(timeToEnd / 3600000).toFixed(
           2,
         )}ч.\nКлевер был запущен: <t:${Math.floor(
           clover.timestamp / 1_000,
@@ -145,16 +133,32 @@ class Command extends BaseCommand {
         guild.data.description ||
         "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера",
       footer: {
-        text:
-          "Сервер был создан " +
-          Util.timestampToDate(Date.now() - guild.createdTimestamp, 3) +
-          " назад." +
-          "\nID: " +
-          guild.id,
+        text: this.getCreatedAtContent() + `\nID: ${guild.id}`,
       },
       image: guild.data.banner,
       fields,
     });
+  }
+  getCreatedAtContent(guild) {
+    return `Сервер был создан ${Util.timestampToDate(Date.now() - guild.createdTimestamp, 3)} назад.`;
+  }
+
+  getCloverData(guild) {
+    const clover = guild.data.cloverEffect;
+    const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
+    const filter = ({ name, params }) =>
+      name === "clover-end" && params.includes(msg.guild.id);
+    const event = TimeEventsManager.at(day).find(filter);
+
+    if (!event) {
+      throw new Error(`effect no finded on day ${day} and name`);
+    }
+
+    const timeToEnd = event.timestamp - Date.now();
+    const multiplier =
+      1.08 + 0.07 * ((1 - 0.9242 ** clover.uses) / (1 - 0.9242));
+
+    return { timeToEnd, multiplier, clover };
   }
 
   options = {
