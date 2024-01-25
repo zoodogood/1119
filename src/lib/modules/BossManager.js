@@ -899,6 +899,13 @@ class BossManager {
     onCollect: (user, context) => {
       const { toLevel, message, guild } = context;
       const boss = guild.data.boss;
+      if (!boss) {
+        message.msg({
+          title: `Босса нет`,
+          delete: 5000,
+        });
+        return;
+      }
       const userStats = BossManager.getUserStats(boss, user.id);
 
       if ("chestRewardAt" in userStats) {
