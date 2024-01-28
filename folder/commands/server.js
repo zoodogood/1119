@@ -133,7 +133,7 @@ class Command extends BaseCommand {
         guild.data.description ||
         "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера",
       footer: {
-        text: this.getCreatedAtContent() + `\nID: ${guild.id}`,
+        text: this.getCreatedAtContent(guild) + `\nID: ${guild.id}`,
       },
       image: guild.data.banner,
       fields,
