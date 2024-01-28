@@ -430,18 +430,18 @@ class Command extends BaseCommand {
           const clover = guildData.cloverEffect;
           clover.uses++;
 
-          const increaseTimestamp = (timestamp) => {
+          const increaseTimestamp = (previous) => {
             const adding = Math.floor(
-              14_400_000 - (timestamp - Date.now()) / 18,
+              14_400_000 - (previous - Date.now()) / 18,
             );
-            const ms = timestamp + Math.max(adding, 0);
+            const ms = previous + Math.max(adding, 0);
             return ms;
           };
           const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
           clover.timestamp = increaseTimestamp(clover.timestamp);
 
           const filter = (event) =>
-            event.name === "cloverEnd" && event.params.includes(guild.id);
+            event.name === "clover-end" && event.params.includes(guild.id);
           const event = TimeEventsManager.at(day).find(filter);
           TimeEventsManager.change(event, { timestamp: clover.timestamp });
           return phrase;
