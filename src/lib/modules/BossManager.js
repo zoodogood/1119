@@ -901,8 +901,9 @@ class BossManager {
       const boss = guild.data.boss;
       if (!boss) {
         message.msg({
-          title: `Босса нет`,
-          delete: 5000,
+          title: `Босса нет!`,
+          delete: 5_000,
+          footer: { text: user.username, avatarURL: user.avatarURL() },
         });
         return;
       }
