@@ -126,7 +126,7 @@ class Command extends BaseCommand {
     }
     //**
 
-    msg.msg({
+    interaction.channel.msg({
       title: guild.name + " " + ["❤️", "🧡", "💛", "💚", "💙", "💜"].random(),
       thumbnail: guild.iconURL(),
       description:
@@ -147,7 +147,7 @@ class Command extends BaseCommand {
     const clover = guild.data.cloverEffect;
     const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
     const filter = ({ name, params }) =>
-      name === "clover-end" && params.includes(msg.guild.id);
+      name === "clover-end" && params.includes(guild.id);
     const event = TimeEventsManager.at(day).find(filter);
 
     if (!event) {
