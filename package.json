@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.12080",
+  "version": "2.0.0-alpha.12278",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -41,6 +41,7 @@
     "canvas": "^2.11.2",
     "cors": "^2.8.5",
     "dayjs": "^1.11.10",
+    "discord-api-types": "^0.37.67",
     "discord-oauth2-utils": "^2.1.4-0",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
