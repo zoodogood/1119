@@ -533,7 +533,7 @@ class Command extends BaseCommand {
   }
 
   onDayStats(guild, context) {
-    const { professions } = guild.data.professions;
+    const { professions } = guild.data;
     ProfessionsUtils.removeUnavailableProfessions({ guild, professions });
 
     const entries = Object.entries(professions ?? {});
