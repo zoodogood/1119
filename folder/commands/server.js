@@ -3,6 +3,7 @@ import * as Util from "#lib/util.js";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ChannelType, PresenceUpdateStatus } from "discord.js";
+import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
 
 class Command extends BaseCommand {
   getUsedCommandsCountOfGuild(guild) {
@@ -108,20 +109,18 @@ class Command extends BaseCommand {
       },
     ];
     //* CLOVER
-    if (guild.data.cloverEffect) {
-      const { timeToEnd, multiplier, clover } = this.getCloverData(guild);
+    const clover = this.getCloverData(guild);
+    if (clover) {
+      const { timeToEnd, multiplier, cloverEffect } = cloverEffect;
+      const { coins, timestamp, uses } = cloverEffect;
 
       fields.unshift({
         name: "🍀 Действие Клевера",
         value: `Осталось времени: ${+(timeToEnd / 3600000).toFixed(
           2,
         )}ч.\nКлевер был запущен: <t:${Math.floor(
-          clover.timestamp / 1_000,
-        )}>;\nНаград получено: ${
-          clover.coins
-        }\nТекущий множетель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${
-          clover.uses
-        }`,
+          timestamp / 1_000,
+        )}>;\nНаград получено: ${coins}\nТекущий множетель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${uses}`,
       });
     }
     //**
@@ -144,8 +143,11 @@ class Command extends BaseCommand {
   }
 
   getCloverData(guild) {
-    const clover = guild.data.cloverEffect;
-    const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
+    const { cloverEffect } = guild.data;
+    if (!cloverEffect) {
+      return;
+    }
+    const day = TimeEventsManager.Util.timestampDay(cloverEffect.timestamp);
     const filter = ({ name, params }) =>
       name === "clover-end" && params.includes(guild.id);
     const event = TimeEventsManager.at(day).find(filter);
@@ -155,10 +157,9 @@ class Command extends BaseCommand {
     }
 
     const timeToEnd = event.timestamp - Date.now();
-    const multiplier =
-      1.08 + 0.07 * ((1 - 0.9242 ** clover.uses) / (1 - 0.9242));
+    const multiplier = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses);
 
-    return { timeToEnd, multiplier, clover };
+    return { timeToEnd, multiplier, cloverEffect };
   }
 
   options = {
