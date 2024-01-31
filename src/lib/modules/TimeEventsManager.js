@@ -83,7 +83,11 @@ class TimeEventsManager {
       Util.omit(data, (key) => ["name", "timestamp", "params"].includes(key)),
     );
 
-    this.create(event.name, event.timestamp - Date.now(), event.params);
+    this.create(
+      event.name,
+      event.timestamp - Date.now(),
+      JSON.parse(event.params),
+    );
     return event;
   }
 
@@ -173,7 +177,7 @@ class TimeEventsManager {
 
   static executeEvent(event) {
     this.remove(event);
-
+    
     const data = {
       name: event.name,
       isLost: Date.now() - event.timestamp < -10_000,
@@ -181,7 +185,6 @@ class TimeEventsManager {
     };
     this.emitter.emit("event", data);
     console.info(`Ивент выполнен ${event.name}`);
-
     return;
   }
 
