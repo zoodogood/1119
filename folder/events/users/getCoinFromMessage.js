@@ -3,6 +3,7 @@ import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import * as SnowyEvent from "#lib/snowyEvent.js";
+import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
 
 class Event extends BaseEvent {
   constructor() {
@@ -20,14 +21,7 @@ class Event extends BaseEvent {
     }
 
     if (guild && "cloverEffect" in guild.data) {
-      const CLOVER_MIN_EFFECT = 0.08;
-      const INCREASE_BY_CLOVER = 0.07;
-      const WEAKING_FOR_CLOVER = 0.9242;
-      const reduce = 1 - WEAKING_FOR_CLOVER ** guild.data.cloverEffect.uses;
-      const value =
-        CLOVER_MIN_EFFECT +
-        (INCREASE_BY_CLOVER * reduce) / (1 - WEAKING_FOR_CLOVER);
-
+      const value = CALCULATE_CLOVER_MULTIPLAYER(guild.data.cloverEffect.uses);
       const multiplier = value * 2 ** (userData.voidMysticClover ?? 0);
       k += multiplier;
     }
