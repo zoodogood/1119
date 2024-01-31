@@ -145,15 +145,15 @@ class Command extends BaseCommand {
   getCloverData(guild) {
     const { cloverEffect } = guild.data;
     if (!cloverEffect) {
-      return;
+      return null;
     }
     const day = TimeEventsManager.Util.timestampDay(cloverEffect.timestamp);
     const filter = ({ name, params }) =>
       name === "clover-end" && params.includes(guild.id);
-    const event = TimeEventsManager.at(day).find(filter);
+    const event = TimeEventsManager.at(day)?.find(filter);
 
     if (!event) {
-      throw new Error(`effect no finded on day ${day} and name`);
+      return null;
     }
 
     const timeToEnd = event.timestamp - Date.now();
