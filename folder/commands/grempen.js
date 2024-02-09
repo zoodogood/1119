@@ -63,7 +63,9 @@ class Command extends BaseCommand {
         value: 244,
         inline: true,
         others: ["палка", "палку"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
+
           let phrase =
             ".\nВы купили палку. Это самая обычная палка, и вы её выбросили.";
           if (userData.monster) {
@@ -106,7 +108,8 @@ class Command extends BaseCommand {
         value: 160,
         inline: true,
         others: ["перец", "перчик"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
           if (userData.chilli === undefined) {
             msg.msg({
               title: "Окей, вы купили перец, просто бросьте его...",
@@ -132,7 +135,8 @@ class Command extends BaseCommand {
         value: 700,
         inline: true,
         others: ["перчатку", "перчатки", "перчатка"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
           userData.thiefGloves === undefined &&
             msg.author.msg({
               title: "Вы купили чудо перчатки?",
@@ -159,7 +163,9 @@ class Command extends BaseCommand {
         value: 15,
         inline: true,
         others: ["ключ", "ключик", "key"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
+
           Util.addResource({
             user: interaction.user,
             value: 1,
@@ -177,7 +183,9 @@ class Command extends BaseCommand {
         value: "???",
         inline: true,
         others: ["опыт", "бутылёк"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
+
           const rand = Util.random(3, 7);
           const LIMIT = 15_000;
           const flaconPrice = Math.min(Math.ceil(userData.coins / rand), LIMIT);
@@ -201,7 +209,9 @@ class Command extends BaseCommand {
         value: 1999 + 1000 * Math.ceil((userData.monstersBought || 0) / 3),
         inline: true,
         others: ["монстр", "монстра"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
+
           if (userData.monster === undefined) {
             userData.monster = 0;
             userData.monstersBought = 0;
@@ -237,7 +247,9 @@ class Command extends BaseCommand {
         value: 1200,
         inline: true,
         others: ["консервы", "интеллект"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
+
           if (userData.iq === undefined) {
             userData.iq = Util.random(27, 133);
           }
@@ -261,7 +273,9 @@ class Command extends BaseCommand {
         value: 400,
         inline: true,
         others: ["бутылка", "бутылку", "глупость", "глупости"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
+
           if (userData.iq === undefined) {
             userData.iq = Util.random(27, 133);
           }
@@ -283,7 +297,9 @@ class Command extends BaseCommand {
         value: 3200,
         inline: true,
         others: ["шуба", "шубу", "шуба из енота"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
+
           const isFirst = !(
             userData.questsGlobalCompleted &&
             userData.questsGlobalCompleted.includes("beEaten")
@@ -326,7 +342,9 @@ class Command extends BaseCommand {
           "casino",
           "лотерейный билет",
         ],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
+
           const coefficient = 220 / 130;
           const bet = userData.voidCasino ? userData.coins * 0.3 : 130;
           const odds = userData.voidCasino ? 22 : 21;
@@ -408,6 +426,13 @@ class Command extends BaseCommand {
         value: 400,
         inline: true,
         others: ["клевер", "счастливый", "счастливый клевер", "clover"],
+        createCloverTimeEvent(guildId, channelId) {
+          const endsIn = 14400000;
+          return TimeEventsManager.create("clover-end", endsIn, [
+            guildId,
+            channelId,
+          ]);
+        },
         fn: () => {
           const phrase =
             ". Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.";
@@ -420,10 +445,7 @@ class Command extends BaseCommand {
               timestamp: Date.now(),
               uses: 1,
             };
-            TimeEventsManager.create("clover-end", 14400000, [
-              guild.id,
-              interaction.channel.id,
-            ]);
+            this.createCloverTimeEvent(guild.id, interaction.channel.id);
             return phrase;
           }
 
@@ -442,7 +464,11 @@ class Command extends BaseCommand {
 
           const filter = (event) =>
             event.name === "clover-end" && event.params.includes(guild.id);
-          const event = TimeEventsManager.at(day).find(filter);
+
+          const event =
+            TimeEventsManager.at(day)?.find(filter) ??
+            this.createCloverTimeEvent(guild.id, interaction.channel.id);
+
           TimeEventsManager.change(event, { timestamp: clover.timestamp });
           return phrase;
         },
@@ -461,6 +487,8 @@ class Command extends BaseCommand {
           "всевидящий шар",
         ],
         fn: () => {
+          const product = this;
+
           const items = [
             "void",
             "seed",
@@ -482,7 +510,7 @@ class Command extends BaseCommand {
             executor: interaction.user,
             source: "command.grempen.product.ball",
             resource: item,
-            context: { interaction },
+            context: { interaction, product },
           });
 
           return ` как \`gachi-${item}\`, которого у вас прибавилось в количестве один.`;
@@ -505,7 +533,8 @@ class Command extends BaseCommand {
         value: 600,
         inline: true,
         others: ["камень", "проклятие", "камень с глазами"],
-        fn: (product) => {
+        fn: () => {
+          const product = this;
           userData.curses ||= [];
 
           const already = userData.curses.length;
@@ -595,7 +624,16 @@ class Command extends BaseCommand {
         return;
       }
 
-      const phrase = product.fn(product);
+      const phrase = (() => {
+        try {
+          return product.fn();
+        } catch (error) {
+          return error;
+        }
+      })();
+      if (phrase instanceof Error) {
+        throw phrase;
+      }
 
       if (!isNaN(product.value)) {
         Util.addResource({
@@ -633,7 +671,7 @@ class Command extends BaseCommand {
     };
 
     if (interaction.params) {
-      buyFunc(interaction.params.toLowerCase());
+      await buyFunc(interaction.params.toLowerCase());
       return;
     }
 
@@ -705,7 +743,7 @@ class Command extends BaseCommand {
       const product = allItems.find(
         (item) => item.name.split(" ")[0] === react,
       );
-      buyFunc(product.name);
+      await buyFunc(product.name);
 
       if (userData.coins < 80) {
         msg.channel.sendTyping();
