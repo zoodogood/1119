@@ -5,8 +5,9 @@ import {
 import Discord from "discord.js";
 
 import { Collection } from "@discordjs/collection";
+import { BaseChannel } from "discord.js";
 
-async function awaitUserAccept({ name, message, channel, userData }) {
+export async function awaitUserAccept({ name, message, channel, userData }) {
   const prefix = "userAccept_";
   if (`${prefix}${name}` in userData) {
     return true;
@@ -27,27 +28,28 @@ async function awaitUserAccept({ name, message, channel, userData }) {
   return false;
 }
 
-function awaitReactOrMessage({
+export function awaitReactOrMessage({
   target,
   user,
   time,
   reactionOptions = {},
   messageOptions = {},
 }) {
-  const reactions = reactionOptions.reactions?.filter(Boolean);
-
   const MAX_TIMEOUT = time ?? 300_000;
 
+  const reactions = reactionOptions.reactions?.filter(Boolean);
+  reactions?.forEach((reaction) => target.react(reaction));
+
+  const isUserMessage = (target) => target.id === user.id;
+  const isReactOfUser = (react, target) =>
+    target.id === user.id &&
+    (!reactions.length ||
+      reactions.includes(react.emoji.id ?? react.emoji.name));
   const filter = (some, adding) =>
     some instanceof Discord.Message
-      ? some.author.id === user.id
-      : adding.id === user.id &&
-        (!reactions.length ||
-          reactions.includes(some.emoji.id ?? some.emoji.name));
-
+      ? isUserMessage(some.author)
+      : isReactOfUser(some, adding);
   const collectorOptions = { max: 1, time: MAX_TIMEOUT, filter };
-
-  reactions.forEach((reaction) => target.react(reaction));
 
   return new Promise(async (resolve) => {
     const collected = await Promise.race([
@@ -57,7 +59,7 @@ function awaitReactOrMessage({
 
     const some = collected.first();
     if (some instanceof Discord.Message) {
-      some.delete();
+      !messageOptions.preventRemove && some.delete();
     }
     target.reactions.cache.each((reaction) =>
       reaction.users.remove(target.client.user),
@@ -80,4 +82,32 @@ export function transformToCollectionUsingKey(array) {
   return new Collection(entries);
 }
 
-export { awaitUserAccept, awaitReactOrMessage };
+export async function question({
+  channel,
+  user,
+  message,
+  time = null,
+  reactions = [],
+}) {
+  const request = await channel.msg(message);
+  const response = await awaitReactOrMessage({
+    target: request,
+    user,
+    messageOptions: {
+      remove: true,
+    },
+    reactionOptions: {
+      reactions,
+    },
+    time,
+  });
+  request.delete();
+  const isMessage = response instanceof BaseChannel;
+  const emoji = response?.emoji;
+  return {
+    value: response,
+    isMessage,
+    content: response?.content,
+    emoji: emoji?.id || emoji?.identifier,
+  };
+}
