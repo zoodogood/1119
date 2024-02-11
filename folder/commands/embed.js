@@ -1,406 +1,520 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
 //@ts-check
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
-import { client } from "#bot/client.js";
-import { EmbedBuilder } from "discord.js";
+import { FormattingPatterns } from "discord-api-types/v10";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { MINUTE } from "#constants/globals/time.js";
+
+class CommandRunContext extends BaseCommandRunContext {
+  embed = {};
+  addable = {
+    reactions: null,
+    webhook: null,
+  };
+  previewMessage = null;
+  reactionsPool = null;
+  user;
+  channel;
+  guild;
+
+  updatePreviewMessage() {
+    this.previewMessage.msg({ edit: true, ...this.embed });
+  }
+
+  static async new(interaction, command) {
+    return new this(interaction, command);
+  }
+
+  constructor(interaction, command) {
+    super(interaction, command);
+    const { user, channel, guild } = interaction;
+    Object.assign(this, { user, channel, guild });
+    this.reactionsPool = this.command.DEFAULT_REACTIONS_POOL;
+  }
+}
 
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    const context = {
-      questionMessage: null,
-      embed: new EmbedBuilder(),
-      previewMessage: null,
-      updatePreviewMessage: () => {
-        context.previewMessage({ edit: true, ...context.embed });
-      },
+  createBaseEmbed(json) {
+    const title = "Эмбед конструктор";
+    const description = `С помощью реакций создайте великое сообщение, \nкоторое не останется незамеченным\nПосле чего отправьте его в любое место этого сервера!\n\n📌 - заглавие/название\n🎨 - цвет\n🎬 - описание\n👤 - автор\n🎏 - подгруппа\n🪤 - изображение сверху\n🪄 - изображение снизу\n🧱 - добавить область\n🕵️ - установить вебхук\n😆 - добавить реакции\n📥 - футер\n\n⭑ После завершения жмякайте <:arrowright:640449832799961088>\n`;
+
+    const embed = {
+      title,
+      description,
     };
 
-    const createBaseEmbed = (json) => {
-      const title = "Эмбед конструктор";
-      const description = `С помощью реакций создайте великое сообщение \nкоторое не останется незамеченным\nПосле чего отправьте его в любое место этого сервера!\n\n📌 - заглавие/название\n🎨 - цвет\n🎬 - описание\n👤 - автор\n🎏 - подгруппа\n🪤 - изображение сверху\n🪄 - изображение снизу\n🧱 - добавить область\n🕵️ - установить вебхук\n😆 - добавить реакции\n📥 - футер\n\n⭑ После завершения жмякайте <:arrowright:640449832799961088>\n`;
+    if (json) {
+      const parsed = JSON.parse(json);
+      Object.assign(embed, parsed);
+    }
 
-      const embed = {
-        title,
-        description,
-      };
+    return embed;
+  }
 
-      if (json) {
-        try {
-          const parsed = JSON.parse(json);
-          Object.assign(embed, parsed);
-        } catch {}
-      }
+  DEFAULT_WEBHOOK_ICON_URL =
+    "https://www.emojiall.com/images/240/openmoji/1f7e9.png";
 
-      return embed;
-    };
+  actions = [
+    {
+      emoji: "📌",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        embed.title = "{Введенный текст будет здесь}";
+        await context.updatePreviewMessage();
 
-    Object.assign(context.embed, createBaseEmbed(interaction.params));
-
-    const author = msg.author;
-
-    context.previewMessage = await msg.msg(context.embed);
-
-    let react, answer, reactions;
-
-    while (true) {
-      if (typeof react !== "object")
-        react = await context.previewMessage.awaitReact(
-          { user: author, removeType: "one" },
-          "📌",
-          "🎨",
-          "🎬",
-          "👤",
-          "🎏",
-          "📥",
-          "😆",
-          "640449832799961088",
-        );
-      else
-        react = await context.previewMessage.awaitReact(
-          { user: author, removeType: "one" },
-          ...react,
-        );
-
-      switch (react) {
-        case "📌":
-          context.questionMessage = await msg.msg({
-            title: "Введите название 📌",
-            color: context.embed.color,
-          });
-          answer = await msg.channel.awaitMessage({
-            user: msg.author,
+        const question = await channel.msg({
+          title: "Введите название 📌",
+          color: embed.color,
+        });
+        let answer = (
+          await channel.awaitMessage({
+            user,
             remove: true,
-          });
-          context.questionMessage.delete();
-          if (!answer) {
-            continue;
-          }
+          })
+        )?.content;
+        question.delete();
+        if (!answer) {
+          return;
+        }
 
-          const link = answer.content.match(/https:\/\/.+?(\s|$)/);
-          if (link) {
-            answer.content = answer.content.replace(link[0], "").trim();
-            context.embed.setURL(link);
-          }
-          context.embed.setTitle(answer);
-
-          break;
-
-        case "🎨":
-          answer = await msg.channel.awaitMessage(msg.author, {
+        const link = answer.match(/https:\/\/.+?(\s|$)/);
+        if (link) {
+          answer = answer.replace(link[0], "").trim();
+          embed.url = link;
+        }
+        embed.title = answer;
+      },
+    },
+    {
+      emoji: "🎨",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        const HEX_PALLETTE_PICKER_URL = "https://g.co/kgs/nZmh1XP";
+        const { content: answer } = await Util.question({
+          channel,
+          user,
+          message: {
             title: "Цвет в формате: #2c2f33",
-            embed: { color: embed.color },
+            description: `[Перейти к онлайн палитре](${HEX_PALLETTE_PICKER_URL})`,
+            color: embed.color,
+          },
+        });
+        if (!answer) {
+          return;
+        }
+
+        const color = answer.match(/[a-f0-9]{6}/i)?.[0];
+        if (!color) {
+          channel.msg({
+            title: "Неверный формат, ожидался цвет в формате HEX `#38f913`",
+            color: "#ff0000",
+            delete: 7_000,
           });
-          if (!answer) {
-            continue;
-          }
-
-          let color = answer.content.match(/[abcdef0-9]{6}|[abcdef0-9]{3}/i);
-          if (!color) {
-            msg.msg({
-              title: "Неверный формат, введите цвет в формате HEX `#38f913`",
-              color: "#ff0000",
-              delete: 5000,
-            });
-            continue;
-          }
-          color = color[0].toLowerCase();
-          color =
-            color.length === 3 ? [...color].map((e) => e + e).join("") : color;
-
-          context.embed.color = color;
-          break;
-
-        case "🎬":
-          answer = await msg.channel.awaitMessage(msg.author, {
-            time: 1000000,
+          return;
+        }
+        embed.color = color.toLowerCase();
+      },
+    },
+    {
+      emoji: "🎬",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        embed.description = "{Введенный текст будет здесь}";
+        await context.updatePreviewMessage();
+        const { content: answer } = await Util.question({
+          channel,
+          user,
+          time: MINUTE * 15,
+          message: {
             title: "Описание к фильму 🎬",
-            embed: { color: embed.color },
-          });
-          if (!answer) {
-            continue;
-          }
-          context.embed.setDescription(answer);
-          break;
+            color: embed.color,
+          },
+        });
 
-        case "👤":
-          answer = await msg.channel.awaitMessage(msg.author, {
+        if (!answer) {
+          return;
+        }
+        embed.description = answer;
+      },
+    },
+    {
+      emoji: "👤",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        embed.author = { name: "{Введенный текст будет здесь}" };
+        await context.updatePreviewMessage();
+        const { value: response } = await Util.question({
+          channel,
+          user,
+          message: {
             title:
               "Упомяните пользователя, чтобы использовать его аватар и ник",
-            embed: {
-              description:
-                "Вы также можете указать свое содержание. Для этого не используйте никаких упоминаний и укажите ссылку на изображение",
-              color: embed.color,
-            },
-          });
-          if (!answer) {
-            continue;
-          }
-          const user = answer.mentions.users.first();
-          if (user) {
-            context.embed.setAuthor({
-              name: user.username,
-              iconURL: user.avatarURL(),
-            });
-            break;
-          }
-
-          let image = answer.content.match(/https:\/\/.+?(\s|$)/);
-          if (image) {
-            answer.content = answer.content.replace(image[0], "").trim();
-          }
-
-          image = image ? image[0] : null;
-          context.embed.setAuthor({ name: answer.content, iconURL: image });
-          break;
-
-        case "🎏":
-          await context.previewMessage.reactions.removeAll();
-          react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
-          break;
-
-        case "📥":
-          answer = await msg.channel.awaitMessage(msg.author, {
-            title: "Укажите текст футера",
-            embed: {
-              description: `Впишите ссылку на изображение, если хотите, чтобы была картинка`,
-              color: embed.color,
-            },
-          });
-          if (!answer) {
-            continue;
-          }
-          let url = answer.content.match(/https:\/\/.+?(\s|$)/);
-          if (url) {
-            answer.content = answer.content.replace(url[0], "").trim();
-          }
-
-          url = url ? url[0] : null;
-          context.embed.setFooter(answer, url);
-          break;
-
-        case "😆":
-          await context.previewMessage.reactions.removeAll();
-          const collector = await msg.msg({
-            title:
-              'Установите реакции прямо под этим сообщением!\nА затем жмякните реакцию"Готово"<:mark:685057435161198594>',
+            description:
+              "Или вы также можете указать произвольное имя пользователя и ссылку на изображение. Для этого не используйте никаких напоминаний",
             color: embed.color,
-          });
-          react = await context.previewMessage.awaitReact(
-            { user: author, removeType: "one" },
-            "685057435161198594",
-          );
-          reactions = Array.from(collector.reactions.cache.keys());
-          collector.delete();
-          await context.previewMessage.reactions.removeAll();
-          break;
+          },
+        });
 
-        case "🪤":
-          answer = await msg.channel.awaitMessage(msg.author, {
+        if (!response) {
+          return;
+        }
+        const member = response.mentions.users.first();
+        const iconURL = member
+          ? member.avatarURL()
+          : (() => {
+              const url = response.content.match(/https:\/\/.+?(\s|$)/)?.[0];
+              response.content = response.content.replace(url, "").trim();
+            })();
+        const name = member ? member.username : response.content;
+        embed.author = { name, iconURL };
+      },
+    },
+    {
+      emoji: "🎏",
+      async callback(context) {
+        await context.previewMessage.reactions.removeAll();
+        context.reactionsPool = context.command.WHEN_UNCOVERED_REACTIONS_POOL;
+      },
+    },
+    {
+      emoji: "📥",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        embed.footer = { text: "{Введенный текст будет здесь}" };
+        await context.updatePreviewMessage();
+        const { value: response } = await Util.question({
+          channel,
+          user,
+          message: {
+            title: "Укажите текст футера",
+            description: `А также впишите ссылку на изображение, если хотите, чтобы была картинка`,
+            color: embed.color,
+          },
+        });
+
+        if (!response) {
+          return;
+        }
+        const iconURL = response.content.match(/https:\/\/.+?(\s|$)/)?.[0];
+        if (iconURL) {
+          response.content = response.content.replace(iconURL[0], "").trim();
+        }
+
+        embed.footer = { text: response, iconURL };
+      },
+    },
+    {
+      emoji: "😆",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        await context.previewMessage.reactions.removeAll();
+        const collector = await channel.msg({
+          title:
+            'Установите реакции прямо под этим сообщением!\nА затем жмякните реакцию "Готово"<:mark:685057435161198594>',
+          color: embed.color,
+        });
+        await context.previewMessage.awaitReact(
+          { user, removeType: "one" },
+          "685057435161198594",
+        );
+        const reactions = Array.from(collector.reactions.cache.keys());
+        context.addable.reactions = reactions;
+
+        collector.delete();
+        await context.previewMessage.reactions.removeAll();
+      },
+    },
+    {
+      emoji: "🪤",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        const { content: answer } = await Util.question({
+          channel,
+          user,
+          message: {
             title: "Ссылка на изображение",
-            embed: {
-              description: "Оно будет отображаться справа-сверху",
-              color: embed.color,
-            },
-          });
-          if (!answer) {
-            continue;
-          }
-          if (!answer.content.startsWith("http")) {
-            msg.msg({
-              title: "Вы должны указать ссылку на изображение",
-              color: "#ff0000",
-              delete: 3000,
-            });
-            continue;
-          }
-          context.embed.setThumbnail(answer.content);
-          react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
-          break;
+            description: "Оно будет отображаться справа-сверху",
+            color: embed.color,
+          },
+        });
 
-        case "🪄":
-          answer = await msg.channel.awaitMessage(msg.author, {
+        if (!answer.startsWith("http")) {
+          channel.msg({
+            title: "Вы должны указать ссылку на изображение",
+            color: "#ff0000",
+            delete: 7_000,
+          });
+          return;
+        }
+        embed.thumbnail = answer;
+      },
+    },
+    {
+      emoji: "🪄",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        const { content: answer } = await Util.question({
+          channel,
+          user,
+          message: {
             title: "Ссылка на изображение",
-            embed: {
-              description: "Оно будет отображаться в нижней части эмбеда",
-              color: embed.color,
-            },
-          });
-          if (!answer) {
-            continue;
-          }
-          if (!answer.content.startsWith("http")) {
-            msg.msg({
-              title: "Вы должны указать ссылку на изображение",
-              color: "#ff0000",
-              delete: 3000,
-            });
-            continue;
-          }
-          context.embed.setImage(answer.content);
-          react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
-          break;
+            description: "Оно будет отображаться в нижней части эмбеда",
+            color: embed.color,
+          },
+        });
 
-        case "🧱":
-          const name = await msg.channel.awaitMessage(msg.author, {
+        if (!answer.startsWith("http")) {
+          channel.msg({
+            title: "Вы должны указать ссылку на изображение",
+            color: "#ff0000",
+            delete: 7_000,
+          });
+          return;
+        }
+        embed.image = answer;
+      },
+    },
+    {
+      emoji: "🧱",
+      async callback(context) {
+        const { channel, user, embed } = context;
+
+        const { content: name } = await Util.question({
+          channel,
+          user,
+          message: {
             title: "Укажите имя для этой области",
-            embed: {
-              fields: [
-                {
-                  name: "Так отображается **название**",
-                  value: "Тут будет значение",
-                },
-              ],
-              color: embed.color,
-            },
-          });
-          if (!name) {
-            continue;
-          }
-          const value = await msg.channel.awaitMessage(msg.author, {
+            fields: [
+              {
+                name: "{Так отображается **название**}",
+                value: "Тут будет значение",
+              },
+            ],
+            color: embed.color,
+          },
+        });
+        if (!name) {
+          return;
+        }
+        const { content: value } = await Util.question({
+          channel,
+          user,
+          message: {
             title: "Введите значение",
-            embed: {
-              fields: [{ name: name, value: "Тут будет значение" }],
-              color: embed.color,
-            },
-          });
-          if (!value) {
-            continue;
-          }
-          context.embed.addFields([{ name, value, inline: true }]);
-          react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
-          break;
+            fields: [{ name, value: "{Тут будет значение}" }],
+            color: embed.color,
+          },
+        });
 
-        case "🕵️":
-          answer = await msg.channel.awaitMessage(msg.author, {
+        if (!value) {
+          return;
+        }
+        embed.fields ||= [];
+        embed.fields.push({ name, value, inline: true });
+      },
+    },
+    {
+      emoji: "🕵️",
+      async callback(context) {
+        const { channel, user, embed } = context;
+        const { value: response } = await Util.question({
+          channel,
+          user,
+          message: {
             title:
-              "Укажите имя и ссылку на аватар Вебхука, от имени которого будет отправляться эмбед-сообщение.",
-            embed: {
-              description:
-                "Если вы собираетесь использовать уже имеющийся вебхук, укажите только его имя.\nДля каждого канала, в который будет отправлено сообщение создаётся свой собственный вебхук.",
-              color: embed.color,
-            },
-          });
-          if (!answer) {
-            continue;
-          }
+              "Укажите имя и ссылку на аватар вебхука, от имени которого будет отправляться эмбед-сообщение.",
+            description:
+              "Если вы собираетесь использовать уже имеющийся вебхук, укажите только его имя.\nДля каждого канала, в который будет отправлено сообщение создаётся отдельный вебхук.",
+            color: embed.color,
+          },
+        });
 
-          const avatar = Util.match(answer, /http\S+/);
-          if (avatar) {
-            answer.content = answer.content.replace(avatar, "").trim();
-          }
+        if (!response) {
+          return;
+        }
 
-          context.embed.webhook = { name: answer.content, avatar };
-          react = ["640449848050712587", "🧱", "🪄", "🪤", "🕵️"];
-          msg.msg({
-            title: "Успешно!",
-            author: { name: answer.content, iconURL: avatar },
-            delete: 3000,
-          });
-          break;
+        const avatar = Util.match(response.content, /http\S+/);
+        if (avatar) {
+          response.content = response.content.replace(avatar, "").trim();
+        }
 
-        case "640449848050712587":
-          // Arror-Left
-          await context.previewMessage.reactions.removeAll();
-          break;
+        context.addable.webhook = { name: response.content, iconURL: avatar };
+        channel.msg({
+          description:
+            "Успешно установлен вебхук, от имени которого отправится эмбед",
+          author: {
+            name: response.content,
+            iconURL: avatar || context.command.DEFAULT_WEBHOOK_ICON_URL,
+          },
+          delete: 9_000,
+        });
+      },
+    },
+    {
+      emoji: "640449848050712587",
+      async callback(context) {
+        // Arror-Left
+        await context.previewMessage.reactions.removeAll();
+        context.reactionsPool = context.command.DEFAULT_REACTIONS_POOL;
+      },
+    },
+    {
+      emoji: "640449832799961088",
+      async callback(context) {
+        const { channel, user, embed, guild } = context;
+        // Send Embed-Message
+        await context.previewMessage.reactions.removeAll();
 
-        case "640449832799961088":
-          // Send Embed-Message
-          await context.previewMessage.reactions.removeAll();
-          const whatChannelSend = await msg.msg({
-            title: "Введите Айди канала или упомяните его для отправки эмбеда",
+        const response = await Util.question({
+          channel,
+          user,
+          message: {
+            title: "Введите айди канала или упомяните его для отправки эмбеда",
             color: embed.color,
             description:
               "Или используйте реакцию <:arrowright:640449832799961088>, чтобы отправить в этот канал.",
+            reactions: ["640449832799961088"],
+          },
+        });
+
+        if (!response.value) {
+          return;
+        }
+
+        const target =
+          response.emoji === "640449832799961088"
+            ? channel
+            : guild.channels.cache.get(
+                response.content.match(FormattingPatterns.Channel)?.groups.id,
+              );
+
+        if (!target) {
+          channel.msg({
+            title: "Канал не существует",
+            color: "#ff0000",
+            delete: 7500,
           });
-          answer = await Util.awaitReactOrMessage(
-            whatChannelSend,
-            msg.author,
-            "640449832799961088",
-          );
-          whatChannelSend.delete();
-
-          if (!answer) {
-            continue;
-          }
-
-          let channel =
-            answer === "640449832799961088"
-              ? msg.channel
-              : false ||
-                answer.mentions.channels.first() ||
-                msg.guild.channels.cache.get(answer.content) ||
-                client.channels.cache.get(answer.content);
-
-          if (!channel) {
-            msg.channel.msg({
-              title: "Канал не существует",
-              color: "#ff0000",
-              delete: 4500,
-            });
-            continue;
-          }
-
-          if (!channel.guild.members.resolve(msg.author)) {
-            msg.channel.msg({
-              title:
-                "Вы должны присутствовать на сервере, которому предналежит этот канал, чтобы отправить Эмбед-сообщение",
-              color: "#ff0000",
-              delete: 4500,
-            });
-            continue;
-          }
-
-          if (
-            channel.guild.members
-              .resolve(msg.author)
-              .wastedPermissions(18432, channel)[0]
-          ) {
-            msg.channel.msg({
-              title:
-                "В указанный канале у вас нет права отправлять Эмбед-сообщения ",
-              color: "#ff0000",
-              delete: 4500,
-            });
-            continue;
-          }
-
-          if (context.embed.webhook) {
-            const webhooks = await channel.fetchWebhooks();
-            let hook = webhooks.find(
-              (e) => e.name === context.embed.webhook.name,
-            );
-
-            if (hook && context.embed.webhook.avatar) {
-              await webhook.edit({ avatar: context.embed.webhook.avatar });
-            }
-
-            if (!hook) {
-              hook = await channel.createWebhook(context.embed.webhook.name, {
-                avatar:
-                  context.embed.webhook.avatar ||
-                  "https://www.emojiall.com/images/240/openmoji/1f7e9.png",
-                reason: `${msg.author.tag} (${msg.author.id}) Created a message with Embed-constructor`,
-              });
-            }
-            channel = hook;
-          }
-
-          await channel.msg({ content: context.embed, reactions: reactions });
-          react = ["✏️", "❌", "640449832799961088"];
-          break;
-
-        case "❌":
-          context.previewMessage.delete();
           return;
+        }
 
-        case "✏️":
-          context.previewMessage.reactions.removeAll();
-          break;
-
-        default:
+        if (
+          target.guild.members
+            .resolve(user)
+            .wastedPermissions(18432n, target)[0]
+        ) {
+          target.msg({
+            title:
+              "В указанный канале у вас нет права отправлять эмбед-сообщения ",
+            color: "#ff0000",
+            delete: 7_500,
+          });
           return;
+        }
+
+        context.command.sendEmbedMessageTo(target, context);
+        context.reactionsPool = context.command.BEFORE_SEND_REACTIONS_POOL;
+      },
+    },
+    {
+      emoji: "❌",
+      async callback(context) {
+        await context.previewMessage.delete();
+        context.end();
+      },
+    },
+    {
+      emoji: "✏️",
+      async callback(context) {
+        await context.previewMessage.reactions.removeAll();
+        context.reactionsPool = context.command.DEFAULT_REACTIONS_POOL;
+      },
+    },
+  ];
+
+  async getOrInsertWebhookIn(channel, context) {
+    const {
+      user,
+      addable: { webhook },
+    } = context;
+    const webhooks = await channel.fetchWebhooks();
+
+    let hook = webhooks.find((compare) => compare.name === webhook.name);
+
+    if (hook && webhook.avatar) {
+      await webhook.edit({ avatar: webhook.avatar });
+    }
+
+    if (!hook) {
+      const avatar = webhook.avatar || this.DEFAULT_WEBHOOK_ICON_URL;
+
+      hook = await channel.createWebhook({
+        name: webhook.name,
+        avatar,
+        reason: `${user.tag} (${user.id}) Created a message with Embed-constructor`,
+      });
+    }
+    return hook;
+  }
+
+  async sendEmbedMessageTo(channel, context) {
+    const {
+      embed,
+      addable: { webhook, reactions },
+    } = context;
+    const target = webhook
+      ? await this.getOrInsertWebhookIn(channel, context)
+      : channel;
+
+    target.msg({ ...embed, reactions });
+  }
+
+  DEFAULT_REACTIONS_POOL = [
+    "📌",
+    "🎨",
+    "🎬",
+    "👤",
+    "🎏",
+    "📥",
+    "😆",
+    "640449832799961088",
+  ];
+  WHEN_UNCOVERED_REACTIONS_POOL = [
+    "640449848050712587",
+    "🧱",
+    "🪄",
+    "🪤",
+    "🕵️",
+  ];
+  BEFORE_SEND_REACTIONS_POOL = ["✏️", "❌", "640449832799961088"];
+
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    Object.assign(context.embed, this.createBaseEmbed(interaction.params));
+
+    const { user, channel } = context;
+    context.previewMessage = await channel.msg(context.embed);
+
+    while (true) {
+      if (context.isEnded) {
+        return;
       }
 
+      const react = await context.previewMessage.awaitReact(
+        { user, removeType: "one" },
+        ...context.reactionsPool,
+      );
+
+      const action = this.actions.find(({ emoji }) => emoji === react);
+      if (!action) {
+        context.channel.msg({
+          description:
+            "Процесс создания эмбеда был завершен по истечению времени",
+          reference: context.previewMessage.id,
+        });
+        return;
+      }
+
+      await action.callback(context);
       context.updatePreviewMessage();
     }
   }
@@ -414,7 +528,8 @@ class Command extends BaseCommand {
     },
     alias: "ембед эмбед",
     allowDM: true,
-    cooldown: 3_00_00,
+    cooldown: 10_000,
+    cooldownTry: 3,
     type: "guild",
     ChannelPermissions: 16384n,
   };
