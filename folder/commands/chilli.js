@@ -303,7 +303,7 @@ class Command extends BaseCommand {
     Object.keys(chilli.players).forEach((id) => {
       const user = client.users.cache.get(id);
       user.action(Actions.chilliBooh, context);
-      RewardSystem.putReward(user, context, reward)
+      RewardSystem.putReward(user, context, reward);
     });
 
     channel.msg({
