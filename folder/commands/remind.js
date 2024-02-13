@@ -40,7 +40,7 @@ class CommandRunContext extends BaseCommandRunContext {
     this.problems.push(text);
   }
 
-  static new(interaction, command) {
+  static async new(interaction, command) {
     const context = new this(interaction, command);
 
     const { userData } = interaction;
@@ -60,8 +60,8 @@ class CommandRunContext extends BaseCommandRunContext {
 class Command extends BaseCommand {
   EVENT_NAME = "remind";
 
-  getContext(interaction) {
-    return CommandRunContext.new(interaction, this);
+  async getContext(interaction) {
+    return await CommandRunContext.new(interaction, this);
   }
 
   stampsToTime(parser) {
@@ -104,7 +104,7 @@ class Command extends BaseCommand {
   }
 
   async run(interaction) {
-    const context = this.getContext(interaction);
+    const context = await this.getContext(interaction);
     const { timeParser } = context;
     if (timeParser.items.length === 0) {
       this.displayUserRemindsInterface(context);
