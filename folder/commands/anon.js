@@ -4,7 +4,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
-  addResource,
+  addMultipleResources,
   escapeRegexp,
   getRandomElementFromArray,
   match,
@@ -257,21 +257,15 @@ class Command extends BaseCommand {
       });
     }
 
-    addResource({
+    addMultipleResources({
       user,
-      value: experience,
-      resource: PropertiesEnum.exp,
       executor: user,
       source: "command.anon.end",
       context,
-    });
-    addResource({
-      user,
-      value: bonuses,
-      resource: PropertiesEnum.chestBonus,
-      executor: user,
-      source: "command.anon.end",
-      context,
+      resources: {
+        [PropertiesEnum.exp]: experience,
+        [PropertiesEnum.chestBonus]: bonuses,
+      },
     });
 
     this.displayReward(context, { coinOdds, experience, bonuses });
