@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 import { Collection } from "@discordjs/collection";
 import {
   DataManager,
@@ -7,7 +9,15 @@ import {
 } from "#lib/modules/mod.js";
 import { Elements, elementsEnum } from "#folder/commands/thing.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import * as Util from "#lib/util.js";
+import {
+  NumberFormatLetterize,
+  addResource,
+  ending,
+  random,
+  sleep,
+  timestampDay,
+  timestampToDate,
+} from "#lib/util.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 import app from "#app";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
@@ -17,6 +27,110 @@ import {
 } from "#lib/modules/EffectsManager.js";
 import { MONTH } from "#constants/globals/time.js";
 
+class RewardSystem {
+  static LevelKill = {
+    BASE: 100,
+    ADDING_PER_LEVEL: 25,
+    calculateKillExpReward({ toLevel, fromLevel }) {
+      const { BASE, ADDING_PER_LEVEL } = this;
+      const perLevel =
+        BASE + (toLevel + fromLevel + 1) * (ADDING_PER_LEVEL / 2);
+      return perLevel * (toLevel - fromLevel);
+    },
+    resources({ fromLevel, toLevel }) {
+      return {
+        exp: this.calculateKillExpReward({ fromLevel, toLevel }),
+      };
+    },
+  };
+  static Chest = {
+    BASE_BONUSES: 50,
+    BONUSES_PER_LEVEL: 10,
+    DAMAGE_FOR_KEY: 5_000,
+    KEYS_LIMIT: 10_000,
+    calculateChestBonus(level) {
+      return this.BASE_BONUSES + level * this.BONUSES_PER_LEVEL;
+    },
+    calculateKeys(userStats) {
+      const value = Math.floor(userStats.damageDealt / this.DAMAGE_FOR_KEY);
+      return Math.min(this.KEYS_LIMIT, value);
+    },
+    resources({ userStats, level }) {
+      return {
+        chestBonus: this.calculateChestBonus(level),
+        keys: this.calculateKeys(userStats),
+      };
+    },
+  };
+  static BossEndPull = {
+    DEFAULT_VOID: 1,
+    VOID_REWARD_DENOMINATOR: 0.8,
+    VOID_LIMIT_MULTIPLAYER: 3,
+    BONUS_VOID_PULL: 3,
+    DAMAGE_FOR_VOID: 150_000,
+    GUARANTEE_DAMAGE_PART_FOR_VOID: 0.2,
+    DAMAGE_FOR_KEY: 5_000,
+    KEYS_LIMIT: 10_000,
+    calculateVoid({ userStats, level }) {
+      const numerator =
+        Math.random() * userStats.damageDealt +
+        userStats.damageDealt * this.GUARANTEE_DAMAGE_PART_FOR_VOID;
+      const byDamage =
+        (numerator / this.DAMAGE_FOR_VOID) ** this.VOID_REWARD_DENOMINATOR;
+      const byRandom = Number(random(this.BONUS_VOID_PULL) === 1);
+      const limit = level * this.VOID_LIMIT_MULTIPLAYER;
+      const value = Math.floor(byDamage + byRandom) + this.DEFAULT_VOID;
+      return Math.min(limit, value);
+    },
+    calculateKeys(userStats) {
+      const value = Math.floor(userStats.damageDealt / this.DAMAGE_FOR_KEY);
+      return Math.min(this.KEYS_LIMIT, value);
+    },
+    resources({ userStats, level }) {
+      return {
+        void: this.calculateVoid({ userStats, level }),
+        keys: this.calculateKeys(userStats),
+      };
+    },
+  };
+  static MostStrongUser = {
+    VOID_REWARD: 3,
+    calculateVoid() {
+      return this.VOID_REWARD;
+    },
+    resources() {
+      return {
+        void: this.calculateVoid(),
+      };
+    },
+  };
+  static GuildHarvest = {
+    REWARD_PER_LEVEL: 1_000,
+    onBossEnded(guild, boss) {
+      const value = boss.level * this.REWARD_PER_LEVEL;
+      RewardSystem.putCoinsToBank(guild, value);
+    },
+  };
+  /**
+   *
+   * @param {Parameters<typeof addResource>[0]} addResourceOptions
+   * @param {Record<string, number>} rewardPull
+   */
+  static sendReward(addResourceOptions, rewardPull) {
+    for (const [resource, value] of Object.entries(rewardPull)) {
+      addResource({
+        ...addResourceOptions,
+        resource,
+        value,
+      });
+    }
+  }
+  static putCoinsToBank(guild, value) {
+    guild.data.coins ||= 0;
+    guild.data.coins += value;
+  }
+}
+
 class Speacial {
   static AVATAR_OF_SNOW_QUEEN =
     "https://media.discordapp.net/attachments/926144032785195059/1189474240974565436/b9183b53bdf18835d4c337f06761d95d_1400x790-q-85_1_1.webp?ex=659e4b36&is=658bd636&hm=0889765cc144e316843ab5ad88144db1ae96f9c21f4747f303860d647200cf00&=&format=webp";
@@ -24,9 +138,65 @@ class Speacial {
   static isSnowQueen(boss) {
     return boss.avatarURL === Speacial.AVATAR_OF_SNOW_QUEEN;
   }
+
+  static findMostDamageDealtUser(boss) {
+    const damageOf = (entrie) => entrie[1].damageDealt;
+    const [id] = Object.entries(boss.users).reduce((previous, compare) =>
+      damageOf(compare) > damageOf(previous) ? compare : previous,
+    );
+    return app.client.users.cache.get(id);
+  }
+
+  static LegendaryWearonList = new Collection(
+    Object.entries({
+      afkPower: {
+        description: "Урон ваших атак будет расти за время простоя",
+        effect: "boss.increaseDamageByAfkTime",
+        emoji: "❄️",
+        values: {
+          power: () => 1 / (60_000 * 10),
+        },
+      },
+      percentDamage: {
+        description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
+        effect: "boss.increaseDamageByBossCurrentHealthPoints",
+        emoji: "🩸",
+        values: {
+          power: () => 0.0005,
+        },
+      },
+      manyEvent: {
+        description: "Увеличивает количество событий атаки на 3",
+        effect: "boss.increaseAttackEventsCount",
+        emoji: "✨",
+        values: {
+          power: () => 3,
+        },
+      },
+      togetherWeAre: {
+        description:
+          "Каждая ваша атака увеличивает урон по боссу независимо от кубика",
+        effect: "boss.increaseDamageForBoss",
+        emoji: "💧",
+        values: {
+          power: () => 0.0005,
+        },
+      },
+      complexWork: {
+        description:
+          "Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону",
+        effect: "boss.increaseDamageWhenStrictlyMessageChallenge",
+        emoji: "🎈",
+        values: {
+          power: () => 1.1,
+          basic: () => 20,
+        },
+      },
+    }),
+  );
 }
 
-class BossUtils {
+class Utils {
   static damageTypeLabel(value) {
     const numeric =
       typeof value === "string" ? BossManager.DAMAGE_SOURCES[value] : value;
@@ -34,7 +204,7 @@ class BossUtils {
   }
 }
 
-class BossShop {
+class AttributesShop {
   static async createShop({ guild, channel, user }) {
     const boss = guild.data.boss;
 
@@ -66,13 +236,13 @@ class BossShop {
         )
         .join("\n");
 
-      const descriptionContent = `Приобретите эти товары! Ваши экономические возможности:\n${Util.ending(
+      const descriptionContent = `Приобретите эти товары! Ваши экономические возможности:\n${ending(
         data.coins,
         "монет",
         "",
         "а",
         "ы",
-      )} <:coin:637533074879414272> и ${Util.ending(
+      )} <:coin:637533074879414272> и ${ending(
         data.keys,
         "ключ",
         "ей",
@@ -262,7 +432,7 @@ class BossEvents {
         callback(boss, context) {
           const now = Date.now();
           const contents = {
-            time: Util.timestampToDate(
+            time: timestampToDate(
               now -
                 (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) *
                   86_400_000,
@@ -389,7 +559,7 @@ class BossEffects {
   static effectBases;
 }
 
-class BossRelics {
+class Relics {
   static collection = new Collection(
     Object.entries({
       destroy: {
@@ -465,54 +635,6 @@ class BossRelics {
   }
 }
 
-const LegendaryWearonList = new Collection(
-  Object.entries({
-    afkPower: {
-      description: "Урон ваших атак будет расти за время простоя",
-      effect: "boss.increaseDamageByAfkTime",
-      emoji: "❄️",
-      values: {
-        power: () => 1 / (60_000 * 10),
-      },
-    },
-    percentDamage: {
-      description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
-      effect: "boss.increaseDamageByBossCurrentHealthPoints",
-      emoji: "🩸",
-      values: {
-        power: () => 0.0005,
-      },
-    },
-    manyEvent: {
-      description: "Увеличивает количество событий атаки на 3",
-      effect: "boss.increaseAttackEventsCount",
-      emoji: "✨",
-      values: {
-        power: () => 3,
-      },
-    },
-    togetherWeAre: {
-      description:
-        "Каждая ваша атака увеличивает урон по боссу независимо от кубика",
-      effect: "boss.increaseDamageForBoss",
-      emoji: "💧",
-      values: {
-        power: () => 0.0005,
-      },
-    },
-    complexWork: {
-      description:
-        "Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону",
-      effect: "boss.increaseDamageWhenStrictlyMessageChallenge",
-      emoji: "🎈",
-      values: {
-        power: () => 1.1,
-        basic: () => 20,
-      },
-    },
-  }),
-);
-
 class BossManager {
   static MAIN_COLOR = "";
   static ELITE_MAIN_COLOR = "";
@@ -561,9 +683,9 @@ class BossManager {
     const date = new Date(
       now.getFullYear(),
       now.getMonth() + 1,
-      Util.random(MIN, MAX),
+      random(MIN, MAX),
     );
-    return Util.timestampDay(date.getTime());
+    return timestampDay(date.getTime());
   }
 
   static generateEndDate(customDuration) {
@@ -721,18 +843,24 @@ class BossManager {
     });
   }
 
-  static calculateKillReward({ fromLevel, toLevel }) {
-    const ADDING_PER_LEVEL = 25;
-    const perLevel = 100 + (toLevel + fromLevel + 1) * (ADDING_PER_LEVEL / 2);
-    return perLevel * (toLevel - fromLevel);
-  }
-
   static kill(context) {
     const { boss, sourceUser, fromLevel, toLevel } = context;
-    const expReward = this.calculateKillReward({ fromLevel, toLevel });
+    const { LevelKill, sendReward } = RewardSystem;
+    const { exp: expReward } = LevelKill.resources({
+      fromLevel,
+      toLevel,
+    });
 
     if (sourceUser) {
-      sourceUser.data.exp += expReward;
+      sendReward(
+        {
+          user: sourceUser,
+          executor: sourceUser,
+          source: "bossManager.kill",
+          context,
+        },
+        { exp: expReward },
+      );
     }
 
     BossEvents.onBossDeath(boss, { fromLevel, toLevel, sourceUser });
@@ -786,58 +914,10 @@ class BossManager {
   }
 
   static BonusesChest = {
-    BASE_BONUSES: 50,
-    BONUSES_PER_LEVEL: 10,
     RECEIVE_LIMIT: 20,
-    BONUS_VOID_PULL: 3,
-    DAMAGE_FOR_VOID: 150_000,
-    GUARANTEE_DAMAGE_PART_FOR_VOID: 0.2,
-    VOID_REWARD_DENOMINATOR: 0.8,
-    VOID_LIMIT_MULTIPLAYER: 3,
-    DAMAGE_FOR_KEY: 5_000,
-    KEYS_LIMIT: 10_000,
     MAIN_COLOR: "#ffda73",
 
-    createRewardPull: ({ userStats, level, bonuses = true }) => {
-      const BossChest = BossManager.BonusesChest;
-
-      // chestBonus
-      const bonusesReward =
-        BossChest.BASE_BONUSES + level * BossChest.BONUSES_PER_LEVEL;
-
-      // void
-      const numerator =
-        Math.random() * userStats.damageDealt +
-        userStats.damageDealt * BossChest.GUARANTEE_DAMAGE_PART_FOR_VOID;
-
-      const byDamage =
-        (numerator / BossChest.DAMAGE_FOR_VOID) **
-        BossChest.VOID_REWARD_DENOMINATOR;
-
-      const voidByRandom = Number(Util.random(BossChest.BONUS_VOID_PULL) === 1);
-
-      const voidLimit = level * BossChest.VOID_LIMIT_MULTIPLAYER;
-
-      const voidReward = Math.min(
-        voidLimit,
-        Math.floor(byDamage + voidByRandom),
-      );
-
-      // keys
-      const keysReward = Math.min(
-        BossChest.KEYS_LIMIT,
-        Math.floor(userStats.damageDealt / BossChest.DAMAGE_FOR_KEY),
-      );
-
-      const rewards = {
-        chestBonus: bonuses ? bonusesReward : 0,
-        void: voidReward,
-        keys: keysReward,
-      };
-      return rewards;
-    },
     createEmbed: ({ fromLevel, toLevel, taking }) => {
-      const levelsDiff = toLevel - fromLevel;
       const contents = {
         rewardPer: `Получите бонусы за победу над боссом ур. ${toLevel}`,
         timeLimit: `Время ограничено двумя часами с момента отправки этого сообщения`,
@@ -882,8 +962,8 @@ class BossManager {
         filter,
         time: 3_600_000 * 2,
       });
-      collector.on("collect", (_reaction, user) => {
-        const result = BossChest.onCollect(user, context);
+      collector.on("collect", (reaction, user) => {
+        const result = BossChest.onCollect(user, context, reaction);
         if (!result) {
           return;
         }
@@ -896,7 +976,7 @@ class BossManager {
 
       collector.on("end", () => context.message.delete());
     },
-    onCollect: (user, context) => {
+    onCollect: (user, context, reaction = null) => {
       const { toLevel, message, guild } = context;
       const boss = guild.data.boss;
       if (!boss) {
@@ -905,6 +985,7 @@ class BossManager {
           delete: 5_000,
           footer: { text: user.username, avatarURL: user.avatarURL() },
         });
+        reaction?.remove();
         return;
       }
       const userStats = BossManager.getUserStats(boss, user.id);
@@ -914,47 +995,37 @@ class BossManager {
           title: `Вы уже взяли награду на ур. ${userStats.chestRewardAt}`,
           delete: 5000,
         });
+        reaction?.remove();
         return;
       }
 
-      const rewardPull = BossManager.BonusesChest.createRewardPull({
-        level: toLevel,
-        userStats,
-        bonuses: true,
-      });
-      for (const [resource, value] of Object.entries(rewardPull)) {
-        user.action(Actions.resourceChange, {
-          value,
+      const { Chest } = RewardSystem;
+
+      const rewardPull = Chest.resources({ userStats, level: toLevel });
+      RewardSystem.sendReward(
+        {
+          user,
           executor: user,
           source: "bossManager.chest.onCollect",
-          resource,
           context,
-        });
-      }
+        },
+        rewardPull,
+      );
 
       userStats.chestRewardAt = toLevel;
-      BossManager.BonusesChest.sendReward(user, rewardPull);
       message.msg({
-        description: `Получено ${Util.ending(
+        description: `Получено ${ending(
           rewardPull.chestBonus,
           "бонус",
           "ов",
           "",
           "а",
-        )} для сундука <a:chest:805405279326961684>, ${rewardPull.keys} 🔩 и ${
-          rewardPull.void
-        } <a:void:768047066890895360>`,
+        )} для сундука <a:chest:805405279326961684> и ${rewardPull.keys} 🔩`,
         color: BossManager.BonusesChest.MAIN_COLOR,
         delete: 7000,
       });
 
       return true;
-    },
-    sendReward(user, rewardPull) {
-      const userData = user.data;
-      Object.entries(rewardPull).forEach(
-        ([key, count]) => (userData[key] = (userData[key] ?? 0) + (count || 0)),
-      );
     },
   };
 
@@ -973,7 +1044,7 @@ class BossManager {
       return;
     }
 
-    await Util.sleep(3000);
+    await sleep(3000);
 
     const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
     const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по завершении участники получат небольшую награду`;
@@ -987,14 +1058,6 @@ class BossManager {
     await guild.chatSend(embed);
   }
 
-  static rewardToBank(guild) {
-    const REWARD_PER_LEVEL = 1_000;
-    const guildData = guild.data;
-    guildData.coins ||= 0;
-    const { boss } = guildData;
-    guildData.coins += boss.level * REWARD_PER_LEVEL;
-  }
-
   static async beforeEnd(guild) {
     const boss = guild.data.boss;
     const usersCache = guild.client.users.cache;
@@ -1003,28 +1066,43 @@ class BossManager {
       guild.chatSend({ content: "Босс покинул сервер в страхе..." });
       return;
     }
-    const DAMAGE_THRESHOLDER_FOR_REWARD = 1_500;
-    const createRewardPull = BossManager.BonusesChest.createRewardPull;
 
-    const sendReward = ([id, userStats]) => {
+    const DAMAGE_THRESHOLDER_FOR_REWARD = 1_500;
+    const { BossEndPull, GuildHarvest, MostStrongUser, LevelKill, sendReward } =
+      RewardSystem;
+    GuildHarvest.onBossEnded(guild, boss);
+
+    const mostStrongUser = (() => {
+      const pull = MostStrongUser.resources();
+      const { findMostDamageDealtUser } = Speacial;
+      const user = findMostDamageDealtUser(boss);
+      sendReward(
+        {
+          source: "bossManager.beforeEnd.mostStrongUser",
+          user,
+          context: { boss },
+          executor: null,
+        },
+        pull,
+      );
+      return user;
+    })();
+
+    const sendReward_ = ([id, userStats]) => {
       const user = usersCache.get(id);
-      const rewardPull = createRewardPull({
-        bonuses: false,
+      const rewardPull = BossEndPull.resources({
         userStats,
         level: boss.level,
       });
-      rewardPull.void = (rewardPull.void || 0) + 1;
-
-      for (const [resource, value] of Object.entries(rewardPull)) {
-        user.action(Actions.resourceChange, {
-          value,
+      sendReward(
+        {
+          user,
           executor: null,
-          source: "bossManager.beforeEnd.sendReward",
-          resource,
+          source: "bossManager.beforeEnd.bossEndPull",
           context: { boss, rewardPull },
-        });
-      }
-      BossManager.BonusesChest.sendReward(user, rewardPull);
+        },
+        rewardPull,
+      );
     };
 
     const cleanEffects = (user) => {
@@ -1033,13 +1111,12 @@ class BossManager {
     };
 
     const usersStatsEntries = Object.entries(boss.users);
-    this.rewardToBank(guild);
 
     usersStatsEntries
       .filter(
         ([_id, { damageDealt }]) => damageDealt > DAMAGE_THRESHOLDER_FOR_REWARD,
       )
-      .forEach(sendReward);
+      .forEach(sendReward_);
 
     usersStatsEntries.map(([id]) => usersCache.get(id)).forEach(cleanEffects);
 
@@ -1063,11 +1140,11 @@ class BossManager {
       ).toFixed(2)};`,
       bossLevel: `Достигнутый уровень: ${
         boss.level
-      } (${this.calculateKillReward({
+      } (${LevelKill.calculateKillExpReward({
         fromLevel: 1,
         toLevel: boss.level,
       })} опыта)`,
-      damageDealt: `Совместными усилиями участники сервера нанесли **${Util.NumberFormatLetterize(
+      damageDealt: `Совместными усилиями участники сервера нанесли **${NumberFormatLetterize(
         boss.damageTaken,
       )}** ед. урона`,
       mainDamageType: `Основной источник: **${
@@ -1079,7 +1156,7 @@ class BossManager {
         2,
       )}% (${weakestDamage.at(1)} ед.)`,
       attacksCount: `Совершено прямых атак: ${boss.stats.userAttacksCount}`,
-      usersCount: `Приняло участие: ${Util.ending(
+      usersCount: `Приняло участие: ${ending(
         participants.length,
         "человек",
         "",
@@ -1088,8 +1165,11 @@ class BossManager {
       )}`,
       parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
       rewards: `Пользователи получают ключи в количестве равном ${
-        100 / BossManager.BonusesChest.DAMAGE_FOR_KEY
+        100 / BossEndPull.DAMAGE_FOR_KEY
       }% от нанесенного урона и примерно случайное количество нестабильности в зависимости от нанесенного урона`,
+      mostStrongUser: `Сильнельший атакер: ${mostStrongUser.toString()}: ${NumberFormatLetterize(
+        boss.users[mostStrongUser.id].damageDealt,
+      )} ед., — он получает 3 нестабильности`,
       invisibleSpace: "⠀",
     };
 
@@ -1106,7 +1186,7 @@ class BossManager {
       disabled: true,
     };
 
-    const description = `🧩 ${contents.dice}\n${contents.bossLevel}\n\n${contents.damageDealt}.\n${contents.mainDamageType}\n${contents.weakestDamageType}\n${contents.attacksCount}\n\n🩸 ${contents.usersCount}. ${contents.parting}\n${contents.rewards}.\n\n${contents.invisibleSpace}`;
+    const description = `🧩 ${contents.dice}\n${contents.bossLevel}\n\n${contents.damageDealt}.\n${contents.mainDamageType}\n${contents.weakestDamageType}\n${contents.attacksCount}\n\n🩸 ${contents.usersCount}. ${contents.parting}\n${contents.mostStrongUser}.\n${contents.rewards}.\n\n${contents.invisibleSpace}`;
     const embed = {
       title: "Среди ночи он покинул сервер",
       description,
@@ -1163,7 +1243,7 @@ class BossManager {
 
     const footer = { iconURL: user.avatarURL(), text: user.tag };
     if (userStats.attack_CD > Date.now()) {
-      const description = `**${Util.timestampToDate(
+      const description = `**${timestampToDate(
         userStats.attack_CD - Date.now(),
       )}**. Дождитесь подготовки перед атакой.`;
       channel.msg({
@@ -1182,7 +1262,7 @@ class BossManager {
       damageMultiplayer: 1,
       listOfEvents: [],
       defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
-      eventsCount: Math.floor(boss.level ** 0.5) + Util.random(-1, 1),
+      eventsCount: Math.floor(boss.level ** 0.5) + random(-1, 1),
       message: null,
     };
 
@@ -1265,7 +1345,7 @@ class BossManager {
     const eventsContent = attackContext.listOfEvents
       .map((event) => `・ ${event.description}.`)
       .join("\n");
-    const description = `Нанесено урона с прямой атаки: ${Util.NumberFormatLetterize(
+    const description = `Нанесено урона с прямой атаки: ${NumberFormatLetterize(
       dealt,
     )} ед.\n\n${eventsContent}`;
     (() => {
@@ -1362,7 +1442,7 @@ class BossManager {
           };
 
           channel.sendTyping();
-          await Util.sleep(2000);
+          await sleep(2000);
           const executorMessage = await parentContext.fetchMessage();
 
           const embed = {
@@ -1458,8 +1538,8 @@ class BossManager {
                 return { adding };
               })();
 
-              if (Util.random(20) === 0) {
-                embed.description += `\n~ Перезарядка увеличена ещё на ${Util.timestampToDate(
+              if (random(20) === 0) {
+                embed.description += `\n~ Перезарядка увеличена ещё на ${timestampToDate(
                   adding,
                 )}`;
                 collector.stop();
@@ -1519,7 +1599,7 @@ class BossManager {
           };
 
           channel.sendTyping();
-          await Util.sleep(2000);
+          await sleep(2000);
 
           const message = await channel.msg(embed);
           const filter = ({ emoji }, member) =>
@@ -1530,7 +1610,7 @@ class BossManager {
             max: 1,
           });
           collector.on("collect", (reaction) => {
-            const isLucky = Util.random(0, 1);
+            const isLucky = random(0, 1);
             const emoji = reaction.emoji.name;
 
             if (!isLucky) {
@@ -1584,16 +1664,15 @@ class BossManager {
         id: "selectLegendaryWearon",
         description: "Требуется совершить выбор",
         callback: async (context) => {
+          const { LegendaryWearonList: wearons } = Speacial;
           const { user, channel, userStats, guild } = context;
-          const reactions = [...LegendaryWearonList.values()].map(
-            ({ emoji }) => emoji,
-          );
+          const reactions = [...wearons.values()].map(({ emoji }) => emoji);
           const getLabel = ({ description, emoji }) =>
             `${emoji} ${description}.`;
           const embed = {
-            description: `**Выберите инструмент с привлекательным для Вас эпическим эффектом:**\n${LegendaryWearonList.map(
-              getLabel,
-            ).join("\n")}`,
+            description: `**Выберите инструмент с привлекательным для Вас эпическим эффектом:**\n${wearons
+              .map(getLabel)
+              .join("\n")}`,
             color: "#3d17a0",
             reactions,
             footer: {
@@ -1603,7 +1682,7 @@ class BossManager {
           };
 
           channel.sendTyping();
-          await Util.sleep(2000);
+          await sleep(2000);
 
           const message = await channel.msg(embed);
           const filter = ({ emoji }, member) =>
@@ -1615,9 +1694,7 @@ class BossManager {
           });
           collector.on("collect", async (reaction) => {
             const emoji = reaction.emoji.name;
-            const wearon = LegendaryWearonList.find(
-              (wearon) => wearon.emoji === emoji,
-            );
+            const wearon = wearons.find((wearon) => wearon.emoji === emoji);
             if (!wearon) {
               throw new Error("Unexpected Exception");
             }
@@ -1641,7 +1718,7 @@ class BossManager {
               description: `Выбрано: ${wearon.description}`,
               reference: message.id,
             });
-            await Util.sleep(10_000);
+            await sleep(10_000);
             collector.stop();
           });
 
@@ -1669,7 +1746,7 @@ class BossManager {
           };
 
           channel.sendTyping();
-          await Util.sleep(2000);
+          await sleep(2000);
 
           const ingredients = [];
 
@@ -1705,7 +1782,7 @@ class BossManager {
                       userStats.attackCooldown * 0.8,
                     );
 
-                    const description = `Кулдаун снизился на ${Util.timestampToDate(
+                    const description = `Кулдаун снизился на ${timestampToDate(
                       current - userStats.attackCooldown,
                     )}`;
 
@@ -1868,7 +1945,7 @@ class BossManager {
             if (ingredients.length === MAX_INGEDIENTS) {
               collector.stop();
 
-              if (!Util.random(0, 15)) {
+              if (!random(0, 15)) {
                 const description =
                   "Вы попросту перевели ресурсы, варево неудалось";
                 channel.msg({
@@ -1999,7 +2076,7 @@ class BossManager {
           userStats.attackCooldown += adding;
           userStats.attack_CD += adding;
 
-          Util.addResource({
+          addResource({
             user,
             value: 1,
             resource: PropertiesEnum.void,
@@ -2059,11 +2136,10 @@ class BossManager {
 
             userData.bossRelics ||= [];
 
-            const relicKey = BossRelics.collection
+            const relicKey = Relics.collection
               .filter(
                 (relic) =>
-                  BossRelics.isUserHasRelic({ userData, relic }) &&
-                  relic.inPull,
+                  Relics.isUserHasRelic({ userData, relic }) && relic.inPull,
               )
               .randomKey();
 
@@ -2081,11 +2157,11 @@ class BossManager {
         TIMEOUT: 60_000 * 10,
         description: "Возглас лидера",
         async callback(context) {
-          await Util.sleep(1000);
+          await sleep(1000);
           const { guild, channel, boss, user } = context;
           const message = await context.fetchMessage();
           channel.sendTyping();
-          await Util.sleep(4000);
+          await sleep(4000);
 
           const owner = (await guild.fetchOwner())?.user ?? user;
 
@@ -2115,7 +2191,7 @@ class BossManager {
             reference: message.id,
             description: `Ждем до ${
               TIMEOUT / 60_000
-            } м., пока ${owner.toString()} нанесёт урон боссу. Вы нанесёте в ${Util.ending(
+            } м., пока ${owner.toString()} нанесёт урон боссу. Вы нанесёте в ${ending(
               MULTIPLAYER,
               "раз",
               "",
@@ -2142,9 +2218,9 @@ class BossManager {
               damageSourceType,
             },
           );
-          embed.description += `\n\nДождались.., — наносит ${baseDamage} базового урона от источника ${BossUtils.damageTypeLabel(
+          embed.description += `\n\nДождались.., — наносит ${baseDamage} базового урона от источника ${Utils.damageTypeLabel(
             damageSourceType,
-          )}.\nВы наносите в ${Util.ending(
+          )}.\nВы наносите в ${ending(
             MULTIPLAYER,
             "раз",
             "",
@@ -2237,19 +2313,12 @@ class BossManager {
   static USER_DEFAULT_ATTACK_COOLDOWN = 3_600_000 * 2;
   static USER_DEFAULT_ATTACK_DAMAGE = 10;
 
-  static BossShop = BossShop;
+  static BossShop = AttributesShop;
   static BossEvents = BossEvents;
-  static BossRelics = BossRelics;
+  static BossRelics = Relics;
   static BossEffects = BossEffects;
   static Speacial = Speacial;
 }
 
-export {
-  BossManager,
-  BossShop,
-  BossEvents,
-  BossEffects,
-  LegendaryWearonList,
-  Speacial as BossSpecial,
-};
+export { BossManager, AttributesShop, BossEvents, BossEffects, Speacial };
 export default BossManager;
