@@ -131,7 +131,7 @@ class RanksUtils {
         key: "curses",
         component: {
           value: "curses",
-          label: "Пережитых проклятий",
+          label: "Пережито проклятий",
           emoji: Emoji.curse.toString(),
         },
         value: (element) => {
