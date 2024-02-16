@@ -11,6 +11,7 @@ import { Elements, elementsEnum } from "#folder/commands/thing.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import {
   NumberFormatLetterize,
+  addMultipleResources,
   addResource,
   ending,
   random,
@@ -117,13 +118,10 @@ class RewardSystem {
    * @param {Record<string, number>} rewardPull
    */
   static sendReward(addResourceOptions, rewardPull) {
-    for (const [resource, value] of Object.entries(rewardPull)) {
-      addResource({
-        ...addResourceOptions,
-        resource,
-        value,
-      });
-    }
+    return addMultipleResources({
+      ...addResourceOptions,
+      resources: rewardPull,
+    });
   }
   static putCoinsToBank(guild, value) {
     guild.data.coins ||= 0;
