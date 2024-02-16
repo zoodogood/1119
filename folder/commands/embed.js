@@ -333,10 +333,14 @@ class Command extends BaseCommand {
           return;
         }
 
-        const avatar = Util.match(response.content, /http\S+/);
-        if (avatar) {
-          response.content = response.content.replace(avatar, "").trim();
-        }
+        const avatar =
+          (() => {
+            const url = Util.match(response.content, /http\S+/);
+            if (url) {
+              response.content = response.content.replace(url, "").trim();
+            }
+            return url;
+          })() || context.command.DEFAULT_WEBHOOK_ICON_URL;
 
         context.addable.webhook = { name: response.content, iconURL: avatar };
         channel.msg({
@@ -344,7 +348,7 @@ class Command extends BaseCommand {
             "Успешно установлен вебхук, от имени которого отправится эмбед",
           author: {
             name: response.content,
-            iconURL: avatar || context.command.DEFAULT_WEBHOOK_ICON_URL,
+            iconURL: avatar,
           },
           delete: 9_000,
         });
@@ -361,57 +365,8 @@ class Command extends BaseCommand {
     {
       emoji: "640449832799961088",
       async callback(context) {
-        const { channel, user, embed, guild } = context;
-        // Send Embed-Message
         await context.previewMessage.reactions.removeAll();
-
-        const response = await Util.question({
-          channel,
-          user,
-          message: {
-            title: "Введите айди канала или упомяните его для отправки эмбеда",
-            color: embed.color,
-            description:
-              "Или используйте реакцию <:arrowright:640449832799961088>, чтобы отправить в этот канал.",
-            reactions: ["640449832799961088"],
-          },
-        });
-
-        if (!response.value) {
-          return;
-        }
-
-        const target =
-          response.emoji === "640449832799961088"
-            ? channel
-            : guild.channels.cache.get(
-                response.content.match(FormattingPatterns.Channel)?.groups.id,
-              );
-
-        if (!target) {
-          channel.msg({
-            title: "Канал не существует",
-            color: "#ff0000",
-            delete: 7500,
-          });
-          return;
-        }
-
-        if (
-          target.guild.members
-            .resolve(user)
-            .wastedPermissions(18432n, target)[0]
-        ) {
-          target.msg({
-            title:
-              "В указанный канале у вас нет права отправлять эмбед-сообщения ",
-            color: "#ff0000",
-            delete: 7_500,
-          });
-          return;
-        }
-
-        context.command.sendEmbedMessageTo(target, context);
+        await EmbedSendProcessor.process(context);
         context.reactionsPool = context.command.BEFORE_SEND_REACTIONS_POOL;
       },
     },
@@ -430,43 +385,6 @@ class Command extends BaseCommand {
       },
     },
   ];
-
-  async getOrInsertWebhookIn(channel, context) {
-    const {
-      user,
-      addable: { webhook },
-    } = context;
-    const webhooks = await channel.fetchWebhooks();
-
-    let hook = webhooks.find((compare) => compare.name === webhook.name);
-
-    if (hook && webhook.avatar) {
-      await webhook.edit({ avatar: webhook.avatar });
-    }
-
-    if (!hook) {
-      const avatar = webhook.avatar || this.DEFAULT_WEBHOOK_ICON_URL;
-
-      hook = await channel.createWebhook({
-        name: webhook.name,
-        avatar,
-        reason: `${user.tag} (${user.id}) Created a message with Embed-constructor`,
-      });
-    }
-    return hook;
-  }
-
-  async sendEmbedMessageTo(channel, context) {
-    const {
-      embed,
-      addable: { webhook, reactions },
-    } = context;
-    const target = webhook
-      ? await this.getOrInsertWebhookIn(channel, context)
-      : channel;
-
-    target.msg({ ...embed, reactions });
-  }
 
   DEFAULT_REACTIONS_POOL = [
     "📌",
@@ -533,6 +451,108 @@ class Command extends BaseCommand {
     type: "guild",
     ChannelPermissions: 16384n,
   };
+}
+
+class EmbedSendProcessor {
+  static isUserCanSendEmbedToChannel(target, user) {
+    return !!target.guild.members
+      .resolve(user)
+      .wastedPermissions(18432n, target)[0];
+  }
+  static async process(context) {
+    const { channel, user, embed, guild } = context;
+
+    const response = await Util.question({
+      channel,
+      user,
+      message: {
+        title: "Введите айди канала или упомяните его для отправки эмбеда",
+        color: embed.color,
+        description:
+          "Или используйте реакцию <:arrowright:640449832799961088>, чтобы отправить в этот канал.",
+        reactions: ["640449832799961088"],
+      },
+    });
+
+    if (!response.value) {
+      return;
+    }
+
+    const target =
+      response.emoji === "640449832799961088"
+        ? channel
+        : guild.channels.cache.get(
+            response.content.match(FormattingPatterns.Channel)?.groups.id,
+          );
+
+    if (!target) {
+      channel.msg({
+        title: "Канал не существует",
+        color: "#ff0000",
+        delete: 7500,
+      });
+      return;
+    }
+
+    if (this.isUserCanSendEmbedToChannel(target, user)) {
+      target.msg({
+        title: "В указанный канале у вас нет права отправлять эмбед-сообщения ",
+        color: "#ff0000",
+        delete: 7_500,
+      });
+      return;
+    }
+
+    const sended = await this.sendEmbedMessageTo(target, context);
+    this.writeAuditLog(context, sended);
+  }
+  static writeAuditLog(context, sended) {
+    const title = "Пользователь отправил эмбед";
+    const description = sended.url;
+    const { guild, user } = context;
+    guild.logSend({
+      title,
+      description,
+      footer: { iconURL: user.avatarURL(), text: user.username },
+    });
+  }
+
+  static async getOrInsertWebhookIn(channel, context) {
+    const {
+      user,
+      addable: { webhook },
+    } = context;
+    const webhooks = await channel.fetchWebhooks();
+
+    let hook = webhooks.find((compare) => compare.name === webhook.name);
+
+    if (hook && webhook.avatar) {
+      await webhook.edit({ avatar: webhook.avatar });
+    }
+
+    if (!hook) {
+      const { name, avatar } = webhook.avatar;
+
+      hook = await channel.createWebhook({
+        name,
+        avatar,
+        reason: `${user.tag} (${user.id}) Created a message with Embed-constructor`,
+      });
+    }
+    return hook;
+  }
+
+  static async sendEmbedMessageTo(channel, context) {
+    const {
+      embed,
+      addable: { webhook, reactions },
+    } = context;
+    const target = webhook
+      ? await this.getOrInsertWebhookIn(channel, context)
+      : channel;
+
+    return target.msg({ ...embed, reactions });
+  }
 }
 
 export default Command;
