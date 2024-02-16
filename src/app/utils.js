@@ -3,18 +3,18 @@ import { OAuth2Scopes, PermissionFlagsBits } from "discord.js";
 import Path from "path";
 const root = process.cwd();
 
-async function ReadPackageJson() {
+export async function ReadPackageJson() {
   const { default: FileSystem } = await import("fs/promises");
   const value = await FileSystem.readFile(`${process.cwd()}/package.json`);
 
   return JSON.parse(value);
 }
 
-function takePath(...relativePath) {
+export function takePath(...relativePath) {
   return Path.resolve(root, ...relativePath);
 }
 
-function generateInviteFor(client) {
+export function generateInviteFor(client) {
   const scopes = [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands];
   const permissions = [
     PermissionFlagsBits.Administrator,
@@ -23,7 +23,14 @@ function generateInviteFor(client) {
   return client.generateInvite({ scopes, permissions });
 }
 
-function addResource({ resource, user, value, source, context, executor }) {
+export function addResource({
+  resource,
+  user,
+  value,
+  source,
+  context,
+  executor,
+}) {
   if (Number.isNaN(value)) {
     throw new Error(`Add NaN resource count`, {
       details: { source, resource },
@@ -40,4 +47,20 @@ function addResource({ resource, user, value, source, context, executor }) {
   user.data[resource] ||= 0;
   user.data[resource] += value;
 }
-export { addResource, takePath, ReadPackageJson, generateInviteFor };
+
+export function addMultipleResources({
+  resources,
+  user,
+  source,
+  context,
+  executor,
+}) {
+  const addResourceOptions = { user, source, context, executor };
+  for (const [resource, value] of Object.entries(resources)) {
+    addResource({
+      ...addResourceOptions,
+      resource,
+      value,
+    });
+  }
+}
