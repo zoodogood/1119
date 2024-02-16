@@ -1,7 +1,7 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import { addResource } from "#lib/util.js";
+import { addMultipleResources } from "#lib/util.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 
 class Command extends BaseCommand {
@@ -112,22 +112,15 @@ class Command extends BaseCommand {
       return;
     }
 
-    addResource({
+    addMultipleResources({
       user,
-      value: price * (-1) ** isBuying,
       executor: user,
       source: "command.berry.barter",
-      resource: PropertiesEnum.coins,
       context: _context,
-    });
-
-    addResource({
-      user,
-      value: quantity * (-1) ** !isBuying,
-      executor: user,
-      source: "command.berry.barter",
-      resource: PropertiesEnum.berrys,
-      context: _context,
+      resources: {
+        [PropertiesEnum.coins]: price * (-1) ** isBuying,
+        [PropertiesEnum.berrys]: quantity * (-1) ** !isBuying,
+      },
     });
 
     context.marketPrice = DataManager.data.bot.berrysPrice = Math.max(
