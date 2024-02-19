@@ -76,6 +76,7 @@ class UserInterfaceUtil {
       this.onComponent({ interaction, context }),
     );
     collector.on("end", () => message.edit({ components: [] }));
+    return { context, message };
   }
 
   static onComponent({ interaction, context }) {
