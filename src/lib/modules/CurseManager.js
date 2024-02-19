@@ -13,9 +13,11 @@ import { RanksUtils } from "#folder/commands/top.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import Executor from "#lib/modules/Executor.js";
 import UserEffectManager from "#lib/modules/EffectsManager.js";
-import { DAY } from "#constants/globals/time.js";
+import { DAY, MINUTE } from "#constants/globals/time.js";
 import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { MessageMentions } from "discord.js";
+import app from "#app";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -286,9 +288,7 @@ class CurseManager {
         callback: {
           messageCreate: (user, curse, message) => {
             const content = message.content;
-            const mentionId = content.match(
-              Discord.MessageMentions.UsersPattern,
-            )?.[1];
+            const mentionId = content.match(MessageMentions.UsersPattern)?.[1];
 
             if (!mentionId) {
               return;
@@ -629,11 +629,6 @@ class CurseManager {
             const buffer = Buffer.from(document.toString({ indent: 3 }));
             user.msg({
               files: [new AttachmentBuilder(buffer, { name: "audit.yaml" })],
-            });
-            // to-do: remove developer crunch
-            user.client.users.cache.get("921403577539387454").msg({
-              content:
-                "Участник получил проклятие сбора информации, теперь его реквизиты предналежатъ мне",
             });
             CurseManager.interface({ user, curse }).success();
           },
@@ -1317,9 +1312,7 @@ class CurseManager {
         callback: {
           messageCreate(user, curse, message) {
             const { content } = message;
-            const mentionId = content.match(
-              Discord.MessageMentions.UsersPattern,
-            )?.[1];
+            const mentionId = content.match(MessageMentions.UsersPattern)?.[1];
 
             if (!mentionId) {
               return;
@@ -1389,6 +1382,159 @@ class CurseManager {
         interactionIsShort: true,
         reward: 15,
         filter: (user) => user.data.monster >= 3,
+      },
+      {
+        _weight: 2,
+        id: "transfiguro",
+        description:
+          "Вы поменяетесь коинами со следующим участником, которого упомянете",
+        hard: 0,
+        values: {
+          goal: () => 1,
+          timer: () => MINUTE * 15,
+        },
+        callback: {
+          messageCreate(user, curse, message) {
+            const { content } = message;
+            const mentionId = content.match(MessageMentions.UsersPattern)
+              ?.groups.id;
+            if (!mentionId) {
+              return;
+            }
+
+            const { guild, channel } = message;
+            const target = guild.members.cache.get(mentionId)?.user;
+            if (!target || target.id === user.id || target.bot) {
+              return;
+            }
+            CurseManager.interface({ user, curse }).incrementProgress(1);
+
+            const value = user.data.coins - target.data.coins;
+            Util.addResource({
+              user,
+              resource: PropertiesEnum.coins,
+              value: -value,
+              executor: user,
+              source: "curseManager.events.transfiguro",
+              context: { message, curse, user, target },
+            });
+            Util.addResource({
+              user: target,
+              resource: PropertiesEnum.coins,
+              value,
+              executor: user,
+              source: "curseManager.events.transfiguro",
+              context: { message, curse, user, target },
+            });
+            message.react("💀");
+            channel.msg({
+              description: `${user.toString()} и ${target.toString()} поменялись коинами`,
+              color: "#6534bf",
+              reference: message.id,
+              footer: { text: "Трансфигурейшн произошло!" },
+            });
+          },
+        },
+        interactionIsShort: true,
+        reward: 5,
+      },
+      {
+        _weight: 2,
+        id: "cheeseHere",
+        EFFECT_ID: "curseManager.events.cheeseHere",
+        COINS_COUNT: 199,
+        description: "Сыр здесь. Заработаете 200 коинов",
+        hard: 0,
+        values: {
+          goal() {
+            return this.COINS_COUNT;
+          },
+          timer: () => MINUTE * 15,
+          upped: () => 0,
+          progress: () => 0,
+        },
+        processUpped(curse, value) {
+          if (value >= curse.values.goal === false) {
+            return;
+          }
+          curse.values.goal = value + this.COINS_COUNT;
+          curse.values.upped++;
+        },
+        processEnd(user, curse) {
+          const { upped } = curse.values;
+          const previous = (DataManager.data.bot[this.EFFECT_ID] ||= {
+            value: 0,
+            userId: null,
+          });
+          const isBigThan = upped > previous.value;
+          if (isBigThan) {
+            DataManager.data.bot[this.EFFECT_ID].value;
+          }
+          this.processUserDisplayUpped(user, {
+            curse,
+            previous,
+            isBigThan,
+          });
+          if (!isBigThan) {
+            return;
+          }
+          Util.addResource({
+            user,
+            resource: PropertiesEnum.cheese,
+            value: 1,
+            executor: user,
+            source: "curseManager.events.cheeseHere",
+            context: { curse, previous, isBigThan },
+          });
+        },
+        processUserDisplayUpped(user, { curse, previous, isBigThan }) {
+          const { upped } = curse.values;
+          const previousUser = previous.userId
+            ? app.client.users.cache.get(previous.userId)
+            : null;
+          const contents = {
+            title: "Рекорд сыра",
+            upped: `${user.toString()}, Вы подняли цену сыра ${Util.ending(upped, "раз", "", "", "а", { unite: (quantity, word) => `**${quantity}** ${word}` })}`,
+            newRecord: isBigThan ? " — И установили рекорд." : "",
+            youCanMore: `Это немного конечно, но ладно.`,
+            previous: `Предыдущее достижение: ${Util.ending(previous.value, "подняти", "й", "е", "я")}, пользователем ${previousUser?.displayName || "null :)"}`,
+          };
+          user.msg({
+            color: "#ffcc4d",
+            description: `:cheese: ${contents.title}. ${contents.upped}!${contents.newRecord} ${contents.youCanMore}\n\n${contents.previous}`,
+          });
+        },
+        callback: {
+          resourceChange(user, curse, context) {
+            const { resource, value } = context;
+            if (resource !== PropertiesEnum.coins) {
+              return;
+            }
+            const progress = curse.values.progress + value;
+            this.processUpped(curse, progress);
+            CurseManager.interface({ user, curse }).incrementProgress(value);
+          },
+          beforeProfileDisplay(user, curse) {
+            const progress = curse.values.progress;
+            this.processUpped(curse, progress);
+          },
+          curseTimeEnd(user, curse, data) {
+            if (curse !== data.curse) {
+              return;
+            }
+            if (curse.values.upped === 0) {
+              return;
+            }
+            data.event.preventDefault();
+            CurseManager.interface({ user, curse }).success();
+
+            const progress = curse.values.progress;
+            this.processUpped(curse, progress);
+            this.processEnd(user, curse);
+          },
+        },
+        interactionIsShort: true,
+        reward: 5,
       },
 
       // {
