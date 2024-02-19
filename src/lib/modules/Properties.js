@@ -1,5 +1,5 @@
 import * as Util from "#lib/util.js";
-import { GeneralPropertiesmap } from "#constants/enums/generalPropertiesMap.js";
+import { GeneralPropertiesMap } from "#constants/enums/generalPropertiesMap.js";
 
 const PropertiesList = {
   berrysPrice: {},
@@ -134,5 +134,5 @@ class Properties {
   }
 }
 
-export { Properties, GeneralPropertiesmap as PropertiesEnum, PropertiesList };
+export { Properties, GeneralPropertiesMap as PropertiesEnum, PropertiesList };
 export default Properties;
