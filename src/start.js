@@ -26,6 +26,7 @@ import {
   MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
 } from "#constants/users/events.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 
 client.on("ready", async () => {
   for (const guild of client.guilds.cache.values()) {
@@ -252,7 +253,6 @@ client.on("ready", async () => {
 
 async function msg(options, ..._devFixParams) {
   if (_devFixParams.length > 0) {
-    console.log(message, options);
     throw new Error("Incorrect message input. Need to fix!");
   }
 
@@ -265,7 +265,21 @@ async function msg(options, ..._devFixParams) {
         ? this.channel
         : this;
 
-  const message = await justSendMessage(target, options);
+  const message = (async () => {
+    try {
+      return await justSendMessage(target, options);
+    } catch (error) {
+      if (!error.message.includes("Invalid Form Body")) {
+        throw error;
+      }
+      await sendErrorInfo({
+        description: "Оригинальное сообщение не было доставлено",
+        channel: target,
+        error,
+      });
+      throw new Error(error.message, { cause: error });
+    }
+  })();
 
   return message;
 }
