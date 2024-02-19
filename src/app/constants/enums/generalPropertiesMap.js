@@ -1,4 +1,4 @@
-const GeneralPropertiesmap = {
+const GeneralPropertiesMap = {
   berrysPrice: "berrysPrice",
   grempen: "grempen",
   name: "name",
@@ -34,6 +34,7 @@ const GeneralPropertiesmap = {
   chilli: "chilli",
   invites: "invites",
   iq: "iq",
+  cheese: "cheese",
   cursesEnded: "cursesEnded",
   voidCasino: "voidCasino",
   element: "element",
@@ -67,4 +68,4 @@ const GeneralPropertiesmap = {
   cursesCallbackMap: "cursesCallbackMap",
 };
 
-export { GeneralPropertiesmap };
+export { GeneralPropertiesMap };
