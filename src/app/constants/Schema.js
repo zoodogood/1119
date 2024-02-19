@@ -67,8 +67,7 @@ const Schema = {
             values: {},
           },
         ],
-        questReward: 0,
-        questTime: 0,
+        cheese: 0,
         last_online: 0,
         chestBonus: 0,
         praiseMe: [""],
@@ -201,8 +200,7 @@ const Schema = {
  * @property {quest} quest
  * @property {curses[]} curses
  * @property {effects[]} effects
- * @property {number} questReward
- * @property {number} questTime
+ * @property {number} cheese
  * @property {number} last_online
  * @property {number} chestBonus
  * @property {string[]} praiseMe
