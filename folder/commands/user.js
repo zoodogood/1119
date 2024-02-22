@@ -160,14 +160,9 @@ class Command extends BaseCommand {
         embed.fields.push({ name: "\nКвест:", value });
       }
 
-      if (user.curses && user.curses.length) {
-        const content = user.curses
-          .map((curse) =>
-            curse.values.goal
-              ? `・${curse.values.progress || 0}/${curse.values.goal}`
-              : `・${curse.values.progress || 0}`,
-          )
-          .join("; ");
+      if (user.curses?.length) {
+        const { Utils } = await import("#folder/commands/curses.js");
+        const content = Utils.getCursesProgressContent(user.curses);
         embed.fields.push({
           name: "᠌᠌",
           value: `Прогресс проклятия: ${content}`,
@@ -273,7 +268,7 @@ class Command extends BaseCommand {
               user.cursesEnded || 0
             }`;
             const getCurrentContent = () => {
-              if (!user.curses || !user.curses.length) {
+              if (!user.curses?.length) {
                 return "Проклятия отсуствуют.";
               }
 
