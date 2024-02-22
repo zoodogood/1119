@@ -2,7 +2,7 @@ import { Collection } from "@discordjs/collection";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import * as Util from "#lib/util.js";
-import Discord, { AttachmentBuilder } from "discord.js";
+import { AttachmentBuilder } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
@@ -991,7 +991,7 @@ class CurseManager {
         hard: 1,
         description: (user, curse) => {
           const { client } = user;
-          const { name } = client.guilds.cache.get(curse.values.guildId);
+          const { name } = client.guilds.cache.get(curse.values.guildId) || {};
           return `Поднимитесь в топе по богатству на "${name}" хотя бы на один ранг и дождитесь конца проклятия`;
         },
         values: {
