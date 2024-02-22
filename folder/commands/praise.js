@@ -8,7 +8,7 @@ class Command extends BaseCommand {
       userData = interaction.userData,
       membUser = memb.data;
 
-    if (memb == msg.author) {
+    if (memb === msg.author) {
       msg.channel.msg({
         title: "Выберите другую жертву объятий!",
         author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
@@ -72,7 +72,8 @@ class Command extends BaseCommand {
       description:
         "\n\nМожете похвалить пользователя, например, если он классный. Однако количество похвал ограничено и зависит от уровня в профиле.\n\n✏️\n```python\n!praise {memb}\n```\n\n",
     },
-    alias: "похвалить like лайк лайкнуть похвалити лайкнути",
+    alias:
+      "похвалить like лайк лайкнуть похвалити лайкнути simpatico симпатико сімпатіко",
     expectMention: true,
     allowDM: true,
     type: "user",
