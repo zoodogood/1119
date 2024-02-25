@@ -15,6 +15,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import { ImportDirectory } from "@zoodogood/import-directory";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 import { permissionRawToI18n } from "#lib/permissions.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 
 const COMMANDS_PATH = "./folder/commands";
 
@@ -322,7 +323,11 @@ class CommandsManager {
           perCall: options.cooldown,
         }).call();
 
-      await whenCommandEnd;
+      const _context = await whenCommandEnd;
+      if (_context instanceof BaseCommandRunContext) {
+        await _context.whenRunExecuted;
+      }
+
       this.statistics.increase(context);
     } catch (error) {
       ErrorsHandler.onErrorReceive(error, {
