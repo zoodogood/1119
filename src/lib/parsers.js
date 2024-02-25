@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 
 export class ParserTime {
   regex =
-    /(?<time>\d\d:\d\d)|(?<date>\d\d\.\d\d)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\w*?)/i;
+    /(?<time>\d\d:\d\d)|(?<date>\d\d\.\d\d)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)[a-zа-яъё]*?)/i;
 
   items = [];
   time = 0;
