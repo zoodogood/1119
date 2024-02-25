@@ -4,15 +4,25 @@ import EventsManager from "#lib/modules/EventsManager.js";
 class BaseCommandRunContext {
   command = null;
   interaction = null;
+  guild = null;
+  channel = null;
+  user = null;
   emitter = new EventsManager();
+  whenRunExecuted = null;
 
   setCliParsed(parsed, values) {
     this.cliParsed = [parsed, values];
+    return this;
   }
   getCliParsed() {
     return this.cliParsed || [null, null];
   }
   cliParsed = null;
+
+  setWhenRunExecuted(whenRunExecuted) {
+    this.whenRunExecuted = whenRunExecuted;
+    return this;
+  }
 
   end() {
     this.isEnded = true;
@@ -25,6 +35,9 @@ class BaseCommandRunContext {
   constructor(interaction, command) {
     this.interaction = interaction;
     this.command = command;
+    this.guild = interaction.guild;
+    this.channel = interaction.channel;
+    this.user = interaction.user;
   }
 }
 
