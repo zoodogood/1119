@@ -5,101 +5,112 @@ import DataManager from "#lib/modules/DataManager.js";
 import Discord from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import { permissionsBitsToI18nArray } from "#lib/permissions.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 
-class Command extends BaseCommand {
-  getContext(interaction) {
-    const params = interaction.params
+class CliFlagsField {
+  constructor(context) {
+    this.context = context;
+  }
+  processFlags() {
+    const {
+      targetCommand: { options },
+    } = this.context;
+    const flags = options.cliParser?.flags;
+    if (!flags) {
+      return;
+    }
+    this.context.addableFields.push({
+      name: "Флаги команды:",
+      value: flags.map((flag) => this.flagToString(flag)).join(", "),
+    });
+  }
+
+  flagToString(flag) {
+    const { capture, expectValue } = flag;
+    const isMultiple = capture.length > 1;
+    const toString = (capture) =>
+      `\`${expectValue ? `${capture} {}` : capture}\``;
+
+    const content = capture.map(toString).join("|");
+    return isMultiple ? `[${content}]` : content;
+  }
+}
+
+class CommandRunContext extends BaseCommandRunContext {
+  targetCommand;
+  params;
+  meta;
+  addableFields = [];
+
+  static new(interaction, command) {
+    const context = new this(interaction, command);
+    context.processParams();
+    context.processCommandInfo();
+    if (!context.meta) {
+      return context;
+    }
+    context.processFlags();
+    return context;
+  }
+
+  setTargetCommand(command) {
+    this.targetCommand = command;
+    return this;
+  }
+
+  setCommandMeta(meta) {
+    this.meta = meta;
+    return this;
+  }
+
+  processCommandInfo() {
+    this.setTargetCommand(
+      CommandsManager.callMap.get(this.params.commandRaw),
+    ).setCommandMeta(
+      this.targetCommand ? TargetCommandMetadata.new(this) : null,
+    );
+    return this;
+  }
+
+  processParams() {
+    const { interaction } = this;
+    const commandRaw = interaction.params
       .toLowerCase()
       .replace(/[^a-zа-яёьъ0-9]/g, "")
       .trim();
 
-    const command = CommandsManager.callMap.get(params);
-    const meta = command ? this.fetchCommandMetadata(command) : null;
-    return {
-      command,
-      params,
-      meta,
-      interaction,
+    const params = {
+      commandRaw,
     };
+    Object.assign(this, { params });
+    return true;
   }
 
-  async onChatInput(msg, interaction) {
-    const __inServer = msg.channel.id === "753687864302108913";
-
-    const context = this.getContext(interaction);
-    const { meta, command } = context;
-
-    if (!command) {
-      this.sendHelpMessage(context);
+  processFlags() {
+    const { meta } = this;
+    if (!meta) {
       return;
     }
-
-    const {
-      aliases,
-      commandNameId,
-      guide,
-      poster,
-      usedCount,
-      githubURL,
-      id,
-      category,
-    } = meta;
-
-    const locale = interaction.user.data.locale;
-
-    const commandUsedTotally = this.calculateCommandsUsedTotally();
-
-    const usedPercentage =
-      +((usedCount / commandUsedTotally) * 100).toFixed(1) + "%";
-
-    const embed = {
-      title: `— ${commandNameId.toUpperCase()}`,
-      description:
-        guide.trim() +
-        (__inServer
-          ? `\nДругие названия:\n${aliases.map((name) => `!${name}`).join(" ")}`
-          : ""),
-      color: __inServer ? null : "#1f2022",
-      image:
-        poster ||
-        (__inServer
-          ? null
-          : "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg"),
-      fields: __inServer
-        ? null
-        : [
-            {
-              name: "Другие способы вызова:",
-              value: Discord.escapeMarkdown(
-                aliases.map((name) => `!${name}`).join(" "),
-              ),
-            },
-            {
-              name: "Категория:",
-              value: `${this.CategoriesEnum[category]}${
-                githubURL ? `\n[Просмотреть в Github ~](${githubURL})` : ""
-              }`,
-            },
-            {
-              name: "Необходимые права",
-              value:
-                this.permissionsToLocaledArray(meta.Permissions, locale) ||
-                "Нет",
-            },
-            {
-              name: "Количество использований",
-              value: `${usedCount} (${usedPercentage})`,
-            },
-          ],
-      footer: __inServer
-        ? null
-        : { text: `Уникальный идентификатор команды: ${id}` },
-    };
-    const message = await msg.msg(embed);
-    return message;
+    new CliFlagsField(this).processFlags();
   }
+}
 
-  CategoriesEnum = {
+class TargetCommandMetadata {
+  id;
+  options;
+  category;
+  commandNameId;
+  aliases;
+  guide;
+  poster;
+  usedCount;
+  githubURL;
+  static new(context) {
+    const meta = new this();
+    Object.assign(meta, meta.fetchCommandMetadata(context.targetCommand));
+    return meta;
+  }
+  static CategoriesEnum = {
     dev: "Команда в разработке или доступна только разработчику",
     delete: "Команда была удалена",
     guild: "Управление сервером",
@@ -122,19 +133,22 @@ class Command extends BaseCommand {
   }
 
   fetchCommandMetadata(command) {
-    const commandNameId = command.options.name;
-    const category = command.options.type;
-    const aliases = command.options.alias.split(" ");
-    const poster = command.options.media?.poster;
+    const { options } = command;
+    const { id } = options;
+    const commandNameId = options.name;
+    const category = options.type;
+    const aliases = options.alias.split(" ");
+    const poster = options.media?.poster;
     const githubURL = this.resolveGithubPathOf(commandNameId);
     const guide =
-      command.options.media?.description ||
+      options.media?.description ||
       "Описание для этой команды пока отсуствует...";
     const usedCount =
       DataManager.data.bot.commandsUsed[command.options.id] || 0;
 
     return {
-      ...command.options,
+      options,
+      id,
       category,
       commandNameId,
       aliases,
@@ -145,9 +159,83 @@ class Command extends BaseCommand {
     };
   }
 
+  get commandUsedTotally() {
+    return this.calculateCommandsUsedTotally();
+  }
+
   calculateCommandsUsedTotally() {
     const used = Object.values(DataManager.data.bot.commandsUsed);
     return used.reduce((acc, count) => acc + count, 0);
+  }
+}
+
+class Command extends BaseCommand {
+  async run(context) {
+    const { meta, targetCommand, user, channel } = context;
+
+    if (!targetCommand) {
+      this.sendHelpMessage(context);
+      return;
+    }
+
+    const {
+      aliases,
+      commandNameId,
+      guide,
+      poster,
+      usedCount,
+      githubURL,
+      id,
+      category,
+      commandUsedTotally,
+    } = meta;
+
+    const locale = user.data.locale;
+
+    const usedPercentage =
+      +((usedCount / commandUsedTotally) * 100).toFixed(1) + "%";
+
+    const embed = {
+      title: `— ${commandNameId.toUpperCase()}`,
+      description: guide.trim(),
+      color: "#1f2022",
+      image:
+        poster ||
+        "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg",
+      fields: [
+        {
+          name: "Другие способы вызова:",
+          value: Discord.escapeMarkdown(
+            aliases.map((name) => `!${name}`).join(" "),
+          ),
+        },
+        {
+          name: "Категория:",
+          value: `${TargetCommandMetadata.CategoriesEnum[category]}${
+            githubURL ? `\n[Просмотреть в Github ~](${githubURL})` : ""
+          }`,
+        },
+        {
+          name: "Необходимые права",
+          value:
+            meta.permissionsToLocaledArray(meta.Permissions, locale) || "Нет",
+        },
+        {
+          name: "Количество использований",
+          value: `${usedCount} (${usedPercentage})`,
+        },
+        ...context.addableFields,
+      ],
+      footer: { text: `Уникальный идентификатор команды: ${id}` },
+    };
+    const message = await channel.msg(embed);
+    return message;
+  }
+
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    this.run(context);
+    return context;
   }
 
   async sendHelpMessage(context) {
