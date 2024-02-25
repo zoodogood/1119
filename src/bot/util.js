@@ -6,6 +6,7 @@ import Discord from "discord.js";
 
 import { Collection } from "@discordjs/collection";
 import { BaseChannel } from "discord.js";
+import app from "#app";
 
 export async function awaitUserAccept({ name, message, channel, userData }) {
   const prefix = "userAccept_";
@@ -110,4 +111,14 @@ export async function question({
     content: response?.content,
     emoji: emoji?.id || emoji?.identifier,
   };
+}
+
+export function whenClientIsReady() {
+  const { client } = app;
+
+  if (client.readyAt) {
+    return true;
+  }
+
+  return new Promise((resolve) => client.once("ready", resolve));
 }
