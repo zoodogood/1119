@@ -1046,7 +1046,7 @@ class Command extends BaseCommand {
                 name === "clover-end" && params.includes(channel.guild.id);
 
               const event = TimeEventsManager.at(day).find(filter);
-              TimeEventsManager.change(event, {
+              TimeEventsManager.update(event, {
                 timestamp: clover.timestamp + level * 1_200_000,
               });
             },
@@ -1139,7 +1139,7 @@ class Command extends BaseCommand {
                 name === "clover-end" && params.includes(channel.guild.id);
 
               const event = TimeEventsManager.at(day).find(filter);
-              TimeEventsManager.change(event, {
+              TimeEventsManager.update(event, {
                 timestamp: clover.timestamp / 2,
               });
             },
