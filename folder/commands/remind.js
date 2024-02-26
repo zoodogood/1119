@@ -3,12 +3,119 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
-import { dayjs, timestampDay } from "#lib/util.js";
+import { dayjs, timestampDay, ending, capitalize } from "#lib/util.js";
+import { CliParser } from "@zoodogood/utils/primitives";
 
-class CommandRunContext extends BaseCommandRunContext {
-  parseParamsLine(params) {
-    const timeParser = new ParserTime();
-    const regex = RegExp(`^${timeParser.regex.source}`);
+class AbstractRemindRepeats {
+  static DEFAULT_REPEAT_COUNT = 1;
+  static COMMAND_FLAG_DATA = {
+    expectValue: true,
+    capture: ["--repeat", "-r"],
+    name: "--repeat",
+    description:
+      "Позволяет повторять напоминание несколько раз, одно после завершения предыдущего. Ожидает указания количества повторений",
+  };
+
+  static recallEvent(event) {
+    return createEvent(
+      event.timeTo,
+      event.channel,
+      event.user,
+      event.phrase,
+      event.repeatsCount,
+    );
+  }
+
+  static processRemindTimeEvent(
+    eventData,
+    channel,
+    user,
+    phrase,
+    repeatsCount,
+  ) {
+    console.log(repeatsCount, eventData);
+    if (repeatsCount <= 1) {
+      return;
+    }
+
+    const timeTo = Date.now() - eventData.createdAt;
+    return createEvent({
+      channel,
+      user,
+      phrase,
+      repeatsCount: repeatsCount - 1,
+      timeTo,
+    });
+  }
+}
+
+class RemindData {
+  static DEFAULT_VALUES = {
+    phrase: "ням",
+    repeatsCount: AbstractRemindRepeats.DEFAULT_REPEAT_COUNT,
+    timeTo: null,
+  };
+
+  timeTo;
+  channel;
+  user;
+  phrase;
+  repeatsCount;
+  static from(data) {
+    const eventData = new this();
+    Object.assign(eventData, data);
+    return eventData;
+  }
+  constructor({ timeTo, channel, user, phrase, repeatsCount }) {
+    this.timeTo = timeTo;
+    this.channel = channel;
+    this.user = user;
+    this.phrase = phrase;
+    this.repeatsCount = repeatsCount;
+  }
+}
+function createEvent(remindData) {
+  const { timeTo, channel, user, phrase, repeatsCount } = remindData;
+  const userData = user.data;
+
+  const event = TimeEventsManager.create(Command.EVENT_NAME, timeTo, [
+    user.id,
+    channel.id,
+    phrase,
+    repeatsCount,
+  ]);
+
+  userData.reminds ||= [];
+  userData.reminds.push(event.timestamp);
+  return event;
+}
+
+class ParamsProcessor {
+  cliParser = new CliParser();
+  timeParser = new ParserTime();
+  cliParserParams = null;
+  values;
+
+  constructor(context) {
+    this.context = context;
+  }
+
+  setParamsCliParserParams(params) {
+    this.cliParserParams = params;
+    this.cliParser.setText(params);
+    return this;
+  }
+
+  captureFlags(parser) {
+    const {
+      context: { command },
+    } = this;
+    parser.captureFlags(command.options.cliParser.flags);
+  }
+
+  captureTime(timeParser) {
+    let { cliParserParams: params } = this;
+    const regex = RegExp(`(?:^|\\s+)${timeParser.regex.source}`);
 
     let match;
     while ((match = params.match(regex))) {
@@ -18,64 +125,114 @@ class CommandRunContext extends BaseCommandRunContext {
       timeParser.pushItem(item);
       params = params.replace(match[0], "").trim();
     }
-    const phrase = params;
-    return { timeParser, phrase };
+
+    this.setParamsCliParserParams(params);
+    return params;
   }
 
-  appendParams() {
-    const { interaction } = this;
-    const { timeParser, phrase: phraseRaw } = this.parseParamsLine(
-      interaction.params,
-    );
-
-    const phrase = (phraseRaw || "Без описания").replace(
-      /[a-zа-яъёь]/i,
-      (letter) => letter.toUpperCase(),
-    );
-
-    Object.assign(this, { timeParser, phraseRaw, phrase });
+  captureResiduePhrase(parser) {
+    parser.captureResidue({ name: "phrase" });
   }
+  processParams() {
+    this.captureParamsLine();
+    const {
+      timeParser,
+      cliParser: { context: cliParsed },
+    } = this;
+    const timeTo = timeParser.summarizeItems();
 
+    const repeatsCount =
+      cliParsed.captures.get("--repeat")?.content.groups.value;
+
+    const phrase = cliParsed.captures.get("phrase")?.content;
+
+    const params = { timeTo, repeatsCount, phrase };
+    this.values = params;
+    return this;
+  }
+  captureParamsLine() {
+    const { cliParser, timeParser } = this;
+    // stage 1
+    this.captureFlags(cliParser);
+    this.setParamsCliParserParams(cliParser.context.input);
+    // stage 2
+    const _temp1_params = this.captureTime(timeParser);
+    this.setParamsCliParserParams(_temp1_params);
+    // stagw 3
+    this.captureResiduePhrase(cliParser);
+    this.setParamsCliParserParams(cliParser.context.input);
+    return this;
+  }
+}
+
+class CommandRunContext extends BaseCommandRunContext {
+  now = Date.now();
+  problems = [];
   pushProblem(text) {
     this.problems.push(text);
   }
 
+  get params() {
+    return this.paramsProcessor.values;
+  }
+
   static async new(interaction, command) {
     const context = new this(interaction, command);
-
     const { userData } = interaction;
+    context.userData = userData;
 
-    Object.assign(context, {
-      userData,
-      interaction,
-      now: Date.now(),
-      problems: [],
-    });
+    context.paramsProcessor = new ParamsProcessor(context)
+      .setParamsCliParserParams(interaction.params)
+      .processParams();
 
-    context.appendParams();
     return context;
   }
 }
 
 class Command extends BaseCommand {
-  EVENT_NAME = "remind";
+  static EVENT_NAME = "remind";
 
-  async getContext(interaction) {
-    return await CommandRunContext.new(interaction, this);
+  async run(context) {
+    const {
+      interaction,
+      params: { timeTo, repeatsCount },
+    } = context;
+
+    if (!timeTo) {
+      this.displayUserRemindsInterface(context);
+      return;
+    }
+
+    if (repeatsCount && isNaN(repeatsCount)) {
+      interaction.channel.msg({
+        content:
+          "Флаг <Повторяющееся напоминание> (-r|--repeat) должно состоять только из цифр",
+      });
+      return;
+    }
+
+    await this.processCreateRemind(context);
+    return context;
   }
 
-  stampsToTime(parser) {
-    return parser.summarizeItems();
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
   }
 
-  async runCreateRemind(context) {
-    const { interaction, userData, timeParser, phrase } = context;
-    const timeTo = this.stampsToTime(timeParser);
+  async processCreateRemind(context) {
+    const { channel, user, params } = context;
+    const phrase = capitalize(
+      params.phrase || RemindData.DEFAULT_VALUES.phrase,
+    );
+
+    const { timeTo, repeatsCount } = params;
 
     const LIMIT = YEAR * 30;
 
     if (timeTo > LIMIT) {
-      interaction.channel.msg({
+      channel.msg({
         color: "#ff0000",
         title: "Максимальный период — 30 лет",
         delete: 8_000,
@@ -84,39 +241,26 @@ class Command extends BaseCommand {
       return;
     }
 
-    const event = TimeEventsManager.create(this.EVENT_NAME, timeTo, [
-      interaction.user.id,
-      interaction.channel.id,
-      phrase,
-    ]);
+    const event = this.createRemind(context);
 
-    userData.reminds ||= [];
-    userData.reminds.push(event.timestamp);
-    interaction.channel.msg({
+    await channel.msg({
       title: "Напомнинание создано",
-      description: `— ${phrase}`,
+      description: `— ${phrase}${repeatsCount ? `\n\nПовторяется: ${ending(repeatsCount, "раз", "", "", "а")}` : ""}`,
       timestamp: event.timestamp,
       footer: {
-        iconURL: interaction.user.avatarURL(),
-        text: interaction.user.username,
+        iconURL: user.avatarURL(),
+        text: user.username,
       },
     });
   }
+  async createRemind(context) {
+    const {
+      user,
+      channel,
+      params: { phrase, timeTo, repeatsCount },
+    } = context;
 
-  async run(interaction) {
-    const context = await this.getContext(interaction);
-    const { timeParser } = context;
-    if (timeParser.items.length === 0) {
-      this.displayUserRemindsInterface(context);
-      return;
-    }
-
-    await this.runCreateRemind(context);
-    return context;
-  }
-
-  async onChatInput(msg, interaction) {
-    this.run(interaction);
+    return createEvent({ timeTo, channel, user, phrase, repeatsCount });
   }
 
   removeByTimestampIfEnded(timestamp, context) {
@@ -146,7 +290,7 @@ class Command extends BaseCommand {
     const userId = interaction.user.id;
     const compare = ({ name, params, timestamp }, targetTimestamp) =>
       timestamp === targetTimestamp &&
-      name === this.EVENT_NAME &&
+      name === Command.EVENT_NAME &&
       JSON.parse(params).at(0) === userId;
 
     const events = [];
@@ -259,11 +403,16 @@ class Command extends BaseCommand {
     },
     alias:
       "напомни напоминание напомнить нагадай нагадування нагадайко нап rem",
+    cliParser: {
+      flags: [AbstractRemindRepeats.COMMAND_FLAG_DATA],
+    },
     allowDM: true,
     cooldown: 8_000,
     cooldownTry: 5,
     type: "other",
   };
 }
+
+export { AbstractRemindRepeats, RemindData };
 
 export default Command;
