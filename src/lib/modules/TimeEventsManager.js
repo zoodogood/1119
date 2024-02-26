@@ -45,7 +45,7 @@ class TimeEventData {
       eventData.name,
       eventData.timestamp,
       eventData._params_as_json ||
-        JSON.parse(eventData.params) /* to-do developer-crunch */,
+        JSON.parse(eventData.params ?? "[]") /* to-do developer-crunch */,
       eventData.createdAt,
     );
   }
