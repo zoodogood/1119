@@ -14,7 +14,7 @@ class Event extends BaseEvent {
       throw new Error(`Unknown TimeEvent: ${event.name}`);
     }
     const params = event.params ?? [];
-    eventBase.run(event.isLost, ...params);
+    eventBase.run(event, ...params);
   }
 
   options = {
