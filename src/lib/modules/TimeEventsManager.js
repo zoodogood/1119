@@ -20,7 +20,7 @@ class TimeEventData {
     this.name = name;
     this.timestamp = createdAt + timeTo;
     this.createdAt = createdAt;
-    this._params_as_json = params;
+    this.params = params;
   }
 
   get params() {
@@ -45,7 +45,7 @@ class TimeEventData {
       eventData.name,
       eventData.timestamp,
       eventData._params_as_json ||
-        JSON.parse(eventData.params ?? "[]") /* to-do developer-crunch */,
+        eventData.params /* to-do developer-crunch */,
       eventData.createdAt,
     );
   }
@@ -59,7 +59,7 @@ class TimeEventData {
     if (!params) {
       return;
     }
-    this.params = JSON.stringify(params);
+    this._params_as_json = JSON.stringify(params);
     return this;
   }
 
