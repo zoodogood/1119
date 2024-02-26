@@ -1,9 +1,67 @@
 import FileSystem from "fs";
 import EventEmitter from "events";
 
-import * as Util from "#lib/util.js";
 import StorageManager from "#lib/modules/StorageManager.js";
+import {
+  timestampDay,
+  omit,
+  rangeToArray,
+  timestampToDate,
+} from "#lib/safe-utils.js";
 
+class TimeEventData {
+  createdAt;
+  _params_as_json;
+  name;
+  timestamp;
+  isLost;
+  constructor(name, timeTo, params) {
+    const createdAt = Date.now();
+    this.name = name;
+    this.timestamp = createdAt + timeTo;
+    this.createdAt = createdAt;
+    this._params_as_json = params;
+  }
+
+  get params() {
+    return this._params_as_json ? JSON.parse(this._params_as_json) : null;
+  }
+
+  set params(value) {
+    this.setParams(value);
+  }
+
+  static from(name, timestamp, _params_as_json, createdAt) {
+    const data = new this();
+    data.name = name;
+    data.timestamp = timestamp;
+    data.createdAt = createdAt;
+    data._params_as_json = _params_as_json;
+    return data;
+  }
+
+  static fromEventData(eventData) {
+    return this.from(
+      eventData.name,
+      eventData.timestamp,
+      eventData._params_as_json ||
+        JSON.parse(eventData.params) /* to-do developer-crunch */,
+      eventData.createdAt,
+    );
+  }
+
+  setCreatedAt(createdAt) {
+    this.createdAt = createdAt;
+    return this;
+  }
+
+  setParams(params) {
+    if (!params) {
+      return;
+    }
+    this.params = JSON.stringify(params);
+  }
+}
 class TimeEventsManager {
   static #lastSeenDay;
 
@@ -11,21 +69,20 @@ class TimeEventsManager {
     return this.data[day];
   }
 
-  static Util = Util;
-
   static create(eventName, ms, params) {
-    const event = {
-      name: eventName,
-      timestamp: Date.now() + ms,
-      params: params ? JSON.stringify(params) : undefined,
-    };
-    const day = this.Util.timestampDay(event.timestamp);
+    const event = new TimeEventData(eventName, ms, params);
+    this._createEvent(event);
+  }
+
+  static _createEvent(event) {
+    const day = timestampDay(event.timestamp);
 
     this.data[day] ||= [];
     this.data[day].push(event);
     this.data[day].sortBy("timestamp");
 
-    if (day <= this.#lastSeenDay || !this.#lastSeenDay) {
+    const needUpdate = day <= this.#lastSeenDay || !this.#lastSeenDay;
+    if (needUpdate) {
       day < this.#lastSeenDay && (this.#lastSeenDay = null);
       this.handle();
     }
@@ -45,7 +102,7 @@ class TimeEventsManager {
   }
 
   static getEventsInRange(range) {
-    const days = [...Util.rangeToArray(range)];
+    const days = [...rangeToArray(range)];
     const events = [];
     for (const day of days) {
       const todayEvents = this.at(day);
@@ -56,7 +113,7 @@ class TimeEventsManager {
   }
 
   static remove(event) {
-    const day = this.Util.timestampDay(event.timestamp);
+    const day = timestampDay(event.timestamp);
     if (!this.data[day]) {
       this.data = {};
     }
@@ -76,19 +133,18 @@ class TimeEventsManager {
     return true;
   }
 
-  static change(event, data) {
-    this.remove(event);
+  static update(target, data) {
+    this.remove(target);
+
     Object.assign(
-      event,
-      Util.omit(data, (key) => ["name", "timestamp", "params"].includes(key)),
+      target,
+      omit(data, (key) =>
+        ["name", "timestamp", "params", "createdAt"].includes(key),
+      ),
     );
 
-    this.create(
-      event.name,
-      event.timestamp - Date.now(),
-      JSON.parse(event.params),
-    );
-    return event;
+    this._createEvent(target);
+    return target;
   }
 
   static fetchNextEvent() {
@@ -152,7 +208,7 @@ class TimeEventsManager {
       console.info(
         `{\n\n  Имя события: ${
           event.name
-        },\n  Текущее время: ${parse},\n  Времени до начала: ${Util.timestampToDate(
+        },\n  Текущее время: ${parse},\n  Времени до начала: ${timestampToDate(
           timeTo,
         )}\n\n}`,
       );
@@ -177,7 +233,7 @@ class TimeEventsManager {
 
   static executeEvent(event) {
     this.remove(event);
-    
+
     const data = {
       name: event.name,
       isLost: Date.now() - event.timestamp < -10_000,
@@ -193,8 +249,10 @@ class TimeEventsManager {
     load: () => {
       const path = this.file.path;
       const content = FileSystem.readFileSync(path, "utf-8");
-      const data = JSON.parse(content);
-      this.data = data;
+      const events = JSON.parse(content, (key, value) =>
+        value.name ? TimeEventData.fromEventData(value) : value,
+      );
+      this.data = events;
     },
     write: async () => {
       const path = this.file.path;
