@@ -53,7 +53,9 @@ class RewardSystem {
       return this.BASE_BONUSES + level * this.BONUSES_PER_LEVEL;
     },
     calculateKeys(userStats) {
-      const value = Math.floor(userStats.damageDealt / this.DAMAGE_FOR_KEY);
+      const value = Math.floor(
+        (userStats.damageDealt || 0) / this.DAMAGE_FOR_KEY,
+      );
       return Math.min(this.KEYS_LIMIT, value);
     },
     resources({ userStats, level }) {
