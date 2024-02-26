@@ -1,16 +1,24 @@
 import { client } from "#bot/client.js";
 import { whenClientIsReady } from "#bot/util.js";
-import { AbstractRemindRepeats } from "#folder/commands/remind.js";
+import { AbstractRemindRepeats, RemindData } from "#folder/commands/remind.js";
 
 class Event {
-  async run(eventData, authorId, channelId, phrase, repeatsCount) {
-    await whenClientIsReady();
-    const { isLost } = eventData;
+  resolveParams(authorId, channelId, phrase, repeatsCount) {
+    phrase ||= RemindData.DEFAULT_VALUES.phrase;
+    repeatsCount ||= RemindData.DEFAULT_VALUES.repeatsCount;
 
     const channel = client.channels.cache.get(channelId);
     const user = client.users.cache.get(authorId);
-
     const target = channel || user;
+    return { phrase, repeatsCount, channel, user, target };
+  }
+  async run(eventData, ...params) {
+    await whenClientIsReady();
+    const { isLost } = eventData;
+
+    const { phrase, repeatsCount, user, channel, target } = this.resolveParams(
+      ...params,
+    );
 
     if (target !== user)
       target.msg({ content: user.toString(), mentions: [user.id] });
