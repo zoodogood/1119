@@ -469,7 +469,7 @@ class Command extends BaseCommand {
             TimeEventsManager.at(day)?.find(filter) ??
             this.createCloverTimeEvent(guild.id, interaction.channel.id);
 
-          TimeEventsManager.change(event, { timestamp: clover.timestamp });
+          TimeEventsManager.update(event, { timestamp: clover.timestamp });
           return phrase;
         },
       },
