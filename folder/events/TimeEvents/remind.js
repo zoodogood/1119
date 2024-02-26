@@ -6,20 +6,25 @@ import { capitalize } from "#lib/mini.js";
 class Event {
   resolveParams(authorId, channelId, phrase, repeatsCount) {
     phrase = capitalize(phrase || RemindData.DEFAULT_VALUES.phrase);
-    repeatsCount ||= RemindData.DEFAULT_VALUES.repeatsCount;
 
     const channel = client.channels.cache.get(channelId);
     const user = client.users.cache.get(authorId);
     const target = channel || user;
-    return { phrase, repeatsCount, channel, user, target };
+    return {
+      phrase,
+      repeatsCount,
+      channel,
+      user,
+      target,
+      isDefaultPhrase: phrase === RemindData.DEFAULT_VALUES.phrase,
+    };
   }
   async run(eventData, ...params) {
     await whenClientIsReady();
     const { isLost } = eventData;
 
-    const { phrase, repeatsCount, user, channel, target } = this.resolveParams(
-      ...params,
-    );
+    const { phrase, repeatsCount, user, channel, target, isDefaultPhrase } =
+      this.resolveParams(...params);
 
     if (target !== user)
       target.msg({ content: user.toString(), mentions: [user.id] });
@@ -42,7 +47,7 @@ class Event {
       eventData,
       channel,
       user,
-      phrase,
+      !isDefaultPhrase && phrase,
       repeatsCount,
     );
   }
