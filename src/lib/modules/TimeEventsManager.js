@@ -60,6 +60,12 @@ class TimeEventData {
       return;
     }
     this.params = JSON.stringify(params);
+    return this;
+  }
+
+  setIsLost(isLost) {
+    this.isLost = isLost;
+    return this;
   }
 }
 class TimeEventsManager {
@@ -234,12 +240,8 @@ class TimeEventsManager {
   static executeEvent(event) {
     this.remove(event);
 
-    const data = {
-      name: event.name,
-      isLost: Date.now() - event.timestamp < -10_000,
-      params: event.params ? JSON.parse(event.params) : undefined,
-    };
-    this.emitter.emit("event", data);
+    event.setIsLost(Date.now() - event.timestamp < -10_000);
+    this.emitter.emit("event", event);
     console.info(`Ивент выполнен ${event.name}`);
     return;
   }
