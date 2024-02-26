@@ -3,7 +3,7 @@ import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { CurseManager } from "#lib/modules/mod.js";
 
 class Event {
-  run(isLost, userId, timestamp) {
+  run(timeEventData, userId, timestamp) {
     const user = client.users.cache.get(userId);
     if (!user) {
       return;
@@ -14,7 +14,7 @@ class Event {
       cancelable: true,
     });
     user.action(ActionsMap.timeEventCurseTimeoutEnd, {
-      isLost,
+      timeEventData,
       timestamp,
       event,
     });

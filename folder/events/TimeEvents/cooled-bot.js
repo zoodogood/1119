@@ -1,7 +1,7 @@
 import { client } from "#bot/client.js";
 
 class Event {
-  run(isLost, guildId) {
+  run(eventData, guildId) {
     const guild = client.guilds.cache.get(guildId);
     if (!guild) {
       return;

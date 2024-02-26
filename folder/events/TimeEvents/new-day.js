@@ -13,12 +13,12 @@ import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import config from "#config";
 
 class Event {
-  async run(isLost) {
+  async run(timeEventData) {
     if (this.todayIsAlreadyLaunched()) {
       return;
     }
     const context = {
-      isLost,
+      timeEventData,
       today: null,
       currentDay: null,
     };
@@ -30,7 +30,7 @@ class Event {
     await DailyEvents.checkDayStatsEvent();
     this.createNextCall();
 
-    if (isLost) {
+    if (timeEventData.isLost) {
       return;
     }
 

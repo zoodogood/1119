@@ -7,7 +7,7 @@ class Event {
    * @param {string} guildId
    * @param {string} channelId
    */
-  async run(isLost, guildId, channelId) {
+  async run(eventData, guildId, channelId) {
     const guild = client.guilds.cache.get(guildId);
     if (!guild) {
       return;

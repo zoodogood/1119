@@ -40,7 +40,7 @@ class Event {
     UserEffectManager.removeEffect({ effect, user });
   }
 
-  getContext(isLost, userId, uuid) {
+  getContext(timeEventData, userId, uuid) {
     const user = client.users.cache.get(userId);
     if (!user) {
       return;
@@ -52,7 +52,7 @@ class Event {
     });
 
     const context = {
-      isLost,
+      timeEventData,
       uuid,
       event,
       user,

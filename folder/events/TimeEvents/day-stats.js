@@ -6,10 +6,10 @@ import BankCommand from "#folder/commands/bank.js";
 import { ending, NumberFormatLetterize } from "#src/lib/util.js";
 
 class Event {
-  run(isLost) {
+  run(eventData) {
     const next =
       new Date(Date.now() + 14500000).setHours(20, 0, 0) - Date.now();
-    if (isLost) {
+    if (eventData.isLost) {
       return TimeEventsManager.create("day-stats", next);
     }
 
