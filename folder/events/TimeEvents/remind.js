@@ -1,10 +1,11 @@
 import { client } from "#bot/client.js";
 import { whenClientIsReady } from "#bot/util.js";
 import { AbstractRemindRepeats, RemindData } from "#folder/commands/remind.js";
+import { capitalize } from "#lib/mini.js";
 
 class Event {
   resolveParams(authorId, channelId, phrase, repeatsCount) {
-    phrase ||= RemindData.DEFAULT_VALUES.phrase;
+    phrase = capitalize(phrase || RemindData.DEFAULT_VALUES.phrase);
     repeatsCount ||= RemindData.DEFAULT_VALUES.repeatsCount;
 
     const channel = client.channels.cache.get(channelId);
