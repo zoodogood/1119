@@ -77,7 +77,7 @@ class TimeEventsManager {
 
   static create(eventName, ms, params) {
     const event = new TimeEventData(eventName, ms, params);
-    this._createEvent(event);
+    return this._createEvent(event);
   }
 
   static _createEvent(event) {
