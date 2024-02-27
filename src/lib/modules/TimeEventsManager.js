@@ -45,7 +45,8 @@ class TimeEventData {
       eventData.name,
       eventData.timestamp,
       eventData._params_as_json ||
-        eventData.params /* to-do developer-crunch */,
+        (eventData instanceof TimeEventData === false &&
+          eventData.params) /* to-do developer-crunch */,
       eventData.createdAt,
     );
   }
@@ -140,7 +141,10 @@ class TimeEventsManager {
   }
 
   static update(target, data) {
-    this.remove(target);
+    const endTimestampChanged = data.timestamp !== target.timestamp;
+    if (endTimestampChanged) {
+      this.remove(target);
+    }
 
     Object.assign(
       target,
@@ -149,7 +153,9 @@ class TimeEventsManager {
       ),
     );
 
-    this._createEvent(target);
+    if (endTimestampChanged) {
+      this._createEvent(target);
+    }
     return target;
   }
 
