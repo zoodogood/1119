@@ -33,7 +33,6 @@ class AbstractRemindRepeats {
     phrase,
     repeatsCount,
   ) {
-    console.log(repeatsCount, eventData);
     if (repeatsCount <= 1) {
       return;
     }
