@@ -284,31 +284,35 @@ class Command extends BaseCommand {
     reminds.splice(index, 1);
   }
 
+  handleNotExistedReminds(notExitsted, context) {
+    for (const timestamp of notExitsted) {
+      this.removeRemindFieldOfUserReminds(timestamp, context);
+      const problemText = `Паника: напоминание (${dayjs(+timestamp).format(
+        "DD.MM HH:mm",
+      )}, ${timestamp}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`;
+      context.pushProblem(problemText);
+    }
+  }
+
+  handleEndedReminds(context) {
+    const { userData } = context;
+    for (const timestamp of userData.reminds ?? []) {
+      this.removeByTimestampIfEnded(timestamp, context);
+    }
+  }
+
   findUserRemindEvents(context) {
     const { userData, interaction } = context;
     const userId = interaction.user.id;
-    const compare = ({ name, params, timestamp }, targetTimestamp) =>
-      timestamp === targetTimestamp &&
-      name === Command.EVENT_NAME &&
-      JSON.parse(params).at(0) === userId;
-
-    const events = [];
-    for (const timestamp of userData.reminds ?? []) {
-      this.removeByTimestampIfEnded(timestamp, context);
-      const day = timestampDay(timestamp);
-      const dayEvents = TimeEventsManager.at(day);
-      const event = dayEvents?.find((event) => compare(event, timestamp));
-
-      if (!event) {
-        this.removeByTimestampIfEnded(timestamp, context);
-        const problemText = `Паника: напоминание (${dayjs(+timestamp).format(
-          "DD.MM HH:mm",
-        )}, ${timestamp}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`;
-        context.pushProblem(problemText);
-        continue;
-      }
-      events.push(event);
-    }
+    this.handleEndedReminds(context);
+    const reminds = userData.reminds ?? [];
+    const compare = ({ name, _params_as_json }) =>
+      name === Command.EVENT_NAME && _params_as_json.includes(userId);
+    const events = TimeEventsManager.findBulk(reminds, compare).filter(Boolean);
+    const notExisted = reminds.filter(
+      (target) => !events.some(({ timestamp }) => target === timestamp),
+    );
+    this.handleNotExistedReminds(notExisted, context);
     return events;
   }
 
@@ -361,7 +365,7 @@ class Command extends BaseCommand {
     const userRemindsContentRaw = context.remindEvents.map(
       ({ params, timestamp }) => {
         /* eslint-disable-next-line no-unused-vars */
-        const [_authorId, _channelId, phrase] = JSON.parse(params);
+        const [_authorId, _channelId, phrase] = params;
         return `• <t:${Math.floor(timestamp / 1_000)}:R> — ${phrase}.`;
       },
     );
@@ -371,7 +375,7 @@ class Command extends BaseCommand {
         }\n${userRemindsContentRaw.join("\n\n").slice(0, 100)}`
       : "";
 
-    const description = `Пример:\n!напомни 1ч 7м ${context.phrase}${remindsContent}`;
+    const description = `Пример:\n!напомни 1ч 7м ${context.phrase || RemindData.DEFAULT_VALUES.phrase}${remindsContent}`;
     const message = await interaction.channel.msg({
       title: "Вы не указали время, через какое нужно напомнить..",
       color: "#ff0000",
@@ -380,7 +384,7 @@ class Command extends BaseCommand {
     });
 
     if (context.remindEvents.length) {
-      await this.displayRemoveRemindInterface(context, message);
+      this.displayRemoveRemindInterface(context, message);
     }
 
     if (context.problems.length) {
