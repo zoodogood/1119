@@ -119,6 +119,42 @@ class TimeEventsManager {
     return events;
   }
 
+  static findBulk(targetTimestamps, filter) {
+    const daysMap = {};
+    for (const timestamp of targetTimestamps) {
+      const day = timestampDay(timestamp);
+      daysMap[day] ||= 0;
+      daysMap[day]++;
+    }
+
+    const events = [];
+    for (const day in daysMap) {
+      const todayEvents = this.at(day);
+      const count = daysMap[day];
+      if (!todayEvents) {
+        events.push(...new Array(count).fill(null));
+        continue;
+      }
+
+      let counter = 0;
+      for (const event of todayEvents) {
+        if (!targetTimestamps.includes(event.timestamp) || !filter(event)) {
+          continue;
+        }
+        counter++;
+        events.push(event);
+        if (counter === count) {
+          break;
+        }
+      }
+
+      if (counter < count) {
+        events.push(...new Array(count - counter).fill(null));
+      }
+    }
+    return events;
+  }
+
   static remove(event) {
     const day = timestampDay(event.timestamp);
     if (!this.data[day]) {
