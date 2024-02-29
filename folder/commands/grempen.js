@@ -463,7 +463,8 @@ class Command extends BaseCommand {
           clover.timestamp = increaseTimestamp(clover.timestamp);
 
           const filter = (event) =>
-            event.name === "clover-end" && event.params.includes(guild.id);
+            event.name === "clover-end" &&
+            event._params_as_json.includes(guild.id);
 
           const event =
             TimeEventsManager.at(day)?.find(filter) ??

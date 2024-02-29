@@ -1042,8 +1042,9 @@ class Command extends BaseCommand {
               const clover = channel.guild.data.cloverEffect;
               const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
 
-              const filter = ({ name, params }) =>
-                name === "clover-end" && params.includes(channel.guild.id);
+              const filter = ({ name, _params_as_json }) =>
+                name === "clover-end" &&
+                _params_as_json.includes(channel.guild.id);
 
               const event = TimeEventsManager.at(day).find(filter);
               TimeEventsManager.update(event, {
