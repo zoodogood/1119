@@ -87,6 +87,75 @@ class ListCommandManager {
   }
 }
 
+class MembersCommandManager {
+  constructor(context) {
+    this.context = context;
+  }
+
+  getPull() {
+    const { guild } = this.context;
+    const entries = guild.members.cache
+      .map(({ user }) => {
+        return [user, user.data.curses];
+      })
+      .filter(([_user, curses]) => curses?.length);
+
+    return entries;
+  }
+
+  onProcess() {
+    const { context } = this;
+    if (this.processJSONFlag(context)) {
+      return;
+    }
+    this.sendList(context.channel);
+  }
+  processJSONFlag(context) {
+    const [parsed] = context.cliParsed;
+    const hasJSONFlag = parsed.captures.get("--json");
+
+    if (!hasJSONFlag) {
+      return;
+    }
+    const pull = this.getPull().map(([user, curses]) => [
+      user.username,
+      curses,
+    ]);
+    const description = `Перечень пользователей и проклятий (${pull.length}) .json`;
+
+    context.channel.msg({
+      description,
+      color: context.command.MESSAGE_THEME.color,
+      files: [jsonFile(Object.fromEntries(pull), "cursesManager_members.json")],
+      delete: MINUTE,
+    });
+    return true;
+  }
+
+  async sendList(channel) {
+    const { context } = this;
+    const pull = this.getPull().map(([user, curses]) => [
+      user.toString(),
+      curses.map((curse) => `\`${curse.id}\``).join(", "),
+    ]);
+    const contents = {
+      count: `Общее количество: ${pull.length}`,
+      pull: pull.map(([user, curses]) => `- ${user}: ${curses}`).join("\n"),
+      empty:
+        "Ни у кого из пользователей нет проклятия. Это странно, но такое может быть.",
+    };
+    const description = `${contents.count}\n${
+      pull.length ? contents.pull : contents.empty
+    }`;
+
+    channel.msg({
+      title: "Пользователи и их проклятия",
+      description,
+      ...context.command.MESSAGE_THEME,
+    });
+  }
+}
+
 class HelpCommandManager {
   constructor(context) {
     this.context = context;
@@ -142,7 +211,7 @@ class HelpCommandManager {
     const { curses } = context;
     const message = await channel.msg({
       title: "Вызвана команда с параметром --help",
-      description: `${contents.description} ${contents.found}\n${contents.current}\n\n**--help**\nПоказывает это меню.\n\n**--at {}**\nСокращение: \`!curses 1\`. Показывает больше информации об проклятии пользователя за номером. Вы можете упомянуть другого пользователя.\n\n**--list**\nПредоставляет перечисление всех существующих проклятий. Принимает параметр --json`,
+      description: `${contents.description} ${contents.found}\n${contents.current}\n\n**--help**\nПоказывает это меню.\n\n**--at {}**\nСокращение: \`!curses 1\`. Показывает больше информации об проклятии пользователя за номером. Вы можете упомянуть другого пользователя.\n\n**--list**\nПредоставляет перечисление всех существующих проклятий. Принимает параметр --json\n\n**--members**\n123`,
       ...context.command.MESSAGE_THEME,
       components: curses.length
         ? justButtonComponents([
@@ -391,6 +460,10 @@ class Command extends BaseCommand {
       return;
     }
 
+    if (this.processMembersCommand(context)) {
+      return;
+    }
+
     this.processDefaultBehavior(context);
   }
   processHelpCommand(context) {
@@ -421,6 +494,15 @@ class Command extends BaseCommand {
       return;
     }
     new AtCommandManager(context, value).onProcess();
+    return true;
+  }
+
+  processMembersCommand(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--members")) {
+      return;
+    }
+    new MembersCommandManager(context).onProcess();
     return true;
   }
   processDefaultBehavior(context) {
@@ -455,6 +537,10 @@ class Command extends BaseCommand {
           expectValue: true,
           description:
             "Укажите номер проклятия у пользователя, чтобы получить дополнительные сведения",
+        },
+        {
+          capture: ["--members"],
+          description: "Возвращает перечень пользователей и проклятий",
         },
         {
           capture: ["--json"],
