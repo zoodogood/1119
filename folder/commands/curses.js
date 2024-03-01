@@ -211,7 +211,7 @@ class HelpCommandManager {
     const { curses } = context;
     const message = await channel.msg({
       title: "Вызвана команда с параметром --help",
-      description: `${contents.description} ${contents.found}\n${contents.current}\n\n**--help**\nПоказывает это меню.\n\n**--at {}**\nСокращение: \`!curses 1\`. Показывает больше информации об проклятии пользователя за номером. Вы можете упомянуть другого пользователя.\n\n**--list**\nПредоставляет перечисление всех существующих проклятий. Принимает параметр --json\n\n**--members**\n123`,
+      description: `${contents.description} ${contents.found}\n${contents.current}\n\n**--help**\nПоказывает это меню.\n\n**--at {}**\nСокращение: \`!curses 1\`. Показывает больше информации об проклятии пользователя за номером. Вы можете упомянуть другого пользователя.\n\n**--list**\nПредоставляет перечисление всех существующих проклятий. Принимает параметр --json\n\n**--members**\nВозвращает перечень пользователей и проклятий`,
       ...context.command.MESSAGE_THEME,
       components: curses.length
         ? justButtonComponents([
@@ -513,7 +513,8 @@ class Command extends BaseCommand {
     name: "curses",
     id: 65,
     media: {
-      description: "Даёт полезную информацию о проклятиях",
+      description:
+        "Даёт полезную информацию о проклятиях\n\n✏️\n```python\n!curses --help\n```\n\n",
     },
     alias: "проклятия проклятие curse",
     allowDM: true,
