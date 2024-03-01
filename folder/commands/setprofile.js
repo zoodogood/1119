@@ -1,8 +1,7 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
-import { Actions } from "#lib/modules/ActionManager.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
+import { BirthdayMember } from "#folder/commands/birthdays.js";
 
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
@@ -10,6 +9,7 @@ class Command extends BaseCommand {
       args = interaction.params.split(" "),
       item = args[0].toLowerCase();
 
+    const { user, channel } = interaction;
     let value = args.splice(1).join(" ");
 
     if (
@@ -152,68 +152,7 @@ class Command extends BaseCommand {
 
       case "birthday":
       case "др":
-        if (userData.BDay) {
-          const price = [1200, 3000, 12000][userData.chestLevel];
-          const message = await msg.msg({
-            title: `Вы уже устанавливали дату своего дня рождения, повторная смена будет стоить вам ${price} коинов\nПродолжить?`,
-          });
-          const react = await message.awaitReact(
-            { user: msg.author, removeType: "all" },
-            "685057435161198594",
-            "763807890573885456",
-          );
-
-          if (react !== "685057435161198594") {
-            return msg.msg({
-              title: "Действие отменено",
-              color: "#ff0000",
-              delete: 4000,
-            });
-          }
-          if (userData.coins < price) {
-            return msg.msg({
-              title: "Недостаточно коинов",
-              color: "#ff0000",
-              delete: 4000,
-            });
-          }
-          Util.addResource({
-            user: interaction.user,
-            value: -price,
-            executor: interaction.user,
-            source: "command.setProfile.BDDay.fine",
-            resource: PropertiesEnum.coins,
-            context: { interaction },
-          });
-        }
-
-        data.day = value.match(/\d\d\.\d\d/);
-        if (!data.day) {
-          return msg.msg({
-            title: 'Укажите в формате "19.11" - день, месяц',
-            color: "#ff0000",
-            delete: 5000,
-          });
-        }
-
-        data.day = data.day[0];
-
-        data.date = data.day.split(".").map(Number);
-        if (
-          data.date.at(0) > 31 ||
-          data.date.at(0) < 1 ||
-          data.date.at(1) < 1 ||
-          data.date.at(1) > 12
-        ) {
-          return msg.msg({
-            title: 'Укажите в формате "19.11" - день, месяц',
-            color: "#ff0000",
-            delete: 5000,
-          });
-        }
-        userData.BDay = data.day;
-        msg.author.action(Actions.globalQuest, { name: "setBirthday" });
-        msg.msg({ title: "Установлено! 🎉", delete: 3000 });
+        new BirthdayMember(user).processUpdate(channel, value);
         break;
 
       case "confidentiality":
