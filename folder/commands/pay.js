@@ -75,6 +75,12 @@ class Command extends BaseCommand {
       names: PropertiesList.snowyTree.alias,
       gives: (n) => `${n} snowyTree`,
     },
+
+    {
+      resource: PropertiesEnum.thiefGloves,
+      names: PropertiesList.thiefGloves.alias,
+      gives: (n) => Util.ending(n, "перчат", "ок", "ку", "ки"),
+    },
   ];
 
   pay(context) {
