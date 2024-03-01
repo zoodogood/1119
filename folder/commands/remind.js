@@ -3,7 +3,7 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
-import { dayjs, timestampDay, ending, capitalize } from "#lib/util.js";
+import { dayjs, ending, capitalize } from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 
 class AbstractRemindRepeats {
