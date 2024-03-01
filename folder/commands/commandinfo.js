@@ -6,6 +6,7 @@ import Discord from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import { permissionsBitsToI18nArray } from "#lib/permissions.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { CliParser } from "@zoodogood/utils/primitives";
 
 class CliFlagsField {
   constructor(context) {
@@ -36,15 +37,43 @@ class CliFlagsField {
   }
 }
 
+class FlagsCommandManager {
+  constructor(context) {
+    this.context = context;
+  }
+
+  async onProcess() {
+    const { context } = this;
+    await this.sendFlags(context.channel);
+  }
+
+  sendFlags(channel) {
+    const {
+      meta: { options },
+    } = this.context;
+    const { name, cliParser } = options;
+
+    const description =
+      cliParser?.flags
+        .map((flag) => {
+          const title = CliFlagsField.prototype.flagToString(flag);
+          const { description, example } = flag;
+          return `- ${title}\n${example ? `✏️ ${example}\n` : ""}${description}`;
+        })
+        .join("\n") || "Здесь пусто..";
+    channel.msg({ title: `Флаги команды ${name}`, description });
+  }
+}
+
 class CommandRunContext extends BaseCommandRunContext {
   targetCommand;
-  params;
+  cliParsed;
   meta;
   addableFields = [];
 
   static new(interaction, command) {
     const context = new this(interaction, command);
-    context.processParams();
+    context.parseCli();
     context.processCommandInfo();
     if (!context.meta) {
       return context;
@@ -64,26 +93,35 @@ class CommandRunContext extends BaseCommandRunContext {
   }
 
   processCommandInfo() {
-    this.setTargetCommand(
-      CommandsManager.callMap.get(this.params.commandRaw),
-    ).setCommandMeta(
+    const values = this.cliParsed.at(1);
+    const raw = values.get("commandRaw");
+    if (!raw) {
+      return null;
+    }
+    this.setTargetCommand(CommandsManager.callMap.get(raw));
+
+    this.setCommandMeta(
       this.targetCommand ? TargetCommandMetadata.new(this) : null,
     );
     return this;
   }
 
-  processParams() {
-    const { interaction } = this;
-    const commandRaw = interaction.params
-      .toLowerCase()
-      .replace(/[^a-zа-яёьъ0-9]/g, "")
-      .trim();
+  parseCli() {
+    const parser = new CliParser().setText(this.interaction.params);
 
-    const params = {
-      commandRaw,
-    };
-    Object.assign(this, { params });
-    return true;
+    const parsed = parser
+      .processBrackets()
+      .captureFlags(this.command.options.cliParser.flags)
+      .captureResidueFlags()
+      .captureByMatch({
+        name: "commandRaw",
+        regex: /[a-zа-яёъ0-9]+/i,
+        valueOf: (capture) => capture?.toString().toLowerCase(),
+      })
+      .collect();
+
+    const values = parsed.resolveValues((capture) => capture?.toString());
+    this.setCliParsed(parsed, values);
   }
 
   processFlags() {
@@ -170,14 +208,8 @@ class TargetCommandMetadata {
 }
 
 class Command extends BaseCommand {
-  async run(context) {
-    const { meta, targetCommand, user, channel } = context;
-
-    if (!targetCommand) {
-      this.sendHelpMessage(context);
-      return;
-    }
-
+  async processDefaultBehaviour(context) {
+    const { meta, user, channel } = context;
     const {
       aliases,
       commandNameId,
@@ -232,6 +264,35 @@ class Command extends BaseCommand {
     return message;
   }
 
+  processCommandExists(context) {
+    const { targetCommand } = context;
+
+    if (!targetCommand) {
+      this.sendHelpMessage(context);
+      return;
+    }
+
+    return true;
+  }
+  async run(context) {
+    if (!(await this.processCommandExists(context))) {
+      return;
+    }
+    if (await this.processFlagsFlag(context)) {
+      return;
+    }
+    return await this.processDefaultBehaviour(context);
+  }
+
+  async processFlagsFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--flags")) {
+      return;
+    }
+    await new FlagsCommandManager(context).onProcess();
+    return true;
+  }
+
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
     this.run(context);
@@ -266,6 +327,15 @@ class Command extends BaseCommand {
     media: {
       description:
         "Показывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение\n\n✏️\n```python\n!commandInfo {command}\n```\n\n",
+    },
+    cliParser: {
+      flags: [
+        {
+          name: "--flags",
+          capture: ["-f", "--flags"],
+          description: "Отображает флаги целевой команды и их описания",
+        },
+      ],
     },
     alias: "command команда",
     allowDM: true,
