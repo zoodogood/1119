@@ -4,6 +4,7 @@ import Template from "#lib/modules/Template.js";
 
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
+    return;
     const heAccpet = await Util.awaitUserAccept({
       name: "guildCommand",
       message: {
