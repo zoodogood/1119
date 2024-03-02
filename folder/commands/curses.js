@@ -312,7 +312,7 @@ class AtCommandManager {
 
   getCurseByValue(value) {
     const { memb, curses } = this.context;
-    const curse = curses.at(value > 0 ? value - 1 : value);
+    const curse = curses.at(value);
     return { curse, memb, curses };
   }
 
@@ -350,9 +350,9 @@ class AtCommandManager {
     const { curse, memb, curses } = this.getCurseByValue(value);
     if (!curse) {
       channel.msg({
-        description: `Проклятия под номером ${value} у этого человека нет, их же всего ${curses.length}!`,
+        description: `Проклятия под номером ${value} у этого человека нет, их же всего [${curses.map((_, i) => i).join(", ")}] и нумерация начинается с нуля!`,
         color: context.command.MESSAGE_THEME.color,
-        delete: 9_000,
+        delete: 15_000,
       });
       return;
     }
