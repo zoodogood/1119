@@ -1,7 +1,6 @@
 import { Collection } from "@discordjs/collection";
 
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import * as Util from "#lib/util.js";
 import { AttachmentBuilder } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
@@ -18,6 +17,15 @@ import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { MessageMentions } from "discord.js";
 import app from "#app";
+import {
+  DotNotatedInterface,
+  ending,
+  random,
+  sleep,
+  toLocaleDeveloperString,
+  yaml,
+} from "#lib/safe-utils.js";
+import { addResource, overTheMessageSpamLimit } from "#lib/util.js";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -81,8 +89,8 @@ class CurseManager {
         description: "Используйте команду !юзер <:piggeorg:758711403027759106>",
         hard: 0,
         values: {
-          goal: () => Util.random(1, 5),
-          timer: () => Util.random(1, 3) * 86_400_000,
+          goal: () => random(1, 5),
+          timer: () => random(1, 3) * 86_400_000,
         },
         callback: {
           callCommand: (user, curse, { command }) => {
@@ -104,8 +112,8 @@ class CurseManager {
         description: "Купите клубнику, не продав ни одной",
         hard: 0,
         values: {
-          goal: () => Util.random(5, 20),
-          timer: () => Util.random(1, 2) * 86_400_000,
+          goal: () => random(5, 20),
+          timer: () => random(1, 2) * 86_400_000,
         },
         callback: {
           berryBarter: (user, curse, { quantity, isBuying }) => {
@@ -125,7 +133,7 @@ class CurseManager {
         description: "Не пропускайте выполнение ежедневного квеста",
         hard: 2,
         values: {
-          goal: () => Util.random(3, 5),
+          goal: () => random(3, 5),
           timer: (user, curse) => {
             const now = new Date();
             const adding = curse.values.goal;
@@ -347,7 +355,7 @@ class CurseManager {
         },
         callback: {
           messageCreate: (user, curse, message) => {
-            if (Util.random(6)) {
+            if (random(6)) {
               return;
             }
 
@@ -463,7 +471,7 @@ class CurseManager {
         description: "Сделайте что-нибудь",
         hard: 0,
         values: {
-          goal: () => 195 + Util.random(9) * 5,
+          goal: () => 195 + random(9) * 5,
           timer: () => 60_000 * 8,
         },
         callback: {
@@ -590,7 +598,7 @@ class CurseManager {
             data.event.preventDefault();
 
             const audit = {};
-            const auditInterface = new Util.DotNotatedInterface(audit);
+            const auditInterface = new DotNotatedInterface(audit);
 
             auditInterface.setItem("actions", curse.values.counter);
 
@@ -624,7 +632,7 @@ class CurseManager {
               }
               box.sortBy("resource");
             }
-            const document = new Util.yaml.Document(audit);
+            const document = new yaml.Document(audit);
 
             const buffer = Buffer.from(document.toString({ indent: 3 }));
             user.msg({
@@ -754,7 +762,7 @@ class CurseManager {
               return;
             }
 
-            Util.addResource({
+            addResource({
               user,
               value: Math.floor(data.value * 0.1),
               resource: PropertiesEnum.coins,
@@ -791,7 +799,7 @@ class CurseManager {
               return;
             }
 
-            Util.addResource({
+            addResource({
               user,
               value: Math.floor(data.value * 0.05),
               resource: PropertiesEnum.coins,
@@ -856,7 +864,7 @@ class CurseManager {
               PropertiesEnum.keys,
               PropertiesEnum.exp,
             ]) {
-              Util.addResource({
+              addResource({
                 user,
                 value: -userData[resource],
                 resource,
@@ -899,7 +907,7 @@ class CurseManager {
               PropertiesEnum.void,
               PropertiesEnum.chestBonus,
             ]) {
-              Util.addResource({
+              addResource({
                 user,
                 value: -userData[resource],
                 resource,
@@ -1077,7 +1085,7 @@ class CurseManager {
             if (curse !== target.curse) {
               return;
             }
-            Util.addResource({
+            addResource({
               user,
               value: -curse.values.addable,
               source: "curseManager.events.buggyProggy",
@@ -1094,7 +1102,7 @@ class CurseManager {
             const TARGET_VALUE = 99_999;
             const adding = TARGET_VALUE - user.data.coins;
             curse.values.addable = adding;
-            Util.addResource({
+            addResource({
               user,
               value: adding,
               source: "curseManager.events.buggyProggy",
@@ -1165,14 +1173,14 @@ class CurseManager {
         callback: {
           coinFromMessage(user, curse) {
             CurseManager.interface({ user, curse }).incrementProgress(
-              Util.random(1, 4) * 5,
+              random(1, 4) * 5,
             );
           },
           messageCreate(user, curse, message) {
-            if (Util.overTheMessageSpamLimit(user)) {
+            if (overTheMessageSpamLimit(user)) {
               return;
             }
-            if (Util.random(20) === 0) {
+            if (random(20) === 0) {
               EventsManager.emitter.emit("users/getCoinsFromMessage", {
                 user,
                 message,
@@ -1270,7 +1278,7 @@ class CurseManager {
               timeDiff,
             };
             const value =
-              Util.random(1, userData.level) +
+              random(1, userData.level) +
               this.calculateCandiesPerRest(_context);
 
             candyData.candies += value;
@@ -1292,8 +1300,8 @@ class CurseManager {
               candyData.candies,
             );
 
-            await Util.sleep(7_000);
-            Util.random(1) ? context.message.delete() : message.delete();
+            await sleep(7_000);
+            random(1) ? context.message.delete() : message.delete();
           },
         },
         reward: 5,
@@ -1410,7 +1418,7 @@ class CurseManager {
             CurseManager.interface({ user, curse }).incrementProgress(1);
 
             const value = user.data.coins - target.data.coins;
-            Util.addResource({
+            addResource({
               user,
               resource: PropertiesEnum.coins,
               value: -value,
@@ -1418,7 +1426,7 @@ class CurseManager {
               source: "curseManager.events.transfiguro",
               context: { message, curse, user, target },
             });
-            Util.addResource({
+            addResource({
               user: target,
               resource: PropertiesEnum.coins,
               value,
@@ -1478,7 +1486,7 @@ class CurseManager {
           if (!isBigThan) {
             return;
           }
-          Util.addResource({
+          addResource({
             user,
             resource: PropertiesEnum.cheese,
             value: 1,
@@ -1494,10 +1502,10 @@ class CurseManager {
             : null;
           const contents = {
             title: "Рекорд сыра",
-            upped: `${user.toString()}, Вы подняли цену сыра ${Util.ending(upped, "раз", "", "", "а", { unite: (quantity, word) => `**${quantity}** ${word}` })}`,
+            upped: `${user.toString()}, Вы подняли цену сыра ${ending(upped, "раз", "", "", "а", { unite: (quantity, word) => `**${quantity}** ${word}` })}`,
             newRecord: isBigThan ? " — И установили рекорд." : "",
             youCanMore: `Это немного конечно, но ладно.`,
-            previous: `Предыдущее достижение: ${Util.ending(previous.value, "подняти", "й", "е", "я")}, пользователем ${previousUser?.displayName || "null :)"}`,
+            previous: `Предыдущее достижение: ${ending(previous.value, "подняти", "й", "е", "я")}, пользователем ${previousUser?.displayName || "null :)"}`,
           };
           user.msg({
             color: "#ffcc4d",
@@ -1698,8 +1706,7 @@ class CurseManager {
         name: "Прогресс:",
         value: Object.entries(curse.values)
           .map(
-            ([key, value]) =>
-              `${key}: \`${Util.toLocaleDeveloperString(value)}\``,
+            ([key, value]) => `${key}: \`${toLocaleDeveloperString(value)}\``,
           )
           .join("\n"),
       });
@@ -1708,8 +1715,7 @@ class CurseManager {
         name: "Основа:",
         value: Object.entries(curseBase)
           .map(
-            ([key, value]) =>
-              `${key}: \`${Util.toLocaleDeveloperString(value)}\``,
+            ([key, value]) => `${key}: \`${toLocaleDeveloperString(value)}\``,
           )
           .join("\n"),
       });
@@ -1727,7 +1733,7 @@ class CurseManager {
     };
 
     if (lost) {
-      Util.addResource({
+      addResource({
         user,
         executor: null,
         value: user.data.level > 1 ? -1 : 0,
@@ -1777,7 +1783,7 @@ class CurseManager {
       };
       const coinsReward = getCoinsReward();
 
-      Util.addResource({
+      addResource({
         user,
         value: coinsReward,
         source: "curseManager.curse.onEnd",
@@ -1785,7 +1791,7 @@ class CurseManager {
         resource: PropertiesEnum.coins,
         context: { curse },
       });
-      Util.addResource({
+      addResource({
         user,
         value: voidReward,
         source: "curseManager.curse.onEnd",
@@ -1794,15 +1800,9 @@ class CurseManager {
         context: { curse },
       });
 
-      const rewardContent = `${Util.ending(
-        coinsReward,
-        "коин",
-        "ов",
-        "",
-        "а",
-      )}${
+      const rewardContent = `${ending(coinsReward, "коин", "ов", "", "а")}${
         voidReward
-          ? ` и ${Util.ending(voidReward, "нестабильност", "и", "ь", "и")}`
+          ? ` и ${ending(voidReward, "нестабильност", "и", "ь", "и")}`
           : ""
       }`;
       const descriptionFooter = `${
