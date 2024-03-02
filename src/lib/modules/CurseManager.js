@@ -1565,7 +1565,7 @@ class CurseManager {
           },
         },
         callback: {
-          beforeChestOpen(user, curse, context) {
+          beforeOpenChest(user, curse, context) {
             const {
               values: { voidCount, chestCount },
             } = curse;
