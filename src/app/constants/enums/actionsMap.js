@@ -11,6 +11,7 @@ const ActionsMap = {
   buyFromGrempen: "buyFromGrempen",
   callBot: "callBot",
   berryBarter: "berryBarter",
+  beforeOpenChest: "beforeOpenChest",
   openChest: "openChest",
   chilliBooh: "chilliBooh",
   praiseUser: "praiseUser",
