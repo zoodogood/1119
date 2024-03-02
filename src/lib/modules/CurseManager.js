@@ -1544,7 +1544,48 @@ class CurseManager {
         interactionIsShort: true,
         reward: 5,
       },
+      {
+        _weight: 2,
+        id: "theChestIsFullOfCurses",
+        VOID_COUNT: 2,
+        CHEST_COUNT: 300,
+        description: (user, curse) => {
+          const { voidCount, chestCount } = curse.values;
+          return `Следующее открытые сундука даст вам ${ending(voidCount, "нестабильност", "ей", "ь", "и")}, но и отберёт ${ending(chestCount, "бонус", "ов", "", "а")} сундука`;
+        },
+        hard: 0,
+        values: {
+          goal: () => 1,
+          timer: () => DAY,
+          chestCount() {
+            return this.CHEST_COUNT;
+          },
+          voidCount() {
+            return this.VOID_COUNT;
+          },
+        },
+        callback: {
+          beforeChestOpen(user, curse, context) {
+            const {
+              values: { voidCount, chestCount },
+            } = curse;
+            const { treasures } = context;
+            treasures.void ||= 0;
+            treasures.void += voidCount;
+            addResource({
+              user,
+              value: -chestCount,
+              resource: PropertiesEnum.chestBonus,
+              executor: null,
+              source: "curseManager.events.theChestIsFullOfCurses",
+              context,
+            });
 
+            CurseManager.interface({ curse, user }).success();
+          },
+        },
+        reward: 5,
+      },
       // {
       //   _weight: 5,
       //   id: "__example",
