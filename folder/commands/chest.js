@@ -11,8 +11,8 @@ import {
 } from "#constants/users/commands.js";
 
 class Chest {
-  static callOpen({ user }) {
-    const count = this.calculateOpenCount({ user });
+  static callOpen({ user, toOpen }) {
+    const count = this.calculateOpenCount({ user, toOpen });
     return this.getResources({ user, openCount: count });
   }
 
@@ -20,17 +20,6 @@ class Chest {
     const apply = (item, quantity) => {
       switch (item) {
         case "trash":
-          break;
-
-        case "gloves":
-          Util.addResource({
-            user,
-            value: quantity,
-            executor: user,
-            source: "chestManager.applyTreasures",
-            resource: PropertiesEnum.thiefGloves,
-            context: { treasures, ...context },
-          });
           break;
 
         default:
@@ -51,8 +40,8 @@ class Chest {
     );
   }
 
-  static calculateOpenCount({ user }) {
-    const bonuses = user.data.chestBonus || 0;
+  static calculateOpenCount({ toOpen }) {
+    const bonuses = Math.max(0, toOpen);
     return Util.random(2) + Math.ceil(bonuses / 3);
   }
 
@@ -87,10 +76,10 @@ class Chest {
       { item: "berrys", quantity: 1, _weight: 4 },
       { item: "keys", quantity: Util.random(2, 3), _weight: 9 },
       { item: "trash", quantity: 0, _weight: 13 },
-      { item: "exp", quantity: Util.random(19, 89), _weight: 22 },
+      { item: "exp", quantity: Util.random(19, 79), _weight: 22 },
       { item: "coins", quantity: Util.random(23, 40), _weight: 46 },
       { item: "chilli", quantity: 1, _weight: 4 },
-      { item: "gloves", quantity: 1, _weight: 1 },
+      { item: "thiefGloves", quantity: 1, _weight: 1 },
     ],
     [
       { item: "void", quantity: 1, _weight: 1 },
@@ -100,15 +89,15 @@ class Chest {
       { item: "exp", quantity: Util.random(39, 119), _weight: 22 },
       { item: "coins", quantity: Util.random(88, 148), _weight: 54 },
       { item: "chilli", quantity: 1, _weight: 3 },
-      { item: "gloves", quantity: 1, _weight: 2 },
+      { item: "thiefGloves", quantity: 1, _weight: 2 },
     ],
     [
       { item: "void", quantity: 1, _weight: 1 },
       { item: "berrys", quantity: Util.random(1, 3), _weight: 12 },
       { item: "keys", quantity: 9, _weight: 1 },
-      { item: "exp", quantity: Util.random(229), _weight: 22 },
+      { item: "exp", quantity: Util.random(189), _weight: 22 },
       { item: "coins", quantity: Util.random(304, 479), _weight: 62 },
-      { item: "gloves", quantity: 1, _weight: 1 },
+      { item: "thiefGloves", quantity: 1, _weight: 1 },
       { item: "bonus", quantity: 5, _weight: 1 },
     ],
   ];
@@ -116,19 +105,65 @@ class Chest {
 
 class ChestManager {
   static open({ user, context }) {
-    const userData = user.data;
-    const nowBirthday = userData.BDay === DataManager.data.bot.dayDate;
-    nowBirthday && (userData.chestBonus = 30 + (userData.chestBonus || 0));
+    const toOpen = Math.max(0, user.data.chestBonus);
+    this.processBirthday({ user, context });
 
-    const { treasures, openCount } = Chest.callOpen({ user });
-    delete userData.chestBonus;
+    const { treasures, openCount } = Chest.callOpen({ user, toOpen });
+    this.procesBefore({ user, context, treasures, openCount, toOpen });
     Chest.applyTreasures({ user, treasures, context });
 
     Object.entries(treasures).forEach((item, quantity) =>
       this.handleTreasure(item, quantity, user),
     );
 
+    this.processAfter({ user, treasures, context, openCount, toOpen });
+
     return { treasures, openCount };
+  }
+
+  static processBirthday({ user, context }) {
+    const nowBirthday = user.data.BDay === DataManager.data.bot.dayDate;
+    if (!nowBirthday) {
+      return;
+    }
+    Util.addResource({
+      user,
+      value: 30,
+      resource: PropertiesEnum.chestBonus,
+      executor: user,
+      source: "chestManager.processBirthday",
+      context,
+    });
+  }
+
+  static procesBefore({ user, context, treasures, openCount, toOpen }) {
+    user.action(Actions.beforeOpenChest, {
+      primary: context,
+      treasures,
+      openCount,
+      toOpen,
+    });
+  }
+
+  static processAfter({ user, context, treasures, openCount, toOpen }) {
+    user.action(Actions.openChest, {
+      primary: context,
+      treasures,
+      openCount,
+      toOpen,
+    });
+    user.action(Actions.globalQuest, { name: "firstChest" });
+    Util.addResource({
+      user,
+      value: -toOpen,
+      resource: PropertiesEnum.chestBonus,
+      source: "chestManager.processAfter",
+      executor: user,
+      context: { primary: context, openCount, treasures, toOpen },
+    });
+    if (user.data.chestBonus === 0) {
+      delete user.data.chestBonus;
+    }
   }
 
   static handleTreasure(item, quantity, user) {
@@ -271,7 +306,7 @@ class Command extends BaseCommand {
           );
           break;
 
-        case "gloves":
+        case "thiefGloves":
           items.push(`${Util.ending(quantity, "Перчат", "ок", "ка", "ки")} 🧤`);
           break;
 
@@ -289,9 +324,6 @@ class Command extends BaseCommand {
     );
 
     const itemsOutput = structuredClone(items);
-    msg.author.action(Actions.openChest, { msg, interaction, treasures });
-
-    msg.author.action(Actions.globalQuest, { name: "firstChest" });
     cooldown.install();
 
     const embed = {
