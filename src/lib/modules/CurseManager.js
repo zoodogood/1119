@@ -1520,7 +1520,7 @@ class CurseManager {
             }
             const progress = Math.max(0, curse.values.progress + value);
             this.processUpped(curse, progress);
-            CurseManager.interface({ user, curse }).incrementProgress(value);
+            CurseManager.interface({ user, curse }).setProgress(progress);
           },
           beforeProfileDisplay(user, curse) {
             const progress = curse.values.progress;
