@@ -1518,7 +1518,7 @@ class CurseManager {
             if (resource !== PropertiesEnum.coins) {
               return;
             }
-            const progress = curse.values.progress + value;
+            const progress = Math.max(0, curse.values.progress + value);
             this.processUpped(curse, progress);
             CurseManager.interface({ user, curse }).incrementProgress(value);
           },
