@@ -1,6 +1,6 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { Emoji } from "#constants/emojis.js";
-import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
+import { NEW_YEAR_DAY_DATE, SECOND } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum, PropertiesList } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
@@ -38,12 +38,25 @@ const ITEMS = [
     names: PropertiesList.coins.alias.split(" "),
     ending: (count) =>
       `<:coin:637533074879414272> ${Util.ending(count, "Коин", "ов", "", "а")}`,
-    onUse({ count }) {
-      const phrase = `Вы вернули свои ${this.findItemByKey(
-        PropertiesEnum.coins,
-      ).ending(count)}`;
+    onUse({ context }) {
+      const {
+        interaction: { channel },
+      } = context;
 
-      return { phrase };
+      const contents = {
+        description: "Вы кидаете монетку",
+        endFlip: Util.random(1) ? "Орёл" : "Решка",
+        result: ``,
+      };
+
+      setTimeout(() => {
+        channel.msg({
+          description: `${contents.endFlip}. ${contents.result}`,
+        });
+      }, SECOND * 2);
+
+      const phrase = `${contents.description}`;
+      return { phrase, used: 1 };
     },
   },
   {
@@ -68,8 +81,6 @@ const ITEMS = [
     key: "void",
     names: PropertiesList.void.alias.split(" "),
     onUse({ count, context }) {
-      const used = count;
-
       const MULTIPLAYER = 2;
       const randomized = Util.random(1);
       const { user } = context;
@@ -85,8 +96,8 @@ const ITEMS = [
       }
       const phrase = `Шаурма ты. ${randomized ? "+" : "-"} ${
         randomized ? count * MULTIPLAYER : count
-      }`;
-      return { phrase, used };
+      } нест`;
+      return { phrase, used: count };
     },
     ending: (count) =>
       `<a:void:768047066890895360> ${Util.ending(
@@ -264,12 +275,12 @@ const ITEMS = [
     async onUse({ context }) {
       const { guild } = context;
       const today = Util.timestampDay(Date.now());
-      const boss = guild.data.boss;
+      const { boss } = guild.data;
 
       const BossManager = (await import("#lib/modules/BossManager.js")).default;
-      if (BossManager.isArrivedIn(guild) || boss?.apparanceAtDay - 3 > today) {
+      if (BossManager.isArrivedIn(guild) || boss?.apparanceAtDay - 3 <= today) {
         const phrase =
-          "Вы можете применить этот предмет в момент отсутствия босса на сервере, но не за 3 дня до его появления";
+          "Неудалось применить леденец:\nВы можете применить этот предмет в момент отсутствия босса на сервере, но не за 3 дня до его появления";
         return { phrase };
       }
 
@@ -435,8 +446,10 @@ class Command extends BaseCommand {
       });
     }
 
+    const emoji = Emoji[PropertiesList[item.key].emojiKey];
+
     interaction.channel.msg({
-      description: `Использовано ${used} ед. предмета\n${phrase}`,
+      description: `${Util.ending(used, "единиц", "", "а", "ы")} предмета ${emoji} — использовано\n${phrase}`,
     });
   }
 
