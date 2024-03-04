@@ -15,7 +15,7 @@ export default {
       }
       const { attackContext } = data;
       const { power, multiplayer } = effect.values;
-      attackContext.eventsCount += power * multiplayer;
+      attackContext.eventsCount += Math.floor(power * multiplayer);
     },
   },
   values: {
