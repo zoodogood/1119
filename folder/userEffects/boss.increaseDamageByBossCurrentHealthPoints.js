@@ -15,17 +15,18 @@ export default {
       }
 
       const { attackContext, boss } = data;
-      const { power } = effect.values;
+      const { power, multiplayer } = effect.values;
 
       const thresholder = BossManager.calculateHealthPointThresholder(
         boss.level,
       );
       const currentHealth = thresholder - boss.damageTaken;
-      const damage = Math.floor(currentHealth * power);
+      const damage = Math.floor(currentHealth * power * multiplayer);
       attackContext.baseDamage += damage;
     },
   },
   values: {
+    multiplayer: () => 1,
     power: () => 0.001,
     guildId: (user, effect, { guild }) => guild?.id,
   },

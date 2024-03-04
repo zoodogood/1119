@@ -13,7 +13,8 @@ export default {
       if (guild.id !== guildId) {
         return;
       }
-      const values = effect.values;
+
+      const { power, multiplayer, goal, basic } = effect.values;
       const userStats = BossManager.getUserStats(
         message.guild.data.boss,
         message.author.id,
@@ -21,7 +22,7 @@ export default {
 
       const currentHour = Math.floor(Date.now() / 3_600_000);
 
-      const hoursMap = (values.hoursMap ||= {});
+      const hoursMap = (effect.values.hoursMap ||= {});
 
       if (currentHour in hoursMap === false) {
         hoursMap[currentHour] = 0;
@@ -32,25 +33,25 @@ export default {
           )
           .at(1);
 
-        if (previousHourMessages === values.goal) {
-          userStats.damagePerMessage = Math.ceil(
-            (userStats.damagePerMessage || 1) * values.power + values.basic,
-          );
+        if (previousHourMessages === goal) {
+          userStats.damagePerMessage ||= 1;
+          userStats.damagePerMessage = Math.ceil((power + basic) * multiplayer);
           message.react("685057435161198594");
         }
       }
 
       hoursMap[currentHour]++;
-      if (hoursMap[currentHour] === values.goal) {
+      if (hoursMap[currentHour] === goal) {
         message.react("998886124380487761");
       }
 
-      if (hoursMap[currentHour] === values.goal + 1) {
+      if (hoursMap[currentHour] === goal + 1) {
         message.react("🫵");
       }
     },
   },
   values: {
+    multiplayer: () => 1,
     power: () => 1.5,
     basic: () => 2,
     goal: () => 30,

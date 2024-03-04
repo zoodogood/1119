@@ -13,7 +13,8 @@ export default {
       if (guild.id !== guildId) {
         return;
       }
-      attackContext.damageMultiplayer *= effect.values.power;
+      const { power, multiplayer } = effect.values;
+      attackContext.damageMultiplayer *= power * multiplayer;
 
       effect.values.duration--;
       if (!effect.values.duration) {
@@ -24,6 +25,7 @@ export default {
   values: {
     power: () => 2,
     duration: () => 1,
+    multiplayer: () => 1,
     guildId: (user, effect, { guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,

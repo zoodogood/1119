@@ -14,13 +14,14 @@ export default {
       }
 
       const { boss } = data;
-      const { power } = effect.values;
+      const { power, multiplayer } = effect.values;
       boss.legendaryWearonDamageMultiplayer ||= 1;
-      boss.legendaryWearonDamageMultiplayer += power;
+      boss.legendaryWearonDamageMultiplayer += power * multiplayer;
     },
   },
   values: {
-    power: () => 1 / 100_000,
+    multiplayer: () => 1,
+    power: () => 1 / 100,
     guildId: (user, effect, { guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Positive,

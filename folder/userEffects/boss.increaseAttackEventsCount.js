@@ -14,11 +14,12 @@ export default {
         return;
       }
       const { attackContext } = data;
-      const { power } = effect.values;
-      attackContext.eventsCount += power;
+      const { power, multiplayer } = effect.values;
+      attackContext.eventsCount += power * multiplayer;
     },
   },
   values: {
+    multiplayer: () => 1,
     power: () => 1,
     guildId: (user, effect, { guild }) => guild?.id,
   },
