@@ -8,11 +8,13 @@ const PropertiesList = {
   name: {},
   id: {},
   coins: {
+    id: GeneralPropertiesMap.coins,
     label: "Коин",
     labelMeta: {
       base: "коин",
       suffixes: ["ов", "", "а"],
     },
+    emojiKey: GeneralPropertiesMap.coins,
     alias:
       "coins coin коин коинов коина коины монет монету монеты монета монеток",
   },
@@ -28,6 +30,7 @@ const PropertiesList = {
   void: {
     alias:
       "void камушков камешек камушка voids камень камня камней нестабильность камни нестабильности нест н",
+    emojiKey: GeneralPropertiesMap.void,
   },
   keys: {
     label: "Ключ",
@@ -43,12 +46,14 @@ const PropertiesList = {
   },
   presents: {
     alias: "presents подарок подарка подарков present",
+    emojiKey: GeneralPropertiesMap.presents,
   },
   snowyTree: {
     alias: "snowy новогоднее",
   },
   lollipops: {
     alias: "lollipops lolipops lollipop lolipop леденец леденцы леденцов",
+    emojiKey: GeneralPropertiesMap.lollipops,
   },
   cheese: {
     alias: "сыр сыра сыров cheese cheeses",
