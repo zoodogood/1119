@@ -1,6 +1,7 @@
 import { BossEffects } from "#lib/modules/BossManager.js";
-import UserEffectManager, { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
-
+import UserEffectManager, {
+  EffectInfluenceEnum,
+} from "#lib/modules/EffectsManager.js";
 
 function isBossEffect(effect) {
   return effect.id.startsWith("boss.");
@@ -32,7 +33,7 @@ export default {
         return;
       }
 
-      if (effectBase.canPrevented === false) {
+      if (effectBase.canPrevented === false || values.canPrevented === false) {
         return;
       }
 
