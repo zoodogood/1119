@@ -14,6 +14,7 @@ import {
   addMultipleResources,
   addResource,
   ending,
+  question,
   random,
   sleep,
   timestampDay,
@@ -27,6 +28,8 @@ import {
   UserEffectManager,
 } from "#lib/modules/EffectsManager.js";
 import { MONTH } from "#constants/globals/time.js";
+import config from "#config";
+import { justButtonComponents } from "@zoodogood/utils/discordjs";
 
 class RewardSystem {
   static LevelKill = {
@@ -1070,7 +1073,6 @@ class BossManager {
     const DAMAGE_THRESHOLDER_FOR_REWARD = 1_500;
     const { BossEndPull, GuildHarvest, MostStrongUser, LevelKill, sendReward } =
       RewardSystem;
-    GuildHarvest.onBossEnded(guild, boss);
 
     const mostStrongUser = (() => {
       const pull = MostStrongUser.resources();
@@ -1110,7 +1112,17 @@ class BossManager {
       BossEffects.removeEffects({ list, user });
     };
 
-    const usersStatsEntries = Object.entries(boss.users);
+    const context = {
+      guild,
+      boss,
+      mostStrongUser,
+      usersStatsEntries: Object.entries(boss.users),
+    };
+
+    this.eventBases.get("andWhoStronger").onBossEnd(context);
+    GuildHarvest.onBossEnded(guild, boss);
+
+    const { usersStatsEntries } = context;
 
     usersStatsEntries
       .filter(
@@ -1130,7 +1142,7 @@ class BossManager {
       [BossManager.DAMAGE_SOURCES.other, Number.MAX_SAFE_INTEGER],
     );
 
-    const participants = Object.entries(boss.users).filter(
+    const participants = usersStatsEntries.filter(
       ([id, { damageDealt }]) => damageDealt,
     );
 
@@ -1705,6 +1717,9 @@ class BossManager {
                 value(context),
               ]),
             );
+            values.isLegendaryWearon = true;
+            values.canPrevented = false;
+
             BossEffects.applyEffect({
               guild,
               user,
@@ -1971,7 +1986,7 @@ class BossManager {
         },
       },
       powerOfEarth: {
-        weight: 1500,
+        weight: 1000,
         id: "powerOfEarth",
         description: "Вознаграждение за терпение",
         callback: ({ user, boss }) => {
@@ -1981,7 +1996,7 @@ class BossManager {
         filter: ({ boss }) => boss.elementType === elementsEnum.earth,
       },
       powerOfWind: {
-        weight: 1500,
+        weight: 1000,
         id: "powerOfWind",
         description: "Уменьшает перезарядку на случайное значение",
         callback: ({ userStats }) => {
@@ -1995,7 +2010,7 @@ class BossManager {
         filter: ({ boss }) => boss.elementType === elementsEnum.wind,
       },
       powerOfFire: {
-        weight: 1500,
+        weight: 1000,
         id: "powerOfFire",
         description: "На что вы надеятесь?",
         callback: ({ boss }) => {
@@ -2004,7 +2019,7 @@ class BossManager {
         filter: ({ boss }) => boss.elementType === elementsEnum.fire,
       },
       powerOfDarkness: {
-        weight: 1500,
+        weight: 1000,
         id: "powerOfDarkness",
         description: "Вознагражение за настойчивость",
         callback: ({ user, boss }) => {
@@ -2092,13 +2107,14 @@ class BossManager {
         id: "pests",
         description: "Клопы",
         callback: ({ user, boss, userStats }) => {
-          const addingCooldowm = 60_000;
+          const addingCooldowm = 30_000;
           userStats.attackCooldown += addingCooldowm;
           userStats.attack_CD += addingCooldowm;
 
-          const decreaseMultiplayer = 0.005;
-          userStats.attacksDamageMultiplayer ||= 1;
-          userStats.attacksDamageMultiplayer -= decreaseMultiplayer;
+          const decreaseMultiplayer = 0.995;
+          userStats.attacksDamageMultiplayer = +(
+            (userStats.attacksDamageMultiplayer ?? 1) * decreaseMultiplayer
+          ).toFixed(3);
         },
         repeats: true,
         filter: ({ boss }) => boss.level >= 10,
@@ -2240,7 +2256,7 @@ class BossManager {
         filter: ({ boss }) => Speacial.isSnowQueen(boss),
       },
       preventPositiveEffects: {
-        weight: 50,
+        weight: 100,
         id: "preventPositiveEffects",
         description: "Предотвращает два следующих позитивных эффекта",
         callback: ({ user, guild }) => {
@@ -2256,8 +2272,248 @@ class BossManager {
           });
         },
       },
+      forging: {
+        weight: 100,
+        id: "forging",
+        description: "Эффект легендарного оружия усилен, обычный урон ослаблен",
+        callback: async ({ user, boss, channel, userStats }) => {
+          const effect = BossEffects.effectsOf({ boss, user }).find(
+            (effect) => effect.values.isLegendaryWearon,
+          );
+          if (!effect) {
+            channel.msg({
+              content: `Упс, легендарного оружия не найдено! Как так?\nТак быть не должно и вы можете связаться с [сервером поддержки](${config.guild.url})`,
+            });
+            return;
+          }
+
+          const effectMultiplayer = 0.2;
+          effect.values.multiplier += effectMultiplayer;
+
+          const damageMultiplayer = 0.95;
+          userStats.attacksDamageMultiplayer = +(
+            (userStats.attacksDamageMultiplayer ?? 1) * damageMultiplayer
+          ).toFixed(3);
+        },
+        filter: ({ userStats }) => userStats.haveLegendaryWearon,
+      },
+
+      seemed: {
+        weight: 50,
+        id: "seemed",
+        description: "Требуется совершить выбор",
+        callback: async ({ user, boss, channel, userStats }) => {
+          const embed = {
+            author: { name: user.username, iconURL: user.avatarURL() },
+            description:
+              "Упомяните активного участника или укажите его айди, чтобы наложить на него проклятие, если он не справится, вы получите нестабильность; или заплатите 5 000 коинов, чтобы эффект прошел",
+            footer: {
+              iconURL: user.avatarURL(),
+              text: "Это действие нельзя пропустить",
+            },
+          };
+
+          channel.sendTyping();
+          await sleep(2000);
+
+          const response = await question({ message: embed, user, channel });
+          if (!response) {
+            return;
+          }
+        },
+      },
+      andWhoStronger: {
+        weight: Infinity,
+        id: "andWhoStronger",
+        description: "Викторина",
+        REACTIONS: {
+          FirstByDamage: "1️⃣",
+          SecondByDamage: "3️⃣",
+          Nothing: "💠",
+        },
+        ID_OF_NOTHING_USER: "none",
+        EFFECT_ID: "bossManager.attack.events.andWhoStronger",
+        userOnCorrectAnswer(user, selected, context) {
+          const isSelectedNothing = selected === this.ID_OF_NOTHING_USER;
+          isSelectedNothing
+            ? addResource({
+                user,
+                executor: null,
+                context,
+                source: `bossManager.attack.events.andWhoStronger.userOnCorrectAnswer`,
+                value: 1,
+                resource: PropertiesEnum.void,
+              })
+            : addResource({
+                user,
+                executor: null,
+                context,
+                source: `bossManager.attack.events.andWhoStronger.userOnCorrectAnswer`,
+                value: 50,
+                resource: PropertiesEnum.keys,
+              });
+          user.msg({
+            description: `Вы ответили правильно в викторине (${this.EFFECT_ID})!\nПолучите Вашу награду. Вроде бы это 1 нестабильность или 50 ключей`,
+          });
+        },
+        async onBossEnd(context) {
+          const { boss, mostStrongUser, usersStatsEntries } = context;
+          for (const [userId, userStats] of usersStatsEntries) {
+            if (this.EFFECT_ID in userStats === false) {
+              continue;
+            }
+            const { id, strongest } = userStats[`${this.EFFECT_ID}`];
+
+            const user = app.client.users.cache.get(userId);
+            if (mostStrongUser.id === id) {
+              this.userOnCorrectAnswer(user, id, context);
+              continue;
+            }
+
+            if (
+              id === this.ID_OF_NOTHING_USER &&
+              !strongest.includes(mostStrongUser.id)
+            ) {
+              this.userOnCorrectAnswer(user, id, context);
+              continue;
+            }
+          }
+        },
+        async onSelectWinner(interaction, context) {
+          const { participantsContext, userStats, user } = context;
+          const { reaction, strongest } = participantsContext;
+          const { REACTIONS } = this;
+          const INDEXES = {
+            [REACTIONS.FirstByDamage]: 0,
+            [REACTIONS.SecondByDamage]: 1,
+            [REACTIONS.Nothing]: null,
+          };
+          const emoji = reaction.emoji.name;
+          const selectedUser = strongest[INDEXES[emoji]]?.at(0) ?? {
+            toString() {
+              return "Никто из них";
+            },
+            id: this.ID_OF_NOTHING_USER,
+          };
+          interaction.msg({
+            edit: true,
+            author: {
+              name: `Викторина | ${user.username}`,
+              iconURL: user.avatarURL(),
+            },
+            description: `😛?, Ставка сделана: ${selectedUser}`,
+          });
+
+          userStats[`${this.EFFECT_ID}`] = {
+            id: selectedUser.id,
+            strongest: strongest.map(([user]) => user.id),
+          };
+        },
+        async onParcitipate(interaction, context) {
+          const { boss, guild, user } = context;
+          const damageOfEntry = (entry) => entry?.at(1).damageDealt || 0;
+          const strongest = Object.entries(boss.users)
+            .reduce((acc, entry) => {
+              const [first, second] = acc;
+              if (damageOfEntry(entry) > damageOfEntry(first)) {
+                return [entry, first];
+              }
+              if (damageOfEntry(entry) > damageOfEntry(second)) {
+                return [first, entry];
+              }
+              return acc;
+            }, [])
+            .filter(Boolean)
+            .map((entry) => [
+              guild.members.cache.get(entry[0]),
+              damageOfEntry(entry),
+            ]);
+
+          const { REACTIONS } = this;
+          const reactions = [
+            ...[REACTIONS.FirstByDamage, REACTIONS.SecondByDamage].slice(
+              0,
+              strongest.length,
+            ),
+            REACTIONS.Nothing,
+          ];
+          const contents = {
+            description:
+              "У нас есть два лидера, угадайте кто нанесёт больше урона к концу события и получите 50 ключей. Если вы верите в другого участника, выберите опцию «никто из них» и, в случае верного предсказания, получите одну нестабильность:",
+            strongest: `**Вот наши первосилачи:**\n${strongest.map(([memb, damage], i) => `${reactions[i]} ${memb.toString()}, — ${NumberFormatLetterize(damage)}`).join("\n")}\n${REACTIONS.Nothing} Никто из них`,
+          };
+          const message = await interaction.msg({
+            description: `${contents.description}\n${contents.strongest}`,
+            author: { name: user.username, iconURL: user.avatarURL() },
+            fetchReply: true,
+            reactions,
+          });
+
+          const participantsContext = {
+            message,
+            reactions,
+            strongest,
+          };
+          Object.assign(context, { participantsContext });
+
+          const collector = message.createReactionCollector();
+          collector.on("collect", async (reaction, _user) => {
+            if (_user.id !== interaction.user.id) {
+              return;
+            }
+            participantsContext.reaction = reaction;
+            this.onSelectWinner(interaction, context);
+            collector.stop();
+          });
+          collector.on("end", () => message.reactions.removeAll());
+        },
+        async callback(context) {
+          const { user, boss, channel, userStats, guild } = context;
+          await sleep(500);
+          channel.sendTyping();
+          await sleep(5_000);
+
+          const embed = {
+            content: ":wave:",
+          };
+
+          const preview = await channel.msg(embed);
+          await sleep(1_200);
+
+          Object.assign(embed, {
+            author: { name: user.username, iconURL: user.avatarURL() },
+            title: "Викторина",
+            description:
+              "Кто сильнее? Сделайте ставку кто из текущих лидеров урона по боссу нанесёт больше урона к концу",
+            components: justButtonComponents([{ label: "Участвовать" }]),
+            edit: true,
+          });
+
+          preview.msg(embed);
+          const collector = preview.createMessageComponentCollector();
+
+          collector.on("collect", async (interaction) => {
+            if (interaction.user.id !== user.id) {
+              interaction.msg({
+                ephemeral: true,
+                content: `Это взаимодействие доступно только ${user.username}`,
+              });
+              return;
+            }
+
+            this.onParcitipate(interaction, context);
+            collector.stop();
+          });
+
+          collector.on("end", async () => {
+            preview.msg({ components: [], edit: true });
+          });
+        },
+        filter: ({ guild, boss }) =>
+          true || (boss.level >= 3 && Object.keys(boss.users).length > 2),
+      },
       // ______e4example: {
-      //   _weight: 2,
+      //   weight: 2,
       //   id: "______e4example",
       //   description: "Требуется совершить выбор",
       //   callback: async ({user, boss, channel, userStats}) => {
