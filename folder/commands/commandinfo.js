@@ -337,7 +337,7 @@ class Command extends BaseCommand {
         },
       ],
     },
-    alias: "command команда",
+    alias: "command команда command_info",
     allowDM: true,
     expectParams: true,
     cooldown: 5_000,
