@@ -20,7 +20,47 @@ function createShop(guild, user, channel) {
   });
 }
 
-class CommandHelpManager {
+class BossesCommandManager {
+  constructor(context) {
+    this.context = context;
+  }
+  onProcess() {
+    const { interaction } = this.context;
+    const memb = interaction.mention || interaction.user;
+    const { guilds } = memb;
+    const fields = Util.sortByResolve(
+      guilds.filter((guild) => guild.data.boss),
+      ({ data: { boss } }) =>
+        boss.isArrived ? Number.MIN_SAFE_INTEGER : +boss.apparanceAtDay || 0,
+      { reverse: true },
+    )
+      .map((guild) => this.guildToField(guild))
+      .slice(0, 20);
+
+    const { channel } = this.context;
+    channel.msg({
+      description: "Ваши сервера с боссом",
+      fields,
+    });
+  }
+
+  guildToField(guild) {
+    const { boss } = guild.data;
+    const isArrived = boss.isArrived;
+    const { name } = guild;
+    const contents = {
+      endsAt: boss.endingAtDay
+        ? Util.toDayDate(boss.endingAtDay * DAY)
+        : "Никогда",
+    };
+    const value = isArrived
+      ? `Пришёл (${boss.level} ур.), уйдет ${contents.endsAt}`
+      : `Придёт ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`;
+    return { name, value };
+  }
+}
+
+class HelpCommandManager {
   constructor(context) {
     this.context = context;
   }
@@ -70,9 +110,7 @@ class Command extends BaseCommand {
         : Math.ceil(currentHealthPointPercent * 100),
 
       leaveDay: `Уйдет ${
-        boss.endingAtDay
-          ? Util.toDayDate(boss.endingAtDay * 86_400_000)
-          : "Никогда"
+        boss.endingAtDay ? Util.toDayDate(boss.endingAtDay * DAY) : "Никогда"
       }`,
       level: `Уровень: ${boss.level}.`,
     };
@@ -122,6 +160,9 @@ class Command extends BaseCommand {
     if (await this.processAttackFlag(context)) {
       return;
     }
+    if (await this.processBossesFlag(context)) {
+      return;
+    }
     await this.processDefaultBehavior(context);
   }
 
@@ -130,7 +171,16 @@ class Command extends BaseCommand {
     if (!values.get("--help")) {
       return;
     }
-    await new CommandHelpManager(context).onProcess();
+    await new HelpCommandManager(context).onProcess();
+    return true;
+  }
+
+  async processBossesFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--bosses")) {
+      return;
+    }
+    await new BossesCommandManager(context).onProcess();
     return true;
   }
 
@@ -411,6 +461,12 @@ class Command extends BaseCommand {
           name: "--shop",
           capture: ["--shop", "-s"],
           description: "Незамедлительно открывает лавку босса",
+        },
+        {
+          name: "--bosses",
+          capture: ["--bosses"],
+          description:
+            "Показывает перечень серверов, где вы находитесь, с активными или предшествующими боссами",
         },
       ],
     },
