@@ -147,7 +147,7 @@ class Command extends BaseCommand {
     if (!cloverEffect) {
       return null;
     }
-    const day = TimeEventsManager.Util.timestampDay(cloverEffect.timestamp);
+    const day = Util.timestampDay(cloverEffect.timestamp);
     const filter = ({ name, _params_as_json }) =>
       name === "clover-end" && _params_as_json.includes(guild.id);
     const event = TimeEventsManager.at(day)?.find(filter);
