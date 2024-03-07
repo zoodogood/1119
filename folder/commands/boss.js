@@ -5,9 +5,60 @@ import { BossManager, BossEffects } from "#lib/modules/BossManager.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { DAY } from "#constants/globals/time.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { CliParser } from "@zoodogood/utils/primitives";
+
+function attackBoss(boss, user, channel) {
+  return BossManager.userAttack({ boss, user, channel });
+}
+
+function createShop(guild, user, channel) {
+  return BossManager.BossShop.createShop({
+    channel: channel,
+    user,
+    guild: guild,
+  });
+}
+
+class CommandHelpManager {
+  constructor(context) {
+    this.context = context;
+  }
+  onProcess() {
+    const { channel } = this.context;
+    channel.msg({
+      content:
+        "Атакуйте босса, чтобы получить больше наград. В его лавке вы можете приобрести усилители, которые становятся дороже с каждой покупкой. Поэтому распоряжайтесь валютой разумно. Время от времени босс будет накладывать проклятия. Имейте ввиду, что эти самые проклятия, — козырный источник прибыли и их стоит проходить. Объединяйтесь в кланы, чтобы получать прибавку к урону и добраться до глобальной таблицы лидеров. Напоминаю, что основным эпилогом бота является открытие 20 !котлов и хорошее времяпровождение\n\n",
+    });
+  }
+}
+class CommandRunContext extends BaseCommandRunContext {
+  memb;
+  boss;
+  userStats;
+  userEffects;
+  parseCli(params) {
+    const parsed = new CliParser()
+      .setText(params)
+      .processBrackets()
+      .captureFlags(this.command.options.cliParser.flags)
+      .collect();
+
+    const values = parsed.resolveValues((capture) => capture?.toString());
+    this.setCliParsed(parsed, values);
+  }
+
+  static async new(interaction, command) {
+    const context = new this(interaction, command);
+    const memb = interaction.mention ?? interaction.user;
+    const boss = interaction.guild.data.boss ?? {};
+    Object.assign(context, { memb, boss });
+    return context;
+  }
+}
 
 class Command extends BaseCommand {
-  createEmbed({ userEffects, userStats, member, boss }) {
+  createEmbed({ userEffects, userStats, memb, boss }) {
     const currentHealthPointPercent =
       1 - boss.damageTaken / boss.healthThresholder;
 
@@ -48,37 +99,81 @@ class Command extends BaseCommand {
       description,
       fields,
       thumbnail: boss.avatarURL,
-      footer: { text: member.tag, iconURL: member.avatarURL() },
+      footer: { text: memb.tag, iconURL: memb.avatarURL() },
     };
 
     return embed;
   }
 
   async onChatInput(msg, interaction) {
-    const member = interaction.mention ?? msg.author;
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
 
-    const guild = msg.guild;
-    const boss = guild.data.boss ?? {};
+  async run(context) {
+    context.parseCli(context.interaction.params);
+    if (await this.processHelpFlag(context)) {
+      return;
+    }
+    if (await this.processShopFlag(context)) {
+      return;
+    }
+    if (await this.processAttackFlag(context)) {
+      return;
+    }
+    await this.processDefaultBehavior(context);
+  }
+
+  async processHelpFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--help")) {
+      return;
+    }
+    await new CommandHelpManager(context).onProcess();
+    return true;
+  }
+
+  async processShopFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--shop")) {
+      return;
+    }
+
+    await createShop(context.guild, context.user, context.channel);
+    return true;
+  }
+
+  async processAttackFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--attack")) {
+      return;
+    }
+
+    await attackBoss(context.boss, context.user, context.channel);
+    await this.processDefaultBehavior(context);
+    return true;
+  }
+
+  async processDefaultBehavior(context) {
+    const { boss, memb, channel } = context;
 
     if (!boss.isArrived) {
       const description = boss.apparanceAtDay
         ? `Прибудет лишь ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`
         : "Момент появления босса пока неизвестен";
 
-      msg.msg({ description, color: "#000000" });
+      channel.msg({ description, color: "#000000" });
       return;
     }
 
-    const userStats = BossManager.getUserStats(boss, member.id);
-    const userEffects = BossEffects.effectsOf({ boss, user: member });
+    const userStats = BossManager.getUserStats(boss, memb.id);
+    const userEffects = BossEffects.effectsOf({ boss, user: memb });
 
-    const context = {
-      interaction,
-      member,
-      boss,
+    Object.assign(context, {
       userStats,
       userEffects,
-    };
+    });
 
     if (userStats.heroIsDead) {
       this.displayHeadstone(context);
@@ -101,7 +196,7 @@ class Command extends BaseCommand {
       reaction.filter(context),
     ).map(({ emoji }) => emoji);
 
-    const message = await msg.msg({ ...embed, reactions });
+    const message = await channel.msg({ ...embed, reactions });
 
     const filter = (reaction, user) =>
       user.id !== client.user.id && reactions.includes(reaction.emoji.name);
@@ -110,15 +205,11 @@ class Command extends BaseCommand {
       reaction.users.remove(user);
 
       if (reaction.emoji.name === "⚔️") {
-        BossManager.userAttack({ boss, user, channel: message.channel });
+        attackBoss(boss, user, channel);
       }
 
       if (reaction.emoji.name === "🕋") {
-        BossManager.BossShop.createShop({
-          channel: message.channel,
-          user,
-          guild: message.guild,
-        });
+        createShop(channel.guild, user, channel);
       }
 
       const embed = this.createEmbed(context);
@@ -303,6 +394,25 @@ class Command extends BaseCommand {
     media: {
       description:
         "\n\nБосс страшен. Победите его вместе или проиграйте по-одиночке. Он появляется один раз месяц и уходит спустя три дня.\n\n✏️\n```python\n!boss <member>\n```",
+    },
+    cliParser: {
+      flags: [
+        {
+          name: "--help",
+          capture: ["--help", "-h"],
+          description: "Для чего босс приходит и что с ним делать",
+        },
+        {
+          name: "--attack",
+          capture: ["--attack", "-a"],
+          description: "Незамедлительно проведите атаку",
+        },
+        {
+          name: "--shop",
+          capture: ["--shop", "-s"],
+          description: "Незамедлительно открывает лавку босса",
+        },
+      ],
     },
     alias: "босс бос",
     allowDM: true,
