@@ -1040,7 +1040,7 @@ class Command extends BaseCommand {
           {
             action: async ({ level, channel }) => {
               const clover = channel.guild.data.cloverEffect;
-              const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
+              const day = Util.timestampDay(clover.timestamp);
 
               const filter = ({ name, _params_as_json }) =>
                 name === "clover-end" &&
@@ -1135,7 +1135,7 @@ class Command extends BaseCommand {
           {
             action: async ({ channel }) => {
               const clover = channel.guild.data.cloverEffect;
-              const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
+              const day = Util.timestampDay(clover.timestamp);
               const filter = ({ name, params }) =>
                 name === "clover-end" && params.includes(channel.guild.id);
 
