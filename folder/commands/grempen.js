@@ -433,7 +433,7 @@ class Command extends BaseCommand {
             channelId,
           ]);
         },
-        fn: () => {
+        fn() {
           const phrase =
             ". Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.";
           const guild = interaction.guild;
@@ -459,7 +459,7 @@ class Command extends BaseCommand {
             const ms = previous + Math.max(adding, 0);
             return ms;
           };
-          const day = TimeEventsManager.Util.timestampDay(clover.timestamp);
+          const day = Util.timestampDay(clover.timestamp);
           clover.timestamp = increaseTimestamp(clover.timestamp);
 
           const filter = (event) =>
