@@ -1,6 +1,6 @@
 const GeneralPropertiesMap = {
   berrysPrice: "berrysPrice",
-  grempen: "grempen",
+  grempenBoughted: "grempenBoughted",
   name: "name",
   id: "id",
   coins: "coins",

@@ -3,7 +3,7 @@ import { GeneralPropertiesMap } from "#constants/enums/generalPropertiesMap.js";
 
 const PropertiesList = {
   berrysPrice: {},
-  grempen: {},
+  grempenBoughted: {},
 
   name: {},
   id: {},
