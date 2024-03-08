@@ -105,14 +105,14 @@ class Chest {
 
 class ChestManager {
   static open({ user, context }) {
-    const toOpen = Math.max(0, user.data.chestBonus);
+    const toOpen = Math.max(0, user.data.chestBonus) || 0;
     this.processBirthday({ user, context });
 
     const { treasures, openCount } = Chest.callOpen({ user, toOpen });
     this.procesBefore({ user, context, treasures, openCount, toOpen });
     Chest.applyTreasures({ user, treasures, context });
 
-    Object.entries(treasures).forEach((item, quantity) =>
+    Object.entries(treasures).forEach(([item, quantity]) =>
       this.handleTreasure(item, quantity, user),
     );
 
@@ -170,6 +170,7 @@ class ChestManager {
     switch (item) {
       case "keys":
         if (quantity > 99) {
+          console.log(123);
           user.action(Actions.globalQuest, { name: "bigHungredBonus" });
         }
         break;
