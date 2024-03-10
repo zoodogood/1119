@@ -63,7 +63,7 @@ class Command extends BaseCommand {
         value: 244,
         inline: true,
         others: ["палка", "палку"],
-        fn: () => {
+        fn() {
           const product = this;
 
           let phrase =
@@ -108,7 +108,7 @@ class Command extends BaseCommand {
         value: 160,
         inline: true,
         others: ["перец", "перчик"],
-        fn: () => {
+        fn() {
           const product = this;
           if (userData.chilli === undefined) {
             msg.msg({
@@ -135,7 +135,7 @@ class Command extends BaseCommand {
         value: 700,
         inline: true,
         others: ["перчатку", "перчатки", "перчатка"],
-        fn: () => {
+        fn() {
           const product = this;
           userData.thiefGloves === undefined &&
             msg.author.msg({
@@ -163,7 +163,7 @@ class Command extends BaseCommand {
         value: 15,
         inline: true,
         others: ["ключ", "ключик", "key"],
-        fn: () => {
+        fn() {
           const product = this;
 
           Util.addResource({
@@ -183,7 +183,7 @@ class Command extends BaseCommand {
         value: "???",
         inline: true,
         others: ["опыт", "бутылёк"],
-        fn: () => {
+        fn() {
           const product = this;
 
           const rand = Util.random(3, 7);
@@ -209,7 +209,7 @@ class Command extends BaseCommand {
         value: 1999 + 1000 * Math.ceil((userData.monstersBought || 0) / 3),
         inline: true,
         others: ["монстр", "монстра"],
-        fn: () => {
+        fn() {
           const product = this;
 
           if (userData.monster === undefined) {
@@ -247,7 +247,7 @@ class Command extends BaseCommand {
         value: 1200,
         inline: true,
         others: ["консервы", "интеллект"],
-        fn: () => {
+        fn() {
           const product = this;
 
           if (userData.iq === undefined) {
@@ -273,7 +273,7 @@ class Command extends BaseCommand {
         value: 400,
         inline: true,
         others: ["бутылка", "бутылку", "глупость", "глупости"],
-        fn: () => {
+        fn() {
           const product = this;
 
           if (userData.iq === undefined) {
@@ -297,7 +297,7 @@ class Command extends BaseCommand {
         value: 3200,
         inline: true,
         others: ["шуба", "шубу", "шуба из енота"],
-        fn: () => {
+        fn() {
           const product = this;
 
           const isFirst = !(
@@ -342,7 +342,7 @@ class Command extends BaseCommand {
           "casino",
           "лотерейный билет",
         ],
-        fn: () => {
+        fn() {
           const product = this;
 
           const coefficient = 220 / 130;
@@ -378,7 +378,7 @@ class Command extends BaseCommand {
             : 80,
         inline: true,
         others: ["идея", "идею"],
-        fn: () => {
+        fn() {
           const ideas = [
             "познать мир шаблонов",
             "купить что-то в этой лавке",
@@ -487,7 +487,7 @@ class Command extends BaseCommand {
           "ball",
           "всевидящий шар",
         ],
-        fn: () => {
+        fn() {
           const product = this;
 
           const items = [
@@ -523,7 +523,7 @@ class Command extends BaseCommand {
         value: 312 + userData.level * 2,
         inline: true,
         others: ["завоз", "завоз товаров"],
-        fn: () => {
+        fn() {
           userData.grempenBoughted = 0;
           return " как дорогостоящий завоз товаров. Заходите ко мне через пару минут за новыми товарами";
         },
@@ -534,7 +534,7 @@ class Command extends BaseCommand {
         value: 600,
         inline: true,
         others: ["камень", "проклятие", "камень с глазами"],
-        fn: () => {
+        fn() {
           const product = this;
           userData.curses ||= [];
 
