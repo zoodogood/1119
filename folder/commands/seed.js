@@ -251,9 +251,6 @@ class Command extends BaseCommand {
     guildData.treeSeedEntry = 0;
     context.level = guildData.treeLevel = (guildData.treeLevel ?? 0) + 1;
     context.costsUp = this.COSTS_TABLE[context.level];
-    guildData.berrys =
-      Math.round(1.5 ** (context.level + 3) + guildData.berrys) +
-      this.getSpeedGrowth(context) * 5;
 
     await message.react("756114492055617558");
 
