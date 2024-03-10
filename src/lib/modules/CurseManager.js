@@ -182,7 +182,7 @@ class CurseManager {
           callBot: (user, curse, { type }) =>
             type === "stupid" && CurseManager.interface({ user, curse }).fail(),
         },
-        filter: (user) => user.data.quest?.id === "namebot",
+        filter: (user) => user.data.quest?.id === "namebot" && !user.data.quest.isCompleted,
         interactionIsShort: true,
         reward: 4,
       },
