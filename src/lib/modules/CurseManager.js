@@ -252,7 +252,7 @@ class CurseManager {
       {
         _weight: 10,
         id: "sonic",
-        description: "Отправьте 70 сообщний за минуту",
+        description: "Отправьте 70 сообщений за минуту",
         hard: 1,
         values: {
           goal: () => 70,
