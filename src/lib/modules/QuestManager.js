@@ -475,7 +475,7 @@ class QuestManager {
     return questBase.isSecret;
   }
 
-  questIsGlobalAvailable(questResolable) {
+  static questIsGlobalAvailable(questResolable) {
     const questBase = this.resolveQuestBase(questResolable);
     return questBase.isGlobal && !questBase.isRemoved;
   }
