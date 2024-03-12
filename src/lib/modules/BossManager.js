@@ -1302,7 +1302,7 @@ class BossManager {
     }
 
     const pull = [...BossManager.eventBases.values()]
-      .filter((event) => !event.filter || event.filter(data))
+      .filter((base) => !base.filter || base.filter(data))
       .map((event) => ({
         ...event,
         _weight:
@@ -2299,7 +2299,7 @@ class BossManager {
       },
 
       seemed: {
-        weight: 50,
+        weight: 0,
         id: "seemed",
         description: "Требуется совершить выбор",
         callback: async ({ user, boss, channel, userStats }) => {
@@ -2320,10 +2320,12 @@ class BossManager {
           if (!response) {
             return;
           }
+
+
         },
       },
       andWhoStronger: {
-        weight: Infinity,
+        weight: 5,
         id: "andWhoStronger",
         description: "Викторина",
         REACTIONS: {
@@ -2509,8 +2511,13 @@ class BossManager {
             preview.msg({ components: [], edit: true });
           });
         },
-        filter: ({ guild, boss }) =>
-          true || (boss.level >= 3 && Object.keys(boss.users).length > 2),
+        filter({ guild, boss, userStats }) {
+          return (
+            boss.level >= 3 &&
+            Object.keys(boss.users).length > 2 &&
+            this.EFFECT_ID in userStats === false
+          );
+        },
       },
       // ______e4example: {
       //   weight: 2,
