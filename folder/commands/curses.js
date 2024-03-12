@@ -447,6 +447,7 @@ class Command extends BaseCommand {
    * @param {CommandRunContext} context
    */
   async run(context) {
+    console.log(context);
     context.parseCli();
     if (this.processHelpCommand(context)) {
       return;
