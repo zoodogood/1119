@@ -475,6 +475,11 @@ class QuestManager {
     return questBase.isSecret;
   }
 
+  questIsGlobalAvailable(questResolable) {
+    const questBase = this.resolveQuestBase(questResolable);
+    return questBase.isGlobal && !questBase.isRemoved;
+  }
+
   static resolveQuestBase(questResolable) {
     const id =
       typeof questResolable === "string" ? questResolable : questResolable.id;
