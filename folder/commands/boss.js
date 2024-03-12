@@ -190,6 +190,10 @@ class Command extends BaseCommand {
       return;
     }
 
+    if (!this.processBossIsExists(context)) {
+      return;
+    }
+
     await createShop(context.guild, context.user, context.channel);
     return true;
   }
@@ -200,20 +204,33 @@ class Command extends BaseCommand {
       return;
     }
 
+    if (!this.processBossIsExists(context)) {
+      return;
+    }
+
     await attackBoss(context.boss, context.user, context.channel);
     await this.processDefaultBehavior(context);
     return true;
   }
 
-  async processDefaultBehavior(context) {
-    const { boss, memb, channel } = context;
-
+  processBossIsExists(context) {
+    const { boss, channel } = context;
     if (!boss.isArrived) {
       const description = boss.apparanceAtDay
         ? `Прибудет лишь ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`
         : "Момент появления босса пока неизвестен";
 
       channel.msg({ description, color: "#000000" });
+      return;
+    }
+
+    return true;
+  }
+
+  async processDefaultBehavior(context) {
+    const { boss, memb, channel } = context;
+
+    if (!this.processBossIsExists(context)) {
       return;
     }
 
