@@ -4,6 +4,81 @@ import { NEW_YEAR_DAY_DATE, SECOND } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum, PropertiesList } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { CliParser } from "@zoodogood/utils/primitives";
+
+class CommandRunContext extends BaseCommandRunContext {
+  defaultPrevented = false;
+  userData;
+  action;
+  count;
+  itemRaw;
+  item;
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+  static new(interaction, command) {
+    const context = new this(interaction, command);
+    context.userData = interaction.user.data;
+    return context;
+  }
+
+  parseCli(params) {
+    const parser = new CliParser()
+      .setText(params)
+      .processBrackets()
+      .captureFlags(this.command.options.cliParser.flags)
+      .captureByMatch({
+        name: "action",
+        regex:
+          /взять|take|get|t|g|положить|put|set|p|s|использовать|use|використати|u/i,
+      })
+      .captureByMatch({
+        name: "count",
+        regex: /\d+|\+/,
+      })
+      .captureByMatch({
+        name: "itemRaw",
+        regex: /[a-zа-яёъ]+/i,
+      });
+
+    const parsed = parser.collect();
+    const values = parsed.resolveValues((capture) =>
+      capture?.toString().toLowerCase(),
+    );
+    this.parseCli_processDefaultValues(values);
+
+    values.forEach((value, key) => {
+      this[key] = value;
+    });
+
+    this.isReceiveAction = ["взять", "take", "get", "t", "g"].includes(
+      this.action,
+    );
+    this.isPutAction = ["положить", "put", "set", "p", "s"].includes(
+      this.action,
+    );
+    this.isUseAction = ["использовать", "use", "використати", "u"].includes(
+      this.action,
+    );
+
+    this.item = this.command.findItem(this.itemRaw);
+    this.setCliParsed(parsed, values);
+  }
+
+  parseCli_processDefaultValues(values) {
+    const count = values.get("count");
+    const itemRaw = values.get("itemRaw");
+    if (count && !itemRaw) {
+      values.set("itemRaw", PropertiesEnum.coins);
+    }
+
+    if (!count && itemRaw) {
+      const DEFAULT_COUNT = 1;
+      values.set("count", DEFAULT_COUNT);
+    }
+  }
+}
 
 class Item {
   static from(itemData) {
@@ -367,22 +442,8 @@ class Command extends BaseCommand {
     );
   }
 
-  findItem(item) {
+  findItem(item = "") {
     return this.findItemByKey(item) || this.findItemByalias(item);
-  }
-
-  getContext(interaction) {
-    return {
-      interaction,
-      user: interaction.user,
-      guild: interaction.guild,
-      userData: interaction.userData,
-      defaultPrevented: false,
-      preventDefault() {
-        this.defaultPrevented = true;
-      },
-      ...this.parseParams(interaction.params),
-    };
   }
 
   async onActionUseItem(context) {
@@ -453,35 +514,6 @@ class Command extends BaseCommand {
     });
   }
 
-  parseParams(params) {
-    const action = params.match(
-      /взять|take|get|положить|put|set|использовать|use|використати/,
-    )?.[0];
-    const count = params.match(/\d+|\+/)?.[0] ?? 1;
-    let item = null;
-    let rawItem = null;
-    const isReceiveAction = ["взять", "take", "get"].includes(action);
-    const isPutAction = ["положить", "put", "set"].includes(action);
-    const isUseAction = ["использовать", "use", "використати"].includes(action);
-
-    if (action && count) {
-      params = params.replace(action, "");
-      params = params.replace(count, "");
-      rawItem = params = params.trim().toLowerCase();
-
-      item = this.findItem(rawItem);
-    }
-    return {
-      action,
-      count,
-      item,
-      isReceiveAction,
-      isPutAction,
-      isUseAction,
-      rawItem,
-    };
-  }
-
   getMoveTargetsOf({ user, isToBag }) {
     const userData = user.data;
     const bagData = CommandUtil.getBagTargetOf(user);
@@ -503,8 +535,10 @@ class Command extends BaseCommand {
       return;
     }
 
-    const context = this.getContext(interaction);
-    const { action, count, item, rawItem, userData } = context;
+    const context = await CommandRunContext.new(interaction, this);
+    context.parseCli(interaction.params);
+
+    const { action, count, item, userData } = context;
 
     interaction.user.action(Actions.beforeBagInteracted, context);
     const needPrevent = context.defaultPrevented;
@@ -521,29 +555,13 @@ class Command extends BaseCommand {
       return;
     }
 
-    if (action && count) {
-      if (!item) {
-        const list = this.items.reduce(
-          (acc, item) => acc.concat(item.names),
-          [],
-        );
-        const similarItem = Util.getSimilar(list, rawItem);
-        msg.msg({
-          title: "Не удалось найти такой предмет:",
-          description: `\`${rawItem}\`${
-            similarItem ? `\n\nВозможно, Вы имели ввиду: ${similarItem}?` : ""
-          }`,
-          delete: 7000,
-        });
-        return;
-      }
+    if (!this.processItemIsExists(context)) {
+      return;
     }
 
     if (item) {
       const isToBag = context.isPutAction;
-
       userData.bag ||= {};
-
       this.moveItem(context, item.key, count, isToBag);
       return;
     }
@@ -552,8 +570,29 @@ class Command extends BaseCommand {
     return;
   }
 
+  processItemIsExists(context) {
+    const { action, count, item, itemRaw, channel } = context;
+    if (!action || !count) {
+      return true;
+    }
+    if (item) {
+      return true;
+    }
+    const list = this.items.reduce((acc, item) => acc.concat(item.names), []);
+    const similarItem = Util.getSimilar(list, itemRaw);
+    channel.msg({
+      title: "Не удалось найти такой предмет:",
+      description: `\`${itemRaw}\`${
+        similarItem ? `\n\nВозможно, Вы имели ввиду: ${similarItem}?` : ""
+      }`,
+      delete: 7000,
+    });
+    return false;
+  }
+
   displayBag(context) {
     const { userData, interaction } = context;
+    console.log(context);
     const items = Object.entries(userData.bag || {})
       .map(([key, count]) => ({
         item: this.items.find((item) => item.key === key),
@@ -663,6 +702,9 @@ class Command extends BaseCommand {
     media: {
       description:
         '\n\nНикто кроме владельца не может просматривать содержимое сумки. В неё можно положить любой предмет будь то нестабильность, клубника и даже бонусы\nСумка это альтернатива использования казны как личного хранилища. При этом она всегда под рукой!\n\n✏️\n```python\n!bag <"take" | "put"> <item> <count | "+"> # аргументы могут быть указаны в любом порядке\n```\n\n',
+    },
+    cliParser: {
+      flags: [],
     },
     alias: "сумка рюкзак",
     allowDM: true,
