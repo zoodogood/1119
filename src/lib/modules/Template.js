@@ -366,6 +366,7 @@ class Template {
               "resolveGithubPath",
               "yaml",
               "resolveDate",
+              "inspect",
             ].includes(key),
           ),
         name: "Util",
@@ -613,15 +614,24 @@ class RegularProxy {
         return;
       }
 
-      this.regular = this.regular.replace(regex, (full, macro, value) =>
-        this.onMacro({ macro, value, primary: this.context }),
-      );
+      this.regular = this.regular.replace(regex, (full, macro, value) => {
+        const context = { macro, value, primary: this.context };
+        const macroBase = this.findMacro(context);
+        if (!macroBase) {
+          return full;
+        }
+        return this.onMacro(macroBase, context);
+      });
     }
   }
 
-  onMacro(context) {
+  findMacro(context) {
     const { macro } = context;
-    return this.macroses[macro].call(this, context);
+    return this.macroses[macro];
+  }
+
+  onMacro(macro, context) {
+    return macro.call(this, context);
   }
 
   macroses = {
@@ -635,6 +645,10 @@ class RegularProxy {
     },
     "3q": () => {
       return "```";
+    },
+    debug: (context) => {
+      const { value } = context;
+      return `m'Util.inspect(${value})`;
     },
   };
 }
