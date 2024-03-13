@@ -576,7 +576,7 @@ class Command extends BaseCommand {
   }
   processDefaultBehavior(context) {
     const { channel, task } = context;
-    if (task.isDone !== undefined) {
+    if (task?.isDone !== undefined) {
       new Display_CommandManager(context).onProcess();
       return;
     }
