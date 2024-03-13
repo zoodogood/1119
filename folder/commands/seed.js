@@ -17,7 +17,7 @@ class CommandRunContext extends BaseCommandRunContext {
     const context = new this(interaction, command);
     context.guildData = interaction.guild.data;
     context.level = context.guildData.treeLevel || 0;
-    context.costsUp = command.getCostsUp(this);
+    context.costsUp = command.getCostsUp(context);
     return context;
   }
 
