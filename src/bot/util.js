@@ -4,6 +4,8 @@ import {
 } from "#constants/users/events.js";
 import Discord from "discord.js";
 
+import { inspect as _inspect } from "util";
+
 import { Collection } from "@discordjs/collection";
 import { BaseChannel } from "discord.js";
 import app from "#app";
@@ -121,4 +123,8 @@ export function whenClientIsReady() {
   }
 
   return new Promise((resolve) => client.once("ready", resolve));
+}
+
+export async function inspect(value) {
+  return _inspect(value).replace(app.client.token, "");
 }
