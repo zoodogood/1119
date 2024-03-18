@@ -10,9 +10,9 @@ class Command extends BaseCommand {
   async onChatInput(_msg, interaction) {
     const COMMANDS = [
       "git pull",
-      "yarn run build",
+      "pnpm run build",
       config.pm2.id
-        ? `yarn run pm2-please-restart ${config.pm2.id}`
+        ? `pnpm run pm2-please-restart ${config.pm2.id}`
         : "echo pm2 not setted",
     ];
 

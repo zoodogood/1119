@@ -22,7 +22,7 @@ function serve() {
   return {
     async writeBundle() {
       if (server) return;
-      server = spawn("yarn", ["run", "site-watch", "--", "--dev"], {
+      server = spawn("pnpm", ["run", "site-watch", "--", "--dev"], {
         stdio: ["ignore", "inherit", "inherit"],
         shell: true,
       });
@@ -42,7 +42,7 @@ export default {
     file: "./static/build/svelte-bundle/bundle.js",
   },
   plugins: [
-    execSync("yarn run createPagesExports") && false,
+    execSync("pnpm run createPagesExports") && false,
 
     replace({
       include: ["./src/site/src/enviroment/mod.js"],

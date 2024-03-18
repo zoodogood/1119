@@ -23,7 +23,7 @@ import get from "#lib/child-process-utils.js";
 const { run, info } = get({ root, logger: true });
 
 const runtime = "node";
-const manager = "yarn";
+const manager = "pnpm";
 
 await info(`${runtime} version:`);
 await run(runtime, ["-v"]);
