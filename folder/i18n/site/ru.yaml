@@ -133,6 +133,7 @@ pages:
     created: "Создано:"
     uniqueMessages: "Уникальных элементов:"
     tags: "Теги:"
+    comments: "Комментариев:"
     units: шт.
   errorsItem:
     label: "Коллекция ошибок из файла:"
