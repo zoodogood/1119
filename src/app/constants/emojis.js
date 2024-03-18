@@ -5,6 +5,12 @@ const Emoji = {
       return "📜";
     },
   },
+  green_arrow_left: {
+    id: "640449848050712587",
+  },
+  green_arrow_right: {
+    id: "640449832799961088",
+  },
   coins: {
     id: "637533074879414272",
     toString() {
