@@ -7,8 +7,8 @@ import Discord from "discord.js";
 import { inspect as _inspect } from "util";
 
 import { Collection } from "@discordjs/collection";
-import { BaseChannel } from "discord.js";
 import app from "#app";
+import { Message } from "discord.js";
 
 export async function awaitUserAccept({ name, message, channel, userData }) {
   const prefix = "userAccept_";
@@ -105,7 +105,7 @@ export async function question({
     time,
   });
   request.delete();
-  const isMessage = response instanceof BaseChannel;
+  const isMessage = response instanceof Message;
   const emoji = response?.emoji;
   return {
     value: response,
@@ -126,5 +126,15 @@ export function whenClientIsReady() {
 }
 
 export async function inspect(value) {
-  return _inspect(value).replace(app.client.token, "");
+  const inspected = _inspect(value, {
+    maxArrayLength: 10,
+    maxStringLength: 50,
+    numericSeparator: true,
+    getters: true,
+  }).replace(app.client.token, "");
+  const proto = Object.getOwnPropertyNames(value)
+    .filter((name) => name !== "constructor")
+    .map((name) => `${name}`)
+    .join("\n");
+  return `${inspected}\n[ownPropertyNames ${value.name}]\n${proto}`;
 }
