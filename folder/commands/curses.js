@@ -1,6 +1,7 @@
 import { MINUTE } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { Pager } from "#lib/DiscordPager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { toLocaleDeveloperString } from "#lib/safe-utils.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
@@ -70,20 +71,43 @@ class ListCommandManager {
   }
   sendList(context, channel) {
     const bases = CurseManager.cursesBase;
-    const content = bases
-      .map((curse) => {
-        const description =
-          typeof curse.description === "function"
-            ? curse.description(context.memb, { values: {} }, {})
-            : curse.description;
+    const contents = bases.map((curse) => {
+      const description =
+        typeof curse.description === "function"
+          ? curse.description(context.memb, { values: {} }, {})
+          : curse.description;
 
-        return `- \`${curse.id}\`\nШанс: ${curse._weight}, сложность: !${curse.hard + 1}, награда: X${curse.reward}\nОписание: ${description.replaceAll("undefined", "{X}")}.`;
-      })
-      .join("\n");
-
-    channel.msg({
-      description: content,
+      return `- \`${curse.id}\`\nШанс: ${curse._weight}, сложность: !${curse.hard + 1}, награда: X${curse.reward}\nОписание: ${description.replaceAll("undefined", "{X}")}.`;
     });
+
+    const SIZE = this.sendList_CHUNK_SIZE;
+    const pages = [];
+    while (contents.length) {
+      const chunk = contents.splice(0, SIZE);
+      pages.push(this.sendList_contentsToPage(pages, contents, chunk));
+    }
+
+    const pager = new Pager(channel, context.user);
+    pager.addPages(...pages);
+    pager.updateMessage();
+  }
+
+  sendList_CHUNK_SIZE = 15;
+
+  sendList_calculatePagesCount(pages, contentsArray) {
+    return Math.ceil(
+      pages.length + contentsArray.length / this.sendList_CHUNK_SIZE + 1,
+    );
+  }
+
+  sendList_contentsToPage(pages, contentsArray, chunk) {
+    const description = chunk.join("\n");
+    return {
+      description,
+      footer: {
+        text: `Страница ${pages.length + 1}/${this.sendList_calculatePagesCount(pages, contentsArray)}`,
+      },
+    };
   }
 }
 
@@ -540,7 +564,7 @@ class Command extends BaseCommand {
             "Укажите номер проклятия у пользователя, чтобы получить дополнительные сведения",
         },
         {
-          capture: ["--members"],
+          capture: ["--members", "-m"],
           description: "Возвращает перечень пользователей и проклятий",
         },
         {
