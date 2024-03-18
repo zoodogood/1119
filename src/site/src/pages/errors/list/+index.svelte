@@ -1,8 +1,9 @@
 <script>
   import svelteApp from "#site/core/svelte-app.js";
   import Layout from "#site-component/Layout";
-  import { fetchFromInnerApi } from "#lib/safe-utils.js";
+  import { dayjs, fetchFromInnerApi } from "#lib/safe-utils.js";
   import PagesRouter from "#site/lib/Router.js";
+  import Icon from "#site-component/iconic";
 
   const Component = {
     errors: [],
@@ -11,16 +12,9 @@
 
   (async () => {
     const { list, metadata } = await fetchFromInnerApi("errors/files");
-    const errors = list;
+    const entries = list.map((key, index) => [key, metadata[index]]).reverse();
 
-    const current = Date.now();
-    Component.errors = [current, ...errors].sort((a, b) => a - b);
-
-    for (const [name, _metadata] of Object.entries(metadata)) {
-      const error = errors.find((error) => error.name === name);
-      error.metadata = _metadata;
-      error.metadata.errorsCount = _metadata.messages.length;
-    }
+    Component.errors = entries;
   })();
 </script>
 
@@ -28,37 +22,39 @@
   <main>
     <h1>{i18n.label}</h1>
     <ul class="errors-list">
-      {#each Component.errors as errorFile, i}
-        {@const [day, month, hour, minute] = errorFile.name
-          .split("-")
-          .map((number) => `0${number}`.slice(-2))}
+      {#each Component.errors as [timestamp, errorFile], i}
         <li
           class="error-file"
-          class:special={errorFile.fullname === ""}
-          data-uniqueErrors={errorFile.metadata?.errorsCount}
+          class:special={timestamp === null}
+          data-uniqueErrors={errorFile?.errorsCount}
         >
           <a
             href="{PagesRouter.relativeToPage(
               PagesRouter.getPageBy('errors/list/item').key,
-            )}/:{errorFile.fullname}"
+            )}/:{timestamp}"
           >
             <big>ID: {Component.errors.length - i}</big>
-            <p>{i18n.created} <code>{day}.{month}, {hour}:{minute}</code></p>
+            <p>
+              {i18n.created}
+              <code>{dayjs(+timestamp).format("DD.MM HH:mm")}</code>
+            </p>
             <br />
 
-            {#if errorFile.metadata}
+            {#if errorFile}
               <section class="metadata-container">
                 <ul>
-                  <li data-value={errorFile.metadata.errorsCount ?? null}>
+                  <li data-value={errorFile.errorsCount ?? null}>
                     {i18n.uniqueMessages}
-                    {errorFile.metadata.errorsCount}
+                    {errorFile.errorsCount}
                     {i18n.units}
                   </li>
-                  <li
-                    data-value={errorFile.metadata.uniqueTags?.length || null}
-                  >
+                  <li data-value={errorFile.uniqueTags?.length || null}>
                     {i18n.tags}
-                    {errorFile.metadata.uniqueTags?.join(", ")}
+                    {errorFile.uniqueTags?.join(", ")}
+                  </li>
+                  <li data-value={errorFile.commentsCount || null}>
+                    <Icon code="" />{i18n.comments}
+                    {errorFile.commentsCount}
                   </li>
                 </ul>
               </section>
