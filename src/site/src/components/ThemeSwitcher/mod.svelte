@@ -1,117 +1,105 @@
-
-
-<button
-class = "switch-theme"
-data-current = { Theme.current }
-on:click = { () => Theme.switchToNext() & CallBulbAnimation(node) }
-bind:this = { node }
->
-	<Icon code = ""/>
-</button>
-
-
-
-<style>
-	.switch-theme
-	{
-		display: inline-block;
-		cursor: pointer;
-		opacity: 0.7;
-		font-size: 1em;
-		
-		border-radius: 30px;
-		padding: 0;
-		width: fit-content;
-		min-width: 0;
-
-		transition: all 500ms;
-	}
-
-	.switch-theme[data-current="dark"]
-	{
-		color: var( --white );
-	}
-
-	.switch-theme[data-current="light"]
-	{
-		color: var( --dark );
-		background-color: #ffffff44;
-		opacity: 0.5;
-	}
-
-	.switch-theme[data-current="rainbow"]
-	{
-		transform: rotate(250deg);
-	}
-
-	.switch-theme:hover
-	{
-		opacity: 0.9;
-	}
-</style>
-
 <script context="module">
-	const DEFAULT_THEME = "darkGreen";
-	const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
-	import { writable, get } from 'svelte/store';
-	
-	const Theme = {
-		current: writable(localStorage[STORAGE_KEY] ?? DEFAULT_THEME),
+  const DEFAULT_THEME = "darkGreen";
+  const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
+  import { writable, get } from "svelte/store";
 
-		apply(themeName){
-			const theme = Theme.collection.get(themeName);
-			const target = document.documentElement.style;
-			
-			for (const style in theme){
-				target.setProperty(style, theme[style]);
-			}
+  const Theme = {
+    current: writable(localStorage[STORAGE_KEY] ?? DEFAULT_THEME),
 
-			localStorage[STORAGE_KEY] = themeName;
-		},
+    apply(themeName) {
+      const theme = Theme.collection.get(themeName);
+      const target = document.documentElement.style;
 
-		remove(themeName){
-			const theme = Theme.collection.get(themeName);
-			const target = document.documentElement.style;
-			
-			for (const style in theme){
-				target.removeProperty(style);
-			}
-		},
+      for (const style in theme) {
+        target.setProperty(style, theme[style]);
+      }
 
-		switchToNext(){
-			const themes = [...Theme.collection.keys()];
-			const index = themes.indexOf( get(Theme.current) );
-			const themeName = themes.at((index + 1) % themes.length);
+      localStorage[STORAGE_KEY] = themeName;
+    },
 
-			const previousName = themes.at(index);
-			Theme.remove(previousName);
-			
-			Theme.current.set(themeName);
-			Theme.apply(themeName);
-		},
+    remove(themeName) {
+      const theme = Theme.collection.get(themeName);
+      const target = document.documentElement.style;
 
-		collection: themes,
-		
-		enum: Object.fromEntries([...themes.keys()].map(k => [k, k]))
+      for (const style in theme) {
+        target.removeProperty(style);
+      }
+    },
 
-	}
+    switchToNext() {
+      const themes = [...Theme.collection.keys()];
+      const index = themes.indexOf(get(Theme.current));
+      const themeName = themes.at((index + 1) % themes.length);
 
-	Theme.current.subscribe(themeName => {
-		Theme.apply(themeName);
-	})
-	export { Theme };
+      const previousName = themes.at(index);
+      Theme.remove(previousName);
+
+      Theme.current.set(themeName);
+      Theme.apply(themeName);
+    },
+
+    collection: themes,
+
+    enum: Object.fromEntries([...themes.keys()].map((k) => [k, k])),
+  };
+
+  Theme.current.subscribe((themeName) => {
+    Theme.apply(themeName);
+  });
+  export { Theme };
 </script>
 
 <script>
-	import Icon from '#site-component/iconic';
-	import BulbAnimation from './BulbAnimation.svelte';
-	import themes from './themes.js';
+  import Icon from "#site-component/iconic";
+  import BulbAnimation from "./BulbAnimation.svelte";
+  import themes from "./themes.js";
 
-	let node = null;
+  let node = null;
 
-	function CallBulbAnimation(){
-		new BulbAnimation({target: node});
-	}
+  function CallBulbAnimation() {
+    new BulbAnimation({ target: document.body });
+  }
 </script>
 
+<button
+  class="switch-theme"
+  data-current={Theme.current}
+  on:click={() => Theme.switchToNext() & CallBulbAnimation(node)}
+  bind:this={node}
+>
+  <Icon code="" />
+</button>
 
+<style>
+  .switch-theme {
+    display: inline-block;
+    cursor: pointer;
+    opacity: 0.7;
+    font-size: 1em;
+
+    border-radius: 30px;
+    padding: 0;
+    width: fit-content;
+    min-width: 0;
+
+    transition: all 500ms;
+  }
+
+  .switch-theme[data-current="dark"] {
+    color: var(--white);
+  }
+
+  .switch-theme[data-current="light"] {
+    color: var(--dark);
+    background-color: #ffffff44;
+    opacity: 0.5;
+  }
+
+  .switch-theme[data-current="rainbow"] {
+    transform: rotate(250deg);
+  }
+
+  .switch-theme:hover {
+    opacity: 0.9;
+  }
+</style>
