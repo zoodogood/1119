@@ -354,7 +354,9 @@ class Command extends BaseCommand {
   }
 
   onBerryCollect(berrys, user, context) {
-    const { userData, guildData, channel } = context;
+    const { guildData, channel } = context;
+    const userData = user.data;
+
     Util.addResource({
       user,
       value: berrys,
