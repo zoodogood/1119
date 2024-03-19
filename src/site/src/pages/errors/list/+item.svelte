@@ -4,7 +4,6 @@
   import Icon from "#site-component/iconic";
 
   import { dayjs, ending, fetchFromInnerApi, yaml } from "#lib/safe-utils.js";
-  import { parse } from "flatted";
   import PagesRouter from "#site/lib/Router.js";
 
   const i18n = svelteApp.i18n.pages.errorsItem;
@@ -14,7 +13,7 @@
   };
 
   const Search = {
-    filter([message, errorsArray]) {
+    filter({ key, meta }) {
       if (!Search.value) {
         return true;
       }
@@ -32,8 +31,8 @@
       const isIncludes = (list) =>
         list.every(
           (word) =>
-            message.includes(word) ||
-            errorsArray.uniqueKeys.some((tag) => tag.includes(word)),
+            key.includes(word) ||
+            meta.uniqueTags.some((tag) => tag.includes(word)),
         );
 
       return (
@@ -53,42 +52,24 @@
     value: "",
   };
 
-  const parseName = (fullname) => {
-    const name = fullname.match(/.+?(?=\.json$)/)?.at(0);
-    const [day, month, hour, minute] = name?.split("-") ?? [];
-
-    const date = new Date(
-      svelteApp.Date.getFullYear(),
-      month - 1,
-      day,
-      hour,
-      minute,
-    );
-    const timestamp = date.getTime();
-    return { fullname, name, timestamp };
-  };
-
   (async () => {
     const URLSubpath = svelteApp.url.subpath;
-    const fileName =
+    const fileKey =
       URLSubpath.at(-1).startsWith(":") && URLSubpath.at(-1).slice(1);
 
-    const path = fileName ? `files/${fileName}` : "current";
+    const path = fileKey ? `files/${fileKey}` : "current";
 
-    const data = await fetchFromInnerApi(`errors/${path}`);
-    for (const [_message, array] of data) {
-      array.forEach((item) => {
-        item.context = (item.context && parse(item.context)) || {};
-        item.stack = decodeURI(item.stack).replaceAll("\\", "/");
-      });
-      const set = [
-        ...new Set(...array.map(({ context }) => Object.keys(context))),
-      ];
-      array.uniqueKeys = set;
+    const { groups } = await fetchFromInnerApi(`errors/${path}`);
+    for (const { errors: array } of groups) {
+      for (const item of array) {
+        item.context = (item.context && JSON.parse(item.context)) || {};
+        item.stack = item.stackData
+          ? decodeURI(item.stackData.stack).replaceAll("\\", "/")
+          : null;
+      }
     }
 
-    console.log({ data });
-    Component.errors = data;
+    Component.errors = groups;
   })();
 </script>
 
@@ -117,15 +98,15 @@
 
     <ul class="errors">
       {#each Component.errors.filter(Search.filter) as element, i}
-        {@const [message, array] = element}
-        <li class="error-file" id={message}>
-          <h2>{message}</h2>
+        {@const { key, errors: array, meta } = element}
+        <li class="error-file" id={key}>
+          <h2>{key}</h2>
           <section class="tags">
             <span>{i18n.tags}</span>
 
             <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
             <ul on:click={Search.tagClickHandler} on:keydown={() => {}}>
-              {#each array.uniqueKeys as tag}
+              {#each meta.uniqueTags as tag}
                 <li>{tag}</li>
               {/each}
             </ul>
@@ -149,6 +130,7 @@
                 <code class="context">
                   {yaml.stringify(arrayErrorElement.context)}
                 </code>
+
                 <h3>{i18n.stack}</h3>
                 <code class="stack">
                   {arrayErrorElement.stack}
