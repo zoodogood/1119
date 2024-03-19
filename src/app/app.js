@@ -7,6 +7,8 @@ class App {
 
   server = null;
 
+  cli = null;
+
   /** @type {string} */
   version = null;
 
