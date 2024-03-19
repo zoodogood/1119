@@ -11,8 +11,7 @@ folder/errors/*.json
 
 folder/!localStorage/
 
-folder/SSLSecret/certificate.crt
-folder/SSLSecret/private.key
-folder/SSLSecret/ca_bundle.crt
+folder/SSLSecret/privkey.pem
+folder/SSLSecret/cert.pem
 
 yarn-error.log
