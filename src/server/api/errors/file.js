@@ -16,9 +16,7 @@ class Route extends BaseRoute {
       response.sendStatus(404);
       return;
     }
-
-    const list = JSON.parse(json);
-    response.json(list);
+    response.json(json);
   }
 }
 
