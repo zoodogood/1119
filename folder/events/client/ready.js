@@ -7,6 +7,24 @@ import {
 import { client } from "#bot/client.js";
 import { ReadPackageJson, timestampDay } from "#lib/util.js";
 import app from "#app";
+import childProcessUtils from "#lib/child-process-utils.js";
+import { CliParser } from "@zoodogood/utils/primitives";
+
+class AppCli {
+  setCliParsed(parsed, values) {
+    this.cliParsed = [parsed, values];
+  }
+  flags = [{ name: "--on-ready", expectValue: true, capture: ["--on-ready"] }];
+  callbacks = {
+    "--on-ready": async (capture, value) => {
+      if (!value) {
+        return;
+      }
+      const { run } = childProcessUtils({ root: process.cwd() });
+      run("zsh", ["-c", value]);
+    },
+  };
+}
 
 class Event extends BaseEvent {
   constructor() {
@@ -18,6 +36,8 @@ class Event extends BaseEvent {
     app.version = (await ReadPackageJson()).version;
     const { default: server } = await import("#server/start.js");
     app.server = server;
+
+    app.cli = this.parseCli();
     CounterManager.handle();
     TimeEventsManager.handle();
 
@@ -26,6 +46,24 @@ class Event extends BaseEvent {
     if (needUpdate) {
       await EventsManager.collection.get("TimeEvent/new-day").run(true);
     }
+  }
+
+  parseCli() {
+    const manager = new AppCli(this);
+    const SYSTEM_ARGV_COUNT = 2;
+    const params = process.argv.slice(SYSTEM_ARGV_COUNT).join(" ");
+    const parsed = new CliParser()
+      .setText(params)
+      .processBrackets()
+      .captureFlags(manager.flags)
+      .collect();
+
+    const values = parsed.resolveValues((capture) => capture?.toString());
+    parsed.captures.forEach((capture, key) => {
+      manager.callbacks[key]?.(capture, values.get(key));
+    });
+    manager.setCliParsed(parsed, values);
+    return manager;
   }
 
   async run() {
