@@ -21,7 +21,7 @@ class AppCli {
         return;
       }
       const { run } = childProcessUtils({ root: process.cwd() });
-      run("zsh", ["-c", value]);
+      run(process.env.SHELL, ["-c", value]);
     },
   };
 }
