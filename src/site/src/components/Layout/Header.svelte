@@ -106,7 +106,7 @@
     font-size: 0.8em;
     transition: top 200ms;
     backdrop-filter: blur(10px);
-    z-index: 10000;
+    z-index: 10;
 
     user-select: none;
     overflow: hidden;
