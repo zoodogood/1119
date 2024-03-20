@@ -4,12 +4,16 @@ import { AttachmentBuilder } from "discord.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 
 class Command extends BaseCommand {
+  isInited = false;
   constructor() {
     super();
-    this.#init();
   }
   #FONT_FAMILY = "VAG World";
   async #init() {
+    if (this.isInited) {
+      return;
+    }
+    this.isInited = true;
     this.canvasModule = await import("canvas");
 
     const FONT_FAMILY = this.#FONT_FAMILY;
@@ -19,6 +23,7 @@ class Command extends BaseCommand {
         family: FONT_FAMILY,
       },
     );
+
   }
   async getContext(interaction) {
     const canvasModule = this.canvasModule;
@@ -37,6 +42,7 @@ class Command extends BaseCommand {
     };
   }
   async onChatInput(msg, interaction) {
+    await this.#init();
     const context = await this.getContext(interaction);
     const { canvas, ctx, member, canvasModule } = context;
 
