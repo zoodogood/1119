@@ -40,6 +40,6 @@ await info("Build bundle:");
 await run(manager, ["run", "site-build"]);
 
 await info("Clean");
-await run(manager, [`prune ${PRODUCTION ? "--production" : ""}`]);
+await run(manager, [`prune ${PRODUCTION ? "--prod" : ""}`]);
 
 await info("Success");
