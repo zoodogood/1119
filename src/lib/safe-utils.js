@@ -14,7 +14,12 @@ import { dayjs } from "#lib/dayjs.js";
 import yaml from "yaml";
 import Path from "path";
 
-function toLocaleDeveloperString(value) {
+export function objectToLocaleDeveloperString(value) {
+  return Object.entries(value)
+    .map((key, value) => `${key}: ${toLocaleDeveloperString(value)}`)
+    .join("\n");
+}
+export function toLocaleDeveloperString(value) {
   if (!value) {
     return String(value);
   }
@@ -374,7 +379,6 @@ export {
   TimeAuditor,
   dayjs,
   yaml,
-  toLocaleDeveloperString,
   sleep,
   rangeToArray,
   getRandomElementFromArray,
