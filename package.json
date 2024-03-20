@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.14537",
+  "version": "2.0.0-alpha.14543",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -50,13 +50,15 @@
     "yaml": "^2.4.1",
     "yamljs": "^0.3.0"
   },
-  "optionalDependencies": {
-    "canvas": "^2.11.2",
-    "mongodb": "^6.5.0",
-    "bun": "^1.0.33"
+  "// comment it's be ignored": {
+    "optional_dependencies": {
+      "canvas": "^2.11.2",
+      "mongodb": "^6.5.0"
+    }
   },
   "devDependencies": {
     "svelte-heatmap": "^1.0.2",
+    "bun": "^1.0.33",
     "svelte-intersection-observer": "^1.0.0",
     "svelte-markdown": "^0.4.1",
     "svelte-meta-tags": "^3.1.1",
