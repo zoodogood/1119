@@ -31,7 +31,7 @@ await info(`${runtime} version:`);
 await run(runtime, ["-v"]);
 
 await info("Install modules:");
-await run(manager, ["install", PRODUCTION ? "--no-optional" : ""]);
+await run(manager, ["install"]);
 
 await info("Check files:");
 await run(runtime, ["./folder/scripts/checkFiles.js"]);
@@ -40,6 +40,6 @@ await info("Build bundle:");
 await run(manager, ["run", "site-build"]);
 
 await info("Clean");
-await run(manager, ["prune", PRODUCTION ? "--production --no-optional" : ""]);
+await run(manager, [`prune ${PRODUCTION ? "--production" : ""}`]);
 
 await info("Success");
