@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.14534",
+  "version": "2.0.0-alpha.14537",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -52,7 +52,8 @@
   },
   "optionalDependencies": {
     "canvas": "^2.11.2",
-    "mongodb": "^6.5.0"
+    "mongodb": "^6.5.0",
+    "bun": "^1.0.33"
   },
   "devDependencies": {
     "svelte-heatmap": "^1.0.2",
@@ -64,7 +65,6 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-terser": "^0.4.4",
-    "bun": "^1.0.33",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
