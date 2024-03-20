@@ -18,7 +18,9 @@
 // echo "Success!"
 
 const root = process.cwd();
+import config from "#config";
 import get from "#lib/child-process-utils.js";
+const PRODUCTION = config.development === false;
 
 const { run, info } = get({ root, logger: true });
 
@@ -29,12 +31,15 @@ await info(`${runtime} version:`);
 await run(runtime, ["-v"]);
 
 await info("Install modules:");
-await run(manager, ["install"]);
+await run(manager, ["install", PRODUCTION ? "--no-optional" : ""]);
 
 await info("Check files:");
 await run(runtime, ["./folder/scripts/checkFiles.js"]);
 
 await info("Build bundle:");
 await run(manager, ["run", "site-build"]);
+
+await info("Clean");
+await run(manager, ["prune", PRODUCTION ? "--prod --no-optional" : ""]);
 
 await info("Success");
