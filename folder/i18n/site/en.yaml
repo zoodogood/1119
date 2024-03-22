@@ -13,6 +13,16 @@ pages:
   public:
     hi: Hello!
     cool: Cat Chest is cool
+  publicExperiments:
+    thisPageNotingTranslate: "Эта страница не будет переведена"
+  commandsIndex:
+    category:
+      dev: "Available only for developers"
+      delete: "Removed"
+      user: "User"
+      guild: "Guilds"
+      bot: "Bot"
+      other: "Something"
   openChest:
     label: Сундук
     mainInfo: >-

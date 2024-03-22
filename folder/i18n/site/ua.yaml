@@ -13,6 +13,16 @@ pages:
   public:
     hi: Привет!
     cool: Сундук кота это круто
+  publicExperiments:
+    thisPageNotingTranslate: "Эта страница не будет переведена"
+  commandsIndex:
+    category:
+      dev: "Доступна розробникам"
+      delete: "Видалина"
+      user: "Користувачі"
+      guild: "Гильдія"
+      bot: "Бот"
+      other: "Інше"
   openChest:
     label: Сундук
     mainInfo: >-
