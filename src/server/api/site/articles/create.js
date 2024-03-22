@@ -29,6 +29,11 @@ class Route extends BaseRoute {
     author.avatarURL = user.avatarURL();
 
     const filename = request.headers.filename;
+
+    if (filename.includes("..")) {
+      response.status(400).send();
+      return;
+    }
     const content = String(request.body);
 
     const data = await ArticlesManager.createArticle({
