@@ -114,7 +114,7 @@ class ParamsProcessor {
 
   captureTime(timeParser) {
     let { cliParserParams: params } = this;
-    const regex = RegExp(`(?:^|\\s+)${timeParser.regex.source}`);
+    const regex = RegExp(`(?:^s*)${timeParser.regex.source}`);
 
     let match;
     while ((match = params.match(regex))) {
