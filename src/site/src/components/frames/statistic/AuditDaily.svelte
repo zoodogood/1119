@@ -72,7 +72,6 @@
       if (state.data) {
         const values = [...state.data.values()].reduce((acc, values) => {
           for (const key in values) {
-            console.log(key, Component);
             const auditTypeEntity = Component.auditTypeEnum.get(key);
 
             acc[key] = auditTypeEntity.reduce(acc[key] ?? 0, values[key]);
