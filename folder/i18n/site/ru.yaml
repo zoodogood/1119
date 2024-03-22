@@ -6,7 +6,7 @@ general:
       description: "Токен действителен в течении двух недель и становится недействительным. Чтобы его обновить авторизуйтесь повторно; Если это сообщение возникает чаще указаного срока, сообщите о проблеме для её решения.\n\n<a href = ${ link }>${ _key }</a>"
 frames:
   AuditDaily:
-    auditTypeEnum: 
+    auditTypeEnum:
       enterToPages:
         label: Посещений страниц
       enterToAPI:
@@ -14,7 +14,7 @@ frames:
       commandsUsed:
         label: Использовано команд
       messages:
-        label: Отправлено сообщений 
+        label: Отправлено сообщений
       riches:
         label: Богатство
       boss:
@@ -35,16 +35,16 @@ frames:
         label: Гильдий
       users:
         label: Пользователей
-      commands: 
+      commands:
         label: Команд
   externalAuthorProjects:
-    aside: 
+    aside:
       stars: "Звёзд:"
     projectesEnum:
       piramide:
         label: Пирамидка
         description: "Пользователю предстоит написать алгоритм для решения детской задачи — построить пирамидку, которая с высотой постепенно уменьшается в диаметре."
-      letsbet: 
+      letsbet:
         label: let-s-bet
         description: "Бинарный поиск очень эффективен"
       glitchBall:
@@ -56,8 +56,8 @@ pages:
     cool: Сундук кота это круто
   publicExperiments:
     thisPageNotingTranslate: "Эта страница не будет переведена"
-  commandsIndex: 
-    category: 
+  commandsIndex:
+    category:
       dev: "Доступна только разработчикам"
       delete: "Удалена"
       user: "Пользователь"
@@ -88,38 +88,45 @@ pages:
       author: Ваши никнейм и аватар будут видны другим.
       noWarnings: Других предупреждений нет.
     serverResponse: "Ответ сервера:"
+    externalEditorSection:
+      label: "Внешний редактор:"
+      description: >-
+        Это лишь редактор с возможностью предварительного просмотра (его
+        возможности значительно отличаются от классического Markdown синтаксиса).
+        Сохраните содержимое в файл с расширением .md и загрузите через кнопку
+        выше.
   articlesIndex:
     label: Статьи
     description: Что может быть хуже экспериментов ради экспериментов.. Эта часть сайта просто *существует* и, надеюсь, живёт своей жизнью. В будущем вы здесь найдете тексты раскрывающие возможности бота.
     filter: Фильтровать
-    createInfo: 
+    createInfo:
       label: Создать
       content: Чтобы написать статью авторизуйтесь и воспользуйтесь <a href = ${ href }>этой ссылкой</a>.
-    articlesList: 
+    articlesList:
       label: "Написание статьи:"
       filesCount: "Количество файлов:"
       loading: Загрузка...
       hereEmpty: Здесь пусто..
       loadingFailed: Загрузка неудалась
-    articleMetadata: 
+    articleMetadata:
       author: "Автор:"
       readTime: "Время чтения:"
       lastEdited: "Послед. изменение:"
       tags: "Теги:"
   articlesItem:
     contentLoading: Загрузка основного контента
-    article: 
-      author: "Автор:" 
+    article:
+      author: "Автор:"
       lastEdited: "Последнее редактирование:"
       readTime: "Время чтения:"
       tags: "Включённые теги:"
       defaultTag: Статья участника
       words: "Слов"
     downloadMarkdown: Скачать .md файл
-    noResults: 
+    noResults:
       label: Нет результатов
       content: Проверьте правильность <code>id</code> в строке запроса или вернитесь к <a href = ${ link }>списку страниц</a>.
-  oauth: 
+  oauth:
     greeting: Привет неизвестный!
     specialGreeting: Здравствуй
     yourToken: Ваш токен
@@ -128,7 +135,7 @@ pages:
     panel: Панель управления
     login: Войти
     nowYouCanLeave: Теперь вы можете покинуть эту страницу
-  errorsIndex: 
+  errorsIndex:
     label: "Комплекты ошибок:"
     created: "Создано:"
     uniqueMessages: "Уникальных элементов:"
@@ -148,34 +155,34 @@ pages:
     context: "Контекст:"
     stack: "Стек:"
     times__ending: ["раз", "", "", "а"]
-  secretpage: 
+  secretpage:
     label: Вы оказались на первой секретной странице
     future: (радужно смотрит в будущее...)
-  navigation: 
+  navigation:
     label: Навигация
-    pages: 
+    pages:
       label: Страницы
-    api: 
+    api:
       label: API'шечки
       loading: Загрузка...
-      serverNotAvailable: Сервер недоступен 
+      serverNotAvailable: Сервер недоступен
       simple: "Простые пути:"
       simpleDescription: Данные из точки зачастую можно получить напрямую.
       special: "Особые пути:"
       specialDescription: Опциональны, иногда, требуется аунтефикация или присутсвуют условности.
       regexp: "Регулярные выражения:"
       regexpDescription: Не имеют чёткого адреса.
-    other: 
+    other:
       label: Другое
       server: Discord server
       github: Github
       inviteBot: Пригласить бота
       learnJavascript: Javascript учебник
-    history: 
+    history:
       label: История
 
 components:
-  Giscus: 
+  Giscus:
     comments: Комментарии
     identify: "Идентификатор:"
     notSupported: Giscus не поддерживается
@@ -187,13 +194,13 @@ components:
         navigation: Навигация
         discord: Дискорд
       authorization: Войти
-    Footer: 
+    Footer:
       imagine: Представьте себе...
-      info: 
+      info:
         label: Информация
         policy: Политика использования
         thanks: Благодарности
-      nav: 
+      nav:
         label: Навигация
         invite: Пригласить
         discord: Дискорд
