@@ -120,10 +120,11 @@
           <details class="error-details">
             <summary>{i18n.details}</summary>
             {#each array as arrayErrorElement, i}
+              {console.log(arrayErrorElement)}
               <details class="arrayErrorElement">
                 <summary
                   >{i18n.element} #{i + 1} ({dayjs(
-                    arrayErrorElement.timestamp,
+                    arrayErrorElement.createdAt,
                   ).format("HH:mm")})</summary
                 >
                 <h3>{i18n.context}</h3>
