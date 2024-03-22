@@ -39,6 +39,14 @@ class BaseCommandRunContext {
     this.channel = interaction.channel;
     this.user = interaction.user;
   }
+
+  toJSON() {
+    return {
+      type: "commandContext",
+      command: this.command.options.name,
+      comment: "experiment",
+    };
+  }
 }
 
 export { BaseCommandRunContext };
