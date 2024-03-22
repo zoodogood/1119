@@ -1,6 +1,7 @@
 import { dayjs, mapGetOrInsert } from "#lib/util.js";
 import config from "#config";
 import StorageManager from "#lib/modules/StorageManager.js";
+import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 
 const { stringify, parse } = JSON;
 
@@ -337,6 +338,13 @@ class Manager {
     ];
     return { current, cache };
   }
+}
+
+export function util_store_and_send_audit(context, error) {
+  const { channel, interaction } = context;
+  const primary = context.getSafeJSON?.() || null;
+  Manager.onErrorReceive(error, primary);
+  sendErrorInfo({ channel, interaction, error, primary });
 }
 
 export default Manager;
