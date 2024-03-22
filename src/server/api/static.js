@@ -43,7 +43,7 @@ class Route extends BaseRoute {
         (() => {
           const queries = {
             from: request.url,
-            error: error.message,
+            error: data.message,
           };
 
           const queriesContent = Object.entries(queries)
@@ -117,7 +117,13 @@ class PathControll {
     }
   }
 
+  processQuerySymbol(target) {
+    return target.replace(/\?.*$/, "");
+  }
+
   getTarget({ files, targetChunk }) {
+    targetChunk = this.processQuerySymbol(targetChunk);
+
     const exact = (name) => name === targetChunk;
     const include = (name) => name.includes(targetChunk);
     const isIndex = (name) => name === "index.html";
