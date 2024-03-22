@@ -1,197 +1,189 @@
-<element-card 
-	style:--image = { imageURL ? `url("${ imageURL }")` : null }
-	class = "component element-card" 
-	on:click = { Interaction.onClick }
-	on:keydown = { Interaction.onClick }
+<script>
+  export let imageURL = null,
+    label = "",
+    content = "",
+    url = null;
+
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
+
+  const Interaction = {
+    onClick() {
+      url && window.open(url, "_blank");
+
+      dispatch("click");
+    },
+  };
+</script>
+
+<element-card
+  style:--image={imageURL ? `url("${imageURL}")` : null}
+  class="component element-card"
+  on:click={Interaction.onClick}
+  on:keydown={Interaction.onClick}
 >
-	<element-layer class = "background"/>
-	<element-layer class = "foreground">
+  <element-layer class="background" />
+  <element-layer class="foreground">
+    <element-container>
+      <element-group class="button">
+        <element-svg class="octagon" />
+        <element-svg class="triange" />
+      </element-group>
 
-		<element-container>
-			<element-group class = "button">
-				<element-svg class = "octagon"/>
-				<element-svg class = "triange"/>
-			</element-group>
-			
-			<section class = "content">
-				<h3>{ label }</h3>
-				<span>{ content }</span>
-			</section>
-		</element-container>
-
-	</element-layer>
+      <section class="content">
+        <h3>{label}</h3>
+        <span>{content}</span>
+      </section>
+    </element-container>
+  </element-layer>
 </element-card>
 
-
 <style>
-	element-card 
-	{
-		width: 300px;
-		max-width: 100%;
-		aspect-ratio: 410 / 240;
-		display: flex;
+  element-card {
+    width: 300px;
+    max-width: 100%;
+    aspect-ratio: 410 / 240;
+    display: flex;
 
-		container: card / inline-size;
-		position: relative;
-		isolation: isolate;
+    container: card / inline-size;
+    position: relative;
+    isolation: isolate;
 
-		cursor: pointer;
-		transition: filter 1s;
-	}
+    cursor: pointer;
+    transition: filter 1s;
+  }
 
-	.background
-	{
-		background-image: var( --image );
-		background-size: cover;
-		background-position: center;
-		
-		width: 100%;
-		height: 100%;
-		position: absolute;
-		z-index: -1;
-	}
+  .background {
+    background-image: var(--image);
+    background-size: cover;
+    background-position: center;
 
-	.foreground
-	{
-		width: 100%;
-		height: 100%;
-		position: absolute;
-		z-index: 1;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: -1;
+  }
 
-		background-image: linear-gradient(to bottom, #00000000 0%, #000000aa 100%);
-	}
+  .foreground {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
 
-	.foreground element-container
-	{
-		display: flex;
-		width: 100%;
-		height: 100%;
-		align-items: center;
-		justify-content: center;
-		position: relative;
-	}
+    background-image: linear-gradient(to bottom, #00000000 0%, #000000aa 100%);
+  }
 
-	.button
-	{
-		--size: 20cqw;
+  .foreground element-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
 
-		position: relative;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+  .button {
+    --size: 20cqw;
 
-		width: var( --size );
-		aspect-ratio: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-		filter: contrast(1.5);
-	}
+    width: var(--size);
+    aspect-ratio: 1;
 
-	.octagon
-	{
-		position: absolute;
+    filter: contrast(1.5);
+  }
 
-		aspect-ratio: 1;
-		width: 100%;
-		clip-path: polygon(85% 85%, 50% 100%, 15% 85%, 0% 50%, 15% 15%, 50% 0%, 85% 15%, 100% 50%);
-		background-color: var( --main-color );
+  .octagon {
+    position: absolute;
 
-		padding: 0;
-		min-width: 0;
+    aspect-ratio: 1;
+    width: 100%;
+    clip-path: polygon(
+      85% 85%,
+      50% 100%,
+      15% 85%,
+      0% 50%,
+      15% 15%,
+      50% 0%,
+      85% 15%,
+      100% 50%
+    );
+    background-color: var(--main-color);
 
-		display: flex;
-		align-items: center;
-		justify-content: center;
+    padding: 0;
+    min-width: 0;
 
-		transition: transform 0.5s, filter 0.5s;
-		transition-timing-function: cubic-bezier(0.7, 0, 0.35, 1);
-		filter: contrast(0.5);
-	}
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-	.triange
-	{
-		--size: 50%;
-		position: absolute;
-		clip-path: polygon(80% 50%, 30% 20%, 30% 80%);
-		background-color: var( --dark );
+    transition:
+      transform 0.5s,
+      filter 0.5s;
+    transition-timing-function: cubic-bezier(0.7, 0, 0.35, 1);
+    filter: contrast(0.5);
+    transition-delay: 1s;
+  }
 
-		display: block;
-		width: var( --size );
-		aspect-ratio: 1;
-	}
+  .triange {
+    --size: 50%;
+    position: absolute;
+    clip-path: polygon(80% 50%, 30% 20%, 30% 80%);
+    background-color: var(--dark);
 
-	.content 
-	{
-		--bottom: 3cqw;
-		--max-width: 40cqw;
-		--translate: 40%;
+    display: block;
+    width: var(--size);
+    aspect-ratio: 1;
+  }
 
-		color: var( --white );
-		position: absolute;
-		right: 0;
-		bottom: var( --bottom );
-		transform: translateX( var(--translate) );
+  .content {
+    --bottom: 3cqw;
+    --max-width: 40cqw;
+    --translate: 40%;
 
-		font-size: calc( 0.3em + 3cqw );
-		max-width: var( --max-width );
+    color: var(--white);
+    position: absolute;
+    right: 0;
+    bottom: var(--bottom);
+    transform: translateX(var(--translate));
 
-		text-transform: uppercase;
-		opacity: 0.8;
-	}
+    font-size: calc(0.3em + 3cqw);
+    max-width: var(--max-width);
 
-	.content h3
-	{
-		font-weight: bold;
-		transition: color 500ms;
-		overflow-wrap: normal;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
 
-	}
+  .content h3 {
+    font-weight: bold;
+    transition: color 500ms;
+    overflow-wrap: normal;
+  }
 
-	.content span
-	{
-		display: inline-block;
-		font-size: 0.5em;
-	}
+  .content span {
+    display: inline-block;
+    font-size: 0.5em;
+  }
 
-	element-card:hover .octagon
-	{
-		transform: scale(1.1) rotateZ(calc( (360deg / 8) * 4 ));
-		filter: contrast(0.5) brightness(1.1);
-	}
+  element-card:hover .octagon {
+    transform: scale(1.1) rotateZ(calc((360deg / 8) * 4));
+    filter: contrast(0.5) brightness(1.1);
+    transition-delay: 0s;
+  }
 
-	element-card:hover h3
-	{
-		color: var( --main-color );
-		filter: contrast(1.5);
-	}
+  element-card:hover h3 {
+    color: var(--main-color);
+    filter: contrast(1.5);
+  }
 
-	element-card:hover .content
-	{
-		opacity: 1;
-	}
+  element-card:hover .content {
+    opacity: 1;
+  }
 
-	element-card:hover 
-	{
-		filter: brightness(1.2);
-	}
+  element-card:hover {
+    filter: brightness(1.2);
+  }
 </style>
-
-
-<script>
-	export let
-		imageURL = null,
-		label = "",
-		content = "",
-		url = null;
-
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
-
-	const Interaction = {
-		onClick(){
-			url && window.open(url, "_blank");
-
-			dispatch("click");
-		}
-	}
-	
-</script>
