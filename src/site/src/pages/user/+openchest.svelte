@@ -43,6 +43,7 @@
         {@html i18n.mainInfo}
       </p>
       {#if !svelteApp.user}
+        <hr />
         <small>{i18n.logInAgain}</small>
       {/if}
       <button disabled={!svelteApp.user} on:click={clickHandler}
