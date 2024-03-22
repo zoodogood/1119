@@ -213,6 +213,8 @@
     align-items: center;
     opacity: 0.8;
     transition: opacity 1s;
+
+    scrollbar-width: none;
   }
 
   .guilds-list:hover {
