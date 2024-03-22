@@ -103,7 +103,7 @@ class ErrorData {
     try {
       this.stackData = this.parseErrorStack();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
     this.createdAt = Date.now();
     this.context = context ?? null;
