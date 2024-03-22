@@ -11,8 +11,7 @@
         piramide: {
           label: i18n.projectesEnum.piramide.label,
           description: i18n.projectesEnum.piramide.description,
-          imageURL:
-            "https://private-user-images.githubusercontent.com/52154209/311414420-47cae351-e6d8-400b-8c5f-2e436aea02e7.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTA4NzI0NDcsIm5iZiI6MTcxMDg3MjE0NywicGF0aCI6Ii81MjE1NDIwOS8zMTE0MTQ0MjAtNDdjYWUzNTEtZTZkOC00MDBiLThjNWYtMmU0MzZhZWEwMmU3LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMTklMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzE5VDE4MTU0N1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWJjMjZhZGJjZGJlYTA5NmRlNzQ4M2JjOWFkNjI1MjJmZWZmOTNjYTkyN2QyNzNhNjBkZjM0MWM3OWIxNDYzM2QmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.XFf3iXhlq5rZaIgXiKiwyTOVwRW9fjrehSJ2pZt7IDI", //"https://camo.githubusercontent.com/764d636fff5a8d36cbce72b5c14c5fe895c25fd46fcc9b62dd00d13cffff15f1/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6174746163686d656e74732f3836343039383736353534363731373138342f3930323038393535353830373733313738322f756e6b6e6f776e2e706e67",
+          imageURL: "https://i.ibb.co/gTttG8p/piramide-screenshot.png",
           home: "https://zoodogood.github.io/piramide/",
           github: "https://github.com/zoodogood/piramide",
         },
