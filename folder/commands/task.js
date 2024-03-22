@@ -503,7 +503,7 @@ class CommandRunContext extends BaseCommandRunContext {
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
-    this.run(context);
+    context.setWhenRunExecuted(this.run(context));
     return context;
   }
 
