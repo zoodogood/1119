@@ -1,6 +1,7 @@
-
 const __json__ = {
-	version: "0.0.0",
-	buildedTimestamp: null
+  version: "0.0.0",
+  buildedTimestamp: null,
+  bot: null,
+  i18n: null,
 };
 export default __json__;
