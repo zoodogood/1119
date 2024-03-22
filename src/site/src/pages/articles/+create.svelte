@@ -3,11 +3,7 @@
   import Dialog from "#site-component/Dialog";
 
   import PagesRouter from "#site/lib/Router.js";
-  import {
-    fetchFromInnerApi,
-    MarkdownMetadata,
-    sleep,
-  } from "#lib/safe-utils.js";
+  import { fetchFromInnerApi, MarkdownMetadata } from "#lib/safe-utils.js";
   import { svelteApp } from "#site/core/svelte-app.js";
 
   const i18n = svelteApp.i18n.pages.articlesCreate;
@@ -94,12 +90,9 @@
 
   <hr />
   <section>
-    <h4>Внешнй редактор:</h4>
+    <h4>{i18n.externalEditorSection.label}</h4>
     <p>
-      Это лишь редактор с возможностью предварительного просмотра (Хотя его
-      возможности и значительно отличаются от классического Markdown
-      синтаксиса). Сохраните содержимое в файл с расширением .md и загрузите
-      через кнопку выше.
+      {i18n.externalEditorSection.description}
     </p>
     <br />
     <iframe
