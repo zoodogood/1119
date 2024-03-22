@@ -14,9 +14,15 @@ import { dayjs } from "#lib/dayjs.js";
 import yaml from "yaml";
 import Path from "path";
 
-export function objectToLocaleDeveloperString(value) {
+export function objectToLocaleDeveloperString(value, deep = 0) {
+  if (typeof value !== "object" || value === null) {
+    return toLocaleDeveloperString(value);
+  }
   return Object.entries(value)
-    .map((key, value) => `${key}: ${toLocaleDeveloperString(value)}`)
+    .map(
+      ([key, value]) =>
+        `${key}: ${toLocaleDeveloperString(value)}${typeof value === "object" && deep > 0 ? ` —\n${objectToLocaleDeveloperString(value, deep - 1)}` : ""}`,
+    )
     .join("\n");
 }
 export function toLocaleDeveloperString(value) {
