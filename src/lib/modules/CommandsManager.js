@@ -310,6 +310,7 @@ class CommandsManager {
     });
     const { options, typeBase } = context;
 
+    let _context;
     try {
       interaction.user.action(Actions.callCommand, { command, interaction });
       const whenCommandEnd = typeBase.call(command, interaction);
@@ -323,23 +324,26 @@ class CommandsManager {
           perCall: options.cooldown,
         }).call();
 
-      const _context = await whenCommandEnd;
+      _context = await whenCommandEnd;
       if (_context instanceof BaseCommandRunContext) {
         await _context.whenRunExecuted;
       }
 
       this.statistics.increase(context);
     } catch (error) {
+      const primary = _context?.toJSON() || null;
       ErrorsHandler.onErrorReceive(error, {
         userId: interaction.user.id,
         type: typeBase.type,
         command: command.options.name,
         source: "Command",
+        ...primary,
       });
       sendErrorInfo({
         channel: interaction.channel,
         error,
         interaction,
+        primary,
       });
     }
   }
