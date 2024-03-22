@@ -283,7 +283,7 @@
   }
 
   .guilds-list > li {
-    width: calc(0.5em + 0.5vw + 10px);
+    width: calc(0.5em + 0.5vw + 25px);
     aspect-ratio: 1 / 1;
     border-radius: 50%;
     overflow: hidden;
