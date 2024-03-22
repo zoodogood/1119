@@ -14,15 +14,19 @@ class Route extends BaseRoute {
   }
 
   async post(request, response) {
-    const { data: user } = authorizationProtocol(request, response);
+    const { data: user } = await authorizationProtocol(request, response);
+    if (!user) {
+      return;
+    }
 
     await new Promise((resolve) =>
       bodyParser.raw()(request, response, resolve),
     );
 
     const author = omit(user, (key) =>
-      ["id", "avatarURL", "username", "discriminator"].includes(key),
+      ["id", "username", "discriminator"].includes(key),
     );
+    author.avatarURL = user.avatarURL();
 
     const filename = request.headers.filename;
     const content = String(request.body);
