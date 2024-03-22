@@ -170,7 +170,6 @@ class ChestManager {
     switch (item) {
       case "keys":
         if (quantity > 99) {
-          console.log(123);
           user.action(Actions.globalQuest, { name: "bigHungredBonus" });
         }
         break;
