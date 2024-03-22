@@ -592,7 +592,6 @@ class Command extends BaseCommand {
 
   displayBag(context) {
     const { userData, interaction } = context;
-    console.log(context);
     const items = Object.entries(userData.bag || {})
       .map(([key, count]) => ({
         item: this.items.find((item) => item.key === key),
