@@ -5,7 +5,11 @@ import {
   TextInputStyle,
 } from "discord-api-types/v10";
 import { CreateModal } from "@zoodogood/utils/discordjs";
-import { resolveGithubPath, uid } from "#lib/util.js";
+import {
+  objectToLocaleDeveloperString,
+  resolveGithubPath,
+  uid,
+} from "#lib/util.js";
 import Path from "path";
 import config from "#config";
 import client from "#bot/client.js";
@@ -15,6 +19,7 @@ class UserInterfaceUtil {
     channel,
     error,
     interaction = {},
+    primary = null,
     description = "",
   }) {
     const { fileOfError, strokeOfError, stack } =
@@ -51,6 +56,13 @@ class UserInterfaceUtil {
         label: "Сообщение",
         customId: "setAddableInformationForError",
       },
+      {
+        type: ComponentType.Button,
+        style: ButtonStyle.Success,
+        label: "Контекст",
+        customId: "readPrimaryContext",
+        disabled: !primary,
+      },
     ];
     const embed = {
       title: "— Данные об панике 🙄",
@@ -67,6 +79,7 @@ class UserInterfaceUtil {
       interaction,
       channel,
       description,
+      primary,
     };
 
     const collector = message.createMessageComponentCollector({
@@ -203,6 +216,15 @@ class UserInterfaceUtil {
         });
       })();
       return;
+    },
+
+    async readPrimaryContext({ interaction, context }) {
+      const DEEP = 1;
+      const description = objectToLocaleDeveloperString(context.primary, DEEP);
+      interaction.msg({
+        title: "Часть состояния программы:",
+        description,
+      });
     },
   };
 }
