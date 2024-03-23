@@ -416,6 +416,7 @@ class New_CommandManager {
     const { taskManager } = this.context;
     const task = taskManager.getUserTaskField();
     Object.assign(task, taskManager.createTaskData(value));
+    console.log(this.context.user.data.task);
   }
 }
 
@@ -455,11 +456,14 @@ class IDidItCommandManager {
 
   processTaskIsDone() {
     const { task, channel } = this.context;
-    if (task?.isDone !== false) {
-      return;
+    if (task.isDone === true) {
+      return true;
     }
-    channel.msg({ content: "Нет активной задачи :yellow_square:" });
-    return true;
+    channel.msg({
+      content:
+        "Нет активной задачи. Текущая задача уже завершена :yellow_square:",
+    });
+    return;
   }
 
   doneTask() {
