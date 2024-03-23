@@ -416,7 +416,6 @@ class New_CommandManager {
     const { taskManager } = this.context;
     const task = taskManager.getUserTaskField();
     Object.assign(task, taskManager.createTaskData(value));
-    console.log(this.context.user.data.task);
   }
 }
 
