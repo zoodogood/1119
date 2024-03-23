@@ -292,7 +292,7 @@ class TodoCommandManager {
 
   processTaskIsExists() {
     const { task } = this.context;
-    if (task.isDone !== undefined) {
+    if (task?.isDone !== undefined) {
       return true;
     }
 
@@ -400,7 +400,7 @@ class New_CommandManager {
 
   processUserAlreadyHasTask() {
     const { task } = this.context;
-    if (task.isDone === false) {
+    if (task?.isDone === false) {
       const { channel } = this.context;
       channel.msg({
         description:
@@ -442,7 +442,7 @@ class IDidItCommandManager {
 
   processTaskIsExists() {
     const { task, channel } = this.context;
-    if (task.isDone !== undefined) {
+    if (task?.isDone !== undefined) {
       return true;
     }
 
@@ -455,7 +455,7 @@ class IDidItCommandManager {
 
   processTaskIsDone() {
     const { task, channel } = this.context;
-    if (task.isDone !== false) {
+    if (task?.isDone !== false) {
       return;
     }
     channel.msg({ content: "Нет активной задачи :yellow_square:" });
