@@ -490,7 +490,7 @@ class CommandRunContext extends BaseCommandRunContext {
   static async new(interaction, command) {
     const context = new this(interaction, command);
     context.taskManager = new TaskManager(context);
-    context.task = context.taskManager.task;
+    context.task = context.taskManager.getUserTaskField();
     return context;
   }
 
