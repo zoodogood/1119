@@ -1,92 +1,85 @@
-import { relativeSiteRoot } from '#lib/safe-utils.js';
+import { relativeSiteRoot } from "#lib/safe-utils.js";
 import { Collection } from "@discordjs/collection";
-import Path from 'path';
+import Path from "path";
 
 class PagesRouter {
+  static PAGES_FOLDER_PATH = "./src/site/src/pages";
+  static collection = new Collection();
+  static #pagesMap = new Map();
 
-	static PAGES_FOLDER_PATH = "./src/site/src/pages";
-	static collection = new Collection();
-	static #pagesMap = new Map();
+  static resolvePages(PagesURLs) {
+    for (const path of PagesURLs) {
+      const page = this.resolvePage(path);
+      this.addPage(page);
+    }
+  }
 
-	static resolvePages(PagesURLs){
-		for (const path of PagesURLs){
-			const page = this.resolvePage(path);
-			this.addPage(page);
-		}
-	}
+  static #svelteApp;
+  static setSvelteApp(svelteApp) {
+    this.#svelteApp = svelteApp;
+  }
 
-	static #svelteApp;
-	static setSvelteApp(svelteApp){
-		this.#svelteApp = svelteApp;
-	}
+  static resolvePage(path) {
+    const key = this.resolvePageName(path);
 
-	static resolvePage(path){
-		const key = this.resolvePageName(path);
+    const relativeToPages = (() => {
+      const isFolderIndex = (arr) => arr.at(-1).toLowerCase() === "index";
+      const arr = key.split("/");
 
-		const relativeToPages = (() => {
-			const isFolderIndex = (arr) => arr.at(-1).toLowerCase() === "index";
-			const arr = key.split("/");
-			
-			isFolderIndex(arr) && arr.splice(-1, 1);
-			return arr.join("/");
-		})();
-		
-		return {source: path, key, relativeToPages};
-	}
+      isFolderIndex(arr) && arr.splice(-1, 1);
+      return arr.join("/");
+    })();
 
-	static resolvePageName(path){
-		const directory = this.PAGES_FOLDER_PATH;
-	
-	
-		const name = Path
-			.relative(directory, path)
-			.replaceAll("\\", "/")
-			.replaceAll("+", "")
-			.replaceAll(/\..+$/g, "")
-			.toLowerCase()
-			.trim();
+    return { source: path, key, relativeToPages };
+  }
 
-		return name;
-	}
+  static resolvePageName(path) {
+    const directory = this.PAGES_FOLDER_PATH;
 
-	
-	
-	static addPage(page){
-		const pagesMap = this.#pagesMap;
-		pagesMap.set(page.key , page);
-		pagesMap.set(page.relativeToPages , page);
-		pagesMap.set(page.source , page);
+    const name = Path.relative(directory, path)
+      .replaceAll("\\", "/")
+      .replaceAll("+", "")
+      .replaceAll(/\..+$/g, "")
+      .toLowerCase()
+      .trim();
 
-		this.collection.set(page.key, page);
-	}
+    return name;
+  }
 
-	static getPageBy(any){
-		return this.#pagesMap.get(any);
-	}
+  static addPage(page) {
+    const pagesMap = this.#pagesMap;
+    pagesMap.set(page.key, page);
+    pagesMap.set(page.relativeToPages, page);
+    pagesMap.set(page.source, page);
 
-	static get pages(){
-		return Object.fromEntries(
-			[...this.collection.entries()]
-				.map(([any, {key}]) => [any, key])
-		);
-	}
+    this.collection.set(page.key, page);
+  }
 
-	static relativeToPage(key){
-		const svelteApp = this.#svelteApp;
-		const url = relativeSiteRoot(svelteApp, key);
-		const simplifyURL = (url) => {
-			return url.endsWith("index") ? url.split("/").slice(0, -1).join("/") : url;
-		}
-		return simplifyURL(url);
-	}
+  static getPageBy(any) {
+    return this.#pagesMap.get(any);
+  }
 
-	static redirect(path){
-		this.#svelteApp.document.location.href
-			= this.relativeToPage(path);
-	}
+  static get pages() {
+    return Object.fromEntries(
+      [...this.collection.entries()].map(([any, { key }]) => [any, key]),
+    );
+  }
+
+  static relativeToPage(key) {
+    const svelteApp = this.#svelteApp;
+    const url = relativeSiteRoot(svelteApp, key);
+    const simplifyURL = (url) => {
+      return url.endsWith("index")
+        ? url.split("/").slice(0, -1).join("/")
+        : url;
+    };
+    return simplifyURL(url);
+  }
+
+  static redirect(path) {
+    this.#svelteApp.document.location.href = this.relativeToPage(path);
+  }
 }
-
-
 
 export default PagesRouter;
 export { PagesRouter };
