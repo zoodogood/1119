@@ -80,7 +80,7 @@ class SvelteApp {
   i18n = null;
 
   constructor() {
-    this.lang = this.url.base.lang ?? "ru";
+    this.lang = this.url.base.lang ?? this.storage.getSelectedLocale() ?? "ru";
     this.i18n = this.enviroment.i18n[this.lang];
 
     this.#checkOrigin();
