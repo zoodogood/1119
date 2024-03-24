@@ -1,7 +1,6 @@
 <script>
   import config from "#config";
   import ThemeSwitcher from "#site-component/ThemeSwitcher";
-  import Icon from "#site-component/iconic";
   import svelteApp from "#site/core/svelte-app.js";
   import PagesRouter from "#site/lib/Router.js";
 
@@ -72,7 +71,7 @@
           class="oauth"
           on:click={() =>
             PagesRouter.redirect(
-              `../oauth2/auth?redirect=${svelteApp.url.subpath.join("/")}`,
+              `/oauth2/auth?redirect=${svelteApp.url.subpath.join("/")}`,
             )}
         >
           {i18n.authorization}
