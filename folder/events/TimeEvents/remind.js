@@ -1,10 +1,21 @@
 import { client } from "#bot/client.js";
 import { whenClientIsReady } from "#bot/util.js";
-import { RemindData, Remind_AbstractRepeats } from "#folder/commands/remind.js";
+import {
+  RemindData,
+  Remind_AbstractEvaluate,
+  Remind_AbstractRepeats,
+} from "#folder/commands/remind.js";
 import { capitalize } from "#lib/mini.js";
 
 class Event {
-  resolveParams(authorId, channelId, phrase, repeatsCount) {
+  resolveParams(
+    eventData,
+    authorId,
+    channelId,
+    phrase,
+    repeatsCount,
+    evaluateRemind,
+  ) {
     phrase = capitalize(phrase || RemindData.DEFAULT_VALUES.phrase);
 
     const channel = client.channels.cache.get(channelId);
@@ -17,15 +28,24 @@ class Event {
       user,
       target,
       isDefaultPhrase: phrase === RemindData.DEFAULT_VALUES.phrase,
+      evaluateRemind,
+      eventData,
     };
   }
   async run(eventData, ...params) {
     await whenClientIsReady();
     const { isLost } = eventData;
 
-    const context = this.resolveParams(...params);
+    const context = this.resolveParams(eventData, ...params);
 
-    const { phrase, repeatsCount, user, channel, isDefaultPhrase } = context;
+    const {
+      phrase,
+      repeatsCount,
+      user,
+      channel,
+      isDefaultPhrase,
+      evaluateRemind,
+    } = context;
 
     this.processUserHaventPermissionsToSend(context);
     this.processSpecifyUser(context);
@@ -35,8 +55,8 @@ class Event {
     const { processMessageWithRepeat } = Remind_AbstractRepeats.message;
     const description = processMessageWithRepeat(phrase, context, true);
 
-    target.msg({
-      title: "Напоминание:",
+    context.message = await target.msg({
+      title: `Напоминание: ${evaluateRemind ? " --EVAL" : ""}`,
       description,
       footer: isLost
         ? {
@@ -45,17 +65,19 @@ class Event {
         : null,
     });
 
+    Remind_AbstractEvaluate.onEvaluate(context);
+
     if (isLost) {
       return;
     }
 
-    Remind_AbstractRepeats.processRemindTimeEvent(
-      eventData,
+    const remindData = RemindData.from({
       channel,
       user,
-      !isDefaultPhrase && phrase,
+      phrase: !isDefaultPhrase && phrase,
       repeatsCount,
-    );
+    });
+    Remind_AbstractRepeats.processRemindTimeEvent(eventData, remindData);
   }
 
   processUserHaventPermissionsToSend(context) {
