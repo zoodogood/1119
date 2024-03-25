@@ -69,7 +69,7 @@ function inspectStructure(structure) {
 class Template {
   constructor(source, context) {
     const { client } = context;
-    source.executor = client.users.resolve(source.executor);
+    source.executor = client. users.resolve(source.executor);
 
     this.source = source;
     this.context = context;
@@ -514,6 +514,29 @@ class Template {
         name: "FileSystem",
         permissions: {
           scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+        },
+      },
+      executeCommand: {
+        getContent(context, source) {
+          console.log(context, source);
+          return (commandBase, params) => {
+            const { CommandInteraction: CommandContext } = CommandsManager;
+            const ctx = new CommandContext({
+              commandBase,
+              params,
+              user: source.executor,
+              channel: context.channel,
+              message: context.message,
+              guild: context.channel.guild,
+            });
+            CommandsManager.checkAvailable(ctx.command, ctx) &&
+              CommandsManager.execute(ctx.command, ctx);
+          };
+        },
+        name: "executeCommand",
+        permissions: {
+          scope: this.PERMISSIONS_MASK_ENUM.USER,
+          investigate: this.PERMISSIONS_MASK_ENUM.USER,
         },
       },
       addEvaluateTemplateEffect: {
