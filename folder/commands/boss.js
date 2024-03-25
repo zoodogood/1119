@@ -286,15 +286,15 @@ class Command extends BaseCommand {
     collector.on("end", () => message.reactions.removeAll());
   }
 
-  async displayHeadstone({ interaction, member, boss, userStats }) {
+  async displayHeadstone({ interaction, memb, boss, userStats }) {
     const guild = interaction.guild;
     const contents = {
-      level: `Уровень: ${member.data.level}.`,
+      level: `Уровень: ${memb.data.level}.`,
       joined: `Появился: ${new Intl.DateTimeFormat("ru-ru", {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
-      }).format(guild.members.resolve(member).joinedTimestamp)}`,
+      }).format(guild.members.resolve(memb).joinedTimestamp)}`,
       heroStatus:
         "Выдуманный персонаж был искалечен и умертвлён, или просто умер. В таком состоянии методы атаки и использование реликвий заблокированны.\n",
     };
@@ -363,7 +363,7 @@ class Command extends BaseCommand {
             disabled: true,
           },
 
-      footer: { iconURL: member.avatarURL(), text: member.tag },
+      footer: { iconURL: memb.avatarURL(), text: memb.tag },
     };
     const message = await interaction.channel.msg(embed);
     const collector = message.createMessageComponentCollector({
@@ -373,7 +373,7 @@ class Command extends BaseCommand {
     collector.on("collect", async (interaction) => {
       const isAlready = BossManager.getUserStats(
         boss,
-        member.id,
+        memb.id,
       ).alreadyKeepAliveRitualBy;
 
       if (isAlready) {
@@ -396,7 +396,7 @@ class Command extends BaseCommand {
       }
 
       const effectId = "boss.deadlyCurse";
-      const values = { keepAliveUserId: member.id };
+      const values = { keepAliveUserId: memb.id };
 
       const { effect } = BossEffects.applyEffect({
         guild,
