@@ -23,15 +23,22 @@ class Event {
     await whenClientIsReady();
     const { isLost } = eventData;
 
-    const { phrase, repeatsCount, user, channel, target, isDefaultPhrase } =
-      this.resolveParams(...params);
+    const context = this.resolveParams(...params);
 
-    if (target !== user)
-      target.msg({ content: user.toString(), mentions: [user.id] });
+    const { phrase, repeatsCount, user, channel, isDefaultPhrase } =
+      context;
+
+    this.processUserHaventPermissionsToSend(context);
+    this.processSpecifyUser(context);
+
+    const { target } = context;
+
+    const { processMessageWithRepeat } = AbstractRemindRepeats.message;
+    const description = processMessageWithRepeat(phrase, context, true);
 
     target.msg({
       title: "Напоминание:",
-      description: phrase,
+      description,
       footer: isLost
         ? {
             text: "Ваше напоминание не могло быть доставлено вовремя. Если напоминания должны были повторяться - этого не произойдет. Смещены данные об периодичности их повторений",
@@ -50,6 +57,30 @@ class Event {
       !isDefaultPhrase && phrase,
       repeatsCount,
     );
+  }
+
+  processUserHaventPermissionsToSend(context) {
+    const { user, target, channel } = context;
+    if (target === user) {
+      return;
+    }
+
+    const member = channel.guild.members.cache.get(user.id);
+    const cannotSend =
+      (member && member.wastedPermissions(2048n, channel)) ||
+      member.isCommunicationDisabled();
+
+    if (!member || cannotSend) {
+      context.target = user;
+      return;
+    }
+  }
+
+  processSpecifyUser(context) {
+    const { user, target } = context;
+    if (target !== user) {
+      target.msg({ content: user.toString(), mentions: [user.id] });
+    }
   }
 
   options = {
