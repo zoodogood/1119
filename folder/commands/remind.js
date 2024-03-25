@@ -1,3 +1,4 @@
+import config from "#config";
 import { YEAR } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
@@ -14,6 +15,26 @@ class AbstractRemindRepeats {
     name: "--repeat",
     description:
       "Позволяет повторять напоминание несколько раз, одно после завершения предыдущего. Ожидает указания количества повторений",
+  };
+
+  static message = {
+    addToContentRepeatsCount: (content, remindData) =>
+      `${content}${remindData.repeatsCount ? `\n\nПовторяется: ${ending(remindData.repeatsCount, "раз", "", "", "а")}` : ""}`,
+    addDisclamerHowToRemove: (content) =>
+      `${content}\nНапоминание можно [удалить](${config.server.origin}/pages/articles/how-to-reminds): !reminds --delete {}`,
+    processMessageWithRepeat: (content, remindData, isEnd) => {
+      if (!remindData.repeatsCount) {
+        return content;
+      }
+      const { addToContentRepeatsCount, addDisclamerHowToRemove } =
+        this.message;
+
+      content = addToContentRepeatsCount(content, remindData);
+      if (!isEnd && remindData.repeatsCount <= 5) {
+        return content;
+      }
+      return addDisclamerHowToRemove(content);
+    },
   };
 
   static recallEvent(event) {
@@ -226,7 +247,7 @@ class Command extends BaseCommand {
       params.phrase || RemindData.DEFAULT_VALUES.phrase,
     );
 
-    const { timeTo, repeatsCount } = params;
+    const { timeTo } = params;
 
     const LIMIT = YEAR * 30;
 
@@ -240,11 +261,11 @@ class Command extends BaseCommand {
       return;
     }
 
-    const event = this.createRemind(context);
-
+    const event = await this.createRemind(context);
+    const description = `— ${AbstractRemindRepeats.message.processMessageWithRepeat(phrase, params, false)}`;
     await channel.msg({
       title: "Напомнинание создано",
-      description: `— ${phrase}${repeatsCount ? `\n\nПовторяется: ${ending(repeatsCount, "раз", "", "", "а")}` : ""}`,
+      description,
       timestamp: event.timestamp,
       footer: {
         iconURL: user.avatarURL(),
