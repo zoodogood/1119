@@ -1,5 +1,8 @@
 // @ts-check
-import { Collection, CommandInteraction } from "discord.js";
+import {
+  Collection,
+  CommandInteraction as DiscordCommandInteraction,
+} from "discord.js";
 import config from "#config";
 
 import * as Util from "#lib/util.js";
@@ -16,23 +19,28 @@ import { ImportDirectory } from "@zoodogood/import-directory";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 import { permissionRawToI18n } from "#lib/permissions.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import app from "#app";
 
 const COMMANDS_PATH = "./folder/commands";
 
+class CommandInteraction {
+  constructor({ params, user, channel, guild, commandBase, message, client }) {
+    this.params = params;
+    this.user = user;
+    this.channel = channel;
+    this.guild = guild;
+    this.commandBase = commandBase;
+    this.message = message;
+    this.client = client || app.client;
+
+    this.command = CommandsManager.callMap.get(commandBase);
+    this.member = guild?.members.resolve(user) || null;
+    this.userData = user.data;
+    this.mention = message.mentions?.users.first() ?? null;
+  }
+}
 /**
- * @returns {{
- *  commandBase: typeof import("#lib/BaseCommand.js").BaseCommand,
- *  command: import("#lib/BaseCommand.js").BaseCommand,
- *  client: import("discord.js").Client,
- *  params: string,
- *  message: import("discord.js").Message,
- *  userData: import("#constants/Schema.js").users,
- *  user: import("discord.js").User,
- *  channel: import("discord.js").Channel
- *  guild: import("discord.js").Guild,
- *  member: import("discord.js").GuildMember,
- *  mention: import("discord.js").User
- * }}
+ * @returns {CommandInteraction}
  */
 function parseInputCommandFromMessage(message) {
   const content = message.content.trim();
@@ -55,23 +63,17 @@ function parseInputCommandFromMessage(message) {
   const commandBase = spliceCommandBase(words);
   const params = words.join(" ");
 
-  const command = CommandsManager.callMap.get(commandBase);
   const { client, author: user, channel, guild } = message;
-  const userData = user.data;
 
-  const commandContext = {
+  const commandContext = new CommandInteraction({
     commandBase,
-    command,
     client,
     params,
     message,
-    userData,
     user,
     channel,
     guild,
-    member: guild ? guild.members.resolve(user) : null,
-    mention: message.mentions.users.first() ?? null,
-  };
+  });
 
   commandContext.user.action(Actions.inputCommandParsed, commandContext);
 
@@ -85,6 +87,7 @@ class CommandsManager {
   static collection = null;
 
   static parseInputCommandFromMessage = parseInputCommandFromMessage;
+  static CommandInteraction = CommandInteraction;
 
   static emitter = new EventsEmitter();
 
@@ -276,7 +279,8 @@ class CommandsManager {
       call: async (command, interaction) => {
         return await command.onSlashCommand(interaction);
       },
-      condition: (interaction) => interaction instanceof CommandInteraction,
+      condition: (interaction) =>
+        interaction instanceof DiscordCommandInteraction,
     },
     input: {
       type: "input",
