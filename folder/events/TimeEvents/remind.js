@@ -1,6 +1,6 @@
 import { client } from "#bot/client.js";
 import { whenClientIsReady } from "#bot/util.js";
-import { AbstractRemindRepeats, RemindData } from "#folder/commands/remind.js";
+import { RemindData, Remind_AbstractRepeats } from "#folder/commands/remind.js";
 import { capitalize } from "#lib/mini.js";
 
 class Event {
@@ -25,15 +25,14 @@ class Event {
 
     const context = this.resolveParams(...params);
 
-    const { phrase, repeatsCount, user, channel, isDefaultPhrase } =
-      context;
+    const { phrase, repeatsCount, user, channel, isDefaultPhrase } = context;
 
     this.processUserHaventPermissionsToSend(context);
     this.processSpecifyUser(context);
 
     const { target } = context;
 
-    const { processMessageWithRepeat } = AbstractRemindRepeats.message;
+    const { processMessageWithRepeat } = Remind_AbstractRepeats.message;
     const description = processMessageWithRepeat(phrase, context, true);
 
     target.msg({
@@ -50,7 +49,7 @@ class Event {
       return;
     }
 
-    AbstractRemindRepeats.processRemindTimeEvent(
+    Remind_AbstractRepeats.processRemindTimeEvent(
       eventData,
       channel,
       user,
