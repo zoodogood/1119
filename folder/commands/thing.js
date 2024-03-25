@@ -1674,7 +1674,7 @@ class Command extends BaseCommand {
           {
             action: async (context) => {
               const { user } = context;
-              const curse = user.curses.at(0);
+              const curse = user.data.curses.at(0);
               CurseManager.interface({ curse, user }).incrementProgress(1);
               CurseManager.checkAvailable({ user, curse });
             },
