@@ -98,8 +98,8 @@
     <iframe
       loading="lazy"
       title="editor-preview"
-      src="https://marked.hyoo.ru/#!preview=view"
-      style="width: 100%; height: 100vh;"
+      src="https://dillinger.io/"
+      style="width: 100%; height: 90vh;"
     />
     <hr />
   </section>
