@@ -32,7 +32,6 @@ const resolveModule = (filePath) => {
     path.replaceAll(Path.win32.sep, Path.posix.sep);
   const source = normalizePath(Path.relative(".", filePath));
 
-  console.log(filePath);
   const name = PagesRouter.resolvePageName(filePath).replaceAll("/", "_");
   return { filePath, name, source };
 };
