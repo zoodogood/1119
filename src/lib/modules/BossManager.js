@@ -27,7 +27,7 @@ import {
   EffectInfluenceEnum,
   UserEffectManager,
 } from "#lib/modules/EffectsManager.js";
-import { MONTH } from "#constants/globals/time.js";
+import { HOUR, MONTH } from "#constants/globals/time.js";
 import config from "#config";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 
@@ -963,7 +963,7 @@ class BossManager {
         !user.bot && reaction.emoji.id === "637533074879414272";
       const collector = context.message.createReactionCollector({
         filter,
-        time: 3_600_000 * 2,
+        time: HOUR * 2,
       });
       collector.on("collect", (reaction, user) => {
         const result = BossChest.onCollect(user, context, reaction);
@@ -998,7 +998,7 @@ class BossManager {
           title: `Вы уже взяли награду на ур. ${userStats.chestRewardAt}`,
           delete: 5000,
         });
-        reaction?.remove();
+        reaction?.users.remove(user);
         return;
       }
 
