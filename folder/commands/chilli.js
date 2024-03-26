@@ -176,7 +176,7 @@ class Command extends BaseCommand {
     const hasChilli = channel.chilli?.find(
       (chilli) => chilli.currentIn.id === memb.id,
     );
-    if (!hasChilli) {
+    if (hasChilli) {
       return true;
     }
     channel.msg({
