@@ -69,7 +69,7 @@ function inspectStructure(structure) {
 class Template {
   constructor(source, context) {
     const { client } = context;
-    source.executor = client. users.resolve(source.executor);
+    source.executor = client.users.resolve(source.executor);
 
     this.source = source;
     this.context = context;
@@ -629,22 +629,30 @@ class RegularProxy {
   }
 
   processMacroses() {
-    const regex = /(\w+)'(\w*)/;
-    while (true) {
+    const regex = /(?<!not_macro\^\S*)(\w+)'(\w*)/;
+    let _i = 0;
+    const _LIMIT = 100;
+    while (_i < _LIMIT) {
       const macro = this.regular.match(regex);
       if (!macro) {
-        return;
+        break;
       }
 
       this.regular = this.regular.replace(regex, (full, macro, value) => {
         const context = { macro, value, primary: this.context };
         const macroBase = this.findMacro(context);
         if (!macroBase) {
-          return full;
+          return Util.use_unique_characters_marker(full, "not_macro", "g")
+            .value;
         }
         return this.onMacro(macroBase, context);
       });
+      _i++;
     }
+    this.regular = this.regular.replaceAll(
+      Util.use_unique_characters_marker("", "not_macro", "g").regex,
+      (full, value) => value,
+    );
   }
 
   findMacro(context) {
