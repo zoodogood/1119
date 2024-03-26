@@ -528,8 +528,10 @@ class Template {
               message: context.message,
               guild: context.channel.guild,
             });
-            CommandsManager.checkAvailable(ctx.command, ctx) &&
-              CommandsManager.execute(ctx.command, ctx);
+            return (
+              CommandsManager.checkAvailable(ctx.command, ctx) &&
+              CommandsManager.execute(ctx.command, ctx)
+            );
           };
         },
         name: "executeCommand",
