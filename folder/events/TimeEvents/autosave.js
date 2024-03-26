@@ -1,3 +1,4 @@
+import config from "#config";
 import {
   TimeEventsManager,
   DataManager,
@@ -8,6 +9,10 @@ class Event {
   static INTERVAL = 60_000 * 5;
 
   run() {
+    if (config.development) {
+      return;
+    }
+
     DataManager.file.write();
     TimeEventsManager.file.write();
     CounterManager.file.write();
