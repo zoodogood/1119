@@ -70,7 +70,7 @@
         <button
           class="oauth"
           on:click={() =>
-            PagesRouter.redirect(
+            PagesRouter.redirectToAbsolute(
               `/oauth2/auth?redirect=${svelteApp.url.subpath.join("/")}`,
             )}
         >
