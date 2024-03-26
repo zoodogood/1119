@@ -46,6 +46,12 @@ class Event extends BaseEvent {
     if (needUpdate) {
       await EventsManager.collection.get("TimeEvent/new-day").run(true);
     }
+
+    TimeEventsManager.getEventsInRange([
+      TimeEventsManager.getNearestDay(),
+      TimeEventsManager.getNearestDay() + 1,
+    ]).find((event) => event.name === "autosave") ||
+      (await EventsManager.collection.get("TimeEvent/autosave").run(true));
   }
 
   parseCli() {
