@@ -138,3 +138,14 @@ export async function inspect(value) {
     .join("\n");
   return `${inspected}\n[ownPropertyNames ${value.name}]\n${proto}`;
 }
+
+export function use_unique_characters_marker(value, label, flags = "") {
+  const START = "_µ§§";
+  const MIDDLE = "^";
+  const END = "µ§§;";
+
+  return {
+    value: `${START}${label}${MIDDLE}${value}${END}`,
+    regex: new RegExp(`${START}${label}\\${MIDDLE}((?:.|\\n)*?)${END}`, flags),
+  };
+}
