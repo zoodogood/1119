@@ -108,10 +108,10 @@ export class Pager extends EventsEmitter {
    *
    * @param {number} from - you can remove default components
    * @param {number} to - remove to
-   * @param {object} components you can add new components
+   * @param {object[]} components you can add new components
    */
   spliceComponents(from, to, components) {
-    return this.components.splice(from, to, components);
+    return this.components.splice(from, to, ...components);
   }
 
   close() {
