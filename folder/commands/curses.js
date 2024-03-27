@@ -4,9 +4,9 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { Pager } from "#lib/DiscordPager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { toLocaleDeveloperString } from "#lib/safe-utils.js";
+import { justSelectMenuComponent } from "#bot/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
-import { ComponentType } from "discord.js";
 import { AttachmentBuilder } from "discord.js";
 import { FormattingPatterns } from "discord.js";
 
@@ -15,13 +15,6 @@ function jsonFile(data, name) {
   return new AttachmentBuilder(buffer, {
     name,
   });
-}
-function justSelectMenuComponent({ placeholder, labels }) {
-  return {
-    type: ComponentType.StringSelect,
-    placeholder,
-    options: labels.map((label, index) => ({ label, value: String(index) })),
-  };
 }
 
 class Utils {
