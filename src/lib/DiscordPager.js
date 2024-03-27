@@ -41,7 +41,9 @@ class DefaultComponentsProcessor {
       },
       [NEXT.customId]: (component) => {
         Object.defineProperty(component, "disabled", {
-          get: () => this.pager.currentPage === this.pager.pages.length - 1,
+          get: () =>
+            this.pager.pages.length &&
+            this.pager.currentPage === this.pager.pages.length - 1,
           enumerable: true,
         });
       },
