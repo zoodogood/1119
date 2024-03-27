@@ -6,6 +6,10 @@ class BaseCommand {
    * @param {ReturnType<import("#lib/modules/CommandsManager.js").parseInputCommandFromMessage>} interaction
    */
   onChatInput(message, interaction) {}
+
+  onSlash() {}
+
+  onComponent() {}
 }
 
 export { BaseCommand };
