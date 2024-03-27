@@ -2,6 +2,7 @@ import path from "path";
 import FileSystem from "fs";
 import config from "#config";
 import { BaseRoute } from "#server/router.js";
+import PagesRouter from "#site/lib/Router.js";
 
 const ROOT = config.server.paths.static;
 const root = path.join(process.cwd(), ROOT);
@@ -36,7 +37,9 @@ class Route extends BaseRoute {
   responseByCode(code, { data, response, request }) {
     switch (code) {
       case "NOT_FOUND":
-        response.redirect("/static/special/i-love-404");
+        response.redirect(
+          `/static/special/i-love-404?from=${encodeURIComponent(request.path)}`,
+        );
         break;
 
       case "ERROR":
