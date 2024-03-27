@@ -1,7 +1,6 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
 "use strict";
+import { BaseCommand } from "#lib/BaseCommand.js";
 
-import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { ButtonStyle, ComponentType, TextInputStyle } from "discord.js";
 import { Collection } from "@discordjs/collection";
@@ -11,7 +10,91 @@ import { CustomCollector } from "@zoodogood/utils/objectives";
 import QuestManager from "#lib/modules/QuestManager.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { Emoji } from "#constants/emojis.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { CliParser } from "@zoodogood/utils/primitives";
+import { Pager } from "#lib/DiscordPager.js";
+import {
+  NumberFormatLetterize,
+  joinWithAndSeparator,
+  random,
+  ending,
+} from "#lib/safe-utils.js";
+import { omit } from "@zoodogood/utils/objectives";
 
+class CommandRunContext extends BaseCommandRunContext {
+  sortedPull = null;
+  users;
+  pages = null;
+  page = 0;
+  boss;
+  snowyEvent;
+  selected = RanksUtils.leaderboardTypes.at(0);
+  values = null;
+  pager = new Pager();
+
+  static async new(interaction, command) {
+    const context = new this(interaction, command);
+    const { boss, showEvent } = interaction.guild.data;
+    Object.assign(context, { boss: boss || {}, showEvent: showEvent || {} });
+    return context;
+  }
+
+  setupPager() {
+    this.pager.setChannel(this.interaction.channel);
+    const defaultComponents = this.pager.components;
+    const components = [
+      [...defaultComponents],
+      [
+        {
+          type: ComponentType.StringSelect,
+          options: RanksUtils.leaderboardTypes
+            .filter(
+              (leaderboard) => !leaderboard.filter || leaderboard.filter(this),
+            )
+            .map((leaderboard) => leaderboard.component),
+          customId: "selectFilter",
+          placeholder: "Сменить",
+        },
+      ],
+    ];
+    this.pager.setComponents(components);
+
+    this.pager.on(Pager.Events.beforePageRender, (event) =>
+      this.command.onPagerBeforePageRender(event, this),
+    );
+
+    this.pager.on(Pager.Events.component, (interaction) =>
+      this.command.onPagerComponent(interaction, this),
+    );
+  }
+
+  parseCli(params) {
+    const parsed = new CliParser()
+      .setText(params)
+      .captureFlags(this.command.options.cliParser.flags)
+      .collect();
+
+    const values = parsed.resolveValues((capture) => capture?.toString());
+    this.flag_displayHidden = values.get("--show-hidden");
+    this.setCliParsed(parsed, values);
+  }
+
+  createUsers() {
+    const { interaction, flag_displayHidden } = this;
+    const needDisplay = (user) => {
+      return (
+        flag_displayHidden ||
+        user.id === interaction.user.id ||
+        (!user.bot && !user.data.profile_confidentiality)
+      );
+    };
+    const users = interaction.guild.members.cache
+      .map((element) => element.user)
+      .filter(needDisplay);
+
+    this.users = users;
+  }
+}
 class RanksUtils {
   static leaderboardTypes = new Collection(
     Object.entries({
@@ -33,7 +116,7 @@ class RanksUtils {
           const name = `${index + 1}. ${element.username}`;
           const value = `Уровень: **${
             element.data.level
-          }** | Опыта: ${Util.NumberFormatLetterize(output)}`;
+          }** | Опыта: ${NumberFormatLetterize(output)}`;
           return { name, value };
         },
       },
@@ -52,7 +135,7 @@ class RanksUtils {
         },
         display: (element, output, index) => {
           const name = `${index + 1}. ${element.username}`;
-          const value = `— ${element.data.coins} (${Util.NumberFormatLetterize(
+          const value = `— ${element.data.coins} (${NumberFormatLetterize(
             output,
           )}) <:coin:637533074879414272>`;
           return { name, value };
@@ -70,7 +153,7 @@ class RanksUtils {
         },
         display: (element, output, index) => {
           const name = `${index + 1}. ${element.username}`;
-          const value = `— Был похвален ${Util.ending(
+          const value = `— Был похвален ${ending(
             output,
             "раз",
             "",
@@ -165,10 +248,10 @@ class RanksUtils {
               : element.username;
           const addingName =
             (index === 0 ? " <a:neonThumbnail:806176512159252512>" : "") +
-            (Util.random(9) ? "" : " <a:void:768047066890895360>");
+            (random(9) ? "" : " <a:void:768047066890895360>");
           const name = `${index + 1}. ${username}${addingName}`;
           const value = `Использований котла ${
-            Util.random(3) ? element.data.voidRituals : "???"
+            random(3) ? element.data.voidRituals : "???"
           }`;
           return { name, value };
         },
@@ -186,7 +269,7 @@ class RanksUtils {
         },
         display: (element, output, index, context) => {
           const name = `${index + 1}. ${element.username}`;
-          const value = `Великий воин нанёс ${Util.NumberFormatLetterize(
+          const value = `Великий воин нанёс ${NumberFormatLetterize(
             output,
           )} (${((output * 100) / context.boss.damageTaken).toFixed(
             1,
@@ -233,7 +316,7 @@ class RanksUtils {
           const name = `${index + 1}. ${element.username}`;
           const presents = element.data.presents;
           const presentsContent = presents
-            ? `${Util.ending(
+            ? `${ending(
                 presents,
                 "подар",
                 "ков",
@@ -241,14 +324,14 @@ class RanksUtils {
                 "ка",
               )} ${Emoji.presents.toString()}`
             : null;
-          const snowflakesContent = `${Util.ending(
+          const snowflakesContent = `${ending(
             presents,
             "снежин",
             "ок",
             "ка",
             "ки",
           )} ${Emoji.snowyEvent.toString()}`;
-          const value = `${Util.joinWithAndSeparator([
+          const value = `${joinWithAndSeparator([
             snowflakesContent,
             presentsContent,
           ])}`;
@@ -274,7 +357,37 @@ class RanksUtils {
 }
 
 class Command extends BaseCommand {
-  PAGE_SIZE = 15;
+  PAGE_SIZE = 2;
+
+  onPagerBeforePageRender(event, context) {
+    event.pager.pages.length = 20;
+    const addable = this.createEmbed({ context });
+    delete addable.edit;
+    delete addable.components;
+
+    Object.assign(event.value, addable);
+  }
+
+  async onPagerComponent(interaction, context) {
+    if (await this.process_onSelectMenuFilter(interaction, context)) {
+      return;
+    }
+  }
+
+  async process_onSelectMenuFilter(interaction, context) {
+    if (interaction.customId !== "selectFilter") {
+      return;
+    }
+
+    const leaderboardId = interaction.values.at(0);
+    context.selected = RanksUtils.leaderboardTypes.find(
+      (leaderboard) => leaderboard.component.value === leaderboardId,
+    );
+    context.values = this.createValuesMap(context);
+    context.pager.updateMessage(interaction);
+
+    return true;
+  }
 
   createComponents(context) {
     return [
@@ -319,7 +432,7 @@ class Command extends BaseCommand {
     ];
   }
 
-  createEmbed({ interaction, context, edit = false }) {
+  createEmbed({ context, edit = false }) {
     const { pages, page, selected, values } = context;
     const fields = values
       .slice(page * this.PAGE_SIZE, page * this.PAGE_SIZE + this.PAGE_SIZE)
@@ -327,9 +440,7 @@ class Command extends BaseCommand {
         selected.display(user, output, index + page * this.PAGE_SIZE, context),
       );
 
-    const executorIndex = values.findIndex(
-      ([user]) => user === interaction.user,
-    );
+    const executorIndex = values.findIndex(([user]) => user === context.user);
 
     if (!fields.length) {
       fields.push({
@@ -342,9 +453,9 @@ class Command extends BaseCommand {
       title:
         executorIndex !== -1
           ? `Вы находитесь на ${executorIndex + 1} месте, ${
-              interaction.user.username
+              context.user.username
             }`
-          : `Вы не числитесь в этом топе, ${interaction.user.username}`,
+          : `Вы не числитесь в этом топе, ${context.user.username}`,
       fields,
       edit,
       author: {
@@ -446,29 +557,16 @@ class Command extends BaseCommand {
   };
 
   async onChatInput(msg, interaction) {
-    const users = interaction.guild.members.cache
-      .map((element) => element.user)
-      .filter(
-        (user) =>
-          user.id === interaction.user.id ||
-          (!user.bot && !user.data.profile_confidentiality),
-      );
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
 
-    const { guild, user } = interaction;
-
-    const context = {
-      interaction,
-      sortedPull: null,
-      users,
-      pages: null,
-      page: 0,
-      guild,
-      boss: guild.data.boss ?? {},
-      snowyEvent: guild.data.snowyEvent ?? {},
-      selected: RanksUtils.leaderboardTypes.at(0),
-      values: null,
-      user,
-    };
+  async run(context) {
+    const { interaction } = context;
+    context.parseCli(interaction.params);
+    context.createUsers();
+    context.setupPager();
 
     context.values = this.createValuesMap(context);
     context.pages = this.calculatePages(context.values.length);
@@ -485,6 +583,8 @@ class Command extends BaseCommand {
     collector.on("end", () => {
       context.message.msg({ components: [], edit: true });
     });
+
+    context.pager.updateMessage();
   }
 
   calculatePages(elementsCount) {
@@ -499,6 +599,15 @@ class Command extends BaseCommand {
         "\n\nОтображает список лидеров на сервере по различным показателям.\n\nСуществующие данные:\n• Количество коинов\n• Уровень\n• Похвалы\n• Успешность краж\n• Статистика квестов\n• Использование котла\n\n✏️\n```python\n!top #без аргументов\n```\n\n",
     },
     alias: "топ ранги rank ranks rangs лидеры leaderboard leaders лідери",
+    cliParser: {
+      flags: [
+        {
+          name: "--show-hidden",
+          capture: ["--show-hidden", "-sh"],
+          description: "Показывает скрытые элементы, тех, кто сокрылся",
+        },
+      ],
+    },
     allowDM: true,
     cooldown: 20_000,
     cooldownTry: 2,
