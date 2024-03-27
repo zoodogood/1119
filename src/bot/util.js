@@ -9,6 +9,7 @@ import { inspect as _inspect } from "util";
 import { Collection } from "@discordjs/collection";
 import app from "#app";
 import { Message } from "discord.js";
+import { ComponentType } from "discord.js";
 
 export async function awaitUserAccept({ name, message, channel, userData }) {
   const prefix = "userAccept_";
@@ -147,5 +148,14 @@ export function use_unique_characters_marker(value, label, flags = "") {
   return {
     value: `${START}${label}${MIDDLE}${value}${END}`,
     regex: new RegExp(`${START}${label}\\${MIDDLE}((?:.|\\n)*?)${END}`, flags),
+  };
+}
+
+export function justSelectMenuComponent({ placeholder, labels, addable = {} }) {
+  return {
+    type: ComponentType.StringSelect,
+    placeholder,
+    options: labels.map((label, index) => ({ label, value: String(index) })),
+    ...addable,
   };
 }
