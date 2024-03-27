@@ -1,6 +1,7 @@
 import { question } from "#bot/util.js";
 import { Emoji } from "#constants/emojis.js";
 import { MINUTE } from "#constants/globals/time.js";
+import { createStopPromise } from "#lib/createStopPromise.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { ending } from "@zoodogood/utils/primitives";
 import EventsEmitter from "events";
@@ -123,6 +124,11 @@ export class Pager extends EventsEmitter {
       : this._createMessage(target);
   }
 
+  updateCurrentPageContent(value) {
+    const { currentPage } = this;
+    this.setPageAt(currentPage, value);
+  }
+
   _createCollector() {
     this.collector = this.message.createMessageComponentCollector({
       time: MINUTE * 3,
@@ -143,7 +149,7 @@ export class Pager extends EventsEmitter {
 
   async _editMessage(target) {
     target ||= this.message;
-    return await target.msg({
+    return await this._renderPage(target, {
       ...this._getDefaultMessageProperties(),
       edit: true,
     });
@@ -151,13 +157,24 @@ export class Pager extends EventsEmitter {
 
   async _createMessage(target) {
     target ||= this.channel;
-    this.message = await target.msg({
+    this.message = await this._renderPage(target, {
       ...this._getDefaultMessageProperties(),
     });
     this._createCollector();
     return this.message;
   }
 
+  async _renderPage(target, value) {
+    const event = {
+      target,
+      pager: this,
+      createStopPromise,
+      _createStopPromise_stoppers: [],
+    };
+    this.emit(this.constructor.Events.beforePageRender, event);
+    await Promise.all(event._createStopPromise_stoppers);
+    return target.msg(value);
+  }
   _processDefaultComponents(Processor = DefaultComponentsProcessor) {
     const processor = new Processor(this);
     processor.process();
@@ -215,6 +232,7 @@ export class Pager extends EventsEmitter {
   static Events = {
     beforeClose: "beforeClose",
     component: "component",
+    beforePageRender: "beforePageRender",
   };
 
   static DefaultComponents = {
