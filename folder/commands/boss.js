@@ -191,7 +191,7 @@ class Command extends BaseCommand {
     }
 
     if (!this.processBossIsExists(context)) {
-      return;
+      return true;
     }
 
     await createShop(context.guild, context.user, context.channel);
@@ -205,7 +205,7 @@ class Command extends BaseCommand {
     }
 
     if (!this.processBossIsExists(context)) {
-      return;
+      return true;
     }
 
     await attackBoss(context.boss, context.user, context.channel);
