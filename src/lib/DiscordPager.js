@@ -105,6 +105,10 @@ export class Pager extends EventsEmitter {
     this.pages[index] = page;
   }
 
+  setPagesLength(length) {
+    this.pages.length = length;
+  }
+
   /**
    * You can define your own components
    *
@@ -151,7 +155,7 @@ export class Pager extends EventsEmitter {
     return {
       components: this.components,
       ...this.embed,
-      ...this.pages.at(this.currentPage),
+      ...this.pages[this.currentPage],
     };
   }
 
@@ -178,6 +182,7 @@ export class Pager extends EventsEmitter {
       pager: this,
       createStopPromise,
       _createStopPromise_stoppers: [],
+      value,
     };
     this.emit(this.constructor.Events.beforePageRender, event);
     await Promise.all(event._createStopPromise_stoppers);
