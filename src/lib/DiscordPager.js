@@ -25,7 +25,9 @@ class DefaultComponentsProcessor {
 
   process() {
     const { DefaultComponents } = this.pager.constructor;
-    const components = Object.values(structuredClone(DefaultComponents));
+    const components = justButtonComponents(
+      Object.values(structuredClone(DefaultComponents)),
+    );
     this.processIsDisabledGetters(components);
     this.pager.components.push(...components);
   }
@@ -114,6 +116,10 @@ export class Pager extends EventsEmitter {
     return this.components.splice(from, to, ...components);
   }
 
+  setComponents(components) {
+    this.components = components;
+  }
+
   close() {
     this.emit(this.constructor.Events.beforeClose);
     this.removeAllListeners();
@@ -143,7 +149,7 @@ export class Pager extends EventsEmitter {
 
   _getDefaultMessageProperties() {
     return {
-      components: justButtonComponents(this.components),
+      components: this.components,
       ...this.embed,
       ...this.pages.at(this.currentPage),
     };
