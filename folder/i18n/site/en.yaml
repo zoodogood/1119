@@ -1,4 +1,5 @@
 general:
+  title: Сундук кота
   app:
     externalTokenDialog:
       title: Пожалуйста, авторизуйтесь повторно
@@ -9,6 +10,52 @@ general:
 
 
         <a href = ${ link }>${ _key }</a>
+frames:
+  AuditDaily:
+    auditTypeEnum:
+      enterToPages:
+        label: Посещений страниц
+      enterToAPI:
+        label: Обращений к API
+      commandsUsed:
+        label: Использовано команд
+      messages:
+        label: Отправлено сообщений
+      riches:
+        label: Богатство
+      boss:
+        label: По боссу
+    SectionManager:
+      footerLabels:
+        general: "Общие"
+        for$day: "За"
+      emptyContent: "( Пусто )"
+    section:
+      selectionGroup:
+        label: "Выбранный график:"
+    serverIsNotAvailable: "Сервер недоступен"
+
+  Statistic:
+    statsEnum:
+      guilds:
+        label: Гильдий
+      users:
+        label: Пользователей
+      commands:
+        label: Команд
+  externalAuthorProjects:
+    aside:
+      stars: "Звёзд:"
+    projectesEnum:
+      piramide:
+        label: Пирамидка
+        description: "Пользователю предстоит написать алгоритм для решения детской задачи — построить пирамидку, которая с высотой постепенно уменьшается в диаметре."
+      letsbet:
+        label: let-s-bet
+        description: "Бинарный поиск очень эффективен"
+      glitchBall:
+        label: GlitchBall
+        description: "Если вы заполнили область за пределами этого круга — проиграли."
 pages:
   public:
     hi: Hello!
@@ -51,13 +98,14 @@ pages:
       label: "External editor:"
       description: >-
         It is only a preview editor (its features are quite different from the classic Markdown syntax). 
-        Save the content to a file with the .md extension and upload via the button above. 
+        Save the content to a file with the .md extension and upload via the button above.
   articlesIndex:
     label: Статьи
     description: >-
       Что может быть хуже экспериментов ради экспериментов.. Эта часть сайта
       просто *существует* и, надеюсь, живёт своей жизнью. В будущем вы здесь
       найдете тексты раскрывающие возможности бота.
+    filter: Фильтровать
     createInfo:
       label: Создать
       content: >-
@@ -69,6 +117,11 @@ pages:
       loading: Загрузка...
       hereEmpty: Здесь пусто..
       loadingFailed: Загрузка неудалась
+    articleMetadata:
+      author: "Автор:"
+      readTime: "Время чтения:"
+      lastEdited: "Послед. изменение:"
+      tags: "Теги:"
   articlesItem:
     contentLoading: Загрузка основного контента
     article:
@@ -77,6 +130,7 @@ pages:
       readTime: "Время чтения:"
       tags: "Включённые теги:"
       defaultTag: Статья участника
+      words: "Слов"
     downloadMarkdown: Скачать .md файл
     noResults:
       label: Нет результатов
