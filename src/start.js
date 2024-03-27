@@ -1,6 +1,7 @@
 console.clear();
 
 import "dotenv/config";
+import "#lib/polifiles.js";
 
 import Discord, { ActivityType, AuditLogEvent } from "discord.js";
 
