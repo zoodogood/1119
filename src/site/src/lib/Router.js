@@ -77,7 +77,16 @@ class PagesRouter {
   }
 
   static redirect(path) {
-    this.#svelteApp.document.location.href = this.relativeToPage(path);
+    this._redirect(this.relativeToPage(path));
+  }
+
+  static redirectToAbsolute(path) {
+    const { origin } = this.#svelteApp.url;
+    this._redirect(`${origin}${path}`);
+  }
+
+  static _redirect(path) {
+    this.#svelteApp.document.location.href = path;
   }
 }
 
