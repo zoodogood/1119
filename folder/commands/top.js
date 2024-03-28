@@ -2,11 +2,9 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 
 import DataManager from "#lib/modules/DataManager.js";
-import { ButtonStyle, ComponentType, TextInputStyle } from "discord.js";
+import { ComponentType } from "discord.js";
 import { Collection } from "@discordjs/collection";
 import BossManager from "#lib/modules/BossManager.js";
-import { CreateModal } from "@zoodogood/utils/discordjs";
-import { CustomCollector } from "@zoodogood/utils/objectives";
 import QuestManager from "#lib/modules/QuestManager.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { Emoji } from "#constants/emojis.js";
@@ -19,18 +17,76 @@ import {
   random,
   ending,
 } from "#lib/safe-utils.js";
-import { omit } from "@zoodogood/utils/objectives";
+
+class Flag_open {
+  static FLAG_DATA = {
+    name: "--open",
+    capture: ["--open", "-o"],
+    expectValue: true,
+    description:
+      "Мгновенно открывает выбранную вкладку или показывает их перечень",
+  };
+
+  context;
+  capture;
+
+  constructor(context) {
+    this.context = context;
+  }
+
+  parse_and_process() {
+    const capture = this.context.cliParsed
+      .at(0)
+      .captures.get(this.constructor.FLAG_DATA.name);
+
+    if (!capture) {
+      return false;
+    }
+
+    this.capture = capture;
+    this.process_use_capture();
+  }
+
+  process_use_capture() {
+    if (this.process_value_is_exists()) {
+      return;
+    }
+
+    this.display_value_is_ignored();
+  }
+
+  process_value_is_exists() {
+    const value = RanksUtils.leaderboardTypes.find((leaderboard) =>
+      leaderboard.key.startsWith(this.capture.toString()),
+    );
+    if (!value) {
+      return false;
+    }
+
+    this.context.selected = value;
+    return value;
+  }
+
+  display_value_is_ignored() {
+    const leaderboards = RanksUtils.leaderboardTypes
+      .map((leaderboard) => leaderboard.key)
+      .join(", ");
+    this.context.channel.msg({
+      content: `Флаг --open был проигнорирован. Используйте его с одним из этих значений: ${leaderboards}`,
+    });
+  }
+}
 
 class CommandRunContext extends BaseCommandRunContext {
   sortedPull = null;
   users;
-  pages = null;
-  page = 0;
   boss;
   snowyEvent;
   selected = RanksUtils.leaderboardTypes.at(0);
   values = null;
   pager = new Pager();
+  flag_displayHidden_value;
+  PAGE_SIZE = 15;
 
   static async new(interaction, command) {
     const context = new this(interaction, command);
@@ -75,12 +131,14 @@ class CommandRunContext extends BaseCommandRunContext {
       .collect();
 
     const values = parsed.resolveValues((capture) => capture?.toString());
-    this.flag_displayHidden = values.get("--show-hidden");
+    this.flag_displayHidden_value = values.get("--show-hidden");
     this.setCliParsed(parsed, values);
+
+    new Flag_open(this).parse_and_process();
   }
 
   createUsers() {
-    const { interaction, flag_displayHidden } = this;
+    const { interaction, flag_displayHidden_value: flag_displayHidden } = this;
     const needDisplay = (user) => {
       return (
         flag_displayHidden ||
@@ -93,6 +151,27 @@ class CommandRunContext extends BaseCommandRunContext {
       .filter(needDisplay);
 
     this.users = users;
+  }
+
+  calculatePages(elementsCount) {
+    return Math.ceil(elementsCount / this.PAGE_SIZE);
+  }
+
+  updateValues() {
+    this.values = this._createValues();
+    this.pager.setPagesLength(this.calculatePages(this.values.length));
+  }
+
+  _createValues() {
+    const pull = (this.sortedPull =
+      this.sortedPull ?? RanksUtils.createPull(this.users));
+
+    const resolver = this.selected.value;
+    for (const entrie of pull) {
+      entrie[1] = resolver(entrie[0], this) ?? 0;
+    }
+
+    return RanksUtils.sortMutableAndFilterPull(pull);
   }
 }
 class RanksUtils {
@@ -357,24 +436,17 @@ class RanksUtils {
 }
 
 class Command extends BaseCommand {
-  PAGE_SIZE = 2;
-
   onPagerBeforePageRender(event, context) {
-    event.pager.pages.length = 20;
-    const addable = this.createEmbed({ context });
-    delete addable.edit;
-    delete addable.components;
-
-    Object.assign(event.value, addable);
+    Object.assign(event.value, this.createEmbed({ context }));
   }
 
   async onPagerComponent(interaction, context) {
-    if (await this.process_onSelectMenuFilter(interaction, context)) {
+    if (await this.onSelectLeaderboard(interaction, context)) {
       return;
     }
   }
 
-  async process_onSelectMenuFilter(interaction, context) {
+  async onSelectLeaderboard(interaction, context) {
     if (interaction.customId !== "selectFilter") {
       return;
     }
@@ -383,61 +455,25 @@ class Command extends BaseCommand {
     context.selected = RanksUtils.leaderboardTypes.find(
       (leaderboard) => leaderboard.component.value === leaderboardId,
     );
-    context.values = this.createValuesMap(context);
+    context.updateValues(context);
     context.pager.updateMessage(interaction);
-
     return true;
   }
 
-  createComponents(context) {
-    return [
-      [
-        {
-          type: ComponentType.Button,
-          label: "",
-          emoji: "640449848050712587",
-          customId: "previousPage",
-          style: ButtonStyle.Secondary,
-          disabled: context.page === 0,
-        },
-        {
-          type: ComponentType.Button,
-          label: "",
-          emoji: "640449832799961088",
-          customId: "nextPage",
-          style: ButtonStyle.Secondary,
-          disabled: context.pages <= 1 || context.page === context.pages - 1,
-        },
-        {
-          type: ComponentType.Button,
-          label: `Страница #${context.page + 1}`,
-          customId: "selectPage",
-          style: ButtonStyle.Secondary,
-          disabled: context.pages <= 1,
-        },
-      ],
-      [
-        {
-          type: ComponentType.StringSelect,
-          options: RanksUtils.leaderboardTypes
-            .filter(
-              (leaderboard) =>
-                !leaderboard.filter || leaderboard.filter(context),
-            )
-            .map((leaderboard) => leaderboard.component),
-          customId: "selectFilter",
-          placeholder: "Сменить",
-        },
-      ],
-    ];
-  }
+  createEmbed({ context }) {
+    const { pager, selected, values, PAGE_SIZE } = context;
+    const { currentPage, pages } = pager;
+    const pages_length = pages.length;
 
-  createEmbed({ context, edit = false }) {
-    const { pages, page, selected, values } = context;
     const fields = values
-      .slice(page * this.PAGE_SIZE, page * this.PAGE_SIZE + this.PAGE_SIZE)
+      .slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE)
       .map(([user, output], index) =>
-        selected.display(user, output, index + page * this.PAGE_SIZE, context),
+        selected.display(
+          user,
+          output,
+          index + currentPage * PAGE_SIZE,
+          context,
+        ),
       );
 
     const executorIndex = values.findIndex(([user]) => user === context.user);
@@ -457,104 +493,16 @@ class Command extends BaseCommand {
             }`
           : `Вы не числитесь в этом топе, ${context.user.username}`,
       fields,
-      edit,
       author: {
         name: `Топ на сервере ${context.guild.name}・${selected.component.label}`,
         iconURL: context.guild.iconURL(),
       },
-      components: this.createComponents(context),
-      footer: pages > 1 ? { text: `Страница: ${page + 1} / ${pages}` } : null,
+      footer:
+        pages_length > 1
+          ? { text: `Страница: ${currentPage + 1} / ${pages_length}` }
+          : null,
     };
   }
-
-  createValuesMap(context) {
-    const pull = (context.sortedPull =
-      context.sortedPull ?? RanksUtils.createPull(context.users));
-
-    const resolver = context.selected.value;
-    for (const entrie of pull) {
-      entrie[1] = resolver(entrie[0], context) ?? 0;
-    }
-
-    return RanksUtils.sortMutableAndFilterPull(pull);
-  }
-
-  async onCollect(interaction, context) {
-    if (interaction.user !== context.user) {
-      interaction.msg({
-        ephemeral: true,
-        content: `Это взаимодействие доступно участнику ${context.user.toString()}, открывшему его. Используйте команду !топ`,
-      });
-      return;
-    }
-    const updateMessage = (replitableInteraction = interaction) => {
-      context.pages = this.calculatePages(context.values.length);
-      const embed = this.createEmbed({
-        interaction: context.interaction,
-        context,
-        edit: true,
-      });
-      replitableInteraction.msg(embed);
-    };
-    await this.componentsCallbacks[interaction.customId](
-      interaction,
-      context,
-      updateMessage,
-    );
-  }
-
-  componentsCallbacks = {
-    previousPage: (interaction, context, responseTo) => {
-      context.page--;
-      responseTo();
-    },
-    nextPage: (interaction, context, responseTo) => {
-      context.page++;
-      responseTo();
-    },
-    selectPage: async (interaction, context, responseTo) => {
-      const user = interaction.user;
-      const title = "Перейти к странице";
-      const customId = "pageSelectValue";
-      const components = {
-        type: ComponentType.TextInput,
-        style: TextInputStyle.Short,
-        label: "Укажите число",
-        placeholder: `От 1 до ${context.pages}`,
-        customId,
-      };
-      const modal = CreateModal({ customId, title, components });
-      await interaction.showModal(modal);
-
-      const filter = ([interaction]) =>
-        customId === interaction.customId && user === interaction.user;
-      const collector = new CustomCollector({
-        target: interaction.client,
-        event: "interactionCreate",
-        filter,
-        time: 300_000,
-      });
-      collector.setCallback((interaction) => {
-        collector.end();
-
-        const value =
-          +interaction.fields.getField("pageSelectValue").value - 1 ||
-          context.page;
-        context.page = Math.max(Math.min(context.pages, value), 1);
-        responseTo(interaction);
-        return;
-      });
-    },
-    selectFilter: (interaction, context, responseTo) => {
-      const leaderboardId = interaction.values.at(0);
-      context.selected = RanksUtils.leaderboardTypes.find(
-        (leaderboard) => leaderboard.component.value === leaderboardId,
-      );
-      context.values = this.createValuesMap(context);
-
-      responseTo();
-    },
-  };
 
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
@@ -566,29 +514,9 @@ class Command extends BaseCommand {
     const { interaction } = context;
     context.parseCli(interaction.params);
     context.createUsers();
+    context.updateValues();
     context.setupPager();
-
-    context.values = this.createValuesMap(context);
-    context.pages = this.calculatePages(context.values.length);
-
-    const embed = this.createEmbed({ interaction, context, edit: false });
-
-    context.message = await interaction.channel.msg(embed);
-    const collector = context.message.createMessageComponentCollector({
-      time: 180_000,
-    });
-    collector.on("collect", (interaction) =>
-      this.onCollect(interaction, context),
-    );
-    collector.on("end", () => {
-      context.message.msg({ components: [], edit: true });
-    });
-
     context.pager.updateMessage();
-  }
-
-  calculatePages(elementsCount) {
-    return Math.ceil(elementsCount / this.PAGE_SIZE);
   }
 
   options = {
@@ -606,6 +534,7 @@ class Command extends BaseCommand {
           capture: ["--show-hidden", "-sh"],
           description: "Показывает скрытые элементы, тех, кто сокрылся",
         },
+        Flag_open.FLAG_DATA,
       ],
     },
     allowDM: true,
