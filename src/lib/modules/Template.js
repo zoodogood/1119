@@ -26,6 +26,7 @@ import FileSystem from "fs";
 import Discord from "discord.js";
 import { Constants } from "#constants/mod.js";
 import { MINUTE } from "#constants/globals/time.js";
+import app from "#app";
 
 function isConstruct(fn) {
   try {
@@ -67,8 +68,8 @@ function inspectStructure(structure) {
 }
 
 class Template {
-  constructor(source, context) {
-    const { client } = context;
+  constructor(source, context = {}) {
+    const client = context.client || app.client;
     source.executor = client.users.resolve(source.executor);
 
     this.source = source;
@@ -164,11 +165,9 @@ class Template {
     const permissionsEnum = this.constructor.PERMISSIONS_MASK_ENUM;
 
     const isUser = !!source.executor;
-    const isGuildManager =
-      context.guild &&
-      context.guild.members
-        .resolve(source.executor)
-        .permissions.has(PermissionsBitField.Flags.ManageGuild);
+    const isGuildManager = context.guild?.members
+      .resolve(source.executor)
+      .permissions.has(PermissionsBitField.Flags.ManageGuild);
     const isDelevoper = config.developers.includes(source.executor.id);
 
     const mask =
