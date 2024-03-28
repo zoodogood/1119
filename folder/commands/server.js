@@ -4,6 +4,7 @@ import * as Util from "#lib/util.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ChannelType, PresenceUpdateStatus } from "discord.js";
 import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
+import Template from "#lib/modules/Template.js";
 
 class Command extends BaseCommand {
   getUsedCommandsCountOfGuild(guild) {
@@ -128,15 +129,29 @@ class Command extends BaseCommand {
     interaction.channel.msg({
       title: guild.name + " " + ["❤️", "🧡", "💛", "💚", "💙", "💜"].random(),
       thumbnail: guild.iconURL(),
-      description:
-        guild.data.description ||
-        "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера",
+      description: await this.getGuildDescription(guild),
       footer: {
         text: this.getCreatedAtContent(guild) + `\nID: ${guild.id}`,
       },
       image: guild.data.banner,
       fields,
     });
+  }
+
+  async getGuildDescription(guild) {
+    const field = guild.data.description;
+    if (!field) {
+      return "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера";
+    }
+    const resolveTemplate = () => {
+      return new Template({
+        executor: field.authorId,
+        type: Template.sourceTypes.involuntarily,
+      })
+        .createVM()
+        .run(field.content);
+    };
+    return field.isTemplate ? await resolveTemplate() : field.content;
   }
   getCreatedAtContent(guild) {
     return `Сервер был создан ${Util.timestampToDate(Date.now() - guild.createdTimestamp, 3)} назад.`;
