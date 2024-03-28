@@ -1,252 +1,367 @@
+import { question } from "#bot/util.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
+import { util_store_and_send_audit } from "#lib/modules/ErrorsHandler.js";
+import Template from "#lib/modules/Template.js";
 
-class Command extends BaseCommand {
-  getChannelsContent(interaction) {
-    const { guild } = interaction;
-    const guildData = interaction.guild.data;
-    return [guildData.chatChannel, guildData.logChannel, guildData.hiChannel]
-      .map((id) =>
-        id ? guild.channels.cache.get(id) || "не найден" : "не установлен",
-      )
-      .map(
-        (content, i) =>
-          ["Чат: ", "Для логов: ", "Для приветсвий: "][i] + content,
-      )
-      .join("\n");
+class CommandRunContext extends BaseCommandRunContext {
+  intefaceMessage;
+
+  new(interaction, command) {
+    const context = new this(interaction, command);
+    return context;
   }
 
-  async onChatInput(msg, interaction) {
-    const { guild } = interaction;
+  setInterfaceMessage(message) {
+    this.intefaceMessage = message;
+  }
+
+  parseCli() {}
+
+  get randomEmoji() {
+    return (this._randomEmoji ||= ["🔧", "🔨", "💣", "🛠️", "🔏"].random());
+  }
+}
+class Command_GuildChannels_Manager {
+  constructor(context) {
+    this.context = context;
+  }
+
+  async onProcess() {
+    const { user, channel } = this.context;
+    await question({
+      reactions: this.CHANNELS.map(({ emoji }) => emoji),
+      channel,
+      user,
+      message: {
+        fields: [
+          {
+            name: "Каналы",
+            value: this.CHANNELS.map((channelBase) =>
+              this.channelBaseToString(channelBase),
+            ).join("\n"),
+          },
+        ],
+      },
+    });
+  }
+
+  channelBaseToString(channelBase) {
+    const { guild } = this.context;
     const guildData = guild.data;
-    const settingsAll = [
-      [
-        "description",
-        "🪧 Настроить описание сервера",
-        "Описание сервера удачно настроено",
-      ],
-      ["banner", "🌌 Установите баннер", "На сервере есть свой баннер!"],
-      ["chatFilter", "🚸 Фильтр чата выключен", "Фильтр чата включён :)"],
-      [
-        "hi",
-        "👋 Не настроено приветсвие новых участников ",
-        "«Привет тебе, новый участник»",
-      ],
-      //["globalXp", "📯 Опыт участников только с этого сервера", "Вы видите настоящий опыт всех участников!"]
-    ];
 
-    const channelsContent = this.getChannelsContent(interaction);
-    let settings = settingsAll.map((e) =>
-      guildData[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
-    );
+    const value = this.isChannelInstalled(channelBase)
+      ? this.getChannelOfChannelBase(guild, channelBase).toString()
+      : channelBase.key in guildData
+        ? "не найден"
+        : "не установлен";
 
-    const randomEmoji = ["🔧", "🔨", "💣", "🛠️", "🔏"].random();
-    let message = await msg.msg({
-        title: "Идёт Настройка сервера... " + randomEmoji,
-        description: settings.join("\n"),
-        footer: { text: "🔂 - отобразить все действия" },
-        fields: [{ name: "🏝️ Назначенные каналы", value: channelsContent }],
-      }),
-      react = await message.awaitReact(
-        { user: msg.author, removeType: "all" },
-        ...settings
-          .map((e) => e.split(" ")[0])
-          .filter((e) => e != "<a:yes:763371572073201714>"),
-        "🏝️",
-        "🔂",
-      ),
-      answer,
-      bot_msg;
+    return `${channelBase.emoji} ${channelBase.label}: ${value}`;
+  }
 
-    while (true) {
-      let reactions;
-      switch (react) {
-        case "🪧":
-          bot_msg = await msg.msg({
-            title: "Введите описание вашего чудесного сервера",
-            description: "Не забывайте использовать шаблоны **{ }** 💚",
-          });
-          answer = await bot_msg.channel.awaitMessage(msg.author);
+  getChannelOfChannelBase(guild, channelBase) {
+    return guild.channels.cache.get(guild.data[channelBase.key]);
+  }
 
-          bot_msg.delete();
-          if (answer.content) {
-            guildData.description = answer.content;
-            msg.msg({ title: "Описание установлено! Юху!", delete: 3000 });
-          } else
-            msg.msg({
-              title: "Время вышло ⏰",
-              color: "#ff0000",
-              delete: 3000,
-            });
-          break;
+  processChannelIsExists(channel, channelBase) {
+    if (channel) {
+      return true;
+    }
+    const { guild } = this.context;
+    delete guild.data[channelBase.key];
+  }
+  isChannelInstalled(channelBase) {
+    return !!this.getChannelOfChannelBase(channelBase);
+  }
 
-        case "🌌":
-          bot_msg = await msg.msg({
-            title: "Укажите ссылку на изображение",
-            description: "Апчхи",
-          });
-          answer = await bot_msg.channel.awaitMessage(msg.author);
+  CHANNELS = [
+    {
+      key: "chatChannel",
+      label: "Чат",
+      emoji: "🔥",
+    },
+    {
+      key: "logChannel",
+      label: "Для логов",
+      emoji: "📒",
+    },
+    {
+      key: "hiChannel",
+      label: "Для приветствий",
+      emoji: "👌",
+    },
+  ];
+}
 
-          answer = answer.content || null;
-          bot_msg.delete();
-          if (answer && answer.startsWith("http")) {
-            guildData.banner = answer;
-            msg.msg({ title: "Баннер установлен!", delete: 3000 });
-          } else
-            msg.msg({
-              title: "Вы должны были указать ссылку на изображение",
-              color: "#ff0000",
-              delete: 3000,
-            });
-          break;
+class Command_GuildBanner_Manager {
+  constructor(context) {
+    this.context = context;
+  }
 
-        case "🚸":
-          bot_msg = await msg.msg({
-            title: "Включить фильтр чата?",
-            description:
-              'Подразумивается удаление сообщений которые содержат: рекламу, нецензурную лексику, капс и т.д.\nСейчас эта функция является "сырой" и будет продолжать развиваться со временем',
-          });
-          answer = await bot_msg.awaitReact(
-            { user: msg.author, removeType: "all" },
-            "685057435161198594",
-            "763804850508136478",
-          );
-          bot_msg.delete();
+  async onProcess() {
+    const { context } = this;
+    const { user, channel, guild } = context;
+    const { content } = await question({
+      user,
+      channel,
+      message: { title: "Укажите ссылку на изображение", description: "Апчхи" },
+    });
 
-          if (answer == "685057435161198594") {
-            guildData.chatFilter = 1;
-            msg.msg({ title: "Фильтр включён", delete: 3000 });
-          } else if (answer == "763804850508136478") {
-            guildData.chatFilter = 0;
-            msg.msg({ title: "Фильтр выключен", delete: 3000 });
-          }
-          break;
+    if (!content) {
+      return;
+    }
 
-        case "👋":
-          await CommandsManager.callMap
-            .get("sethello")
-            .onChatInput(msg, interaction);
-          break;
+    if (!this.processContentIsLink(content, context)) {
+      return;
+    }
 
-        case "📯":
-          bot_msg = await msg.msg({
-            title: "Отображать только опыт заработанный в этой гильдии?",
-            description:
-              "По стандарту бот показывает весь опыт пользователя, допустим если пользователь заработал 15 уровень на другом сервере, то и на этом сервере у него будет тоже 15\nВы можете изменить это нажав <:mark:685057435161198594>. В этом случае уровень пользователей будет сброшен до 1-го и будучи активными на других серверах, они не будут получать опыт на этом сервере",
-          });
-          answer = await bot_msg.awaitReact(
-            { user: msg.author, removeType: "all" },
-            "685057435161198594",
-            "763804850508136478",
-          );
-          if (answer == "685057435161198594") {
-            guildData.globalXp = 0;
-            msg.msg({ title: "Готово.", delete: 3000 });
-          } else if (answer == "763804850508136478") {
-            guildData.globalXp = 1;
-            msg.msg({ title: "Ограничение снято!", delete: 3000 });
-          }
-          break;
+    guild.data.banner = content;
+    channel.msg({
+      title: "Баннер установлен!",
+      delete: 7_000,
+      image: guild.data.banner,
+    });
+  }
+  processContentIsLink(content, context) {
+    if (content.startsWith("http")) {
+      return true;
+    }
 
-        case "🏝️":
-          bot_msg = await msg.msg({
-            fields: [
-              {
-                name: "Каналы",
-                value: [
-                  guildData.chatChannel,
-                  guildData.logChannel,
-                  guildData.hiChannel,
-                ]
-                  .map((e) =>
-                    e
-                      ? guild.channels.cache.get(e).toString() || "не найден"
-                      : "не установлен",
-                  )
-                  .map(
-                    (e, i) =>
-                      ["🔥 Чат: ", "📒 Для логов: ", "👌 Для приветсвий: "][i] +
-                      e,
-                  ),
-              },
-            ],
-          });
-          const channel = await bot_msg.awaitReact(
-            { user: msg.author, removeType: "all" },
-            "🔥",
-            "📒",
-            "👌",
-          );
-          bot_msg = await bot_msg.msg({
-            title: "Упомяните канал или введите его айди",
-            edit: true,
-          });
-          answer = await bot_msg.channel.awaitMessage(msg.author);
-          bot_msg.delete();
-          answer =
-            answer.mentions.channels.first() ||
-            guild.channels.cache.get(bot_msg.content);
+    const { channel } = context;
+    channel.msg({
+      title: "Вы должны были указать ссылку на изображение",
+      color: "#ff0000",
+      delete: 3000,
+    });
+  }
+}
 
-          if (answer) {
-            guildData[
-              channel == "🔥"
-                ? "chatChannel"
-                : channel == "📒"
-                  ? "logChannel"
-                  : "hiChannel"
-            ] = answer.id;
-            channels = [
-              guildData.chatChannel,
-              guildData.logChannel,
-              guildData.hiChannel,
-            ]
-              .map((e) =>
-                e
-                  ? guild.channels.cache.get(e).toString() || "не найден"
-                  : "не установлен",
-              )
-              .map(
-                (e, i) => ["Чат: ", "Для логов: ", "Для приветсвий: "][i] + e,
-              );
-            msg.msg({
-              title: `Канал ${answer.name} успешно установлен! ${channel}`,
-              delete: 3000,
-            });
-          } else msg.msg({ title: "Не удалось найти канал", color: "#ff0000" });
-          break;
+class Command_GuildDescription_Manager {
+  TEMPLATE_KEY_PREFIX = "_i_know_how_work_with_eval";
+  constructor(context) {
+    this.context = context;
+  }
 
-        case "🔂":
-          reactions = [...settingsAll.map((e) => e[1].split(" ")[0]), "🏝️"];
-          break;
+  async onProcess() {
+    const { context } = this;
+    const { user, channel, guild } = context;
+    let { content } = await question({
+      user,
+      channel,
+      message: {
+        title: "Введите описание вашего чудесного сервера",
+        description: `Если вы готовы использовать JavaScript код, начните описание с ключевого префикса: ${this.TEMPLATE_KEY_PREFIX} :green_heart:`,
+      },
+    });
 
-        default:
-          message.reactions.removeAll();
-          message.delete();
-          return;
-      }
-      settings = settingsAll.map((e) =>
-        guildData[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
-      );
-      message = await message.msg({
-        title: "Идёт Настройка сервера... " + randomEmoji,
-        description: settings.join("\n"),
-        footer: { text: "🔂 - отобразить все действия" },
-        edit: true,
-        fields: [{ name: "🏝️ Назначенные каналы", value: channels }],
+    if (this.processTimeEnd(content, context)) {
+      return;
+    }
+
+    const isTemplate =
+      content.startsWith(this.TEMPLATE_KEY_PREFIX) &&
+      (content = content.replace(this.TEMPLATE_KEY_PREFIX, "").trim());
+
+    const guildData = guild.data;
+    guildData.description ||= {};
+    guildData.description.content = content;
+    isTemplate &&
+      Object.assign(guildData.description, { isTemplate, authorId: user.id });
+
+    const resolveTemplate = (content) => {
+      const templater = new Template({
+        executor: user,
+        type: Template.sourceTypes.involuntarily,
       });
-      reactions = reactions || [
-        ...settings
-          .map((e) => e.split(" ")[0])
-          .filter((e) => e != "<a:yes:763371572073201714>"),
-        "🏝️",
-        "🔂",
-      ];
-      react = await message.awaitReact(
-        { user: msg.author, removeType: "all" },
-        ...reactions,
-      );
+      return templater.createVM().run(content);
+    };
+
+    const description = isTemplate ? await resolveTemplate(content) : content;
+    channel.msg({
+      title: "Описание установлено! Юху!",
+      delete: 7_000,
+      description,
+    });
+  }
+
+  processTimeEnd(answer, context) {
+    if (answer) {
+      return false;
+    }
+
+    const { channel } = context;
+    channel.msg({
+      title: "Время вышло ⏰",
+      color: "#ff0000",
+      delete: 7_000,
+    });
+    return true;
+  }
+}
+
+class Command_GuildSetHello_Manager {
+  constructor(context) {
+    this.context = context;
+  }
+
+  async onProcess() {
+    const { interaction } = this.context;
+    const { message } = interaction;
+    await CommandsManager.callMap
+      .get("sethello")
+      .onChatInput(message, interaction);
+  }
+}
+
+class Command_GuildChatFilter_Manager {
+  constructor(context) {
+    this.context = context;
+  }
+
+  emojiEnum = {
+    enable: "685057435161198594",
+    disable: "763804850508136478",
+  };
+
+  async onProcess() {
+    const { user, channel, guild } = this.context;
+    const { emoji } = await question({
+      user,
+      channel,
+      message: {
+        title: "Включить фильтр чата?",
+        description:
+          'Подразумивается удаление сообщений которые содержат: рекламу, нецензурную лексику, капс и т.д.\nСейчас эта функция является "сырой" и будет продолжать развиваться со временем',
+      },
+      reactions: [this.emojiEnum.enable, this.emojiEnum.disable],
+    });
+
+    const guildData = guild.data;
+    if (emoji === this.emojiEnum.enable) {
+      guildData.chatFilter = 1;
+      channel.msg({ title: "Фильтр включён", delete: 7_000 });
+      return;
+    }
+
+    if (emoji === this.emojiEnum.disable) {
+      guildData.chatFilter = 0;
+      channel.msg({ title: "Фильтр выключен", delete: 3000 });
+      return;
     }
   }
+}
+
+class CommandDefaultBehavior {
+  constructor(context) {
+    this.context = context;
+    this.command = this.context.command;
+  }
+  async onProcess() {
+    const { context } = this;
+    const { channel } = context;
+    /**@type {import("discord.js").Message} */
+    const message = await channel.msg(this.createEmbed(context));
+
+    const collector = message.createReactionCollector();
+    collector.on("collect", (reaction, user) => {
+      this.onReaction(reaction, user, context).catch(
+        util_store_and_send_audit.bind(null, context),
+      );
+    });
+    collector.on("end", () => {
+      message.reactions.removeAll();
+    });
+    context.setInterfaceMessage(message);
+  }
+
+  async onReaction(reaction, user, context) {
+    const { emoji } = reaction;
+    if (!this.processUserCanUseReaction(user, context)) {
+      return;
+    }
+
+    await context.channel.msg({ content: String(emoji), delete: 5_000 });
+    this.command.SETTING_FIELDS.find(
+      (field) => field.emoji === emoji.name,
+    )?.onReaction(reaction, user, context);
+  }
+
+  processUserCanUseReaction(user, context) {
+    if (user === context.user) {
+      return true;
+    }
+
+    return false;
+  }
+
+  createEmbed(context) {
+    const emoji = context.randomEmoji;
+    return {
+      title: `Настроим сервер?... ${emoji}`,
+      reactions: this.command.SETTING_FIELDS.map((field) => field.emoji),
+    };
+  }
+}
+
+class Command extends BaseCommand {
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
+  async run(context) {
+    context.parseCli();
+    await this.processDefaultBehavior(context);
+  }
+
+  /**
+   * Process the default behavior using the provided context.
+   * @param {CommandRunContext} context - the context object containing channel information
+   */
+  async processDefaultBehavior(context) {
+    await new CommandDefaultBehavior(context).onProcess();
+  }
+
+  SETTING_FIELDS = [
+    {
+      key: "description",
+      emoji: "🪧",
+      labelOff: "Настроить описание сервера",
+      labelOn: "Описание сервера удачно настроено",
+      onReaction(reaction, user, context) {
+        new Command_GuildDescription_Manager(context).onProcess();
+      },
+    },
+    {
+      key: "banner",
+      emoji: "🌌",
+      labelOff: "Установите баннер",
+      labelOn: "На сервере есть свой баннер!",
+      onReaction(reaction, user, context) {
+        new Command_GuildBanner_Manager(context).onProcess();
+      },
+    },
+    {
+      key: "chatFilter",
+      emoji: "🚸",
+      labelOff: "Фильтр чата выключен",
+      labelOn: "Фильтр чата включён :)",
+      onReaction(reaction, user, context) {
+        new Command_GuildChatFilter_Manager(context).onProcess();
+      },
+    },
+    {
+      key: "hi",
+      emoji: "👋",
+      labelOff: "Не настроено приветсвие новых участников",
+      labelOn: "«Привет тебе, новый участник»",
+      onReaction(reaction, user, context) {
+        new Command_GuildSetHello_Manager(context).onProcess();
+      },
+    },
+  ];
 
   options = {
     name: "editserver",
@@ -263,3 +378,47 @@ class Command extends BaseCommand {
 }
 
 export default Command;
+
+// const { guild, interaction } = context;
+//     const guildData = guild.data;
+//     const settingsAll = [
+
+//     settings = settingsAll.map(([key, setup_off, setup_on]) =>
+//       guildData[key] ? "<a:yes:763371572073201714> " + setup_on : setup_off,
+//     );
+
+//     let message = await context.channel.msg({
+//       title: "Идёт Настройка сервера... " + randomEmoji,
+//       description: settings.join("\n"),
+//       footer: { text: "🔂 - отобразить все действия" },
+//       fields: [{ name: "🏝️ Назначенные каналы", value: channelsContent }],
+//     }),
+//       react = await message.awaitReact(
+//         { user, removeType: "all" },
+//         ...settings
+//           .map((e) => e.split(" ")[0])
+//           .filter((e) => e !== "<a:yes:763371572073201714>"),
+//         "🏝️",
+//         "🔂",
+//       ),
+//       settings = settingsAll.map((e) =>
+//         guildData[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
+//       );
+//     message = await message.msg({
+//       title: "Идёт Настройка сервера... " + randomEmoji,
+//       description: settings.join("\n"),
+//       footer: { text: "🔂 - отобразить все действия" },
+//       edit: true,
+//       fields: [{ name: "🏝️ Назначенные каналы", value: channels }],
+//     });
+//     reactions = reactions || [
+//       ...settings
+//         .map((e) => e.split(" ")[0])
+//         .filter((e) => e != "<a:yes:763371572073201714>"),
+//       "🏝️",
+//       "🔂",
+//     ];
+//     react = await message.awaitReact(
+//       { user: user, removeType: "all" },
+//       ...reactions,
+//     );
