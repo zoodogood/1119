@@ -517,7 +517,7 @@ class Template {
       },
       executeCommand: {
         getContent(context, source) {
-          return (commandBase, params) => {
+          return (commandBase, params = "") => {
             const { CommandInteraction: CommandContext } = CommandsManager;
             const ctx = new CommandContext({
               commandBase,
