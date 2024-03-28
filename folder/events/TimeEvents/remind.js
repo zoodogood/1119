@@ -1,25 +1,15 @@
-import { client } from "#bot/client.js";
+
 import { whenClientIsReady } from "#bot/util.js";
 import {
   RemindData,
   Remind_AbstractEvaluate,
   Remind_AbstractRepeats,
 } from "#folder/commands/remind.js";
-import { capitalize } from "#lib/mini.js";
 
 class Event {
-  resolveParams(
-    eventData,
-    authorId,
-    channelId,
-    phrase,
-    repeatsCount,
-    evaluateRemind,
-  ) {
-    phrase = capitalize(phrase || RemindData.DEFAULT_VALUES.phrase);
-
-    const channel = client.channels.cache.get(channelId);
-    const user = client.users.cache.get(authorId);
+  resolveParams(eventData, params) {
+    const remindData = RemindData.fromParams(params);
+    const { channel, user, phrase, repeatsCount, evaluateRemind } = remindData;
     const target = channel || user;
     return {
       phrase,
@@ -36,7 +26,7 @@ class Event {
     await whenClientIsReady();
     const { isLost } = eventData;
 
-    const context = this.resolveParams(eventData, ...params);
+    const context = this.resolveParams(eventData, params);
 
     const {
       phrase,
@@ -82,14 +72,15 @@ class Event {
 
   processUserHaventPermissionsToSend(context) {
     const { user, target, channel } = context;
-    if (target === user) {
+    if (target.recipientId === user.id) {
       return;
     }
 
-    const member = channel.guild.members.cache.get(user.id);
+    const member = channel.guild?.members.cache.get(user.id);
     const cannotSend =
-      (member && member.wastedPermissions(2048n, channel)) ||
-      member.isCommunicationDisabled();
+      member &&
+      (member.wastedPermissions(2048n, channel) ||
+        member.isCommunicationDisabled());
 
     if (!member || cannotSend) {
       context.target = user;
