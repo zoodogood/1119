@@ -157,7 +157,7 @@ class Command extends BaseCommand {
   processTargetIsBotUser(context) {
     const { memb, channel } = context;
     if (!memb.bot) {
-      return true;
+      return false;
     }
     channel.msg({
       title: "🤬🤬🤬",
@@ -168,7 +168,7 @@ class Command extends BaseCommand {
         text: "Кое-кто бросил перец в бота..",
       },
     });
-    return false;
+    return true;
   }
 
   processTargetAlreadyHasChilli(context) {
@@ -176,15 +176,15 @@ class Command extends BaseCommand {
     const hasChilli = channel.chilli?.find(
       (chilli) => chilli.currentIn.id === memb.id,
     );
-    if (hasChilli) {
-      return true;
+    if (!hasChilli) {
+      return false;
     }
     channel.msg({
       title: "Вы не можете бросить перец в участника с перцем в руке",
       color: "#ff0000",
       footer: { iconURL: FOOTER_EMOJI, text: "Перчик™" },
     });
-    return false;
+    return true;
   }
 
   reputChilli(context) {
@@ -274,10 +274,10 @@ class Command extends BaseCommand {
     if (!this.processUserCanPutChilli(context)) {
       return;
     }
-    if (!this.processTargetAlreadyHasChilli(context)) {
+    if (this.processTargetAlreadyHasChilli(context)) {
       return;
     }
-    if (!this.processTargetIsBotUser(context)) {
+    if (this.processTargetIsBotUser(context)) {
       return;
     }
 
