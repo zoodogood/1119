@@ -27,6 +27,7 @@ import Discord from "discord.js";
 import { Constants } from "#constants/mod.js";
 import { MINUTE } from "#constants/globals/time.js";
 import app from "#app";
+import { FormattingPatterns } from "discord.js";
 
 function isConstruct(fn) {
   try {
@@ -527,6 +528,9 @@ class Template {
               message: context.message,
               guild: context.channel.guild,
             });
+            ctx.mention = ctx.client.users.cache.get(
+              params.match(FormattingPatterns.User)?.groups.id,
+            );
             return (
               CommandsManager.checkAvailable(ctx.command, ctx) &&
               CommandsManager.execute(ctx.command, ctx)
