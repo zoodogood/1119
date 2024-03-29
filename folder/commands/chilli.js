@@ -308,7 +308,7 @@ class Command extends BaseCommand {
 
     channel.msg({
       title: "Бах! Перчик взорвался!",
-      description: `Перец бахнул прямо у ${boohIn.toString()}\nИгра окончена.\nБыло совершено отскоков: ${chilli.rebounds}\nЧтобы победить, должен быть хотя бы один отскок. Тогда всё игроки получат по ${reward} ${Emoji.coins.toString()}`,
+      description: `Перец бахнул прямо у ${boohIn.toString()}\nИгра окончена.\nБыло совершено отскоков: ${chilli.rebounds}\nЧтобы победить, должен быть хотя бы один отскок. Тогда все игроки получат по ${reward} ${Emoji.coins.toString()}`,
       fields: Object.entries(chilli.players)
         .sortBy("1", true)
         .map(([id, score]) => ({
