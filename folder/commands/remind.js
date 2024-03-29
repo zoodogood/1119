@@ -1,6 +1,6 @@
 import client from "#bot/client.js";
 import config from "#config";
-import { YEAR } from "#constants/globals/time.js";
+import { SECOND, YEAR } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
@@ -72,40 +72,68 @@ class AbstractRemindRepeats {
     return true;
   }
 
+  static processRepeatedRemindsLimit(context) {
+    const {
+      channel,
+      remindData: { phrase },
+      membReminds,
+    } = context;
+
+    const repeatedReminds = membReminds.filter(
+      (timeEvent) =>
+        timeEvent && RemindData.fromParams(timeEvent.params)._repeatsCount > 1,
+    );
+
+    if (
+      repeatedReminds.length <= AbstractRemindRepeats.REPEATED_REMINDS_LIMIT
+    ) {
+      return false;
+    }
+    channel.msg({
+      color: "#ff0000",
+      title: `Максимум повторяющихся напоминаний — ${AbstractRemindRepeats.REPEATED_REMINDS_LIMIT}`,
+      delete: 8_000,
+      description: phrase,
+    });
+    return true;
+  }
+
+  static processLimites(context) {
+    const repeatsLimit = this.processRemindRepeatsCountLimit(context);
+    const repeatedRemindsLimit = this.processRepeatedRemindsLimit(context);
+    return repeatedRemindsLimit || repeatsLimit;
+  }
+
   static message = {
     addToContentRepeatsCount: (content, remindData) =>
       `${content}${remindData.repeatsCount > 1 ? `\n\nПовторяется: ${ending(remindData.repeatsCount, "раз", "", "", "а")}` : ""}`,
     addDisclamerHowToRemove: (content) =>
       `${content}\nНапоминание можно [удалить](${config.server.origin}/pages/articles/how-to-reminds): !reminds --delete {}`,
-    processMessageWithRepeat: (content, remindData, isEnd) => {
-      if (!remindData.repeatsCount) {
+    processMessageWithRepeat: (content, remindData) => {
+      if (remindData.repeatsCount <= 1) {
         return content;
       }
       const { addToContentRepeatsCount, addDisclamerHowToRemove } =
         this.message;
 
       content = addToContentRepeatsCount(content, remindData);
-      if (!isEnd && remindData.repeatsCount <= 5) {
+      if (remindData.repeatsCount <= 5) {
         return content;
       }
       return addDisclamerHowToRemove(content);
     },
   };
 
-  static recallEvent(event) {
-    return RemindsManager.createEvent(event);
-  }
-
   static processRemindTimeEvent(eventData, remindData) {
-    const { repeatsCount, _phrase } = remindData;
-    if (repeatsCount <= 1) {
+    const { _repeatsCount, _phrase } = remindData;
+    if (_repeatsCount <= 1) {
       return;
     }
 
     const timeTo = Date.now() - eventData.createdAt;
     return RemindsManager.createEvent({
       ...remindData,
-      repeatsCount: repeatsCount - 1,
+      _repeatsCount: _repeatsCount - 1,
       timeTo,
       _phrase,
     });
@@ -113,9 +141,10 @@ class AbstractRemindRepeats {
 }
 
 class RemindsManager {
-  static findUserReminds(user) {
-    const userData = user.data;
-    const reminds = userData.reminds ?? [];
+  static findUserReminds(user, reminds) {
+    if (!reminds?.length) {
+      return [];
+    }
     const compare = ({ name, _params_as_json }) =>
       name === Command.EVENT_NAME && _params_as_json.includes(user.id);
     const events = TimeEventsManager.findBulk(reminds, compare);
@@ -127,35 +156,30 @@ class RemindsManager {
     if (+timestamp > now) {
       return;
     }
-    this.removeRemindFieldOfUserReminds(timestamp, user);
+    this.removeRemind(timestamp, user.data.reminds);
   }
 
-  static removeRemindFieldOfUserReminds(timestamp, user) {
-    const userData = user.data;
-    const { reminds } = userData;
-    if (!reminds) {
+  static removeRemind(timestamp, remindsField) {
+    if (!remindsField) {
       return;
     }
-    const index = reminds.indexOf(timestamp);
+    const index = remindsField.indexOf(timestamp);
     if (~index === 0) {
       return;
     }
 
-    reminds.splice(index, 1);
+    remindsField.splice(index, 1);
   }
 
   static createEvent(remindData) {
-    const { timeTo, channel, user, phrase, repeatsCount, evaluateRemind } =
-      remindData;
+    const { timeTo, user } = remindData;
     const userData = user.data;
 
-    const event = TimeEventsManager.create(Command.EVENT_NAME, timeTo, [
-      user.id,
-      channel.id,
-      phrase,
-      repeatsCount,
-      evaluateRemind,
-    ]);
+    const event = TimeEventsManager.create(
+      Command.EVENT_NAME,
+      timeTo,
+      RemindData.toParams(remindData),
+    );
 
     userData.reminds ||= [];
     userData.reminds.push(event.timestamp);
@@ -166,6 +190,44 @@ class RemindsManager {
     const { reminds } = user.data;
     for (const timestamp of reminds ?? []) {
       this.removeIfEnded(timestamp, user);
+    }
+  }
+
+  static _removeReminds(indexes, remindsField) {
+    const targets = new Set();
+    for (const index of indexes) {
+      if (index === "+") {
+        remindsField.forEach((target) => targets.add(target));
+        break;
+      }
+      targets.add(remindsField.at(index));
+    }
+
+    const willRemoved = [...targets.values()].filter(Boolean);
+    for (const target of willRemoved) {
+      this.removeRemind(target, remindsField);
+    }
+    return willRemoved;
+  }
+
+  static removeReminds(indexes, user) {
+    const { reminds } = user.data;
+    if (!reminds) {
+      return [];
+    }
+    const willRemoved = this._removeReminds(indexes, reminds);
+    if (reminds.length === 0) {
+      delete user.data.reminds;
+    }
+    return willRemoved;
+  }
+
+  static pruneEvents(reminds, membReminds) {
+    for (const timestamp of reminds) {
+      const event = membReminds.find(
+        (timeEvent) => timeEvent?.timestamp === timestamp,
+      );
+      TimeEventsManager.remove(event);
     }
   }
 }
@@ -189,12 +251,13 @@ class RemindData {
     Object.assign(eventData, data);
     return eventData;
   }
-  constructor({ timeTo, channel, user, phrase, repeatsCount }) {
+  constructor({ timeTo, channel, user, phrase, repeatsCount, evaluateRemind }) {
     this.timeTo = timeTo;
     this.channel = channel;
     this.user = user;
     this.phrase = phrase;
     this.repeatsCount = repeatsCount;
+    this.evaluateRemind = evaluateRemind;
   }
 
   get phrase() {
@@ -211,6 +274,26 @@ class RemindData {
 
   set repeatsCount(value) {
     this._repeatsCount = value;
+  }
+
+  static toParams(remindData) {
+    const { channel, user, _phrase, _repeatsCount, evaluateRemind } =
+      remindData;
+    return [user.id, channel.id, _phrase, _repeatsCount, evaluateRemind];
+  }
+
+  static fromParams(params) {
+    const [authorId, channelId, phrase, repeatsCount, evaluateRemind] = params;
+    const channel = client.channels.cache.get(channelId);
+    const user = client.users.cache.get(authorId);
+    return new this({
+      timeTo: null,
+      user,
+      channel,
+      phrase,
+      repeatsCount,
+      evaluateRemind,
+    });
   }
 }
 
@@ -254,8 +337,19 @@ class ParamsProcessor {
     return params;
   }
 
+  /**
+   * Capture the residue phrase.
+   *
+   * @param {CliParser} parser - The parser object.
+   * @return {void}
+   */
   captureResiduePhrase(parser) {
     parser.captureResidue({ name: "phrase" });
+    const capture = parser.context.captures.get("phrase");
+    capture.content = parser.context.brackets.replaceBracketsStamps(
+      capture.content,
+      (group) => group?.full,
+    );
   }
   processParams() {
     this.captureParamsLine();
@@ -270,9 +364,10 @@ class ParamsProcessor {
       timeTo: timeParser.summarizeItems(),
       phrase: captures.get("phrase")?.toString(),
       repeatsCount: captures.get("--repeat")?.valueOfFlag(),
-      deleteRemind: captures.get("--delete")?.valueOfFlag(),
+      deleteRemind: captures.get("--delete")?.toString(),
       evaluateRemind: captures.get("--eval")?.toString(),
     };
+
     this.values = params;
     return this;
   }
@@ -293,6 +388,54 @@ class ParamsProcessor {
   }
 }
 
+class MemberReminds {
+  userRemindsField;
+  user;
+  cache = new Map();
+  constructor(user) {
+    this.userRemindsField = user.data.reminds;
+    this.user = user;
+  }
+
+  getReminds() {
+    if (!this.userRemindsField) {
+      return [];
+    }
+    this.fill_cache();
+    this.prune_cache();
+    return [...this.cache.values()];
+  }
+
+  prune_cache() {
+    const { userRemindsField, cache } = this;
+    const needPrune = [...cache.keys()].filter(
+      (timestamp) => !userRemindsField.includes(timestamp),
+    );
+
+    for (let index = 0; index < needPrune.length; index++) {
+      const timestamp = needPrune[index];
+      cache.delete(timestamp);
+    }
+  }
+
+  fill_cache() {
+    const { userRemindsField, cache } = this;
+    const needUpdate = userRemindsField.filter(
+      (timestamp) => !cache.has(timestamp),
+    );
+
+    const finded =
+      needUpdate.length &&
+      RemindsManager.findUserReminds(this.user, needUpdate);
+
+    for (let index = 0; index < (finded || []).length; index++) {
+      const timeEvent = finded[index];
+      const timestamp = needUpdate[index];
+      cache.set(timestamp, timeEvent);
+    }
+  }
+}
+
 class CommandRunContext extends BaseCommandRunContext {
   paramsProcessor;
   problems = [];
@@ -302,6 +445,7 @@ class CommandRunContext extends BaseCommandRunContext {
   deleteRemind;
   evaluateRemind;
   _remindData;
+  _membReminds;
 
   pushProblem(text) {
     this.problems.push(text);
@@ -324,6 +468,10 @@ class CommandRunContext extends BaseCommandRunContext {
     }));
   }
 
+  get membReminds() {
+    this._membReminds ||= new MemberReminds(this.user);
+    return this._membReminds.getReminds();
+  }
   static async new(interaction, command) {
     const context = new this(interaction, command);
     const { userData } = interaction;
@@ -339,15 +487,75 @@ class CommandRunContext extends BaseCommandRunContext {
 }
 
 class Command_DeleteRemind {
+  targets;
   constructor(context) {
     this.context = context;
   }
 
   onProcess() {
-    const { interaction, deleteRemind: value } = this.context;
+    const { deleteRemind: value } = this.context;
+    this.setValue(value);
+    if (!this.process_validate()) {
+      return;
+    }
+    this.process_remove();
+  }
 
-    const { userData } = interaction;
-    const { reminds } = userData;
+  setValue(value) {
+    this.targets = [...new Set(value.split(" ").filter(Boolean))];
+  }
+
+  process_validate() {
+    const { membReminds } = this.context;
+    for (const target of this.targets) {
+      if (!this.validate_target(target, membReminds)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  validate_target(target, membReminds) {
+    const match = target.match(/(-?\d+)|\+/)?.[0];
+    if (!match) {
+      this.response(`Не найдено индексов для удаления элементов: ${target}`);
+      return false;
+    }
+    if (match === "+") {
+      return true;
+    }
+    const number = +match;
+    const length = membReminds.length;
+    if (!length) {
+      this.response("У пользователя нет напоминаний для удаления");
+      return false;
+    }
+    if (number >= length || number <= -length) {
+      this.response(
+        `Элемент ${target} не состоит в диапазоне ${-length - 1} < X < ${length}`,
+      );
+      return false;
+    }
+    return true;
+  }
+
+  process_remove() {
+    const { interaction, membReminds } = this.context;
+    const removed = RemindsManager.removeReminds(
+      this.targets,
+      interaction.user,
+    );
+    RemindsManager.pruneEvents(removed, membReminds);
+  }
+
+  response(description, color = "#ff0000") {
+    const { channel } = this.context;
+    channel.msg({
+      color,
+      description,
+      delete: 10 * SECOND,
+    });
   }
 }
 
@@ -421,12 +629,12 @@ class Command extends BaseCommand {
       return;
     }
 
-    if (AbstractRemindRepeats.processRemindRepeatsCountLimit(context)) {
+    if (AbstractRemindRepeats.processLimites(context)) {
       return;
     }
 
-    const event = await this.createRemind(context);
-    const description = `— ${AbstractRemindRepeats.message.processMessageWithRepeat(remindData.phrase, remindData, false)}`;
+    const event = await RemindsManager.createEvent(context.remindData);
+    const description = `— ${AbstractRemindRepeats.message.processMessageWithRepeat(remindData.phrase, remindData)}`;
     await channel.msg({
       title: "Напомнинание создано",
       description,
@@ -437,18 +645,11 @@ class Command extends BaseCommand {
       },
     });
   }
-  async createRemind(context) {
-    const { remindData } = context;
-
-    return RemindsManager.createEvent({
-      ...remindData,
-      phrase: remindData._phrase,
-    });
-  }
 
   handleNotExistedReminds(notExitsted, context) {
+    const { reminds } = context.user.data;
     for (const timestamp of notExitsted) {
-      RemindsManager.removeRemindFieldOfUserReminds(timestamp, context);
+      RemindsManager.removeRemind(timestamp, reminds);
       const problemText = `Паника: напоминание (${dayjs(+timestamp).format(
         "DD.MM HH:mm",
       )}, ${timestamp}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`;
@@ -457,18 +658,20 @@ class Command extends BaseCommand {
   }
 
   findUserRemindEvents(context) {
-    const { userData, user } = context;
-    RemindsManager.removeEndedRemindsOfUser(context);
-    const events = RemindsManager.findUserReminds(user);
-    const notExisted = userData.reminds.filter(
-      (target) => !events.some(({ timestamp }) => target === timestamp),
+    RemindsManager.removeEndedRemindsOfUser(context.user);
+
+    const { membReminds } = context;
+    const reminds = context.user.data.reminds || [];
+    const notExisted = reminds.filter(
+      (target) =>
+        !membReminds.some((timeEvent) => timeEvent?.timestamp === target),
     );
     this.handleNotExistedReminds(notExisted, context);
-    return events;
+    return context.membReminds;
   }
 
   async displayRemoveRemindInterface(context, parentMessage) {
-    const { interaction, remindEvents, userData } = context;
+    const { interaction, membReminds, user } = context;
     const react = await parentMessage.awaitReact(
       { user: interaction.user, removeType: "one" },
       "🗑️",
@@ -478,7 +681,7 @@ class Command extends BaseCommand {
     }
 
     const questionMessage = await interaction.channel.msg({
-      title: `Для удаления, укажите индексы от 1 до ${remindEvents.length} через пробел, чтобы удалить 🗑️ напоминания. Чтобы отменить, введите любое не числовое значение`,
+      title: `Для удаления, укажите индексы от 0 до ${membReminds.length - 1} через пробел, чтобы удалить 🗑️ напоминания. Чтобы отменить, введите любое не числовое значение`,
     });
     const answer = await parentMessage.channel.awaitMessage({
       user: interaction.user,
@@ -487,43 +690,31 @@ class Command extends BaseCommand {
     if (!answer) {
       return;
     }
-    const numbers = [...new Set(answer.content.split(" ").filter(Boolean))];
-    if (
-      numbers.some(isNaN) ||
-      numbers.some((number) => number <= 0 || number > remindEvents.length)
-    ) {
-      return interaction.channel.msg({
-        title: "🗑️ Отменено.",
-        delete: 5_000,
-      });
+
+    const deleteManager = new Command_DeleteRemind(context);
+    deleteManager.setValue(answer.content);
+    if (deleteManager.process_validate()) {
+      deleteManager.process_remove();
     }
 
-    const willRemoved = numbers.map((index) => userData.reminds[index - 1]);
-    for (const timestamp of willRemoved) {
-      const event = remindEvents.find((event) => event.timestamp === timestamp);
-      TimeEventsManager.remove(event);
-      this.removeByTimestampIfEnded(timestamp, context);
-      if (userData.reminds.length === 0) {
-        delete userData.reminds;
-      }
-      parentMessage.delete();
-    }
+    parentMessage.delete();
   }
 
   async displayUserRemindsInterface(context) {
     const { userData, interaction } = context;
-    context.remindEvents = this.findUserRemindEvents(context);
-    const userRemindsContentRaw = context.remindEvents.map(
-      ({ params, timestamp }) => {
-        /* eslint-disable-next-line no-unused-vars */
-        const [_authorId, _channelId, phrase] = params;
-        return `• <t:${Math.floor(timestamp / 1_000)}:R> — ${phrase}.`;
-      },
-    );
-    const remindsContent = userData.reminds.length
+
+    const reminds = this.findUserRemindEvents(context);
+
+    const userRemindsContentRaw = reminds.map(({ params, timestamp }) => {
+      /* eslint-disable-next-line no-unused-vars */
+      const remindData = RemindData.fromParams(params);
+      const { phrase, channel } = remindData;
+      return `• <t:${Math.floor(timestamp / SECOND)}:R> — ${phrase}.\n${channel.toString()}`;
+    });
+    const remindsContent = reminds.length
       ? `\n\nВаши напоминания: ${
           userData.reminds.length
-        }\n${userRemindsContentRaw.join("\n\n").slice(0, 100)}`
+        }\n${userRemindsContentRaw.join("\n\n").slice(0, 300)}`
       : "";
 
     const description = `Пример:\n!напомни 1ч 7м ${context.phrase || RemindData.DEFAULT_VALUES.phrase}${remindsContent}`;
@@ -534,7 +725,7 @@ class Command extends BaseCommand {
       description,
     });
 
-    if (context.remindEvents.length) {
+    if (context.membReminds.length) {
       this.displayRemoveRemindInterface(context, message);
     }
 
