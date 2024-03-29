@@ -227,7 +227,7 @@ class RemindsManager {
       const event = membReminds.find(
         (timeEvent) => timeEvent?.timestamp === timestamp,
       );
-      TimeEventsManager.remove(event);
+      event && TimeEventsManager.remove(event);
     }
   }
 }
@@ -533,7 +533,7 @@ class Command_DeleteRemind {
     }
     if (number >= length || number <= -length) {
       this.response(
-        `Элемент ${target} не состоит в диапазоне ${-length - 1} < X < ${length}`,
+        `Элемент ${target} не состоит в диапазоне ${-length} < X < ${length - 1}`,
       );
       return false;
     }
