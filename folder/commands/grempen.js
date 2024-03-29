@@ -779,7 +779,8 @@ class Command extends BaseCommand {
     alias:
       "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop шалун ґремпенс крамниця магазин",
     allowDM: true,
-    cooldown: 10_000,
+    cooldown: 2_000,
+    cooldownTry: 2,
     type: "other",
     myChannelPermissions: 8256n,
   };
