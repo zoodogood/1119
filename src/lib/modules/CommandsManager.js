@@ -265,8 +265,9 @@ class CommandsManager {
           ...interaction,
           params: options.name,
         });
+      await helper.whenRunExecuted;
       await Util.sleep(30_000);
-      helper.delete();
+      helper.targetMessage.delete();
     };
     helpMessage();
 
