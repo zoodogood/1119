@@ -70,6 +70,7 @@ class CommandRunContext extends BaseCommandRunContext {
   cliParsed;
   meta;
   addableFields = [];
+  targetMessage;
 
   static new(interaction, command) {
     const context = new this(interaction, command);
@@ -261,7 +262,8 @@ class Command extends BaseCommand {
       footer: { text: `Уникальный идентификатор команды: ${id}` },
     };
     const message = await channel.msg(embed);
-    return message;
+    context.targetMessage = message;
+    return true;
   }
 
   processCommandExists(context) {
@@ -295,7 +297,7 @@ class Command extends BaseCommand {
 
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
-    this.run(context);
+    context.setWhenRunExecuted(this.run(context));
     return context;
   }
 
