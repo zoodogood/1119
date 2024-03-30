@@ -6,7 +6,7 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
-import { dayjs, ending, capitalize } from "#lib/util.js";
+import { dayjs, ending, capitalize, question } from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { Message } from "discord.js";
 
@@ -24,7 +24,7 @@ class AbstractRemindEvaluate {
     }
     const COMMAND = "eval";
     const { name } = CommandsManager.callMap.get(COMMAND).options;
-    const { user, phrase, message } = context;
+    const { user, _phrase: phrase, message } = context;
     const cloneMessage = Object.create(Message.prototype);
     Object.assign(cloneMessage, {
       ...message,
@@ -233,6 +233,12 @@ class RemindsManager {
   }
 }
 
+class RemindDataFormatter {
+  static toUserString(remindData, timestamp) {
+    const { phrase, channel } = remindData;
+    return `• <t:${Math.floor(timestamp / SECOND)}:R> — ${phrase}.\n${channel.toString()}`;
+  }
+}
 class RemindData {
   static DEFAULT_VALUES = {
     phrase: "Ням",
@@ -494,16 +500,18 @@ class Command_DeleteRemind {
   }
 
   onProcess() {
-    const { deleteRemind: value } = this.context;
-    this.setValue(value);
     if (!this.process_validate()) {
       return;
     }
-    this.process_remove();
+    const removed = this.process_remove();
+    this.response(
+      `Удалено ${ending(removed.length, "напоминани", "й", "е", "я")}`,
+    );
   }
 
   setValue(value) {
     this.targets = [...new Set(value.split(" ").filter(Boolean))];
+    return this;
   }
 
   process_validate() {
@@ -520,7 +528,9 @@ class Command_DeleteRemind {
   validate_target(target, membReminds) {
     const match = target.match(/(-?\d+)|\+/)?.[0];
     if (!match) {
-      this.response(`Не найдено индексов для удаления элементов: ${target}`);
+      this.response(`Не найдено индексов для удаления элементов: ${target}`, {
+        color: "#ff0000",
+      });
       return false;
     }
     if (match === "+") {
@@ -529,12 +539,15 @@ class Command_DeleteRemind {
     const number = +match;
     const length = membReminds.length;
     if (!length) {
-      this.response("У пользователя нет напоминаний для удаления");
+      this.response("У пользователя нет напоминаний для удаления", {
+        color: "#ff0000",
+      });
       return false;
     }
     if (number >= length || number <= -length) {
       this.response(
         `Элемент ${target} не состоит в диапазоне ${-length} < X < ${length - 1}`,
+        { color: "#ff0000" },
       );
       return false;
     }
@@ -542,15 +555,17 @@ class Command_DeleteRemind {
   }
 
   process_remove() {
-    const { interaction, membReminds } = this.context;
+    const { interaction, membReminds, user } = this.context;
+    const { reminds } = user.data;
     const removed = RemindsManager.removeReminds(
       this.targets,
       interaction.user,
-    );
+    ).filter((timestamp) => !reminds.includes(timestamp));
     RemindsManager.pruneEvents(removed, membReminds);
+    return removed;
   }
 
-  response(description, color = "#ff0000") {
+  response(description, { color } = {}) {
     const { channel } = this.context;
     channel.msg({
       color,
@@ -574,7 +589,7 @@ class Command extends BaseCommand {
     }
 
     if (!timeTo) {
-      this.displayUserRemindsInterface(context);
+      this.processDefaultBehaviour(context);
       return;
     }
 
@@ -596,7 +611,9 @@ class Command extends BaseCommand {
       return;
     }
 
-    await new Command_DeleteRemind(context).onProcess();
+    await new Command_DeleteRemind(context)
+      .setValue(context.deleteRemind)
+      .onProcess();
     return true;
   }
 
@@ -671,53 +688,53 @@ class Command extends BaseCommand {
     return context.membReminds;
   }
 
-  async displayRemoveRemindInterface(context, parentMessage) {
-    const { channel, membReminds, user } = context;
-    const react = await parentMessage.awaitReact(
-      { user, removeType: "one" },
-      "🗑️",
-    );
-    if (!react) {
-      return;
-    }
+  async displayRemoveReminds(context, parentMessage) {
+    const { channel, user } = context;
+    const { reminds } = user.data;
+    while (true) {
+      const react = await parentMessage.awaitReact(
+        { user, removeType: "one" },
+        "🗑️",
+      );
+      if (!react) {
+        break;
+      }
+      const { membReminds } = context;
+      const { length } = membReminds;
 
-    const { length } = membReminds;
+      const { content } = question({
+        channel,
+        user,
+        message: {
+          title: `Для удаления, укажите индексы от ${-length} до ${length - 1} через пробел, чтобы удалить 🗑️ напоминания. Чтобы отменить, введите любое не числовое значение`,
+        },
+      });
+      if (!content) {
+        break;
+      }
 
-    const questionMessage = await channel.msg({
-      title: `Для удаления, укажите индексы от ${-length} до ${length - 1} через пробел, чтобы удалить 🗑️ напоминания. Чтобы отменить, введите любое не числовое значение`,
-    });
-    const answer = await parentMessage.channel.awaitMessage({
-      user,
-    });
-    questionMessage.delete();
-    if (!answer) {
-      return;
-    }
-
-    const deleteManager = new Command_DeleteRemind(context);
-    deleteManager.setValue(answer.content);
-    if (deleteManager.process_validate()) {
-      deleteManager.process_remove();
+      new Command_DeleteRemind(context).setValue(content).onProcess();
+      if (!reminds.length) {
+        break;
+      }
     }
 
     parentMessage.delete();
   }
 
-  async displayUserRemindsInterface(context) {
+  async processDefaultBehaviour(context) {
     const { userData, interaction } = context;
-
     const reminds = this.findUserRemindEvents(context);
 
     const userRemindsContentRaw = reminds.map(({ params, timestamp }) => {
       /* eslint-disable-next-line no-unused-vars */
       const remindData = RemindData.fromParams(params);
-      const { phrase, channel } = remindData;
-      return `• <t:${Math.floor(timestamp / SECOND)}:R> — ${phrase}.\n${channel.toString()}`;
+      return RemindDataFormatter.toUserString(remindData, timestamp);
     });
     const remindsContent = reminds.length
       ? `\n\nВаши напоминания: ${
           userData.reminds.length
-        }\n${userRemindsContentRaw.join("\n\n").slice(0, 300)}`
+        }\n${userRemindsContentRaw.join("\n")}`
       : "";
 
     const description = `Пример:\n!напомни 1ч 7м ${context.phrase || RemindData.DEFAULT_VALUES.phrase}${remindsContent}`;
@@ -729,7 +746,7 @@ class Command extends BaseCommand {
     });
 
     if (context.membReminds.length) {
-      this.displayRemoveRemindInterface(context, message);
+      this.displayRemoveReminds(context, message);
     }
 
     if (context.problems.length) {
