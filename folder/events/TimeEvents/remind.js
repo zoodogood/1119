@@ -1,4 +1,3 @@
-
 import { whenClientIsReady } from "#bot/util.js";
 import {
   RemindData,
@@ -9,17 +8,13 @@ import {
 class Event {
   resolveParams(eventData, params) {
     const remindData = RemindData.fromParams(params);
-    const { channel, user, phrase, repeatsCount, evaluateRemind } = remindData;
+    const { channel, user } = remindData;
     const target = channel || user;
     return {
-      phrase,
-      repeatsCount,
-      channel,
-      user,
       target,
-      isDefaultPhrase: phrase === RemindData.DEFAULT_VALUES.phrase,
-      evaluateRemind,
       eventData,
+      remindData,
+      ...remindData,
     };
   }
   async run(eventData, ...params) {
@@ -27,15 +22,8 @@ class Event {
     const { isLost } = eventData;
 
     const context = this.resolveParams(eventData, params);
-
-    const {
-      phrase,
-      repeatsCount,
-      user,
-      channel,
-      isDefaultPhrase,
-      evaluateRemind,
-    } = context;
+    const { remindData } = context;
+    const { phrase, evaluateRemind } = remindData;
 
     this.processUserHaventPermissionsToSend(context);
     this.processSpecifyUser(context);
@@ -43,7 +31,7 @@ class Event {
     const { target } = context;
 
     const { processMessageWithRepeat } = Remind_AbstractRepeats.message;
-    const description = processMessageWithRepeat(phrase, context, true);
+    const description = processMessageWithRepeat(phrase, remindData);
 
     context.message = await target.msg({
       title: `Напоминание: ${evaluateRemind ? " --EVAL" : ""}`,
@@ -61,12 +49,6 @@ class Event {
       return;
     }
 
-    const remindData = RemindData.from({
-      channel,
-      user,
-      phrase: !isDefaultPhrase && phrase,
-      repeatsCount,
-    });
     Remind_AbstractRepeats.processRemindTimeEvent(eventData, remindData);
   }
 
