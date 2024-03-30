@@ -105,10 +105,11 @@ class AbstractRemindRepeats {
   }
 
   static message = {
+    HOW_TO_REMIND_URL: `${config.server.origin}/pages/articles/item?id=how-to-reminds`,
     addToContentRepeatsCount: (content, remindData) =>
       `${content}${remindData.repeatsCount > 1 ? `\n\nПовторяется: ${ending(remindData.repeatsCount, "раз", "", "", "а")}` : ""}`,
     addDisclamerHowToRemove: (content) =>
-      `${content}\nНапоминание можно [удалить](${config.server.origin}/pages/articles/how-to-reminds): !reminds --delete {}`,
+      `${content}\nНапоминание можно [удалить](${this.message.HOW_TO_REMIND_URL}): !reminds --delete {}`,
     processMessageWithRepeat: (content, remindData) => {
       if (remindData.repeatsCount <= 1) {
         return content;
@@ -671,20 +672,22 @@ class Command extends BaseCommand {
   }
 
   async displayRemoveRemindInterface(context, parentMessage) {
-    const { interaction, membReminds, user } = context;
+    const { channel, membReminds, user } = context;
     const react = await parentMessage.awaitReact(
-      { user: interaction.user, removeType: "one" },
+      { user, removeType: "one" },
       "🗑️",
     );
     if (!react) {
       return;
     }
 
-    const questionMessage = await interaction.channel.msg({
-      title: `Для удаления, укажите индексы от 0 до ${membReminds.length - 1} через пробел, чтобы удалить 🗑️ напоминания. Чтобы отменить, введите любое не числовое значение`,
+    const { length } = membReminds;
+
+    const questionMessage = await channel.msg({
+      title: `Для удаления, укажите индексы от ${-length} до ${length - 1} через пробел, чтобы удалить 🗑️ напоминания. Чтобы отменить, введите любое не числовое значение`,
     });
     const answer = await parentMessage.channel.awaitMessage({
-      user: interaction.user,
+      user,
     });
     questionMessage.delete();
     if (!answer) {
