@@ -668,9 +668,11 @@ class Command extends BaseCommand {
     const { reminds } = context.user.data;
     for (const timestamp of notExitsted) {
       RemindsManager.removeRemind(timestamp, reminds);
-      const problemText = `Паника: напоминание (${dayjs(+timestamp).format(
+      const problemText = `Данные вашего напоминания (${dayjs(
+        +timestamp,
+      ).format(
         "DD.MM HH:mm",
-      )}, ${timestamp}), а именно временная метка напоминания, существовала. Однако событие и текст, — нет, не найдены`;
+      )}, ${timestamp}) утеряны`;
       context.pushProblem(problemText);
     }
   }
@@ -726,11 +728,13 @@ class Command extends BaseCommand {
     const { userData, interaction } = context;
     const reminds = this.findUserRemindEvents(context);
 
-    const userRemindsContentRaw = reminds.map(({ params, timestamp }) => {
-      /* eslint-disable-next-line no-unused-vars */
-      const remindData = RemindData.fromParams(params);
-      return RemindDataFormatter.toUserString(remindData, timestamp);
-    });
+    const userRemindsContentRaw = reminds.map(
+      ({ params, timestamp }, index) => {
+        /* eslint-disable-next-line no-unused-vars */
+        const remindData = RemindData.fromParams(params);
+        return `${index}\\. ${RemindDataFormatter.toUserString(remindData, timestamp)}`;
+      },
+    );
     const remindsContent = reminds.length
       ? `\n\nВаши напоминания: ${
           userData.reminds.length
