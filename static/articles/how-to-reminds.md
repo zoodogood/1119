@@ -1,3 +1,11 @@
+---
+author:
+  id: "921403577539387454"
+  username: nnnn421012
+  discriminator: "0000"
+  avatarURL: https://cdn.discordapp.com/avatars/921403577539387454/bcef00c62b72864983775c065071edd1.webp
+timestamp: 1711775004728
+---
 # Напоминания — мощный инструмент.
 
 ##### Как удалить собственное напоминание:
