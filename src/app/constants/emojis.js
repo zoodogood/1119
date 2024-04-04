@@ -5,6 +5,18 @@ const Emoji = {
       return "📜";
     },
   },
+  animation_tick_block: {
+    id: "763371572073201714",
+    toString() {
+      return "<a:yes:763371572073201714>";
+    }
+  },
+  animation_cross_block: {
+    id: "763371626908876830",
+    toString() {
+      return "<a:Yno:763371626908876830>"
+    }
+  },
   green_arrow_left: {
     id: "640449848050712587",
   },
