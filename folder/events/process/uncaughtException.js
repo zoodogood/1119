@@ -16,7 +16,7 @@ class Event extends BaseEvent {
     });
     try {
       const channel = app.client.channels.cache.get(config.guild.logChannelId);
-      await channel.msg({
+      await channel?.msg({
         content: "Бот был перезапущен после необработанной ошибки",
         description: `message: ${error.message}\n, ${Date.now()}`,
       });
