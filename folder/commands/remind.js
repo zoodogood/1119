@@ -73,18 +73,16 @@ class AbstractRemindRepeats {
   }
 
   static processRepeatedRemindsLimit(context) {
-    const {
-      channel,
-      remindData: { phrase },
-      membReminds,
-    } = context;
+    const { channel, remindData, membReminds } = context;
 
     const repeatedReminds = membReminds.filter(
       (timeEvent) =>
         timeEvent && RemindData.fromParams(timeEvent.params)._repeatsCount > 1,
     );
 
+    const isRepeatedRemind = remindData._repeatsCount > 1;
     if (
+      !isRepeatedRemind ||
       repeatedReminds.length <= AbstractRemindRepeats.REPEATED_REMINDS_LIMIT
     ) {
       return false;
@@ -93,7 +91,7 @@ class AbstractRemindRepeats {
       color: "#ff0000",
       title: `Максимум повторяющихся напоминаний — ${AbstractRemindRepeats.REPEATED_REMINDS_LIMIT}`,
       delete: 8_000,
-      description: phrase,
+      description: remindData.phrase,
     });
     return true;
   }
@@ -670,9 +668,7 @@ class Command extends BaseCommand {
       RemindsManager.removeRemind(timestamp, reminds);
       const problemText = `Данные вашего напоминания (${dayjs(
         +timestamp,
-      ).format(
-        "DD.MM HH:mm",
-      )}, ${timestamp}) утеряны`;
+      ).format("DD.MM HH:mm")}, ${timestamp}) утеряны`;
       context.pushProblem(problemText);
     }
   }
