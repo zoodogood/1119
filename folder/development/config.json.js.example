@@ -49,7 +49,7 @@ export default {
     id: null,
   },
   database: {
-    driver: "localstorage",
+    driver: "localdb",
     mongoURL: null,
   },
 };
