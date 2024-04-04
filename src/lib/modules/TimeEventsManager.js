@@ -158,9 +158,9 @@ class TimeEventsManager {
   static remove(event) {
     const day = timestampDay(event.timestamp);
     if (!this.data[day]) {
-      this.data = {};
+      return false;
     }
-
+    
     const index = this.data[day].indexOf(event);
 
     if (~index === 0) {
