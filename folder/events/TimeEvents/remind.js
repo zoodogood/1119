@@ -3,6 +3,7 @@ import {
   RemindData,
   Remind_AbstractEvaluate,
   Remind_AbstractRepeats,
+  RemindsManager,
 } from "#folder/commands/remind.js";
 
 class Event {
@@ -19,21 +20,32 @@ class Event {
   }
   async run(eventData, ...params) {
     await whenClientIsReady();
-    const { isLost } = eventData;
-
     const context = this.resolveParams(eventData, params);
+    const { isLost } = eventData;
     const { remindData } = context;
-    const { phrase, evaluateRemind } = remindData;
 
     this.processUserHaventPermissionsToSend(context);
     this.processSpecifyUser(context);
 
-    const { target } = context;
+    const { user } = context;
+    context.message = await this.createMessage(context);
+    Remind_AbstractEvaluate.onEvaluate(context);
+    RemindsManager.removeRemind(eventData.timestamp, user.data.reminds);
 
+    if (isLost) {
+      return;
+    }
+    Remind_AbstractRepeats.processRemindTimeEvent(eventData, remindData);
+  }
+
+  createMessage(context) {
+    const { remindData, target, eventData } = context;
     const { processMessageWithRepeat } = Remind_AbstractRepeats.message;
+    const { isLost } = eventData;
+    const { phrase, evaluateRemind } = remindData;
     const description = processMessageWithRepeat(phrase, remindData);
 
-    context.message = await target.msg({
+    return target.msg({
       title: `Напоминание: ${evaluateRemind ? " --EVAL" : ""}`,
       description,
       footer: isLost
@@ -42,14 +54,6 @@ class Event {
           }
         : null,
     });
-
-    Remind_AbstractEvaluate.onEvaluate(context);
-
-    if (isLost) {
-      return;
-    }
-
-    Remind_AbstractRepeats.processRemindTimeEvent(eventData, remindData);
   }
 
   processUserHaventPermissionsToSend(context) {
