@@ -31,9 +31,7 @@ class FileDBDriver {
       return result;
     } catch (error) {
       if (error.code === "ENOENT") {
-        this._createDeepFolder(Path.resolve(path, "../"));
-        const result = await this.readFile(name);
-        return result;
+        return null;
       }
       throw error;
     }
@@ -46,7 +44,7 @@ class FileDBDriver {
       return result;
     } catch (error) {
       if (error.code === "ENOENT") {
-        this._createDeepFolder(Path.resolve(fullpath, "../"));
+        await this._createDeepFolder(Path.resolve(fullpath, "."));
         const result = await this.keys(path);
         return result;
       }
@@ -55,7 +53,7 @@ class FileDBDriver {
   }
 
   async _createDeepFolder(path) {
-    FileSystem.mkdir(path, { recursive: true });
+    return FileSystem.mkdir(path, { recursive: true });
   }
 }
 
