@@ -7,9 +7,11 @@ import Template from "#lib/modules/Template.js";
 
 class CommandRunContext extends BaseCommandRunContext {
   intefaceMessage;
+  guildData;
 
-  new(interaction, command) {
+  static new(interaction, command) {
     const context = new this(interaction, command);
+    context.guildData = interaction.guild.data;
     return context;
   }
 
@@ -48,10 +50,9 @@ class Command_GuildChannels_Manager {
   }
 
   channelBaseToString(channelBase) {
-    const { guild } = this.context;
-    const guildData = guild.data;
+    const { guildData, guild } = this.context;
 
-    const value = this.isChannelInstalled(channelBase)
+    const value = this.isChannelInstalled(guild, channelBase)
       ? this.getChannelOfChannelBase(guild, channelBase).toString()
       : channelBase.key in guildData
         ? "не найден"
@@ -71,8 +72,8 @@ class Command_GuildChannels_Manager {
     const { guild } = this.context;
     delete guild.data[channelBase.key];
   }
-  isChannelInstalled(channelBase) {
-    return !!this.getChannelOfChannelBase(channelBase);
+  isChannelInstalled(guild, channelBase) {
+    return !!this.getChannelOfChannelBase(guild, channelBase);
   }
 
   CHANNELS = [
@@ -299,8 +300,22 @@ class CommandDefaultBehavior {
     const emoji = context.randomEmoji;
     return {
       title: `Настроим сервер?... ${emoji}`,
+      description: this.createDescription(context),
       reactions: this.command.SETTING_FIELDS.map((field) => field.emoji),
     };
+  }
+
+  createDescription(context) {
+    const { guild, command } = context;
+    const guildData = guild.data;
+    const channels = new Command_GuildChannels_Manager(context);
+
+    const channelContent =  channels.CHANNELS.map((channelBase) =>
+      channels.channelBaseToString(channelBase),
+    ).join("\n");
+
+    const { SETTING_FIELDS } = this;
+    const instrumentsContent = command.SETTING_FIELDS.map(field => )
   }
 }
 
