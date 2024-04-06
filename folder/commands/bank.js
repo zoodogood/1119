@@ -594,7 +594,7 @@ class Command extends BaseCommand {
     },
     alias: "cash банк казна скарбниця",
     allowDM: true,
-    cooldown: 5_00_00,
+    cooldown: 50_000,
     cooldownTry: 3,
     type: "guild",
   };
