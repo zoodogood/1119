@@ -1,9 +1,9 @@
-import { question } from "#bot/util.js";
+import { CustomCollector, question, ending } from "#lib/util.js";
 import { Emoji } from "#constants/emojis.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
-import { justButtonComponents } from "@zoodogood/utils/discordjs";
-import { ending } from "@zoodogood/utils/primitives";
+import { CreateModal, justButtonComponents } from "@zoodogood/utils/discordjs";
+import { TextInputStyle, ComponentType } from "discord.js";
 import EventsEmitter from "events";
 
 function processUserCanUseInteraction(interaction, pager) {
@@ -14,6 +14,12 @@ function processUserCanUseInteraction(interaction, pager) {
     return false;
   }
   return true;
+}
+
+class AbstractHideDisabledComponents {
+  static needHide(pager, component) {
+    return pager.hideDisabled ? !component.disabled : true;
+  }
 }
 
 class DefaultComponentsProcessor {
@@ -70,6 +76,67 @@ class DefaultComponentsProcessor {
   }
 }
 
+export const Pager_selectPageStrategy = {
+  async Message(pager, interaction) {
+    if (!processUserCanUseInteraction(interaction, pager)) {
+      return;
+    }
+    const result = await question({
+      channel: interaction,
+      user: interaction.user,
+      message: {
+        content: `Укажите номер страницы: (доступно ${ending(pager.pages.length, "страниц", "", "а", "ы")})`,
+        fetchReply: true,
+        ephemeral: true,
+      },
+    });
+    const value = +result.content?.match(/\d+/);
+    if (!value || value > pager.pages.length || value <= 0) {
+      interaction.msg({
+        edit: true,
+        content: "Некорректное значение. Отмена",
+      });
+      return;
+    }
+    interaction.deleteReply();
+    pager.currentPage = +value - 1;
+    await pager.updateMessage();
+  },
+  async Modal(pager, interaction) {
+    const { user } = interaction;
+    const TITLE = "Перейти к странице";
+    const customId = "pager_pageSelectValue";
+
+    const components = {
+      type: ComponentType.TextInput,
+      style: TextInputStyle.Short,
+      label: "Укажите число",
+      placeholder: `Доступно страниц: ${pager.pages.length}`,
+      customId,
+    };
+    const modal = CreateModal({ customId, title: TITLE, components });
+    await interaction.showModal(modal);
+
+    const filter = ([interaction]) =>
+      customId === interaction.customId && user === interaction.user;
+    const collector = new CustomCollector({
+      target: interaction.client,
+      event: "interactionCreate",
+      filter,
+      time: MINUTE * 5,
+    });
+    collector.setCallback((interaction) => {
+      collector.end();
+
+      const value =
+        +interaction.fields.getField(customId).value - 1 || pager.currentPage;
+      pager.currentPage = Math.max(Math.min(pager.pages.length, value), 1);
+      pager.updateMessage(interaction);
+      return;
+    });
+  },
+};
+
 export class Pager extends EventsEmitter {
   message = null;
   channel = null;
@@ -78,6 +145,8 @@ export class Pager extends EventsEmitter {
   embed = {};
   currentPage = 0;
   user = null;
+  selectPageStrategy = Pager_selectPageStrategy.Modal;
+  hideDisabled = false;
 
   constructor(channel) {
     super();
@@ -141,6 +210,14 @@ export class Pager extends EventsEmitter {
     this.setPageAt(currentPage, value);
   }
 
+  setSelectPageStrategyOption(strategy) {
+    this.selectPageStrategy = strategy;
+  }
+
+  setHideDisabledOption(value) {
+    this.hideDisabled = value;
+  }
+
   _createCollector() {
     this.collector = this.message.createMessageComponentCollector({
       time: MINUTE * 3,
@@ -153,7 +230,9 @@ export class Pager extends EventsEmitter {
 
   _getDefaultMessageProperties() {
     return {
-      components: this.components,
+      components: this.components.filter(
+        AbstractHideDisabledComponents.needHide.bind(null, this),
+      ),
       ...this.embed,
       ...this.pages[this.currentPage],
     };
@@ -216,29 +295,7 @@ export class Pager extends EventsEmitter {
     [this.constructor.DefaultComponents.SELECT.customId]: async (
       interaction,
     ) => {
-      if (!processUserCanUseInteraction(interaction, this)) {
-        return;
-      }
-      const result = await question({
-        channel: interaction,
-        user: interaction.user,
-        message: {
-          content: `Укажите номер страницы: (доступно ${ending(this.pages.length, "страниц", "", "а", "ы")})`,
-          fetchReply: true,
-          ephemeral: true,
-        },
-      });
-      const value = +result.content?.match(/\d+/);
-      if (!value || value > this.pages.length || value <= 0) {
-        interaction.msg({
-          edit: true,
-          content: "Некорректное значение. Отмена",
-        });
-        return;
-      }
-      interaction.deleteReply();
-      this.currentPage = +value - 1;
-      await this.updateMessage();
+      this.selectPageStrategy(this, interaction);
     },
   };
 
