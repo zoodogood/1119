@@ -1,4 +1,5 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
+import { Pager } from "#lib/DiscordPager.js";
 import { ExpressionParser, TokenTypeEnum } from "#lib/ExpressionParser.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
@@ -87,6 +88,72 @@ const ModesData = {
     weights: 1,
   },
 };
+
+class CommandGuidances {
+  constructor(context, command) {
+    this.context = context;
+    this.command = command;
+  }
+  async onInteraction(interaction) {
+    const pager = new Pager(interaction.channel);
+    pager.addPages(
+      ...this.getGuidancePagesContent().map((description) => ({
+        description,
+        fetchReply: true,
+      })),
+    );
+    pager.setHideDisabledOption(true);
+    pager.updateMessage(interaction);
+  }
+  getGuidancePagesContent() {
+    return [
+      "Решайте запачканые уравнения",
+      'Стандартные операторы:\n` "+" ` — сложение\n` "-" ` — вычитание\n` "*" ` — умножение\n` "/" ` — деление с округлением\n` "%" ` — остаток от деления\n` "**" ` — возведение в степень',
+      'Побитовые операторы:\n` "&" ` — побитовое и (and)\n` "|" ` — побитовое или (or)\n` "~" ` — побитовое не (not)\n` "^" ` — побитовое исключающее или (xor)\n, — побитовые операторы воздействуют на каждый бит числа.\nПример: `0b1|0b01=0b11=1|2=3`\n\nПереведите в привычную систему счисления:\nвозведите число 2 в степень номера разряда для каждого бита, суммируйте\nПример: `0b111=(2**3+2**1+2**0)`\n\nДополнительно:\n- оператор побитового "не", по сути, заменяет два действия:\n\\×(-1) и -1, а именно пример: `~3=(3×(-1)-1)=-4`',
+      'Логические значения:\n` "1" `, или любое значение, не ноль — вернуть истину\n` "0" ` — вернуть ложь\nОператоры:\n` "&&" ` — оператор логического "и"\n` "||" ` — логическое "или"\n` ">" ` — "больше"\n` "<" ` — "меньше"\n` "===" ` — "равенство"\n` "!" ` — логическое "отрицание"\n, — логические операторы не могут вернуть значение отличное от "0" или "1"\nПримеры: `1&&0=0`, `2===3=0`, `!10=0`, `!0=1`',
+      `Приоритет операторов:\n${(() => {
+        const tokens = Object.values(ExpressionParser.Tokens).filter(
+          (token) => token.type === TokenTypeEnum.Operator,
+        );
+
+        const prioritySet = [
+          ...new Set(tokens.map((token) => token.operatorPriority || 0)),
+        ]
+          .sort()
+          .map(String);
+
+        const tokensTable = new Array(prioritySet.length).fill("");
+        for (const token of tokens) {
+          tokensTable[token.operatorPriority] += `\n${token.symbol}`;
+        }
+        const builder = new TextTableBuilder()
+          .addRowWithElements(prioritySet, { align: CellAlignEnum.Center })
+          .addRowSeparator()
+          .addMultilineRowWithElements(tokensTable, {
+            removeNextSeparator: true,
+            gapLeft: 2,
+            gapRight: 2,
+          });
+
+        return `\`\`\`⠀\n${builder.generateTextContent()}\`\`\``;
+      })()},\n — где операция степени всегда будет выполняться первой, а логические — последними. В случае, если приоритет операторов одинаковый, операции выполняются последовательно`,
+      `Римские обозначения:\n${Object.entries(ROMAN_NUMERALS_TABLE)
+        .map(([key, value]) => `\` "${key}" \` — ${value}`)
+        .join("\n")}`,
+      `Алгоритм решения Римских цифер:
+Ищите наибольший элемент
+- 1) Найдите символ, который обозначает наибольшее число
+- 2) Если за ним следует идентичный символ, смело суммируйте их
+- 3) Проверьте есть ли элементы слева от найденного
+- 3.1) В случае, если Да, перейдите к шагу один и вновь найдите наибольший элемент из доступных. Результат отнимите от текущего наибольшего элемента: \`IV=5-1\`
+- 4) Повторите шаги 3 и 3.1 для правой стороны. Результат прибавьте: \`VI=5+1\`
+- 5) Выражение решено
+
+Пример: \`VIXXI=(10+10-(5+1)+1)\``,
+      "Крайние случаи:\nПроблема: **операторы находятся скраю от выражения или идут один за другим**\nПояснение: невалидные операторы должны быть проигнорированы, например, знак умножения не может находится по левому или правому краю\n\\*Знаки плюс или минус всегда валидны, если предшествуют числу.\nПример 1: `4*/2=4/2`, оператор умножения проверялся первым и был проигнорирован.\nПример 2: `+2=2`, знаку плюс необязательно иметь левого соседа\n\nПриоритет операторов не учитывается на этапе внутренней проверке их валидности",
+    ];
+  }
+}
 
 class Command extends BaseCommand {
   TIME_FOR_RESPONSE_ON_TASK = 600_000;
@@ -575,55 +642,6 @@ class Command extends BaseCommand {
     return Math.ceil(10 / (expression.length / 3));
   }
 
-  getGuidancePagesContent() {
-    return [
-      "Решайте запачканые уравнения",
-      'Стандартные операторы:\n` "+" ` — сложение\n` "-" ` — вычитание\n` "*" ` — умножение\n` "/" ` — деление с округлением\n` "%" ` — остаток от деления\n` "**" ` — возведение в степень',
-      'Побитовые операторы:\n` "&" ` — побитовое и (and)\n` "|" ` — побитовое или (or)\n` "~" ` — побитовое не (not)\n` "^" ` — побитовое исключающее или (xor)\n, — побитовые операторы воздействуют на каждый бит числа.\nПример: `0b1|0b01=0b11=1|2=3`\n\nПереведите в привычную систему счисления:\nвозведите число 2 в степень номера разряда для каждого бита, суммируйте\nПример: `0b111=(2**3+2**1+2**0)`\n\nДополнительно:\n- оператор побитового "не", по сути, заменяет два действия:\n\\×(-1) и -1, а именно пример: `~3=(3×(-1)-1)=-4`',
-      'Логические значения:\n` "1" `, или любое значение, не ноль — вернуть истину\n` "0" ` — вернуть ложь\nОператоры:\n` "&&" ` — оператор логического "и"\n` "||" ` — логическое "или"\n` ">" ` — "больше"\n` "<" ` — "меньше"\n` "===" ` — "равенство"\n` "!" ` — логическое "отрицание"\n, — логические операторы не могут вернуть значение отличное от "0" или "1"\nПримеры: `1&&0=0`, `2===3=0`, `!10=0`, `!0=1`',
-      `Приоритет операторов:\n${(() => {
-        const tokens = Object.values(ExpressionParser.Tokens).filter(
-          (token) => token.type === TokenTypeEnum.Operator,
-        );
-
-        const prioritySet = [
-          ...new Set(tokens.map((token) => token.operatorPriority || 0)),
-        ]
-          .sort()
-          .map(String);
-
-        const tokensTable = new Array(prioritySet.length).fill("");
-        for (const token of tokens) {
-          tokensTable[token.operatorPriority] += `\n${token.symbol}`;
-        }
-        const builder = new TextTableBuilder()
-          .addRowWithElements(prioritySet, { align: CellAlignEnum.Center })
-          .addRowSeparator()
-          .addMultilineRowWithElements(tokensTable, {
-            removeNextSeparator: true,
-            gapLeft: 2,
-            gapRight: 2,
-          });
-
-        return `\`\`\`⠀\n${builder.generateTextContent()}\`\`\``;
-      })()},\n — где операция степени всегда будет выполняться первой, а логические — последними. В случае, если приоритет операторов одинаковый, операции выполняются последовательно`,
-      `Римские обозначения:\n${Object.entries(ROMAN_NUMERALS_TABLE)
-        .map(([key, value]) => `\` "${key}" \` — ${value}`)
-        .join("\n")}`,
-      `Алгоритм решения Римских цифер:
-Ищите наибольший элемент
-- 1) Найдите символ, который обозначает наибольшее число
-- 2) Если за ним следует идентичный символ, смело суммируйте их
-- 3) Проверьте есть ли элементы слева от найденного
-- 3.1) В случае, если Да, перейдите к шагу один и вновь найдите наибольший элемент из доступных. Результат отнимите от текущего наибольшего элемента: \`IV=5-1\`
-- 4) Повторите шаги 3 и 3.1 для правой стороны. Результат прибавьте: \`VI=5+1\`
-- 5) Выражение решено
-
-Пример: \`VIXXI=(10+10-(5+1)+1)\``,
-      "Крайние случаи:\nПроблема: **операторы находятся скраю от выражения или идут один за другим**\nПояснение: невалидные операторы должны быть проигнорированы, например, знак умножения не может находится по левому или правому краю\n\\*Знаки плюс или минус всегда валидны, если предшествуют числу.\nПример 1: `4*/2=4/2`, оператор умножения проверялся первым и был проигнорирован.\nПример 2: `+2=2`, знаку плюс необязательно иметь левого соседа\n\nПриоритет операторов не учитывается на этапе внутренней проверке их валидности",
-    ];
-  }
-
   getStageCodename(stageIndex) {
     return (
       [
@@ -803,59 +821,8 @@ class Command extends BaseCommand {
       }`;
       interaction.msg({ ephemeral: true, title: content, color: "#c0c0c0" });
     },
-    getGuidance: async (interaction) => {
-      let currentPage = 0;
-      const guidances = this.getGuidancePagesContent();
-      const interactionResponseMessage = await interaction.msg({
-        ephemeral: true,
-        description: guidances.at(currentPage),
-        components: {
-          customId: "nextPage",
-          type: ComponentType.Button,
-          emoji: "640449832799961088",
-          style: ButtonStyle.Secondary,
-        },
-        fetchReply: true,
-      });
-
-      const collector =
-        interactionResponseMessage.createMessageComponentCollector({
-          time: 120_000,
-        });
-
-      collector.on("collect", (interaction) => {
-        collector.resetTimer();
-        const isDirectionRight = interaction.customId === "nextPage";
-        currentPage = isDirectionRight ? currentPage + 1 : currentPage - 1;
-        const components = [
-          currentPage > 0
-            ? {
-                type: ComponentType.Button,
-                emoji: "640449848050712587",
-                customId: "previousPage",
-                style: ButtonStyle.Secondary,
-              }
-            : null,
-
-          currentPage < guidances.length - 1
-            ? {
-                type: ComponentType.Button,
-                emoji: "640449832799961088",
-                customId: "nextPage",
-                style: ButtonStyle.Secondary,
-              }
-            : null,
-        ].filter(Boolean);
-        interaction.msg({
-          edit: true,
-          description: guidances.at(currentPage),
-          components,
-        });
-      });
-
-      collector.on("end", () => {
-        interaction.msg({ edit: true, components: [] });
-      });
+    getGuidance: async (interaction, _, context) => {
+      new CommandGuidances(context, this).onInteraction(interaction);
     },
   };
 
