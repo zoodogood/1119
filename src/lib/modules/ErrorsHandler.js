@@ -1,5 +1,4 @@
 import { dayjs, mapGetOrInsert } from "#lib/util.js";
-import config from "#config";
 import StorageManager from "#lib/modules/StorageManager.js";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 
