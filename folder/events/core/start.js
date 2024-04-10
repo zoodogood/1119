@@ -18,10 +18,12 @@ import { client } from "#bot/client.js";
 
 import app from "#app";
 import config from "#config";
+import { createStopPromise } from "#lib/createStopPromise.js";
+import { Events } from "#constants/app/events.js";
 
 class Event extends BaseEvent {
   constructor() {
-    const EVENT = "start";
+    const EVENT = Events.Start;
     super(EventsManager.emitter, EVENT);
   }
 
@@ -46,6 +48,17 @@ class Event extends BaseEvent {
     app.client = client;
     app.i18n = new I18nManager();
     await app.i18n.load();
+
+    this.processLogin();
+  }
+
+  async processLogin() {
+    const event = {
+      createStopPromise,
+      _createStopPromise_stoppers: [],
+    };
+    EventsManager.emitter.emit(Events.BeforeLogin, event);
+    await Promise.all(event._createStopPromise_stoppers);
     client.login(process.env.DISCORD_TOKEN);
   }
 
