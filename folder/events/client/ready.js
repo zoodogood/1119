@@ -9,6 +9,7 @@ import { ReadPackageJson, timestampDay } from "#lib/util.js";
 import app from "#app";
 import childProcessUtils from "#lib/child-process-utils.js";
 import { CliParser } from "@zoodogood/utils/primitives";
+import { Events } from "#constants/app/events.js";
 
 class AppCli {
   setCliParsed(parsed, values) {
@@ -28,7 +29,7 @@ class AppCli {
 
 class Event extends BaseEvent {
   constructor() {
-    const EVENT = "ready";
+    const EVENT = Events.Ready;
     super(client, EVENT);
   }
 
