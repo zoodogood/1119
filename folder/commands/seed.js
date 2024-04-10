@@ -6,6 +6,32 @@ import BerryCommand from "#folder/commands/berry.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { MINUTE } from "#constants/globals/time.js";
+import { Events } from "#constants/app/events.js";
+
+// to-do: developer crunch will be removed
+EventsManager.emitter.on(Events.BeforeLogin, (event) => {
+  const _replacer = Object.entries({
+    treeLevel: "level",
+    berrys: "berrys",
+    treeEntryTimestamp: "entryTimestamp",
+    treeSeedEntry: "seedEntry",
+    treeMisstakes: "damage",
+  });
+  for (const guildData of DataManager.data.guilds) {
+    guildData.tree ||= {};
+    _replacer.forEach(([primary, key]) => {
+      if (primary in guildData === false) {
+        return;
+      }
+      guildData.tree[key] = guildData[primary];
+      delete guildData[primary];
+    });
+    if (Object.keys(guildData.tree).length === 0) {
+      delete guildData.tree;
+    }
+  }
+});
 
 class CommandRunContext extends BaseCommandRunContext {
   guildData;
@@ -16,7 +42,8 @@ class CommandRunContext extends BaseCommandRunContext {
   static new(interaction, command) {
     const context = new this(interaction, command);
     context.guildData = interaction.guild.data;
-    context.level = context.guildData.treeLevel || 0;
+    context.treeField = context.guildData.tree ||= {};
+    context.level = context.treeField.level || 0;
     context.costsUp = command.getCostsUp(context);
     return context;
   }
@@ -29,7 +56,7 @@ class CommandRunContext extends BaseCommandRunContext {
 
 class Command extends BaseCommand {
   async run(context) {
-    const { channel, guildData } = context;
+    const { channel, treeField } = context;
     const embed = this.createEmbed(context);
     context.setInterfaceMessage(await channel.msg(embed));
 
@@ -39,7 +66,7 @@ class Command extends BaseCommand {
       await interfaceMessage.react("🌱");
     }
 
-    if (guildData.berrys >= 1) {
+    if (treeField.berrys >= 1) {
       await interfaceMessage.react("756114492055617558");
     }
 
@@ -49,7 +76,7 @@ class Command extends BaseCommand {
         reaction.emoji.id === "756114492055617558");
     const collector = interfaceMessage.createReactionCollector({
       filter,
-      time: 180000,
+      time: MINUTE * 3,
     });
     collector.on("collect", async (reaction, user) => {
       this.onCollect(reaction, user, context);
@@ -64,21 +91,21 @@ class Command extends BaseCommand {
   }
 
   updateBerrysCount(context) {
-    const { level, guildData } = context;
-    const timePassed = Date.now() - guildData.treeEntryTimestamp || 0;
+    const { level, treeField } = context;
+    const timePassed = Date.now() - treeField.entryTimestamp || 0;
     const speedGrowth = this.getSpeedGrowth({ level });
     const limit = speedGrowth * 360;
 
     const adding = (timePassed / 86_400_000) * speedGrowth;
-    const berrys = (guildData.berrys || 0) + adding;
-    guildData.berrys = Math.min(berrys, limit);
+    const berrys = (treeField.berrys || 0) + adding;
+    treeField.berrys = Math.min(berrys, limit);
 
-    guildData.treeEntryTimestamp = Date.now();
+    treeField.entryTimestamp = Date.now();
     return;
   }
 
   createEmbed(context) {
-    const { level, costsUp, guildData } = context;
+    const { level, costsUp, guildData, treeField } = context;
     this.updateBerrysCount(context);
 
     const speedGrowth = this.getSpeedGrowth({ level });
@@ -103,9 +130,9 @@ class Command extends BaseCommand {
                   : { metric: "день", count: speedGrowth };
             const contents = {
               speed: `Клубники выростает ${count} в ${metric}`,
-              ready: `Готово для сбора: ${Math.floor(guildData.berrys)}`,
+              ready: `Готово для сбора: ${Math.floor(treeField.berrys)}`,
               nextIn: `Следущая дозреет через: ${Util.timestampToDate(
-                ((1 - (guildData.berrys % 1)) * 86400000) / speedGrowth,
+                ((1 - (treeField.berrys % 1)) * 86400000) / speedGrowth,
               )} <:berry:756114492055617558>`,
             };
             const name = "Плоды";
@@ -117,7 +144,7 @@ class Command extends BaseCommand {
         },
         {
           callback: () => {
-            const entrySeeds = guildData.treeSeedEntry || 0;
+            const entrySeeds = treeField.seedEntry || 0;
             const contents = {
               forIncreaseNeed: `${
                 costsUp - entrySeeds > 5
@@ -149,7 +176,7 @@ class Command extends BaseCommand {
           callback: () => {
             const messagesNeed = this.calculateMessagesNeed(context);
 
-            const status = guildData.treeMisstakes
+            const status = treeField.damage
               ? messagesNeed <= guildData.day_msg
                 ? "Дерево восстанавливается"
                 : "Следите, чтобы дерево не засохло"
@@ -161,9 +188,9 @@ class Command extends BaseCommand {
               messagesNeed <= guildData.day_msg
                 ? "Необходимое количество сообщений уже собрано!"
                 : `Сообщений собрано: ${guildData.day_msg}/${messagesNeed} ${
-                    guildData.treeMisstakes
+                    treeField.damage
                       ? `\nРискует завянуть через ${+(
-                          4 - guildData.treeMisstakes
+                          4 - treeField.damage
                         ).toFixed(1)}д`
                       : ""
                   }`;
@@ -223,13 +250,13 @@ class Command extends BaseCommand {
 
   GLOBAL_MESSAGES_NEED_MULTIPLAYER = 0.3;
 
-  calculateMessagesNeed({ level, guildData, guild }) {
+  calculateMessagesNeed({ level, guildData, guild, treeField }) {
     const basic = this.MESSAGES_NEED_TABLE[level];
     const byMembersCount = guild.memberCount * 3;
     const byDayAverage = (guildData.day_average || 0) / 5;
 
     const treeMistakesMultiplayer =
-      "treeMisstakes" in guildData ? 1 - 0.1 * guildData.treeMisstakes : 1;
+      "damage" in treeField ? 1 - 0.1 * treeField.damage : 1;
     const globalMultiplayer = this.GLOBAL_MESSAGES_NEED_MULTIPLAYER;
     const count =
       (basic + byMembersCount + byDayAverage) *
@@ -247,22 +274,23 @@ class Command extends BaseCommand {
   }
 
   async onLevelUp(context) {
-    const { guildData, message, channel } = context;
-    guildData.treeSeedEntry = 0;
-    context.level = guildData.treeLevel = (guildData.treeLevel ?? 0) + 1;
+    const { interfaceMessage, channel, treeField } = context;
+    treeField.seedEntry = 0;
+    context.level = treeField.level = (treeField.level ?? 0) + 1;
     context.costsUp = this.COSTS_TABLE[context.level];
+    treeField.berrys++;
 
-    await message.react("756114492055617558");
+    await interfaceMessage.react("756114492055617558");
 
     channel.msg({
       title: "Дерево немного подросло",
       description: `После очередного семечка 🌱, дерево стало больше и достигло уровня ${context.level}!`,
     });
-    delete guildData.treeMisstakes;
+    delete treeField.damage;
   }
 
   async onCollect(reaction, user, context) {
-    const { guildData, interfaceMessage, channel } = context;
+    const { interfaceMessage, channel, treeField } = context;
     const react = reaction.emoji.id || reaction.emoji.name;
     const userData = user.data;
 
@@ -307,7 +335,7 @@ class Command extends BaseCommand {
         return;
       }
 
-      if (guildData.berrys < 1) {
+      if (treeField.berrys < 1) {
         channel.msg({
           title: "Упс..!",
           description:
@@ -320,7 +348,7 @@ class Command extends BaseCommand {
       }
 
       const berrys = this.calculateBerrysTake({
-        guildData,
+        treeField,
         userData,
         level: context.level,
       });
@@ -332,7 +360,7 @@ class Command extends BaseCommand {
   }
 
   onSeedEntry(user, context) {
-    const { guildData, channel } = context;
+    const { channel, treeField } = context;
     Util.addResource({
       user,
       value: -1,
@@ -341,20 +369,20 @@ class Command extends BaseCommand {
       context,
       source: "command.seed.onSeedEntry",
     });
-    guildData.treeSeedEntry = (guildData.treeSeedEntry ?? 0) + 1;
+    treeField.seedEntry = (treeField.seedEntry ?? 0) + 1;
     channel.msg({
       title: `Спасибо за семечко, ${user.username}`,
       description: `🌱 `,
       delete: 7_000,
     });
 
-    if (guildData.treeSeedEntry >= context.costsUp) {
+    if (treeField.seedEntry >= context.costsUp) {
       this.onLevelUp(context);
     }
   }
 
   onBerryCollect(berrys, user, context) {
-    const { guildData, channel } = context;
+    const { treeField, channel } = context;
     const userData = user.data;
 
     Util.addResource({
@@ -365,7 +393,7 @@ class Command extends BaseCommand {
       context,
       source: "command.seed.onBerryCollect",
     });
-    guildData.berrys -= berrys;
+    treeField.berrys -= berrys;
     context.berrysCollected += berrys;
 
     DataManager.data.bot.berrysPrice += berrys * BerryCommand.INFLATION;
@@ -386,10 +414,14 @@ class Command extends BaseCommand {
     userData.CD_54 = Date.now() + this.calculateCooldown(context);
 
     this.becomeCoinMessage({ user });
+
+    if (treeField.berrys < 1) {
+      context.interfaceMessage.reactions.resolve("756114492055617558").remove();
+    }
   }
 
-  calculateBerrysTake({ guildData, level, userData }) {
-    const isBerryMany = guildData.berrys > this.getSpeedGrowth({ level }) * 3;
+  calculateBerrysTake({ treeField, level, userData }) {
+    const isBerryMany = treeField.berrys > this.getSpeedGrowth({ level }) * 3;
 
     const farmerBonus = userData.voidTreeFarm ?? 0;
 
@@ -400,7 +432,7 @@ class Command extends BaseCommand {
 
     const berrys = basic + berryManyBonus;
 
-    return Math.floor(Math.min(berrys, guildData.berrys));
+    return Math.floor(Math.min(berrys, treeField.berrys));
   }
 
   calculateCooldown(context) {
@@ -412,34 +444,35 @@ class Command extends BaseCommand {
 
   onDayStats(guild, eventContext) {
     const guildData = guild.data;
-    const level = guildData.treeLevel;
+    const treeField = guildData.tree;
+    const level = guildData.level;
     const messagesNeed = this.calculateMessagesNeed({
       guild,
       guildData,
       level,
     });
 
-    guildData.treeMisstakes ||= 0;
+    treeField.damage ||= 0;
 
     if (guildData.day_msg < messagesNeed) {
-      guildData.treeMisstakes +=
+      treeField.damage +=
         0.2 + Number((1 - guildData.day_msg / messagesNeed).toFixed(1));
 
       eventContext.guilds[guild.id] ||= {};
       eventContext.guilds[guild.id].messagesNeed = messagesNeed;
 
-      if (guildData.treeMisstakes >= 4) {
-        delete guildData.treeMisstakes;
-        guildData.treeLevel--;
+      if (treeField.damage >= 4) {
+        delete treeField.damage;
+        treeField.level--;
       }
 
       return;
     }
 
-    guildData.treeMisstakes -= 0.2;
+    treeField.damage -= 0.2;
 
-    if (guildData.treeMisstakes <= 0) {
-      delete guildData.treeMisstakes;
+    if (treeField.damage <= 0) {
+      delete treeField.damage;
     }
   }
 
