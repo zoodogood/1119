@@ -2183,6 +2183,7 @@ class BossManager {
 
           const TIMEOUT = this.TIMEOUT;
           const MULTIPLAYER = this.MULTIPLAYER;
+
           const whenOwnerMakeDamage = new Promise((resolve) => {
             const callback = (_user, effect, { actionName, data }) => {
               if (actionName !== Actions.bossMakeDamage) {
@@ -2198,6 +2199,11 @@ class BossManager {
                 callback,
               },
             });
+
+            // to-do: developer crutch
+            if (!effect) {
+              throw new Error("Effect not be returned");
+            }
 
             const outTimeout = () => resolve({ effect, data: null });
             setTimeout(outTimeout, TIMEOUT);
@@ -2320,8 +2326,6 @@ class BossManager {
           if (!response) {
             return;
           }
-
-
         },
       },
       andWhoStronger: {
