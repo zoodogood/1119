@@ -16,7 +16,7 @@ class Event {
     const context = {
       treeCommand: new TreeCommand(),
       bankCommand: new BankCommand(),
-      guilds: {},
+      guildsStatsContext: {},
     };
 
     client.guilds.cache
@@ -39,32 +39,33 @@ class Event {
   }
 
   sendStats(guild, context) {
-    const data = guild.data;
-    const msgs = data.day_msg || 0;
+    const guildData = guild.data;
+    const messagesOfDay = guildData.day_msg || 0;
+    const { guildsStatsContext } = context;
 
-    const misstake = context.guilds[guild.id]?.messagesNeed;
+    const { treeMessagesNeed } = guildsStatsContext[guild.id];
 
     guild.data.coins += 2 * guild.memberCount;
 
-    data.days = data.days + 1 || 1;
-    data.msg_total = data.msg_total + msgs || msgs;
+    guildData.days = guildData.days + 1 || 1;
+    guildData.msg_total = guildData.msg_total + messagesOfDay || messagesOfDay;
 
     let description = `За этот день было отправлено ${ending(
-      msgs,
+      messagesOfDay,
       "сообщени",
       "й",
       "е",
       "я",
-    )}\nРекордное количество: ${data.day_max || (data.day_max = 0)}`;
+    )}\nРекордное количество: ${guildData.day_max || (guildData.day_max = 0)}`;
 
-    if (data.days > 3) {
+    if (guildData.days > 3) {
       description += `\nВсего сообщений: ${NumberFormatLetterize(
-        data.msg_total,
-      )}\nВ среднем за день: ${Math.round(data.msg_total / data.days)}`;
+        guildData.msg_total,
+      )}\nВ среднем за день: ${Math.round(guildData.msg_total / guildData.days)}`;
     }
 
-    if (data.day_max < msgs) {
-      data.day_max = msgs;
+    if (guildData.day_max < messagesOfDay) {
+      guildData.day_max = messagesOfDay;
       description += `\nГильдия ${[
         "<a:jeqery:768047102503944202>",
         "<a:jeqeryBlue:806176327223738409>",
@@ -76,16 +77,16 @@ class Event {
       ].random()} установила свой рекорд по сообщениям!`;
     }
 
-    data.day_msg = 0;
+    guildData.day_msg = 0;
 
-    if (!msgs) {
+    if (!messagesOfDay) {
       return;
       // description = ["Сегодня не было отправленно ни одно сообщение", "Сегодня на сервере пусто", "За целый день ни один смертный не проявил активность", "Похоже, тишина — второе имя этого сервера"].random();
     }
 
-    if (misstake)
+    if (treeMessagesNeed)
       description += `\n\nДерево засыхает! Ему необходимо на ${ending(
-        misstake - msgs,
+        treeMessagesNeed - messagesOfDay,
         "сообщени",
         "й",
         "е",
