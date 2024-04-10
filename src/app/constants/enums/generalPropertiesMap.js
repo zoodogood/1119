@@ -55,6 +55,7 @@ const GeneralPropertiesMap = {
   monstersBought: "monstersBought",
   voidThief: "voidThief",
   voidIce: "voidIce",
+  voidMonster: "voidMonster",
   quest: "quest",
   voidMysticClover: "voidMysticClover",
   voidFreedomCurse: "voidFreedomCurse",
