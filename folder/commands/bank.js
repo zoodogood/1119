@@ -564,7 +564,13 @@ class Command extends BaseCommand {
         executor: null,
         source: "command.bank.salary",
         resource: PropertiesEnum.coins,
-        context: { ...context, guild, expenditure, salaryTable },
+        context: {
+          primary: context,
+          ...context,
+          guild,
+          expenditure,
+          salaryTable,
+        },
       });
     }
 
