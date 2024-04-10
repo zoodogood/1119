@@ -458,8 +458,8 @@ class Command extends BaseCommand {
       treeField.damage +=
         0.2 + Number((1 - guildData.day_msg / messagesNeed).toFixed(1));
 
-      eventContext.guilds[guild.id] ||= {};
-      eventContext.guilds[guild.id].messagesNeed = messagesNeed;
+      eventContext.guildsStatsContext[guild.id] ||= {};
+      eventContext.guildsStatsContext[guild.id].treeMessagesNeed = messagesNeed;
 
       if (treeField.damage >= 4) {
         delete treeField.damage;
