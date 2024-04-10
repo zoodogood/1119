@@ -101,6 +101,7 @@ const Schema = {
         voidMysticClover: 0,
         voidFreedomCurse: 0,
         voidCooldown: 0,
+        voidMonster: 0,
         CD_$: 0,
         profile_confidentiality: true,
         voidQuests: {},
