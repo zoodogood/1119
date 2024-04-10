@@ -1,4 +1,5 @@
 import { question } from "#bot/util.js";
+import { Emoji } from "#constants/emojis.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
@@ -310,12 +311,18 @@ class CommandDefaultBehavior {
     const guildData = guild.data;
     const channels = new Command_GuildChannels_Manager(context);
 
-    const channelContent =  channels.CHANNELS.map((channelBase) =>
+    const channelContent = channels.CHANNELS.map((channelBase) =>
       channels.channelBaseToString(channelBase),
     ).join("\n");
 
-    const { SETTING_FIELDS } = this;
-    const instrumentsContent = command.SETTING_FIELDS.map(field => )
+    const on_emoji = Emoji.animation_tick_block.toString();
+
+    const instrumentsContent = command.SETTING_FIELDS.map(
+      ({ key, label_on, label_off, emoji }) =>
+        guildData[key] ? `${on_emoji} ${label_on}` : `${emoji} ${label_off}`,
+    ).join("\n");
+
+    return `Каналы:\n${channelContent}\nИнструменты:\n${instrumentsContent}`;
   }
 }
 
@@ -343,8 +350,8 @@ class Command extends BaseCommand {
     {
       key: "description",
       emoji: "🪧",
-      labelOff: "Настроить описание сервера",
-      labelOn: "Описание сервера удачно настроено",
+      label_off: "Настроить описание сервера",
+      label_on: "Описание сервера удачно настроено",
       onReaction(reaction, user, context) {
         new Command_GuildDescription_Manager(context).onProcess();
       },
@@ -352,8 +359,8 @@ class Command extends BaseCommand {
     {
       key: "banner",
       emoji: "🌌",
-      labelOff: "Установите баннер",
-      labelOn: "На сервере есть свой баннер!",
+      label_off: "Установите баннер",
+      label_on: "На сервере есть свой баннер!",
       onReaction(reaction, user, context) {
         new Command_GuildBanner_Manager(context).onProcess();
       },
@@ -361,8 +368,8 @@ class Command extends BaseCommand {
     {
       key: "chatFilter",
       emoji: "🚸",
-      labelOff: "Фильтр чата выключен",
-      labelOn: "Фильтр чата включён :)",
+      label_off: "Фильтр чата выключен",
+      label_on: "Фильтр чата включён :)",
       onReaction(reaction, user, context) {
         new Command_GuildChatFilter_Manager(context).onProcess();
       },
@@ -370,8 +377,8 @@ class Command extends BaseCommand {
     {
       key: "hi",
       emoji: "👋",
-      labelOff: "Не настроено приветсвие новых участников",
-      labelOn: "«Привет тебе, новый участник»",
+      label_off: "Не настроено приветсвие новых участников",
+      label_on: "«Привет тебе, новый участник»",
       onReaction(reaction, user, context) {
         new Command_GuildSetHello_Manager(context).onProcess();
       },
