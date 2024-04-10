@@ -15,6 +15,7 @@
     const entries = list.map((key, index) => [key, metadata[index]]).reverse();
 
     Component.errors = entries;
+    console.info("=== Component.errors ===\n", Component.errors);
   })();
 </script>
 
