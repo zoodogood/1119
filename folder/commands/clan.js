@@ -24,7 +24,7 @@ class Command extends BaseCommand {
 
     const guild = msg.guild;
 
-    msg.msg({ description: "hhh" });
+    msg.msg({ description: "создайте его, в своём воображении" });
     return;
   }
 
