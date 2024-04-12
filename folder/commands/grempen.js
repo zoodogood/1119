@@ -6,6 +6,7 @@ import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { HOUR } from "#constants/globals/time.js";
 
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
@@ -427,7 +428,7 @@ class Command extends BaseCommand {
         inline: true,
         others: ["клевер", "счастливый", "счастливый клевер", "clover"],
         createCloverTimeEvent(guildId, channelId) {
-          const endsIn = 14400000;
+          const endsIn = HOUR * 4;
           return TimeEventsManager.create("clover-end", endsIn, [
             guildId,
             channelId,
