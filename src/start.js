@@ -28,6 +28,7 @@ import {
 } from "#constants/users/events.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
+import { Events } from "#constants/app/events.js";
 
 client.on("ready", async () => {
   for (const guild of client.guilds.cache.values()) {
@@ -893,6 +894,18 @@ ActionManager.extendsGlobalPrototypes();
   app.launch();
   EventsManager.emitter.emit("start");
 })();
+
+function _processOnStart_developerScript() {
+  // to-do: developer crutch
+  for (const guildDData of DataManager.data.guilds) {
+    const effect = guildDData.cloverEffect;
+    if (!effect) {
+      continue;
+    }
+    effect.createdAt ||= effect.timestamp;
+  } 
+};
+EventsManager.emitter.once(Events.BeforeLogin, _processOnStart_developerScript);
 
 //---------------------------------{#End--}------------------------------                            #ff0
 
