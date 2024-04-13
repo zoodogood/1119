@@ -1,5 +1,6 @@
 import { client } from "#bot/client.js";
 import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
+import { HOUR } from "#constants/globals/time.js";
 
 class Event {
   /**
@@ -16,12 +17,12 @@ class Event {
     const { cloverEffect } = guild.data;
     delete guild.data.cloverEffect;
 
-    const multiplier = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses);
+    const multiplier = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses) + 1;
 
     channel?.msg({
       title: "☘️ Ивент Клевера завершился",
       color: "#21c96c",
-      description: `Получено наград во время действия эффекта: ${cloverEffect.coins}\nМаксимальный множитель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${cloverEffect.uses}\nКлевер длился ${((Date.now() - cloverEffect.timestamp) / 3600000).toFixed(1)}ч.`,
+      description: `Получено наград во время действия эффекта: ${cloverEffect.coins}\nМаксимальный множитель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${cloverEffect.uses}\nКлевер длился ${((Date.now() - cloverEffect.createdAt) / HOUR).toFixed(1)}ч.`,
     });
   }
 
