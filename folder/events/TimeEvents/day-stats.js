@@ -43,7 +43,8 @@ class Event {
     const messagesOfDay = guildData.day_msg || 0;
     const { guildsStatsContext } = context;
 
-    const { treeMessagesNeed } = guildsStatsContext[guild.id];
+    
+    const { treeMessagesNeed } = guildsStatsContext[guild.id] || {};
 
     guild.data.coins += 2 * guild.memberCount;
 
