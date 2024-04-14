@@ -86,7 +86,7 @@ class Command extends BaseCommand {
     cliParser: {
       flags: [],
     },
-    alias: "идея innovation новвоведение ідея",
+    alias: "идея innovation новвоведение ідея proposal предложение",
     allowDM: true,
     expectParams: true,
     cooldown: MINUTE * 10,
