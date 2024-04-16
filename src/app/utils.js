@@ -1,4 +1,4 @@
-import { Actions } from "#lib/modules/ActionManager.js";
+import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { OAuth2Scopes, PermissionFlagsBits } from "discord.js";
 import Path from "path";
 const root = process.cwd();
@@ -37,7 +37,7 @@ export function addResource({
     });
   }
 
-  user.action(Actions.resourceChange, {
+  user.action(ActionsMap.resourceChange, {
     value,
     executor,
     source,
