@@ -62,7 +62,7 @@ class Command extends BaseCommand {
     return +Util.match(authorField.name, /#\d+$/).slice(1);
   }
   async run(context) {
-    context.parseCli(context.intearction.params);
+    context.parseCli(context.interaction.params);
     this.processDefaultBehaviour(context);
   }
 
