@@ -81,7 +81,7 @@ class Command extends BaseCommand {
   }
 
   async onChatInput(_msg, interaction) {
-    const context = CommandRunContext.new(interaction, this);
+    const context = await CommandRunContext.new(interaction, this);
     context.setWhenRunExecuted(this.run(context));
     return context;
   }
