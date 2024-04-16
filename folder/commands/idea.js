@@ -85,7 +85,7 @@ class Command extends BaseCommand {
       },
       reactions: ["814911040964788254", "815109658637369377"],
     });
-    channel.msg({
+    interaction.channel.msg({
       title: "<:meow:637290387655884800> Вы отправили нам свою идею! Спасибо!",
       description: `А что, идея «${phrase}» весьма не плоха...`,
       color: "#00ffaf",
