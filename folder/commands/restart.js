@@ -65,7 +65,7 @@ class Command extends BaseCommand {
       if (!commandData.filter(context)) {
         continue;
       }
-      const [command, ...params] = commandData.split(" ");
+      const [command, ...params] = commandData.run.split(" ");
       pager.addPages({
         title: `> ${commandData.run}`,
       });
