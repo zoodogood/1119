@@ -112,7 +112,7 @@ class Command extends BaseCommand {
     //* CLOVER
     const clover = this.getCloverData(guild);
     if (clover) {
-      const { timeToEnd, multiplier, cloverEffect } = cloverEffect;
+      const { timeToEnd, multiplier, cloverEffect } = clover;
       const { coins, timestamp, uses } = cloverEffect;
 
       fields.unshift({
