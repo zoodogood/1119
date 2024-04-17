@@ -5,6 +5,7 @@ import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ChannelType, PresenceUpdateStatus } from "discord.js";
 import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
 import Template from "#lib/modules/Template.js";
+import {HOUR} from "#constants/globals/time.js";
 
 class Command extends BaseCommand {
   getUsedCommandsCountOfGuild(guild) {
@@ -117,11 +118,11 @@ class Command extends BaseCommand {
 
       fields.unshift({
         name: "🍀 Действие Клевера",
-        value: `Осталось времени: ${+(timeToEnd / 3600000).toFixed(
-          2,
+        value: `Осталось времени: ${+(timeToEnd / HOUR).toFixed(
+          1,
         )}ч.\nКлевер был запущен: <t:${Math.floor(
           timestamp / 1_000,
-        )}>;\nНаград получено: ${coins}\nТекущий множетель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${uses}`,
+        )}>;\nНаград получено: ${coins}\nТекущий множетель: X${(multiplier + 1).toFixed(2)}\nКуплено клеверов: ${uses}`,
       });
     }
     //**
