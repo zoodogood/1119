@@ -114,14 +114,14 @@ class Command extends BaseCommand {
     const clover = this.getCloverData(guild);
     if (clover) {
       const { timeToEnd, multiplier, cloverEffect } = clover;
-      const { coins, timestamp, uses } = cloverEffect;
+      const { coins, createdAt, uses } = cloverEffect;
 
       fields.unshift({
         name: "🍀 Действие Клевера",
         value: `Осталось времени: ${+(timeToEnd / HOUR).toFixed(
           1,
         )}ч.\nКлевер был запущен: <t:${Math.floor(
-          timestamp / 1_000,
+          createdAt / 1_000,
         )}>;\nНаград получено: ${coins}\nТекущий множетель: X${(multiplier + 1).toFixed(2)}\nКуплено клеверов: ${uses}`,
       });
     }
