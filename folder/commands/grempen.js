@@ -663,7 +663,7 @@ class Command extends BaseCommand {
         description: `Благодарю за покупку ${
           product.name.split(" ")[0]
         } !\nЦена в ${Util.ending(
-          product.value,
+          isNaN(product.value) ? product.value : 0,
           "монет",
           "",
           "у",
