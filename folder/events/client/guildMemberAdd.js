@@ -143,7 +143,11 @@ class EnterLoggerUtil {
 
   static async fetchInviter(member) {
     const { guild } = member;
-    const guildInvites = await guild.invites.fetch();
+    const guildInvites = await guild.invites.fetch().catch(() => {});
+
+    if (!guildInvites) {
+      return null;
+    }
 
     const cached = guild.invitesUsesCache;
     const invite = guildInvites.find(
