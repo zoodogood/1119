@@ -6,6 +6,7 @@ import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { HOUR } from "#constants/globals/time.js";
 
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
@@ -427,7 +428,7 @@ class Command extends BaseCommand {
         inline: true,
         others: ["клевер", "счастливый", "счастливый клевер", "clover"],
         createCloverTimeEvent(guildId, channelId) {
-          const endsIn = 14400000;
+          const endsIn = HOUR * 4;
           return TimeEventsManager.create("clover-end", endsIn, [
             guildId,
             channelId,
@@ -442,10 +443,12 @@ class Command extends BaseCommand {
           if (!guildData.cloverEffect) {
             guildData.cloverEffect = {
               coins: 0,
-              timestamp: Date.now(),
+              createdAt: Date.now(),
               uses: 1,
+              timestamp: null,
             };
-            this.createCloverTimeEvent(guild.id, interaction.channel.id);
+            const event = this.createCloverTimeEvent(guild.id, interaction.channel.id);
+            guildData.cloverEffect.timestamp = event.timestamp;
             return phrase;
           }
 
@@ -454,7 +457,7 @@ class Command extends BaseCommand {
 
           const increaseTimestamp = (previous) => {
             const adding = Math.floor(
-              14_400_000 - (previous - Date.now()) / 18,
+              (HOUR * 4) - (previous - Date.now()) / 18,
             );
             const ms = previous + Math.max(adding, 0);
             return ms;
@@ -660,7 +663,7 @@ class Command extends BaseCommand {
         description: `Благодарю за покупку ${
           product.name.split(" ")[0]
         } !\nЦена в ${Util.ending(
-          product.value,
+          isNaN(product.value) ? product.value : 0,
           "монет",
           "",
           "у",

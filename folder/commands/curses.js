@@ -7,8 +7,7 @@ import { toLocaleDeveloperString } from "#lib/safe-utils.js";
 import { justSelectMenuComponent } from "#bot/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
-import { AttachmentBuilder } from "discord.js";
-import { FormattingPatterns } from "discord.js";
+import { AttachmentBuilder, FormattingPatterns } from "discord.js";
 
 function jsonFile(data, name) {
   const buffer = Buffer.from(JSON.stringify(data, null, "\t"));
@@ -29,7 +28,7 @@ class Utils {
   }
 }
 
-class ListCommandManager {
+class List_FlagSubcommand {
   constructor(context) {
     this.context = context;
   }
@@ -104,7 +103,7 @@ class ListCommandManager {
   }
 }
 
-class MembersCommandManager {
+class Members_FlagSubcommand {
   constructor(context) {
     this.context = context;
   }
@@ -173,7 +172,7 @@ class MembersCommandManager {
   }
 }
 
-class HelpCommandManager {
+class Help_FlagSubcommand {
   constructor(context) {
     this.context = context;
   }
@@ -256,7 +255,7 @@ class HelpCommandManager {
 
   onCurseSelect(interaction, _message) {
     const value = interaction.values.at(0);
-    const manager = new AtCommandManager(this.context, +value);
+    const manager = new At_FlagSubcommand(this.context, +value);
     const { curse, memb } = manager.getCurseByValue(+value);
     const embed = manager.createEmbed(curse, memb);
     embed.ephemeral = true;
@@ -265,7 +264,7 @@ class HelpCommandManager {
   }
 }
 
-class AtCommandManager {
+class At_FlagSubcommand {
   constructor(context, value) {
     this.context = context;
     this.value = value;
@@ -488,7 +487,7 @@ class Command extends BaseCommand {
     if (!values.get("--help")) {
       return;
     }
-    new HelpCommandManager(context).onProcess();
+    new Help_FlagSubcommand(context).onProcess();
     return true;
   }
 
@@ -497,7 +496,7 @@ class Command extends BaseCommand {
     if (!values.get("--list")) {
       return;
     }
-    new ListCommandManager(context).onProcess();
+    new List_FlagSubcommand(context).onProcess();
     return true;
   }
 
@@ -510,7 +509,7 @@ class Command extends BaseCommand {
     if (!value) {
       return;
     }
-    new AtCommandManager(context, value).onProcess();
+    new At_FlagSubcommand(context, value).onProcess();
     return true;
   }
 
@@ -519,11 +518,11 @@ class Command extends BaseCommand {
     if (!values.get("--members")) {
       return;
     }
-    new MembersCommandManager(context).onProcess();
+    new Members_FlagSubcommand(context).onProcess();
     return true;
   }
   processDefaultBehavior(context) {
-    new HelpCommandManager(context).onProcess();
+    new Help_FlagSubcommand(context).onProcess();
   }
 
   options = {
@@ -571,4 +570,4 @@ class Command extends BaseCommand {
 }
 
 export default Command;
-export { HelpCommandManager, Utils };
+export { Help_FlagSubcommand as HelpCommandManager, Utils };
