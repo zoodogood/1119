@@ -358,7 +358,7 @@ function escapeRegexp(value) {
 
 function uid() {
   const now = Date.now();
-  return `${now}-${Math.floor(Math.random() * now)}`;
+  return `${now}_${Math.floor(Math.random() * now)}`;
 }
 
 class TimeAuditor {
