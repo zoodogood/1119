@@ -14,7 +14,6 @@ import {
   ActionManager,
   EventsManager,
 } from "#lib/modules/mod.js";
-import { justSendMessage } from "@zoodogood/utils/discordjs";
 import client from "#bot/client.js";
 import config from "#config";
 
@@ -27,7 +26,6 @@ import {
   MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
 } from "#constants/users/events.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 import { Events } from "#constants/app/events.js";
 
 client.on("ready", async () => {
@@ -252,39 +250,6 @@ client.on("ready", async () => {
 });
 
 //----------------------------------{Functions--}------------------------------                            #0f0
-
-async function msg(options, ..._devFixParams) {
-  if (_devFixParams.length > 0) {
-    throw new Error("Incorrect message input. Need to fix!");
-  }
-
-  options.color ||= config.development ? "#000100" : "#23ee23";
-
-  const target =
-    this instanceof Discord.InteractionResponse
-      ? this.interaction
-      : this instanceof Discord.Message && !options.edit
-        ? this.channel
-        : this;
-
-  const message = (async () => {
-    try {
-      return await justSendMessage(target, options);
-    } catch (error) {
-      if (!error.message.includes("Invalid Form Body")) {
-        throw error;
-      }
-      await sendErrorInfo({
-        description: "Оригинальное сообщение не было доставлено",
-        channel: target,
-        error,
-      });
-      throw new Error(error.message, { cause: error });
-    }
-  })();
-
-  return message;
-}
 
 //---------------------------------{Functions from events--}------------------------------                            #ff0
 
@@ -548,14 +513,6 @@ function filterChat(msg) {
 }
 
 //---------------------------------{#Prototypes--}------------------------------                            #f00
-
-Discord.User.prototype.msg = msg;
-Discord.Message.prototype.msg = msg;
-Discord.BaseChannel.prototype.msg = msg;
-Discord.Webhook.prototype.msg = msg;
-Discord.WebhookClient.prototype.msg = msg;
-Discord.BaseInteraction.prototype.msg = msg;
-Discord.InteractionResponse.prototype.msg = msg;
 
 Discord.Message.prototype.awaitReact = async function (options, ...reactions) {
   if (!options.user) {
@@ -903,8 +860,8 @@ function _processOnStart_developerScript() {
       continue;
     }
     effect.createdAt ||= effect.timestamp;
-  } 
-};
+  }
+}
 EventsManager.emitter.once(Events.BeforeLogin, _processOnStart_developerScript);
 
 //---------------------------------{#End--}------------------------------                            #ff0
