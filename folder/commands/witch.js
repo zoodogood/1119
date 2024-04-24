@@ -17,13 +17,14 @@ class Command extends BaseCommand {
       MAX_LEVEL: 20,
       MAX_WEIGHT: 100,
       _weight(user) {
+        const current = user.data.voidCooldown || 0;
         return (
-          this.MAX_WEIGHT -
-          (user.data.voidCooldown * (this.MAX_WEIGHT / this.MAX_LEVEL) || 0)
+          this.MAX_WEIGHT - (current * (this.MAX_WEIGHT / this.MAX_LEVEL) || 0)
         );
       },
       filter(user) {
-        return user.data.voidCooldown < this.MAX_LEVEL;
+        const current = user.data.voidCooldown || 0;
+        return current < this.MAX_LEVEL;
       },
       action(user, interaction) {
         Util.addResource({
@@ -80,7 +81,7 @@ class Command extends BaseCommand {
       },
       _weight: 5,
       filter(user) {
-        return user.data.voidPrice < this.MAX_LEVEL;
+        return (user.data.voidPrice || 0) < this.MAX_LEVEL;
       },
       action(user, interaction) {
         Util.addResource({
@@ -120,9 +121,9 @@ class Command extends BaseCommand {
       MAX_LEVEL: 5,
       description:
         "Делает ежедневные квесты на 15% сложнее, однако также увеличивает их награду на 30%",
-      _weight: 10,
+      _weight: 5,
       filter(user) {
-        return user.data.voidQuests < this.MAX_LEVEL;
+        return (user.data.voidQuests || 0) < this.MAX_LEVEL;
       },
       action(user, interaction) {
         Util.addResource({
@@ -196,7 +197,7 @@ class Command extends BaseCommand {
           user,
         )} коинов в случайную сторону.`;
       },
-      _weight: 10,
+      _weight: 12,
       action(user) {
         return (DataManager.data.bot.berrysPrice +=
           this.calculate(user) * (-1) ** Util.random(1));
@@ -232,7 +233,7 @@ class Command extends BaseCommand {
         const { voids, keys } = this.calculate(user);
         return `Получите ${voids} ур. нестабильности взамен ${keys} ключей.`;
       },
-      _weight: 30,
+      _weight: 40,
       filter(user) {
         return user.data.keys >= this.KEYS_PER_VOID && user.data.chestLevel;
       },
@@ -657,26 +658,31 @@ class Command extends BaseCommand {
     return { interaction };
   }
 
+  process_displayMemberBoiler(interaction) {
+    if (!interaction.mention) {
+      return false;
+    }
+    const userData = interaction.mention.data;
+    interaction.channel.msg({
+      title:
+        "<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг",
+      description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${
+        userData.name
+      }, использовал котёл ${userData.voidRituals} раз.\nЕго бонус к опыту: ${(
+        100 *
+        (1 - this.calculateExperienceBonus(userData) + 1)
+      ).toFixed(
+        2,
+      )}% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`,
+      color: "#3d17a0",
+    });
+    return true;
+  }
+
   async onChatInput(msg, interaction) {
     // <a:void:768047066890895360> <a:placeForVoid:780051490357641226> <a:cotik:768047054772502538>
 
-    if (interaction.mention) {
-      const userData = interaction.mention.data;
-      msg.msg({
-        title:
-          "<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг",
-        description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${
-          userData.name
-        }, использовал котёл ${
-          userData.voidRituals
-        } раз.\nЕго бонус к опыту: ${(
-          100 *
-          (1 - this.calculateExperienceBonus(userData) + 1)
-        ).toFixed(
-          2,
-        )}% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`,
-        color: "#3d17a0",
-      });
+    if (this.process_displayMemberBoiler(interaction)) {
       return;
     }
 
@@ -757,7 +763,7 @@ class Command extends BaseCommand {
     });
 
     await this.boilerChoise({ userData, interaction, boiler: boilerMessage });
-
+    await interaction.channel.sendTyping();
     await Util.sleep(3000);
     this.displayStory(interaction);
     return;
