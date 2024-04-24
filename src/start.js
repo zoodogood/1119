@@ -143,7 +143,7 @@ client.on("ready", async () => {
       case "reactor":
         rolesReactions = rolesReactions.reactions;
 
-        role = String(rolesReactions[reaction.emoji.id || reaction.emoji.name]);
+        role = String(rolesReactions[reaction.emoji.code]);
         if (!role) {
           break;
         }
@@ -175,7 +175,7 @@ client.on("ready", async () => {
       case "reactor":
         rolesReactions = rolesReactions.reactions;
 
-        role = String(rolesReactions[reaction.emoji.id || reaction.emoji.name]);
+        role = String(rolesReactions[reaction.emoji.code]);
         role = reaction.message.guild.roles.cache.get(role);
         if (!role)
           reaction.message.msg({

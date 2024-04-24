@@ -47,8 +47,7 @@ export function awaitReactOrMessage({
   const isUserMessage = (target) => target.id === user.id;
   const isReactOfUser = (react, target) =>
     target.id === user.id &&
-    (!reactions.length ||
-      reactions.includes(react.emoji.id ?? react.emoji.name));
+    (!reactions.length || reactions.includes(react.emoji.code));
   const filter = (some, adding) =>
     some instanceof Discord.Message
       ? isUserMessage(some.author)

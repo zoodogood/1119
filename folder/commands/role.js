@@ -172,7 +172,7 @@ class Command extends BaseCommand {
   }
 
   async rolesListOnReact(context, reaction, user) {
-    const react = reaction.emoji.id || reaction.emoji.name;
+    const react = reaction.emoji.code;
     const { message, interaction } = context;
     message.reactions.removeAll();
 

@@ -291,7 +291,7 @@ class Command extends BaseCommand {
 
   async onCollect(reaction, user, context) {
     const { interfaceMessage, channel, treeField } = context;
-    const react = reaction.emoji.id || reaction.emoji.name;
+    const react = reaction.emoji.code;
     const userData = user.data;
 
     if (react === "🌱") {
