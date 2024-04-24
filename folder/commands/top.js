@@ -96,8 +96,10 @@ class CommandRunContext extends BaseCommandRunContext {
   }
 
   setupPager() {
-    this.pager.setChannel(this.interaction.channel);
-    const defaultComponents = this.pager.components;
+    const { user, channel } = this.interaction;
+
+    this.pager.setChannel(channel);
+    const defaultComponents = this.pager.options.components;
     const components = [
       [...defaultComponents],
       [
@@ -114,12 +116,12 @@ class CommandRunContext extends BaseCommandRunContext {
       ],
     ];
     this.pager.setComponents(components);
-
-    this.pager.on(Pager.Events.beforePageRender, (event) =>
+    this.pager.setUser(user);
+    this.pager.emitter.on(Pager.Events.before_update, (event) =>
       this.command.onPagerBeforePageRender(event, this),
     );
 
-    this.pager.on(Pager.Events.component, (interaction) =>
+    this.pager.emitter.on(Pager.Events.allowed_collect, ({ interaction }) =>
       this.command.onPagerComponent(interaction, this),
     );
   }
@@ -441,12 +443,10 @@ class Command extends BaseCommand {
   }
 
   async onPagerComponent(interaction, context) {
-    if (await this.onSelectLeaderboard(interaction, context)) {
-      return;
-    }
+    this.process_onSelectLeaderboard(interaction, context);
   }
 
-  async onSelectLeaderboard(interaction, context) {
+  async process_onSelectLeaderboard(interaction, context) {
     if (interaction.customId !== "selectFilter") {
       return;
     }
