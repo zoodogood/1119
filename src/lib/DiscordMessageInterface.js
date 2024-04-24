@@ -83,7 +83,7 @@ export class MessageInterface {
       return;
     }
     this.emitter.emit(MessageInterface.Events.before_close);
-    this.removeAllListeners();
+    this.emitter.removeAllListeners();
     for (const collector of this._collectors) {
       collector.stop();
     }
