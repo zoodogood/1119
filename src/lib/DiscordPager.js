@@ -200,7 +200,7 @@ export class Pager extends MessageInterface {
       this.updateMessage(interaction);
     },
     [Pager.DefaultComponents.Select.customId]: async (interaction) => {
-      this.selectPageStrategy(this, interaction);
+      this.options.selectPageStrategy(this, interaction);
     },
   };
 
