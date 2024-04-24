@@ -102,7 +102,7 @@ class CommandGuidances {
         fetchReply: true,
       })),
     );
-    pager.setHideDisabledOption(true);
+    pager.setHideDisabledComponents(true);
     pager.updateMessage(interaction);
   }
   getGuidancePagesContent() {
