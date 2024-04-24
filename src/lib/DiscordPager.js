@@ -1,53 +1,41 @@
 import { CustomCollector, question, ending } from "#lib/util.js";
 import { Emoji } from "#constants/emojis.js";
 import { MINUTE } from "#constants/globals/time.js";
-import { createStopPromise } from "#lib/createStopPromise.js";
 import { CreateModal, justButtonComponents } from "@zoodogood/utils/discordjs";
 import { TextInputStyle, ComponentType } from "discord.js";
-import EventsEmitter from "events";
-
-function processUserCanUseInteraction(interaction, pager) {
-  if (!pager.user) {
-    return true;
-  }
-  if (interaction.user.id !== pager.user.id) {
-    return false;
-  }
-  return true;
-}
-
-class AbstractHideDisabledComponents {
-  static needHide(pager, component) {
-    return pager.hideDisabled ? !component.disabled : true;
-  }
-}
+import {
+  MessageInterface,
+  MessageInterface_Options,
+} from "#lib/DiscordMessageInterface.js";
 
 class DefaultComponentsProcessor {
-  callbacks;
+  callbaks;
+  /**@type {Pager} */
+  pager;
   constructor(pager) {
     this.pager = pager;
     this._initCallbacks();
   }
 
   process() {
-    const { DefaultComponents } = this.pager.constructor;
+    const { DefaultComponents } = Pager;
     const components = justButtonComponents(
       Object.values(structuredClone(DefaultComponents)),
     );
     this.processIsDisabledGetters(components);
-    this.pager.components.push(...components);
+    this.pager.options.components.push(...components);
   }
 
   _initCallbacks() {
-    const { NEXT, PREVIOUS, SELECT } = this.pager.constructor.DefaultComponents;
+    const { Next, Previous, Select } = Pager.DefaultComponents;
     this.callbacks = {
-      [PREVIOUS.customId]: (component) => {
+      [Previous.customId]: (component) => {
         Object.defineProperty(component, "disabled", {
           get: () => this.pager.currentPage === 0,
           enumerable: true,
         });
       },
-      [NEXT.customId]: (component) => {
+      [Next.customId]: (component) => {
         Object.defineProperty(component, "disabled", {
           get: () =>
             this.pager.pages.length &&
@@ -55,7 +43,7 @@ class DefaultComponentsProcessor {
           enumerable: true,
         });
       },
-      [SELECT.customId]: (component) => {
+      [Select.customId]: (component) => {
         Object.defineProperty(component, "disabled", {
           get: () => this.pager.pages.length <= 1,
           enumerable: true,
@@ -78,9 +66,6 @@ class DefaultComponentsProcessor {
 
 export const Pager_selectPageStrategy = {
   async Message(pager, interaction) {
-    if (!processUserCanUseInteraction(interaction, pager)) {
-      return;
-    }
     const result = await question({
       channel: interaction,
       user: interaction.user,
@@ -132,38 +117,23 @@ export const Pager_selectPageStrategy = {
         +interaction.fields.getField(customId).value - 1 || pager.currentPage;
       pager.currentPage = Math.max(Math.min(pager.pages.length, value), 1);
       pager.updateMessage(interaction);
-      return;
     });
   },
 };
 
-export class Pager extends EventsEmitter {
-  message = null;
-  channel = null;
-  components = [];
-  pages = [];
-  embed = {};
-  currentPage = 0;
-  user = null;
+class Pager_Options extends MessageInterface_Options {
   selectPageStrategy = Pager_selectPageStrategy.Modal;
-  hideDisabled = false;
+}
+
+export class Pager extends MessageInterface {
+  pages = [];
+  currentPage = 0;
+  options = new Pager_Options();
 
   constructor(channel) {
     super();
     this.setChannel(channel);
     this._processDefaultComponents();
-  }
-
-  setChannel(channel) {
-    this.channel = channel;
-  }
-
-  setUser(user) {
-    this.user = user;
-  }
-
-  setDefaultMessageState(addable) {
-    Object.assign(this.embed, addable);
   }
 
   addPages(...pages) {
@@ -178,6 +148,11 @@ export class Pager extends EventsEmitter {
     this.pages.length = length;
   }
 
+  updateCurrentPageContent(value) {
+    const { currentPage } = this;
+    this.setPageAt(currentPage, value);
+  }
+
   /**
    * You can define your own components
    *
@@ -186,130 +161,58 @@ export class Pager extends EventsEmitter {
    * @param {object[]} components you can add new components
    */
   spliceComponents(from, to, components) {
-    return this.components.splice(from, to, ...components);
-  }
-
-  setComponents(components) {
-    this.components = components;
-  }
-
-  close() {
-    this.emit(this.constructor.Events.beforeClose);
-    this.removeAllListeners();
-    this.collector.stop();
-  }
-
-  updateMessage(target = null) {
-    return this.message
-      ? this._editMessage(target)
-      : this._createMessage(target);
-  }
-
-  updateCurrentPageContent(value) {
-    const { currentPage } = this;
-    this.setPageAt(currentPage, value);
+    const { options } = this;
+    return options.components.splice(from, to, ...components);
   }
 
   setSelectPageStrategyOption(strategy) {
-    this.selectPageStrategy = strategy;
+    this._setOptions({ selectPageStrategy: strategy });
+    return this;
   }
 
-  setHideDisabledOption(value) {
-    this.hideDisabled = value;
-  }
-
-  _createCollector() {
-    this.collector = this.message.createMessageComponentCollector({
-      time: MINUTE * 3,
-    });
-    this.collector.on("collect", (interaction) =>
-      this._onCollect.call(this, interaction),
-    );
-    this.collector.once("end", () => this.emit("close"));
-  }
-
-  _getDefaultMessageProperties() {
+  _getMessageOptions() {
+    const properties = super._getMessageOptions();
     return {
-      components: this.components.filter(
-        AbstractHideDisabledComponents.needHide.bind(null, this),
-      ),
-      ...this.embed,
+      ...properties,
       ...this.pages[this.currentPage],
     };
   }
 
-  async _editMessage(target) {
-    target ||= this.message;
-    return await this._renderPage(target, {
-      ...this._getDefaultMessageProperties(),
-      edit: true,
-    });
-  }
-
-  async _createMessage(target) {
-    target ||= this.channel;
-    this.message = await this._renderPage(target, {
-      ...this._getDefaultMessageProperties(),
-    });
-    this._createCollector();
-    return this.message;
-  }
-
-  async _renderPage(target, value) {
-    const event = {
-      target,
-      pager: this,
-      createStopPromise,
-      _createStopPromise_stoppers: [],
-      value,
-    };
-    this.emit(this.constructor.Events.beforePageRender, event);
-    await Promise.all(event._createStopPromise_stoppers);
-    return target.msg(value);
-  }
   _processDefaultComponents(Processor = DefaultComponentsProcessor) {
     const processor = new Processor(this);
     processor.process();
   }
 
-  _onCollect(interaction) {
-    this.emit(this.constructor.Events.component, interaction);
-    this._callbacks[interaction.customId]?.call(this, interaction);
+  _onCollect(type, interaction) {
+    const data = super._onCollect_processData(type, interaction);
+    data.isAllowed &&
+      this._callbacks[interaction.customId]?.call(this, interaction);
+    super._onCollect_emit(data);
   }
 
   _callbacks = {
-    [this.constructor.DefaultComponents.PREVIOUS.customId]: (interaction) => {
-      if (!processUserCanUseInteraction(interaction, this)) {
-        return;
-      }
+    [Pager.DefaultComponents.Previous.customId]: (interaction) => {
       this.currentPage--;
       this.updateMessage(interaction);
     },
-    [this.constructor.DefaultComponents.NEXT.customId]: (interaction) => {
-      if (!processUserCanUseInteraction(interaction, this)) {
-        return;
-      }
+    [Pager.DefaultComponents.Next.customId]: (interaction) => {
       this.currentPage++;
       this.updateMessage(interaction);
     },
-    [this.constructor.DefaultComponents.SELECT.customId]: async (
-      interaction,
-    ) => {
+    [Pager.DefaultComponents.Select.customId]: async (interaction) => {
       this.selectPageStrategy(this, interaction);
     },
   };
 
   static Events = {
-    beforeClose: "beforeClose",
-    component: "component",
-    beforePageRender: "beforePageRender",
+    ...super.Events,
   };
 
   static DefaultComponents = {
-    PREVIOUS: { customId: "PREVIOUS", emoji: Emoji.green_arrow_left.id },
-    NEXT: { customId: "NEXT", emoji: Emoji.green_arrow_right.id },
-    SELECT: {
-      customId: "SELECT",
+    Previous: { customId: "PAGER_PREVIOUS", emoji: Emoji.green_arrow_left.id },
+    Next: { customId: "PAGER_NEXT", emoji: Emoji.green_arrow_right.id },
+    Select: {
+      customId: "PAGER_SELECT",
     },
   };
 }
