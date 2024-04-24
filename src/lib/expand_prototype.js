@@ -174,6 +174,10 @@ Array.prototype.sortBy = function (property, reverse) {
   return this.sort(func);
 };
 
+Array.prototype.empty = function () {
+  this.length = 0;
+};
+
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
