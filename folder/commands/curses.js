@@ -79,7 +79,8 @@ class List_FlagSubcommand {
       pages.push(this.sendList_contentsToPage(pages, contents, chunk));
     }
 
-    const pager = new Pager(channel, context.user);
+    const pager = new Pager(channel);
+    pager.setUser(context.user);
     pager.addPages(...pages);
     pager.updateMessage();
   }
