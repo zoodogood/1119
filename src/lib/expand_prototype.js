@@ -5,6 +5,7 @@ import Discord from "discord.js";
 // MARK: Prototypes
 // =================================================
 
+// MARK: Discord
 Discord.User.prototype.msg = pushMessage;
 Discord.Message.prototype.msg = pushMessage;
 Discord.BaseChannel.prototype.msg = pushMessage;
@@ -136,6 +137,12 @@ Discord.Guild.prototype.Audit = async function (
   const auditLog = find ? audit.entries.find(find) : audit.entries.first();
   return auditLog;
 };
+
+Discord.Emoji.prototype.code = function () {
+  return this.id || this.name;
+};
+
+// MARK: JavaScript
 
 Array.prototype.random = function ({ pop, weights } = {}) {
   let index;
