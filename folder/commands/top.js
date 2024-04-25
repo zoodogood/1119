@@ -16,6 +16,7 @@ import {
   joinWithAndSeparator,
   random,
   ending,
+  DotNotatedInterface,
 } from "#lib/safe-utils.js";
 
 class Flag_open {
@@ -75,6 +76,53 @@ class Flag_open {
       content: `Флаг --open был проигнорирован. Используйте его с одним из этих значений: ${leaderboards}`,
     });
   }
+}
+
+class Flag_property {
+  constructor(context) {
+    this.context = context;
+  }
+  parse_and_process() {
+    const capture = this.context.cliParsed
+      .at(0)
+      .captures.get(this.constructor.FLAG_DATA.name);
+
+    if (!capture) {
+      return false;
+    }
+
+    this.capture = capture;
+    this.process_use_capture();
+  }
+  process_use_capture() {
+    this.context.advanced_property_flag = this.capture.valueOfFlag();
+  }
+  static FLAG_DATA = {
+    name: "--property",
+    capture: ["--property"],
+    description: "Позволяет указать свойство для сортировки",
+    expectValue: true,
+  };
+
+  static RankBase = {
+    key: "advanced_property",
+    component: {
+      value: "advanced_property",
+      label: "_advanced_property",
+      emoji: "👾",
+    },
+    filter: (context) => context.advanced_property_flag,
+    value: (element, context) => {
+      const key = context.advanced_property_flag;
+      return new DotNotatedInterface(element.data).getItem(key);
+    },
+    display: (element, output, index, context) => {
+      const key = context.advanced_property_flag;
+      const name = `${index + 1}. ${element.username}`;
+      const value = `${key}: ${output}`;
+      return { name, value };
+    },
+  };
 }
 
 class CommandRunContext extends BaseCommandRunContext {
@@ -137,6 +185,7 @@ class CommandRunContext extends BaseCommandRunContext {
     this.setCliParsed(parsed, values);
 
     new Flag_open(this).parse_and_process();
+    new Flag_property(this).parse_and_process();
   }
 
   createUsers() {
@@ -419,6 +468,7 @@ class RanksUtils {
           return { name, value };
         },
       },
+      advanced_property: Flag_property.RankBase,
     }),
   );
 
@@ -535,6 +585,7 @@ class Command extends BaseCommand {
           description: "Показывает скрытые элементы, тех, кто сокрылся",
         },
         Flag_open.FLAG_DATA,
+        Flag_property.FLAG_DATA,
       ],
     },
     allowDM: true,
