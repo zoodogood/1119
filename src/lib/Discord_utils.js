@@ -15,5 +15,7 @@ export class ReactionInteraction {
       customId,
     });
   }
-  msg = pushMessage;
+  msg(...options) {
+    return pushMessage.call(this.channel, ...options);
+  }
 }
