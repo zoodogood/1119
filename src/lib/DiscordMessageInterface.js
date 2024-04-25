@@ -32,6 +32,7 @@ export class MessageInterface_Options {
   components = [];
   reactions = [];
   hideDisabledComponents = null;
+  render = null;
 }
 export class MessageInterface {
   emitter = new EventsEmitter();
@@ -146,7 +147,7 @@ export class MessageInterface {
       ),
       reactions: this.options.reactions,
       ...this.embed,
-      ...(this.options.remder?.() || {}),
+      ...(this.options.render?.() || {}),
     };
   }
 
