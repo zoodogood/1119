@@ -381,7 +381,7 @@ class Command extends BaseCommand {
     }
   }
 
-  onBerryCollect(berrys, user, context) {
+  async onBerryCollect(berrys, user, context) {
     const { treeField, channel } = context;
     const userData = user.data;
 
@@ -397,7 +397,7 @@ class Command extends BaseCommand {
     context.berrysCollected += berrys;
 
     DataManager.data.bot.berrysPrice += berrys * BerryCommand.INFLATION;
-    channel.msg({
+    await channel.msg({
       title: "Вы успешно собрали клубнику",
       author: { name: user.username, iconURL: user.avatarURL() },
       description: `${
