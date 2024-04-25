@@ -1,6 +1,6 @@
 export async function* fetchMessagesWhile({
   fromMessage = null,
-  while: checkWhile,
+  while: checkWhile = null,
   direction = "before",
   channel,
 }) {
@@ -15,7 +15,7 @@ export async function* fetchMessagesWhile({
     for (const message of bulk.values()) {
       yield message;
     }
-    if (!checkWhile()) {
+    if (checkWhile && !checkWhile()) {
       return;
     }
     fromMessage = bulk.at(-1)?.id;
