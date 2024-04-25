@@ -352,7 +352,7 @@ class CommandRunContext extends BaseCommandRunContext {
 
   hasSpecialTarget() {
     const values = this.cliParsed.at(1);
-    return values.get("by_phrase") || this.referenceId;
+    return values.get("by_phrase").trim() || this.referenceId;
   }
   static async new(interaction, command) {
     const context = new this(interaction, command);
@@ -400,7 +400,7 @@ class CommandRunContext extends BaseCommandRunContext {
   async fetchMessagesToClean() {
     const values = this.cliParsed.at(1);
     this.messagesFetcher.setOptions({
-      targetPhrase: values.get("by_phrase"),
+      targetPhrase: values.get("by_phrase")?.trim(),
       targetReference: this.referenceId,
       targetUserId: values.get("target_user")?.groups.id,
       hasSpecialTarget: this.hasSpecialTarget(),
