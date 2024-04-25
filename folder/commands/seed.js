@@ -290,6 +290,8 @@ class Command extends BaseCommand {
   }
 
   async onCollect(reaction, user, context) {
+    // to-do: developer crutch
+    console.error(2);
     const { interfaceMessage, channel, treeField } = context;
     const react = reaction.emoji.code;
     const userData = user.data;
@@ -321,6 +323,8 @@ class Command extends BaseCommand {
 
     // Berry take
     if (react === "756114492055617558") {
+      // to-do: developer crutch
+      console.error(1);
       if (userData.CD_54 > Date.now()) {
         channel.msg({
           title: "Перезарядка...",
