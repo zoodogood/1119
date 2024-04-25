@@ -1,3 +1,4 @@
+import app from "#app";
 import { MINUTE } from "#constants/globals/time.js";
 import { ReactionInteraction } from "#lib/Discord_utils.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
@@ -104,6 +105,16 @@ export class MessageInterface {
     this.updateMessage(target);
   }
 
+  _clean_missing_reactions(target) {
+    if ("reactions" in target === false) {
+      return;
+    }
+    const { options } = this;
+    target.reactions.cache
+      .filter((reaction) => !options.reactions.includes(reaction.emoji.code))
+      .every((reaction) => reaction.remove());
+  }
+
   _createCollectors() {
     this._collectors.push(this._createComponentCollector());
     this._collectors.push(this._createReactionCollector());
@@ -113,12 +124,15 @@ export class MessageInterface {
     const collector = this.message.createReactionCollector({
       time: MINUTE * 3,
     });
-    collector.on("collect", (reaction, user) =>
-      this._onCollect.call(
-        this,
-        MessageInterface.CollectType.reaction,
-        new ReactionInteraction(reaction, user),
-      ),
+    collector.on(
+      "collect",
+      (reaction, user) =>
+        user !== app.client.user &&
+        this._onCollect.call(
+          this,
+          MessageInterface.CollectType.reaction,
+          new ReactionInteraction(reaction, user),
+        ),
     );
     collector.once("end", () => this.close());
     return collector;
@@ -153,6 +167,7 @@ export class MessageInterface {
 
   async _editMessage(target) {
     target ||= this.message;
+    this._clean_missing_reactions(target);
     return await this._renderPage(target, {
       ...this._getMessageOptions(),
       edit: true,
