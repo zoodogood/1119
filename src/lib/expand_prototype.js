@@ -138,9 +138,11 @@ Discord.Guild.prototype.Audit = async function (
   return auditLog;
 };
 
-Discord.Emoji.prototype.code = function () {
-  return this.id || this.name;
-};
+Object.defineProperty(Discord.Emoji.prototype, "code", {
+  get() {
+    return this.id || this.name;
+  },
+});
 
 // MARK: JavaScript
 
