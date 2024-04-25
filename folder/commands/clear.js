@@ -1,194 +1,481 @@
+// @ts-check
 import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
+import { DAY, MINUTE } from "#constants/globals/time.js";
+import { fetchMessagesWhile } from "#lib/fetchMessagesWhile.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { FormattingPatterns } from "discord.js";
+import { CliParser } from "@zoodogood/utils/primitives";
+import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import { PermissionFlagsBits } from "discord.js";
 
-class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    await interaction.message.delete().catch(() => {});
+const RemoveStatus = {
+  Idle: "Idle",
+  Running: "Running",
+  Ended: "Ended",
+};
+// MARK: Remover
+class Remover {
+  _interface = null;
+  removedCount = 0;
+  canceled = false;
+  MAX_BULK_REMOVE_AVAILABLE = 50;
+  removeStatus = RemoveStatus.Idle;
+  constructor(context, fetchedMessages) {
+    this.context = context;
+    this.fetchedMessages = fetchedMessages;
+  }
 
-    const channel = msg.channel,
-      params = interaction.params,
-      _isDMBased = interaction.channel.isDMBased();
-
-    const referenceId = msg.reference ? msg.reference.messageId : null;
-
-    const userId = Util.match(params, /\d{17,19}/);
-    const limit = Util.match(params, /(?:\s|^)\d{1,16}(?:\s|$)/);
-
-    const foundedMessages = [],
-      twoWeekAgo = new Date() - 1209600000,
-      options = { limit: 50 };
-
-    const foundLimit = referenceId
-      ? 500
-      : Math.min(limit !== null ? limit : 75, 900);
-
-    let lastMessageId = null;
-    while (true) {
-      if (lastMessageId) options.before = lastMessageId;
-
-      const messages = await channel.messages.fetch(options);
-      foundedMessages.push(...messages.values());
-
-      if (referenceId) {
-        const founded = messages.find((message) => message.id === referenceId);
-
-        if (founded) {
-          foundedMessages.splice(foundedMessages.indexOf(founded));
-          break;
-        }
-
-        if (messages.size !== 50 || foundedMessages.length === 350) {
-          msg.msg({
-            title: "Не удалось найти сообщение",
-            color: "#ff0000",
-            delete: 3000,
-            description: params,
-          });
-          return;
-        }
-      }
-
-      lastMessageId = messages.last().id;
-      if (messages.size !== 50 || foundedMessages.length >= foundLimit) {
-        break;
-      }
-    }
-
-    let messages = foundedMessages;
-
-    messages = messages.filter((message) => !message.pinned);
-
-    if (_isDMBased)
-      messages = messages.filter((message) => message.author === client.user);
-
-    if (userId)
-      messages = messages.filter((message) => message.author.id === userId);
-
-    messages.splice(foundLimit);
-
-    if (messages.length === 0)
-      return msg.msg({
-        title: "Вроде-как удалено 0 сообщений",
-        delete: 3000,
-        description: "Я серьёзно! Не удалено ни единого сообщения!",
-      });
-
-    let counter = await msg.msg({
-      title: `Пожалуйста, Подождите... ${Util.ending(
-        messages.length,
-        "сообщени",
-        "й",
-        "е",
-        "я",
-      )} на удаление.`,
-      description: "Нажмите реакцию чтобы отменить чистку",
-      reactions: ["❌"],
-    });
-    const toDelete = messages.length;
-
+  async onProcess() {
+    this.createInterface();
     await Util.sleep(3000);
 
-    if (messages.length > 120) {
-      msg.channel.sendTyping();
+    if (this.fetchedMessages.length > 120) {
+      this.context.channel.sendTyping();
     }
 
+    await this.start_remove();
+    this._interface.setDefaultMessageState({ delete: MINUTE });
+    this._interface.updateMessage();
+    this._interface.close();
+
+    new Logger(this.context, this).onProcess();
+  }
+
+  async removeMessages({ messages, channel, isBulk }) {
+    const result = await (isBulk
+      ? channel.bulkDelete(messages)
+      : (async () => {
+          for (const message of messages) {
+            await message.delete();
+          }
+        })());
+
+    this.removedCount += messages.length;
+    return result;
+  }
+  async start_remove() {
+    this.removeStatus = RemoveStatus.Running;
+    const { channel } = this.context;
+    const [byBulkDelete, byOneDelete] = this.resolveRemovableGroups();
+    while (byBulkDelete.length) {
+      if (this.canceled) {
+        break;
+      }
+      await this.removeMessages({
+        messages: byBulkDelete.splice(0, this.MAX_BULK_REMOVE_AVAILABLE),
+        channel,
+        isBulk: true,
+      });
+      this._interface.updateMessage();
+    }
+
+    while (byOneDelete.length) {
+      if (this.canceled) {
+        break;
+      }
+      await this.removeMessages({
+        messages: byOneDelete.splice(0, Util.random(5, 15)),
+        channel,
+        isBulk: false,
+      });
+      this._interface.updateMessage();
+    }
+    this.removeStatus = RemoveStatus.Ended;
+  }
+
+  resolveRemovableGroups() {
+    const { fetchedMessages, context } = this;
     const byBulkDelete = [];
     const byOneDelete = [];
+    const { twoWeekAgo_stamp } = context;
+    const inDM = context.channel_isDMBased;
 
-    messages.forEach((msg) => {
-      if (_isDMBased) return byOneDelete.push(msg);
+    fetchedMessages.forEach((message) => {
+      const isMoreThanDiscordBulkDeletePeriod =
+        message.createdTimestamp - twoWeekAgo_stamp < 0;
+      if (inDM || isMoreThanDiscordBulkDeletePeriod) {
+        byOneDelete.push(message);
+        return;
+      }
 
-      if (msg.createdTimestamp - twoWeekAgo < 0) return byOneDelete.push(msg);
-
-      byBulkDelete.push(msg);
+      byBulkDelete.push(message);
     });
 
-    const updateCounter = async () => {
-      const current = toDelete - byOneDelete.length - byBulkDelete.length;
-      counter = await counter.msg({
-        title: `Пожалуйста, Подождите... ${current} / ${toDelete}`,
-        edit: true,
-      });
+    return [byBulkDelete, byOneDelete];
+  }
+
+  createInterface() {
+    const _interface = new MessageInterface();
+    _interface.setChannel(this.context.channel);
+    _interface.setRender(() => this.getEmbed());
+    _interface.setReactions(["❌"]);
+
+    _interface.updateMessage();
+    this._interface = _interface;
+
+    _interface.emitter.on(
+      MessageInterface.Events.allowed_collect,
+      ({ interaction }) => this.process_collectCallback(interaction),
+    );
+    return _interface;
+  }
+
+  process_collectCallback(interaction) {
+    this.process_cancelCallback(interaction);
+  }
+
+  process_cancelCallback(interaction) {
+    const canCancel =
+      interaction.user === this.context.user ||
+      (() =>
+        interaction.guild.members
+          .resolve(interaction.user)
+          ?.permissions.has(PermissionFlagsBits.Administrator))();
+
+    if (!canCancel) {
+      return;
+    }
+
+    this.cancel();
+  }
+
+  getEmbed() {
+    return {
+      title: this.getEmbedTitle(),
+      description: this.getEmbedDescription(),
     };
+  }
 
-    const isReaction = () => {
-      const reacted = counter.reactions.cache.get("❌");
-      if (reacted) return reacted.users.cache.has(msg.author.id);
-    };
-
-    const sendLog = () => {
-      const current = toDelete - byOneDelete.length - byBulkDelete.length;
-
-      if (current === 0) return;
-
-      const mode = referenceId
-        ? `До указанного сообщения`
-        : userId
-          ? `Сообщения пользователя <@${userId}>`
-          : limit
-            ? "Количественная выборка"
-            : "Все сообщения";
-      const isCancel = !!(toDelete - current);
-      const description = `В канале: ${channel.toString()}\nУдалил: ${msg.author.toString()}\nТип чистки: ${mode}${
-        isCancel ? "\n\nЧистка была отменена" : ""
-      }`;
-
-      if (msg.guild) {
-        const title = `Удалено ${Util.ending(
-          current,
-          "сообщени",
-          "й",
-          "е",
-          "я",
-        )}`;
-        msg.guild.logSend({ title, description });
-      }
-    };
-
-    while (byBulkDelete.length || byOneDelete.length) {
-      if (isReaction()) {
-        counter.delete();
-
-        const current = toDelete - byOneDelete.length - byBulkDelete.length;
-        const description = `Было очищено ${Util.ending(
-          current,
+  getEmbedDescription() {
+    const isEnded = this.removeStatus === RemoveStatus.Ended;
+    switch (true) {
+      case this.canceled:
+        return `Было очищено ${Util.ending(
+          this.removedCount,
           "сообщени",
           "й",
           "е",
           "я",
         )} до отмены`;
-        msg.msg({
-          title: "Очистка была отменена",
-          description,
-          delete: 12_000,
-        });
+      case isEnded:
+        return null;
+      default:
+        return "Нажмите реакцию чтобы отменить чистку";
+    }
+  }
 
-        sendLog();
+  getEmbedTitle() {
+    const { removedCount, fetchedMessages, canceled, removeStatus } = this;
 
-        return;
-      }
+    switch (true) {
+      case canceled:
+        return "Очистка была отменена";
+      case removeStatus === RemoveStatus.Ended:
+        return `Удалено ${Util.ending(removedCount, "сообщени", "й", "е", "я")}!`;
+      case !!removedCount:
+        return `Пожалуйста, Подождите... ${removedCount} / ${fetchedMessages.length}`;
+      default:
+        return `Пожалуйста, Подождите... ${Util.ending(
+          fetchedMessages.length,
+          "сообщени",
+          "й",
+          "е",
+          "я",
+        )} на удаление.`;
+    }
+  }
 
-      if (byBulkDelete.length) {
-        await channel.bulkDelete(byBulkDelete.splice(0, 50));
-      } else {
-        for (const message of byOneDelete.splice(0, Util.random(5, 15))) {
-          await message.delete();
-        }
-      }
+  cancel() {
+    this.canceled = true;
+  }
+}
 
-      updateCounter();
+// MARK: Logger
+class Logger {
+  constructor(context, remover) {
+    this.context = context;
+    this.remover = remover;
+  }
+
+  onProcess() {
+    if (!this.process_guild_is_exists) {
+      return false;
     }
 
-    await Util.sleep(toDelete * 30);
+    this.sendLog();
+  }
 
-    counter.msg({
-      title: `Удалено ${Util.ending(toDelete, "сообщени", "й", "е", "я")}!`,
-      edit: true,
-      delete: 1500,
+  process_guild_is_exists() {
+    if (!this.context.guild) {
+      return false;
+    }
+    return true;
+  }
+
+  sendLog() {
+    const { guild } = this.context;
+
+    guild.logSend({
+      title: this.getEmbedTitle(),
+      description: this.getEmbedDescription(),
     });
+  }
 
-    sendLog();
+  getEmbedTitle() {
+    return `Удалено ${Util.ending(this.remover.removedCount, "сообщени", "й", "е", "я")}`;
+  }
+
+  getEmbedDescription() {
+    const { messagesFetcher, user, channel } = this.context;
+    const { targetUserId, hasSpecialTarget } = messagesFetcher;
+
+    const modes = [
+      {
+        label: "до указаного сообщения",
+        condition: hasSpecialTarget,
+      },
+      {
+        label: `сообщения пользователя <@${targetUserId}>`,
+        condition: !!targetUserId,
+      },
+      {
+        label: "количественная выборка",
+        condition: !hasSpecialTarget,
+      },
+    ];
+
+    const contents = {
+      label: "Тип чистки",
+      mode: modes
+        .filter(({ condition }) => condition)
+        .map(({ label }) => label)
+        .join(", "),
+      channel: `В канале: ${channel.toString()}`,
+      user: `Удалил: ${user.toString()}`,
+      canceled: this.remover.canceled ? "\nЧистка была отменена" : "",
+    };
+
+    return `${contents.channel}\n${contents.user}\n${contents.label}: ${Util.capitalize(contents.mode)}${contents.canceled}`;
+  }
+}
+
+// MARK: Fetcher
+class Fetcher {
+  processedMessagesCount = 0;
+  hasSpecialTarget = null;
+  limitCount = null;
+  targetUserId;
+  targetPhrase = null;
+  targetReference = null;
+  fetchedMessages = [];
+
+  isLimit = false;
+  isTargetFounded = false;
+  constructor(context) {
+    this.context = context;
+  }
+
+  async fetch() {
+    const { channel } = this.context;
+    for await (const message of fetchMessagesWhile({
+      channel,
+    })) {
+      this.processedMessagesCount++;
+      if (this.processMessageIsSpecialFetched(message)) {
+        break;
+      }
+      if (this.processMessagesLimit()) {
+        break;
+      }
+      if (!this.processFetchedMessage_isAllowed(message)) {
+        continue;
+      }
+      this.fetchedMessages.push(message);
+    }
+  }
+  setOptions({
+    targetPhrase,
+    targetReference,
+    targetUserId,
+    hasSpecialTarget,
+    limitCount,
+  }) {
+    Object.assign(this, {
+      targetPhrase,
+      targetReference,
+      targetUserId,
+      hasSpecialTarget,
+      limitCount,
+    });
+  }
+
+  processMessageIsSpecialFetched(message) {
+    if (!this.hasSpecialTarget) {
+      return false;
+    }
+
+    const targetFounded =
+      message.content === this.targetPhrase ||
+      message.id === this.targetReference;
+
+    targetFounded && (this.isTargetFounded = true);
+    return targetFounded;
+  }
+
+  processMessagesLimit() {
+    const isLimit = this.fetchedMessages.length > this.limitCount;
+    isLimit && (this.isLimit = true);
+    return isLimit;
+  }
+
+  processFetchedMessage_isAllowed(message) {
+    const { context } = this;
+    const filterByUser =
+      !this.targetUserId || message.author.id === this.targetUserId;
+    const isUserInDMCHannel =
+      context.channel_isDMBased && message.author.id !== client.user.id;
+
+    return !message.pinned && !isUserInDMCHannel && filterByUser;
+  }
+}
+
+// MARK: CommandRunContext
+class CommandRunContext extends BaseCommandRunContext {
+  referenceId;
+  channel_isDMBased;
+  messagesFetcher;
+  DEFAULT_CLEAN_COUNT = 75;
+  CLEAN_COUNT_LIMIT = 1_000;
+  DEFAULT_CLEAN_FOUND_FOR_SPECIAL_TARGET = 500;
+
+  hasSpecialTarget() {
+    const values = this.cliParsed.at(1);
+    return values.get("by_phrase") || this.referenceId;
+  }
+  static async new(interaction, command) {
+    const context = new this(interaction, command);
+    context.referenceId = context.fetchReferenseId();
+    context.channel_isDMBased = interaction.channel.isDMBased();
+    context.messagesFetcher = new Fetcher(context);
+    return context;
+  }
+
+  fetchReferenseId() {
+    const { message } = this.interaction;
+    const { reference } = message;
+    return reference?.messageId;
+  }
+  parseCli(input) {
+    const parsed = new CliParser()
+      .setText(input)
+      .captureByMatch({
+        regex: new RegExp(`${FormattingPatterns.User.source}`),
+        name: "target_user",
+      })
+      .captureByMatch({ regex: /\d+/, name: "clean_count" })
+      .captureResidue({ name: "by_phrase" })
+      .collect();
+    const values = parsed.resolveValues((capture) => capture?.content);
+    this.setCliParsed(parsed, values);
+  }
+  calculateMessagesForClean_count() {
+    const {
+      DEFAULT_CLEAN_COUNT,
+      CLEAN_COUNT_LIMIT,
+      DEFAULT_CLEAN_FOUND_FOR_SPECIAL_TARGET,
+    } = this;
+    const values = this.cliParsed.at(1);
+    const [capturedCount] = values.get("clean_count") ?? [];
+
+    const count =
+      capturedCount ||
+      (this.hasSpecialTarget()
+        ? DEFAULT_CLEAN_FOUND_FOR_SPECIAL_TARGET
+        : DEFAULT_CLEAN_COUNT);
+    return Math.min(count, CLEAN_COUNT_LIMIT);
+  }
+
+  async fetchMessagesToClean() {
+    const values = this.cliParsed.at(1);
+    this.messagesFetcher.setOptions({
+      targetPhrase: values.get("by_phrase"),
+      targetReference: this.referenceId,
+      targetUserId: values.get("target_user")?.groups.id,
+      hasSpecialTarget: this.hasSpecialTarget(),
+      limitCount: this.calculateMessagesForClean_count(),
+    });
+    await this.messagesFetcher.fetch();
+  }
+
+  get twoWeekAgo_stamp() {
+    return Date.now() - DAY * 14;
+  }
+}
+
+// MARK: Command
+class Command extends BaseCommand {
+  removeCallMessage(context) {
+    return context.interaction.message.delete().catch(() => {});
+  }
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
+  async run(context) {
+    await this.removeCallMessage(context);
+    context.parseCli(context.interaction.params);
+    await context.fetchMessagesToClean();
+    this.runClean(context);
+  }
+
+  async runClean(context) {
+    const { messagesFetcher } = context;
+    const { fetchedMessages } = messagesFetcher;
+
+    if (this.processIsSpecialTargetNotFound(context)) {
+      return;
+    }
+
+    if (this.processFetchedNessagesIsEmpty(context)) {
+      return;
+    }
+
+    const remover = new Remover(context, fetchedMessages);
+    await remover.onProcess();
+  }
+
+  processIsSpecialTargetNotFound(context) {
+    if (!context.hasSpecialTarget() || !context.messagesFetcher.isLimit) {
+      return false;
+    }
+    const { channel, interaction } = context;
+    const { params } = interaction;
+    channel.msg({
+      title: "Не удалось найти сообщение",
+      color: "#ff0000",
+      delete: 7_000,
+      description: params,
+    });
+    return true;
+  }
+
+  processFetchedNessagesIsEmpty(context) {
+    const { messagesFetcher } = context;
+    const { fetchedMessages } = messagesFetcher;
+    if (fetchedMessages.length !== 0) {
+      return false;
+    }
+    const { channel } = context;
+    channel.msg({
+      title: "Вроде-как удалено 0 сообщений",
+      delete: 7_000,
+      description: "Я серьёзно! Не удалено ни единого сообщения!",
+    });
+    return true;
   }
 
   options = {
@@ -202,7 +489,7 @@ class Command extends BaseCommand {
     },
     alias: "очистить очисти очисть клир клиар клір очистити",
     allowDM: true,
-    cooldown: 15_000,
+    cooldown: 10_000,
     type: "guild",
     myChannelPermissions: 8192n,
     ChannelPermissions: 8192n,
