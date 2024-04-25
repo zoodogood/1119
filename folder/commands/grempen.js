@@ -447,7 +447,10 @@ class Command extends BaseCommand {
               uses: 1,
               timestamp: null,
             };
-            const event = this.createCloverTimeEvent(guild.id, interaction.channel.id);
+            const event = this.createCloverTimeEvent(
+              guild.id,
+              interaction.channel.id,
+            );
             guildData.cloverEffect.timestamp = event.timestamp;
             return phrase;
           }
@@ -456,9 +459,7 @@ class Command extends BaseCommand {
           clover.uses++;
 
           const increaseTimestamp = (previous) => {
-            const adding = Math.floor(
-              (HOUR * 4) - (previous - Date.now()) / 18,
-            );
+            const adding = Math.floor(HOUR * 4 - (previous - Date.now()) / 18);
             const ms = previous + Math.max(adding, 0);
             return ms;
           };
@@ -663,7 +664,7 @@ class Command extends BaseCommand {
         description: `Благодарю за покупку ${
           product.name.split(" ")[0]
         } !\nЦена в ${Util.ending(
-          isNaN(product.value) ? product.value : 0,
+          !isNaN(product.value) ? product.value : 0,
           "монет",
           "",
           "у",
