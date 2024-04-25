@@ -60,7 +60,7 @@ class TaskManager {
 
   setUserTaskField(user) {
     const task = new TaskData(user.data.task || {});
-    user.data.task ||= task;
+    user.data.task = task;
     this.userTask = task;
     return this;
   }
