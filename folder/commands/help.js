@@ -21,13 +21,14 @@ class Command extends BaseCommand {
     const commands = CommandsManager.collection;
     const isHidden = ({ options }) =>
       options.hidden || options.type === "dev" || options.removed;
-    const design = (command) => `\`!${command.options.name}\``;
+    const pretty_format = (command) => `\`!${command.options.name}\``;
 
-    if (interaction.guild?.data.commands) {
+    // to-do: developer crutch. Restore when interaction.guild?.data.commands analized and changed
+    if (false || interaction.guild?.data.commands) {
       const list = interaction.guild.data.commands;
       guildCommands.push({
         name: "Кастомные команды <:cupS:806813704913682442>",
-        value: list.map(design).join(" "),
+        value: list.map(pretty_format).join(" "),
       });
     }
 
@@ -38,7 +39,7 @@ class Command extends BaseCommand {
           .filter(
             (command) => command.options.type === "guild" && !isHidden(command),
           )
-          .map(design)
+          .map(pretty_format)
           .join(" "),
       },
       {
@@ -47,7 +48,7 @@ class Command extends BaseCommand {
           .filter(
             (command) => command.options.type === "user" && !isHidden(command),
           )
-          .map(design)
+          .map(pretty_format)
           .join(" "),
       },
       {
@@ -56,7 +57,7 @@ class Command extends BaseCommand {
           .filter(
             (command) => command.options.type === "bot" && !isHidden(command),
           )
-          .map(design)
+          .map(pretty_format)
           .join(" "),
       },
       ...guildCommands,
@@ -66,7 +67,7 @@ class Command extends BaseCommand {
           .filter(
             (command) => command.options.type === "other" && !isHidden(command),
           )
-          .map(design)
+          .map(pretty_format)
           .join(" "),
       },
     ];
