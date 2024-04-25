@@ -325,7 +325,7 @@ class Fetcher {
   }
 
   processMessagesLimit() {
-    const isLimit = this.fetchedMessages.length > this.limitCount;
+    const isLimit = this.fetchedMessages.length >= this.limitCount;
     isLimit && (this.isLimit = true);
     return isLimit;
   }
@@ -374,7 +374,7 @@ class CommandRunContext extends BaseCommandRunContext {
         regex: new RegExp(`${FormattingPatterns.User.source}`),
         name: "target_user",
       })
-      .captureByMatch({ regex: /\d+/, name: "clean_count" })
+      .captureByMatch({ regex: /\d{1,16}/, name: "clean_count" })
       .captureResidue({ name: "by_phrase" })
       .collect();
     const values = parsed.resolveValues((capture) => capture?.content);
