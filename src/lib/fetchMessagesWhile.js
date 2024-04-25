@@ -19,5 +19,5 @@ export async function* fetchMessagesWhile({
       return;
     }
     fromMessage = bulk.at(-1)?.id;
-  } while (bulk.length === MAX_AVAILABLE_LIMIT);
+  } while (bulk.size === MAX_AVAILABLE_LIMIT);
 }
