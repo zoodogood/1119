@@ -2,7 +2,7 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
-import { DAY, MINUTE } from "#constants/globals/time.js";
+import { DAY, SECOND } from "#constants/globals/time.js";
 import { fetchMessagesWhile } from "#lib/fetchMessagesWhile.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { FormattingPatterns } from "discord.js";
@@ -36,7 +36,7 @@ class Remover {
     }
 
     await this.start_remove();
-    this._interface.setDefaultMessageState({ delete: MINUTE });
+    this._interface.setDefaultMessageState({ delete: SECOND * 5 });
     this._interface.updateMessage();
     this._interface.close();
 
