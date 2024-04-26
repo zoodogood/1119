@@ -145,6 +145,14 @@ Object.defineProperty(Discord.Emoji.prototype, "code", {
   },
 });
 
+Object.defineProperty(Discord.Message.prototype, "embed", {
+  get() {
+    const { embeds } = this;
+    const [embed] = embeds || [];
+    return embed;
+  },
+});
+
 // MARK: JavaScript
 
 Array.prototype.random = function ({ pop, weights } = {}) {
