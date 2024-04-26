@@ -7,14 +7,8 @@ import { toLocaleDeveloperString } from "#lib/safe-utils.js";
 import { justSelectMenuComponent } from "#bot/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
-import { AttachmentBuilder, FormattingPatterns } from "discord.js";
-
-function jsonFile(data, name) {
-  const buffer = Buffer.from(JSON.stringify(data, null, "\t"));
-  return new AttachmentBuilder(buffer, {
-    name,
-  });
-}
+import { FormattingPatterns } from "discord.js";
+import { jsonFile } from "#lib/Discord_utils.js";
 
 class Utils {
   static getCursesProgressContent(curses) {
