@@ -9,10 +9,22 @@ import { CliParser } from "@zoodogood/utils/primitives";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { TimedCache } from "#lib/TimedCache.js";
 import { jsonFile } from "#lib/Discord_utils.js";
+import config from "#config";
 
 export function getChannel() {
-  const IDEAS_CHANNEL_ID = "753587805195862058";
-  return client.channels.cache.get(IDEAS_CHANNEL_ID);
+  return client.channels.cache.get(config.guild.ideaChannelId);
+}
+
+function parseIdeaNumber(authorField) {
+  return +Util.match(authorField?.name, /#\d+$/)?.slice(1) || 0;
+}
+
+function parseAuthorName(authorField) {
+  return authorField?.name.replace(/#\d+$/, "").trim();
+}
+
+function parseIdeaDescription(description) {
+  return description.replace("**Идея:**", "").trim();
 }
 
 class Store extends TimedCache {
@@ -65,7 +77,7 @@ class JSON_Flagsubcommand {
   };
   _interface;
   store;
-  messages;
+  messages = [];
   get ideas() {
     return this.messages.filter((message) => message.author === client.user);
   }
@@ -75,6 +87,7 @@ class JSON_Flagsubcommand {
   }
 
   async onProcess() {
+    await this.createInterface();
     if (!this.store.isCached()) {
       const dispose = this.store.emitter.disposable(Store.Events.message, () =>
         this.onMessageCollected(),
@@ -83,7 +96,6 @@ class JSON_Flagsubcommand {
     }
     const { messages, promise } = this.store.value();
     this.messages = messages;
-    this.createInterface();
     await promise;
     this._interface.updateMessage();
     this.sendJSON();
@@ -92,32 +104,59 @@ class JSON_Flagsubcommand {
 
   sendJSON() {
     const { ideas } = this;
-    const data = JSON.stringify(
-      ideas.map(({ embeds: [embed] }) => embed.description),
-      null,
-      "\t",
-    );
+    const data = JSON.stringify(this.ideasToJSON(ideas), null, "\t");
     this.context.channel.msg({ files: [jsonFile(data, "ideas.json")] });
   }
 
-  onMessageCollected() {
-    if (this.store.value().messages.length % 30 === 0) {
-      return;
-    }
-    this._interface.updateMessage();
+  ideasToJSON(ideas) {
+    return ideas.map((idea) => this.ideaToJson(idea));
   }
 
-  createInterface() {
+  ideaToJson(idea) {
+    const [embed] = idea.embeds || [];
+
+    if (!embed) {
+      return undefined;
+    }
+
+    const { author, description } = embed;
+
+    const index = parseIdeaNumber(author);
+    if (!index) {
+      return undefined;
+    }
+    const content = parseIdeaDescription(description);
+    const authorName = parseAuthorName(author);
+    const reactions = idea.reactions.cache.map((reaction) => {
+      const { count, emoji } = reaction;
+      return { count, emoji: emoji.code };
+    });
+    return { index, content, reactions, authorName };
+  }
+
+  async onMessageCollected() {
+    if (this.store.value().messages.length % 100 !== 0) {
+      return;
+    }
+    await this._interface.updateMessage();
+  }
+
+  async createInterface() {
     const { context } = this;
     const _interface = new MessageInterface(context.channel);
     this._interface = _interface;
     _interface.setDefaultMessageState({
       title: "Поиск данных может занять некоторое время",
     });
+    _interface.setRender(() => this.getEmbed());
+    await this._interface.updateMessage();
   }
 
   getEmbed() {
-    return { description: `Получено идей: ${this.ideas.length}` };
+    const { ideas } = this;
+    return {
+      description: ideas.length ? `Получено идей: ${ideas.length}` : null,
+    };
   }
 }
 class CommandRunContext extends BaseCommandRunContext {
@@ -161,8 +200,8 @@ class Command extends BaseCommand {
 
   async lastIdeaNumber() {
     const lastIdeaMessage = await this.store.lastIdeaMessage();
-    const { author: authorField } = lastIdeaMessage.embeds[0];
-    return +Util.match(authorField.name, /#\d+$/).slice(1);
+    const { author: authorField } = lastIdeaMessage?.embeds?.[0] || {};
+    return parseIdeaNumber(authorField);
   }
   async run(context) {
     context.parseCli(context.interaction.params);
