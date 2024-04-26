@@ -14,7 +14,10 @@ class Command extends BaseCommand {
       return;
     }
     this.isInited = true;
-    this.canvasModule = await import("canvas");
+    this.canvasModule = await import("canvas").catch();
+    if (!this.canvasModule) {
+      return;
+    }
 
     const FONT_FAMILY = this.#FONT_FAMILY;
     await this.canvasModule.registerFont(
@@ -23,7 +26,18 @@ class Command extends BaseCommand {
         family: FONT_FAMILY,
       },
     );
+  }
 
+  process_module_exists(interaction) {
+    if (this.canvasModule) {
+      return true;
+    }
+
+    interaction.channel.msg({
+      description:
+        "Модуль холста был отключен. Команды на его основе недоступны",
+    });
+    return false;
   }
   async getContext(interaction) {
     const canvasModule = this.canvasModule;
@@ -202,7 +216,7 @@ class Command extends BaseCommand {
     },
     alias: "уровень rang rank ранг ранк lvl лвл рівень левел",
     allowDM: true,
-    type: "user",
+    type: "dev",
   };
 }
 
