@@ -6,7 +6,120 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { fetchMessagesWhile } from "#lib/fetchMessagesWhile.js";
 import { CliParser } from "@zoodogood/utils/primitives";
+import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import { TimedCache } from "#lib/TimedCache.js";
+import { jsonFile } from "#lib/Discord_utils.js";
 
+export function getChannel() {
+  const IDEAS_CHANNEL_ID = "753587805195862058";
+  return client.channels.cache.get(IDEAS_CHANNEL_ID);
+}
+
+class Store extends TimedCache {
+  constructor() {
+    super();
+  }
+  fetch() {
+    const channel = getChannel();
+    const messages = [];
+    const promise = (async () => {
+      for await (const message of fetchMessagesWhile({ channel })) {
+        this.emitter.emit(Store.Events.message, message);
+        messages.push(message);
+      }
+      this.emitter.emit(Store.Events.collect_end);
+    })();
+    return { messages, promise };
+  }
+
+  async lastIdeaMessage() {
+    return this.isCached()
+      ? this.value().messages.at(0)
+      : await (async () => {
+          // @ts-expect-error
+          const messages = await getChannel().messages.fetch();
+          return messages.find((message) => message.author === client.user);
+        })();
+  }
+
+  onNewIdea(message) {
+    if (!this.isCached()) {
+      return;
+    }
+
+    this.value().messages.unshift(message);
+  }
+
+  static Events = {
+    ...super.Events,
+    message: "message",
+    collect_end: "collect_end",
+  };
+}
+
+class JSON_Flagsubcommand {
+  static FLAG_DATA = {
+    name: "--json",
+    capture: ["--json", "-j"],
+    description: "Возвращает список идей как *.json файл",
+  };
+  _interface;
+  store;
+  messages;
+  get ideas() {
+    return this.messages.filter((message) => message.author === client.user);
+  }
+  constructor(context) {
+    this.context = context;
+    this.store = this.context.command.store;
+  }
+
+  async onProcess() {
+    if (!this.store.isCached()) {
+      const dispose = this.store.emitter.disposable(Store.Events.message, () =>
+        this.onMessageCollected(),
+      );
+      this.store.emitter.once(Store.Events.collect_end, dispose);
+    }
+    const { messages, promise } = this.store.value();
+    this.messages = messages;
+    this.createInterface();
+    await promise;
+    this._interface.updateMessage();
+    this.sendJSON();
+    return true;
+  }
+
+  sendJSON() {
+    const { ideas } = this;
+    const data = JSON.stringify(
+      ideas.map(({ embeds: [embed] }) => embed.description),
+      null,
+      "\t",
+    );
+    this.context.channel.msg({ files: [jsonFile(data, "ideas.json")] });
+  }
+
+  onMessageCollected() {
+    if (this.store.value().messages.length % 30 === 0) {
+      return;
+    }
+    this._interface.updateMessage();
+  }
+
+  createInterface() {
+    const { context } = this;
+    const _interface = new MessageInterface(context.channel);
+    this._interface = _interface;
+    _interface.setDefaultMessageState({
+      title: "Поиск данных может занять некоторое время",
+    });
+  }
+
+  getEmbed() {
+    return { description: `Получено идей: ${this.ideas.length}` };
+  }
+}
 class CommandRunContext extends BaseCommandRunContext {
   parseCli(input) {
     const parsed = new CliParser()
@@ -21,15 +134,8 @@ class CommandRunContext extends BaseCommandRunContext {
 }
 
 class Command extends BaseCommand {
-  getChannel() {
-    const IDEAS_CHANNEL_ID = "753587805195862058";
-    return client.channels.cache.get(IDEAS_CHANNEL_ID);
-  }
-  fetchIdeaMessages() {
-    const channel = this.getChannel();
-    const generator = fetchMessagesWhile({ while: () => true, channel });
-    return generator;
-  }
+  store = new Store();
+
   async processAggree(context) {
     const { channel, user, interaction } = context;
     const heAccpet = await Util.awaitUserAccept({
@@ -53,17 +159,25 @@ class Command extends BaseCommand {
     return false;
   }
 
-  async fetchLastIdeaNumber(channel) {
-    const messages = await channel.messages.fetch();
-    const lastIdeaMessage = messages.find(
-      (message) => message.author === client.user,
-    );
+  async lastIdeaNumber() {
+    const lastIdeaMessage = await this.store.lastIdeaMessage();
     const { author: authorField } = lastIdeaMessage.embeds[0];
     return +Util.match(authorField.name, /#\d+$/).slice(1);
   }
   async run(context) {
     context.parseCli(context.interaction.params);
+    if (await this.process_json_flag(context)) {
+      return true;
+    }
     this.processDefaultBehaviour(context);
+  }
+
+  async process_json_flag(context) {
+    if (!context.cliParsed.at(1).get("--json")) {
+      return false;
+    }
+    await new JSON_Flagsubcommand(context).onProcess();
+    return true;
   }
 
   async processDefaultBehaviour(context) {
@@ -71,11 +185,11 @@ class Command extends BaseCommand {
       return;
     }
     const { interaction, user } = context;
-    const channel = this.getChannel();
-    const increasedIdeaNumber = (await this.fetchLastIdeaNumber(channel)) + 1;
+    const channel = getChannel();
+    const increasedIdeaNumber = (await this.lastIdeaNumber()) + 1;
     const phrase = context.cliParsed.at(1).get("phrase");
 
-    channel.msg({
+    const message = await channel.msg({
       title: "<:meow:637290387655884800> Какая классная идея!",
       description: `**Идея:**\n${phrase}`,
       color: interaction.userData.profile_color || "#00ffaf",
@@ -91,6 +205,8 @@ class Command extends BaseCommand {
       color: "#00ffaf",
       author: { name: user.username, iconURL: user.avatarURL() },
     });
+
+    await this.store.onNewIdea(message);
   }
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
@@ -120,11 +236,7 @@ class Command extends BaseCommand {
           expectValue: true,
           description: "Возвращает информацию об идее за её номером",
         },
-        {
-          name: "--json",
-          capture: ["--json", "-j"],
-          description: "Возвращает список идей как *.json файл",
-        },
+        JSON_Flagsubcommand.FLAG_DATA,
       ],
     },
     alias: "идея innovation новвоведение ідея proposal предложение",
