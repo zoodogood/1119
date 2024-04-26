@@ -19,8 +19,13 @@ class Command extends BaseCommand {
   run(interaction) {
     const guildCommands = [];
     const commands = CommandsManager.collection;
+    const { level: userLevel } = interaction.user.data;
     const isHidden = ({ options }) =>
-      options.hidden || options.type === "dev" || options.removed;
+      options.hidden ||
+      options.type === "dev" ||
+      options.removed ||
+      options.accessibility?.publicized_on_level > userLevel;
+
     const pretty_format = (command) => `\`!${command.options.name}\``;
 
     // to-do: developer crutch. Restore when interaction.guild?.data.commands analized and changed
@@ -72,27 +77,31 @@ class Command extends BaseCommand {
       },
     ];
 
+    const EMBED_COMPONENT_PUBLIZED_ON_LEVEL = 3;
     const embed = {
       title: "Команды, которые не сломают ваш сервер",
       description: `Знаете все-все мои возможности? Вы точно молодец!`,
       fields,
-      components: [
-        {
-          type: ComponentType.Button,
-          label: "Discord",
-          style: ButtonStyle.Link,
-          url: "https://discord.gg/76hCg2h7r8",
-          emoji: { id: "849587567564554281" },
-        },
-        {
-          type: ComponentType.Button,
-          label: "Тишком-нишком",
-          customId: "@command/help/guidances-preview",
-          style: ButtonStyle.Primary,
-          emoji: "❄️",
-          // options: this.createGuidances().selectOptions
-        },
-      ],
+      components:
+        userLevel > EMBED_COMPONENT_PUBLIZED_ON_LEVEL
+          ? [
+              {
+                type: ComponentType.Button,
+                label: "Discord",
+                style: ButtonStyle.Link,
+                url: "https://discord.gg/76hCg2h7r8",
+                emoji: { id: "849587567564554281" },
+              },
+              {
+                type: ComponentType.Button,
+                label: "Тишком-нишком",
+                customId: "@command/help/guidances-preview",
+                style: ButtonStyle.Primary,
+                emoji: "❄️",
+                // options: this.createGuidances().selectOptions
+              },
+            ]
+          : [],
     };
 
     interaction.channel.msg(embed);
