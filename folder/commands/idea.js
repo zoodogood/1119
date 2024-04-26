@@ -122,7 +122,7 @@ class JSON_Flagsubcommand {
     const { author, description } = embed;
 
     const index = parseIdeaNumber(author);
-    if (!index) {
+    if (!index || !description) {
       return undefined;
     }
     const content = parseIdeaDescription(description);
