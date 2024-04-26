@@ -10,6 +10,7 @@ export default {
   guild: {
     url: "https://discord.gg/76hCg2h7r8",
     logChannelId: "1186636612835217428",
+    ideaChannelId: "753587805195862058",
   },
   development: true,
 
