@@ -356,6 +356,7 @@ class CommandsManager {
         primary,
       });
     }
+    return _context;
   }
 
   static statistics = {
