@@ -99,27 +99,45 @@ function timestampToDate(ms, max) {
     return NaN;
   }
 
-  const date = new Date(Math.max(ms, 0)),
-    s = date.getUTCSeconds() + "с",
-    m = date.getUTCMinutes() + "м ",
-    h = date.getUTCHours() + "ч ",
-    d = date.getUTCDate() - 1 + "д ",
-    mo = date.getUTCMonth() + "мес. ",
-    y =
-      date.getUTCFullYear() -
-      1970 +
-      (date.getUTCFullYear() - 1970 > 4 ? "л " : "г ");
+  const date = new Date(Math.max(ms, 0));
+  const stamps = [
+    {
+      ending: ["", "лет", "год", "года"],
+      value: date.getUTCFullYear() - 1970,
+    },
+    {
+      ending: ["месяц", "ев", "", "а"],
+      value: date.getUTCMonth(),
+    },
+    {
+      ending: ["д", "ней", "ень", "ня"],
+      value: date.getUTCDate() - 1,
+    },
+    {
+      ending: ["час", "ов", "", "а"],
+      value: date.getUTCHours(),
+    },
+    {
+      ending: ["минут", "", "а", "ы"],
+      value: date.getUTCMinutes(),
+    },
+    {
+      ending: ["секунд", "", "а", "ы"],
+      value: date.getUTCSeconds(),
+    },
+  ];
 
   let input = joinWithAndSeparator(
-    [y, mo, d, h, m, s]
-      .filter((stamp) => +stamp[0])
-      .slice(0, max || 7)
-      .join(" ")
+    stamps
+      .filter((stamp) => +stamp.value)
+      .map((stamp) => `${ending(stamp.value, ...stamp.ending)}`)
+      .slice(0, max || Number.MAX_SAFE_INTEGER)
+      .join(", ")
       .trim(),
   );
 
   if (!input) {
-    input = `0,${ms.toString().slice(0, 3)}с`;
+    input = `0,${ms.toString().slice(0, 3)} с.`;
   }
 
   return input;
