@@ -104,7 +104,7 @@ class JSON_Flagsubcommand {
 
   sendJSON() {
     const { ideas } = this;
-    const data = JSON.stringify(this.ideasToJSON(ideas), null, "\t");
+    const data = this.ideasToJSON(ideas);
     this.context.channel.msg({ files: [jsonFile(data, "ideas.json")] });
   }
 
