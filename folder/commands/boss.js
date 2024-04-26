@@ -487,6 +487,9 @@ class Command extends BaseCommand {
         },
       ],
     },
+    accessibility: {
+      publicized_on_level: 7,
+    },
     alias: "босс бос",
     allowDM: true,
     type: "other",
