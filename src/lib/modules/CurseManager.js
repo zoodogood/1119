@@ -182,7 +182,8 @@ class CurseManager {
           callBot: (user, curse, { type }) =>
             type === "stupid" && CurseManager.interface({ user, curse }).fail(),
         },
-        filter: (user) => user.data.quest?.id === "namebot" && !user.data.quest.isCompleted,
+        filter: (user) =>
+          user.data.quest?.id === "namebot" && !user.data.quest.isCompleted,
         interactionIsShort: true,
         reward: 4,
       },
@@ -926,6 +927,7 @@ class CurseManager {
         hard: 1,
         EFFECT_ID: "curseManager.event.pacifier",
         description: "На время заменяет ваш профиль пустышкой",
+        SYNCED_KEYS: ["reminds", "praises"],
         values: {
           timer: () => 86_400_000,
         },
@@ -953,13 +955,14 @@ class CurseManager {
             const puppet = { ...userData };
             const defaults = DataManager.userToDefaultData(user, user.id);
             for (const key of Object.keys(userData)) {
+              if (this.SYNCED_KEYS.includes(key)) {
+                continue;
+              }
               delete userData[key];
             }
             Object.assign(userData, defaults);
-            userData.curses ||= [];
-            userData.curses.push(curse);
-            userData.cursesCallbackMap ||= {};
-            userData.cursesCallbackMap.curseTimeEnd = true;
+            userData.curses = [curse];
+            userData.cursesCallbackMap = { curseTimeEnd: true };
             userData[this.EFFECT_ID] = puppet;
           },
           timeEventEffectTimeoutEnd(user, curse, data) {
