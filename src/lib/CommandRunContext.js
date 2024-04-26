@@ -1,5 +1,5 @@
 // @ts-check
-import EventsManager from "#lib/modules/EventsManager.js";
+import EventsEmitter from "events";
 
 class BaseCommandRunContext {
   command = null;
@@ -7,7 +7,7 @@ class BaseCommandRunContext {
   guild = null;
   channel = null;
   user = null;
-  emitter = new EventsManager();
+  emitter = new EventsEmitter();
   whenRunExecuted = null;
 
   setCliParsed(parsed, values) {
