@@ -23,6 +23,10 @@ import app from "#app";
 
 const COMMANDS_PATH = "./folder/commands";
 
+export const Events = {
+  signal_command_flow_end: "signal_command_flow_end",
+};
+
 class CommandInteraction {
   constructor({ params, user, channel, guild, commandBase, message, client }) {
     this.params = params;
@@ -332,6 +336,7 @@ class CommandsManager {
       _context = await whenCommandEnd;
       if (_context instanceof BaseCommandRunContext) {
         await _context.whenRunExecuted;
+        _context.emitter.emit(Events.signal_command_flow_end);
       }
 
       this.statistics.increase(context);
