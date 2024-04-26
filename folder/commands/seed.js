@@ -6,7 +6,7 @@ import BerryCommand from "#folder/commands/berry.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { MINUTE } from "#constants/globals/time.js";
+import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import { Events } from "#constants/app/events.js";
 
 // to-do: developer crunch will be removed
@@ -124,16 +124,17 @@ class Command extends BaseCommand {
           callback: () => {
             const { metric, count } =
               speedGrowth > 100
-                ? { metric: "минуту", count: speedGrowth / 1440 }
+                ? { metric: "минуту", count: speedGrowth / (DAY / MINUTE) }
                 : speedGrowth > 10
-                  ? { metric: "час", count: speedGrowth / 24 }
+                  ? { metric: "час", count: speedGrowth / (DAY / HOUR) }
                   : { metric: "день", count: speedGrowth };
             const contents = {
-              speed: `Клубники выростает ${count} в ${metric}`,
+              speed: `Клубники выростает ${count} <:berry:756114492055617558> в ${metric}`,
               ready: `Готово для сбора: ${Math.floor(treeField.berrys)}`,
               nextIn: `Следущая дозреет через: ${Util.timestampToDate(
-                ((1 - (treeField.berrys % 1)) * 86400000) / speedGrowth,
-              )} <:berry:756114492055617558>`,
+                ((1 - (treeField.berrys % 1)) * DAY) / speedGrowth,
+                2,
+              )}`,
             };
             const name = "Плоды";
             const value = `${contents.speed}\n${contents.ready}\n${contents.nextIn}`;
@@ -326,6 +327,7 @@ class Command extends BaseCommand {
           title: "Перезарядка...",
           description: `Вы сможете собрать клубнику только через **${Util.timestampToDate(
             userData.CD_54 - Date.now(),
+            2,
           )}**`,
           footer: { text: "Перезарядка уменьшается по мере роста дерева" },
           author: { name: user.username, iconURL: user.avatarURL() },
