@@ -588,6 +588,9 @@ class Command extends BaseCommand {
         Flag_property.FLAG_DATA,
       ],
     },
+    accessibility: {
+      publicized_on_level: 3,
+    },
     allowDM: true,
     cooldown: 20_000,
     cooldownTry: 2,

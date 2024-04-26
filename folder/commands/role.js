@@ -388,6 +388,9 @@ class Command extends BaseCommand {
       description:
         "\n\nБывает такое, что вы хотите дать право для одной роли управлять другой ролью, и только ею? Редко, но такая потребность действительно имеется, и теперь вы знаете что с ней делать!\n\n✏️\n```python\n!role <memb> <roleID> #аргументы нужны только при выдаче / снятии роли. roleID Даже в этом случае необязателен\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 9,
+    },
     alias: "роль roles роли ролі",
     allowDM: true,
     cooldown: 3_000,

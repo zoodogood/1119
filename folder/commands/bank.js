@@ -598,6 +598,9 @@ class Command extends BaseCommand {
       poster:
         "https://cdn.discordapp.com/attachments/769566192846635010/872463081672949890/bank.gif",
     },
+    accessibility: {
+      publicized_on_level: 2,
+    },
     alias: "cash банк казна скарбниця",
     allowDM: true,
     cooldown: 50_000,

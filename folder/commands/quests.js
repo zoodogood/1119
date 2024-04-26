@@ -285,6 +285,9 @@ class Command extends BaseCommand {
     cliParser: {
       flags: [MembersFlag_Manager.flag],
     },
+    accessibility: {
+      publicized_on_level: 3,
+    },
     allowDM: true,
     cooldown: 5_000,
     type: "user",

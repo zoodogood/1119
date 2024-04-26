@@ -394,6 +394,9 @@ class Command extends BaseCommand {
       description:
         '\n\nВы можете присваивать пользователям информацию, удобно изменять её и просматривать.\nЭто полезная и универсальная функция для РП серверов, хотя для большенства она может оказаться бесполезной.\n\n✏️\n```python\n!variables <memb | "сервер"> <propertyName> <properyValue> # propery переводится как: "свойство"\n```\n\n',
     },
+    accessibility: {
+      publicized_on_level: 15,
+    },
     alias: "variable вар var переменная переменные змінні",
     allowDM: true,
     type: "guild",

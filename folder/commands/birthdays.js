@@ -257,6 +257,9 @@ class Command extends BaseCommand {
         },
       ],
     },
+    accessibility: {
+      publicized_on_level: 5,
+    },
     alias: "parties праздники вечеринки днирождения др днінарождення",
     allowDM: true,
     cooldown: 15_000,

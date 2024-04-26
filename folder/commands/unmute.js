@@ -84,6 +84,9 @@ class Command extends BaseCommand {
       description:
         "\n\nМут наоборот — снимает ограничения на общение в чатах для пользователей.\n\n✏️\n```python\n!unmute {memb}\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 7,
+    },
     alias: "анмут анмьют відглушити",
     expectMention: true,
     allowDM: true,

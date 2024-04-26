@@ -537,6 +537,9 @@ class Command extends BaseCommand {
       poster:
         "https://static.tumblr.com/3f31d88965fd2e42728392a079958659/ngjf4de/g0np1hy8q/tumblr_static_filename_2048_v2.gif",
     },
+    accessibility: {
+      publicized_on_level: 3,
+    },
     alias: "ограбить роб украсть вкрасти крадіжка",
     expectMention: true,
     allowDM: true,

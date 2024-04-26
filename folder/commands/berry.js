@@ -304,6 +304,9 @@ class Command extends BaseCommand {
       description:
         '\n\nКлубника — яркий аналог золотых слитков, цена которых зависит от спроса.\nЧерез эту команду осуществляется её покупка и продажа, тут-же можно увидеть курс.\n\n✏️\n```python\n!berry <"продать" | "купить"> <count>\n```\n\n',
     },
+    accessibility: {
+      publicized_on_level: 3,
+    },
     alias: "клубника клубнички ягода ягоды berrys берри полуниця полуниці",
     allowDM: true,
     cooldown: 15_000,

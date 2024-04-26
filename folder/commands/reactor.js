@@ -218,6 +218,9 @@ class Command extends BaseCommand {
       description:
         '\n\nРеактор — команда позволяющая создавать "роли за реакции" — возможность пользователям выбирать себе роли нажимая реакции под сообщением.\n\n:information_source:\nВозможность пользователями выбирать роли даёт множество вариантов персонализации сервера.\n\n✏️\n```python\n!reactor #без аргументов\n```\n\n',
     },
+    accessibility: {
+      publicized_on_level: 9,
+    },
     alias: "реактор",
     allowDM: true,
     cooldown: 3_00_00,

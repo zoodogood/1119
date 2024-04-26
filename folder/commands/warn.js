@@ -54,6 +54,9 @@ class Command extends BaseCommand {
       description:
         "\n\nВыдаёт формальное предупреждение пользователю — —\n\n✏️\n```python\n!warn {memb}\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 5,
+    },
     alias: "пред варн попередити",
     expectMention: true,
     allowDM: true,

@@ -567,6 +567,9 @@ class Command extends BaseCommand {
         },
       ],
     },
+    accessibility: {
+      publicized_on_level: 7,
+    },
   };
 }
 

@@ -57,6 +57,9 @@ class Command extends BaseCommand {
       description:
         "\n\nСовместный Ютуб — новая возможность дискорда, в отличии от музыкальных команд видео транслируется напрямую из ютуба, а не к боту и уже потом к каналу. Нагрузка на бота при таком подходе сводится к нулю.\nСамая скучная по своим внутренностям команда.\n\n✏️\n```python\n!youtube #без аргументов\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 12,
+    },
     alias: "ютуб ютубвместе youtubetogether ютьюб",
     allowDM: true,
     type: "other",

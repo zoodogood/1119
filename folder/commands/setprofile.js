@@ -195,6 +195,9 @@ class Command extends BaseCommand {
       description:
         '\n\nНастройки вашего профиля: Цвет, описание, день рождения и режим конфиденциальности\n\n✏️\n```python\n!setProfile {"осебе" | "цвет" | "др" | "конфиденциальность"} {value} #для реж. конфиденциальности аргумент value не нужен\n```\n\n',
     },
+    accessibility: {
+      publicized_on_level: 10,
+    },
     alias: "настроитьпрофиль about осебе sp нп налаштуватипрофіль",
     allowDM: true,
     cooldown: 200_000,

@@ -776,6 +776,9 @@ class Command extends BaseCommand {
       description:
         "\n\nКотелок даёт неплохие бонусы, а так же вводит концовку в боте — используя котёл 20 раз, вы раскроете её, попутно читая небольшой рассказ и уничтожив парочку вселенных.\n\n✏️\n```python\n!witch #без аргументов\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 7,
+    },
     alias: "boiler котёл котел ведьма відьма",
     allowDM: true,
     type: "user",

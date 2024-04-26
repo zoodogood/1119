@@ -14,9 +14,13 @@ class Command extends BaseCommand {
     media: {
       description: "Помощь с переводом",
     },
+    accessibility: {
+      publicized_on_level: 10,
+    },
     alias: "локализация локалізація i18n",
     allowDM: true,
     cooldown: 4_000,
+    hidden: true,
     type: "other",
   };
 }

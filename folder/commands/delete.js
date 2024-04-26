@@ -18,6 +18,9 @@ class Command extends BaseCommand {
       description:
         "Шуточная команда, при попытке пользователем что-то удалить отправляет сообщение с требованием купить премиум и ссылкой на картофильное видео.\n\n✏️\n```python\n# secret\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 10,
+    },
     alias: "удалить удали видалити видали",
     allowDM: true,
     cooldown: 5_000,

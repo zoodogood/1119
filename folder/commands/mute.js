@@ -157,6 +157,9 @@ class Command extends BaseCommand {
       poster:
         "https://images-ext-2.discordapp.net/external/fBq1I0O3Tdhoi-DeVVm7nDadXN-uzdgKveyekp-Vm88/https/media.discordapp.net/attachments/769566192846635010/872776969341796382/mute.gif",
     },
+    accessibility: {
+      publicized_on_level: 7,
+    },
     alias: "мут мьют заглушить заглушити",
     expectMention: true,
     allowDM: true,

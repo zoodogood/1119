@@ -255,6 +255,9 @@ class Command extends BaseCommand {
       description:
         '\n\nИспользуйте, чтобы передать коины другому пользователю в качестве доброго подарка или оплаты за помощь :wink:\n\n✏️\n```python\n!pay {memb} {coinsCount | "+"} <message> #аргументы можно указывать в любом порядке. "+" обозначает "Все коины, которые у вас есть"\n```\n\n',
     },
+    accessibility: {
+      publicized_on_level: 2,
+    },
     alias: "give дать передать заплатить дати заплатити передати",
     expectMention: true,
     allowDM: true,

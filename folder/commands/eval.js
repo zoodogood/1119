@@ -144,6 +144,9 @@ class Command extends BaseCommand {
       description:
         "\n\nХотя это и команда разработчика, вы можете просмотреть ваши данные из базы данных в JSON формате, для этого просто не вводите никаких аргументов. Список доступных модулей: !eval availableList\n\n✏️\n```python\n!eval #без аргументов\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 20,
+    },
     alias: "dev евал эвал vm worker",
     allowDM: true,
     type: "other",

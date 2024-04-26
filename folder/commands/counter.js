@@ -133,6 +133,9 @@ class Command extends BaseCommand {
       description:
         "\n\nОтличный способ отображать статистику — с помощью шаблонов создайте динамический текст, который будет меняться каждые 15 минут. Счётчики могут менять как имя любого канала, так и содержание сообщения.\n\n✏️\n```python\n!counter #без аргументов\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 15,
+    },
     alias: "счётчик счетчик count рахівник",
     allowDM: true,
     type: "guild",

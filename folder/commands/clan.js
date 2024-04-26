@@ -34,7 +34,11 @@ class Command extends BaseCommand {
     media: {
       description: "пока тут пусто",
     },
+    accessibility: {
+      publicized_on_level: 9,
+    },
     alias: "клан",
+    hidden: true,
     type: "other",
   };
 }

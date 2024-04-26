@@ -833,6 +833,9 @@ class Command extends BaseCommand {
       description:
         "Медленно адаптируется\nПримечание к выпуску: [побитовые операторы](https://learn.javascript.ru/bitwise-operators); Пока не ясно в каком направлении будет меняться эта команда\n\n✏️\n```python\n!anon # без аргументов\n```\n\n",
     },
+    accessibility: {
+      publicized_on_level: 10,
+    },
     alias: "анон",
     allowDM: true,
     cooldown: 10_000,

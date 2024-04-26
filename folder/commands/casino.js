@@ -95,6 +95,9 @@ ${
       description:
         '\n\nМеня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки\n\n✏️\n```python\n!casino {coinsBet | "+"}\n```\n\n',
     },
+    accessibility: {
+      publicized_on_level: 9,
+    },
     alias: "казино bet ставка",
     expectParams: true,
     allowDM: true,
