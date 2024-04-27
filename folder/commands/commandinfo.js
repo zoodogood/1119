@@ -140,8 +140,7 @@ class TargetCommandMetadata {
   category;
   commandNameId;
   aliases;
-  guide;
-  poster;
+  media;
   usedCount;
   githubURL;
   static new(context) {
@@ -177,11 +176,8 @@ class TargetCommandMetadata {
     const commandNameId = options.name;
     const category = options.type;
     const aliases = options.alias.split(" ");
-    const poster = options.media?.poster;
     const githubURL = this.resolveGithubPathOf(commandNameId);
-    const guide =
-      options.media?.description ||
-      "Описание для этой команды пока отсуствует...";
+    const media = options.media;
     const usedCount =
       DataManager.data.bot.commandsUsed[command.options.id] || 0;
 
@@ -191,8 +187,7 @@ class TargetCommandMetadata {
       category,
       commandNameId,
       aliases,
-      guide,
-      poster,
+      media,
       usedCount,
       githubURL,
     };
@@ -214,8 +209,7 @@ class Command extends BaseCommand {
     const {
       aliases,
       commandNameId,
-      guide,
-      poster,
+      media,
       usedCount,
       githubURL,
       id,
@@ -230,10 +224,10 @@ class Command extends BaseCommand {
 
     const embed = {
       title: `— ${commandNameId.toUpperCase()}`,
-      description: guide.trim(),
+      description: this.formatMediaDescription(media).trim(),
       color: "#1f2022",
       image:
-        poster ||
+        media.poster ||
         "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg",
       fields: [
         {
@@ -264,6 +258,12 @@ class Command extends BaseCommand {
     const message = await channel.msg(embed);
     context.targetMessage = message;
     return true;
+  }
+
+  formatMediaDescription(media) {
+    const { description, example } = media;
+    const exampleContent = `\n\n✏️\n\`\`\`python\n${example}\n\`\`\``;
+    return `${description ?? "Описание для этой команды пока отсуствует..."}${example ? exampleContent : ""}`;
   }
 
   processCommandExists(context) {
