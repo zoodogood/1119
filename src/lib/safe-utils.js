@@ -406,6 +406,26 @@ export function getValuesByIndexes(array, indexes) {
   return [...targets.values()].filter(Boolean);
 }
 
+export function* zeroCenteredSequence() {
+  let i = 0;
+  while (true) {
+    yield i;
+    yield -i;
+    i++;
+  }
+}
+
+export function around(array, index, count = 2) {
+  const per_side = Math.floor(count / 2);
+  const right_space = array.length - index - 1;
+  const right_lacks = Math.max(0, per_side - right_space - 1);
+
+  const start = Math.max(0, index - per_side - right_lacks);
+  const residue = count - (index - start);
+  const end = index + residue + 1;
+  return array.slice(start, index).concat(array.slice(index + 1, end));
+}
+
 export {
   ending,
   omit,
