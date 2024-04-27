@@ -5,7 +5,7 @@ import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ChannelType, PresenceUpdateStatus } from "discord.js";
 import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
 import Template from "#lib/modules/Template.js";
-import {HOUR} from "#constants/globals/time.js";
+import { HOUR } from "#constants/globals/time.js";
 
 class Command extends BaseCommand {
   getUsedCommandsCountOfGuild(guild) {
@@ -183,7 +183,8 @@ class Command extends BaseCommand {
     id: 28,
     media: {
       description:
-        "Отображает основную информацию и статистику о сервере, в том числе бонусы связанные с этим ботом.\nВ неё входят: количество пользователей, каналов, сообщений или эффект клевера (если есть), а также установленные каналы, дата создания и другое\n\n✏️\n```python\n!server #без аргументов\n```\n\n",
+        "Отображает основную информацию и статистику о сервере, в том числе бонусы связанные с этим ботом.\nВ неё входят: количество пользователей, каналов, сообщений или эффект клевера (если есть), а также установленные каналы, дата создания и другое",
+      example: `!server #без аргументов`,
     },
     alias: "сервер guild гильдия",
     allowDM: true,

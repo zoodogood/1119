@@ -51,8 +51,8 @@ class Command extends BaseCommand {
     name: "warn",
     id: 7,
     media: {
-      description:
-        "Выдаёт формальное предупреждение пользователю — —\n\n✏️\n```python\n!warn {memb}\n```\n\n",
+      description: "Выдаёт формальное предупреждение пользователю — —",
+      example: `!warn {memb}`,
     },
     accessibility: {
       publicized_on_level: 5,

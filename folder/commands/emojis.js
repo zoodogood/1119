@@ -112,7 +112,8 @@ class Command extends BaseCommand {
     id: 23,
     media: {
       description:
-        "Отправляет список смайликов на сервере или подробную информацию об одном из них.\n\n✏️\n```python\n!emojis <emoji|emojiID>\n```\n\n",
+        "Отправляет список смайликов на сервере или подробную информацию об одном из них.",
+      example: `!emojis <emoji|emojiID>`,
     },
     alias: "emoji смайлики эмодзи эмоджи емодзі",
     allowDM: true,

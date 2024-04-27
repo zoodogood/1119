@@ -93,7 +93,8 @@ ${
     id: 57,
     media: {
       description:
-        'Меня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки\n\n✏️\n```python\n!casino {coinsBet | "+"}\n```\n\n',
+        "Меня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки",
+      example: `!casino {coinsBet | "+"}`,
     },
     accessibility: {
       publicized_on_level: 9,

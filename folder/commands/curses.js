@@ -524,8 +524,8 @@ class Command extends BaseCommand {
     name: "curses",
     id: 65,
     media: {
-      description:
-        "Даёт полезную информацию о проклятиях\n\n✏️\n```python\n!curses --help\n```\n\n",
+      description: "Даёт полезную информацию о проклятиях",
+      example: `!curses --help`,
     },
     alias: "проклятия проклятие curse",
     allowDM: true,

@@ -138,7 +138,8 @@ class Command extends BaseCommand {
     id: 43,
     media: {
       description:
-        "Отображает список существующих счётчиков на сервере. См. команду `!counter`\n\n✏️\n```python\n!counters #без аргументов\n```\n\n",
+        "Отображает список существующих счётчиков на сервере. См. команду `!counter`",
+      example: `!counters #без аргументов`,
     },
     accessibility: {
       publicized_on_level: 15,

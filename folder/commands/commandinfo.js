@@ -328,7 +328,8 @@ class Command extends BaseCommand {
     id: 53,
     media: {
       description:
-        "Показывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение\n\n✏️\n```python\n!commandInfo {command}\n```\n\n",
+        "Показывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение",
+      example: `!commandInfo {command}`,
     },
     cliParser: {
       flags: [

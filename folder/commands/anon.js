@@ -831,7 +831,8 @@ class Command extends BaseCommand {
     id: 63,
     media: {
       description:
-        "Медленно адаптируется\nПримечание к выпуску: [побитовые операторы](https://learn.javascript.ru/bitwise-operators); Пока не ясно в каком направлении будет меняться эта команда\n\n✏️\n```python\n!anon # без аргументов\n```\n\n",
+        "Медленно адаптируется\nПримечание к выпуску: [побитовые операторы](https://learn.javascript.ru/bitwise-operators); Пока не ясно в каком направлении будет меняться эта команда",
+      example: `!anon # без аргументов`,
     },
     accessibility: {
       publicized_on_level: 10,
