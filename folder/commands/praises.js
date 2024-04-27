@@ -303,7 +303,7 @@ class Command extends BaseCommand {
     id: 6,
     media: {
       description:
-        "\n\nОтображает список людей, которых вы похвалили и которые похвалили вас.\n\n✏️\n```python\n!praises <memb>\n```\n\n",
+        "Отображает список людей, которых вы похвалили и которые похвалили вас.\n\n✏️\n```python\n!praises <memb>\n```\n\n",
     },
     alias: "похвалы похвали лайки likes",
     allowDM: true,

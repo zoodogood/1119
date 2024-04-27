@@ -82,7 +82,7 @@ class Command extends BaseCommand {
     id: 18,
     media: {
       description:
-        "\n\nМут наоборот — снимает ограничения на общение в чатах для пользователей.\n\n✏️\n```python\n!unmute {memb}\n```\n\n",
+        "Мут наоборот — снимает ограничения на общение в чатах для пользователей.\n\n✏️\n```python\n!unmute {memb}\n```\n\n",
     },
     accessibility: {
       publicized_on_level: 7,

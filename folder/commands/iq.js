@@ -43,7 +43,7 @@ class Command extends BaseCommand {
     id: 31,
     media: {
       description:
-        "\n\nХотя мы не знаем ваш настоящий IQ, можем предложить наш собственный..\nВозможно, когда-то у нас появится тест на ICQ\n\n✏️\n```python\n!iq <memb>\n```\n\n",
+        "Хотя мы не знаем ваш настоящий IQ, можем предложить наш собственный..\nВозможно, когда-то у нас появится тест на ICQ\n\n✏️\n```python\n!iq <memb>\n```\n\n",
     },
     accessibility: {
       publicized_on_level: 2,

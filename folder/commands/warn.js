@@ -52,7 +52,7 @@ class Command extends BaseCommand {
     id: 7,
     media: {
       description:
-        "\n\nВыдаёт формальное предупреждение пользователю — —\n\n✏️\n```python\n!warn {memb}\n```\n\n",
+        "Выдаёт формальное предупреждение пользователю — —\n\n✏️\n```python\n!warn {memb}\n```\n\n",
     },
     accessibility: {
       publicized_on_level: 5,

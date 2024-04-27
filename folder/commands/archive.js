@@ -56,7 +56,7 @@ class Command extends BaseCommand {
     id: 10,
     media: {
       description:
-        "\n\nАрхивирует сообщения в канале и отправляет содержимое пользователю в виде файла.\n\n✏️\n```python\n!archive #без аргументов\n```\n\n",
+        "Архивирует сообщения в канале и отправляет содержимое пользователю в виде файла.\n\n✏️\n```python\n!archive #без аргументов\n```\n\n",
     },
     alias: "arhive архив архів",
     allowDM: true,

@@ -18,7 +18,7 @@ class Command extends BaseCommand {
     id: 21,
     media: {
       description:
-        "\n\nСтарые тестирования муз. команд.\n\n✏️\n```python\n!voice #без аргументов\n```\n\n",
+        "Старые тестирования муз. команд.\n\n✏️\n```python\n!voice #без аргументов\n```\n\n",
     },
     alias: "войс голосовий",
     allowDM: true,

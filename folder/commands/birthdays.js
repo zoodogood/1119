@@ -245,7 +245,7 @@ class Command extends BaseCommand {
     id: 22,
     media: {
       description:
-        "\n\nОтображает список ближайших именинников! :tada:\nНе забудьте поздравить их с праздником.\n\n✏️\n```python\n!birthdays #без аргументов\n```\n\n",
+        "Отображает список ближайших именинников! :tada:\nНе забудьте поздравить их с праздником.\n\n✏️\n```python\n!birthdays #без аргументов\n```\n\n",
     },
     cliParser: {
       flags: [
