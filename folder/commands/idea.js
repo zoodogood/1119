@@ -12,7 +12,6 @@ import { jsonFile } from "#lib/Discord_utils.js";
 import config from "#config";
 import { Pager } from "#lib/DiscordPager.js";
 import { Collection } from "@discordjs/collection";
-import { resolvePartialEmoji } from "discord.js";
 
 export function getChannel() {
   return client.channels.cache.get(config.guild.ideaChannelId);
@@ -253,6 +252,7 @@ class At_Flagsubcommand {
     this.context.channel.msg({
       description: "Значение флага --at должно быть числом",
       delete: 8 * SECOND,
+      color: Command.MESSAGE_THEME.color,
     });
   }
 
@@ -335,6 +335,7 @@ class Edit_Flagsubcommand {
   pager;
   value;
   store;
+  targetMessage;
   constructor(context, value) {
     this.context = context;
     this.value = +value;
@@ -346,9 +347,60 @@ class Edit_Flagsubcommand {
     }
     const loader = new Loader(this.context);
     await loader.process_wait_load();
-    this.ideas = loader.ideas();
-    await this.createInterface();
+    if (
+      !this.process_validate_value() ||
+      !(await this.fetchMessage()) ||
+      !this.process_validate_permission()
+    ) {
+      return;
+    }
+
+    await this.editMessage();
     return true;
+  }
+
+  async fetchMessage() {
+    const { ideasChannel, storeValue } = this.context;
+    const message = await ideasChannel.messages.fetch(
+      storeValue.ideas.get(this.value)?.id,
+    );
+    if (!this.process_idea_exists(message)) {
+      return false;
+    }
+    this.targetMessage = message;
+    return true;
+  }
+
+  process_idea_exists(message) {
+    if (message) {
+      return true;
+    }
+
+    this.context.channel.msg({
+      description: "Идея с указанным номером не существует",
+      delete: 8 * SECOND,
+      color: Command.MESSAGE_THEME.color,
+    });
+    return false;
+  }
+
+  process_validate_permission() {
+    const { targetMessage, context } = this;
+    const { user } = context;
+    const author_id =
+      targetMessage.embed.author.iconURL.match(/\d{17,22}/)?.[0];
+    const isSame = author_id === user.id;
+    const isUserModerator = config.developers.includes(user.id);
+    if (isSame || isUserModerator) {
+      return true;
+    }
+
+    const idea_author = client.users.cache.get(author_id);
+    this.context.channel.msg({
+      description: `Автором идеи является ${idea_author?.username || null}`,
+      delete: 8 * SECOND,
+      color: Command.MESSAGE_THEME.color,
+    });
   }
 
   process_validate_value() {
@@ -361,20 +413,26 @@ class Edit_Flagsubcommand {
       description:
         "Значение флага --edit должно быть числом и указывать на целевую идею",
       delete: 8 * SECOND,
+      color: Command.MESSAGE_THEME.color,
     });
   }
 
-  createInterface() {
-    this.pager.currentPage = this.value;
-    this.pager.setDefaultMessageState({
-      color: Command.MESSAGE_THEME.color,
+  async editMessage() {
+    const { targetMessage } = this;
+    const { embed } = targetMessage;
+    const { title, color, author } = embed;
+    await targetMessage.msg({
+      title,
+      color,
+      author,
+      description: this.context.cliParsed.at(1).get("phrase"),
+      edit: true,
     });
-    this.pager.addPages(
-      this.ideas.map(({ embeds }) => {
-        const [embed] = embeds;
-        return { description: embed?.description };
-      }),
-    );
+
+    this.context.channel.msg({
+      title: "Идея отредактирована!",
+      description: `Старое содержание:\n${embed.description}`,
+    });
   }
 }
 
@@ -448,10 +506,11 @@ class Command extends BaseCommand {
   }
 
   async process_edit_flag(context) {
-    if (!context.cliParsed.at(1).get("--edit")) {
+    const value = context.cliParsed.at(1).get("--edit");
+    if (!value) {
       return false;
     }
-    await new Edit_Flagsubcommand(context).onProcess();
+    await new Edit_Flagsubcommand(context, value).onProcess();
     return true;
   }
 
