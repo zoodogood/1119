@@ -12,6 +12,7 @@ import { jsonFile } from "#lib/Discord_utils.js";
 import config from "#config";
 import { Pager } from "#lib/DiscordPager.js";
 import { Collection } from "@discordjs/collection";
+import { resolvePartialEmoji } from "discord.js";
 
 export function getChannel() {
   return client.channels.cache.get(config.guild.ideaChannelId);
@@ -72,6 +73,7 @@ class Loader {
     _interface.setChannel(context.channel);
     _interface.setDefaultMessageState({
       title: "Поиск данных может занять некоторое время...",
+      color: Command.MESSAGE_THEME.color,
     });
     _interface.setRender(() => this.getEmbed());
     await this._interface.updateMessage();
@@ -133,7 +135,14 @@ class Store extends TimedCache {
       const { count, emoji } = reaction;
       return { count, emoji: emoji.code };
     });
-    return { index, content, reactions, authorName, id };
+    return {
+      index,
+      content,
+      reactions,
+      authorName,
+      authorIconURL: author.iconURL,
+      id,
+    };
   }
 
   async sort() {
@@ -250,6 +259,9 @@ class At_Flagsubcommand {
   createInterface() {
     const { pager } = this;
     pager.currentPage = this.value;
+    pager.setDefaultMessageState({
+      color: Command.MESSAGE_THEME.color,
+    });
     pager.setPagesLength(Math.max(...this.ideas.keys()));
     pager.setRender(() => this.messageOptionsOfCurrent());
     pager.updateMessage();
@@ -286,10 +298,29 @@ class At_Flagsubcommand {
       return { description, title: `Идея #${ideaIndex}` };
     }
 
+    const { ideasChannel } = this.context;
     return {
-      description: idea.content,
-      author: { name: idea.authorName },
-      footer: { text: `Идея #${ideaIndex}` },
+      description: `<:meow:637290387655884800> Классная идея:\n${idea.content}`,
+      fields: [
+        {
+          name: `Перейти к сообщению`,
+          value: `https://discord.com/channels/${ideasChannel.guild.id}/${ideasChannel.id}/${idea.id}`,
+        },
+        {
+          name: "Реакции",
+          value:
+            idea.reactions
+              .map(
+                ({ count, emoji }) =>
+                  `${client.emojis.resolve(emoji)?.toString() || emoji} | ${count}`,
+              )
+              .join("\n") || "Пусто",
+        },
+      ],
+      author: {
+        name: `${idea.authorName} #${ideaIndex}`,
+        iconURL: idea.authorIconURL,
+      },
     };
   }
 }
@@ -335,6 +366,9 @@ class Edit_Flagsubcommand {
 
   createInterface() {
     this.pager.currentPage = this.value;
+    this.pager.setDefaultMessageState({
+      color: Command.MESSAGE_THEME.color,
+    });
     this.pager.addPages(
       this.ideas.map(({ embeds }) => {
         const [embed] = embeds;
@@ -346,8 +380,12 @@ class Edit_Flagsubcommand {
 
 class CommandRunContext extends BaseCommandRunContext {
   _storeValue;
+  _ideasChannel;
   get storeValue() {
     return (this._storeValue ||= this.command.store.value());
+  }
+  get ideasChannel() {
+    return getChannel();
   }
   parseCli(input) {
     const parsed = new CliParser()
@@ -363,6 +401,10 @@ class CommandRunContext extends BaseCommandRunContext {
 
 class Command extends BaseCommand {
   store = new Store();
+
+  static MESSAGE_THEME = {
+    color: "#00ffaf",
+  };
 
   async processAggree(context) {
     const { channel, user, interaction } = context;
@@ -452,7 +494,7 @@ class Command extends BaseCommand {
     interaction.channel.msg({
       title: "<:meow:637290387655884800> Вы отправили нам свою идею! Спасибо!",
       description: `А что, идея «${phrase}» весьма не плоха...`,
-      color: "#00ffaf",
+      color: Command.MESSAGE_THEME.color,
       author: { name: user.username, iconURL: user.avatarURL() },
     });
 
