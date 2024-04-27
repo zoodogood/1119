@@ -38,14 +38,15 @@ class Loader {
   storeValue;
 
   constructor(context) {
+    const { command, storeValue } = context;
     this.context = context;
-    this.store = this.context.command.store;
-    this.storeValue = this.context.storeValue;
+    this.store = command.store;
+    this.storeValue = storeValue;
   }
 
   async process_wait_load() {
     await this.createInterface();
-    if (!this.store.isCached()) {
+    if (!this.storeValue.isFulled) {
       const dispose = this.store.emitter.disposable(Store.Events.idea, () =>
         this.onMessageCollected(),
       );
@@ -93,13 +94,16 @@ class Store extends TimedCache {
   fetch() {
     const channel = getChannel();
     const ideas = new Collection();
+    const data = { ideas, isSorted: false, isFulled: false, promise: null };
     const promise = (async () => {
       for await (const message of fetchMessagesWhile({ channel })) {
         this.process_message(message);
       }
       this.emitter.emit(Store.Events.collect_end);
+      data.isFulled = true;
     })();
-    return { ideas, promise, isSorted: false };
+    data.promise = promise;
+    return data;
   }
 
   process_message(message) {
