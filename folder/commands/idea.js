@@ -3,20 +3,25 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { MINUTE } from "#constants/globals/time.js";
+import { MINUTE, SECOND } from "#constants/globals/time.js";
 import { fetchMessagesWhile } from "#lib/fetchMessagesWhile.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { TimedCache } from "#lib/TimedCache.js";
 import { jsonFile } from "#lib/Discord_utils.js";
 import config from "#config";
+import { Pager } from "#lib/DiscordPager.js";
+import { Collection } from "@discordjs/collection";
 
 export function getChannel() {
   return client.channels.cache.get(config.guild.ideaChannelId);
 }
 
 function parseIdeaNumber(authorField) {
-  return +Util.match(authorField?.name, /#\d+$/)?.slice(1) || 0;
+  if (!authorField) {
+    return;
+  }
+  return +Util.match(authorField.name, /#\d+$/)?.slice(1) || 0;
 }
 
 function parseAuthorName(authorField) {
@@ -27,44 +32,144 @@ function parseIdeaDescription(description) {
   return description.replace("**Идея:**", "").trim();
 }
 
+class Loader {
+  _interface = new MessageInterface();
+  store;
+  storeValue;
+
+  constructor(context) {
+    this.context = context;
+    this.store = this.context.command.store;
+    this.storeValue = this.context.storeValue;
+  }
+
+  async process_wait_load() {
+    await this.createInterface();
+    if (!this.store.isCached()) {
+      const dispose = this.store.emitter.disposable(Store.Events.idea, () =>
+        this.onMessageCollected(),
+      );
+      this.store.emitter.once(Store.Events.collect_end, dispose);
+    }
+    const { promise } = this.storeValue;
+    await promise;
+    this._interface.updateMessage();
+  }
+
+  ideas() {
+    return this.storeValue.ideas;
+  }
+
+  async onMessageCollected() {
+    if (this.storeValue.ideas.size % 100 !== 0) {
+      return;
+    }
+    await this._interface.updateMessage();
+  }
+
+  async createInterface() {
+    const { context, _interface } = this;
+    _interface.setChannel(context.channel);
+    _interface.setDefaultMessageState({
+      title: "Поиск данных может занять некоторое время...",
+    });
+    _interface.setRender(() => this.getEmbed());
+    await this._interface.updateMessage();
+  }
+
+  getEmbed() {
+    const { ideas } = this.storeValue;
+    return {
+      description: ideas.size ? `Получено идей: ${ideas.size}` : null,
+    };
+  }
+}
+
 class Store extends TimedCache {
   constructor() {
     super();
   }
   fetch() {
     const channel = getChannel();
-    const messages = [];
+    const ideas = new Collection();
     const promise = (async () => {
       for await (const message of fetchMessagesWhile({ channel })) {
-        this.emitter.emit(Store.Events.message, message);
-        messages.push(message);
+        this.process_message(message);
       }
       this.emitter.emit(Store.Events.collect_end);
     })();
-    return { messages, promise };
+    return { ideas, promise, isSorted: false };
   }
 
-  async lastIdeaMessage() {
+  process_message(message) {
+    if (!this.isCached()) {
+      return;
+    }
+    this.emitter.emit(Store.Events.message, message);
+
+    const { ideas } = this.value();
+    const metadata = this.idea_parse_metadata(message);
+    if (!metadata) {
+      return;
+    }
+    this.value().isSorted = false;
+    this.emitter.emit(Store.Events.idea, { message, metadata });
+    ideas.set(metadata.index, metadata);
+  }
+
+  idea_parse_metadata(message) {
+    const { embed, id } = message;
+    if (!embed) {
+      return undefined;
+    }
+    const { author, description } = embed;
+    const index = parseIdeaNumber(author);
+    if (!index) {
+      return undefined;
+    }
+    const content = parseIdeaDescription(description);
+    const authorName = parseAuthorName(author);
+    const reactions = message.reactions.cache.map((reaction) => {
+      const { count, emoji } = reaction;
+      return { count, emoji: emoji.code };
+    });
+    return { index, content, reactions, authorName, id };
+  }
+
+  async sort() {
+    if (!this.isCached()) {
+      return;
+    }
+    const { ideas, isSorted, promise } = this.value();
+    if (isSorted) {
+      return;
+    }
+    await promise;
+    ideas.sort((b, a) => a.index - b.index);
+    this.value().isSorted = true;
+  }
+
+  async lastIdea() {
     return this.isCached()
-      ? this.value().messages.at(0)
+      ? this.value().ideas.at(0)
       : await (async () => {
           // @ts-expect-error
           const messages = await getChannel().messages.fetch();
-          return messages.find((message) => message.author === client.user);
+          const message = messages.find(
+            (message) => message.author === client.user,
+          );
+          return this.idea_parse_metadata(message);
         })();
   }
 
   onNewIdea(message) {
-    if (!this.isCached()) {
-      return;
-    }
-
-    this.value().messages.unshift(message);
+    this.process_message(message);
   }
 
   static Events = {
     ...super.Events,
     message: "message",
+    idea: "idea",
     collect_end: "collect_end",
   };
 }
@@ -75,29 +180,15 @@ class JSON_Flagsubcommand {
     capture: ["--json", "-j"],
     description: "Возвращает список идей как *.json файл",
   };
-  _interface;
-  store;
-  messages = [];
-  get ideas() {
-    return this.messages.filter((message) => message.author === client.user);
-  }
+
   constructor(context) {
     this.context = context;
-    this.store = this.context.command.store;
   }
 
   async onProcess() {
-    await this.createInterface();
-    if (!this.store.isCached()) {
-      const dispose = this.store.emitter.disposable(Store.Events.message, () =>
-        this.onMessageCollected(),
-      );
-      this.store.emitter.once(Store.Events.collect_end, dispose);
-    }
-    const { messages, promise } = this.store.value();
-    this.messages = messages;
-    await promise;
-    this._interface.updateMessage();
+    const loader = new Loader(this.context);
+    await loader.process_wait_load();
+    this.ideas = loader.ideas();
     this.sendJSON();
     return true;
   }
@@ -113,53 +204,151 @@ class JSON_Flagsubcommand {
   }
 
   ideaToJson(idea) {
-    const [embed] = idea.embeds || [];
+    return idea;
+  }
+}
 
-    if (!embed) {
-      return undefined;
+class At_Flagsubcommand {
+  static FLAG_DATA = {
+    name: "--at",
+    capture: ["--at"],
+    expectValue: true,
+    description: "Возвращает информацию об идее за её номером",
+  };
+  pager;
+  value;
+  store;
+  constructor(context, value) {
+    this.context = context;
+    this.store = this.context.command.store;
+    this.value = value - 1;
+    this.pager = new Pager(context.channel);
+  }
+  async onProcess() {
+    if (!this.process_validate_value()) {
+      return true;
+    }
+    const loader = new Loader(this.context);
+    await loader.process_wait_load();
+    this.ideas = loader.ideas();
+    await this.createInterface();
+    return true;
+  }
+
+  process_validate_value() {
+    const { value } = this;
+    if (!isNaN(value)) {
+      return true;
     }
 
-    const { author, description } = embed;
-
-    const index = parseIdeaNumber(author);
-    if (!index || !description) {
-      return undefined;
-    }
-    const content = parseIdeaDescription(description);
-    const authorName = parseAuthorName(author);
-    const reactions = idea.reactions.cache.map((reaction) => {
-      const { count, emoji } = reaction;
-      return { count, emoji: emoji.code };
+    this.context.channel.msg({
+      description: "Значение флага --at должно быть числом",
+      delete: 8 * SECOND,
     });
-    return { index, content, reactions, authorName };
   }
 
-  async onMessageCollected() {
-    if (this.store.value().messages.length % 100 !== 0) {
-      return;
+  createInterface() {
+    const { pager } = this;
+    pager.currentPage = this.value;
+    pager.setPagesLength(Math.max(...this.ideas.keys()));
+    pager.setRender(() => this.messageOptionsOfCurrent());
+    pager.updateMessage();
+  }
+
+  messageOptionsOfCurrent() {
+    const { pager, ideas, store } = this;
+    const { currentPage } = pager;
+    const ideaIndex = currentPage + 1;
+    const idea = ideas.get(ideaIndex);
+    if (!idea) {
+      store.sort();
+
+      const index = (() => {
+        const generator = Util.zeroCenteredSequence();
+        const keys = [...ideas.keys()];
+        const LIMIT = 200;
+        while (true) {
+          const { value = 200 } = generator.next();
+          if (value >= LIMIT) {
+            return;
+          }
+
+          if (ideas.get(ideaIndex + value)) {
+            return keys.indexOf(ideaIndex + value);
+          }
+        }
+      })();
+      const description = `Ап-ап-ап. Не получилось получить данные идеи. Ближе всего идеи (доступные): ${
+        Util.around([...ideas.keys()], index, 5)
+          .concat([index])
+          .join(", ") || "*Идей не найдено вовсе*"
+      }`;
+      return { description, title: `Идея #${ideaIndex}` };
     }
-    await this._interface.updateMessage();
-  }
 
-  async createInterface() {
-    const { context } = this;
-    const _interface = new MessageInterface(context.channel);
-    this._interface = _interface;
-    _interface.setDefaultMessageState({
-      title: "Поиск данных может занять некоторое время",
-    });
-    _interface.setRender(() => this.getEmbed());
-    await this._interface.updateMessage();
-  }
-
-  getEmbed() {
-    const { ideas } = this;
     return {
-      description: ideas.length ? `Получено идей: ${ideas.length}` : null,
+      description: idea.content,
+      author: { name: idea.authorName },
+      footer: { text: `Идея #${ideaIndex}` },
     };
   }
 }
+
+class Edit_Flagsubcommand {
+  static FLAG_DATA = {
+    name: "--edit",
+    capture: ["--edit", "-e"],
+    expectValue: true,
+    description: "Автор идеи может переписать её содержание за её номером",
+  };
+  pager;
+  value;
+  store;
+  constructor(context, value) {
+    this.context = context;
+    this.value = +value;
+    this.pager = new Pager(context.channel);
+  }
+  async onProcess() {
+    if (!this.process_validate_value()) {
+      return true;
+    }
+    const loader = new Loader(this.context);
+    await loader.process_wait_load();
+    this.ideas = loader.ideas();
+    await this.createInterface();
+    return true;
+  }
+
+  process_validate_value() {
+    const { value } = this;
+    if (!isNaN(value)) {
+      return true;
+    }
+
+    this.context.channel.msg({
+      description:
+        "Значение флага --edit должно быть числом и указывать на целевую идею",
+      delete: 8 * SECOND,
+    });
+  }
+
+  createInterface() {
+    this.pager.currentPage = this.value;
+    this.pager.addPages(
+      this.ideas.map(({ embeds }) => {
+        const [embed] = embeds;
+        return { description: embed?.description };
+      }),
+    );
+  }
+}
+
 class CommandRunContext extends BaseCommandRunContext {
+  _storeValue;
+  get storeValue() {
+    return (this._storeValue ||= this.command.store.value());
+  }
   parseCli(input) {
     const parsed = new CliParser()
       .setText(input)
@@ -199,16 +388,38 @@ class Command extends BaseCommand {
   }
 
   async lastIdeaNumber() {
-    const lastIdeaMessage = await this.store.lastIdeaMessage();
-    const { author: authorField } = lastIdeaMessage?.embeds?.[0] || {};
-    return parseIdeaNumber(authorField);
+    const { index } = (await this.store.lastIdea()) || {};
+    return index || 0;
   }
   async run(context) {
     context.parseCli(context.interaction.params);
     if (await this.process_json_flag(context)) {
       return true;
     }
+    if (await this.process_at_flag(context)) {
+      return true;
+    }
+    if (await this.process_edit_flag(context)) {
+      return true;
+    }
     this.processDefaultBehaviour(context);
+  }
+
+  async process_edit_flag(context) {
+    if (!context.cliParsed.at(1).get("--edit")) {
+      return false;
+    }
+    await new Edit_Flagsubcommand(context).onProcess();
+    return true;
+  }
+
+  async process_at_flag(context) {
+    const value = context.cliParsed.at(0).captures.get("--at")?.valueOfFlag();
+    if (!value) {
+      return false;
+    }
+    await new At_Flagsubcommand(context, value).onProcess();
+    return true;
   }
 
   async process_json_flag(context) {
@@ -262,19 +473,8 @@ class Command extends BaseCommand {
     },
     cliParser: {
       flags: [
-        {
-          name: "--edit",
-          capture: ["--edit", "-e"],
-          expectValue: true,
-          description:
-            "Автор идеи может переписать её содержание за её номером",
-        },
-        {
-          name: "--at",
-          capture: ["--at"],
-          expectValue: true,
-          description: "Возвращает информацию об идее за её номером",
-        },
+        Edit_Flagsubcommand.FLAG_DATA,
+        At_Flagsubcommand.FLAG_DATA,
         JSON_Flagsubcommand.FLAG_DATA,
       ],
     },
