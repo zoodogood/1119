@@ -170,8 +170,8 @@ export class Pager extends MessageInterface {
     return this;
   }
 
-  _getMessageOptions() {
-    const properties = super._getMessageOptions();
+  async _getMessageOptions() {
+    const properties = await super._getMessageOptions();
     return {
       ...properties,
       ...this.pages[this.currentPage],

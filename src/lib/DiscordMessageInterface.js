@@ -153,7 +153,7 @@ export class MessageInterface {
     return collector;
   }
 
-  _getMessageOptions() {
+  async _getMessageOptions() {
     const { options } = this;
     return {
       components: options.components.filter(
@@ -161,7 +161,7 @@ export class MessageInterface {
       ),
       reactions: this.options.reactions,
       ...this.embed,
-      ...(this.options.render?.() || {}),
+      ...((await this.options.render?.()) || {}),
     };
   }
 
@@ -169,7 +169,7 @@ export class MessageInterface {
     target ||= this.message;
     this._clean_missing_reactions(target);
     return await this._renderPage(target, {
-      ...this._getMessageOptions(),
+      ...(await this._getMessageOptions()),
       edit: true,
     });
   }
@@ -177,7 +177,7 @@ export class MessageInterface {
   async _createMessage(target) {
     target ||= this.channel;
     this.message = await this._renderPage(target, {
-      ...this._getMessageOptions(),
+      ...(await this._getMessageOptions()),
     });
     this._createCollectors();
     return this.message;
