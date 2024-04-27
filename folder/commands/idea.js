@@ -586,7 +586,7 @@ class Command extends BaseCommand {
     alias: "идея innovation новвоведение ідея proposal предложение",
     allowDM: true,
     expectParams: true,
-    cooldown: MINUTE * 10,
+    cooldown: MINUTE * 3,
     cooldownTry: 3,
     type: "bot",
   };
