@@ -204,8 +204,17 @@ class TargetCommandMetadata {
 }
 
 class Command extends BaseCommand {
+  static MESSAGE_THEME = {
+    poster:
+      "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg",
+  };
+  async onComponent({ interaction, params }) {
+    interaction.params = params;
+    const context = await CommandRunContext.new(interaction, this);
+    await this.processDefaultBehaviour(context);
+  }
   async processDefaultBehaviour(context) {
-    const { meta, user, channel } = context;
+    const { meta, user, interaction } = context;
     const {
       aliases,
       commandNameId,
@@ -226,9 +235,7 @@ class Command extends BaseCommand {
       title: `— ${commandNameId.toUpperCase()}`,
       description: this.formatMediaDescription(media).trim(),
       color: "#1f2022",
-      image:
-        media.poster ||
-        "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg",
+      image: media.poster || Command.MESSAGE_THEME.poster,
       fields: [
         {
           name: "Другие способы вызова:",
@@ -255,7 +262,7 @@ class Command extends BaseCommand {
       ],
       footer: { text: `Уникальный идентификатор команды: ${id}` },
     };
-    const message = await channel.msg(embed);
+    const message = await interaction.msg(embed);
     context.targetMessage = message;
     return true;
   }
