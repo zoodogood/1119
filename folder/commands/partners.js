@@ -1,8 +1,14 @@
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import { SECOND } from "#constants/globals/time.js";
-import { dayjs, question, timestampDay } from "#lib/util.js";
+import { HOUR, SECOND } from "#constants/globals/time.js";
+import {
+  dayjs,
+  question,
+  timestampDay,
+  timestampToDate,
+  ending,
+} from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { ButtonStyle } from "discord.js";
 import { PermissionFlagsBits } from "discord.js";
@@ -15,6 +21,8 @@ import { escapeMarkdown } from "discord.js";
 import client from "#bot/client.js";
 import { CategoryChannel } from "discord.js";
 import { Emoji } from "#constants/emojis.js";
+import { BaseInteraction } from "discord.js";
+import { Bosses_Flagsubcommand } from "#folder/commands/boss.js";
 
 class Special {
   static processGuildPartner_isSetted(context, partnerField) {
@@ -93,6 +101,14 @@ class PartnerField {
     this.assert_field.channelId = channel.id;
   }
 
+  get bumpedAt() {
+    return this.field?.bumpedAt || 0;
+  }
+
+  set bumpedAt(value) {
+    this.assert_field.bumpedAt = value;
+  }
+
   get endlessLink() {
     return new Promise(async (resolve) => {
       if (!this.isEnable) {
@@ -124,12 +140,13 @@ class PartnerField {
       fetchReply: true,
       fields: [
         {
-          name: "Ссылка на сервер",
+          name: "**🔗 Ссылка на сервер**",
           value: this.isEnable
-            ? `[Вступить](${await this.endlessLink})`
+            ? `➡️ **[Вступить](${await this.endlessLink})**`
             : `~ Приглашение будет создано автоматически при настройке`,
         },
       ],
+      footer: { text: ":palm_up_hand: " },
     };
   }
 }
@@ -315,15 +332,54 @@ class Preview_FlagSubcommand extends BaseFlagSubcommand {
     capture: ["-p", "--preview"],
     description: "Показать сообщение партнёрства",
   };
-  onProcess() {}
-  sendPreview(channel) {}
-  _getEmbed() {}
-  _getClansContent(guild) {}
-  _getTreeContent(guild) {}
-  _getBossesContent(guild) {}
+  partnerField = new PartnerField();
+  onProcess() {
+    this.setGuild(this.context.guild);
+    if (
+      !Special.processGuildPartner_isSetted(this.context, this.partnerField)
+    ) {
+      return true;
+    }
+    this.sendPreview(this.context.interaction);
+    return true;
+  }
+  async sendPreview(channel) {
+    channel.msg(await this.getEmbed());
+  }
+  setGuild(guild) {
+    this.guild = guild;
+    this.partnerField.setGuild(guild);
+    return this;
+  }
+  async getEmbed() {
+    const options = await this.partnerField.toMessageOptions();
+    options.fields ||= [];
+    options.fields.unshift(
+      {
+        name: "Босс",
+        value: this._getBossesContent(),
+        inline: true,
+      },
+      {
+        name: "Дерево",
+        value: this._getTreeContent(),
+        inline: true,
+      },
+    );
+    options.ephemeral = true;
+    return options;
+  }
+  _getClansContent() {}
+  _getTreeContent() {
+    return `Уровень дерева: ${this.guild.data.tree?.level || "ещё не появилось"}`;
+  }
+  _getBossesContent() {
+    return Bosses_Flagsubcommand.guildToField(this.guild).value;
+  }
 }
 
 class Bump_FlagSubcommand extends BaseFlagSubcommand {
+  static BUMP_COOLDOWN = HOUR * 4;
   static FLAG_DATA = {
     name: "--bump",
     capture: ["-b", "--bump"],
@@ -331,6 +387,14 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
       "Разослать приглашение о вступлении подписанным на партнёрство серверам",
   };
   onProcess() {
+    if (
+      !Special.processGuildPartner_isSetted(
+        this.context,
+        this.context.partnerField,
+      )
+    ) {
+      return;
+    }
     if (this.processPartnerAlreadyInPull() || !this.process_cooldown()) {
       return;
     }
@@ -338,14 +402,60 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
   }
 
   process_cooldown() {
-    return true;
+    const field = this.context.partnerField;
+    const cooldown_end =
+      field.bumpedAt + Bump_FlagSubcommand.BUMP_COOLDOWN - Date.now();
+
+    if (cooldown_end < 0) {
+      field.bumpedAt = Date.now();
+      return true;
+    }
+
+    const { interaction } = this.context;
+    const percent = 1 - cooldown_end / Bump_FlagSubcommand.BUMP_COOLDOWN;
+    const MAX_LINE_WIDTH = 30;
+    const line = `\`[${"=".repeat(Math.ceil(percent * MAX_LINE_WIDTH))}${" ".repeat(Math.floor((1 - percent) * MAX_LINE_WIDTH))}]\` ${Math.ceil(percent * 100)}%`;
+    interaction.msg({
+      reference:
+        interaction instanceof BaseInteraction ? null : interaction.message.id,
+      description: `${line}\nПерезарядка: ${timestampToDate(cooldown_end)}\nКто-то уже бампнул до вас..`,
+      fetchReply: true,
+      footer: {
+        iconURL: interaction.user.avatarURL(),
+        text: interaction.user.username,
+      },
+      delete: 8 * SECOND,
+    });
+    return false;
   }
   bump() {
-    const daemon = this.context.command.daemon;
-    daemon.onPartnerBump(this.context);
-    this.context.interaction.msg({
-      description:
-        "Спасибо, что попробовали воспользоваться этой командой, но она ещё не завершена",
+    const { context } = this;
+    const { guild } = context;
+    const { id: guildId } = guild;
+    const daemon = context.command.daemon;
+    daemon.onPartnerBump(context);
+    const options = new Preview_FlagSubcommand(context)
+      .setGuild(context.guild)
+      .getEmbed();
+    const targets = DataManager.data.guilds
+      .filter((guildData) => {
+        const field = guildData[PartnerField.KEY];
+        if (!field) {
+          return;
+        }
+        if (!field.isEnable || !field.channelId || guildData.id === guildId) {
+          return;
+        }
+      })
+      .map((guildData) => guildData[PartnerField.KEY].channelId);
+
+    targets.forEach((channelId) => {
+      const channel = client.channels.cache.get(channelId);
+      channel.msg(options);
+    });
+
+    context.interaction.msg({
+      description: `Разослано ${ending(targets.length, "сервер", "ам", "у", "ам")} 😦`,
     });
   }
   processPartnerAlreadyInPull() {
@@ -356,9 +466,13 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
     }
 
     const timestamp = daemon.fetchTimeEvent()?.timestamp;
-    const indexOfQueque = daemon.pull.indexOf(this.context.guild.id);
+    const indexOfQueque =
+      daemon.pull.indexOf(this.context.guild.id) +
+      daemon.pull.LIMIT -
+      daemon.pull.length;
     this.context.interaction.msg({
-      description: `Гильдия уже заметна :slight_smile:. Через некоторое время очередь продвинется или очистится.\n!partners --daemon, — чтобы увидеть в какой части очереди Вы находитесь или время авто-чистки\nСерверов в очереди перед вами: ${indexOfQueque}. Очистится через: <t:${Math.floor(timestamp / SECOND)}:R>`,
+      description: `Гильдия уже заметна! Через некоторое время очередь продвинется или очистится.\n!partners --daemon, — чтобы увидеть в какой части очереди Вы находитесь или время авто-чистки\nСерверов в очереди перед вами: ${indexOfQueque}. Очистится через: <t:${Math.floor(timestamp / SECOND)}:R>`,
+      delete: 8 * SECOND,
     });
     return true;
   }
@@ -371,7 +485,7 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
     description: "Получить обзор команды",
   };
   onProcess() {
-    this.sendHelp(this.context.channel);
+    this.sendHelp(this.context.interaction);
   }
   sendHelp(channel) {
     return channel.msg({
@@ -421,6 +535,30 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
   }
 }
 
+class List_FlagSubcommand_Filter {
+  _interface = new MessageInterface();
+  filters() {}
+  constructor(parent, interaction) {
+    this.parent = parent;
+    this.interaction = interaction;
+  }
+
+  createInterface() {
+    const { _interface, interaction } = this;
+    _interface.setChannel(interaction.channel);
+    _interface.setUser(interaction.user);
+
+    // _interface.setComponents();
+    _interface.setRender(() => ({
+      content: "фильтровать по боссу",
+      ephemeral: true,
+    }));
+    _interface.updateMessage(interaction);
+  }
+
+  selectFilter() {}
+}
+
 class List_FlagSubcommand extends BaseFlagSubcommand {
   static FLAG_DATA = {
     name: "--list",
@@ -430,6 +568,7 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
 
   _interface = new Pager();
   partners = [];
+  filters = {};
 
   onProcess() {
     this.sendList(this.context.interaction);
@@ -441,7 +580,7 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
   }
   fetch() {
     this.partners = DataManager.data.guilds
-      .filter((guildData) => guildData[PartnerField.KEY])
+      .filter((guildData) => guildData[PartnerField.KEY]?.isEnable)
       .map((guildData) => ({
         guildData,
         field: guildData[PartnerField.KEY],
@@ -449,17 +588,47 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
   }
 
   createInterface(channel) {
-    this._interface.setChannel(channel);
-    this._interface.setRender(() => this.getEmbed());
-    this._interface.setPagesLength(this.partners.length);
-    this._interface.updateMessage();
+    const { _interface } = this;
+    _interface.setChannel(channel);
+    _interface.setRender(() => this.getEmbed());
+    _interface.setPagesLength(this.partners.length);
+    _interface.updateMessage();
+    _interface.spliceComponents(
+      0,
+      0,
+      justButtonComponents({
+        label: "Фильтры",
+        style: ButtonStyle.Success,
+        customId: "filter",
+      }),
+    );
+    _interface.emitter.on(
+      Pager.Events.allowed_collect,
+      this.onComponent.bind(this),
+    );
+  }
+
+  onComponent({ interaction }) {
+    this.process_filter_component(interaction);
+  }
+
+  process_filter_component(interaction) {
+    new List_FlagSubcommand_Filter(this, interaction).createInterface();
   }
 
   async getEmbed() {
     const index = this._interface.currentPage;
-    const { guildData } = this.partners[index];
-    const guild = client.guilds.cache.get(guildData.id);
-    return new PartnerField().setGuild(guild).toMessageOptions();
+    const { guildData } = this.partners?.[index] || {};
+    const guild = client.guilds.cache.get(guildData?.id);
+    if (guild) {
+      return await new Preview_FlagSubcommand(this.context)
+        .setGuild(guild)
+        .getEmbed();
+    }
+
+    return {
+      description: "Погодите, но почему здесь пусто?",
+    };
   }
 }
 
@@ -577,6 +746,7 @@ class PartnersDaemon {
   }
   onTimeEvent() {
     this.pull.empty();
+    this._createTimeEvent();
   }
   ms_to_timeEvent() {
     return dayjs().endOf("week").add(2, "day").set("hour", 20) - Date.now();
@@ -694,7 +864,7 @@ class Command extends BaseCommand {
     if (!value) {
       return false;
     }
-    await new Setup_FlagSubcommand(context).onProcess();
+    await new Preview_FlagSubcommand(context).onProcess();
     return true;
   }
   async processChannel_flag(context) {
