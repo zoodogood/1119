@@ -20,7 +20,7 @@ function createShop(guild, user, channel) {
   });
 }
 
-class BossesCommandManager {
+export class Bosses_Flagsubcommand {
   constructor(context) {
     this.context = context;
   }
@@ -34,7 +34,7 @@ class BossesCommandManager {
         boss.isArrived ? Number.MIN_SAFE_INTEGER : +boss.apparanceAtDay || 0,
       { reverse: true },
     )
-      .map((guild) => this.guildToField(guild))
+      .map((guild) => Bosses_Flagsubcommand.guildToField(guild))
       .slice(0, 20);
 
     const { channel } = this.context;
@@ -44,7 +44,7 @@ class BossesCommandManager {
     });
   }
 
-  guildToField(guild) {
+  static guildToField(guild) {
     const { boss } = guild.data;
     const isArrived = boss.isArrived;
     const { name } = guild;
@@ -60,7 +60,7 @@ class BossesCommandManager {
   }
 }
 
-class HelpCommandManager {
+class Help_Flagsubcommand {
   constructor(context) {
     this.context = context;
   }
@@ -171,7 +171,7 @@ class Command extends BaseCommand {
     if (!values.get("--help")) {
       return;
     }
-    await new HelpCommandManager(context).onProcess();
+    await new Help_Flagsubcommand(context).onProcess();
     return true;
   }
 
@@ -180,7 +180,7 @@ class Command extends BaseCommand {
     if (!values.get("--bosses")) {
       return;
     }
-    await new BossesCommandManager(context).onProcess();
+    await new Bosses_Flagsubcommand(context).onProcess();
     return true;
   }
 
