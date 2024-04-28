@@ -12,4 +12,17 @@ class BaseCommand {
   onComponent() {}
 }
 
-export { BaseCommand };
+class BaseFlagSubcommand {
+  /**
+   *
+   * @param {import("#lib/CommandRunContext").BaseCommandRunContext} context
+   * @param {import("@zoodogood/utils/CliParser").CapturedContent} value
+   */
+  constructor(context, value) {
+    this.capture = value;
+    this.context = context;
+  }
+  onProcess() {}
+}
+
+export { BaseCommand, BaseFlagSubcommand };
