@@ -1,8 +1,10 @@
-import { PartnersDaemon } from "#folder/commands/partners.js";
-import { TimeEventsManager } from "#lib/modules/mod.js";
+import { CommandsManager } from "#lib/modules/mod.js";
 
 class Event {
-  async run(timeEventData) {}
+  async run(timeEventData) {
+    const instance = CommandsManager.collection.get("partners");
+    instance.daemon.onTimeEvent(timeEventData);
+  }
 
   options = {
     name: "TimeEvent/partner-daemon",
