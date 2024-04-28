@@ -44,7 +44,7 @@ class CommandInteraction {
   }
 
   msg(...params) {
-    this.channel.msg(...params);
+    return this.channel.msg(...params);
   }
 }
 /**
