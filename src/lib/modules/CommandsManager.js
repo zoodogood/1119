@@ -42,6 +42,10 @@ class CommandInteraction {
     this.userData = user.data;
     this.mention = message.mentions?.users.first() ?? null;
   }
+
+  msg(...params) {
+    this.channel.msg(...params);
+  }
 }
 /**
  * @returns {CommandInteraction}
