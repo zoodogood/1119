@@ -315,7 +315,6 @@ class Fetcher {
     if (!this.hasSpecialTarget) {
       return false;
     }
-
     const targetFounded =
       message.content === this.targetPhrase ||
       message.id === this.targetReference;
@@ -400,7 +399,7 @@ class CommandRunContext extends BaseCommandRunContext {
   async fetchMessagesToClean() {
     const values = this.cliParsed.at(1);
     this.messagesFetcher.setOptions({
-      targetPhrase: values.get("by_phrase")?.trim(),
+      targetPhrase: values.get("by_phrase")?.trim() || null,
       targetReference: this.referenceId,
       targetUserId: values.get("target_user")?.groups.id,
       hasSpecialTarget: this.hasSpecialTarget(),
