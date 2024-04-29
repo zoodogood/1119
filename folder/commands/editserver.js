@@ -5,6 +5,7 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import { util_store_and_send_audit } from "#lib/modules/ErrorsHandler.js";
 import Template from "#lib/modules/Template.js";
+import { DotNotatedInterface } from "@zoodogood/utils/objectives";
 
 class CommandRunContext extends BaseCommandRunContext {
   intefaceMessage;
@@ -216,6 +217,20 @@ class Command_GuildSetHello_Manager {
   }
 }
 
+class Command_GuildPartners_Manager {
+  constructor(context) {
+    this.context = context;
+  }
+
+  async onProcess() {
+    const { interaction } = this.context;
+    const { message } = interaction;
+    await CommandsManager.callMap
+      .get("partners")
+      .onChatInput(message, interaction);
+  }
+}
+
 class Command_GuildChatFilter_Manager {
   constructor(context) {
     this.context = context;
@@ -316,10 +331,13 @@ class CommandDefaultBehavior {
     ).join("\n");
 
     const on_emoji = Emoji.animation_tick_block.toString();
+    const target = new DotNotatedInterface(guildData);
 
     const instrumentsContent = command.SETTING_FIELDS.map(
       ({ key, label_on, label_off, emoji }) =>
-        guildData[key] ? `${on_emoji} ${label_on}` : `${emoji} ${label_off}`,
+        target.hasItem(key)
+          ? `${on_emoji} ${label_on}`
+          : `${emoji} ${label_off}`,
     ).join("\n");
 
     return `Каналы:\n${channelContent}\nИнструменты:\n${instrumentsContent}`;
@@ -372,6 +390,15 @@ class Command extends BaseCommand {
       label_on: "Фильтр чата включён :)",
       onReaction(reaction, user, context) {
         new Command_GuildChatFilter_Manager(context).onProcess();
+      },
+    },
+    {
+      key: "partners.isEnable",
+      emoji: "🪂",
+      label_off: "Можно запустить партнёрства",
+      label_on: "Партнёрства включены",
+      onReaction(reaction, user, context) {
+        new Command_GuildPartners_Manager(context).onProcess();
       },
     },
     {
