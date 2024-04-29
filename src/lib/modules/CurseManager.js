@@ -1497,6 +1497,10 @@ class CurseManager {
             source: "curseManager.events.cheeseHere",
             context: { curse, previous, isBigThan },
           });
+          DataManager.data.bot[this.EFFECT_ID] = {
+            value: upped,
+            userId: user.id,
+          };
         },
         processUserDisplayUpped(user, { curse, previous, isBigThan }) {
           const { upped } = curse.values;
