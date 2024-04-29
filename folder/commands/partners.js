@@ -428,13 +428,13 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
     });
     return false;
   }
-  bump() {
+  async bump() {
     const { context } = this;
     const { guild } = context;
     const { id: guildId } = guild;
     const daemon = context.command.daemon;
     daemon.onPartnerBump(context);
-    const options = new Preview_FlagSubcommand(context)
+    const options = await new Preview_FlagSubcommand(context)
       .setGuild(context.guild)
       .getEmbed();
     const targets = DataManager.data.guilds
@@ -457,6 +457,12 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
 
     context.interaction.msg({
       description: `Разослано ${ending(targets.length, "сервер", "ам", "у", "ам")} 😦`,
+      components: justButtonComponents([
+        {
+          label: "Предпросмотр",
+          customId: `@command/partners/${Command.ComponentsCallbacks.preview}`,
+        },
+      ]),
     });
   }
   processPartnerAlreadyInPull() {
