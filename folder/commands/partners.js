@@ -558,6 +558,7 @@ class List_FlagSubcommand_Filter {
     // _interface.setComponents();
     _interface.setRender(() => ({
       content: "фильтровать по боссу",
+      fetchReply: true,
       ephemeral: true,
     }));
     _interface.updateMessage(interaction);
@@ -599,16 +600,18 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
     _interface.setChannel(channel);
     _interface.setRender(() => this.getEmbed());
     _interface.setPagesLength(this.partners.length);
-    _interface.updateMessage();
     _interface.spliceComponents(
       0,
       0,
-      justButtonComponents({
-        label: "Фильтры",
-        style: ButtonStyle.Success,
-        customId: "filter",
-      }),
+      justButtonComponents([
+        {
+          label: "Фильтры",
+          style: ButtonStyle.Success,
+          customId: "filter",
+        },
+      ]),
     );
+    _interface.updateMessage();
     _interface.emitter.on(
       Pager.Events.allowed_collect,
       this.onComponent.bind(this),
@@ -620,6 +623,9 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
   }
 
   process_filter_component(interaction) {
+    if (interaction.customId !== "filter") {
+      return;
+    }
     new List_FlagSubcommand_Filter(this, interaction).createInterface();
   }
 
