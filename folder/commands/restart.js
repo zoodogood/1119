@@ -12,7 +12,7 @@ import { dayjs, sleep } from "#lib/safe-utils.js";
 
 const toANSIBlock = (content) => `\`\`\`ansi\n${content}\`\`\``;
 class Timeout_Flagsubcommand extends BaseFlagSubcommand {
-  DEFAULT_VALUE = 5;
+  DEFAULT_VALUE = 10;
   constructor(context, value) {
     super(context, value);
     this.value = Number(value) || this.DEFAULT_VALUE;
@@ -29,7 +29,7 @@ class Timeout_Flagsubcommand extends BaseFlagSubcommand {
   setupBotUserStatus() {
     const time = dayjs().add(this.value, "minute").format("HH:mm");
     client.user?.setActivity(`Запланирован перезапуск: ${time}`, {
-      type: ActivityType.Streaming,
+      type: ActivityType.Playing,
       url: "https://www.twitch.tv/monstercat",
     });
   }
