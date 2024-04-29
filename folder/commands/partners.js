@@ -544,7 +544,13 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
 
 class List_FlagSubcommand_Filter {
   _interface = new MessageInterface();
-  filters() {}
+  filters = [
+    {
+      component: { label: "Есть босс", customId: "boss" },
+      check: (guildData) => guildData.boss?.isArrived,
+    },
+  ];
+
   constructor(parent, interaction) {
     this.parent = parent;
     this.interaction = interaction;
@@ -557,14 +563,43 @@ class List_FlagSubcommand_Filter {
 
     // _interface.setComponents();
     _interface.setRender(() => ({
-      content: "фильтровать по боссу",
+      description: "Используйте кнопки, чтобы переключать фильтры",
       fetchReply: true,
       ephemeral: true,
+      components: justButtonComponents(
+        this.filters.map(({ component }) => component),
+      ),
     }));
+    _interface.emitter.on(
+      MessageInterface.Events.allowed_collect,
+      this.onComponent.bind(this),
+    );
     _interface.updateMessage(interaction);
+    return _interface;
   }
 
-  selectFilter() {}
+  onComponent({ interaction }) {
+    const filter = this.filters.find(
+      ({ component }) => component.customId === interaction.customId,
+    );
+    if (!filter) {
+      return;
+    }
+    filter.isEnable = !filter.isEnable;
+    const event = {
+      response(options) {
+        return interaction.msg(options);
+      },
+    };
+    this._interface.emitter.emit(
+      List_FlagSubcommand_Filter.Events.update,
+      event,
+    );
+  }
+
+  static Events = {
+    update: "update",
+  };
 }
 
 class List_FlagSubcommand extends BaseFlagSubcommand {
@@ -583,11 +618,11 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
     return true;
   }
   sendList(channel) {
-    this.fetch();
+    this.partners = this.fetch();
     this.createInterface(channel);
   }
   fetch() {
-    this.partners = DataManager.data.guilds
+    return DataManager.data.guilds
       .filter((guildData) => guildData[PartnerField.KEY]?.isEnable)
       .map((guildData) => ({
         guildData,
@@ -626,7 +661,30 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
     if (interaction.customId !== "filter") {
       return;
     }
-    new List_FlagSubcommand_Filter(this, interaction).createInterface();
+    const manager = new List_FlagSubcommand_Filter(this, interaction);
+    manager.createInterface();
+    manager._interface.emitter.on(
+      List_FlagSubcommand_Filter.Events.update,
+      ({ response }) => {
+        const previousLength = this.partners.length;
+        this.partners = this.fetch().filter(({ guildData }) =>
+          manager.filters
+            .filter(({ isEnable }) => isEnable)
+            .every((filter) => filter.check(guildData)),
+        );
+        const { length } = this.partners;
+        response({
+          description: `Количество серверов: ${previousLength} => ${length}`,
+          ephemeral: true,
+        });
+        this._interface.setPagesLength(length);
+        this._interface.currentPage = Math.min(
+          length,
+          this._interface.currentPage,
+        );
+        this._interface.updateMessage();
+      },
+    );
   }
 
   async getEmbed() {
