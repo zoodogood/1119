@@ -1,4 +1,4 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import config from "#config";
 import get from "#lib/child-process-utils.js";
 import { Pager } from "#lib/DiscordPager.js";
@@ -6,8 +6,34 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 const { run } = get({ root: process.cwd() });
 import { CliParser } from "@zoodogood/utils/primitives";
 import { MINUTE } from "#constants/globals/time.js";
+import client from "#bot/client.js";
+import { ActivityType } from "discord.js";
+import { dayjs, sleep } from "#lib/safe-utils.js";
 
 const toANSIBlock = (content) => `\`\`\`ansi\n${content}\`\`\``;
+class Timeout_Flagsubcommand extends BaseFlagSubcommand {
+  DEFAULT_VALUE = 5;
+  constructor(context, value) {
+    super(context, value);
+    this.value = Number(value) || this.DEFAULT_VALUE;
+  }
+  async onProcess() {
+    this.setupBotUserStatus();
+    await this.sleep();
+  }
+
+  async sleep() {
+    await sleep(this.value * MINUTE);
+  }
+
+  setupBotUserStatus() {
+    const time = dayjs().add(this.value, "minute").format("HH:mm");
+    client.user?.setActivity(`Запланирован перезапуск: ${time}`, {
+      type: ActivityType.Streaming,
+      url: "https://www.twitch.tv/monstercat",
+    });
+  }
+}
 
 class CommandRunContext extends BaseCommandRunContext {
   needPull;
@@ -27,6 +53,7 @@ class CommandRunContext extends BaseCommandRunContext {
     const values = this.cliParsed.at(1);
     this.needPull = values.get("--pull");
     this.needBuild = values.get("--build");
+    this.timeout = values.get("--timeout");
   }
 }
 
@@ -50,6 +77,8 @@ class Command extends BaseCommand {
 
   async run(context) {
     context.parseCli(context.interaction.params);
+
+    await new Timeout_Flagsubcommand(context, context.timeout).onProcess();
     const { COMMANDS } = this;
     const { channel } = context;
     const embed = {
@@ -103,6 +132,12 @@ class Command extends BaseCommand {
           name: "--build",
           capture: ["--build"],
           description: "Применить команду сборки сайта",
+        },
+        {
+          name: "--timeout",
+          capture: ["--timeout"],
+          expectValue: true,
+          description: "Запланировать перезапуск на N минут вперёд",
         },
       ],
     },
