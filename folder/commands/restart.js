@@ -78,7 +78,9 @@ class Command extends BaseCommand {
   async run(context) {
     context.parseCli(context.interaction.params);
 
-    await new Timeout_Flagsubcommand(context, context.timeout).onProcess();
+    if (context.timeout) {
+      await new Timeout_Flagsubcommand(context, context.timeout).onProcess();
+    }
     const { COMMANDS } = this;
     const { channel } = context;
     const embed = {
