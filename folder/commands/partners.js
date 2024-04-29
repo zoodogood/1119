@@ -446,12 +446,13 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
         if (!field.isEnable || !field.channelId || guildData.id === guildId) {
           return;
         }
+        return true;
       })
       .map((guildData) => guildData[PartnerField.KEY].channelId);
 
     targets.forEach((channelId) => {
       const channel = client.channels.cache.get(channelId);
-      channel.msg(options);
+      channel?.msg(options);
     });
 
     context.interaction.msg({
