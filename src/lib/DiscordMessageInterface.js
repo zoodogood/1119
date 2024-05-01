@@ -1,4 +1,3 @@
-import app from "#app";
 import { MINUTE } from "#constants/globals/time.js";
 import { ReactionInteraction } from "#lib/Discord_utils.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
@@ -124,10 +123,11 @@ export class MessageInterface {
     const collector = this.message.createReactionCollector({
       time: MINUTE * 3,
     });
+    const { client } = this.message;
     collector.on(
       "collect",
       (reaction, user) =>
-        user !== app.client.user &&
+        user !== client.user &&
         this._onCollect.call(
           this,
           MessageInterface.CollectType.reaction,
