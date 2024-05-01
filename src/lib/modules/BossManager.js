@@ -2491,7 +2491,7 @@ class BossManager {
             title: "Викторина",
             description:
               "Кто сильнее? Сделайте ставку кто из текущих лидеров урона по боссу нанесёт больше урона к концу",
-            components: justButtonComponents([{ label: "Участвовать" }]),
+            components: justButtonComponents({ label: "Участвовать" }),
             edit: true,
           });
 

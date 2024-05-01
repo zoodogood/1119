@@ -20,7 +20,7 @@ class DefaultComponentsProcessor {
   process() {
     const { DefaultComponents } = Pager;
     const components = justButtonComponents(
-      Object.values(structuredClone(DefaultComponents)),
+      ...Object.values(structuredClone(DefaultComponents)),
     );
     this.processIsDisabledGetters(components);
     this.pager.options.components.push(...components);

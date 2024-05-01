@@ -219,7 +219,7 @@ class Command extends BaseCommand {
         const prompt = await interaction.channel.msg({
           title: "Команда завершена некоректно, нажмите чтобы продолжить",
           description: error.message,
-          components: justButtonComponents([{ label: "Продолжить" }]),
+          components: justButtonComponents({ label: "Продолжить" }),
         });
         const needResume = await prompt
           .awaitMessageComponent({

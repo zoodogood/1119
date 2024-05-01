@@ -1291,12 +1291,10 @@ class CurseManager {
             const message = await channel.msg({
               color: "#65dbeb",
               description: `+ ${value} :candy:`,
-              components: justButtonComponents([
-                {
-                  emoji: "🍬",
-                  customId: `@curseManager/events/candyFactory:${user.id}`,
-                },
-              ]),
+              components: justButtonComponents({
+                emoji: "🍬",
+                customId: `@curseManager/events/candyFactory:${user.id}`,
+              }),
             });
 
             CurseManager.interface({ user, curse }).setProgress(

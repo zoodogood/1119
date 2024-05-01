@@ -32,7 +32,7 @@ class Special {
     context.channel.msg({
       description:
         "Используйте команду `!partners --setup` для настройки партнёрства",
-      components: justButtonComponents([
+      components: justButtonComponents(
         {
           label: "Партнёрства?",
           customId: `@command/partners/${Command.ComponentsCallbacks.show_help}`,
@@ -42,7 +42,7 @@ class Special {
           label: "--setup",
           customId: `@command/partners/${Command.ComponentsCallbacks.setup}`,
         },
-      ]),
+      ),
 
       delete: 20 * SECOND,
     });
@@ -457,12 +457,10 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
 
     context.interaction.msg({
       description: `Разослано ${ending(targets.length, "сервер", "ам", "у", "ам")} 😦`,
-      components: justButtonComponents([
-        {
-          label: "Предпросмотр",
-          customId: `@command/partners/${Command.ComponentsCallbacks.preview}`,
-        },
-      ]),
+      components: justButtonComponents({
+        label: "Предпросмотр",
+        customId: `@command/partners/${Command.ComponentsCallbacks.preview}`,
+      }),
     });
   }
   processPartnerAlreadyInPull() {
@@ -505,7 +503,7 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
         },
       ],
       image: CommmandInfo.MESSAGE_THEME.poster,
-      components: justButtonComponents(this.components),
+      components: justButtonComponents(...this.components),
     });
   }
 
@@ -567,7 +565,7 @@ class List_FlagSubcommand_Filter {
       fetchReply: true,
       ephemeral: true,
       components: justButtonComponents(
-        this.filters.map(({ component }) => component),
+        ...this.filters.map(({ component }) => component),
       ),
     }));
     _interface.emitter.on(
@@ -638,13 +636,11 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
     _interface.spliceComponents(
       0,
       0,
-      justButtonComponents([
-        {
-          label: "Фильтры",
-          style: ButtonStyle.Success,
-          customId: "filter",
-        },
-      ]),
+      justButtonComponents({
+        label: "Фильтры",
+        style: ButtonStyle.Success,
+        customId: "filter",
+      }),
     );
     _interface.updateMessage();
     _interface.emitter.on(

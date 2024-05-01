@@ -224,7 +224,7 @@ class Help_FlagSubcommand {
       title: "Вызвана команда с параметром --help",
       description: `${contents.description} ${contents.found}\n${contents.current}\n\n**--help**\nПоказывает это меню.\n\n**--at {}**\nСокращение: \`!curses 1\`. Показывает больше информации об проклятии пользователя за номером. Вы можете упомянуть другого пользователя.\n\n**--list**\nПредоставляет перечисление всех существующих проклятий. Принимает параметр --json\n\n**--members**\nВозвращает перечень пользователей и проклятий`,
       ...context.command.MESSAGE_THEME,
-      components: justButtonComponents([
+      components: justButtonComponents(
         curses.length
           ? justSelectMenuComponent({
               placeholder: `Отобразить проклятие: (их ${curses.length})`,
@@ -234,7 +234,7 @@ class Help_FlagSubcommand {
               disabled: true,
               label: "Нет проклятий",
             },
-      ]),
+      ),
     });
 
     const collector = message.createMessageComponentCollector({
@@ -342,7 +342,7 @@ class At_FlagSubcommand {
       fields,
       fetchReply: true,
       ...context.command.MESSAGE_THEME,
-      components: justButtonComponents([
+      components: justButtonComponents(
         curses.length
           ? justSelectMenuComponent({
               placeholder: `Отобразить проклятие: (их ${curses.length})`,
@@ -352,7 +352,7 @@ class At_FlagSubcommand {
               disabled: true,
               label: "Нет проклятий",
             },
-      ]),
+      ),
     };
     return embed;
   }
