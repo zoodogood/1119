@@ -57,7 +57,8 @@
     const fileKey =
       URLSubpath.at(-1).startsWith(":") && URLSubpath.at(-1).slice(1);
 
-    const path = fileKey ? `files/${fileKey}` : "current";
+    const DEFAULT = "current";
+    const path = fileKey ? `files/${fileKey}` : DEFAULT;
 
     const { groups } = await fetchFromInnerApi(`errors/${path}`);
     for (const { errors: array } of groups) {
