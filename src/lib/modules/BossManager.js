@@ -27,7 +27,7 @@ import {
   EffectInfluenceEnum,
   UserEffectManager,
 } from "#lib/modules/EffectsManager.js";
-import { HOUR, MONTH } from "#constants/globals/time.js";
+import { DAY, HOUR, MONTH } from "#constants/globals/time.js";
 import config from "#config";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 
@@ -437,8 +437,7 @@ class BossEvents {
           const contents = {
             time: timestampToDate(
               now -
-                (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) *
-                  86_400_000,
+                (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) * DAY,
             ),
           };
           const description = `**10-й уровень за ${contents.time}**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий. Соберите 5 штук, чтобы получить случайную из реликвий`;

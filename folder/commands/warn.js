@@ -1,3 +1,4 @@
+import { NULL_WIDTH_SPACE } from "#constants/globals/characters.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
@@ -5,7 +6,7 @@ class Command extends BaseCommand {
 
     interaction.params = interaction.params.split(" ").slice(1).join(" ");
 
-    if (memb == msg.author) {
+    if (memb === msg.author) {
       msg.msg({
         title: `${msg.author.username} выдал себе предупреждение за то, что ${
           interaction.params.trim() || "смешной такой"
@@ -28,7 +29,7 @@ class Command extends BaseCommand {
         iconURL: msg.author.avatarURL(),
       },
       footer: {
-        text: "to-do: replace to invisible symbol",
+        text: NULL_WIDTH_SPACE,
         iconURL: memb.avatarURL(),
       },
     });

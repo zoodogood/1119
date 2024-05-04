@@ -1,8 +1,8 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import CounterManager from "#lib/modules/CounterManager.js";
 import { ButtonStyle, ComponentType, escapeMarkdown } from "discord.js";
 import { CommandsManager } from "#lib/modules/mod.js";
+import { NULL_WIDTH_SPACE } from "#constants/globals/characters.js";
 
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
@@ -34,7 +34,7 @@ class Command extends BaseCommand {
       description: `Счётчики работают с каналами и сообщениями.\nВыберите основу для дальнельшей настройки.\n\n${counterTypes
         .map(
           ({ label, description }) =>
-            `❯ ${label.toUpperCase()}\n> ${description}.\n> ​`,
+            `❯ ${label.toUpperCase()}\n> ${description}.\n> ${NULL_WIDTH_SPACE}`,
         )
         .join("\n")}`,
     });
