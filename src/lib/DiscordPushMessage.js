@@ -3,11 +3,7 @@ import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 import { Message, InteractionResponse } from "discord.js";
 import config from "#config";
 
-export async function pushMessage(options, ..._devFixParams) {
-  if (_devFixParams.length > 0) {
-    throw new Error("Incorrect message input. Need to fix!");
-  }
-
+export async function pushMessage(options) {
   options.color ||= config.development ? "#000100" : "#23ee23";
 
   const target =
