@@ -25,8 +25,7 @@ class ProfessionsUtils {
       salaryTable[member.id] += salary;
     };
 
-    // to-do replace to guild.members.cache.values() (without spread)< if bug not fixed
-    for (const member of [...guild.members.cache.values()])
+    for (const member of guild.members.cache.values())
       for (const [professionId, salary] of Object.entries(professions)) {
         member.roles.cache.has(professionId) &&
           record(member, professionId, salary);
