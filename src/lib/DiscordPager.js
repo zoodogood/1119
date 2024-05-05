@@ -38,7 +38,7 @@ class DefaultComponentsProcessor {
       [Next.customId]: (component) => {
         Object.defineProperty(component, "disabled", {
           get: () =>
-            this.pager.pages.length &&
+            !this.pager.pages.length ||
             this.pager.currentPage === this.pager.pages.length - 1,
           enumerable: true,
         });
