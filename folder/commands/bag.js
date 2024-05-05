@@ -709,6 +709,8 @@ class Command extends BaseCommand {
     cliParser: {
       flags: [],
     },
+    cooldown: 3 * SECOND,
+    cooldownTry: 3,
     alias: "сумка рюкзак",
     allowDM: true,
     type: "user",
