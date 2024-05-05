@@ -1,6 +1,6 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { Emoji } from "#constants/emojis.js";
-import { NEW_YEAR_DAY_DATE, SECOND } from "#constants/globals/time.js";
+import { MONTH, NEW_YEAR_DAY_DATE, SECOND } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum, PropertiesList } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
@@ -155,25 +155,6 @@ const ITEMS = [
   {
     key: "void",
     names: PropertiesList.void.alias.split(" "),
-    onUse({ count, context }) {
-      const MULTIPLAYER = 2;
-      const randomized = Util.random(1);
-      const { user } = context;
-      if (randomized === 1) {
-        Util.addResource({
-          resource: PropertiesEnum.void,
-          user,
-          context,
-          executor: user,
-          source: "command.bag.item.use.void",
-          value: count * MULTIPLAYER,
-        });
-      }
-      const phrase = `Шаурма ты. ${randomized ? "+" : "-"} ${
-        randomized ? count * MULTIPLAYER : count
-      } нест`;
-      return { phrase, used: count };
-    },
     ending: (count) =>
       `<a:void:768047066890895360> ${Util.ending(
         count,
