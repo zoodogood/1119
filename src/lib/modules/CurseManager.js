@@ -811,7 +811,6 @@ class CurseManager {
           },
         },
         reward: 5,
-        interactionIsShort: true,
       },
       {
         _weight: 1,
