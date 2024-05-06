@@ -188,7 +188,7 @@ class SessionsMetadataCache {
 
   async _fetchAndSet(key) {
     const json = await FileUtils.readFile(key);
-    this.#cache.set(key, json.meta);
+    this.#cache.set(key, json?.meta);
   }
 }
 
