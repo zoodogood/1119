@@ -148,7 +148,8 @@ pages:
     nowYouCanLeave: Теперь вы можете покинуть эту страницу
   errorsIndex:
     label: "Комплекты ошибок:"
-    created: "Создано:"
+    created: "Created at:"
+    inRealTime: "In real time."
     uniqueMessages: "Уникальных элементов:"
     tags: "Теги:"
     comments: "Comments:"

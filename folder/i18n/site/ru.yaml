@@ -138,6 +138,7 @@ pages:
   errorsIndex:
     label: "Комплекты ошибок:"
     created: "Создано:"
+    inRealTime: "В реальном времени."
     uniqueMessages: "Уникальных элементов:"
     tags: "Теги:"
     comments: "Комментариев:"

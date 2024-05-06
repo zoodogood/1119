@@ -93,12 +93,12 @@ pages:
       editable: Вы сможете внести изменения в любой момент времени.
       author: Ваши никнейм и аватар будут видны другим.
       noWarnings: Других предупреждений нет.
-    serverResponse: 'Ответ сервера:'
+    serverResponse: "Ответ сервера:"
     externalEditorSection:
       label: "Зовнішній редактор:"
       description: >-
-       Це лише редактор із можливістю попереднього перегляду (його можливості значно відрізняються від класичного Markdown синтаксису). 
-       Збережіть вміст у файл із розширенням .md і завантажте через кнопку вище.
+        Це лише редактор із можливістю попереднього перегляду (його можливості значно відрізняються від класичного Markdown синтаксису). 
+        Збережіть вміст у файл із розширенням .md і завантажте через кнопку вище.
   articlesIndex:
     label: Статьи
     description: >-
@@ -112,8 +112,8 @@ pages:
         Чтобы написать статью авторизуйтесь и воспользуйтесь
         <a href = ${ href }>этой ссылкой</a>.
     articlesList:
-      label: 'Написание статьи:'
-      filesCount: 'Количество файлов:'
+      label: "Написание статьи:"
+      filesCount: "Количество файлов:"
       loading: Загрузка...
       hereEmpty: Здесь пусто..
       loadingFailed: Загрузка неудалась
@@ -125,10 +125,10 @@ pages:
   articlesItem:
     contentLoading: Загрузка основного контента
     article:
-      author: 'Автор:'
-      lastEdited: 'Последнее редактирование:'
-      readTime: 'Время чтения:'
-      tags: 'Включённые теги:'
+      author: "Автор:"
+      lastEdited: "Последнее редактирование:"
+      readTime: "Время чтения:"
+      tags: "Включённые теги:"
       defaultTag: Статья участника
       words: "Слов"
     downloadMarkdown: Скачать .md файл
@@ -147,30 +147,31 @@ pages:
     login: Войти
     nowYouCanLeave: Теперь вы можете покинуть эту страницу
   errorsIndex:
-    label: 'Комплекты ошибок:'
-    created: 'Создано:'
-    uniqueMessages: 'Уникальных элементов:'
-    tags: 'Теги:'
+    label: "Комплекты ошибок:"
+    created: "Создано:"
+    inRealTime: "У реальному часі."
+    uniqueMessages: "Уникальных элементов:"
+    tags: "Теги:"
     comments: "Коментарі:"
     units: шт.
   errorsItem:
-    label: 'Коллекция ошибок из файла:'
+    label: "Коллекция ошибок из файла:"
     backToCollections: Вернуться к списку коллекций.
     filter: Фильтровать
     filterTip: >-
       Используйте символ перед словом "!", чтобы исключить варианты содержащие
       это слово
-    uniqueCount: 'Уникальных элементов:'
-    tags: 'Теги:'
-    called: 'Вызвано:'
+    uniqueCount: "Уникальных элементов:"
+    tags: "Теги:"
+    called: "Вызвано:"
     details: Сведения
     element: Элемент
-    context: 'Контекст:'
-    stack: 'Стек:'
+    context: "Контекст:"
+    stack: "Стек:"
     times__ending:
       - раз
-      - ''
-      - ''
+      - ""
+      - ""
       - а
   secretpage:
     label: Вы оказались на первой секретной странице
@@ -183,11 +184,11 @@ pages:
       label: API'шечки
       loading: Загрузка...
       serverNotAvailable: Сервер недоступен
-      simple: 'Простые пути:'
+      simple: "Простые пути:"
       simpleDescription: Данные из точки зачастую можно получить напрямую.
-      special: 'Особые пути:'
+      special: "Особые пути:"
       specialDescription: Опциональны, иногда, требуется аунтефикация или присутсвуют условности.
-      regexp: 'Регулярные выражения:'
+      regexp: "Регулярные выражения:"
       regexpDescription: Не имеют чёткого адреса.
     other:
       label: Другое
@@ -200,7 +201,7 @@ pages:
 components:
   Giscus:
     comments: Комментарии
-    identify: 'Идентификатор:'
+    identify: "Идентификатор:"
     notSupported: Giscus не поддерживается
   Layout:
     Header:
