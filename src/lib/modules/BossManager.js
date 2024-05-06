@@ -70,22 +70,18 @@ class RewardSystem {
   };
   static BossEndPull = {
     DEFAULT_VOID: 1,
-    VOID_REWARD_DENOMINATOR: 0.8,
-    VOID_LIMIT_MULTIPLAYER: 3,
-    BONUS_VOID_PULL: 3,
-    DAMAGE_FOR_VOID: 150_000,
-    GUARANTEE_DAMAGE_PART_FOR_VOID: 0.2,
+    VOID_REWARD_DENOMINATOR: 0.65,
+    VOID_LIMIT_MULTIPLAYER: 2,
+    DAMAGE_FOR_VOID: 30_000,
     DAMAGE_FOR_KEY: 5_000,
     KEYS_LIMIT: 10_000,
     calculateVoid({ userStats, level }) {
-      const numerator =
-        Math.random() * userStats.damageDealt +
-        userStats.damageDealt * this.GUARANTEE_DAMAGE_PART_FOR_VOID;
       const byDamage =
-        (numerator / this.DAMAGE_FOR_VOID) ** this.VOID_REWARD_DENOMINATOR;
-      const byRandom = Number(random(this.BONUS_VOID_PULL) === 1);
+        (userStats.damageDealt / this.DAMAGE_FOR_VOID) **
+        this.VOID_REWARD_DENOMINATOR;
+
       const limit = level * this.VOID_LIMIT_MULTIPLAYER;
-      const value = Math.floor(byDamage + byRandom) + this.DEFAULT_VOID;
+      const value = Math.floor(byDamage) + this.DEFAULT_VOID;
       return Math.min(limit, value);
     },
     calculateKeys(userStats) {
@@ -1177,7 +1173,7 @@ class BossManager {
       parting: boss.level > 3 ? "Босс остался доволен.." : "Босс недоволен..",
       rewards: `Пользователи получают ключи в количестве равном ${
         100 / BossEndPull.DAMAGE_FOR_KEY
-      }% от нанесенного урона и примерно случайное количество нестабильности в зависимости от нанесенного урона`,
+      }% от нанесенного урона и некоторое количество нестабильности в зависимости от нанесенного урона`,
       mostStrongUser: `Сильнельший атакер: ${mostStrongUser.toString()}: ${NumberFormatLetterize(
         boss.users[mostStrongUser.id].damageDealt,
       )} ед., — он получает 3 нестабильности`,
