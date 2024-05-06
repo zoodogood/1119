@@ -70,7 +70,7 @@ class Command extends BaseCommand {
           let phrase =
             ".\nВы купили палку. Это самая обычная палка, и вы её выбросили.";
           if (userData.monster) {
-            const DENOMINATOR = 0.995;
+            const DENOMINATOR = 0.992;
             const COMMON_VALUE = 3;
 
             const MIN = 5;
