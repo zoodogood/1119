@@ -32,12 +32,20 @@
           <a
             href="{PagesRouter.relativeToPage(
               PagesRouter.getPageBy('errors/list/item').key,
-            )}/:{timestamp}"
+            )}/:{timestamp || ''}"
           >
             <big>ID: {Component.errors.length - i}</big>
             <p>
-              {i18n.created}
-              <code>{dayjs(+timestamp).format("DD.MM HH:mm")}</code>
+              {#if timestamp}
+                {i18n.created}
+                <code
+                  >{timestamp
+                    ? dayjs(+timestamp).format("DD.MM HH:mm")
+                    : null}</code
+                >
+              {:else}
+                {i18n.inRealTime}
+              {/if}
             </p>
             <br />
 
