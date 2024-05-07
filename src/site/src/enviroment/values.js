@@ -31,6 +31,7 @@ const data = {
   bot: Object(bot).id ? bot : null,
   version: packageJSON.version,
   buildedTimestamp: Date.now(),
+  cwd: process.cwd(),
   i18n,
 };
 export default {

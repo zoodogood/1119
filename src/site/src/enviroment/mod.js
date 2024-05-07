@@ -3,5 +3,6 @@ const __json__ = {
   buildedTimestamp: null,
   bot: null,
   i18n: null,
+  cwd: null,
 };
 export default __json__;
