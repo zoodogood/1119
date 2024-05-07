@@ -2136,16 +2136,17 @@ class BossManager {
         weight: 20,
         id: "relics",
         description: "Получен осколок случайной реликвии",
-        callback: ({ userStats, userData }) => {
+        callback: ({ userStats, user }) => {
           userStats.relicsShards ||= 0;
           userStats.relicsShards++;
           const NEED_SHARDS_TO_GROUP = 5;
 
           if (userStats.relicsShards <= NEED_SHARDS_TO_GROUP) {
+            return;
             userStats.relicIsTaked = true;
             delete userStats.relicIsTaked;
 
-            userData.bossRelics ||= [];
+            user.data.bossRelics ||= [];
 
             const relicKey = Relics.collection
               .filter(
@@ -2154,7 +2155,7 @@ class BossManager {
               )
               .randomKey();
 
-            relicKey && userData.bossRelics.push(relicKey);
+            relicKey && user.data.bossRelics.push(relicKey);
           }
         },
         filter: ({ boss, userStats }) => {
