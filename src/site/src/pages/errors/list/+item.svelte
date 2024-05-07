@@ -3,8 +3,16 @@
   import Layout from "#site-component/Layout";
   import Icon from "#site-component/iconic";
 
-  import { dayjs, ending, fetchFromInnerApi, yaml } from "#lib/safe-utils.js";
+  import {
+    dayjs,
+    ending,
+    fetchFromInnerApi,
+    resolveGithubPath,
+    yaml,
+  } from "#lib/safe-utils.js";
   import PagesRouter from "#site/lib/Router.js";
+
+  import Path from "path";
 
   const i18n = svelteApp.i18n.pages.errorsItem;
 
@@ -67,10 +75,25 @@
         item.stack = item.stackData
           ? decodeURI(item.stackData.stack).replaceAll("\\", "/")
           : null;
+        item.strokeOfError = item.stackData.strokeOfError;
+        item.fileOfError = item.stackData.fileOfError;
+
+        try {
+          item.githubURL = resolveGithubPath(
+            Path.relative(
+              svelteApp.enviroment.cwd,
+              item.stackData.fileOfError ?? ".",
+            ),
+            item.stackData.strokeOfError,
+          );
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
 
     Component.errors = groups;
+    console.info(Component.errors);
   })();
 </script>
 
@@ -136,6 +159,7 @@
                 <code class="stack">
                   {arrayErrorElement.stack}
                 </code>
+                {arrayErrorElement.githubURL || ""}
               </details>
             {/each}
           </details>
@@ -175,6 +199,7 @@
     border-radius: 15px;
     background-color: #88888811;
     width: calc(800px + 10vw);
+    max-width: 100%;
     min-height: calc(400px + 5vw);
     flex-grow: 1;
 
@@ -223,8 +248,6 @@
 
     opacity: 0.5;
     margin: 1vw;
-
-    width: 1vw;
   }
 
   details[open] > summary::before {
@@ -238,6 +261,7 @@
     width: 100%;
     white-space: pre;
     border-radius: 5px;
+    overflow: auto;
   }
 
   .arrayErrorElement {
