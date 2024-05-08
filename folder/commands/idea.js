@@ -162,16 +162,10 @@ class Store extends TimedCache {
   }
 
   async lastIdea() {
-    return this.isCached()
-      ? this.value().ideas.at(0)
-      : await (async () => {
-          // @ts-expect-error
-          const messages = await getChannel().messages.fetch();
-          const message = messages.find(
-            (message) => message.author === client.user,
-          );
-          return this.idea_parse_metadata(message);
-        })();
+    // @ts-expect-error
+    const messages = await getChannel().messages.fetch();
+    const message = messages.find((message) => message.author === client.user);
+    return this.idea_parse_metadata(message);
   }
 
   onNewIdea(message) {
