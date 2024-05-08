@@ -554,7 +554,7 @@ class Command extends BaseCommand {
       },
       reactions: ["814911040964788254", "815109658637369377"],
     });
-    Util.random(3) &&
+    Util.random(5) &&
       message.startThread({
         name: Util.getRandomElementFromArray([
           "Привет, вам нравится эта идея?",
