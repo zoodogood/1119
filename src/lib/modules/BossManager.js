@@ -917,7 +917,7 @@ class BossManager {
 
     createEmbed: ({ fromLevel, toLevel, taking }) => {
       const contents = {
-        rewardPer: `Получите бонусы за победу над боссом ур. ${toLevel}`,
+        rewardPer: `Получите бонусы за победу над боссом ур. ${toLevel - 1}`,
         timeLimit: `Время ограничено двумя часами с момента отправки этого сообщения`,
         receiveLimit: `${
           taking
