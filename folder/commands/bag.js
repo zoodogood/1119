@@ -1,11 +1,156 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { Emoji } from "#constants/emojis.js";
-import { MONTH, NEW_YEAR_DAY_DATE, SECOND } from "#constants/globals/time.js";
+import { NEW_YEAR_DAY_DATE, SECOND } from "#constants/globals/time.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum, PropertiesList } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { CliParser } from "@zoodogood/utils/primitives";
+
+function getMoveTargetsOf({ user, isToBag }) {
+  const userData = user.data;
+  const bagData = getBagTargetOf(user);
+  const targetFrom = isToBag ? userData : bagData;
+  const targetTo = isToBag ? bagData : userData;
+  return { targetTo, targetFrom };
+}
+
+function getBagTargetOf(user) {
+  const userData = user.data;
+  userData.bag ||= {};
+  return userData.bag;
+}
+
+function moveToBagBrute({ key, count, user }) {
+  const bag = getBagTargetOf(user);
+  user.data[key] -= count;
+  bag[key] ||= 0;
+  bag[key] += count;
+}
+
+export function addResourceAndMoveToBag({
+  user,
+  resource,
+  value,
+  source,
+  executor,
+  context,
+}) {
+  Util.addResource({
+    resource,
+    user,
+    value,
+    source,
+    context,
+    executor,
+  });
+
+  moveToBagBrute({ key: resource, count: value, user });
+}
+
+function checkMoveDetailes({ user, isToBag, count, key }) {
+  const item = Command.items.find((item) => item.key === key);
+  const { targetTo, targetFrom } = getMoveTargetsOf({ user, isToBag });
+
+  if (isPointerAll(count)) {
+    const value = item.getter({ target: targetFrom });
+    count = value || 0;
+  }
+  count = Math.max(Math.floor(count), 0);
+  const limit = item.getLimit();
+  if (limit && !isToBag) {
+    const current = item.getter({ target: targetTo });
+    count = Math.min(count, limit - current);
+  }
+
+  count ||= 0;
+
+  return {
+    limit,
+    key,
+    item,
+    count,
+    user,
+    isToBag,
+    targetTo,
+    targetFrom,
+  };
+}
+
+function summarizeInInventoryAndBag({ user, key }) {
+  const userData = user.data;
+  return (+userData[key] || 0) + (+userData.bag?.[key] || 0);
+}
+
+function isPointerAll(target) {
+  return target === "+";
+}
+
+// MARK: Contexted
+function displayBag(context) {
+  const { userData, interaction } = context;
+  const items = Object.entries(userData.bag || {})
+    .map(([key, count]) => ({
+      item: Command.items.find((item) => item.key === key),
+      count,
+    }))
+    .filter(({ item }) => item !== undefined)
+    .map(({ item, count }) => item.display(count))
+    .map((line) => `– ${line}`);
+
+  const description = items.length
+    ? items.join("\n")
+    : "Она пустая!! Гады, положите туда что-нибудь..\n!bag put 1 coin";
+
+  const embed = {
+    title: "Сэр, Ваша сумка?",
+    description,
+    footer: {
+      text: `Ты, Сэр ${interaction.user.tag}`,
+      iconURL: interaction.user.avatarURL(),
+    },
+  };
+  interaction.channel.msg(embed);
+  return;
+}
+
+function _moveItem(moveDetails) {
+  console.log(moveDetails);
+  const { user, isToBag, count, item, context } = moveDetails;
+  const { targetTo, targetFrom } = getMoveTargetsOf({ isToBag, user });
+  user.action(Actions.resourceChange, {
+    value: isToBag ? -count : count,
+    executor: user,
+    source: "command.bag",
+    resource: item.key,
+    context,
+  });
+
+  item.setter({
+    target: targetFrom,
+    count: item.getter({ target: targetFrom }) - count,
+  });
+  item.setter({
+    target: targetTo,
+    count: item.getter({ target: targetTo }) + count,
+  });
+  return moveDetails;
+}
+
+function movePrepare(moveDetailes, context) {
+  const { key, item } = moveDetailes;
+  const { user } = context;
+  const userData = user.data;
+  console.log(userData.bag);
+  if (userData[key] === undefined) {
+    item.setter({ count: 0, target: userData });
+  }
+
+  if (userData.bag[key] === undefined) {
+    item.setter({ count: 0, target: userData.bag });
+  }
+  console.log(userData.bag[key]);
+}
 
 class CommandRunContext extends BaseCommandRunContext {
   defaultPrevented = false;
@@ -77,6 +222,91 @@ class CommandRunContext extends BaseCommandRunContext {
       const DEFAULT_COUNT = 1;
       values.set("count", DEFAULT_COUNT);
     }
+  }
+}
+
+class PutAll_FlagSubcommand extends BaseFlagSubcommand {
+  onProcess() {
+    const { context } = this;
+    const moved = [];
+    const { user } = context;
+    for (const item of Command.items) {
+      const detailes = checkMoveDetailes({
+        user,
+        isToBag: true,
+        count: "+",
+        key: item.key,
+      });
+      detailes.context = this.context;
+      if (!detailes.count) {
+        continue;
+      }
+      movePrepare(detailes, context);
+      moved.push(_moveItem(detailes));
+    }
+    this.context.interaction.msg({
+      description: moved
+        .map(({ item, count }) => {
+          return `${item.key}: ${item.ending(count)}`;
+        })
+        .join(", "),
+    });
+  }
+}
+
+class TakeAll_FlagSubcommand extends BaseFlagSubcommand {
+  onProcess() {
+    const { context } = this;
+    const moved = [];
+    const { user } = context;
+    for (const item of Command.items) {
+      const detailes = checkMoveDetailes({
+        user,
+        isToBag: false,
+        count: "+",
+        key: item.key,
+      });
+      detailes.context = this.context;
+      if (!detailes.count) {
+        continue;
+      }
+      movePrepare(detailes, context);
+      moved.push(_moveItem(detailes));
+    }
+    this.context.interaction.msg({
+      description: moved
+        .map(({ item, count }) => {
+          return `${item.key} - ${item.ending(count)}`;
+        })
+        .join(", "),
+    });
+  }
+}
+
+class Mention_Subcommand extends BaseFlagSubcommand {
+  processIsAuthor() {
+    const { mention, user } = this.context.interaction;
+    if (mention !== user) {
+      return false;
+    }
+
+    displayBag(this.context);
+    return true;
+  }
+  processDefault() {
+    const { message } = this.context.interaction;
+    message.msg({
+      title:
+        "Вы не можете просматривать содержимое сумки у других пользователей",
+      color: "#ff0000",
+      delete: 15_000,
+      description:
+        "Попросите человека открыть сумку, чтобы вы смогли увидеть содержимое",
+    });
+    return true;
+  }
+  onProcess() {
+    return this.processIsAuthor() || this.processDefault();
   }
 }
 
@@ -361,70 +591,23 @@ const ITEMS = [
   },
 ];
 
-class CommandUtil {
-  static summarizeInInventoryAndBag({ user, key }) {
-    const userData = user.data;
-    return (+userData[key] || 0) + (+userData.bag?.[key] || 0);
-  }
-
-  static isPointerAll(target) {
-    return target === "+";
-  }
-
-  static addResourceAndMoveToBag({
-    user,
-    resource,
-    value,
-    source,
-    executor,
-    context,
-  }) {
-    Util.addResource({
-      resource,
-      user,
-      value,
-      source,
-      context,
-      executor,
-    });
-
-    this.moveToBagBrute({ key: resource, count: value, user });
-  }
-
-  static moveToBagBrute({ key, count, user }) {
-    const bag = CommandUtil.getBagTargetOf(user);
-    user.data[key] -= count;
-    bag[key] ||= 0;
-    bag[key] += count;
-  }
-
-  static getBagTargetOf(user) {
-    const userData = user.data;
-    userData.bag ||= {};
-    return userData.bag;
-  }
-}
-
 class Command extends BaseCommand {
-  static CommandUtil = CommandUtil;
+  static items = ITEMS.map((itemData) => Item.from(itemData));
 
-  constructor() {
-    super();
-    this.items = ITEMS.map((itemData) => Item.from(itemData));
-  }
-
-  findItemByalias(alias) {
-    return this.items.find((item) => item.names.includes(alias.toLowerCase()));
+  findItemByAlias(alias) {
+    return Command.items.find((item) =>
+      item.names.includes(alias.toLowerCase()),
+    );
   }
 
   findItemByKey(key) {
-    return this.items.find(
+    return Command.items.find(
       (item) => item.key.toLowerCase() === key.toLowerCase(),
     );
   }
 
   findItem(item = "") {
-    return this.findItemByKey(item) || this.findItemByalias(item);
+    return this.findItemByKey(item) || this.findItemByAlias(item);
   }
 
   async onActionUseItem(context) {
@@ -438,11 +621,11 @@ class Command extends BaseCommand {
     }
 
     const { key } = item;
-    const userResourceCount = CommandUtil.summarizeInInventoryAndBag({
+    const userResourceCount = summarizeInInventoryAndBag({
       user,
       key,
     });
-    const count = CommandUtil.isPointerAll(context.count)
+    const count = isPointerAll(context.count)
       ? userResourceCount
       : context.count;
 
@@ -468,7 +651,7 @@ class Command extends BaseCommand {
       })) ?? {};
 
     if (used > userData[key]) {
-      this._moveItem({
+      _moveItem({
         isToBag: false,
         user,
         count: used - userData[key],
@@ -495,41 +678,40 @@ class Command extends BaseCommand {
     });
   }
 
-  getMoveTargetsOf({ user, isToBag }) {
-    const userData = user.data;
-    const bagData = CommandUtil.getBagTargetOf(user);
-    const targetFrom = isToBag ? userData : bagData;
-    const targetTo = isToBag ? bagData : userData;
-    return { targetTo, targetFrom };
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
   }
 
-  async onChatInput(msg, interaction) {
-    if (interaction.mention) {
-      msg.msg({
-        title:
-          "Вы не можете просматривать содержимое сумки у других пользователей",
-        color: "#ff0000",
-        delete: 15_000,
-        description:
-          "Попросите человека открыть сумку, чтобы вы смогли увидеть содержимое",
-      });
+  async run(context) {
+    context.parseCli(context.interaction.params);
+    if (await this.processMention(context)) {
       return;
     }
 
-    const context = await CommandRunContext.new(interaction, this);
-    context.parseCli(interaction.params);
-
-    const { action, count, item, userData } = context;
+    const { interaction, defaultPrevented } = context;
 
     interaction.user.action(Actions.beforeBagInteracted, context);
-    const needPrevent = context.defaultPrevented;
-    if (action && needPrevent) {
+    if (defaultPrevented) {
       interaction.channel.msg({
         delete: 7_000,
         title: "Взаимодействие с сумкой заблокированно внешним эффектом",
       });
       return;
     }
+    if (await this.processPutAllFlag(context)) {
+      return;
+    }
+    if (await this.processTakeAllFlag(context)) {
+      return;
+    }
+
+    this.processDefaultBehaviour(context);
+  }
+
+  async processDefaultBehaviour(context) {
+    const { count, item, userData } = context;
 
     if (context.isUseAction) {
       this.onActionUseItem(context);
@@ -547,8 +729,36 @@ class Command extends BaseCommand {
       return;
     }
 
-    this.displayBag(context);
+    await displayBag(context);
     return;
+  }
+
+  async processMention(context) {
+    const { mention } = context.interaction;
+    if (!mention) {
+      return false;
+    }
+
+    new Mention_Subcommand(context).onProcess();
+    return true;
+  }
+
+  async processTakeAllFlag(context) {
+    const value = context.cliParsed.at(1).get("--take-all");
+    if (!value) {
+      return false;
+    }
+    await new TakeAll_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+
+  async processPutAllFlag(context) {
+    const value = context.cliParsed.at(1).get("--put-all");
+    if (!value) {
+      return false;
+    }
+    await new PutAll_FlagSubcommand(context, value).onProcess();
+    return true;
   }
 
   processItemIsExists(context) {
@@ -559,7 +769,10 @@ class Command extends BaseCommand {
     if (item) {
       return true;
     }
-    const list = this.items.reduce((acc, item) => acc.concat(item.names), []);
+    const list = Command.items.reduce(
+      (acc, item) => acc.concat(item.names),
+      [],
+    );
     const similarItem = Util.getSimilar(list, itemRaw);
     channel.msg({
       title: "Не удалось найти такой предмет:",
@@ -571,109 +784,42 @@ class Command extends BaseCommand {
     return false;
   }
 
-  displayBag(context) {
-    const { userData, interaction } = context;
-    const items = Object.entries(userData.bag || {})
-      .map(([key, count]) => ({
-        item: this.items.find((item) => item.key === key),
-        count,
-      }))
-      .filter(({ item }) => item !== undefined)
-      .map(({ item, count }) => item.display(count))
-      .map((line) => `– ${line}`);
-
-    const description = items.length
-      ? items.join("\n")
-      : "Она пустая!! Гады, положите туда что-нибудь..\n!bag put 1 coin";
-
-    const embed = {
-      title: "Сэр, Ваша сумка?",
-      description,
-      footer: {
-        text: `Ты, Сэр ${interaction.user.tag}`,
-        iconURL: interaction.user.avatarURL(),
-      },
-    };
-    interaction.channel.msg(embed);
-    return;
-  }
-
-  _moveItem({ user, isToBag, count, item, context }) {
-    const { targetTo, targetFrom } = this.getMoveTargetsOf({ isToBag, user });
-    user.action(Actions.resourceChange, {
-      value: isToBag ? -count : count,
-      executor: user,
-      source: "command.bag",
-      resource: item.key,
-      context,
-    });
-
-    item.setter({
-      target: targetFrom,
-      count: item.getter({ target: targetFrom }) - count,
-    });
-    item.setter({
-      target: targetTo,
-      count: item.getter({ target: targetTo }) + count,
-    });
-  }
-
   moveItem(context, key, count, isToBag) {
-    const { userData, interaction, user } = context;
-    const item = this.items.find((item) => item.key === key);
-    const { targetTo, targetFrom } = this.getMoveTargetsOf({ user, isToBag });
+    const { interaction, user } = context;
 
-    if (CommandUtil.isPointerAll(count)) {
-      const value = item.getter({ target: targetFrom });
-      count = value || 0;
-    }
-    count = Math.max(Math.floor(count), 0);
+    const moveDetailes = checkMoveDetailes({ user, isToBag, count, key });
+    movePrepare(moveDetailes, context);
 
-    if (userData[key] === undefined)
-      item.setter({ count: 0, target: userData });
-
-    if (userData.bag[key] === undefined)
-      item.setter({ count: 0, target: userData.bag });
+    const { targetFrom, item } = moveDetailes;
 
     const currentCount = item.getter({ target: targetFrom });
     if (currentCount < count) {
-      const description = `Надо на ${item.ending(
-        count - currentCount,
-      )} больше!`;
+      const description = `Надо на ${item.ending(count - currentCount)} больше!`;
       interaction.channel.msg({
         title: "Недостаточно ресурса",
-        delete: 7000,
+        delete: 7_000,
         description,
       });
       return;
     }
 
-    if (item.getLimit() && !isToBag) {
-      const current = item.getter({ target: targetTo });
-      const limit = item.getLimit();
-      count = Math.min(count, limit - current);
-    }
-
-    this._moveItem({
-      user: interaction.user,
-      isToBag,
-      count,
-      item,
-      context,
-    });
+    moveDetailes.context = context;
+    const moved = _moveItem(moveDetailes);
 
     const bagDescription = isToBag
       ? "в а-ля вакуумный объект"
       : "из черной дыры";
     const description = `Вы успешно ${
       isToBag ? "положили" : "взяли"
-    } ${item.ending(count)} ${bagDescription}.`;
+    } ${item.ending(moveDetailes.count)} ${bagDescription}.`;
 
     interaction.channel.msg({
       title: `Действие с сумка ${interaction.user.tag}`,
-      delete: 9000,
+      delete: 9_000,
       description,
     });
+
+    return moved;
   }
 
   options = {
@@ -688,7 +834,18 @@ class Command extends BaseCommand {
       publicized_on_level: 5,
     },
     cliParser: {
-      flags: [],
+      flags: [
+        {
+          name: "--put-all",
+          capture: ["--put-all"],
+          description: "Положить доступные ресурсы в сумку ",
+        },
+        {
+          name: "--take-all",
+          capture: ["--take-all"],
+          description: "Захватить доступные ресурсы из сумки",
+        },
+      ],
     },
     cooldown: 3 * SECOND,
     cooldownTry: 3,
