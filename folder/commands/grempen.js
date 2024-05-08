@@ -6,7 +6,7 @@ import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { HOUR } from "#constants/globals/time.js";
+import { DAY, HOUR } from "#constants/globals/time.js";
 
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
@@ -459,7 +459,10 @@ class Command extends BaseCommand {
           clover.uses++;
 
           const increaseTimestamp = (previous) => {
-            const adding = Math.floor(HOUR * 4 - (previous - Date.now()) / 18);
+            const WEAKING = 4;
+            const adding = Math.floor(
+              HOUR * 4 - (previous - Date.now()) / WEAKING,
+            );
             const ms = previous + Math.max(adding, 0);
             return ms;
           };
@@ -585,7 +588,7 @@ class Command extends BaseCommand {
 
     const todayItems = getTodayItems();
 
-    if (Math.floor(Date.now() / 86400000) !== userData.shopTime) {
+    if (Math.floor(Date.now() / DAY) !== userData.shopTime) {
       userData.grempenBoughted = 0;
       userData.shopTime = Math.floor(Date.now() / 86400000);
     }
