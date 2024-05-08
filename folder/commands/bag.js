@@ -115,7 +115,6 @@ function displayBag(context) {
 }
 
 function _moveItem(moveDetails) {
-  console.log(moveDetails);
   const { user, isToBag, count, item, context } = moveDetails;
   const { targetTo, targetFrom } = getMoveTargetsOf({ isToBag, user });
   user.action(Actions.resourceChange, {
@@ -141,7 +140,6 @@ function movePrepare(moveDetailes, context) {
   const { key, item } = moveDetailes;
   const { user } = context;
   const userData = user.data;
-  console.log(userData.bag);
   if (userData[key] === undefined) {
     item.setter({ count: 0, target: userData });
   }
@@ -149,7 +147,6 @@ function movePrepare(moveDetailes, context) {
   if (userData.bag[key] === undefined) {
     item.setter({ count: 0, target: userData.bag });
   }
-  console.log(userData.bag[key]);
 }
 
 class CommandRunContext extends BaseCommandRunContext {
@@ -226,6 +223,11 @@ class CommandRunContext extends BaseCommandRunContext {
 }
 
 class PutAll_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--put-all",
+    capture: ["--put-all"],
+    description: "Положить доступные ресурсы в сумку",
+  };
   onProcess() {
     const { context } = this;
     const moved = [];
@@ -255,6 +257,11 @@ class PutAll_FlagSubcommand extends BaseFlagSubcommand {
 }
 
 class TakeAll_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--take-all",
+    capture: ["--take-all"],
+    description: "Захватить доступные ресурсы из сумки",
+  };
   onProcess() {
     const { context } = this;
     const moved = [];
@@ -276,9 +283,29 @@ class TakeAll_FlagSubcommand extends BaseFlagSubcommand {
     this.context.interaction.msg({
       description: moved
         .map(({ item, count }) => {
-          return `${item.key} - ${item.ending(count)}`;
+          return `${item.key}: ${item.ending(count)}`;
         })
         .join(", "),
+    });
+  }
+}
+
+class Clean_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--clean",
+    capture: ["--clean"],
+    description: "Очистить пустые значения в сумке",
+  };
+  onProcess() {
+    const { context } = this;
+    const { user, interaction } = context;
+    const bag = user.data.bag || {};
+    const toClean = Object.entries(bag).filter((entrie) => !entrie[1]);
+    for (const [key] of toClean) {
+      delete bag[key];
+    }
+    interaction.msg({
+      description: `Очищено ${Util.ending(toClean.length, "свойств", "", "о", "а")}`,
     });
   }
 }
@@ -706,6 +733,9 @@ class Command extends BaseCommand {
     if (await this.processTakeAllFlag(context)) {
       return;
     }
+    if (await this.processCleanFlag(context)) {
+      return;
+    }
 
     this.processDefaultBehaviour(context);
   }
@@ -758,6 +788,15 @@ class Command extends BaseCommand {
       return false;
     }
     await new PutAll_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+
+  async processCleanFlag(context) {
+    const value = context.cliParsed.at(1).get("--clean");
+    if (!value) {
+      return false;
+    }
+    await new Clean_FlagSubcommand(context, value).onProcess();
     return true;
   }
 
@@ -835,16 +874,9 @@ class Command extends BaseCommand {
     },
     cliParser: {
       flags: [
-        {
-          name: "--put-all",
-          capture: ["--put-all"],
-          description: "Положить доступные ресурсы в сумку ",
-        },
-        {
-          name: "--take-all",
-          capture: ["--take-all"],
-          description: "Захватить доступные ресурсы из сумки",
-        },
+        TakeAll_FlagSubcommand.FLAG_DATA,
+        PutAll_FlagSubcommand.FLAG_DATA,
+        Clean_FlagSubcommand.FLAG_DATA,
       ],
     },
     cooldown: 3 * SECOND,
