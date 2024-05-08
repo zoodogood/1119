@@ -121,7 +121,8 @@ class Chilli {
 class Command extends BaseCommand {
   findChilliInChannel(context) {
     const { channel, user } = context;
-    return channel.chilli?.find((chilli) => chilli.currentIn.id === user.id);
+    const i_have_chilli = (chilli) => chilli.currentIn.id === user.id;
+    return channel.chilli?.find(i_have_chilli);
   }
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
@@ -140,7 +141,7 @@ class Command extends BaseCommand {
   }
 
   processUserCanPutChilli(context) {
-    const { userData, chilli, channel } = context;
+    const { userData, channel, chilli } = context;
     if (chilli || userData.chilli) {
       return true;
     }
@@ -229,6 +230,7 @@ class Command extends BaseCommand {
 
     const chilli = new Chilli(context);
     channel.chilli.push(chilli);
+    chilli.currentIn = memb;
     chilli.addPlayer(memb);
     chilli.addPlayer(user);
 
