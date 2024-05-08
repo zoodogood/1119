@@ -230,10 +230,10 @@ class Command extends BaseCommand {
       const description = Discord.escapeMarkdown(msg.content);
       msg.msg({
         title: `Нужно ещё ${item.gives(
-          numeric - interaction.userData[resource],
+          numeric - (interaction.userData[resource] || 0),
         )}`,
         description,
-        delete: 12000,
+        delete: 12_000,
       });
       return;
     }
