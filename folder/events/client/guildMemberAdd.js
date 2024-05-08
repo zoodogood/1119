@@ -14,7 +14,7 @@ function getMemberData(member) {
 class LeaveRolesUtil {
   static getLeaveRoles(member) {
     const memberData = getMemberData(member);
-    return memberData.leaveRoles ?? null;
+    return memberData.leave_roles ?? null;
   }
 
   static installLeaveRoles(member) {
@@ -27,9 +27,9 @@ class LeaveRolesUtil {
     const { guild } = member;
     for (const roleId of roles) {
       const role = guild.roles.cache.get(roleId);
-      role && member.roles.add(role);
+      role && member.roles.add(role).catch(() => {});
     }
-    delete memberData.leaveRoles;
+    delete memberData.leave_roles;
   }
 }
 
