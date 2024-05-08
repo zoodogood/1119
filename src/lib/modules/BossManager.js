@@ -433,7 +433,8 @@ class BossEvents {
           const contents = {
             time: timestampToDate(
               now -
-                (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS) * DAY,
+                (boss.endingAtDay - BossManager.BOSS_DURATION_IN_DAYS - 1) *
+                  DAY,
             ),
           };
           const description = `**10-й уровень за ${contents.time}**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий. Соберите 5 штук, чтобы получить случайную из реликвий`;
