@@ -14,5 +14,6 @@ export default {
 
       callback(user, effect, { actionName, data });
     },
+    canPrevented: false,
   },
 };
