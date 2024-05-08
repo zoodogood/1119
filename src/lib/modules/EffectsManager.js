@@ -56,7 +56,7 @@ class Core {
     };
     user.action(ActionsMap.beforeEffectInit, _context);
 
-    if (context.defaultPrevented) {
+    if (_context.defaultPrevented) {
       return;
     }
 
@@ -71,7 +71,7 @@ class Core {
 
     effects.push(effect);
     user.action(ActionsMap.effectInit, _context);
-    return context;
+    return _context;
   }
 
   static cleanCallbackMap(user) {
