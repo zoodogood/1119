@@ -2144,7 +2144,7 @@ class BossManager {
           userStats.relicsShards++;
           const NEED_SHARDS_TO_GROUP = 5;
 
-          if (userStats.relicsShards <= NEED_SHARDS_TO_GROUP) {
+          if (userStats.relicsShards >= NEED_SHARDS_TO_GROUP) {
             return;
             userStats.relicIsTaked = true;
             delete userStats.relicIsTaked;
