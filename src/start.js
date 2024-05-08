@@ -189,19 +189,19 @@ client.on("ready", async () => {
   });
 
   client.on("guildMemberRemove", async (member) => {
-    if (!member.guild.data.leave_roles) {
-      member.guild.data.leave_roles = {};
+    const { guild } = member;
+    if (!guild.data.members) {
+      member.guild.data.members = {};
     }
-    member.guild.data.leave_roles[member.user.id] = Array.from(
-      member.roles.cache.keys(),
-    );
+    const memberData = guild.data.members[member.id];
+    memberData.leave_roles = Array.from(member.roles.cache.keys());
 
     const banInfo =
-      (await member.guild.Audit((audit) => audit.target.id === member.id, {
+      (await guild.Audit((audit) => audit.target.id === member.id, {
         limit: 50,
         type: AuditLogEvent.MemberBanAdd,
       })) ||
-      (await member.guild.Audit((audit) => audit.target.id === member.id, {
+      (await guild.Audit((audit) => audit.target.id === member.id, {
         limit: 50,
         type: AuditLogEvent.MemberKick,
       }));
@@ -215,7 +215,7 @@ client.on("ready", async () => {
             banInfo.action === AuditLogEvent.MemberKick ? "кикнут" : "забанен"
           }`,
           description: `${name}\nВыгнавший с сервера: ${
-            member.guild.members.resolve(banInfo.executor).displayName
+            guild.members.resolve(banInfo.executor).displayName
           } ${reason().slice(0, 1000)}`,
         }
       : {
