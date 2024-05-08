@@ -168,9 +168,11 @@ class Command_GuildDescription_Manager {
 
     const guildData = guild.data;
     guildData.description ||= {};
-    guildData.description.content = content;
-    isTemplate &&
-      Object.assign(guildData.description, { isTemplate, authorId: user.id });
+    Object.assign(guildData.description, {
+      isTemplate,
+      authorId: user.id,
+      content,
+    });
 
     const resolveTemplate = (content) => {
       const templater = new Template({
