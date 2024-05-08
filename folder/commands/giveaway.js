@@ -1,186 +1,244 @@
+// @ts-check
 import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
-import EventsManager from "#lib/modules/EventsManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
+import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { ParserTime } from "#lib/parsers.js";
+import { SECOND, YEAR } from "#constants/globals/time.js";
+import { FormattingPatterns } from "discord.js";
+import { Emoji } from "#constants/emojis.js";
 
+class CommandRunContext extends BaseCommandRunContext {
+  title;
+  description;
+  winners = 1;
+  winnerRoleId;
+  _interface = new MessageInterface();
+
+  interface_reactions() {
+    return this.command.reactions
+      .filter(({ filter }) => !filter || filter(this))
+      .map(({ emoji }) => emoji);
+  }
+
+  end() {
+    this._interface.close();
+    this._interface.message.delete();
+    super.end();
+  }
+}
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
-    const message = await msg.msg({
-      title: "🌲 Создание раздачи",
-      description:
-        "Используйте реакции ниже, чтобы настроить раздачу!\n◖🪧  Текст 🚩\n◖⏰  Дата окончания 🚩\n◖🎉  Кол-во победителей\n◖🎁  Выдаваемые роли",
-      color: "#4a7e31",
-      footer: { text: "🚩 Обязательные пункты перед началом" },
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.createInterface(context));
+    return context;
+  }
+
+  createInterface(context) {
+    const { _interface } = context;
+    _interface.setChannel(context.channel);
+    _interface.setUser(context.user);
+    _interface.setRender(() => {
+      const fieldsContent = this.reactions
+        .filter(({ hidden }) => !hidden)
+        .map(({ emoji, key, label, required }) => {
+          const icon = !context[key]
+            ? emoji
+            : Emoji.animation_tick_block.toString();
+          return `◖${icon} ${label}${required ? " 🚩" : ""}`;
+        })
+        .join("\n");
+      return {
+        title: "🌲 Создание раздачи",
+        description: `Используйте реакции ниже, чтобы настроить раздачу!\n${fieldsContent}`,
+        color: "#4a7e31",
+        footer: { text: "🚩 Обязательные пункты перед началом" },
+      };
     });
-    let react,
-      answer,
-      timestamp,
-      title,
-      descr,
-      winners = 1,
-      role;
-    let _questionMessage;
-    do {
-      react = await message.awaitReact(
-        { user: msg.author, removeType: "one" },
-        "🪧",
-        "⏰",
-        "🎉",
-        "🎁",
-        timestamp && descr ? "640449832799961088" : null,
-      );
-      switch (react) {
-        case "🪧":
-          _questionMessage = await msg.msg({ title: `Укажите заглавие` });
-          answer = await msg.channel.awaitMessage({ user: msg.author });
-          _questionMessage.delete();
-          if (!answer) return;
-          title = answer.content;
+    _interface.setReactions(context.interface_reactions());
+    _interface.emitter.on(
+      MessageInterface.Events.allowed_collect,
+      async ({ interaction }) => {
+        await this.reactions
+          .find(({ emoji }) => emoji === interaction.customId)
+          ?.callback(interaction, context);
+        !context.isEnded &&
+          _interface.setReactions(context.interface_reactions());
+        !context.isEnded && _interface.updateMessage();
+      },
+    );
+    _interface.updateMessage();
+  }
 
-          _questionMessage = await msg.msg({
-            title: `Укажите ${descr ? "новое " : ""}описание этой раздачи`,
-            description: descr ? "Старое: " + descr : "",
-          });
-          answer = await msg.channel.awaitMessage({
-            user: msg.author,
-            time: 1_800_000,
-          });
-          _questionMessage.delete();
+  reactions = [
+    {
+      emoji: "🪧",
+      key: "title",
+      label: "Текст",
+      required: true,
+      callback: async (interaction, context) => {
+        const { channel, user } = interaction;
 
-          if (!answer) return;
-          descr = answer.content;
-          break;
-        case "⏰":
-          const parse = new Date();
-          _questionMessage = await msg.msg({
+        const { content: title } = await Util.question({
+          message: { title: "Укажите заглавие" },
+          user,
+          channel,
+        });
+
+        if (!title) {
+          return;
+        }
+        context.title = title;
+
+        const { content: description } = await Util.question({
+          message: {
+            title: `Укажите ${context.description ? "новое " : ""}описание этой раздачи`,
+            description: context.description
+              ? `Старое: ${context.description}`
+              : null,
+          },
+          user,
+          channel,
+        });
+
+        if (!description) {
+          return;
+        }
+        context.description = description;
+      },
+    },
+    {
+      emoji: "⏰",
+      key: "timestamp",
+      label: "Дата начала",
+      required: true,
+      callback: async (interaction, context) => {
+        const { channel, user } = interaction;
+        const now = new Date();
+        const { content } = await Util.question({
+          message: {
             title: `Установите дату и время конца ивента`,
             description: `Вы можете указать что-то одно, числа разделенные точкой будут считаться датой, двоеточием — время\n**Вот несколько примеров:**\n22:00 — только время\n31.12 — только дата\n11:11 01.01 — дата и время\nОбратите внимание! Время сервера (${new Intl.DateTimeFormat(
               "ru-ru",
               { weekday: "short", hour: "2-digit", minute: "2-digit" },
-            ).format(parse)}) может отличается от вашего`,
-          });
-          answer = await msg.channel.awaitMessage({ user: msg.author });
-          _questionMessage.delete();
-
-          if (!answer) {
-            return;
-          }
-
-          const co = answer.content;
-          const finded = [
-            co.match(/(?<=\.)\d\d/),
-            co.match(/\d\d(?=\.)/),
-            co.match(/\d\d(?=:)/),
-            co.match(/(?<=:)\d\d/),
-          ].map((e) => (e ? e[0] : undefined));
-          if (!finded.some((e) => e)) {
-            msg.msg({
-              title:
-                "Нам неудалось найти ни одной метки времени, попробуйте ещё раз",
-              color: "#ff0000",
-              delete: 4000,
-            });
-            break;
-          }
-          const [
-            month = parse.getMonth() + 1,
-            days = parse.getDate(),
-            hours = parse.getHours(),
-            minutes = 0,
-          ] = finded;
-          timestamp = new Date(
-            parse.getFullYear(),
-            month - 1,
-            days,
-            hours,
-            minutes,
-            0,
-          );
-          if (timestamp.getTime() - Date.now() < 0) {
-            const messageSetYear = await msg.msg({
-              title: "Эта дата уже прошла, хотите установить на следующий год?",
-            });
-            react = await messageSetYear.awaitReact(
-              { user: msg.author, removeType: "all" },
-              "685057435161198594",
-              "763807890573885456",
-            );
-            messageSetYear.delete();
-            if (react == "685057435161198594") timestamp += 31536000000;
-            else {
-              msg.msg({ title: "Операция отменена", delete: 4000 });
-              break;
-            }
-          }
-          timestamp = timestamp.getTime();
-          title = `Готово! Времени до окончания ~${Util.timestampToDate(
-            timestamp - Date.now(),
-            3,
-          )}`;
-          msg.msg({ title, delete: 3000, timestamp });
-          break;
-        case "🎉":
-          _questionMessage = await msg.msg({
-            title: `Введите количество возможных победителей`,
-          });
-          answer = await msg.channel.awaitMessage({ user: msg.author });
-          _questionMessage.delete();
-          if (!answer) {
-            return;
-          }
-          if (isNaN(answer.content)) {
-            msg.msg({
-              title: "Указано не число",
-              color: "#ff0000",
-              delete: 3000,
-            });
-            break;
-          }
-          winners = Number(answer.content);
-          break;
-        case "🎁":
-          _questionMessage = await msg.msg({
-            title: `Упомяните роль или введите её айди`,
-          });
-          answer = await msg.channel.awaitMessage({ user: msg.author });
-          _questionMessage.delete();
-
-          if (!answer) return;
-          role = answer.content.match(/(?:<@&)?(\d+)>?/)[1];
-          break;
-        case "640449832799961088":
-          const giveaway = await msg.msg({
-            title,
-            description: descr,
-            timestamp,
-            reactions: ["🌲"],
-            color: "#4a7e31",
-            footer: { text: "Окончание раздачи: " },
-          });
-          TimeEventsManager.create("giveaway", timestamp - Date.now(), [
-            msg.channel.id,
-            giveaway.id,
-            winners,
-            role,
-          ]);
-        default:
-          await Util.sleep(1000);
-          message.delete();
-          return;
-      }
-      const description = message.embeds[0].description.replace(
-        react,
-        "<a:yes:763371572073201714>",
-      );
-      if (description !== message.embeds[0].description)
-        message.msg({
-          title: "🌲 Создание раздачи",
-          edit: true,
-          color: "#4a7e31",
-          description: description,
+            ).format(now)}) может отличается от вашего`,
+          },
+          channel,
+          user,
         });
-    } while (react);
-  }
+        if (!content) {
+          return;
+        }
+        let parsed = ParserTime.toNumber(content) + Date.now();
+
+        if (parsed < Date.now()) {
+          const { emoji } = await Util.question({
+            message: {
+              title: "Эта дата уже прошла, хотите установить на следующий год?",
+            },
+            user: interaction.user,
+            channel: interaction.channel,
+            reactions: ["685057435161198594", "763807890573885456"],
+          });
+
+          if (emoji === "685057435161198594") {
+            parsed += YEAR;
+          } else {
+            context.channel.msg({
+              title: "Операция отменена",
+              delete: 8 * SECOND,
+            });
+            return;
+          }
+        }
+
+        context.timestamp = parsed;
+        interaction.msg({
+          title: `Готово! Времени до окончания ~${Util.timestampToDate(
+            parsed - Date.now(),
+            2,
+          )}`,
+          timestamp: parsed,
+          delete: 8 * SECOND,
+        });
+      },
+    },
+    {
+      emoji: "🎉",
+      key: "winners",
+      label: "Кол-во победителей",
+      required: false,
+      callback: async (interaction, context) => {
+        const { content } = await Util.question({
+          message: {
+            title: `Введите количество возможных победителей`,
+          },
+          channel: interaction.channel,
+          user: interaction.user,
+        });
+
+        if (!content) {
+          return;
+        }
+        if (isNaN(content)) {
+          interaction.msg({
+            title: "Указано не число",
+            color: "#ff0000",
+            delete: 3000,
+          });
+          return;
+        }
+        context.winners = Number(content);
+      },
+    },
+    {
+      emoji: "🎁",
+      key: "winnerRoleId",
+      label: "Выдаваемая роль",
+      required: false,
+      callback: async (interaction, context) => {
+        const { content } = await Util.question({
+          message: { title: `Упомяните роль или введите её айди` },
+          channel: interaction.channel,
+          user: interaction.user,
+        });
+
+        if (!content) {
+          return;
+        }
+
+        context.winnerRoleId = content.match(
+          FormattingPatterns.Role,
+        )?.groups.id;
+      },
+    },
+    {
+      emoji: "640449832799961088",
+      required: false,
+      label: "Опубликовать",
+      hidden: true,
+      callback: async (interaction, context) => {
+        const giveaway = await interaction.msg({
+          title: context.title,
+          description: context.description,
+          timestamp: context.timestamp,
+          reactions: ["🌲"],
+          color: "#4a7e31",
+          footer: { text: "Окончание раздачи: " },
+        });
+        TimeEventsManager.create("giveaway", context.timestamp - Date.now(), [
+          interaction.channel.id,
+          giveaway.id,
+          context.winners,
+          context.winnerRoleId,
+        ]);
+
+        context.end();
+      },
+      filter: (context) => context.timestamp && context.title,
+    },
+  ];
 
   options = {
     name: "giveaway",
