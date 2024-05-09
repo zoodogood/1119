@@ -683,6 +683,7 @@ function _processOnStart_developerScript() {
     if (!effect) {
       continue;
     }
+    effect.multiplayer = effect.multiplier;
     effect.createdAt ||= effect.timestamp;
   }
 }
