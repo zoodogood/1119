@@ -532,7 +532,7 @@ class EmbedSendProcessor {
     }
 
     if (!hook) {
-      const { name, avatar } = webhook.avatar;
+      const { name, avatar } = webhook;
 
       hook = await channel.createWebhook({
         name,
