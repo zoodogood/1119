@@ -164,7 +164,7 @@ class Command_GuildDescription_Manager {
 
     const isTemplate =
       content.startsWith(this.TEMPLATE_KEY_PREFIX) &&
-      (content = content.replace(this.TEMPLATE_KEY_PREFIX, "").trim());
+      !!(content = content.replace(this.TEMPLATE_KEY_PREFIX, "").trim());
 
     const guildData = guild.data;
     guildData.description ||= {};
