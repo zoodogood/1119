@@ -328,9 +328,9 @@ class AttributesShop {
         priceMultiplayer: 2,
         resource: "coins",
         callback: ({ userStats }) => {
-          const multiplier = 1.25;
+          const multiplayer = 1.25;
           userStats.attacksDamageMultiplayer = +(
-            (userStats.attacksDamageMultiplayer ?? 1) * multiplier
+            (userStats.attacksDamageMultiplayer ?? 1) * multiplayer
           ).toFixed(3);
         },
       },
@@ -753,15 +753,15 @@ class BossManager {
     boss,
     { context = {}, sourceUser = {} } = {},
   ) {
-    let multiplier = 1;
-    multiplier *= boss.diceDamageMultiplayer ?? 1;
-    multiplier *= boss.legendaryWearonDamageMultiplayer ?? 1;
+    let multiplayer = 1;
+    multiplayer *= boss.diceDamageMultiplayer ?? 1;
+    multiplayer *= boss.legendaryWearonDamageMultiplayer ?? 1;
 
     if (context.restoreHealthByDamage) {
-      multiplier *= -context.restoreHealthByDamage;
+      multiplayer *= -context.restoreHealthByDamage;
     }
 
-    return multiplier;
+    return multiplayer;
   }
 
   static makeDamage(
@@ -1271,7 +1271,7 @@ class BossManager {
     const attackContext = {
       damageMultiplayer: 1,
       listOfEvents: [],
-      defaultDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
+      baseDamage: this.USER_DEFAULT_ATTACK_DAMAGE,
       eventsCount: Math.floor(boss.level ** 0.5) + random(-1, 1),
       message: null,
     };
@@ -1335,10 +1335,10 @@ class BossManager {
 
     const damage = Math.ceil(
       (userStats.attacksDamageMultiplayer ?? 1) *
-        attackContext.defaultDamage *
+        attackContext.baseDamage *
         attackContext.damageMultiplayer,
     );
-    attackContext.defaultDamage = attackContext.damageDealt = damage;
+    attackContext.baseDamage = attackContext.damageDealt = damage;
 
     const damageSourceType = BossManager.DAMAGE_SOURCES.attack;
     const dealt = BossManager.makeDamage(boss, damage, {
@@ -2072,9 +2072,9 @@ class BossManager {
         id: "powerOfFireRare",
         description: "Ваши прямые атаки наносят гораздо больше урона по боссу",
         callback: ({ user, boss, userStats }) => {
-          const multiplier = 1.1;
+          const multiplayer = 1.1;
           userStats.attacksDamageMultiplayer = +(
-            (userStats.attacksDamageMultiplayer ?? 1) * multiplier
+            (userStats.attacksDamageMultiplayer ?? 1) * multiplayer
           ).toFixed(3);
         },
         filter: ({ boss }) => boss.elementType === elementsEnum.fire,
@@ -2280,6 +2280,7 @@ class BossManager {
       forging: {
         weight: 100,
         id: "forging",
+        repeats: true,
         description: "Эффект легендарного оружия усилен, обычный урон ослаблен",
         callback: async ({ user, boss, channel, userStats }) => {
           const effect = BossEffects.effectsOf({ boss, user }).find(
@@ -2293,8 +2294,7 @@ class BossManager {
           }
 
           const effectMultiplayer = 0.2;
-          effect.values.multiplier += effectMultiplayer;
-
+          effect.values.multiplayer += effectMultiplayer;
           const damageMultiplayer = 0.95;
           userStats.attacksDamageMultiplayer = +(
             (userStats.attacksDamageMultiplayer ?? 1) * damageMultiplayer
