@@ -27,7 +27,7 @@ class Command extends BaseCommand {
       poster:
         "https://cdn.discordapp.com/attachments/769566192846635010/872441895215824916/send.gif",
     },
-    alias: "с c сенд s template шаблон",
+    alias: "",
     allowDM: true,
     expectParams: true,
     type: "dev",
