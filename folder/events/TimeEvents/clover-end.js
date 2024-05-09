@@ -17,12 +17,12 @@ class Event {
     const { cloverEffect } = guild.data;
     delete guild.data.cloverEffect;
 
-    const multiplier = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses) + 1;
+    const multiplayer = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses) + 1;
 
     channel?.msg({
       title: "☘️ Ивент Клевера завершился",
       color: "#21c96c",
-      description: `Получено наград во время действия эффекта: ${cloverEffect.coins}\nМаксимальный множитель: X${multiplier.toFixed(2)}\nКуплено клеверов: ${cloverEffect.uses}\nКлевер длился ${((Date.now() - cloverEffect.createdAt) / HOUR).toFixed(1)}ч.`,
+      description: `Получено наград во время действия эффекта: ${cloverEffect.coins}\nМаксимальный множитель: X${multiplayer.toFixed(2)}\nКуплено клеверов: ${cloverEffect.uses}\nКлевер длился ${((Date.now() - cloverEffect.createdAt) / HOUR).toFixed(1)}ч.`,
     });
   }
 

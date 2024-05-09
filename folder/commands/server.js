@@ -113,7 +113,7 @@ class Command extends BaseCommand {
     //* CLOVER
     const clover = this.getCloverData(guild);
     if (clover) {
-      const { timeToEnd, multiplier, cloverEffect } = clover;
+      const { timeToEnd, multiplayer, cloverEffect } = clover;
       const { coins, createdAt, uses } = cloverEffect;
 
       fields.unshift({
@@ -122,7 +122,7 @@ class Command extends BaseCommand {
           1,
         )}ч.\nКлевер был запущен: <t:${Math.floor(
           createdAt / 1_000,
-        )}>;\nНаград получено: ${coins}\nТекущий множетель: X${(multiplier + 1).toFixed(2)}\nКуплено клеверов: ${uses}`,
+        )}>;\nНаград получено: ${coins}\nТекущий множетель: X${(multiplayer + 1).toFixed(2)}\nКуплено клеверов: ${uses}`,
       });
     }
     //**
@@ -173,9 +173,9 @@ class Command extends BaseCommand {
     }
 
     const timeToEnd = event.timestamp - Date.now();
-    const multiplier = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses);
+    const multiplayer = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses);
 
-    return { timeToEnd, multiplier, cloverEffect };
+    return { timeToEnd, multiplayer, cloverEffect };
   }
 
   options = {
