@@ -591,7 +591,7 @@ const ITEMS = [
       const { boss } = guild.data;
 
       const BossManager = (await import("#lib/modules/BossManager.js")).default;
-      if (BossManager.isArrivedIn(guild) || boss?.apparanceAtDay - 3 <= today) {
+      if (BossManager.isArrivedIn(guild) || boss?.apparanceAtDay - 2 <= today) {
         const phrase =
           "Неудалось применить леденец:\nВы можете применить этот предмет в момент отсутствия босса на сервере, но не за 3 дня до его появления";
         return { phrase };
