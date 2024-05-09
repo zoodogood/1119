@@ -54,4 +54,5 @@ export default {
     driver: "localdb",
     mongoURL: null,
   },
+  ai_payloads: []
 };
