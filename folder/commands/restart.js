@@ -28,8 +28,8 @@ class Timeout_Flagsubcommand extends BaseFlagSubcommand {
 
   setupBotUserStatus() {
     const time = dayjs().add(this.value, "minute").format("HH:mm");
-    client.user?.setActivity(`Запланирован перезапуск: ${time}`, {
-      type: ActivityType.Playing,
+    client.user?.setActivity(`${time} — перезапуск`, {
+      type: ActivityType.Streaming,
       url: "https://www.twitch.tv/monstercat",
     });
   }
