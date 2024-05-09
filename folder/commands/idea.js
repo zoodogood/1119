@@ -528,6 +528,27 @@ class Command extends BaseCommand {
     await new JSON_Flagsubcommand(context).onProcess();
     return true;
   }
+  async process_start_thread(context, message, phrase) {
+    if (Util.random(5) !== 0) {
+      return;
+    }
+    const { askTheAI_or_null } = await import("#lib/askTheAIOrNull.js");
+    const thread = await message.startThread({
+      name: Util.getRandomElementFromArray([
+        "Привет, вам нравится эта идея?",
+        "Каков план?",
+      ]),
+    });
+    const question = `Проанализируй эту идею и дай отзыв. Думай шаг за шагом Речь идёт существующем о чат боте с долгой историей. Ценятся идеи развивающие креативность и ставящие пользователям испытания!`;
+    const { response } =
+      (await askTheAI_or_null([`${question}\n${phrase}`])) || {};
+    if (!response) {
+      return;
+    }
+    thread.msg({
+      description: `Вопрос: ${question} [идея]\n${response}`,
+    });
+  }
 
   async processDefaultBehaviour(context) {
     if (!(await this.processAggree(context))) {
@@ -538,28 +559,25 @@ class Command extends BaseCommand {
     const increasedIdeaNumber = (await this.lastIdeaNumber()) + 1;
     const phrase = context.cliParsed.at(1).get("phrase");
 
-    const message = await channel.msg({
-      title: "<:meow:637290387655884800> Какая классная идея!",
-      description: `**Идея:**\n${phrase}`,
-      color: interaction.userData.profile_color || "#00ffaf",
-      author: {
-        name: `${user.username} #${increasedIdeaNumber}`,
-        iconURL: user.avatarURL(),
-      },
-      reactions: ["814911040964788254", "815109658637369377"],
-    });
-    Util.random(5) &&
-      message.startThread({
-        name: Util.getRandomElementFromArray([
-          "Привет, вам нравится эта идея?",
-          "Каков план?",
-        ]),
-      });
+    const message = await channel
+      .msg({
+        title: "<:meow:637290387655884800> Какая классная идея!",
+        description: `**Идея:**\n${phrase}`,
+        color: interaction.userData.profile_color || "#00ffaf",
+        author: {
+          name: `${user.username} #${increasedIdeaNumber}`,
+          iconURL: user.avatarURL(),
+        },
+        reactions: ["814911040964788254", "815109658637369377"],
+      })
+      .catch(() => {});
+    this.process_start_thread(context, message, phrase);
     interaction.channel.msg({
       title: "<:meow:637290387655884800> Вы отправили нам свою идею! Спасибо!",
       description: `А что, идея «${phrase}» весьма не плоха...`,
       color: Command.MESSAGE_THEME.color,
       author: { name: user.username, iconURL: user.avatarURL() },
+      footer: { text: `#${increasedIdeaNumber}` },
     });
 
     await this.store.onNewIdea(message);
