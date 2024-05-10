@@ -193,7 +193,7 @@ client.on("ready", async () => {
     if (!guild.data.members) {
       member.guild.data.members = {};
     }
-    const memberData = guild.data.members[member.id];
+    const memberData = (guild.data.members[member.id] ||= {});
     memberData.leave_roles = Array.from(member.roles.cache.keys());
 
     const banInfo =
