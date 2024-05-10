@@ -1006,7 +1006,6 @@ class Command extends BaseCommand {
     accessibility: {
       publicized_on_level: 2,
     },
-    hidden: true,
   };
 }
 
