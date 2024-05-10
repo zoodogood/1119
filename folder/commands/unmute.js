@@ -29,7 +29,7 @@ class Command extends BaseCommand {
 
     if (
       guildMember.roles.highest.position >
-      interaction.mention.roles.highest.position
+      guild.members.resolve(interaction.mention).roles.highest.position
     )
       return msg.msg({
         title: "Вы не можете размутить участника, роли которого выше ваших",
