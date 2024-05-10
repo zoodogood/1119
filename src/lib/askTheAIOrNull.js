@@ -25,7 +25,6 @@ class Balancer {
   }
   next() {
     const target = (this.current = (this.current + 1) % this.weightsLength);
-    console.log(this.weights);
     const index = this.weights.findIndex((weight) => target < weight);
     return this.agents[index] || this.agents[0] || null;
   }
@@ -41,7 +40,8 @@ export async function askTheAI_or_null(context, { temperature = 0.7 } = {}) {
   if (!agent) {
     return null;
   }
-  const { endpoint, model, secret } = agent;
+  const { endpoint, model, secret_enviroment } = agent;
+  const secret = process.env[secret_enviroment];
 
   const messages = resolveContext(context);
   const response = await fetch(endpoint, {
