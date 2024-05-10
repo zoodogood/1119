@@ -34,7 +34,8 @@ class Command extends BaseCommand {
     id: 40,
     media: {
       description:
-        'Всегда отвечающий "нет" Шар, почему все думают, что он всевидящий?\n\n✏️\n```python\n!ball {question?} # Не спрашивайте у него как его дела\n```',
+        'Всегда отвечающий "нет" Шар, почему все думают, что он всевидящий?',
+      example: "!ball {question?} # Не спрашивайте у него как его дела",
       poster:
         "https://media.discordapp.net/attachments/769566192846635010/872442452152307762/ball.gif",
     },
