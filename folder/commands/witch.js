@@ -654,7 +654,7 @@ class Command extends BaseCommand {
   }
 
   calculateExperienceBonus(userData) {
-    return Math.max(0.97716 ** userData.voidRituals, 0.25);
+    return Math.max(0.97716 ** userData.voidRituals, 0.625);
   }
 
   getContext(interaction) {
