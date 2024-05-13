@@ -1140,8 +1140,9 @@ class Command extends BaseCommand {
                 name === "clover-end" && params.includes(channel.guild.id);
 
               const event = TimeEventsManager.at(day).find(filter);
+              const current_duration = event.timestamp - Date.now();
               TimeEventsManager.update(event, {
-                timestamp: clover.timestamp / 2,
+                timestamp: current_duration / 2,
               });
             },
             textOutput:
