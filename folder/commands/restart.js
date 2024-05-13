@@ -5,7 +5,7 @@ import { Pager } from "#lib/DiscordPager.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 const { run } = get({ root: process.cwd() });
 import { CliParser } from "@zoodogood/utils/primitives";
-import { MINUTE } from "#constants/globals/time.js";
+import { MINUTE, SECOND } from "#constants/globals/time.js";
 import client from "#bot/client.js";
 import { ActivityType } from "discord.js";
 import { dayjs, sleep } from "#lib/safe-utils.js";
@@ -19,6 +19,10 @@ class Timeout_Flagsubcommand extends BaseFlagSubcommand {
   }
   async onProcess() {
     this.setupBotUserStatus();
+    this.context.channel.msg({
+      content: "Запланирован перезапуск...",
+      delete: 10 * SECOND,
+    });
     await this.sleep();
   }
 
