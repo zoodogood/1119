@@ -459,7 +459,7 @@ class Command extends BaseCommand {
           clover.uses++;
 
           const increaseTimestamp = (previous) => {
-            const WEAKING = 12;
+            const WEAKING = 18;
             const adding = Math.floor(
               HOUR * 4 - (previous - Date.now()) / WEAKING,
             );
