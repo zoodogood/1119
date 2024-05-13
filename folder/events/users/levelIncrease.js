@@ -14,7 +14,7 @@ class Event extends BaseEvent {
 
     while (user.exp >= user.level * EXPERIENCE_PER_LEVEL) {
       const expSummary = user.level * EXPERIENCE_PER_LEVEL;
-      const coefficient = Math.max(0.97716 ** user.voidRituals, 0.01);
+      const coefficient = Math.max(0.97716 ** user.voidRituals, 0.25);
       user.exp -= Math.ceil(expSummary * coefficient);
       user.level++;
     }

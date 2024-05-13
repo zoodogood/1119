@@ -654,7 +654,7 @@ class Command extends BaseCommand {
   }
 
   calculateExperienceBonus(userData) {
-    return Math.max(0.97716 ** userData.voidRituals, 0.01);
+    return Math.max(0.97716 ** userData.voidRituals, 0.25);
   }
 
   getContext(interaction) {
@@ -673,7 +673,7 @@ class Command extends BaseCommand {
         userData.name
       }, использовал котёл ${userData.voidRituals} раз.\nЕго бонус к опыту: ${(
         100 *
-        (1 - this.calculateExperienceBonus(userData) + 1)
+        (1 / this.calculateExperienceBonus(userData) + 1)
       ).toFixed(
         2,
       )}% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`,
