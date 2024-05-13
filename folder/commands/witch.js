@@ -143,7 +143,10 @@ class Command extends BaseCommand {
       BASIC: 20,
       BONUS_PER_RITUAL: 7,
       calculate(user) {
-        return this.BASIC + user.data.voidRituals * this.BONUS_PER_RITUAL;
+        return Math.min(
+          this.BASIC + user.data.voidRituals * this.BONUS_PER_RITUAL,
+          300,
+        );
       },
       description(user) {
         const value = this.calculate(user);
