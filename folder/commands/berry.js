@@ -102,7 +102,7 @@ class Command extends BaseCommand {
       primary: context,
     };
 
-    interaction.user.action(Actions.berryBarter, _context);
+    interaction.user.action(Actions.beforeBerryBarter, _context);
 
     if (_context.event.defaultPrevented) {
       interaction.channel.msg({
@@ -111,6 +111,8 @@ class Command extends BaseCommand {
       });
       return;
     }
+
+    interaction.user.action(Actions.berryBarter, _context);
 
     addMultipleResources({
       user,
