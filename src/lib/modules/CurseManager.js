@@ -1670,7 +1670,7 @@ class CurseManager {
             CurseManager.interface({ user, curse }).setProgress(value);
           },
         },
-        filter: (curseBase, user) => user.data.bag?.berrys > 5,
+        filter: (user) => user.data.bag?.berrys > 5,
         reward: 15,
         interactionIsShort: true,
       },
