@@ -27,3 +27,8 @@ export function jsonFile(data, name) {
     name,
   });
 }
+
+export function takeInteractionProperties(raw) {
+  const { user, message, channel, guild } = raw;
+  return { user, message, channel, guild };
+}
