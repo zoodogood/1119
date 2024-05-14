@@ -1678,7 +1678,6 @@ class CurseManager {
         _weight: 1,
         id: "4elements_of_thing",
         description(user, curse) {
-          console.log(this);
           return `Решите задачу: ${curse.values.generated.map((i) => this.EMOJIS[i]).join("")}`;
         },
         EMOJIS: ["🍃", "☁️", "🔥", "👾"],
@@ -1716,7 +1715,6 @@ class CurseManager {
         callback: {
           curseEnd(user, curse, context) {
             const { curse: target } = context;
-            console.log(context);
             const { id } = target;
             const base = CurseManager.cursesBase.get(id);
             if (!base._weight || base.id === this.id) {
