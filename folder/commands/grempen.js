@@ -9,7 +9,8 @@ import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { DAY, HOUR } from "#constants/globals/time.js";
 
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
+  async onChatInput(_msg, interaction) {
+    const { channel, user } = interaction;
     if (interaction.mention) {
       const mentionUserData = interaction.mention.data;
       const wordNumbers = [
@@ -46,7 +47,7 @@ class Command extends BaseCommand {
           : "сегодня ничего не приобретал.\nМожет Вы сами желаете чего-нибудь прикупить?";
 
       const description = `Ох, таки здравствуйте. Человек, о котором Вы спрашиваете ${buyingItemsContent}`;
-      msg.msg({
+      channel.msg({
         title: "<:grempen:753287402101014649> Зловещая лавка",
         description,
         color: "#541213",
@@ -112,7 +113,7 @@ class Command extends BaseCommand {
         fn() {
           const product = this;
           if (userData.chilli === undefined) {
-            msg.msg({
+            channel.msg({
               title: "Окей, вы купили перец, просто бросьте его...",
               description: "Команда броска `!chilli @Пинг`",
               delete: 12000,
@@ -139,7 +140,7 @@ class Command extends BaseCommand {
         fn() {
           const product = this;
           userData.thiefGloves === undefined &&
-            msg.author.msg({
+            user.msg({
               title: "Вы купили чудо перчатки?",
               description:
                 "Отлично, теперь вам доступна команда `!rob`.\n**Правила просты:**\nВаши перчатки позволяют ограбить участника, при условии, что он онлайн.\nВ течении 2-х минут у ограбленного есть возможность догнать вас и вернуть деньги.\nЕсли попадётесь дважды, то перчатки нужно покупать заново — эдакий риск.\nНужно быть осторожным и умным, искать момент.\nА пользователи должны быть хитры, если кто-то спалил, что у вас есть перчатки.\nЦель участников подло заставить Вас на них напасть, а вор, то есть Вы, должен выждать момент и совершить атаку.",
@@ -216,7 +217,7 @@ class Command extends BaseCommand {
           if (userData.monster === undefined) {
             userData.monster = 0;
             userData.monstersBought = 0;
-            msg.msg({
+            channel.msg({
               description:
                 "Монстры защищают вас от мелких воришек и больших воров, также они очень любят приносить палку, но не забывайте играть с ними!",
               author: { name: "Информация", iconURL: client.user.avatarURL() },
@@ -611,7 +612,7 @@ class Command extends BaseCommand {
           .filter((item) => item !== product)
           .map((item) => item.name.split(" ")[0])
           .join(" ");
-        await msg.msg({
+        await channel.msg({
           title: "<:grempen:753287402101014649> Упс!",
           description: `**Сегодня этот предмет (${emoji}) отсуствует в лавке.**\nЖелаете взлянуть на другие товары?\n${itemList}`,
           color: "#400606",
@@ -621,7 +622,7 @@ class Command extends BaseCommand {
       }
 
       if (userData.coins < (product.value || 0)) {
-        await msg.msg({
+        await channel.msg({
           title: "<:grempen:753287402101014649> Т-Вы что удумали?",
           description: `Недостаточно коинов, ${product.name} стоит на ${
             product.value - userData.coins
@@ -663,7 +664,7 @@ class Command extends BaseCommand {
         interaction.user.action(Actions.globalQuest, { name: "cleanShop" });
       }
 
-      return msg.msg({
+      return channel.msg({
         description: `Благодарю за покупку ${
           product.name.split(" ")[0]
         } !\nЦена в ${Util.ending(
@@ -673,7 +674,7 @@ class Command extends BaseCommand {
           "у",
           "ы",
         )} просто ничтожна за такую хорошую вещь${phrase}`,
-        author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
+        author: { name: user.username, iconURL: user.avatarURL() },
         color: "#400606",
       });
     };
@@ -686,7 +687,7 @@ class Command extends BaseCommand {
     if (userData.coins < 80) {
       interaction.channel.sendTyping();
       await Util.sleep(1700);
-      return msg.msg({
+      return channel.msg({
         title: "<:grempen:753287402101014649>",
         description: "Изыди бездомный попрошайка\nбез денег не возвращайся!",
         color: "#541213",
@@ -730,7 +731,7 @@ class Command extends BaseCommand {
       if (reactions.length === 0) reactions = ["❌"];
 
       react = await shop.awaitReact(
-        { user: msg.author, removeType: "all" },
+        { user: user, removeType: "all" },
         ...reactions,
       );
 
@@ -754,7 +755,7 @@ class Command extends BaseCommand {
       await buyFunc(product.name);
 
       if (userData.coins < 80) {
-        msg.channel.sendTyping();
+        channel.sendTyping();
         await Util.sleep(1200);
 
         shop.msg({
