@@ -196,7 +196,10 @@ class Command extends BaseCommand {
       return this.end(context);
     }
 
-    interaction.user.action(Actions.anonTaskResolve, { task, context });
+    interaction.user.action(Actions.anonTaskResolve, {
+      task,
+      primary: context,
+    });
 
     setTimeout(() => answer.delete(), 9_000);
     task.isResolved = true;
