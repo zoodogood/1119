@@ -1450,7 +1450,7 @@ class BossManager {
           !user.data.curses?.length || user.data.voidFreedomCurse,
       },
       unexpectedShop: {
-        weight: 40,
+        weight: Infinity,
         id: "unexpectedShop",
         description: "Требуется заглянуть в лавку торговца",
         callback: async (context) => {
@@ -1461,7 +1461,7 @@ class BossManager {
               "Каждый купленный в лавке предмет нанесёт урон по боссу, равный его цене",
           });
 
-          const effect = UserEffectManager.justEffect({
+          const { effect } = UserEffectManager.justEffect({
             effectId: "useCallback",
             user,
             values: {
@@ -1471,14 +1471,19 @@ class BossManager {
                 }
                 const { product } = data;
 
-                BossManager.makeDamage(context.boss, product.value, {
-                  sourceUser: context.user,
-                  damageSourceType: BossManager.DAMAGE_SOURCES.other,
-                });
+                const damage = BossManager.makeDamage(
+                  context.boss,
+                  product.value,
+                  {
+                    sourceUser: context.user,
+                    damageSourceType: BossManager.DAMAGE_SOURCES.other,
+                  },
+                );
+
+                data.description += `\nТык: ${damage} ед.`;
               },
             },
           });
-          console.log(effect);
           setTimeout(
             () => UserEffectManager.interface({ effect, user }).remove(),
             MINUTE * 10,
