@@ -10,6 +10,7 @@ const ActionsMap = {
   likedTheUser: "likedTheUser",
   buyFromGrempen: "buyFromGrempen",
   callBot: "callBot",
+  beforeBerryBarter: "beforeBerryBarter",
   berryBarter: "berryBarter",
   beforeOpenChest: "beforeOpenChest",
   openChest: "openChest",
@@ -18,6 +19,8 @@ const ActionsMap = {
   userPraiseMe: "userPraiseMe",
   anonTaskResolve: "anonTaskResolve",
   beforeBagInteracted: "beforeBagInteracted",
+  bagItemMove: "bagItemMove",
+  thing: "thing",
   // Quest
   dailyQuestSkiped: "dailyQuestSkiped",
   dailyQuestComplete: "dailyQuestComplete",
