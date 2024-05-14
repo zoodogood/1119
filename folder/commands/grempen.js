@@ -7,58 +7,61 @@ import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { DAY, HOUR } from "#constants/globals/time.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 
 class Command extends BaseCommand {
-  async onChatInput(_msg, interaction) {
-    const { channel, user } = interaction;
-    if (interaction.mention) {
-      const mentionUserData = interaction.mention.data;
-      const wordNumbers = [
-        "ноль",
-        "один",
-        "два",
-        "три",
-        "четыре",
-        "пять",
-        "шесть",
-        "семь",
-        "восемь",
-        "девять",
-        "десять",
-      ];
-
-      const getList = (mask) =>
-        wordNumbers.filter((word, index) => (2 ** index) & mask);
-
-      const list = getList(mentionUserData.grempenBoughted || 0);
-
-      const buyingItemsContent =
-        mentionUserData.shopTime === Math.floor(Date.now() / 86400000) &&
-        mentionUserData.grempenBoughted
-          ? `приобрел ${Util.ending(
-              list.length,
-              "товар",
-              "ов",
-              "",
-              "а",
-            )} под номером: ${Util.joinWithAndSeparator(
-              list.sort(Math.random),
-            )}. Если считать с нуля конечно-же.`
-          : "сегодня ничего не приобретал.\nМожет Вы сами желаете чего-нибудь прикупить?";
-
-      const description = `Ох, таки здравствуйте. Человек, о котором Вы спрашиваете ${buyingItemsContent}`;
-      channel.msg({
-        title: "<:grempen:753287402101014649> Зловещая лавка",
-        description,
-        color: "#541213",
-        thumbnail: interaction.mention.avatarURL(),
-      });
-      return;
+  process_mention(context) {
+    const { interaction, channel } = context;
+    if (!interaction.mention) {
+      return false;
     }
+    const mentionUserData = interaction.mention.data;
+    const wordNumbers = [
+      "ноль",
+      "один",
+      "два",
+      "три",
+      "четыре",
+      "пять",
+      "шесть",
+      "семь",
+      "восемь",
+      "девять",
+      "десять",
+    ];
 
-    const userData = interaction.user.data;
+    const getList = (mask) =>
+      wordNumbers.filter((word, index) => (2 ** index) & mask);
 
-    const allItems = [
+    const list = getList(mentionUserData.grempenBoughted || 0);
+
+    const buyingItemsContent =
+      mentionUserData.shopTime === Math.floor(Date.now() / DAY) &&
+      mentionUserData.grempenBoughted
+        ? `приобрел ${Util.ending(
+            list.length,
+            "товар",
+            "ов",
+            "",
+            "а",
+          )} под номером: ${Util.joinWithAndSeparator(
+            list.sort(Math.random),
+          )}. Если считать с нуля конечно-же.`
+        : "сегодня ничего не приобретал.\nМожет Вы сами желаете чего-нибудь прикупить?";
+
+    const description = `Ох, таки здравствуйте. Человек, о котором Вы спрашиваете ${buyingItemsContent}`;
+    channel.msg({
+      title: "<:grempen:753287402101014649> Зловещая лавка",
+      description,
+      color: "#541213",
+      thumbnail: interaction.mention.avatarURL(),
+    });
+    return true;
+  }
+
+  get_items(context) {
+    const { user, userData, interaction, channel } = context;
+    return [
       {
         id: "stick",
         name: "🦴 Просто палка",
@@ -558,7 +561,8 @@ class Command extends BaseCommand {
               context: { interaction, product },
             });
 
-            userData.grempenBoughted -= 2 ** todayItems.indexOf(product);
+            userData.grempenBoughted -=
+              2 ** context.todayItems.indexOf(product);
             return " как ничто. Ведь вы уже были прокляты!";
           }
 
@@ -581,13 +585,28 @@ class Command extends BaseCommand {
         },
       },
     ];
+  }
+  async onChatInput(_msg, interaction) {
+    const { channel, user } = interaction;
+    const context = {
+      interaction,
+      ...takeInteractionProperties(interaction),
+      userData: interaction.user.data,
+    };
 
+    if (this.process_mention(context)) {
+      return;
+    }
+
+    const { userData } = context;
+    const allItems = this.get_items(context);
     const getTodayItems = () =>
       allItems.filter((e, i) =>
         DataManager.data.bot.grempenItems.includes(i.toString(16)),
       );
 
     const todayItems = getTodayItems();
+    context.todayItems = todayItems;
 
     if (Math.floor(Date.now() / DAY) !== userData.shopTime) {
       userData.grempenBoughted = 0;
@@ -644,27 +663,7 @@ class Command extends BaseCommand {
         throw phrase;
       }
 
-      if (!isNaN(product.value)) {
-        Util.addResource({
-          user: interaction.user,
-          value: -product.value,
-          executor: interaction.user,
-          source: `command.grempen.bought.${product.id}`,
-          resource: PropertiesEnum.coins,
-          context: { interaction, product },
-        });
-      }
-
-      userData.grempenBoughted += 2 ** todayItems.indexOf(product);
-      interaction.user.action(Actions.buyFromGrempen, {
-        product,
-        channel: interaction.channel,
-      });
-      if (userData.grempenBoughted === 63) {
-        interaction.user.action(Actions.globalQuest, { name: "cleanShop" });
-      }
-
-      return channel.msg({
+      const buyingContext = {
         description: `Благодарю за покупку ${
           product.name.split(" ")[0]
         } !\nЦена в ${Util.ending(
@@ -674,6 +673,31 @@ class Command extends BaseCommand {
           "у",
           "ы",
         )} просто ничтожна за такую хорошую вещь${phrase}`,
+        primary: interaction,
+        product,
+        ...takeInteractionProperties(interaction),
+      };
+
+      if (!isNaN(product.value)) {
+        Util.addResource({
+          user: interaction.user,
+          value: -product.value,
+          executor: interaction.user,
+          source: `command.grempen.bought.${product.id}`,
+          resource: PropertiesEnum.coins,
+          context: buyingContext,
+        });
+      }
+
+      userData.grempenBoughted += 2 ** todayItems.indexOf(product);
+
+      interaction.user.action(Actions.buyFromGrempen, buyingContext);
+      if (userData.grempenBoughted === 63) {
+        interaction.user.action(Actions.globalQuest, { name: "cleanShop" });
+      }
+
+      return channel.msg({
+        description: buyingContext.description,
         author: { name: user.username, iconURL: user.avatarURL() },
         color: "#400606",
       });
