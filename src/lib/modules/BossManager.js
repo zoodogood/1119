@@ -6,6 +6,7 @@ import {
   CurseManager,
   Properties,
   ErrorsHandler,
+  CommandsManager,
 } from "#lib/modules/mod.js";
 import { Elements, elementsEnum } from "#folder/commands/thing.js";
 import { Actions } from "#lib/modules/ActionManager.js";
@@ -27,7 +28,7 @@ import {
   EffectInfluenceEnum,
   UserEffectManager,
 } from "#lib/modules/EffectsManager.js";
-import { DAY, HOUR, MONTH } from "#constants/globals/time.js";
+import { DAY, HOUR, MINUTE, MONTH, SECOND } from "#constants/globals/time.js";
 import config from "#config";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 
@@ -1429,6 +1430,65 @@ class BossManager {
         },
         filter: ({ user }) =>
           !user.data.curses?.length || user.data.voidFreedomCurse,
+      },
+      applyManyCurses: {
+        weight: 40,
+        id: "applyManyCurses",
+        description: "Много проклятий",
+        callback: ({ user, boss, channel }) => {
+          for (let i = 0; i < random(3, 5); i++) {
+            const hard = Math.min(Math.floor(boss.level / 5), 2);
+            const curse = CurseManager.generate({
+              user,
+              hard,
+              context: { guild: channel.guild },
+            });
+            CurseManager.init({ user, curse });
+          }
+        },
+        filter: ({ user }) =>
+          !user.data.curses?.length || user.data.voidFreedomCurse,
+      },
+      unexpectedShop: {
+        weight: 40,
+        id: "unexpectedShop",
+        description: "Требуется заглянуть в лавку торговца",
+        callback: async (context) => {
+          const { channel, user } = context;
+          await sleep(1 * SECOND);
+          await channel.msg({
+            description:
+              "Каждый купленный в лавке предмет нанесёт урон по боссу, равный его цене",
+          });
+
+          const effect = UserEffectManager.justEffect({
+            effectId: "useCallback",
+            user,
+            values: {
+              callback: (_user, _effect, { actionName, data }) => {
+                if (actionName !== Actions.buyFromGrempen) {
+                  return;
+                }
+                const { product } = data;
+
+                BossManager.makeDamage(context.boss, product.value, {
+                  sourceUser: context.user,
+                  damageSourceType: BossManager.DAMAGE_SOURCES.other,
+                });
+              },
+            },
+          });
+          console.log(effect);
+          setTimeout(
+            () => UserEffectManager.interface({ effect, user }).remove(),
+            MINUTE * 10,
+          );
+          const interactionClone = { ...context };
+          interactionClone.phrase = "";
+          CommandsManager.collection
+            .get("grempen")
+            .onChatInput(null, interactionClone);
+        },
       },
       improveDamageForAll: {
         weight: 300,
