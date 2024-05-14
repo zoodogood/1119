@@ -31,7 +31,10 @@ class Balancer {
 }
 export const balancer = new Balancer(config.ai_payloads, [3, 1]);
 
-export async function askTheAI_or_null(context, { temperature = 0.7 } = {}) {
+export async function askTheAI_or_null(
+  context,
+  { temperature = 0.7, max_tokens } = {},
+) {
   if (!config.ai_payloads.length) {
     return null;
   }
@@ -54,8 +57,9 @@ export async function askTheAI_or_null(context, { temperature = 0.7 } = {}) {
       model,
       messages,
       temperature,
+      max_tokens,
     }),
-  }).catch();
+  }).catch((error) => error);
 
   if (!response) {
     agent.fail();
