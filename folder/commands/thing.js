@@ -1875,7 +1875,7 @@ class Command extends BaseCommand {
           (context.level + 2.5) *
           (coefficient + 5),
       ),
-      phrase = [
+      titlePhrase = [
         "Это птица? Это самолёт! Нет, это штука!",
         "Вдумайтесь..",
         "Ученье – свет, а неученье – штука.",
@@ -1916,8 +1916,8 @@ class Command extends BaseCommand {
     };
 
     channel.guild.data.coins += income;
-    channel.msg({
-      title: phrase,
+    const message = channel.msg({
+      title: titlePhrase,
       description: `${contents.guildTakeCoins}${contents.event}`,
       color: elementBase.color,
       author: { iconURL: user.avatarURL(), name: user.username },
@@ -1931,6 +1931,21 @@ class Command extends BaseCommand {
       footer: {
         text: `Скажем так: эта вещь чем-то похожа на ${footerPhrase}..`,
       },
+    });
+
+    user.action(Actions.thing, {
+      message,
+      contents,
+      titlePhrase,
+      footerPhrase,
+      income,
+      actionBase,
+      output,
+      eventBase,
+      elementBase,
+      primary: context,
+      scene,
+      coefficient,
     });
   }
 
