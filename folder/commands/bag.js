@@ -124,6 +124,15 @@ function _moveItem(moveDetails) {
     resource: item.key,
     context,
   });
+  user.action(Actions.bagItemMove, {
+    isToBag,
+    count,
+    moveDetails,
+    targetTo,
+    targetFrom,
+    resource: item.key,
+    primary: context,
+  });
 
   item.setter({
     target: targetFrom,
