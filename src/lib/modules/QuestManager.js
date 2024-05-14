@@ -442,7 +442,7 @@ class QuestManager {
       },
       berryActive: {
         id: "berryActive",
-        handler: "berryBarter",
+        handler: "beforeBerryBarter",
         description: "Купите или продайте клубнику",
         _weight: 10,
         isGlobal: false,
