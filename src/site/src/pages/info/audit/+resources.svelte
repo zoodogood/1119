@@ -24,7 +24,17 @@
     return { resources, sources, data, groups };
   })();
 
+  let filter_by_source_raw = "";
   let filter_by_source_value = "";
+
+  $: filter_by_source_value = filter_by_source_raw.toLowerCase().split(" ");
+
+  const resource_group_filter = ({ source }) =>
+    filter_by_source_value.every((input) =>
+      input.startsWith("!")
+        ? !source.includes(input.slice(1).toLowerCase())
+        : source.includes(input.toLowerCase()),
+    );
 </script>
 
 <Layout>
@@ -34,16 +44,23 @@
     <input
       type="text"
       placeholder="Фильтровать по источнику"
-      bind:value={filter_by_source_value}
+      bind:value={filter_by_source_raw}
     />
-    <h2>Оборот ресурсов {filter_by_source_value}</h2>
+    <h2>Оборот ресурсов {filter_by_source_raw}</h2>
     <h5>Ресурс -> источник: количество</h5>
     {#each Object.entries(_interface.groups) as [resource, groupValue]}
-      <p resource_paragpraph>{resource}</p>
-      <ul>
-        {#each sortByResolve(groupValue, ({ value }) => value).filter( ({ source }) => source.includes(filter_by_source_value), ) as { value, source }}
-          <li>{source}: {NumberFormatLetterize(value)}</li>{/each}
-      </ul>
+      {#key filter_by_source_value}
+        <p resource_paragpraph>{resource}</p>
+        <ul>
+          {#each sortByResolve(groupValue, ({ value }) => value).filter(resource_group_filter) as { value, source }}
+            <li resource_group_element>
+              <span resource_group_element_key>{source}:</span>
+              <span resource_group_element_value>
+                {NumberFormatLetterize(value)}
+              </span>
+            </li>{/each}
+        </ul>
+      {/key}
     {/each}
   {:catch error}
     {error}
@@ -55,5 +72,23 @@
     text-transform: capitalize;
     position: sticky;
     top: 0;
+  }
+
+  [resource_group_element] {
+    font-size: 0.8em;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  [resource_group_element]:nth-child(2n) {
+    color: color-mix(in srgb, currentColor, transparent 15%);
+  }
+
+  [resource_group_element_key] {
+    width: 70%;
+  }
+  [resource_group_element_value] {
+    width: 30%;
+    text-align: center;
   }
 </style>
