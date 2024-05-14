@@ -32,20 +32,24 @@
   const resource_group_filter = ({ source }) =>
     filter_by_source_value.every((input) =>
       input.startsWith("!")
-        ? !source.includes(input.slice(1).toLowerCase())
-        : source.includes(input.toLowerCase()),
+        ? !source.toLowerCase().includes(input.slice(1))
+        : source.toLowerCase().includes(input),
     );
 </script>
 
 <Layout>
   {#await _interface_promise}
-    Грузимся
+    Грузимся...
   {:then _interface}
     <input
       type="text"
       placeholder="Фильтровать по источнику"
       bind:value={filter_by_source_raw}
     />
+    <small
+      >— используйте «!» при поиске для исключения, например, !bag !thing, —
+      исключает источники со словами «bag» и «thing»</small
+    >
     <h2>Оборот ресурсов {filter_by_source_raw}</h2>
     <h5>Ресурс -> источник: количество</h5>
     {#each Object.entries(_interface.groups) as [resource, groupValue]}
@@ -65,6 +69,10 @@
   {:catch error}
     {error}
   {/await}
+  <footer style="margin-top: 3em">
+    При изменении любого ресурса у пользователя, происходит фиксация данных,
+    которые можно проанализировать.
+  </footer>
 </Layout>
 
 <style>
