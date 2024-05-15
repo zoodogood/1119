@@ -750,6 +750,11 @@ class Command extends BaseCommand {
       ),
     );
 
+    !context.disableSyncSlots &&
+      context.slots.forEach((slot, index) => {
+        slotIsBoughted(userData, index) && (slot.isBoughted = true);
+      });
+
     const today_products = getTodayItems();
     context.today_products = today_products;
 
