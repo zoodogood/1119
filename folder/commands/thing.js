@@ -7,6 +7,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import { Collection } from "@discordjs/collection";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import EventsManager from "#lib/modules/EventsManager.js";
+import { DAY } from "#constants/globals/time.js";
 
 const { addResource } = Util;
 
@@ -1066,6 +1067,7 @@ class Command extends BaseCommand {
               (async () => {
                 const cloverMessage = await channel.awaitMessage({
                   user: false,
+                  time: DAY,
                 });
 
                 if (!cloverMessage) {
