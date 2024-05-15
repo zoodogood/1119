@@ -129,7 +129,7 @@ class CurseManager {
         reward: 12,
       },
       {
-        _weight: 7,
+        _weight: 2,
         id: "weekdaysQuest",
         description: "Не пропускайте выполнение ежедневного квеста",
         hard: 2,
