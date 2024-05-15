@@ -1,4 +1,5 @@
 // @ts-check
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import EventsEmitter from "events";
 
 class BaseCommandRunContext {
@@ -35,9 +36,7 @@ class BaseCommandRunContext {
   constructor(interaction, command) {
     this.interaction = interaction;
     this.command = command;
-    this.guild = interaction.guild;
-    this.channel = interaction.channel;
-    this.user = interaction.user;
+    Object.assign(this, takeInteractionProperties(interaction));
   }
 
   toJSON() {
