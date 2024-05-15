@@ -1067,6 +1067,11 @@ class Command extends BaseCommand {
                 const cloverMessage = await channel.awaitMessage({
                   user: false,
                 });
+
+                if (!cloverMessage) {
+                  return;
+                }
+
                 let reaction;
                 let i = 0;
                 while ((!reaction || !reaction.me) && i < 100) {
@@ -1445,7 +1450,7 @@ class Command extends BaseCommand {
                 "Штука просто штука.",
                 "Штуке тоже нужен отдых",
               ].random()),
-            textOutput: "{sceme.phrase}",
+            textOutput: "{scene.phrase}",
           },
           false,
           false,
