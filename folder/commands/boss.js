@@ -1,12 +1,17 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
-import { BossManager, BossEffects } from "#lib/modules/BossManager.js";
+import {
+  BossManager,
+  BossEffects,
+  emulate_user_attack,
+} from "#lib/modules/BossManager.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { DAY } from "#constants/globals/time.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { CliParser } from "@zoodogood/utils/primitives";
+import config from "#config";
 
 function attackBoss(boss, user, channel) {
   return BossManager.userAttack({ boss, user, channel });
@@ -72,6 +77,19 @@ class Help_Flagsubcommand {
     });
   }
 }
+
+class Dev_Flagsubcommand extends BaseFlagSubcommand {
+  onProcess() {
+    const { boss, user, channel } = this.context;
+    emulate_user_attack({
+      boss,
+      user,
+      channel,
+      event_id: this.capture?.toString(),
+    });
+  }
+}
+
 class CommandRunContext extends BaseCommandRunContext {
   memb;
   boss;
@@ -163,6 +181,9 @@ class Command extends BaseCommand {
     if (await this.processBossesFlag(context)) {
       return;
     }
+    if (await this.processDevFlag(context)) {
+      return;
+    }
     await this.processDefaultBehavior(context);
   }
 
@@ -172,6 +193,18 @@ class Command extends BaseCommand {
       return;
     }
     await new Help_Flagsubcommand(context).onProcess();
+    return true;
+  }
+
+  async processDevFlag(context) {
+    const value = context.cliParsed.at(1).get("--dev");
+    if (!value) {
+      return;
+    }
+    if (!config.developers.includes(context.user.id)) {
+      return;
+    }
+    await new Dev_Flagsubcommand(context, value).onProcess();
     return true;
   }
 
@@ -485,6 +518,13 @@ class Command extends BaseCommand {
           capture: ["--bosses"],
           description:
             "Показывает перечень серверов, где вы находитесь, с активными или предшествующими боссами",
+        },
+        {
+          name: "--dev",
+          capture: ["--dev"],
+          description: "Для разработчиков",
+          expectValue: true,
+          hidden: true,
         },
       ],
     },
