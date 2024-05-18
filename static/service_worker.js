@@ -6,9 +6,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(precache());
   self.skipWaiting();
 });
-self.addEventListener("activate", () => {
-  console.log("active");
-});
+
 
 async function precache() {
   const cache = await caches.open(CACHE_NAME);
@@ -37,11 +35,9 @@ async function fetch_or_cache(request) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
     }
-    console.log(`FROM NETWORK: ${request.url}`);
     return networkResponse;
   } catch (error) {
     const cachedResponse = await caches.match(request);
-    console.log(`FROM CACHE: ${request.url}`);
     return cachedResponse || Response.error();
   }
 }
