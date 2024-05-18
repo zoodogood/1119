@@ -1,6 +1,5 @@
 import DataManager from "#lib/modules/DataManager.js";
 import { BaseRoute } from "#server/router.js";
-import config from "#config";
 import Path from "path";
 import { parsePagesPath } from "#lib/safe-utils.js";
 
@@ -8,12 +7,10 @@ const ROOT = "static";
 const root = Path.join(process.cwd(), ROOT);
 const target = "index.html";
 
-const PREFIX = /^\/(?:(?:ru|ua|en)\/)?pages/;
-
 class Route extends BaseRoute {
-  prefix = PREFIX;
+  prefix = /^\/(?:(?:ru|ua|en)\/)?pages/;
 
-  constructor(express) {
+  constructor() {
     super();
   }
 
