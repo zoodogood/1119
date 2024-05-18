@@ -1,14 +1,10 @@
 // @ts-check
-import { takeInteractionProperties } from "#lib/Discord_utils.js";
-import EventsEmitter from "events";
+import { BaseContext } from "#lib/BaseContext.js";
 
-class BaseCommandRunContext {
+class BaseCommandRunContext extends BaseContext {
+  options = {};
   command = null;
   interaction = null;
-  guild = null;
-  channel = null;
-  user = null;
-  emitter = new EventsEmitter();
   whenRunExecuted = null;
 
   setCliParsed(parsed, values) {
@@ -34,9 +30,10 @@ class BaseCommandRunContext {
     return new this(interaction, command);
   }
   constructor(interaction, command) {
-    this.interaction = interaction;
+    super(`command.${command.options.name}`, interaction);
     this.command = command;
-    Object.assign(this, takeInteractionProperties(interaction));
+    this.interaction = interaction;
+    interaction.extend && Object.assign(this.options, interaction.extend);
   }
 
   toJSON() {
