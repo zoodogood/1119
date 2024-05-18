@@ -32,6 +32,80 @@ import { DAY, HOUR, MINUTE, MONTH, SECOND } from "#constants/globals/time.js";
 import config from "#config";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 
+export async function emulate_user_attack({ boss, user, channel, event_id }) {
+  const userStats = BossManager.getUserStats(boss, user.id);
+
+  userStats.attack_CD ||= 1;
+  userStats.attackCooldown ||= 1;
+
+  const attackContext = {
+    damageMultiplayer: 1,
+    listOfEvents: [],
+    baseDamage: BossManager.USER_DEFAULT_ATTACK_DAMAGE,
+    eventsCount: Math.floor(boss.level ** 0.5) + random(-1, 1),
+    message: null,
+  };
+
+  const data = {
+    user,
+    userStats,
+    boss,
+    channel,
+    attackContext,
+    guild: channel.guild,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+    message: null,
+    fetchMessage() {
+      return this.message;
+    },
+  };
+  user.action(Actions.bossBeforeAttack, data);
+  BossEvents.beforeAttacked(boss, data);
+
+  if (data.defaultPrevented) {
+    return;
+  }
+
+  const event = BossManager.eventBases.get(event_id);
+  event.callback.call(event, data);
+  attackContext.listOfEvents.push(event);
+  const damage = Math.ceil(
+    (userStats.attacksDamageMultiplayer ?? 1) *
+      attackContext.baseDamage *
+      attackContext.damageMultiplayer,
+  );
+  attackContext.baseDamage = attackContext.damageDealt = damage;
+
+  const damageSourceType = BossManager.DAMAGE_SOURCES.attack;
+  const dealt = BossManager.makeDamage(boss, damage, {
+    sourceUser: user,
+    damageSourceType,
+  });
+
+  user.action(Actions.bossAfterAttack, data);
+  BossEvents.afterAttacked(boss, data);
+
+  boss.stats.userAttacksCount++;
+  userStats.attacksCount = (userStats.attacksCount || 0) + 1;
+
+  const eventsContent = attackContext.listOfEvents
+    .map((event) => `・ ${event.description}.`)
+    .join("\n");
+  const description = `Нанесено урона с прямой атаки: ${NumberFormatLetterize(
+    dealt,
+  )} ед.\n\n${eventsContent}`;
+  (() => {
+    const emoji = "⚔️";
+    const embed = {
+      title: `${emoji} За сервер ${channel.guild.name}!`,
+      description,
+    };
+    data.message = channel.msg(embed);
+  })();
+}
+
 class RewardSystem {
   static LevelKill = {
     BASE: 100,
@@ -1390,7 +1464,7 @@ class BossManager {
       increaseCurrentAttackDamage: {
         weight: 4500,
         repeats: true,
-        id: "increaseAttackCooldown",
+        id: "increaseCurrentAttackDamage",
         description: "Урон текущей атаки был увеличен",
         callback: ({ attackContext }) => {
           attackContext.damageMultiplayer *= 5;
@@ -1399,7 +1473,7 @@ class BossManager {
       increaseNextTwoAttacksDamage: {
         weight: 1_000,
         repeats: true,
-        id: "increaseAttackCooldown",
+        id: "increaseNextTwoAttacksDamage",
         description: "Урон следующих двух атак был увеличен",
         callback: ({ guild, user }) => {
           const effectId = "boss.increaseAttackDamage";
