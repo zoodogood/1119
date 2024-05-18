@@ -14,6 +14,7 @@
   import { onMount } from "svelte";
 
   import { getNotificationsContext } from "svelte-notifications";
+  import { init_pwa_worker } from "#site/lib/init_pwa.js";
   const { addNotification } = getNotificationsContext();
   const hashStore = svelteApp.Hash.store;
 
@@ -174,6 +175,7 @@
       <UserProgress {svelteApp} target={State.target} />
       <UserSettings {svelteApp} target={State.target} />
       <ChangeLanguage isAlwaysVisible={true} />
+      <button on:click={init_pwa_worker()}>Инициализировать PWA</button>
       <button
         on:click={() => {
           svelteApp.storage.setToken(null);
