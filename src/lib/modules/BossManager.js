@@ -1450,7 +1450,7 @@ class BossManager {
           !user.data.curses?.length || user.data.voidFreedomCurse,
       },
       unexpectedShop: {
-        weight: Infinity,
+        weight: 20,
         id: "unexpectedShop",
         description: "Требуется заглянуть в лавку торговца",
         callback: async (context) => {
