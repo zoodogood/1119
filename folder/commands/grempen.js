@@ -6,7 +6,6 @@ import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { DAY, HOUR } from "#constants/globals/time.js";
-import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import {
   addResource,
@@ -16,15 +15,16 @@ import {
   timestampDay,
   sleep,
 } from "#lib/util.js";
+import { BaseContext } from "#lib/BaseContext.js";
 
 function get_products(context) {
   const { user, userData, interaction, channel } = context;
   return [
     {
-      id: "stick",
-      name: "Просто палка",
+      key: "stick",
+      label: "Просто палка",
       emoji: "🦴",
-      value: 244,
+      price: 244,
       inline: true,
       others: ["палка", "палку"],
       fn() {
@@ -67,10 +67,10 @@ function get_products(context) {
       },
     },
     {
-      id: "chilli",
-      name: "Жгучий перчик",
+      key: "chilli",
+      label: "Жгучий перчик",
       emoji: "🌶️",
-      value: 160,
+      price: 160,
       inline: true,
       others: ["перец", "перчик"],
       fn() {
@@ -95,10 +95,10 @@ function get_products(context) {
       },
     },
     {
-      id: "gloves",
-      name: "Перчатки перчатника",
+      key: "gloves",
+      label: "Перчатки перчатника",
       emoji: "🧤",
-      value: 700,
+      price: 700,
       inline: true,
       others: ["перчатку", "перчатки", "перчатка"],
       fn() {
@@ -124,10 +124,10 @@ function get_products(context) {
       },
     },
     {
-      id: "nut",
-      name: "Старый ключ",
+      key: "nut",
+      label: "Старый ключ",
       emoji: "🔩",
-      value: 15,
+      price: 15,
       inline: true,
       others: ["ключ", "ключик", "key"],
       fn() {
@@ -145,13 +145,13 @@ function get_products(context) {
       },
     },
     {
-      id: "exp",
-      name: "Бутылёк опыта",
+      key: "exp",
+      label: "Бутылёк опыта",
       emoji: "🧪",
-      value: "???",
+      price: "???",
       inline: true,
       others: ["опыт", "бутылёк"],
-      fn() {
+      fn(boughtContext) {
         const product = this;
 
         const rand = random(3, 7);
@@ -167,15 +167,15 @@ function get_products(context) {
           context: { interaction, product },
         });
 
-        product.value = flaconPrice;
+        boughtContext.price = flaconPrice;
         return `, как дорогущий флакон давший вам целых ${value} <:crys:637290406958202880>`;
       },
     },
     {
-      id: "monster",
-      name: "Ручной монстр",
+      key: "monster",
+      label: "Ручной монстр",
       emoji: "🐲",
-      value: 1999 + 1000 * Math.ceil((userData.monstersBought || 0) / 3),
+      price: 1999 + 1000 * Math.ceil((userData.monstersBought || 0) / 3),
       inline: true,
       others: ["монстр", "монстра"],
       fn() {
@@ -211,10 +211,10 @@ function get_products(context) {
       },
     },
     {
-      id: "cannedFood",
-      name: "Консервы Интеллекта",
+      key: "cannedFood",
+      label: "Консервы Интеллекта",
       emoji: "🥫",
-      value: 1200,
+      price: 1200,
       inline: true,
       others: ["консервы", "интеллект"],
       fn() {
@@ -238,10 +238,10 @@ function get_products(context) {
       },
     },
     {
-      id: "bottle",
-      name: "Бутылка глупости",
+      key: "bottle",
+      label: "Бутылка глупости",
       emoji: "🍼",
-      value: 400,
+      price: 400,
       inline: true,
       others: ["бутылка", "бутылку", "глупость", "глупости"],
       fn() {
@@ -263,20 +263,20 @@ function get_products(context) {
       },
     },
     {
-      id: "coat",
-      name: "Шуба из енота",
+      key: "coat",
+      label: "Шуба из енота",
       emoji: "👜",
-      value: 3200,
+      price: 3200,
       inline: true,
       others: ["шуба", "шубу", "шуба из енота"],
-      fn() {
+      fn(boughtContext) {
         const product = this;
 
         const isFirst = !(
           userData.questsGlobalCompleted &&
           userData.questsGlobalCompleted.includes("beEaten")
         );
-        const refund = product.value + (isFirst ? 200 : -200);
+        const refund = boughtContext.price + (isFirst ? 200 : -200);
         addResource({
           user: interaction.user,
           value: refund,
@@ -302,10 +302,10 @@ function get_products(context) {
       },
     },
     {
-      id: "casinoTicket",
-      name: userData.voidCasino ? "Casino" : "Лотерейный билет",
+      key: "casinoTicket",
+      label: userData.voidCasino ? "Casino" : "Лотерейный билет",
       emoji: userData.voidCasino ? "🥂" : "🎟️",
-      value: userData.voidCasino ? Math.floor(userData.coins / 3.33) : 130,
+      price: userData.voidCasino ? Math.floor(userData.coins / 3.33) : 130,
       inline: true,
       others: [
         "билет",
@@ -342,10 +342,10 @@ function get_products(context) {
       },
     },
     {
-      id: "idea",
-      name: "Идея",
+      key: "idea",
+      label: "Идея",
       emoji: "💡",
-      value:
+      price:
         userData.iq &&
         userData.iq % 31 === +DataManager.data.bot.dayDate.match(/\d{1,2}/)[0]
           ? "Бесплатно"
@@ -395,10 +395,10 @@ function get_products(context) {
       },
     },
     {
-      id: "clover",
-      name: "Счастливый клевер",
+      key: "clover",
+      label: "Счастливый клевер",
       emoji: "☘️",
-      value: 400,
+      price: 400,
       inline: true,
       others: ["клевер", "счастливый", "счастливый клевер", "clover"],
       createCloverTimeEvent(guildId, channelId) {
@@ -456,10 +456,10 @@ function get_products(context) {
       },
     },
     {
-      id: "ball",
-      name: "Всевидящий шар",
+      key: "ball",
+      label: "Всевидящий шар",
       emoji: "🔮",
-      value: 8000,
+      price: 8000,
       inline: true,
       others: [
         "шар",
@@ -500,10 +500,10 @@ function get_products(context) {
       },
     },
     {
-      id: "renewal",
-      name: "Завоз товаров",
+      key: "renewal",
+      label: "Завоз товаров",
       emoji: "🔧",
-      value: 312 + userData.level * 2,
+      price: 312 + userData.level * 2,
       inline: true,
       others: ["завоз", "завоз товаров"],
       fn() {
@@ -512,13 +512,13 @@ function get_products(context) {
       },
     },
     {
-      id: "curseStone",
-      name: "Камень с глазами",
+      key: "curseStone",
+      label: "Камень с глазами",
       emoji: "👀",
-      value: 600,
+      price: 600,
       inline: true,
       others: ["камень", "проклятие", "камень с глазами"],
-      fn() {
+      fn(boughtContext) {
         const product = this;
         userData.curses ||= [];
 
@@ -527,7 +527,7 @@ function get_products(context) {
         if (already && !userData.voidFreedomCurse) {
           addResource({
             user: interaction.user,
-            value: product.value,
+            value: boughtContext.price,
             executor: interaction.user,
             source: "command.grempen.product.curse.refund",
             resource: PropertiesEnum.coins,
@@ -571,8 +571,10 @@ class Slot {
   index;
   price;
 }
-class BoughtContext {
+
+class BoughtContext extends BaseContext {
   constructor(commandRunContext, slot) {
+    super("command.grempen.bought", commandRunContext);
     this.commandRunContext = commandRunContext;
     this.slot = slot;
     this.product = slot.product;
@@ -595,6 +597,7 @@ class CommandRunContext extends BaseCommandRunContext {
   /**@type {Slot[]} */
   slots = [];
   userData;
+  options = {};
 
   static new(interaction, command) {
     const context = new this(interaction, command);
@@ -608,11 +611,11 @@ async function process_bought(boughtContext) {
   const { product } = slot;
   const { channel, userData, interaction, user } = commandRunContext;
 
-  if (userData.coins < (product.value || 0)) {
+  if (userData.coins < (boughtContext.price || 0)) {
     await channel.msg({
       title: "<:grempen:753287402101014649> Т-Вы что удумали?",
-      description: `Недостаточно коинов, ${product.emoji} ${product.name} стоит на ${
-        product.value - userData.coins
+      description: `Недостаточно коинов, ${product.emoji} ${product.label} стоит на ${
+        boughtContext.price - userData.coins
       } дороже`,
       color: "#400606",
       delete: 5_000,
@@ -622,7 +625,7 @@ async function process_bought(boughtContext) {
 
   const phrase = (() => {
     try {
-      return product.fn();
+      return product.fn(boughtContext);
     } catch (error) {
       return error;
     }
@@ -631,35 +634,30 @@ async function process_bought(boughtContext) {
     throw phrase;
   }
 
-  const buyingContext = {
-    description: `Благодарю за покупку ${product.emoji} !\nЦена в ${ending(
-      !isNaN(product.value) ? product.value : 0,
-      "монет",
-      "",
-      "у",
-      "ы",
-    )} просто ничтожна за такую хорошую вещь${phrase}`,
-    primary: interaction,
-    product,
-    ...takeInteractionProperties(interaction),
-  };
+  boughtContext.phrase = `Благодарю за покупку ${product.emoji} !\nЦена в ${ending(
+    !isNaN(boughtContext.price) ? boughtContext.price : 0,
+    "монет",
+    "",
+    "у",
+    "ы",
+  )} просто ничтожна за такую хорошую вещь${phrase}`;
 
-  if (!isNaN(product.value)) {
+  if (!isNaN(boughtContext.price)) {
     addResource({
       user: interaction.user,
-      value: -product.value,
+      value: -boughtContext.price,
       executor: interaction.user,
-      source: `command.grempen.bought.${product.id}`,
+      source: `command.grempen.bought.${product.key}`,
       resource: PropertiesEnum.coins,
-      context: buyingContext,
+      context: boughtContext,
     });
   }
 
-  if (!boughtContext.disableSyncSlots) {
+  if (!boughtContext.commandRunContext.disableSyncSlots) {
     userData.grempenBoughted += 2 ** slot.index;
   }
 
-  interaction.user.action(Actions.buyFromGrempen, buyingContext);
+  interaction.user.action(Actions.buyFromGrempen, boughtContext);
   if (userData.grempenBoughted === 63) {
     interaction.user.action(Actions.globalQuest, { name: "cleanShop" });
   }
@@ -667,7 +665,7 @@ async function process_bought(boughtContext) {
   slot.isBoughted = true;
 
   return channel.msg({
-    description: buyingContext.description,
+    description: boughtContext.phrase,
     author: { name: user.username, iconURL: user.avatarURL() },
     color: "#400606",
   });
@@ -745,9 +743,10 @@ class Command extends BaseCommand {
         );
 
     context.slots.push(
-      ...getTodayItems().map(
-        (product, index) => new Slot(product, product.value, index),
-      ),
+      ...(context.options.slots ||
+        getTodayItems().map(
+          (product, index) => new Slot(product, product.price, index),
+        )),
     );
 
     !context.disableSyncSlots &&
@@ -760,7 +759,7 @@ class Command extends BaseCommand {
 
     if (Math.floor(Date.now() / DAY) !== userData.shopTime) {
       userData.grempenBoughted = 0;
-      userData.shopTime = Math.floor(Date.now() / 86400000);
+      userData.shopTime = Math.floor(Date.now() / DAY);
     }
 
     const buyFunc = async (index) => {
@@ -774,7 +773,7 @@ class Command extends BaseCommand {
       const target = interaction.params.toLowerCase();
       const index = context.slots.findIndex(
         (slot) =>
-          slot.product.name.includes(target) ||
+          slot.product.label.includes(target) ||
           slot.product.others.includes(target),
       );
       const slot = context.slots[index];
@@ -812,8 +811,8 @@ class Command extends BaseCommand {
     const slots_to_fields = () => {
       return context.slots.map((slot) => {
         const { product } = slot;
-        const name = `${product.emoji} ${product.name}`;
-        let { value } = product;
+        const name = `${product.emoji} ${product.label}`;
+        let { price: value } = product;
 
         if (slot.isBoughted) {
           value = "Куплено";
