@@ -10,17 +10,17 @@ function isBossEffect(effect) {
 export default {
   id: "boss.preventEffects",
   callback: {
-    bossBeforeEffectInit: (user, effect, context) => {
+    bossBeforeEffectInit: (user, preventer, context) => {
       const {
         values: { guildId },
-      } = effect;
+      } = preventer;
 
       const { guild } = context;
       if (guild.id !== guildId) {
         return;
       }
       const { effect: target } = context;
-      const { values } = effect;
+      const { values } = target;
       const effectBase = UserEffectManager.store.get(target.id);
       if (
         values.influence &&
@@ -29,7 +29,7 @@ export default {
         return;
       }
 
-      if (!isBossEffect(effect)) {
+      if (!isBossEffect(preventer)) {
         return;
       }
 
@@ -37,10 +37,10 @@ export default {
         return;
       }
 
-      values.count--;
+      preventer.values.count--;
       context.preventDefault();
-      if (!effect.values.count) {
-        BossEffects.removeEffect({ user, effect });
+      if (!preventer.values.count) {
+        BossEffects.removeEffect({ user, effect: preventer });
       }
     },
   },
@@ -48,5 +48,5 @@ export default {
     count: () => 1,
     guildId: (user, effect, { guild }) => guild?.id,
   },
-  influence: EffectInfluenceEnum.Positive,
+  influence: EffectInfluenceEnum.Neutral,
 };
