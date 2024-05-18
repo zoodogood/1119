@@ -12,7 +12,7 @@
     loggerList: [],
   };
 
-  async function clickHandler(pointerEvent) {
+  async function clickHandler() {
     const headers = { Authorization: svelteApp.storage.getToken() };
     const json = await fetchFromInnerApi("user/chest-open", {
       headers,

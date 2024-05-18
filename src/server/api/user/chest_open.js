@@ -1,12 +1,12 @@
 import { BaseRoute } from "#server/router.js";
 import { ChestManager } from "#folder/commands/chest.js";
-const PREFIX = "/user/chest-open";
+const PREFIX = "/user/chest_open";
 import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 
 class Route extends BaseRoute {
   prefix = PREFIX;
 
-  constructor(express) {
+  constructor() {
     super();
   }
 
