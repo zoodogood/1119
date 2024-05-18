@@ -1,0 +1,13 @@
+{
+  "name": "Greenghost 1119",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/static/assets/dot.svg",
+      "sizes": "144x144",
+      "type": "image/svg+xml"
+    }
+  ],
+  "scope": "/"
+}
