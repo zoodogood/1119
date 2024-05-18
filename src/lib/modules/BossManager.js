@@ -2258,6 +2258,26 @@ class BossManager {
         repeats: true,
         filter: ({ boss }) => boss.level >= 10,
       },
+      pests_effect: {
+        weight: ({ boss }) => 20 * 1.05 ** (boss.level - 10),
+        id: "pests_effect",
+        description: "Слабость следущие 20 минут",
+        callback: (context) => {
+          const { user, boss, userStats } = context;
+          UserEffectManager.justEffect({
+            effectId: "boss.decreaseAttackDamage",
+            user,
+            values: {
+              power: 0.2,
+              duration: Number.MAX_SAFE_INTEGER,
+              timer: 20 * MINUTE,
+            },
+            context
+          })
+        },
+        repeats: true,
+        filter: ({ boss }) => boss.level >= 10,
+      },
       death: {
         weight: 70,
         id: "death",
