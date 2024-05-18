@@ -8,12 +8,9 @@ class Router {
   routes = [];
 
   async fetch() {
-    const modules = await new ImportDirectory({ subfolders: true }).import(
+    this.fetchedRoutes = await new ImportDirectory({ subfolders: true }).import(
       directory,
     );
-
-    this.fetchedRoutes = modules;
-
     return this;
   }
 

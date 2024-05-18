@@ -11,7 +11,7 @@ const PREFIX = /\/static+?/;
 class Route extends BaseRoute {
   prefix = PREFIX;
 
-  constructor(express) {
+  constructor() {
     super();
   }
 
@@ -27,7 +27,7 @@ class Route extends BaseRoute {
       DEFAULT: true,
     };
     const code = Object.entries(byBoolean)
-      .find(([code, value]) => value)
+      .find(([_, value]) => value)
       .at(0);
 
     this.responseByCode(code, { data, response, request });
@@ -78,7 +78,6 @@ class Route extends BaseRoute {
 
       case "DEFAULT":
         throw new Error("Unknown response");
-        break;
     }
   }
 }
