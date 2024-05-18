@@ -1479,7 +1479,7 @@ class BossManager {
         description: "Урон следующих двух атак был увеличен",
         callback: ({ guild, user }) => {
           const effectId = "boss.increaseAttackDamage";
-          const values = { duration: 2, power: 2.5 };
+          const values = { repeats: 2, power: 2.5 };
           BossEffects.applyEffect({ values, guild, user, effectId });
         },
       },
@@ -2269,7 +2269,7 @@ class BossManager {
             user,
             values: {
               power: 0.2,
-              duration: Number.MAX_SAFE_INTEGER,
+              repeats: Number.MAX_SAFE_INTEGER,
               timer: 20 * MINUTE,
             },
             context

@@ -16,15 +16,15 @@ export default {
       const { power, multiplayer } = effect.values;
       attackContext.damageMultiplayer *= power * multiplayer;
 
-      effect.values.duration--;
-      if (!effect.values.duration) {
+      effect.values.repeats--;
+      if (!effect.values.repeats) {
         BossEffects.removeEffect({ user, effect });
       }
     },
   },
   values: {
     power: () => 2,
-    duration: () => 1,
+    repeats: () => 1,
     multiplayer: () => 1,
     guildId: (user, effect, { guild }) => guild?.id,
   },
