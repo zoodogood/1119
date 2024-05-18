@@ -33,3 +33,6 @@ rules:
     - off
   no-async-promise-executor:
     - off
+  no-unused-vars:
+    - error
+    - { argsIgnorePattern: "^_" }
