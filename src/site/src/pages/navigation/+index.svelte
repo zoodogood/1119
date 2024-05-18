@@ -10,7 +10,7 @@
   const CurrentThemeStore = Theme.current;
 
   const whenApiListIsReceived = (async () => {
-    return fetchFromInnerApi("./utils/api-list");
+    return fetchFromInnerApi("./utils/api_list");
   })();
 
   let node;
