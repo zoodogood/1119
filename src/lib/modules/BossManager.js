@@ -32,7 +32,7 @@ import { DAY, HOUR, MINUTE, MONTH, SECOND } from "#constants/globals/time.js";
 import config from "#config";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 
-export async function emulate_user_attack({ boss, user, channel, event_id }) {
+export async function emulate_user_attack({ boss, user, channel, event_ids }) {
   const userStats = BossManager.getUserStats(boss, user.id);
 
   userStats.attack_CD ||= 1;
@@ -68,9 +68,11 @@ export async function emulate_user_attack({ boss, user, channel, event_id }) {
     return;
   }
 
-  const event = BossManager.eventBases.get(event_id);
-  event.callback.call(event, data);
-  attackContext.listOfEvents.push(event);
+  for (const event_id of event_ids) {
+    const event = BossManager.eventBases.get(event_id);
+    event.callback.call(event, data);
+    attackContext.listOfEvents.push(event);
+  }
   const damage = Math.ceil(
     (userStats.attacksDamageMultiplayer ?? 1) *
       attackContext.baseDamage *
@@ -2472,7 +2474,7 @@ class BossManager {
         description: "Викторина",
         REACTIONS: {
           FirstByDamage: "1️⃣",
-          SecondByDamage: "3️⃣",
+          SecondByDamage: "2️⃣",
           Nothing: "💠",
         },
         ID_OF_NOTHING_USER: "none",
