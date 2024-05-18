@@ -81,11 +81,19 @@ class Help_Flagsubcommand {
 class Dev_Flagsubcommand extends BaseFlagSubcommand {
   onProcess() {
     const { boss, user, channel } = this.context;
+    const value = this.capture?.valueOfFlag();
+
+    if (!value) {
+      channel.msg({
+        description: [...BossManager.eventBases.keys()].join("\n"),
+      });
+      return;
+    }
     emulate_user_attack({
       boss,
       user,
       channel,
-      event_id: this.capture?.toString(),
+      event_ids: value.split(","),
     });
   }
 }
@@ -197,7 +205,7 @@ class Command extends BaseCommand {
   }
 
   async processDevFlag(context) {
-    const value = context.cliParsed.at(1).get("--dev");
+    const value = context.cliParsed.at(0).captures.get("--dev");
     if (!value) {
       return;
     }
