@@ -1556,7 +1556,7 @@ class BossManager {
                   },
                 );
 
-                data.description += `\nТык: ${damage} ед.`;
+                data.phrase += `\nТык: ${damage} ед.`;
               },
             },
           });
@@ -1564,8 +1564,29 @@ class BossManager {
             () => UserEffectManager.interface({ effect, user }).remove(),
             MINUTE * 10,
           );
-          const interactionClone = { ...context };
-          interactionClone.phrase = "";
+          const interactionClone = {
+            ...context,
+            extend: {
+              slots: [
+                {
+                  index: 0,
+                  product: {
+                    key: "_",
+                    label: "Подарочек",
+                    emoji: "🎁",
+                    value: 300,
+                    fn() {
+                      return "Спасибо, что купили меня!";
+                    },
+                  },
+                  price: 300,
+                },
+              ],
+              disableSyncSlots: true,
+            },
+            phrase: "",
+          };
+
           CommandsManager.collection
             .get("grempen")
             .onChatInput(null, interactionClone);
@@ -2272,8 +2293,8 @@ class BossManager {
               repeats: Number.MAX_SAFE_INTEGER,
               timer: 20 * MINUTE,
             },
-            context
-          })
+            context,
+          });
         },
         repeats: true,
         filter: ({ boss }) => boss.level >= 10,
