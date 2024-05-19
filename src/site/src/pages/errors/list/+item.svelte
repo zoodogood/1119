@@ -75,8 +75,8 @@
         item.stack = item.stackData
           ? decodeURI(item.stackData.stack).replaceAll("\\", "/")
           : null;
-        item.strokeOfError = item.stackData.strokeOfError;
-        item.fileOfError = item.stackData.fileOfError;
+        item.strokeOfError = item.stackData?.strokeOfError;
+        item.fileOfError = item.stackData?.fileOfError;
 
         try {
           item.githubURL = resolveGithubPath(
