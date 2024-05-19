@@ -45,6 +45,7 @@ function _processOnStart_developerScript() {
           console.log(timeEventInstance);
           console.log(`id = ${timeEventInstance.params}`);
           const { user } = remindField;
+          console.log("VICTORY?");
           user.data._reminds = structuredClone(user.data.reminds || []);
           user.data.reminds = (user.data.reminds || []).filter(
             (remindData) => typeof remindData === "object",
@@ -322,7 +323,7 @@ class MemberRemindField {
     console.log(timeEvent);
     console.log(timeEvent.params);
     const { params: userId, timestamp } = timeEvent;
-    console.log("FROM_TIME_EVENT", timestamp);
+    console.log("timestamp =", timestamp);
     const user = client.users.cache.get(userId);
     console.log(user.username);
     const field = this.fromUser(user, timestamp);
@@ -339,7 +340,7 @@ class MemberRemindField {
       ({ timestamp: target }) => target === timestamp,
     );
 
-    console.log({ userRemindsField, remindDataField });
+    console.log({ userRemindsField, timestamp, remindDataField });
     if (!remindDataField) {
       return null;
     }
