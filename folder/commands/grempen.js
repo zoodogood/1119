@@ -732,12 +732,12 @@ class Command extends BaseCommand {
       return;
     }
 
+    const { userData } = context;
     if (Math.floor(Date.now() / DAY) !== userData.shopTime) {
       userData.grempenBoughted = 0;
       userData.shopTime = Math.floor(Date.now() / DAY);
     }
 
-    const { userData } = context;
     const products_list = get_products(context);
     const getTodayItems = () =>
       products_list
