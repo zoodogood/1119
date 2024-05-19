@@ -3,6 +3,7 @@ import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { PropertiesList, PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 class Command extends BaseCommand {
   RESOURCES_MAP = [
@@ -90,7 +91,7 @@ class Command extends BaseCommand {
 
     const { resource, missive, numeric, item } = context;
 
-    if (context.event.defaultPrevented) {
+    if (context.defaultPrevented()) {
       interaction.channel.msg({
         description:
           "Сделка заблокированна внешним эффектом, применнёным на одного из участников.\nСписок эффектов может быть просмотрен с около базовыми навыками работы с !eval",
@@ -132,7 +133,6 @@ class Command extends BaseCommand {
     const { mention } = interaction;
     params = params.replace(new RegExp(`<@!?${mention.id}>`), "");
 
-    const event = new Event("command.pay", { cancelable: true });
     const numeric = params.match(/\d+|\+/)?.[0];
     if (!numeric) {
       interaction.channel.msg({
@@ -147,12 +147,12 @@ class Command extends BaseCommand {
     const missive = messageParam;
 
     const context = {
-      event,
       interaction,
       itemNameRaw: itemName,
       missiveRaw: missive,
       numericRaw: numeric,
       memb: mention,
+      ...createDefaultPreventable(),
     };
     return context;
   }
