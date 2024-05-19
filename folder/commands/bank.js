@@ -64,8 +64,8 @@ class Command extends BaseCommand {
   }
 
   async interactWithBank(context, { value, isPut, cause }) {
-    const { guildData, interaction, isAdmin, channel } = context;
-    const { user } = interaction;
+    const { guildData, interaction, isAdmin } = context;
+    const { user, channel } = interaction;
 
     if (value === "+") {
       value = isPut ? interaction.userData.coins : guildData.coins;
