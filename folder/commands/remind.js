@@ -324,6 +324,7 @@ class MemberRemindField {
     const { params: userId, timestamp } = timeEvent;
     console.log("FROM_TIME_EVENT", timestamp);
     const user = client.users.cache.get(userId);
+    console.log(user.username);
     const field = this.fromUser(user, timestamp);
     if (!field) {
       return null;
@@ -337,6 +338,8 @@ class MemberRemindField {
     const remindDataField = userRemindsField.find(
       ({ timestamp: target }) => target === timestamp,
     );
+
+    console.log({ userRemindsField, remindDataField });
     if (!remindDataField) {
       return null;
     }
