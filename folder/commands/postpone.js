@@ -62,7 +62,7 @@ class Command extends BaseCommand {
     alias: "отложить отложи відкласти відклади",
     allowDM: true,
     expectParams: true,
-    cooldown: 18_00_000,
+    cooldown: 1_800_000,
     type: "delete",
     myChannelPermissions: 536870912n,
   };

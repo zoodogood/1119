@@ -1,3 +1,4 @@
+import { HOUR } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import Discord from "discord.js";
 
@@ -61,7 +62,7 @@ class Command extends BaseCommand {
     },
     alias: "arhive архив архів",
     allowDM: true,
-    cooldown: 36_00_000,
+    cooldown: HOUR,
     type: "delete",
     Permissions: 16n,
   };

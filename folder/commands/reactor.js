@@ -49,7 +49,7 @@ class Command extends BaseCommand {
   }
 
   async askMessage(interaction) {
-    const channel = interaction.reactor.channel;
+    const channel = interaction.channel;
     const questionMessage = await channel.msg({
       title: "Укажите айди сообщения или ответьте на него",
     });
@@ -224,7 +224,7 @@ class Command extends BaseCommand {
     },
     alias: "реактор",
     allowDM: true,
-    cooldown: 3_00_00,
+    cooldown: 30_000,
     type: "guild",
     myPermissions: 268435456n,
     Permissions: 268435488n,

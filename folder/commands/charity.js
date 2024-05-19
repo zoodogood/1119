@@ -187,7 +187,7 @@ class Command extends BaseCommand {
     alias: "благотворительность благодійність",
     allowDM: true,
     expectParams: true,
-    cooldown: 7_00_00,
+    cooldown: 70_000,
     type: "other",
   };
 }

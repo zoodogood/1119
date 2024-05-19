@@ -30,7 +30,7 @@ class Command extends BaseCommand {
     },
     alias: "дамп",
     allowDM: true,
-    cooldown: 1_00_000,
+    cooldown: 100_000,
     type: "dev",
   };
 }
