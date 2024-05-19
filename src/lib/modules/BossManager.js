@@ -62,7 +62,8 @@ function update_attack_cooldown(
       ? fixed_previous + update_fixed
       : update_fixed(fixed_previous);
 
-  update_current ||= (previous) => previous - (fixed_previous - fixed);
+  update_current === null &&
+    (update_current = (previous) => previous - (fixed_previous - fixed));
   const current_previous = userStats.attack_CD || Date.now();
   const current =
     typeof update_current === "number"
