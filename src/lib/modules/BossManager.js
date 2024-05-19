@@ -9,7 +9,6 @@ import {
   CommandsManager,
 } from "#lib/modules/mod.js";
 import { Elements, elementsEnum } from "#folder/commands/thing.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 import {
   NumberFormatLetterize,
   addMultipleResources,
@@ -122,7 +121,7 @@ export async function emulate_user_attack({ boss, user, channel, event_ids }) {
     },
     ...createDefaultPreventable(),
   };
-  user.action(Actions.bossBeforeAttack, data);
+  user.action(ActionsMap.bossBeforeAttack, data);
   BossEvents.beforeAttacked(boss, data);
 
   if (data.defaultPrevented()) {
@@ -147,7 +146,7 @@ export async function emulate_user_attack({ boss, user, channel, event_ids }) {
     damageSourceType,
   });
 
-  user.action(Actions.bossAfterAttack, data);
+  user.action(ActionsMap.bossAfterAttack, data);
   BossEvents.afterAttacked(boss, data);
 
   boss.stats.userAttacksCount++;
@@ -594,7 +593,9 @@ class BossEvents {
         id: "questFirstTimeKillBoss",
         callback(boss, context) {
           const { sourceUser } = context;
-          sourceUser.action(Actions.globalQuest, { name: "firstTimeKillBoss" });
+          sourceUser.action(ActionsMap.globalQuest, {
+            name: "firstTimeKillBoss",
+          });
         },
       },
 
@@ -610,7 +611,7 @@ class BossEvents {
             return;
           }
 
-          sourceUser.action(Actions.globalQuest, { name: "killBossAlone" });
+          sourceUser.action(ActionsMap.globalQuest, { name: "killBossAlone" });
         },
       },
     }),
@@ -642,7 +643,7 @@ class BossEffects {
       effect,
       ...createDefaultPreventable(),
     };
-    user.action(Actions.bossBeforeEffectInit, context);
+    user.action(ActionsMap.bossBeforeEffectInit, context);
     if (context.defaultPrevented()) {
       return context;
     }
@@ -656,7 +657,7 @@ class BossEffects {
     if (applyContext.defaultPrevented()) {
       return applyContext;
     }
-    user.action(Actions.bossEffectInit, context);
+    user.action(ActionsMap.bossEffectInit, context);
     return applyContext;
   }
 
@@ -680,7 +681,7 @@ class BossEffects {
       return null;
     }
 
-    user.action(Actions.bossEffectEnd, { effect, index });
+    user.action(ActionsMap.bossEffectEnd, { effect, index });
     UserEffectManager.removeEffect({ effect, user });
   }
 
@@ -929,7 +930,7 @@ class BossManager {
       stats.damageDealt ||= 0;
       stats.damageDealt += damage;
 
-      sourceUser.action(Actions.bossMakeDamage, context);
+      sourceUser.action(ActionsMap.bossMakeDamage, context);
     }
 
     if (damageSourceType !== null) {
@@ -1435,7 +1436,7 @@ class BossManager {
       },
     };
 
-    user.action(Actions.bossBeforeAttack, data);
+    user.action(ActionsMap.bossBeforeAttack, data);
     BossEvents.beforeAttacked(boss, data);
 
     if (data.defaultPrevented()) {
@@ -1489,7 +1490,7 @@ class BossManager {
       damageSourceType,
     });
 
-    user.action(Actions.bossAfterAttack, data);
+    user.action(ActionsMap.bossAfterAttack, data);
     BossEvents.afterAttacked(boss, data);
 
     boss.stats.userAttacksCount++;
@@ -1613,7 +1614,7 @@ class BossManager {
             user,
             values: {
               callback: (_user, _effect, { actionName, data }) => {
-                if (actionName !== Actions.buyFromGrempen) {
+                if (actionName !== ActionsMap.buyFromGrempen) {
                   return;
                 }
                 const { product } = data;
@@ -2470,7 +2471,7 @@ class BossManager {
 
           const whenOwnerMakeDamage = new Promise((resolve) => {
             const callback = (_user, effect, { actionName, data }) => {
-              if (actionName !== Actions.bossMakeDamage) {
+              if (actionName !== ActionsMap.bossMakeDamage) {
                 return;
               }
 
