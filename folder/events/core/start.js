@@ -54,11 +54,10 @@ class Event extends BaseEvent {
 
   async processLogin() {
     const event = {
-      createStopPromise,
-      _createStopPromise_stoppers: [],
+      ...createStopPromise(),
     };
     EventsManager.emitter.emit(Events.BeforeLogin, event);
-    await Promise.all(event._createStopPromise_stoppers);
+    await event.whenStopPromises();
     client.login(process.env.DISCORD_TOKEN);
   }
 
