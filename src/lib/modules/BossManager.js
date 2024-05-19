@@ -193,8 +193,8 @@ export async function emulate_user_attack({ boss, user, channel, event_ids }) {
 
 class RewardSystem {
   static LevelKill = {
-    BASE: 100,
-    ADDING_PER_LEVEL: 25,
+    BASE: 80,
+    ADDING_PER_LEVEL: 5,
     calculateKillExpReward({ toLevel, fromLevel }) {
       const { BASE, ADDING_PER_LEVEL } = this;
       const perLevel =
@@ -230,10 +230,10 @@ class RewardSystem {
   };
   static BossEndPull = {
     DEFAULT_VOID: 1,
-    VOID_REWARD_DENOMINATOR: 0.65,
+    VOID_REWARD_DENOMINATOR: 0.5,
     VOID_LIMIT_MULTIPLAYER: 2,
-    DAMAGE_FOR_VOID: 30_000,
-    DAMAGE_FOR_KEY: 5_000,
+    DAMAGE_FOR_VOID: 150_000,
+    DAMAGE_FOR_KEY: 50_000,
     KEYS_LIMIT: 10_000,
     calculateVoid({ userStats, level }) {
       const byDamage =

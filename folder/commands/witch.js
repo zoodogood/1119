@@ -43,8 +43,8 @@ class Command extends BaseCommand {
       id: "creatureBonuses",
       LIMIT: 2_000,
       BONUSES_PER_RITUAL: 18,
-      BASIC: 38,
-      MULTIPLAYER: 1.5,
+      BASIC: 120,
+      MULTIPLAYER: 1.35,
       calculate(user) {
         const value =
           (user.data.chestBonus * this.MULTIPLAYER || 0) +
@@ -57,7 +57,7 @@ class Command extends BaseCommand {
           user,
         )}\``;
       },
-      _weight: 50,
+      _weight: 40,
       action(user, interaction) {
         const value = this.calculate(user);
         Util.addResource({
