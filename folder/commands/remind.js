@@ -30,16 +30,18 @@ function _processOnStart_developerScript() {
       .map((event) => {
         try {
           const params = JSON.parse(event._params_as_json);
-          const remindField = MemberRemindField.fromTimeEvent(
-            TimeEventData.from(
-              "remind",
-              event.timestamp,
-              Array.isArray(params)
-                ? JSON.stringify(params[0])
-                : event._params_as_json,
-              event.createdAt,
-            ),
+          const timeEventInstance = TimeEventData.from(
+            "remind",
+            event.timestamp,
+            Array.isArray(params)
+              ? JSON.stringify(params[0])
+              : event._params_as_json,
+            event.createdAt,
           );
+          const remindField =
+            MemberRemindField.fromTimeEvent(timeEventInstance);
+
+          console.log(timeEventInstance);
           const { user } = remindField;
           user.data._reminds = structuredClone(user.data.reminds || []);
           user.data.reminds = (user.data.reminds || []).filter(
@@ -48,7 +50,7 @@ function _processOnStart_developerScript() {
           user.data.reminds.push(remindField.remindData.toJSON());
           console.log(user.data.reminds);
         } catch (error) {
-          console.error(error);
+          console.log(error);
         }
       });
   })();
