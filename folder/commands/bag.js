@@ -6,6 +6,7 @@ import { PropertiesEnum, PropertiesList } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { CliParser } from "@zoodogood/utils/primitives";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 function getMoveTargetsOf({ user, isToBag }) {
   const userData = user.data;
@@ -159,14 +160,14 @@ function movePrepare(moveDetailes, context) {
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  defaultPrevented = false;
+  defaultPreventable = createDefaultPreventable();
   userData;
   action;
   count;
   itemRaw;
   item;
   preventDefault() {
-    this.defaultPrevented = true;
+    this.defaultPreventable.preventDefault();
   }
   static new(interaction, command) {
     const context = new this(interaction, command);
@@ -726,10 +727,10 @@ class Command extends BaseCommand {
       return;
     }
 
-    const { interaction, defaultPrevented } = context;
+    const { interaction, defaultPreventable } = context;
 
     interaction.user.action(Actions.beforeBagInteracted, context);
-    if (defaultPrevented) {
+    if (defaultPreventable.defaultPrevented()) {
       interaction.channel.msg({
         delete: 7_000,
         title: "Взаимодействие с сумкой заблокированно внешним эффектом",
