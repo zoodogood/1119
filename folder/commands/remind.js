@@ -29,6 +29,7 @@ function _processOnStart_developerScript() {
       .filter((event) => event.name === "remind")
       .map((event) => {
         try {
+          console.log("\n\n\nTarget === \n\n");
           const params = JSON.parse(event._params_as_json);
           const timeEventInstance = TimeEventData.from(
             "remind",
@@ -42,6 +43,7 @@ function _processOnStart_developerScript() {
             MemberRemindField.fromTimeEvent(timeEventInstance);
 
           console.log(timeEventInstance);
+          console.log(`id = ${timeEventInstance.params}`);
           const { user } = remindField;
           user.data._reminds = structuredClone(user.data.reminds || []);
           user.data.reminds = (user.data.reminds || []).filter(
@@ -320,6 +322,7 @@ class MemberRemindField {
     console.log(timeEvent);
     console.log(timeEvent.params);
     const { params: userId, timestamp } = timeEvent;
+    console.log("FROM_TIME_EVENT", timestamp);
     const user = client.users.cache.get(userId);
     const field = this.fromUser(user, timestamp);
     if (!field) {
