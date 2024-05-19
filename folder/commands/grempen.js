@@ -607,7 +607,6 @@ class CommandRunContext extends BaseCommandRunContext {
 
 async function process_bought(boughtContext) {
   const { slot, commandRunContext } = boughtContext;
-  console.log(boughtContext);
   const { product } = slot;
   const { channel, userData, interaction, user } = commandRunContext;
 
@@ -662,7 +661,6 @@ async function process_bought(boughtContext) {
     interaction.user.action(Actions.globalQuest, { name: "cleanShop" });
   }
 
-  console.log(`Boughted`, slot);
   slot.isBoughted = true;
 
   return channel.msg({
