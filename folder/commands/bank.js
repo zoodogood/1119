@@ -1,4 +1,7 @@
+import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseContext } from "#lib/BaseContext.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
@@ -61,7 +64,7 @@ class Command extends BaseCommand {
   }
 
   async interactWithBank(context, { value, isPut, cause }) {
-    const { guildData, interaction, isAdmin } = context;
+    const { guildData, interaction, isAdmin, channel } = context;
     const { user } = interaction;
 
     if (value === "+") {
@@ -104,6 +107,23 @@ class Command extends BaseCommand {
           description: "Недостаточно коинов",
           color: "#ff0000",
           delete: 7000,
+        });
+        return;
+      }
+
+      const _context = new BaseContext(`comamnd.bank.interacted`, context);
+      Object.assign(_context, {
+        value,
+        cause,
+        isPut,
+        ...createDefaultPreventable(),
+      });
+
+      user.action(ActionsMap.beforeBankInteracted, _context);
+      if (_context.defaultPrevented()) {
+        channel.msg({
+          description:
+            "Взаимодействие с банком заблокированно внешним эффектом",
         });
         return;
       }
