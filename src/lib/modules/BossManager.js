@@ -45,7 +45,7 @@ import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
  * @param {CallableFunction | number} update_current
  * @returns {number}
  */
-function update_attack_cooldown(
+export function update_attack_cooldown(
   user,
   boss,
   source,
@@ -68,7 +68,7 @@ function update_attack_cooldown(
   const current =
     typeof update_current === "number"
       ? current_previous + update_current
-      : update_current(userStats.attack_CD || Date.now());
+      : update_current(current_previous);
 
   if (isNaN(fixed) || isNaN(current)) {
     throw new TypeError(
@@ -102,6 +102,19 @@ function update_attack_cooldown(
   userStats.attackCooldown = fixed;
   userStats.attack_CD = current;
   return fixed_previous - fixed;
+}
+
+function update_attack_damage_multiplayer(
+  user,
+  boss,
+  source,
+  context,
+  callback,
+) {
+  const userStats = BossManager.getUserStats(boss, user.id);
+  userStats.attacksDamageMultiplayer = +callback(
+    userStats.attacksDamageMultiplayer ?? 1,
+  ).toFixed(3);
 }
 
 export async function emulate_user_attack({ boss, user, channel, event_ids }) {
@@ -474,11 +487,16 @@ class AttributesShop {
         basePrice: 100,
         priceMultiplayer: 2,
         resource: "coins",
-        callback: ({ userStats }) => {
+        callback: (context) => {
           const multiplayer = 1.25;
-          userStats.attacksDamageMultiplayer = +(
-            (userStats.attacksDamageMultiplayer ?? 1) * multiplayer
-          ).toFixed(3);
+          const { user, boss } = context;
+          update_attack_damage_multiplayer(
+            user,
+            boss,
+            "",
+            context,
+            (previous) => previous * multiplayer,
+          );
         },
       },
       "🐺": {
@@ -2315,11 +2333,16 @@ class BossManager {
         weight: 50,
         id: "powerOfFireRare",
         description: "Ваши прямые атаки наносят гораздо больше урона по боссу",
-        callback: ({ user, boss, userStats }) => {
+        callback: (context) => {
+          const { user, boss } = context;
           const multiplayer = 1.1;
-          userStats.attacksDamageMultiplayer = +(
-            (userStats.attacksDamageMultiplayer ?? 1) * multiplayer
-          ).toFixed(3);
+          update_attack_damage_multiplayer(
+            user,
+            boss,
+            "",
+            context,
+            (previous) => previous * multiplayer,
+          );
         },
         filter: ({ boss }) => boss.elementType === elementsEnum.fire,
       },
@@ -2343,7 +2366,7 @@ class BossManager {
         filter: ({ boss }) => boss.elementType === elementsEnum.darkness,
       },
       pests: {
-        weight: ({ boss }) => 400 * 1.05 ** (boss.level - 10),
+        weight: ({ boss }) => 300 * 1.05 ** (boss.level - 10),
         id: "pests",
         description: "Клопы",
         callback: (context) => {
@@ -2352,9 +2375,13 @@ class BossManager {
           update_attack_cooldown(user, boss, "", context, addingCooldowm);
 
           const decreaseMultiplayer = 0.995;
-          userStats.attacksDamageMultiplayer = +(
-            (userStats.attacksDamageMultiplayer ?? 1) * decreaseMultiplayer
-          ).toFixed(3);
+          update_attack_damage_multiplayer(
+            user,
+            boss,
+            "",
+            context,
+            (previous) => previous * decreaseMultiplayer,
+          );
         },
         repeats: true,
         filter: ({ boss }) => boss.level >= 10,
@@ -2544,7 +2571,8 @@ class BossManager {
         id: "forging",
         repeats: true,
         description: "Эффект легендарного оружия усилен, обычный урон ослаблен",
-        callback: async ({ user, boss, channel, userStats }) => {
+        callback: async (context) => {
+          const { user, boss, channel, userStats } = context;
           const effect = BossEffects.effectsOf({ boss, user }).find(
             (effect) => effect.values.isLegendaryWearon,
           );
@@ -2558,9 +2586,13 @@ class BossManager {
           const effectMultiplayer = 0.2;
           effect.values.multiplayer += effectMultiplayer;
           const damageMultiplayer = 0.95;
-          userStats.attacksDamageMultiplayer = +(
-            (userStats.attacksDamageMultiplayer ?? 1) * damageMultiplayer
-          ).toFixed(3);
+          update_attack_damage_multiplayer(
+            user,
+            boss,
+            "",
+            context,
+            (previous) => previous * damageMultiplayer,
+          );
         },
         filter: ({ userStats }) => userStats.haveLegendaryWearon,
       },
