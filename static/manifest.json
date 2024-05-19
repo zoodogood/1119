@@ -1,7 +1,7 @@
 {
   "name": "Greenghost 1119",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "icons": [
     {
       "src": "/static/assets/dot.svg",
@@ -9,5 +9,7 @@
       "type": "image/svg+xml"
     }
   ],
-  "scope": "/"
+  "scope": "/",
+  "background_color": "#a6edb9",
+  "theme_color": "#a6edb9"
 }
