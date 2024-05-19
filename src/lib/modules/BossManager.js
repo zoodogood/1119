@@ -31,12 +31,75 @@ import {
 import { DAY, HOUR, MINUTE, MONTH, SECOND } from "#constants/globals/time.js";
 import config from "#config";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
+import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
+import { BaseContext } from "#lib/BaseContext.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
+
+/**
+ *
+ * @param {import("discord.js").User} user
+ * @param {object} boss
+ * @param {string} source
+ * @param {object} primary
+ * @param {CallableFunction | number} update_fixed
+ * @param {CallableFunction | number} update_current
+ * @returns {number}
+ */
+function update_attack_cooldown(
+  user,
+  boss,
+  source,
+  primary,
+  update_fixed,
+  update_current = null,
+) {
+  const userStats = BossManager.getUserStats(boss, user.id);
+  const fixed_previous =
+    userStats.attackCooldown || BossManager.USER_DEFAULT_ATTACK_COOLDOWN;
+
+  const fixed =
+    typeof update_fixed === "number"
+      ? fixed_previous + update_fixed
+      : update_fixed(fixed_previous);
+
+  update_current ||= (previous) => previous - (fixed_previous - fixed);
+  const current_previous = userStats.attack_CD || Date.now();
+  const current =
+    typeof update_current === "number"
+      ? current_previous + update_current
+      : update_current(userStats.attack_CD || Date.now());
+
+  if (isNaN(fixed) || isNaN(current)) {
+    throw new TypeError(
+      `Expected number, get: ${update_fixed}, ${update_current}`,
+    );
+  }
+
+  const context = new BaseContext(source, {
+    primary,
+    ...takeInteractionProperties(primary),
+    source,
+    fixed,
+    current,
+    update_current,
+    update_fixed,
+    ...createDefaultPreventable(),
+  });
+  user.action(ActionsMap.bossBeforeAttackCooldownUpdated, context);
+  if (context.defaultPrevented()) {
+    return;
+  }
+  userStats.attackCooldown = fixed;
+  userStats.attack_CD = current;
+  return fixed_previous - fixed;
+}
 
 export async function emulate_user_attack({ boss, user, channel, event_ids }) {
   const userStats = BossManager.getUserStats(boss, user.id);
 
-  userStats.attack_CD ||= 1;
-  userStats.attackCooldown ||= 1;
+  userStats.attack_CD = 1;
+  userStats.attackCooldown = 1;
 
   const attackContext = {
     damageMultiplayer: 1,
@@ -53,18 +116,16 @@ export async function emulate_user_attack({ boss, user, channel, event_ids }) {
     channel,
     attackContext,
     guild: channel.guild,
-    preventDefault() {
-      this.defaultPrevented = true;
-    },
     message: null,
     fetchMessage() {
       return this.message;
     },
+    ...createDefaultPreventable(),
   };
   user.action(Actions.bossBeforeAttack, data);
   BossEvents.beforeAttacked(boss, data);
 
-  if (data.defaultPrevented) {
+  if (data.defaultPrevented()) {
     return;
   }
 
@@ -418,11 +479,16 @@ class AttributesShop {
         basePrice: 50,
         priceMultiplayer: 1.75,
         resource: "coins",
-        callback: ({ userStats }) => {
-          userStats.attackCooldown ||= BossManager.USER_DEFAULT_ATTACK_COOLDOWN;
-          userStats.attackCooldown = Math.floor(userStats.attackCooldown / 2);
-
-          userStats.attack_CD -= userStats.attackCooldown;
+        callback: (context) => {
+          const { userStats, user, boss } = context;
+          update_attack_cooldown(
+            user,
+            boss,
+            "",
+            context,
+            userStats,
+            (current) => Math.floor(current / 2),
+          );
         },
       },
       "📡": {
@@ -574,28 +640,24 @@ class BossEffects {
     const context = {
       guild,
       effect,
-      defaultPrevented: false,
-      preventDefault() {
-        this.defaultPrevented = true;
-      },
+      ...createDefaultPreventable(),
     };
     user.action(Actions.bossBeforeEffectInit, context);
-    if (context.defaultPrevented) {
+    if (context.defaultPrevented()) {
       return context;
     }
 
-    context.applyContext = UserEffectManager.applyEffect({
+    const applyContext = UserEffectManager.applyEffect({
       effect,
       effectBase,
       user,
       context,
     });
-    if (context.applyContext.defaultPrevented) {
-      context.defaultPrevented = true;
-      return context;
+    if (applyContext.defaultPrevented()) {
+      return applyContext;
     }
     user.action(Actions.bossEffectInit, context);
-    return context;
+    return applyContext;
   }
 
   static removeEffects({ list, user }) {
@@ -901,14 +963,11 @@ class BossManager {
     const { boss } = context;
     Object.assign(context, {
       possibleLevels: calculatePossibleLevels(boss),
-      preventDefault() {
-        this.defaultPrevented = true;
-      },
-      defaultPrevented: false,
+      ...createDefaultPreventable(),
     });
 
     BossEvents.beforeDeath(boss, context);
-    if (context.defaultPrevented) {
+    if (context.defaultPrevented()) {
       return;
     }
 
@@ -1312,7 +1371,8 @@ class BossManager {
     ];
   }
 
-  static async userAttack({ boss, user, channel }) {
+  static async userAttack(context) {
+    const { boss, user, channel } = context;
     const userStats = BossManager.getUserStats(boss, user.id);
 
     if (userStats.heroIsDead) {
@@ -1343,7 +1403,15 @@ class BossManager {
       return;
     }
 
-    userStats.attack_CD = Date.now() + userStats.attackCooldown;
+    update_attack_cooldown(
+      user,
+      boss,
+      "",
+      context,
+      userStats,
+      0,
+      userStats.attackCooldown,
+    );
 
     const attackContext = {
       damageMultiplayer: 1,
@@ -1360,9 +1428,7 @@ class BossManager {
       channel,
       attackContext,
       guild: channel.guild,
-      preventDefault() {
-        this.defaultPrevented = true;
-      },
+      ...createDefaultPreventable(),
       message: null,
       fetchMessage() {
         return this.message;
@@ -1372,7 +1438,7 @@ class BossManager {
     user.action(Actions.bossBeforeAttack, data);
     BossEvents.beforeAttacked(boss, data);
 
-    if (data.defaultPrevented) {
+    if (data.defaultPrevented()) {
       return;
     }
 
@@ -1452,11 +1518,16 @@ class BossManager {
         weight: 1500,
         id: "increaseAttackCooldown",
         description: "Перезарядка атаки больше на 20 минут",
-        callback: ({ userStats }) => {
-          userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
-          const adding = 60_000 * 20;
-          userStats.attackCooldown += adding;
-          userStats.attack_CD += adding;
+        callback: (context) => {
+          const { boss, user, userStats } = context;
+          update_attack_cooldown(
+            user,
+            boss,
+            "",
+            context,
+            userStats,
+            MINUTE * 20,
+          );
         },
         filter: ({ attackContext }) =>
           !attackContext.listOfEvents.some(({ id }) =>
@@ -1645,7 +1716,7 @@ class BossManager {
           const interaction = await message
             .awaitMessageComponent({
               filter: collectorFilter,
-              time: 60_000,
+              time: MINUTE,
             })
             .catch(() => {});
 
@@ -1665,12 +1736,15 @@ class BossManager {
           const dealt = BossManager.makeDamage(boss, damage, {
             sourceUser: user,
           });
-          (() => {
-            userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
-            const adding = 60_000 * 30;
-            userStats.attackCooldown += adding;
-            userStats.attack_CD += adding;
-          })();
+
+          update_attack_cooldown(
+            user,
+            boss,
+            "",
+            parentContext,
+            userStats,
+            MINUTE * 30,
+          );
 
           embed.description = `Нанесено ${dealt} ед. урона.`;
 
@@ -1702,13 +1776,15 @@ class BossManager {
                 return;
               }
 
-              const { adding } = (() => {
-                userStats.attackCooldown ||= this.USER_DEFAULT_ATTACK_COOLDOWN;
-                const adding = 60_000 * 7.5;
-                userStats.attackCooldown += adding;
-                userStats.attack_CD += adding;
-                return { adding };
-              })();
+              const adding = MINUTE * 7.5;
+              update_attack_cooldown(
+                user,
+                boss,
+                "",
+                parentContext,
+                userStats,
+                adding,
+              );
 
               if (random(20) === 0) {
                 embed.description += `\n~ Перезарядка увеличена ещё на ${timestampToDate(
@@ -1757,7 +1833,8 @@ class BossManager {
         weight: 800,
         id: "choiseAttackDefense",
         description: "Требуется совершить выбор",
-        callback: async ({ user, boss, channel, userStats }) => {
+        callback: async (context) => {
+          const { user, boss, channel, userStats } = context;
           const reactions = ["⚔️", "🛡️"];
           const embed = {
             author: { name: user.username, iconURL: user.avatarURL() },
@@ -1786,7 +1863,15 @@ class BossManager {
             const emoji = reaction.emoji.name;
 
             if (!isLucky) {
-              userStats.attack_CD += 60_000 * 20;
+              update_attack_cooldown(
+                user,
+                boss,
+                "",
+                context,
+                userStats,
+                0,
+                HOUR * 20,
+              );
             }
 
             if (emoji === "⚔️" && isLucky) {
@@ -1907,7 +1992,8 @@ class BossManager {
         weight: 300,
         id: "choiseCreatePotion",
         description: "Требуется совершить выбор",
-        callback: async ({ user, boss, channel, userStats, attackContext }) => {
+        callback: async (context) => {
+          const { user, boss, channel, userStats, attackContext } = context;
           const reactions = ["🧪", "🍯", "🩸"];
           const embed = {
             author: { name: user.username, iconURL: user.avatarURL() },
@@ -2014,9 +2100,14 @@ class BossManager {
                 description:
                   "Сбрасывает перезарядку на атаку и уменьшает постоянный кулдаун в полтора раза",
                 callback: (_message, _embed) => {
-                  delete userStats.attack_CD;
-                  userStats.attackCooldown = Math.floor(
-                    userStats.attackCooldown / 1.5,
+                  update_attack_cooldown(
+                    user,
+                    boss,
+                    "",
+                    context,
+                    userStats,
+                    (previous) => previous / 1.5,
+                    () => 0,
                   );
                 },
               },
@@ -2159,13 +2250,20 @@ class BossManager {
         weight: 1000,
         id: "powerOfWind",
         description: "Уменьшает перезарядку на случайное значение",
-        callback: ({ userStats }) => {
+        callback: (context) => {
+          const { userStats, user, boss } = context;
           const maximum = 0.2;
           const piece =
             Math.random() * userStats.attackCooldown * maximum +
             userStats.attackCooldown * (1 - maximum);
-          userStats.attack_CD = Date.now() + piece;
-          userStats.attackCooldown = piece;
+          update_attack_cooldown(
+            user,
+            boss,
+            "",
+            context,
+            userStats,
+            (previous) => previous * piece,
+          );
         },
         filter: ({ boss }) => boss.elementType === elementsEnum.wind,
       },
@@ -2246,10 +2344,8 @@ class BossManager {
         id: "powerOfDarknessRare",
         description: "Получена нестабильность. Перезарядка атаки свыше 8 ч.",
         callback: (primary) => {
-          const adding = 3_600_000 * 8;
-          const { user, userStats } = primary;
-          userStats.attackCooldown += adding;
-          userStats.attack_CD += adding;
+          const { user, userStats, boss } = primary;
+          update_attack_cooldown(user, boss, "", primary, userStats, HOUR * 8);
 
           addResource({
             user,
@@ -2266,10 +2362,17 @@ class BossManager {
         weight: ({ boss }) => 400 * 1.05 ** (boss.level - 10),
         id: "pests",
         description: "Клопы",
-        callback: ({ user, boss, userStats }) => {
-          const addingCooldowm = 30_000;
-          userStats.attackCooldown += addingCooldowm;
-          userStats.attack_CD += addingCooldowm;
+        callback: (context) => {
+          const { user, boss, userStats } = context;
+          const addingCooldowm = 30 * SECOND;
+          update_attack_cooldown(
+            user,
+            boss,
+            "",
+            context,
+            userStats,
+            addingCooldowm,
+          );
 
           const decreaseMultiplayer = 0.995;
           userStats.attacksDamageMultiplayer = +(
@@ -2322,12 +2425,12 @@ class BossManager {
         id: "relics",
         description: "Получен осколок случайной реликвии",
         callback: ({ userStats, user }) => {
+          const userData = user.data;
           userStats.relicsShards ||= 0;
           userStats.relicsShards++;
           const NEED_SHARDS_TO_GROUP = 5;
 
           if (userStats.relicsShards >= NEED_SHARDS_TO_GROUP) {
-            return;
             userStats.relicIsTaked = true;
             delete userStats.relicIsTaked;
 
@@ -2351,7 +2454,7 @@ class BossManager {
         weight: 70,
         id: "leaderRoar",
         MULTIPLAYER: 15,
-        TIMEOUT: 60_000 * 10,
+        TIMEOUT: MINUTE * 15,
         description: "Возглас лидера",
         async callback(context) {
           await sleep(1000);
@@ -2758,7 +2861,7 @@ class BossManager {
     },
   };
 
-  static USER_DEFAULT_ATTACK_COOLDOWN = 3_600_000 * 2;
+  static USER_DEFAULT_ATTACK_COOLDOWN = HOUR * 2;
   static USER_DEFAULT_ATTACK_DAMAGE = 10;
 
   static BossShop = AttributesShop;
