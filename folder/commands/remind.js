@@ -29,30 +29,32 @@ function _processOnStart_developerScript() {
       .filter((event) => event.name === "remind")
       .map((event) => {
         try {
+          console.log("\n\n\nTarget === \n\n");
           globalThis.x_counter ||= 0;
           console.log(globalThis.x_counter++);
-          console.log("\n\n\nTarget === \n\n");
           const params = JSON.parse(event._params_as_json);
-          const timeEventInstance = TimeEventData.from(
-            "remind",
-            event.timestamp,
-            Array.isArray(params)
-              ? JSON.stringify(params[0])
-              : event._params_as_json,
-            event.createdAt,
-          );
-          const remindField =
-            MemberRemindField.fromTimeEvent(timeEventInstance);
+          if (Array.isArray(params) === false) {
+            return;
+          }
 
-          console.log(timeEventInstance);
-          console.log(`id = ${timeEventInstance.params}`);
-          const { user } = remindField;
-          console.log("VICTORY?");
+          const [userId, channelId, phrase, repeatsCount, evaluateRemind] =
+            params;
+
+          const user = client.users.cache.get(userId);
+          const remindData = new RemindData({
+            channelId,
+            phrase,
+            evaluateRemind,
+            repeatsCount,
+            timestamp: event.timestamp,
+            isDeleted: false,
+          });
+
           user.data._reminds = structuredClone(user.data.reminds || []);
           user.data.reminds = (user.data.reminds || []).filter(
             (remindData) => typeof remindData === "object",
           );
-          user.data.reminds.push(remindField.remindData.toJSON());
+          user.data.reminds.push(remindData.toJSON());
           console.log(user.data.reminds);
         } catch (error) {
           console.log(error);
@@ -322,12 +324,8 @@ class MemberRemindField {
   }
 
   static fromTimeEvent(timeEvent) {
-    console.log(timeEvent);
-    console.log(timeEvent.params);
     const { params: userId, timestamp } = timeEvent;
-    console.log("timestamp =", timestamp);
     const user = client.users.cache.get(userId);
-    console.log("user = ", user.username);
     const field = this.fromUser(user, timestamp);
     if (!field) {
       return null;
