@@ -1,23 +1,35 @@
 import app from "#app";
-import BossManager, { BossEffects } from "#lib/modules/BossManager.js";
+import { MINUTE } from "#constants/globals/time.js";
+import BossManager, {
+  BossEffects,
+  update_attack_cooldown,
+} from "#lib/modules/BossManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 
 export default {
   id: "boss.deadlyCurse",
   callback: {
-    curseEnd: (user, effect, { curse, isLost }) => {
+    curseEnd: (user, effect, context) => {
+      const { curse, isLost } = context;
       const { values } = effect;
       if (values.targetTimestamp !== curse.timestamp) {
         return;
       }
       const { guildId } = values;
-
       const guild = app.client.guilds.cache.get(guildId);
 
       if (isLost && BossManager.isArrivedIn(guild)) {
-        const userStats = BossManager.getUserStats(guild.data.boss, user.id);
+        const { boss } = guild.data;
+        const userStats = BossManager.getUserStats(boss, user.id);
         userStats.heroIsDead = true;
+        update_attack_cooldown(
+          user,
+          boss,
+          "effect.boss.deadlyCurse",
+          context,
+          (previous) => previous + MINUTE * 5,
+        );
       }
 
       BossEffects.removeEffect({ effect, user });
@@ -87,7 +99,7 @@ export default {
     },
   },
   values: {
-    time: () => 60_000 * 5,
+    time: () => MINUTE * 5,
     guildId: ({ guild }) => guild?.id,
   },
   influence: EffectInfluenceEnum.Scary,
