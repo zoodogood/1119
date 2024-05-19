@@ -89,6 +89,15 @@ function update_attack_cooldown(
   if (context.defaultPrevented()) {
     return;
   }
+
+  console.log({
+    fixed,
+    update_fixed,
+    fixed_dif: fixed_previous - fixed,
+    current,
+    update_current,
+    current_dif: current_previous - current,
+  });
   userStats.attackCooldown = fixed;
   userStats.attack_CD = current;
   return fixed_previous - fixed;
@@ -1374,6 +1383,16 @@ class BossManager {
     if (userStats.heroIsDead) {
       channel.msg({
         description: "Недоступно до воскрешения",
+        color: "#ff0000",
+        footer: { text: user.username, iconURL: user.avatarURL() },
+        delete: 30_000,
+      });
+      return;
+    }
+
+    if (boss.isDefeated) {
+      channel.msg({
+        description: "Прямые атаки недоступны после победы над боссом",
         color: "#ff0000",
         footer: { text: user.username, iconURL: user.avatarURL() },
         delete: 30_000,
