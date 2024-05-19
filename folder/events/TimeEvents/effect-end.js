@@ -1,14 +1,15 @@
 import { client } from "#bot/client.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
 
 class Event {
   run(...params) {
     const context = this.getContext(...params);
-    const { user, event } = context;
+    const { user, defaultPrevented } = context;
 
     user.action(Actions.timeEventEffectTimeoutEnd, context);
-    if (event.defaultPrevented) {
+    if (defaultPrevented()) {
       return;
     }
 
@@ -32,8 +33,8 @@ class Event {
   }
 
   removeEffect(context) {
-    const { event, effect, user } = context;
-    if (event.defaultPrevented) {
+    const { defaultPrevented, effect, user } = context;
+    if (defaultPrevented()) {
       return;
     }
 
@@ -45,17 +46,12 @@ class Event {
     if (!user) {
       return;
     }
-    const { Event } = globalThis;
-
-    const event = new Event("timeEventCurseTimeoutEnd", {
-      cancelable: true,
-    });
 
     const context = {
       timeEventData,
       uuid,
-      event,
       user,
+      ...createDefaultPreventable(),
     };
 
     return context;
