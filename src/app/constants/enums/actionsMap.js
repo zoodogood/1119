@@ -21,6 +21,7 @@ const ActionsMap = {
   beforeBagInteracted: "beforeBagInteracted",
   bagItemMove: "bagItemMove",
   thing: "thing",
+  beforeBankInteracted: "beforeBankInteracted",
   // Quest
   dailyQuestSkiped: "dailyQuestSkiped",
   dailyQuestComplete: "dailyQuestComplete",
