@@ -842,6 +842,9 @@ class CurseManager {
           beforeBerryBarter: (user, curse, context) => {
             context.preventDefault();
           },
+          beforeBankInteracted: (user, curse, context) => {
+            context.preventDefault();
+          },
         },
         reward: 5,
         interactionIsShort: true,
