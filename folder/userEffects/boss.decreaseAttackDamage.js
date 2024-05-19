@@ -2,7 +2,7 @@ import { BossEffects } from "#lib/modules/BossManager.js";
 import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 
 export default {
-  id: "boss.increaseAttackDamage",
+  id: "boss.decreaseAttackDamage",
   callback: {
     bossBeforeAttack: (user, effect, data) => {
       const { guild, attackContext } = data;
@@ -14,7 +14,7 @@ export default {
         return;
       }
       const { power, multiplayer } = effect.values;
-      attackContext.damageMultiplayer *= 1 - (power * multiplayer);
+      attackContext.damageMultiplayer *= 1 - power * multiplayer;
 
       effect.values.repeats--;
       if (!effect.values.repeats) {
