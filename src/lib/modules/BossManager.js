@@ -1568,7 +1568,7 @@ class BossManager {
         id: "applyCurse",
         description: "Вас прокляли",
         callback: ({ user, boss, channel }) => {
-          const hard = Math.min(Math.floor(boss.level / 5), 2);
+          const hard = (random(boss.level) > 20) + (random(boss.level) > 50);
           const curse = CurseManager.generate({
             user,
             hard,
@@ -1585,7 +1585,7 @@ class BossManager {
         description: "Много проклятий",
         callback: ({ user, boss, channel }) => {
           for (let i = 0; i < random(3, 5); i++) {
-            const hard = Math.min(Math.floor(boss.level / 5), 2);
+            const hard = (random(boss.level) > 20) + (random(boss.level) > 50);
             const curse = CurseManager.generate({
               user,
               hard,
