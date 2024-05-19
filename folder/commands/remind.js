@@ -456,7 +456,7 @@ class CommandRunContext extends BaseCommandRunContext {
     this.problems.push(text);
   }
 
-  get params() {
+  get processed_params() {
     return this.paramsProcessor.values;
   }
 
