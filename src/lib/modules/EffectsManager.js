@@ -1,4 +1,6 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { BaseContext } from "#lib/BaseContext.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { TimeEventsManager } from "#lib/modules/mod.js";
 import * as Utils from "#lib/util.js";
 import { Collection } from "@discordjs/collection";
@@ -46,17 +48,14 @@ class Core {
       callbackMap[callbackKey] = true;
     });
 
-    const _context = {
-      effect,
-      defaultPrevented: false,
-      preventDefault() {
-        this.defaultPrevented = true;
-      },
-      primary: context,
-    };
+    const _context = new BaseContext(
+      `effectsManager.applyEffect.${effect.id}`,
+      context,
+    );
+    Object.assign(_context, { effect, ...createDefaultPreventable() });
     user.action(ActionsMap.beforeEffectInit, _context);
 
-    if (_context.defaultPrevented) {
+    if (_context.defaultPrevented()) {
       return;
     }
 
