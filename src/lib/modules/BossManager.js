@@ -480,13 +480,8 @@ class AttributesShop {
         resource: "coins",
         callback: (context) => {
           const { userStats, user, boss } = context;
-          update_attack_cooldown(
-            user,
-            boss,
-            "",
-            context,
-            userStats,
-            (current) => Math.floor(current / 2),
+          update_attack_cooldown(user, boss, "", context, (current) =>
+            Math.floor(current / 2),
           );
         },
       },
@@ -1409,7 +1404,6 @@ class BossManager {
       boss,
       "",
       context,
-      userStats,
       0,
       userStats.attackCooldown,
     );
@@ -1521,14 +1515,7 @@ class BossManager {
         description: "Перезарядка атаки больше на 20 минут",
         callback: (context) => {
           const { boss, user, userStats } = context;
-          update_attack_cooldown(
-            user,
-            boss,
-            "",
-            context,
-            userStats,
-            MINUTE * 20,
-          );
+          update_attack_cooldown(user, boss, "", context, MINUTE * 20);
         },
         filter: ({ attackContext }) =>
           !attackContext.listOfEvents.some(({ id }) =>
@@ -1738,14 +1725,7 @@ class BossManager {
             sourceUser: user,
           });
 
-          update_attack_cooldown(
-            user,
-            boss,
-            "",
-            parentContext,
-            userStats,
-            MINUTE * 30,
-          );
+          update_attack_cooldown(user, boss, "", parentContext, MINUTE * 30);
 
           embed.description = `Нанесено ${dealt} ед. урона.`;
 
@@ -1778,14 +1758,7 @@ class BossManager {
               }
 
               const adding = MINUTE * 7.5;
-              update_attack_cooldown(
-                user,
-                boss,
-                "",
-                parentContext,
-                userStats,
-                adding,
-              );
+              update_attack_cooldown(user, boss, "", parentContext, adding);
 
               if (random(20) === 0) {
                 embed.description += `\n~ Перезарядка увеличена ещё на ${timestampToDate(
@@ -1864,15 +1837,7 @@ class BossManager {
             const emoji = reaction.emoji.name;
 
             if (!isLucky) {
-              update_attack_cooldown(
-                user,
-                boss,
-                "",
-                context,
-                userStats,
-                0,
-                HOUR * 20,
-              );
+              update_attack_cooldown(user, boss, "", context, 0, HOUR * 20);
             }
 
             if (emoji === "⚔️" && isLucky) {
@@ -2106,7 +2071,6 @@ class BossManager {
                     boss,
                     "",
                     context,
-                    userStats,
                     (previous) => previous / 1.5,
                     () => 0,
                   );
@@ -2262,7 +2226,6 @@ class BossManager {
             boss,
             "",
             context,
-            userStats,
             (previous) => previous * piece,
           );
         },
@@ -2346,7 +2309,7 @@ class BossManager {
         description: "Получена нестабильность. Перезарядка атаки свыше 8 ч.",
         callback: (primary) => {
           const { user, userStats, boss } = primary;
-          update_attack_cooldown(user, boss, "", primary, userStats, HOUR * 8);
+          update_attack_cooldown(user, boss, "", primary, HOUR * 8);
 
           addResource({
             user,
@@ -2366,14 +2329,7 @@ class BossManager {
         callback: (context) => {
           const { user, boss, userStats } = context;
           const addingCooldowm = 30 * SECOND;
-          update_attack_cooldown(
-            user,
-            boss,
-            "",
-            context,
-            userStats,
-            addingCooldowm,
-          );
+          update_attack_cooldown(user, boss, "", context, addingCooldowm);
 
           const decreaseMultiplayer = 0.995;
           userStats.attacksDamageMultiplayer = +(
