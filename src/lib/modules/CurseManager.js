@@ -27,6 +27,7 @@ import {
   yaml,
 } from "#lib/safe-utils.js";
 import { addResource, overTheMessageSpamLimit } from "#lib/util.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 class CurseManager {
   static generate({ hard = null, user, context }) {
@@ -839,7 +840,7 @@ class CurseManager {
             context.event.preventDefault();
           },
           beforeBerryBarter: (user, curse, context) => {
-            context.event.preventDefault();
+            context.preventDefault();
           },
         },
         reward: 5,
@@ -1846,9 +1847,12 @@ class CurseManager {
     }
 
     if (values.timer && Date.now() > curse.timestamp + values.timer) {
-      const event = new Event("curseTimeEnd", { cancelable: true });
-      user.action(ActionsMap.curseTimeEnd, { event, curse });
-      if (!event.defaultPrevented) {
+      const context = {
+        curse,
+        ...createDefaultPreventable(),
+      };
+      user.action(ActionsMap.curseTimeEnd, context);
+      if (!context.defaultPrevented()) {
         this.curseIndexOnUser({ curse, user }) !== null &&
           CurseManager.curseEnd({ user, curse, lost: true });
 
