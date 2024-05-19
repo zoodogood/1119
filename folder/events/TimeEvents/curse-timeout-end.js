@@ -1,5 +1,6 @@
 import { client } from "#bot/client.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { CurseManager } from "#lib/modules/mod.js";
 
 class Event {
@@ -10,15 +11,14 @@ class Event {
     }
 
     const curses = user.data.curses;
-    const event = new globalThis.Event("timeEventCurseTimeoutEnd", {
-      cancelable: true,
-    });
-    user.action(ActionsMap.timeEventCurseTimeoutEnd, {
+    const context = {
       timeEventData,
       timestamp,
-      event,
-    });
-    if (event.defaultPrevented) {
+      user,
+      ...createDefaultPreventable(),
+    };
+    user.action(ActionsMap.timeEventCurseTimeoutEnd, context);
+    if (context.defaultPrevented()) {
       return;
     }
     if (!curses) {
