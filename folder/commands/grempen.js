@@ -547,12 +547,11 @@ function get_products(context) {
           user,
           context,
         });
-        const { description } = CurseManager.cursesBase.get(curse.id);
         CurseManager.init({ user, curse });
-        const descriptionContent =
-          typeof description === "function"
-            ? description(user, curse, context)
-            : description;
+        const descriptionContent = CurseManager.interface({
+          user,
+          curse,
+        }).toString();
 
         return ` как новое проклятие. Чтобы избавится от бича камня: ${descriptionContent}.`;
       },
