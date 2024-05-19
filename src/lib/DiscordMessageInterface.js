@@ -187,12 +187,11 @@ export class MessageInterface {
     const event = {
       target,
       me: this,
-      createStopPromise,
-      _createStopPromise_stoppers: [],
+      ...createStopPromise(),
       value,
     };
     this.emitter.emit(MessageInterface.Events.before_update, event);
-    await Promise.all(event._createStopPromise_stoppers);
+    await event.whenStopPromises();
     return target.msg(value);
   }
 
@@ -203,11 +202,10 @@ export class MessageInterface {
       force_allow() {
         this.allowed_force = true;
       },
-      createStopPromise,
-      _createStopPromise_stoppers: [],
+      ...createStopPromise(),
     };
     this.emitter.emit(MessageInterface.Events.before_collect, event);
-    await Promise.all(event._createStopPromise_stoppers);
+    await event.whenStopPromises();
 
     this._onCollect(type, interaction, { force_allow: event.allowed_force });
   }
