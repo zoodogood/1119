@@ -175,7 +175,15 @@
       <UserProgress {svelteApp} target={State.target} />
       <UserSettings {svelteApp} target={State.target} />
       <ChangeLanguage isAlwaysVisible={true} />
-      <button on:click={init_pwa_worker()}>Инициализировать PWA</button>
+      <button
+        on:click={() => (
+          init_pwa_worker(),
+          addNotification({
+            text: "Возможно, в панели браузера появилась соответсвующая опция",
+            removeAfter: 10_000,
+          })
+        )}>Инициализировать PWA (для тестеровщиков)</button
+      >
       <button
         on:click={() => {
           svelteApp.storage.setToken(null);
