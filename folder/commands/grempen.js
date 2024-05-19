@@ -607,6 +607,7 @@ class CommandRunContext extends BaseCommandRunContext {
 
 async function process_bought(boughtContext) {
   const { slot, commandRunContext } = boughtContext;
+  console.log(boughtContext);
   const { product } = slot;
   const { channel, userData, interaction, user } = commandRunContext;
 
@@ -661,6 +662,7 @@ async function process_bought(boughtContext) {
     interaction.user.action(Actions.globalQuest, { name: "cleanShop" });
   }
 
+  console.log(`Boughted`, slot);
   slot.isBoughted = true;
 
   return channel.msg({
@@ -732,6 +734,11 @@ class Command extends BaseCommand {
       return;
     }
 
+    if (Math.floor(Date.now() / DAY) !== userData.shopTime) {
+      userData.grempenBoughted = 0;
+      userData.shopTime = Math.floor(Date.now() / DAY);
+    }
+
     const { userData } = context;
     const products_list = get_products(context);
     const getTodayItems = () =>
@@ -755,11 +762,6 @@ class Command extends BaseCommand {
 
     const today_products = getTodayItems();
     context.today_products = today_products;
-
-    if (Math.floor(Date.now() / DAY) !== userData.shopTime) {
-      userData.grempenBoughted = 0;
-      userData.shopTime = Math.floor(Date.now() / DAY);
-    }
 
     const buyFunc = async (index) => {
       const slot = context.slots[index];
