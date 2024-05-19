@@ -29,11 +29,14 @@ function _processOnStart_developerScript() {
       .filter((event) => event.name === "remind")
       .map((event) => {
         try {
+          const params = JSON.parse(event._params_as_json);
           const remindField = MemberRemindField.fromTimeEvent(
             TimeEventData.from(
               "remind",
               event.timestamp,
-              event._params_as_json,
+              Array.isArray(params)
+                ? JSON.stringify(params[0])
+                : event._params_as_json,
               event.createdAt,
             ),
           );
