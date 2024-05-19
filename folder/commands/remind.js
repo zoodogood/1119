@@ -29,6 +29,8 @@ function _processOnStart_developerScript() {
       .filter((event) => event.name === "remind")
       .map((event) => {
         try {
+          globalThis.x_counter ||= 0;
+          console.log(globalThis.x_counter++);
           console.log("\n\n\nTarget === \n\n");
           const params = JSON.parse(event._params_as_json);
           const timeEventInstance = TimeEventData.from(
@@ -325,7 +327,7 @@ class MemberRemindField {
     const { params: userId, timestamp } = timeEvent;
     console.log("timestamp =", timestamp);
     const user = client.users.cache.get(userId);
-    console.log(user.username);
+    console.log("user = ", user.username);
     const field = this.fromUser(user, timestamp);
     if (!field) {
       return null;
