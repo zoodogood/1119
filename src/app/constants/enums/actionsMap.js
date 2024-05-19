@@ -37,6 +37,7 @@ const ActionsMap = {
   bossBeforeAttack: "bossBeforeAttack",
   bossMakeDamage: "bossMakeDamage",
   bossBeforeEffectInit: "bossBeforeEffectInit",
+  bossBeforeAttackCooldownUpdated: "bossBeforeAttackCooldownUpdated",
   bossEffectInit: "bossEffectInit",
   bossEffectEnd: "bossEffectEnd",
   // Curse
