@@ -9,7 +9,7 @@ import {
   timestampToDate,
 } from "#lib/safe-utils.js";
 
-class TimeEventData {
+export class TimeEventData {
   createdAt;
   _params_as_json;
   name;
@@ -160,7 +160,7 @@ class TimeEventsManager {
     if (!this.data[day]) {
       return false;
     }
-    
+
     const index = this.data[day].indexOf(event);
 
     if (~index === 0) {
