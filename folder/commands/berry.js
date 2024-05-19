@@ -3,6 +3,7 @@ import DataManager from "#lib/modules/DataManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { addMultipleResources } from "#lib/util.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 class Command extends BaseCommand {
   static INFLATION = 0.2;
@@ -98,13 +99,13 @@ class Command extends BaseCommand {
       isBuying,
       price,
       channel: interaction.channel,
-      event: new Event("command.berry.barter"),
       primary: context,
+      ...createDefaultPreventable(),
     };
 
     interaction.user.action(Actions.beforeBerryBarter, _context);
 
-    if (_context.event.defaultPrevented) {
+    if (_context.defaultPrevented()) {
       interaction.channel.msg({
         description:
           "Взаимодействие с клубникой заблокировано внешним эффектом",
