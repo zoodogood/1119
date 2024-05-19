@@ -3,6 +3,7 @@ import { Collection } from "discord.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { addResource } from "#lib/util.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 class QuestManager {
   static generate({ user }) {
@@ -53,9 +54,9 @@ class QuestManager {
   }
 
   static init({ user, quest }) {
-    const event = new Event(Actions.beforeDailyQuestInit);
-    user.action(Actions.beforeDailyQuestInit, { quest, event });
-    if (event.defaultPrevented) {
+    const context = { quest, user, ...createDefaultPreventable() };
+    user.action(Actions.beforeDailyQuestInit, context);
+    if (context.defaultPrevented()) {
       return;
     }
 
