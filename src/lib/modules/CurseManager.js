@@ -379,7 +379,7 @@ class CurseManager {
               return;
             }
 
-            data.event.preventDefault();
+            data.preventDefault();
             CurseManager.interface({ user, curse }).success();
           },
         },
@@ -458,7 +458,7 @@ class CurseManager {
               return;
             }
 
-            data.event.preventDefault();
+            data.preventDefault();
             CurseManager.interface({ user, curse }).success();
           },
           beforeBagInteracted: (user, curse, context) => {
@@ -526,7 +526,7 @@ class CurseManager {
               return;
             }
             if (curse.values.progress >= curse.values.minimalProgress) {
-              data.event.preventDefault();
+              data.preventDefault();
               CurseManager.interface({ user, curse }).success();
             }
           },
@@ -598,7 +598,7 @@ class CurseManager {
               return;
             }
 
-            data.event.preventDefault();
+            data.preventDefault();
 
             const audit = {};
             const auditInterface = new DotNotatedInterface(audit);
@@ -688,7 +688,7 @@ class CurseManager {
               return;
             }
 
-            data.event.preventDefault();
+            data.preventDefault();
 
             CurseManager.interface({ user, curse }).success();
           },
@@ -837,7 +837,7 @@ class CurseManager {
             CurseManager.interface({ curse, user }).setProgress(coins);
           },
           beforeResourcePayed: (user, curse, context) => {
-            context.event.preventDefault();
+            context.preventDefault();
           },
           beforeBerryBarter: (user, curse, context) => {
             context.preventDefault();
@@ -877,7 +877,7 @@ class CurseManager {
                 source: "curseManager.events.itAllBag",
               });
             }
-            target.event.preventDefault();
+            target.preventDefault();
             CurseManager.interface({ user, curse }).silentEnd();
             CurseManager.removeCurse({ user, curse });
           },
@@ -947,7 +947,7 @@ class CurseManager {
               delete userData[key];
             }
             Object.assign(userData, puppet);
-            target.event.preventDefault();
+            target.preventDefault();
             CurseManager.interface({ user, curse }).success();
           },
           curseInit(user, curse, target) {
@@ -979,7 +979,7 @@ class CurseManager {
               return;
             }
             UserEffectManager.removeEffect({ effect: target, user });
-            data.event.preventDefault();
+            data.preventDefault();
           },
           timeEventCurseTimeoutEnd: (user, curse, data) => {
             if (curse.timestamp === data.timestamp) {
@@ -994,7 +994,7 @@ class CurseManager {
               return;
             }
             CurseManager.removeCurse({ user, curse: target });
-            data.event.preventDefault();
+            data.preventDefault();
           },
         },
         reward: 5,
@@ -1020,7 +1020,7 @@ class CurseManager {
             if (curse !== target.curse) {
               return;
             }
-            target.event.preventDefault();
+            target.preventDefault();
 
             const { client } = user;
             const guild = client.guilds.cache.get(curse.values.guildId);
@@ -1085,7 +1085,7 @@ class CurseManager {
             if (curse !== target.curse) {
               return;
             }
-            target.event.preventDefault();
+            target.preventDefault();
             CurseManager.interface({ curse, user }).success();
           },
           curseEnd(user, curse, target) {
@@ -1223,7 +1223,7 @@ class CurseManager {
 
             curse.values["h0-h0-h0"] = "❤️‍🔥";
             CurseManager.interface({ user, curse }).success();
-            target.event.preventDefault();
+            target.preventDefault();
           },
         },
         reward: 3,
@@ -1572,7 +1572,7 @@ class CurseManager {
             if (curse.values.upped === 0) {
               return;
             }
-            data.event.preventDefault();
+            data.preventDefault();
             CurseManager.interface({ user, curse }).success();
 
             const progress = curse.values.progress;
