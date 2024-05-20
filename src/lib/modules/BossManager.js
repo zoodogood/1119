@@ -211,7 +211,7 @@ class RewardSystem {
     BASE_BONUSES: 50,
     BONUSES_PER_LEVEL: 10,
     DAMAGE_FOR_KEY: 5_000,
-    KEYS_LIMIT: 10_000,
+    KEYS_LIMIT: 2_000,
     calculateChestBonus(level) {
       return this.BASE_BONUSES + level * this.BONUSES_PER_LEVEL;
     },
@@ -234,7 +234,7 @@ class RewardSystem {
     VOID_LIMIT_MULTIPLAYER: 0.5,
     DAMAGE_FOR_VOID: 5_000,
     DAMAGE_FOR_KEY: 50_000,
-    KEYS_LIMIT: 20_000,
+    KEYS_LIMIT: 15_000,
     calculateVoid({ userStats, level }) {
       const byDamage =
         (userStats.damageDealt / this.DAMAGE_FOR_VOID) **
