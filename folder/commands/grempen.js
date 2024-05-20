@@ -363,6 +363,10 @@ class Command extends BaseCommand {
       },
     );
 
+    _interface.emitter.on(MessageInterface.Events.before_close, () => {
+      context.grempenIsClosed = true;
+    });
+
     _interface.updateMessage();
   }
 
