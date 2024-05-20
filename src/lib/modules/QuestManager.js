@@ -5,6 +5,13 @@ import { addResource } from "#lib/util.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
+export function part_of_made(base) {
+  return (
+    DataManager.data.users.filter((userData) =>
+      userData.questsGlobalCompleted?.includes(base.id),
+    ).length / DataManager.data.users.length
+  );
+}
 class QuestManager {
   static generate({ user }) {
     const userQuestField = user.data.quest;
@@ -168,14 +175,7 @@ class QuestManager {
       context: { questBase, primary: context },
     });
 
-    const percentOfMade =
-      (
-        (DataManager.data.users.filter((userData) =>
-          userData.questsGlobalCompleted?.includes(questBase.id),
-        ).length /
-          DataManager.data.users.length) *
-        100
-      ).toFixed(2) + "%";
+    const percentOfMade = (part_of_made(questBase) * 100).toFixed(2) + "%";
 
     const isSecret = questBase.isSecret;
 
