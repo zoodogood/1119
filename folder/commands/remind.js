@@ -8,61 +8,11 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { Pager } from "#lib/DiscordPager.js";
 import { getValuesByIndexes } from "#lib/features/primitives.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
-import EventsManager from "#lib/modules/EventsManager.js";
-import TimeEventsManager, {
-  TimeEventData,
-} from "#lib/modules/TimeEventsManager.js";
+import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
-import { ending, capitalize, question, whenClientIsReady } from "#lib/util.js";
+import { ending, capitalize, question } from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { Message } from "discord.js";
-
-// to-do: developer crutch
-function _processOnStart_developerScript() {
-  (async () => {
-    await whenClientIsReady();
-    const keys = Object.keys(TimeEventsManager.data);
-    TimeEventsManager.getEventsInRange([
-      Math.min(...keys.map(Number)),
-      Math.max(...keys.map(Number)),
-    ])
-      .filter((event) => event.name === "remind")
-      .map((event) => {
-        try {
-          console.log("\n\n\nTarget === \n\n");
-          globalThis.x_counter ||= 0;
-          console.log(globalThis.x_counter++);
-          const params = JSON.parse(event._params_as_json);
-          if (Array.isArray(params) === false) {
-            return;
-          }
-
-          const [userId, channelId, phrase, repeatsCount, evaluateRemind] =
-            params;
-
-          const user = client.users.cache.get(userId);
-          const remindData = new RemindData({
-            channelId,
-            phrase,
-            evaluateRemind,
-            repeatsCount,
-            timestamp: event.timestamp,
-            isDeleted: false,
-          });
-
-          user.data._reminds = structuredClone(user.data.reminds || []);
-          user.data.reminds = (user.data.reminds || []).filter(
-            (remindData) => typeof remindData === "object",
-          );
-          user.data.reminds.push(remindData.toJSON());
-          console.log(user.data.reminds);
-        } catch (error) {
-          console.log(error);
-        }
-      });
-  })();
-}
-EventsManager.emitter.once(Events.BeforeLogin, _processOnStart_developerScript);
 
 // MARK: Definitions
 
