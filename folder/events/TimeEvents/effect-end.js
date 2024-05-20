@@ -12,9 +12,7 @@ class Event {
     if (defaultPrevented()) {
       return;
     }
-
-    const effect = this.findEffect(context);
-
+    const { effect } = context;
     if (!effect) {
       return;
     }
@@ -25,10 +23,10 @@ class Event {
   }
 
   findEffect(context) {
-    const { user, uuid } = context;
+    const { user, uid } = context;
     const effects = user.data.effects;
 
-    const compare = (effect) => effect.uuid === uuid;
+    const compare = (effect) => effect.uid === uid;
     return effects.find(compare);
   }
 
@@ -41,7 +39,7 @@ class Event {
     UserEffectManager.removeEffect({ effect, user });
   }
 
-  getContext(timeEventData, userId, uuid) {
+  getContext(timeEventData, userId, uid) {
     const user = client.users.cache.get(userId);
     if (!user) {
       return;
@@ -49,16 +47,16 @@ class Event {
 
     const context = {
       timeEventData,
-      uuid,
+      uid,
       user,
       ...createDefaultPreventable(),
     };
-
+    context.effect = this.findEffect(context);
     return context;
   }
 
   options = {
-    name: "TimeEvent/effect-timeout-end",
+    name: "TimeEvent/effect-end",
   };
 }
 

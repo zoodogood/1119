@@ -61,11 +61,7 @@ class Core {
 
     if (effect.values.timer) {
       const params = [user.id, effect.uid];
-      TimeEventsManager.create(
-        "effect-timeout-end",
-        effect.values.timer,
-        params,
-      );
+      TimeEventsManager.create("effect-end", effect.values.timer, params);
     }
 
     effects.push(effect);
