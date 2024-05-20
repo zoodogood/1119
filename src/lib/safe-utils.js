@@ -257,7 +257,7 @@ function NumberFormatLetterize(numb) {
   const cut =
     numb.length - ((numb.length % (THRESHOLD - DISTANCE + 1)) + DISTANCE);
   numb = numb.slice(0, numb.length - cut);
-  numb = new Intl.NumberFormat().format(numb);
+  numb = new Intl.NumberFormat("ru-ru").format(numb);
 
   const letters = [
     "",
