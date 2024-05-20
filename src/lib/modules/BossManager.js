@@ -313,7 +313,7 @@ class Speacial {
         effect: "boss.increaseDamageByAfkTime",
         emoji: "❄️",
         values: {
-          power: () => 1 / MINUTE,
+          power: () => 1 / (MINUTE * 10),
         },
       },
       percentDamage: {
@@ -348,7 +348,7 @@ class Speacial {
         effect: "boss.increaseDamageWhenStrictlyMessageChallenge",
         emoji: "🎈",
         values: {
-          power: () => 1.2,
+          power: () => 1.1,
           basic: () => 20,
         },
       },
