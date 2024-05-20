@@ -539,6 +539,9 @@ class Command extends BaseCommand {
         "Каков план?",
       ]),
     });
+    if (Util.random(5) !== 0) {
+      return;
+    }
     const question = `Проанализируй эту идею и дай отзыв. Думай шаг за шагом Речь идёт существующем о чат боте с долгой историей. Ценятся идеи развивающие креативность и ставящие пользователям испытания!`;
     const { response } =
       (await askTheAI_or_null([`${question}\n${phrase}`])) || {};
