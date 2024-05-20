@@ -422,7 +422,8 @@ class Command extends BaseCommand {
         "Настройки сервера (бот) — Фильтр чата, канал логов, основной чат, описание и баннер для команды `!сервер` — способы управления сервером.",
       example: `!editserver #без аргументов`,
     },
-    alias: "настроитьсервер серватиус servatius налагодитисервер серватіус",
+    alias:
+      "настроитьсервер серватиус servatius налагодитисервер серватіус настройки налаштування settings",
     allowDM: true,
     type: "guild",
     Permissions: 32n,
@@ -430,47 +431,3 @@ class Command extends BaseCommand {
 }
 
 export default Command;
-
-// const { guild, interaction } = context;
-//     const guildData = guild.data;
-//     const settingsAll = [
-
-//     settings = settingsAll.map(([key, setup_off, setup_on]) =>
-//       guildData[key] ? "<a:yes:763371572073201714> " + setup_on : setup_off,
-//     );
-
-//     let message = await context.channel.msg({
-//       title: "Идёт Настройка сервера... " + randomEmoji,
-//       description: settings.join("\n"),
-//       footer: { text: "🔂 - отобразить все действия" },
-//       fields: [{ name: "🏝️ Назначенные каналы", value: channelsContent }],
-//     }),
-//       react = await message.awaitReact(
-//         { user, removeType: "all" },
-//         ...settings
-//           .map((e) => e.split(" ")[0])
-//           .filter((e) => e !== "<a:yes:763371572073201714>"),
-//         "🏝️",
-//         "🔂",
-//       ),
-//       settings = settingsAll.map((e) =>
-//         guildData[e[0]] ? "<a:yes:763371572073201714> " + e[2] : e[1],
-//       );
-//     message = await message.msg({
-//       title: "Идёт Настройка сервера... " + randomEmoji,
-//       description: settings.join("\n"),
-//       footer: { text: "🔂 - отобразить все действия" },
-//       edit: true,
-//       fields: [{ name: "🏝️ Назначенные каналы", value: channels }],
-//     });
-//     reactions = reactions || [
-//       ...settings
-//         .map((e) => e.split(" ")[0])
-//         .filter((e) => e != "<a:yes:763371572073201714>"),
-//       "🏝️",
-//       "🔂",
-//     ];
-//     react = await message.awaitReact(
-//       { user: user, removeType: "all" },
-//       ...reactions,
-//     );
