@@ -142,12 +142,12 @@ class Command extends BaseCommand {
             user.questsGlobalCompleted?.includes(questBase.id),
           );
 
-        const achiementContent = secretAchievements.size
+        const achievementContent = secretAchievements.size
           ? secretAchievements.random().emoji + " "
           : "";
         embed.fields.push({
           name: " ᠌᠌",
-          value: "\n**" + `${achiementContent}${member.roles.highest}**\nᅠ`,
+          value: "\n**" + `${achievementContent}${member.roles.highest}**\nᅠ`,
         });
       }
 
