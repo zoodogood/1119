@@ -5,10 +5,24 @@ import { client } from "#bot/client.js";
 import Template from "#lib/modules/Template.js";
 import config from "#config";
 
-import { escapeCodeBlock, escapeMarkdown, WebhookClient } from "discord.js";
+import { escapeCodeBlock, WebhookClient } from "discord.js";
+import { Pager } from "#lib/DiscordPager.js";
 
 const DEFAULT_CODE_CONTENT = 'module("userData")';
 
+function format_object(object) {
+  return `\`\`\`json\n${escapeCodeBlock(
+    JSON.stringify(object, null, "\t"),
+  )}\`\`\``;
+}
+function resolve_page(raw) {
+  if (typeof raw === "string") {
+    raw = { description: raw };
+  }
+  const DISCORD_MESSAGE_LIMIT = 4096;
+  raw.description = raw.description.slice(0, DISCORD_MESSAGE_LIMIT);
+  return raw;
+}
 class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const fetchReferense = async (reference) => {
@@ -33,7 +47,7 @@ class Command extends BaseCommand {
       launchTimestamp: Date.now(),
       leadTime: null,
       emojiByType: null,
-      description: null,
+      pages: null,
       codeContent: codeContent.startsWith("```js")
         ? codeContent.match(/```js\n((?:.|\n)+?)```$/)[1]
         : codeContent,
@@ -58,21 +72,25 @@ class Command extends BaseCommand {
 
     switch (true) {
       case output === undefined:
-        interaction.description = "```{Пусто}```";
+        interaction.pages = ["```{Пусто}```"];
         interaction.emojiByType = "753916360802959444";
         break;
       case output instanceof Error:
-        interaction.description = `Ошибка (${output.name}):\n${output.message}`;
+        interaction.pages = [`Ошибка (${output.name}):\n${output.message}`];
         interaction.emojiByType = "753916394135093289";
         break;
       case typeof output === "object":
-        interaction.description = `\`\`\`json\n${escapeCodeBlock(
-          JSON.stringify(output, null, "\t"),
-        )}\`\`\``;
+        interaction.pages = [
+          format_object(output),
+          ...Object.entries(output).map(([title, value]) => ({
+            title: `Поле \`${title}\``,
+            description: format_object(value),
+          })),
+        ];
         interaction.emojiByType = "753916315755872266";
         break;
       default:
-        interaction.description = String(output);
+        interaction.pages = [String(output)];
         interaction.emojiByType = "753916145177722941";
     }
 
@@ -86,33 +104,19 @@ class Command extends BaseCommand {
       return;
     }
 
-    msg
-      .msg({
-        title:
-          "([**{**  <:emoji_48:753916414036803605> <:emoji_50:753916145177722941> <:emoji_47:753916394135093289> <:emoji_46:753916360802959444> <:emoji_44:753916315755872266> <:emoji_44:753916339051036736>  **}**])",
-        author: { name: "Вывод консоли" },
-        description: interaction.description,
-        color: "#1f2022",
-        footer: {
-          text: `Количество символов: ${interaction.description.length}\nВремя выполнения кода: ${interaction.leadTime}мс`,
-        },
-      })
-      .catch((err) => {
-        const lengthContent = Util.ending(
-          interaction.description.length,
-          "символ",
-          "ов",
-          "у",
-          "ам",
-        );
-        msg.msg({
-          title: "Лимит символов",
-          color: "#1f2022",
-          description: `Не удалось отправить сообщение, ведь его длина ${lengthContent}\nСодержимое ошибки:\n${err}\n\n${escapeMarkdown(
-            Util.toLocaleDeveloperString(output).slice(0, 1000),
-          )}`,
-        });
-      });
+    const pager = new Pager(interaction.channel);
+    pager.setHideDisabledComponents(true);
+    pager.setDefaultMessageState({
+      title:
+        "([**{**  <:emoji_48:753916414036803605> <:emoji_50:753916145177722941> <:emoji_47:753916394135093289> <:emoji_46:753916360802959444> <:emoji_44:753916315755872266> <:emoji_44:753916339051036736>  **}**])",
+      author: { name: "Вывод консоли" },
+      color: "#1f2022",
+      footer: {
+        text: `Время выполнения кода: ${interaction.leadTime}мс`,
+      },
+    });
+    pager.addPages(...interaction.pages.map(resolve_page));
+    pager.updateMessage();
   }
 
   async loggerProtocol({ interaction }) {
