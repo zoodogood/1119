@@ -232,7 +232,7 @@ class RewardSystem {
     DEFAULT_VOID: 1,
     VOID_REWARD_DENOMINATOR: 0.5,
     VOID_LIMIT_MULTIPLAYER: 2,
-    DAMAGE_FOR_VOID: 150_000,
+    DAMAGE_FOR_VOID: 5_000,
     DAMAGE_FOR_KEY: 50_000,
     KEYS_LIMIT: 10_000,
     calculateVoid({ userStats, level }) {
