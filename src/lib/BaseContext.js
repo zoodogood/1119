@@ -6,7 +6,7 @@ export class BaseContext {
   user = null;
   emitter = new EventsEmitter();
   constructor(_source, primary) {
-    Object.assign(this, { _source, primary }, primary);
+    Object.assign(this, primary, { _source, primary });
   }
 
   toSafeValues() {}
