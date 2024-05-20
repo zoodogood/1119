@@ -1,574 +1,36 @@
+// @ts-check
 import { BaseCommand } from "#lib/BaseCommand.js";
-import { client } from "#bot/client.js";
-import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
-import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { DAY, HOUR } from "#constants/globals/time.js";
+import { DAY } from "#constants/globals/time.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import {
-  addResource,
-  ending,
-  joinWithAndSeparator,
-  random,
-  timestampDay,
-  sleep,
-} from "#lib/util.js";
+import { addResource, ending, joinWithAndSeparator, sleep } from "#lib/util.js";
 import { BaseContext } from "#lib/BaseContext.js";
+import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 
-function get_products(context) {
-  const { user, userData, interaction, channel } = context;
-  return [
-    {
-      key: "stick",
-      label: "Просто палка",
-      emoji: "🦴",
-      price: 244,
-      inline: true,
-      others: ["палка", "палку"],
-      fn() {
-        const product = this;
-
-        let phrase =
-          ".\nВы купили палку. Это самая обычная палка, и вы её выбросили.";
-        if (userData.monster) {
-          const DENOMINATOR = 0.992;
-          const COMMON_VALUE = 3;
-
-          const MIN = 5;
-
-          const max =
-            (COMMON_VALUE * (1 - DENOMINATOR ** userData.monster)) /
-              (1 - DENOMINATOR) +
-            MIN;
-
-          const count = Math.ceil(random(MIN, max));
-          phrase += `\nВаши ручные Монстры, погнавшись за ней, нашли ${ending(
-            count,
-            "ключ",
-            "ей",
-            "",
-            "а",
-          )}`;
-
-          addResource({
-            user: interaction.user,
-            value: count,
-            source: "command.grempen.product.stick",
-            executor: interaction.user,
-            resource: PropertiesEnum.keys,
-            context: { interaction, product },
-          });
-          userData.keys += count;
-        }
-
-        return phrase;
-      },
-    },
-    {
-      key: "chilli",
-      label: "Жгучий перчик",
-      emoji: "🌶️",
-      price: 160,
-      inline: true,
-      others: ["перец", "перчик"],
-      fn() {
-        const product = this;
-        if (userData.chilli === undefined) {
-          channel.msg({
-            title: "Окей, вы купили перец, просто бросьте его...",
-            description: "Команда броска `!chilli @Пинг`",
-            delete: 12000,
-          });
-        }
-
-        addResource({
-          user: interaction.user,
-          value: 1,
-          source: "command.grempen.product.chilli",
-          executor: interaction.user,
-          resource: PropertiesEnum.chilli,
-          context: { interaction, product },
-        });
-        return '. "Готовтесь глупцы, грядёт эра перчиков"';
-      },
-    },
-    {
-      key: "gloves",
-      label: "Перчатки перчатника",
-      emoji: "🧤",
-      price: 700,
-      inline: true,
-      others: ["перчатку", "перчатки", "перчатка"],
-      fn() {
-        const product = this;
-        userData.thiefGloves === undefined &&
-          user.msg({
-            title: "Вы купили чудо перчатки?",
-            description:
-              "Отлично, теперь вам доступна команда `!rob`.\n**Правила просты:**\nВаши перчатки позволяют ограбить участника, при условии, что он онлайн.\nВ течении 2-х минут у ограбленного есть возможность догнать вас и вернуть деньги.\nЕсли попадётесь дважды, то перчатки нужно покупать заново — эдакий риск.\nНужно быть осторожным и умным, искать момент.\nА пользователи должны быть хитры, если кто-то спалил, что у вас есть перчатки.\nЦель участников подло заставить Вас на них напасть, а вор, то есть Вы, должен выждать момент и совершить атаку.",
-          });
-
-        addResource({
-          user: interaction.user,
-          value: 2,
-          source: "command.grempen.product.gloves",
-          executor: interaction.user,
-          resource: PropertiesEnum.thiefGloves,
-          context: { interaction, product },
-        });
-        delete userData.CD_39;
-
-        return ". _Режим воровитости активирован._";
-      },
-    },
-    {
-      key: "nut",
-      label: "Старый ключ",
-      emoji: "🔩",
-      price: 15,
-      inline: true,
-      others: ["ключ", "ключик", "key"],
-      fn() {
-        const product = this;
-
-        addResource({
-          user: interaction.user,
-          value: 1,
-          source: "command.grempen.product.nut",
-          executor: interaction.user,
-          resource: PropertiesEnum.keys,
-          context: { interaction, product },
-        });
-        return " и что вы делаете? Нет! Это не Фиксик!";
-      },
-    },
-    {
-      key: "exp",
-      label: "Бутылёк опыта",
-      emoji: "🧪",
-      price: "???",
-      inline: true,
-      others: ["опыт", "бутылёк"],
-      fn(boughtContext) {
-        const product = this;
-
-        const rand = random(3, 7);
-        const LIMIT = 15_000;
-        const flaconPrice = Math.min(Math.ceil(userData.coins / rand), LIMIT);
-        const value = Math.ceil(flaconPrice * 0.2);
-        addResource({
-          user: interaction.user,
-          value,
-          source: "command.grempen.product.exp",
-          executor: interaction.user,
-          resource: PropertiesEnum.exp,
-          context: { interaction, product },
-        });
-
-        boughtContext.price = flaconPrice;
-        return `, как дорогущий флакон давший вам целых ${value} <:crys:637290406958202880>`;
-      },
-    },
-    {
-      key: "monster",
-      label: "Ручной монстр",
-      emoji: "🐲",
-      price: 1999 + 1000 * Math.ceil((userData.monstersBought || 0) / 3),
-      inline: true,
-      others: ["монстр", "монстра"],
-      fn() {
-        const product = this;
-
-        if (userData.monster === undefined) {
-          userData.monster = 0;
-          userData.monstersBought = 0;
-          channel.msg({
-            description:
-              "Монстры защищают вас от мелких воришек и больших воров, также они очень любят приносить палку, но не забывайте играть с ними!",
-            author: { name: "Информация", iconURL: client.user.avatarURL() },
-            delete: 5000,
-          });
-        }
-        addResource({
-          user: interaction.user,
-          value: 1,
-          source: "command.grempen.product.monster",
-          executor: interaction.user,
-          resource: PropertiesEnum.monster,
-          context: { interaction, product },
-        });
-        addResource({
-          user: interaction.user,
-          value: 1,
-          source: "command.grempen.product.monster",
-          executor: interaction.user,
-          resource: PropertiesEnum.monstersBought,
-          context: { interaction, product },
-        });
-        return ", ой, простите зверя*";
-      },
-    },
-    {
-      key: "cannedFood",
-      label: "Консервы Интеллекта",
-      emoji: "🥫",
-      price: 1200,
-      inline: true,
-      others: ["консервы", "интеллект"],
-      fn() {
-        const product = this;
-
-        if (userData.iq === undefined) {
-          userData.iq = random(27, 133);
-        }
-
-        const value = random(3, 7);
-        addResource({
-          user: interaction.user,
-          value,
-          source: "command.grempen.product.cannedFood",
-          executor: interaction.user,
-          resource: PropertiesEnum.iq,
-          context: { interaction, product },
-        });
-
-        return ".\nВы едите эти консервы и понимаете, что становитесь умнее. Эта покупка точно была не напрасной...";
-      },
-    },
-    {
-      key: "bottle",
-      label: "Бутылка глупости",
-      emoji: "🍼",
-      price: 400,
-      inline: true,
-      others: ["бутылка", "бутылку", "глупость", "глупости"],
-      fn() {
-        const product = this;
-
-        if (userData.iq === undefined) {
-          userData.iq = random(27, 133);
-        }
-        const value = random(3, 7);
-        addResource({
-          user: interaction.user,
-          value: -value,
-          source: "command.grempen.product.bottle",
-          executor: interaction.user,
-          resource: PropertiesEnum.iq,
-          context: { interaction, product },
-        });
-        return ".\nГу-гу, га-га?... Пора учится...!";
-      },
-    },
-    {
-      key: "coat",
-      label: "Шуба из енота",
-      emoji: "👜",
-      price: 3200,
-      inline: true,
-      others: ["шуба", "шубу", "шуба из енота"],
-      fn(boughtContext) {
-        const product = this;
-
-        const isFirst = !(
-          userData.questsGlobalCompleted &&
-          userData.questsGlobalCompleted.includes("beEaten")
-        );
-        const refund = boughtContext.price + (isFirst ? 200 : -200);
-        addResource({
-          user: interaction.user,
-          value: refund,
-          executor: interaction.user,
-          source: "command.grempen.product.coat.refund",
-          resource: PropertiesEnum.coins,
-          context: { interaction, product },
-        });
-        interaction.user.action(Actions.globalQuest, { name: "beEaten" });
-
-        if (userData.curses.length > 0) {
-          for (const curse of userData.curses) {
-            curse.values.timer = -1;
-            CurseManager.checkAvailable({ curse, user: interaction.user });
-          }
-          CurseManager.checkAvailableAll(interaction.user);
-          return ", как магический артефакт, досрочно завершивший ваши проклятия";
-        }
-
-        return isFirst
-          ? ".\nВы надели шубу и в миг были съедены озлобленной группой енотов.\nХорошо, что это был всего-лишь сон, думаете вы...\nНо на всякий случай свою старую шубу из кролика вы выкинули."
-          : ".\nВы надели шубу. Она вам очень идёт.";
-      },
-    },
-    {
-      key: "casinoTicket",
-      label: userData.voidCasino ? "Casino" : "Лотерейный билет",
-      emoji: userData.voidCasino ? "🥂" : "🎟️",
-      price: userData.voidCasino ? Math.floor(userData.coins / 3.33) : 130,
-      inline: true,
-      others: [
-        "билет",
-        "лотерея",
-        "лотерею",
-        "казино",
-        "casino",
-        "лотерейный билет",
-      ],
-      fn() {
-        const product = this;
-
-        const coefficient = 220 / 130;
-        const bet = userData.voidCasino ? userData.coins * 0.3 : 130;
-        const odds = userData.voidCasino ? 22 : 21;
-        if (random(odds) > 8) {
-          const victory = Math.ceil(bet * coefficient);
-          addResource({
-            user: interaction.user,
-            value: victory,
-            executor: interaction.user,
-            source: "command.grempen.product.casino",
-            resource: PropertiesEnum.coins,
-            context: { interaction, bet, product },
-          });
-          return userData.voidCasino
-            ? `. Куш получен! — ${victory}`
-            : ", ведь с помощью неё вы выиграли 220 <:coin:637533074879414272>!";
-        }
-
-        return userData.voidCasino
-          ? ". Проигрыш. Возьмёте реванш в следующий раз."
-          : ", как бумажка для протирания. Вы проиграли 🤪";
-      },
-    },
-    {
-      key: "idea",
-      label: "Идея",
-      emoji: "💡",
-      price:
-        userData.iq &&
-        userData.iq % 31 === +DataManager.data.bot.dayDate.match(/\d{1,2}/)[0]
-          ? "Бесплатно"
-          : 80,
-      inline: true,
-      others: ["идея", "идею"],
-      fn() {
-        const ideas = [
-          "познать мир шаблонов",
-          "купить что-то в этой лавке",
-          "начать собирать ключики",
-          "занятся чем-то полезным",
-          "предложить идею разработчику",
-          "заглянуть в сундук",
-          "улучшить свой сервер",
-          "завести котиков",
-          "выпить содовую или может быть... пива?",
-          "придумать идею",
-          "провести турнир по перчикам",
-          "осознать, что автор оставляет здесь пасхалки",
-          "купить шубу",
-          "отдохнуть",
-          "сделать доброе дело",
-          "накормить зло добротой",
-          "посмотреть в окно",
-          "хорошенько покушать",
-          "улыбнуться",
-          "расшифровать формулу любви",
-          "разогнаться до скорости Infinity Train",
-          "пройти призрака",
-          "з'їсти кого-небудь",
-          "предложить разработчику посмотреть хороший фильм",
-          "полюбить?",
-          "вернуть мне веру в себя",
-          "\\*мне стоит оставлять здесь больше пасхалок\\*",
-          "понять — проклятья — это не страшно",
-        ];
-        const phrase = [
-          "звучит слишком неубедительно",
-          "печенье...",
-          "зачем вам всё это надо.",
-          "лучше хорошенько выспитесь.",
-          "лучше займитесь ничем.",
-          "занятся ничегонеделанием всё-равно лучше.",
-        ].random();
-        return `.\n**Идея:** Вы могли бы ${ideas.random()}, но ${phrase}`;
-      },
-    },
-    {
-      key: "clover",
-      label: "Счастливый клевер",
-      emoji: "☘️",
-      price: 400,
-      inline: true,
-      others: ["клевер", "счастливый", "счастливый клевер", "clover"],
-      createCloverTimeEvent(guildId, channelId) {
-        const endsIn = HOUR * 4;
-        return TimeEventsManager.create("clover-end", endsIn, [
-          guildId,
-          channelId,
-        ]);
-      },
-      fn() {
-        const phrase =
-          ". Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.";
-        const guild = interaction.guild;
-        const guildData = guild.data;
-
-        if (!guildData.cloverEffect) {
-          guildData.cloverEffect = {
-            coins: 0,
-            createdAt: Date.now(),
-            uses: 1,
-            timestamp: null,
-          };
-          const event = this.createCloverTimeEvent(
-            guild.id,
-            interaction.channel.id,
-          );
-          guildData.cloverEffect.timestamp = event.timestamp;
-          return phrase;
-        }
-
-        const clover = guildData.cloverEffect;
-        clover.uses++;
-
-        const increaseTimestamp = (previous) => {
-          const WEAKING = 18;
-          const adding = Math.floor(
-            HOUR * 4 - (previous - Date.now()) / WEAKING,
-          );
-          const ms = previous + Math.max(adding, 0);
-          return ms;
-        };
-        const day = timestampDay(clover.timestamp);
-        clover.timestamp = increaseTimestamp(clover.timestamp);
-
-        const filter = (event) =>
-          event.name === "clover-end" &&
-          event._params_as_json.includes(guild.id);
-
-        const event =
-          TimeEventsManager.at(day)?.find(filter) ??
-          this.createCloverTimeEvent(guild.id, interaction.channel.id);
-
-        TimeEventsManager.update(event, { timestamp: clover.timestamp });
-        return phrase;
-      },
-    },
-    {
-      key: "ball",
-      label: "Всевидящий шар",
-      emoji: "🔮",
-      price: 8000,
-      inline: true,
-      others: [
-        "шар",
-        "кубик",
-        "случай",
-        "всевидящий",
-        "ball",
-        "всевидящий шар",
-      ],
-      fn() {
-        const product = this;
-
-        const resources = [
-          "void",
-          "seed",
-          "coins",
-          "level",
-          "exp",
-          "coinsPerMessage",
-          "chilli",
-          "key",
-          "monster",
-          "berrys",
-          "iq",
-          "chestBonus",
-        ];
-        const resource = resources.random();
-        addResource({
-          user: interaction.user,
-          value: 1,
-          executor: interaction.user,
-          source: "command.grempen.product.ball",
-          resource,
-          context: { interaction, product },
-        });
-
-        return ` как \`gachi-${resource}\`, которого у вас прибавилось в количестве один.`;
-      },
-    },
-    {
-      key: "renewal",
-      label: "Завоз товаров",
-      emoji: "🔧",
-      price: 312 + userData.level * 2,
-      inline: true,
-      others: ["завоз", "завоз товаров"],
-      fn() {
-        userData.grempenBoughted = 0;
-        return " как дорогостоящий завоз товаров. Заходите ко мне через пару минут за новыми товарами";
-      },
-    },
-    {
-      key: "curseStone",
-      label: "Камень с глазами",
-      emoji: "👀",
-      price: 600,
-      inline: true,
-      others: ["камень", "проклятие", "камень с глазами"],
-      fn(boughtContext) {
-        const product = this;
-        userData.curses ||= [];
-
-        const already = userData.curses.length;
-
-        if (already && !userData.voidFreedomCurse) {
-          addResource({
-            user: interaction.user,
-            value: boughtContext.price,
-            executor: interaction.user,
-            source: "command.grempen.product.curse.refund",
-            resource: PropertiesEnum.coins,
-            context: { interaction, product },
-          });
-
-          userData.grempenBoughted -=
-            2 ** context.today_products.indexOf(product);
-          return " как ничто. Ведь вы уже были прокляты!";
-        }
-
-        const { user, guild } = interaction;
-        const context = { guild };
-
-        const curse = CurseManager.generate({
-          hard: null,
-          user,
-          context,
-        });
-        CurseManager.init({ user, curse });
-        const descriptionContent = CurseManager.interface({
-          user,
-          curse,
-        }).toString();
-
-        return ` как новое проклятие. Чтобы избавится от бича камня: ${descriptionContent}.`;
-      },
-    },
-  ];
+async function get_products() {
+  const { grempen_products } = await import(
+    "#folder/entities/grempen/products.js"
+  );
+  return [...grempen_products.values()];
 }
 
 class Slot {
-  constructor(product, price, index) {
+  constructor(product, resolved, index) {
     this.product = product;
-    this.price = price;
     this.index = index;
+    const { emoji, label, price } = resolved;
+    this.emoji = emoji;
+    this.label = label;
+    this.price = price;
   }
   product;
   isBoughted = false;
   index;
   price;
+  label;
+  emoji;
 }
 
 class BoughtContext extends BaseContext {
@@ -592,28 +54,45 @@ function slotIsBoughted(userData, index) {
   }
   return (userData.grempenBoughted & (2 ** index)) !== 0;
 }
+
 class CommandRunContext extends BaseCommandRunContext {
   /**@type {Slot[]} */
   slots = [];
   userData;
   options = {};
+  _interface = new MessageInterface();
 
-  static new(interaction, command) {
+  static async new(interaction, command) {
     const context = new this(interaction, command);
     context.userData = interaction.user.data;
     return context;
   }
 }
 
+function resolveProductValues(product, context) {
+  return {
+    emoji: product.emoji(context),
+    label: product.label(context),
+    price: product.price(context),
+  };
+}
+
+async function bought_slot(index, context) {
+  const slot = context.slots[index];
+
+  const contextBought = new BoughtContext(context, slot);
+  await process_bought(contextBought);
+}
+
 async function process_bought(boughtContext) {
   const { slot, commandRunContext } = boughtContext;
-  const { product } = slot;
+  const { emoji, label, product } = slot;
   const { channel, userData, interaction, user } = commandRunContext;
 
   if (userData.coins < (boughtContext.price || 0)) {
     await channel.msg({
       title: "<:grempen:753287402101014649> Т-Вы что удумали?",
-      description: `Недостаточно коинов, ${product.emoji} ${product.label} стоит на ${
+      description: `Недостаточно коинов, ${emoji} ${label} стоит на ${
         boughtContext.price - userData.coins
       } дороже`,
       color: "#400606",
@@ -633,7 +112,7 @@ async function process_bought(boughtContext) {
     throw phrase;
   }
 
-  boughtContext.phrase = `Благодарю за покупку ${product.emoji} !\nЦена в ${ending(
+  boughtContext.phrase = `Благодарю за покупку ${emoji} !\nЦена в ${ending(
     !isNaN(boughtContext.price) ? boughtContext.price : 0,
     "монет",
     "",
@@ -726,7 +205,7 @@ class Command extends BaseCommand {
   }
   async run(context) {
     const { interaction } = context;
-    const { channel, user } = interaction;
+    const { channel } = interaction;
 
     if (this.process_mention(context)) {
       return;
@@ -738,18 +217,17 @@ class Command extends BaseCommand {
       userData.shopTime = Math.floor(Date.now() / DAY);
     }
 
-    const products_list = get_products(context);
-    const getTodayItems = () =>
-      products_list
-        .filter((item) => !item.isSpecial)
-        .filter((_item, i) =>
-          DataManager.data.bot.grempenItems.includes(i.toString(16)),
-        );
+    const today_items = (await get_products())
+      .filter((item) => !item.isSpecial)
+      .filter((_item, i) =>
+        DataManager.data.bot.grempenItems.includes(i.toString(16)),
+      );
 
     context.slots.push(
       ...(context.options.slots ||
-        getTodayItems().map(
-          (product, index) => new Slot(product, product.price, index),
+        today_items.map(
+          (product, index) =>
+            new Slot(product, resolveProductValues(product, context), index),
         )),
     );
 
@@ -758,30 +236,18 @@ class Command extends BaseCommand {
         slotIsBoughted(userData, index) && (slot.isBoughted = true);
       });
 
-    const today_products = getTodayItems();
-    context.today_products = today_products;
-
-    const buyFunc = async (index) => {
-      const slot = context.slots[index];
-
-      const contextBought = new BoughtContext(context, slot);
-      await process_bought(contextBought);
-    };
-
     if (interaction.params) {
       const target = interaction.params.toLowerCase();
       const index = context.slots.findIndex(
         (slot) =>
-          slot.product.label.includes(target) ||
-          slot.product.others.includes(target),
+          slot.label.includes(target) || slot.product.others.includes(target),
       );
       const slot = context.slots[index];
       if (!slot || slot.isBoughted) {
-        const product = slot?.product;
-        const emoji = product ? product.emoji : "👺";
+        const emoji = slot ? slot.emoji : "👺";
         const today_available = context.slots
           .filter((slot) => !slot.isBoughted)
-          .map(({ product }) => product.emoji)
+          .map(({ emoji }) => emoji)
           .join(" ");
 
         await channel.msg({
@@ -792,7 +258,7 @@ class Command extends BaseCommand {
         });
         return;
       }
-      await buyFunc(index);
+      await bought_slot(index, context);
       return;
     }
 
@@ -807,85 +273,97 @@ class Command extends BaseCommand {
       });
     }
 
+    this.createInterface(context);
+  }
+
+  async getEmbed(context) {
+    const { userData, channel } = context;
+    if (userData.coins < 80) {
+      channel.sendTyping();
+      await sleep(1200);
+
+      return {
+        title: "У вас ещё остались коины? Нет? Ну и проваливайте!",
+        edit: true,
+        delete: 3_500,
+      };
+    }
+
+    if (context.grempenIsClosed) {
+      return {
+        title: "Лавка закрыта, приходите ещё <:grempen:753287402101014649>",
+        edit: true,
+        color: "#400606",
+        description:
+          "Чтобы открыть её снова, введите команду `!grempen`, новые товары появляются каждый день.",
+        image:
+          "https://cdn.discordapp.com/attachments/629546680840093696/847381047939432478/grempen.png",
+      };
+    }
     const slots_to_fields = () => {
       return context.slots.map((slot) => {
-        const { product } = slot;
-        const name = `${product.emoji} ${product.label}`;
-        let { price: value } = product;
-
-        if (slot.isBoughted) {
-          value = "Куплено";
-        }
+        const { emoji, label } = slot;
+        const value = slot.isBoughted ? "Куплено" : slot.price;
+        const name = `${emoji} ${label}`;
 
         return { name, value, inline: true };
       });
     };
 
-    let embed = {
+    const _default = {
       title: "<:grempen:753287402101014649> Зловещая лавка",
       description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${userData.coins}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`,
       fields: slots_to_fields(),
       color: "#400606",
       footer: { text: "Только сегодня, самые горячие цены!" },
     };
-    const shop = await interaction.channel.msg(embed);
 
-    let react;
-    while (true) {
-      let reactions = context.slots
-        .filter(
-          (slot) =>
-            !slot.isBoughted &&
-            (isNaN(slot.price) || slot.price <= userData.coins),
-        )
-        .map(({ product }) => product.emoji);
-      if (reactions.length === 0) reactions = ["❌"];
-
-      react = await shop.awaitReact(
-        { user: user, removeType: "all" },
-        ...reactions,
-      );
-
-      if (!react || react === "❌") {
-        await shop.reactions.removeAll();
-        await shop.msg({
-          title: "Лавка закрыта, приходите ещё <:grempen:753287402101014649>",
-          edit: true,
-          color: "#400606",
-          description:
-            "Чтобы открыть её снова, введите команду `!grempen`, новые товары появляются каждый день.",
-          image:
-            "https://cdn.discordapp.com/attachments/629546680840093696/847381047939432478/grempen.png",
-        });
-        return;
-      }
-
-      const product = products_list.find((product) => product.emoji === react);
-      await buyFunc(
-        context.slots.findIndex((slot) => slot.product === product),
-      );
-
-      if (userData.coins < 80) {
-        channel.sendTyping();
-        await sleep(1200);
-
-        shop.msg({
-          title: "У вас ещё остались коины? Нет? Ну и проваливайте!",
-          edit: true,
-          delete: 3_500,
-        });
-        return;
-      }
-      embed = {
-        title: "<:grempen:753287402101014649> Зловещая лавка",
-        edit: true,
+    if (context.slots.some((slot) => slot.isBoughted)) {
+      Object.assign(_default, {
         description: `У вас есть-остались коины? Отлично! **${userData.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`,
-        fields: slots_to_fields(),
         footer: { text: "Приходите ещё, акции каждый день!" },
-        color: "#400606",
-      };
-      await shop.msg(embed);
+      });
     }
+
+    return _default;
+  }
+
+  async onReaction(interaction, context, _interface) {
+    const { customId } = interaction;
+    if (customId === "❌") {
+      context.grempenIsClosed = true;
+      return;
+    }
+    const slot = context.slots.find(
+      (slot) => slot.emoji === interaction.customId,
+    );
+    await bought_slot(slot.index, context);
+  }
+
+  async createInterface(context) {
+    const { _interface, userData } = context;
+    _interface.setChannel(context.channel);
+    _interface.setRender(async () => await this.getEmbed(context));
+    const reactions = () => {
+      const slots = context.slots.filter(
+        (slot) =>
+          !slot.isBoughted &&
+          (isNaN(slot.price) || slot.price <= userData.coins),
+      );
+      return slots.length ? slots.map(({ emoji }) => emoji) : ["❌"];
+    };
+
+    _interface.setReactions(reactions());
+    _interface.emitter.on(
+      MessageInterface.Events.allowed_collect,
+      async ({ interaction }) => {
+        await this.onReaction(interaction, context, _interface);
+        _interface.setReactions(reactions());
+        _interface.updateMessage();
+      },
+    );
+
+    _interface.updateMessage();
   }
 
   options = {
