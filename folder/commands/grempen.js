@@ -343,6 +343,7 @@ class Command extends BaseCommand {
   async createInterface(context) {
     const { _interface, userData } = context;
     _interface.setChannel(context.channel);
+    _interface.setUser(context.user);
     _interface.setRender(async () => await this.getEmbed(context));
     const reactions = () => {
       const slots = context.slots.filter(
