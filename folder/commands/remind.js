@@ -1,7 +1,6 @@
 // @ts-check
 import client from "#bot/client.js";
 import config from "#config";
-import { Events } from "#constants/app/events.js";
 import { SECOND, YEAR } from "#constants/globals/time.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
@@ -290,7 +289,6 @@ class MemberRemindField {
       ({ timestamp: target }) => target === timestamp,
     );
 
-    console.log({ userRemindsField, timestamp, remindDataField });
     if (!remindDataField) {
       return null;
     }
