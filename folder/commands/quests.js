@@ -1,11 +1,49 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import QuestManager from "#lib/modules/QuestManager.js";
+import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import QuestManager, { part_of_made } from "#lib/modules/QuestManager.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { FormattingPatterns } from "discord.js";
 import { HOUR } from "#constants/globals/time.js";
 import DataManager from "#lib/modules/DataManager.js";
 
+class Achievement_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--achievement",
+    capture: ["--achievement"],
+    expectValue: true,
+    description: "Показать описание достужения",
+    example: '!quests --achievement "Первый друг"',
+  };
+  onProcess() {
+    const { context, capture } = this;
+    const data = QuestManager.questsBase.find(
+      (quest) => quest.id === capture || quest.title === capture,
+    );
+    if (!data) {
+      this.process_not_found();
+      return;
+    }
+
+    const { title, description } = data;
+    context.interaction.msg({
+      title,
+      description: `## ${description}`,
+      footer: {
+        text: `Опыта: ${data.reward}. Успешно выполнило: ${(part_of_made(data) * 100).toFixed(4)}%`,
+      },
+      image: Command.MESSAGE_THEME.thumbnail,
+    });
+  }
+
+  process_not_found() {
+    this.context.interaction.msg({
+      description: QuestManager.questsBase
+        .filter((base) => base.isGlobal && !base.isSecret)
+        .map(({ id }) => `- ${id}`)
+        .join("\n"),
+    });
+  }
+}
 class MembersFlag_Manager {
   constructor(context) {
     this.context = context;
@@ -55,7 +93,7 @@ class MembersFlag_Manager {
     channel.msg({
       description: this.description,
       fields,
-      ...this.context.command.MESSAGE_THEME,
+      ...Command.MESSAGE_THEME,
     });
   }
 
@@ -141,7 +179,7 @@ class CommandRunContext extends BaseCommandRunContext {
 }
 
 class Command extends BaseCommand {
-  MESSAGE_THEME = {
+  static MESSAGE_THEME = {
     image:
       "https://media.discordapp.net/attachments/549096893653975049/830749264928964608/5.png?width=300&height=88",
     thumbnail: "https://cdn.discordapp.com/emojis/830740711493861416.png?v=1",
@@ -173,6 +211,10 @@ class Command extends BaseCommand {
       return;
     }
 
+    if (this.processAchievementsFlag(context)) {
+      return;
+    }
+
     this.processDefaultBehavior(context);
   }
 
@@ -186,13 +228,23 @@ class Command extends BaseCommand {
     return true;
   }
 
+  processAchievementsFlag(context) {
+    const value = context.cliParsed.at(1).get("--achievement");
+    if (!value) {
+      return;
+    }
+
+    new Achievement_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+
   processDefaultBehavior(context) {
     const { memb, channel, membData } = context;
 
     const displayedGlobalQuests = this.getDisplayedGlobalQuests();
 
     const fields = [
-      ...this.getAchiementsContent(context),
+      ...this.getAchievementsContent(context),
       ...this.getSeedContent(context),
       ...this.getDailyQuestContent(context),
     ];
@@ -202,7 +254,7 @@ class Command extends BaseCommand {
       author: { name: membData.name, iconURL: memb.avatarURL() },
       description: this.globalQuestsToContent(displayedGlobalQuests, context),
       fields,
-      ...this.MESSAGE_THEME,
+      ...Command.MESSAGE_THEME,
     });
   }
 
@@ -243,7 +295,7 @@ class Command extends BaseCommand {
     return fields;
   }
 
-  getAchiementsContent(context) {
+  getAchievementsContent(context) {
     const { membQuests } = context;
     const secretAchievements = this.getSecretGlobalQuests();
     const displayedGlobalQuests = this.getDisplayedGlobalQuests();
@@ -284,7 +336,7 @@ class Command extends BaseCommand {
     },
     alias: "quest квесты квести достижения досягнення",
     cliParser: {
-      flags: [MembersFlag_Manager.flag],
+      flags: [MembersFlag_Manager.flag, Achievement_FlagSubcommand.FLAG_DATA],
     },
     accessibility: {
       publicized_on_level: 3,
