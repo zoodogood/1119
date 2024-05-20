@@ -313,15 +313,16 @@ class Speacial {
         effect: "boss.increaseDamageByAfkTime",
         emoji: "❄️",
         values: {
-          power: () => 1 / (60_000 * 10),
+          power: () => 1 / MINUTE,
         },
       },
       percentDamage: {
-        description: "Базовый урон атак равен 0.05% от текущего здоровья босса",
+        description: "Базовый урон атак равен 0.04% от текущего здоровья босса",
         effect: "boss.increaseDamageByBossCurrentHealthPoints",
         emoji: "🩸",
         values: {
-          power: () => 0.0005,
+          power: () => 0.0004,
+          multiplayer: () => 0.8,
         },
       },
       manyEvent: {
@@ -347,7 +348,7 @@ class Speacial {
         effect: "boss.increaseDamageWhenStrictlyMessageChallenge",
         emoji: "🎈",
         values: {
-          power: () => 1.1,
+          power: () => 1.2,
           basic: () => 20,
         },
       },
