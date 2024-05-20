@@ -231,10 +231,10 @@ class RewardSystem {
   static BossEndPull = {
     DEFAULT_VOID: 1,
     VOID_REWARD_DENOMINATOR: 0.5,
-    VOID_LIMIT_MULTIPLAYER: 2,
+    VOID_LIMIT_MULTIPLAYER: 0.5,
     DAMAGE_FOR_VOID: 5_000,
     DAMAGE_FOR_KEY: 50_000,
-    KEYS_LIMIT: 10_000,
+    KEYS_LIMIT: 20_000,
     calculateVoid({ userStats, level }) {
       const byDamage =
         (userStats.damageDealt / this.DAMAGE_FOR_VOID) **
