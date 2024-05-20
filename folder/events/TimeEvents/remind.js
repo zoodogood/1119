@@ -51,7 +51,7 @@ class Event {
 
   process_status_is_null(context) {
     const { status } = context;
-    if (status === null) {
+    if (status !== null) {
       return true;
     }
 
