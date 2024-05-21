@@ -1,33 +1,32 @@
-import { VM } from "vm2";
 import config from "#config";
-import { PermissionsBitField } from "discord.js";
 import { Collection } from "@discordjs/collection";
+import { PermissionsBitField } from "discord.js";
+import { VM } from "vm2";
 
-import * as Util from "#lib/util.js";
 import {
-  CommandsManager,
-  EventsManager,
-  CurseManager,
-  BossManager,
-  DataManager,
-  TimeEventsManager,
   ActionManager,
-  QuestManager,
-  GuildVariablesManager,
-  StorageManager,
+  BossManager,
+  CommandsManager,
+  CurseManager,
+  DataManager,
   ErrorsHandler,
+  EventsManager,
+  GuildVariablesManager,
+  QuestManager,
+  StorageManager,
+  TimeEventsManager,
   UserEffectManager,
 } from "#lib/modules/mod.js";
+import * as Util from "#lib/util.js";
 
 import * as PropertiesManager from "#lib/modules/Properties.js";
 
-import { client } from "#bot/client.js";
-import FileSystem from "fs";
-import Discord from "discord.js";
-import { Constants } from "#constants/mod.js";
-import { MINUTE } from "#constants/globals/time.js";
 import app from "#app";
-import { FormattingPatterns } from "discord.js";
+import { client } from "#bot/client.js";
+import { MINUTE } from "#constants/globals/time.js";
+import { Constants } from "#constants/mod.js";
+import Discord, { FormattingPatterns } from "discord.js";
+import FileSystem from "fs";
 
 function isConstruct(fn) {
   try {
@@ -36,18 +35,6 @@ function isConstruct(fn) {
     return false;
   }
   return true;
-}
-
-/** Util class */
-class CircularProtocol {
-  collection = new Map();
-  pass(element) {
-    if (this.collection.has(element)) {
-      return false;
-    }
-
-    this.collection.set(element, true);
-  }
 }
 
 function inspectStructure(structure) {
@@ -69,234 +56,6 @@ function inspectStructure(structure) {
 }
 
 class Template {
-  constructor(source, context = {}) {
-    const client = context.client || app.client;
-    source.executor = client.users.resolve(source.executor);
-
-    this.source = source;
-    this.context = context;
-  }
-
-  async replaceAll(string) {
-    const LIMIT = 10;
-
-    const context = {
-      before: string,
-      currentIteration: 0,
-    };
-    do {
-      context.before = string;
-      string = await this.replace(string);
-
-      context.currentIteration++;
-    } while (string !== context.before || context.currentIteration > LIMIT);
-
-    return string;
-  }
-
-  async replace(string) {
-    const context = {
-      nesting: [],
-      inQuotes: null,
-      exitCode: Symbol("exitCode"),
-    };
-
-    const special = {
-      "{": (context, index) => context.nesting.push({ symbol: "{", index }),
-      "}": (context) => {
-        const brackets = context.nesting.filter(({ symbol }) => symbol === "{");
-        const remove = () => context.nesting.pop();
-        return brackets.length === 1 ? context.exitCode : remove();
-      },
-      '"': (context) => (context.inQuotes = '"'),
-      "'": (context) => (context.inQuotes = "'"),
-      "`": (context) => (context.inQuotes = "`"),
-      "\\": (context) => (context.skipOnce = true),
-    };
-
-    for (const index in string) {
-      const symbol = string[index];
-
-      if (symbol in special === false) {
-        continue;
-      }
-
-      if (context.skipOnce) {
-        context.skipOnce = false;
-        continue;
-      }
-
-      if (context.inQuotes === symbol) {
-        context.inQuotes = false;
-        continue;
-      }
-
-      const output = special[symbol].call(this, context, index);
-
-      if (output === context.exitCode) {
-        const openedBracket = context.nesting.find(
-          ({ symbol }) => symbol === "{",
-        );
-        const content = string.slice(openedBracket.index, index + 1);
-        const output = await this.getRegular(content.slice(1, -1));
-        string = string.replace(content, output);
-        break;
-      }
-    }
-
-    return string;
-  }
-
-  createVM() {
-    const MAX_TIMEOUT = 1_000;
-
-    const vm = new VM({ timeout: MAX_TIMEOUT });
-    this.makeSandbox(vm);
-    this.vm = vm;
-    return this;
-  }
-
-  getPermissionsMask() {
-    if (this.mask) {
-      return this.mask;
-    }
-
-    const source = this.source;
-    const context = this.context;
-    const permissionsEnum = this.constructor.PERMISSIONS_MASK_ENUM;
-
-    const isUser = !!source.executor;
-    const isGuildManager = context.guild?.members
-      .resolve(source.executor)
-      .permissions.has(PermissionsBitField.Flags.ManageGuild);
-    const isDelevoper = config.developers.includes(source.executor.id);
-
-    const mask =
-      (isDelevoper * permissionsEnum.DEVELOPER) |
-      (isGuildManager * permissionsEnum.GUILD_MANAGER) |
-      (isUser * permissionsEnum.USER);
-
-    this.mask = mask;
-    return mask;
-  }
-
-  static PERMISSIONS_MASK_ENUM = {
-    USER: 1,
-    GUILD_MANAGER: 2,
-    DEVELOPER: 7,
-  };
-
-  makeSandbox(vm) {
-    const context = this.context;
-
-    const modules = this.constructor.ModulesScope;
-    const mask = this.getPermissionsMask();
-
-    this.availableModulesList = modules
-      .filter(({ filter }) => !filter || filter(context))
-      .filter(
-        ({ permissions }) => (permissions.scope & mask) === permissions.scope,
-      );
-
-    const availableList = Object.freeze(
-      Object.fromEntries(
-        modules.map(({ name }) =>
-          this.availableModulesList.has(name) ? [name, true] : [name, false],
-        ),
-      ),
-    );
-
-    const moduleGetter = this.addModuleToSandbox.bind(this, vm);
-
-    Object.defineProperty(vm.sandbox, "module", {
-      value: moduleGetter,
-      writable: false,
-      configurable: false,
-      enumerable: true,
-    });
-
-    Object.defineProperty(vm.sandbox, "availableList", {
-      value: availableList,
-      writable: false,
-      configurable: false,
-      enumerable: true,
-    });
-
-    return;
-  }
-
-  addModuleToSandbox(vm, moduleName) {
-    const moduleEntity = this.constructor.ModulesScope.get(moduleName);
-    if (!moduleEntity) {
-      throw new TypeError(`Unknown: ${moduleName}`);
-    }
-    const { permissions } = moduleEntity;
-    const availableList = vm.sandbox.availableList;
-
-    if (moduleName in availableList === false) {
-      throw new Error(`Does not exist next module: ${moduleName}`);
-    }
-
-    if (availableList[moduleName] === false) {
-      const mask = this.getPermissionsMask();
-      const missing = Object.entries(this.constructor.PERMISSIONS_MASK_ENUM)
-        /* eslint-disable-next-line no-unused-vars*/
-        .filter(([_, bit]) => permissions.scope === bit && !(mask & bit))
-        .map(([key]) => key)
-        .join(", ");
-
-      throw new Error(
-        `Missing permissions: ${missing} for taking a module ${moduleName}`,
-      );
-    }
-
-    const content = moduleEntity.getContent(this.context, this.source);
-
-    vm.sandbox[moduleName] = this.restrictContent(content, permissions);
-    return vm.sandbox[moduleName];
-  }
-
-  restrictContent(content, permissions) {
-    const mask = this.getPermissionsMask();
-
-    const circular = new CircularProtocol();
-
-    if (
-      permissions.investigate &&
-      (mask & permissions.investigate) !== permissions.investigate
-    ) {
-      const replacer = (_key, value) => {
-        if (
-          (typeof value === "function" || typeof value === "object") &&
-          circular.pass(value) === false
-        ) {
-          return `[Circular* ${_key}]`;
-        }
-
-        if (typeof value === "function") {
-          const staticList = inspectStructure(value);
-          const prototype = inspectStructure(value["prototype"]);
-          return isConstruct(value)
-            ? { name: value.name, static: staticList, prototype }
-            : value.toString();
-        }
-
-        if (value instanceof Array) {
-          return JSON.stringify(value);
-        }
-
-        if (typeof value === "object") {
-          return inspectStructure(value);
-        }
-
-        return value;
-      };
-
-      content = JSON.parse(JSON.stringify(content, replacer));
-    }
-    return content;
-  }
-
   static ModulesScope = new Collection(
     Object.entries({
       interaction: {
@@ -600,6 +359,12 @@ class Template {
     }),
   );
 
+  static PERMISSIONS_MASK_ENUM = {
+    USER: 1,
+    GUILD_MANAGER: 2,
+    DEVELOPER: 7,
+  };
+
   static sourceTypes = {
     /** Can be called independently from executor */
     involuntarily: "involuntarily",
@@ -613,9 +378,231 @@ class Template {
     evaluateEffect: "evaluateEffect",
   };
 
+  constructor(source, context = {}) {
+    const client = context.client || app.client;
+    source.executor = client.users.resolve(source.executor);
+
+    this.source = source;
+    this.context = context;
+  }
+
+  addModuleToSandbox(vm, moduleName) {
+    const moduleEntity = this.constructor.ModulesScope.get(moduleName);
+    if (!moduleEntity) {
+      throw new TypeError(`Unknown: ${moduleName}`);
+    }
+    const { permissions } = moduleEntity;
+    const availableList = vm.sandbox.availableList;
+
+    if (moduleName in availableList === false) {
+      throw new Error(`Does not exist next module: ${moduleName}`);
+    }
+
+    if (availableList[moduleName] === false) {
+      const mask = this.getPermissionsMask();
+      const missing = Object.entries(this.constructor.PERMISSIONS_MASK_ENUM)
+        /* eslint-disable-next-line no-unused-vars*/
+        .filter(([_, bit]) => permissions.scope === bit && !(mask & bit))
+        .map(([key]) => key)
+        .join(", ");
+
+      throw new Error(
+        `Missing permissions: ${missing} for taking a module ${moduleName}`,
+      );
+    }
+
+    const content = moduleEntity.getContent(this.context, this.source);
+
+    vm.sandbox[moduleName] = this.restrictContent(content, permissions);
+    return vm.sandbox[moduleName];
+  }
+
+  createVM() {
+    const MAX_TIMEOUT = 1_000;
+
+    const vm = new VM({ timeout: MAX_TIMEOUT });
+    this.makeSandbox(vm);
+    this.vm = vm;
+    return this;
+  }
+
+  getPermissionsMask() {
+    if (this.mask) {
+      return this.mask;
+    }
+
+    const source = this.source;
+    const context = this.context;
+    const permissionsEnum = this.constructor.PERMISSIONS_MASK_ENUM;
+
+    const isUser = !!source.executor;
+    const isGuildManager = context.guild?.members
+      .resolve(source.executor)
+      .permissions.has(PermissionsBitField.Flags.ManageGuild);
+    const isDelevoper = config.developers.includes(source.executor.id);
+
+    const mask =
+      (isDelevoper * permissionsEnum.DEVELOPER) |
+      (isGuildManager * permissionsEnum.GUILD_MANAGER) |
+      (isUser * permissionsEnum.USER);
+
+    this.mask = mask;
+    return mask;
+  }
+
+  makeSandbox(vm) {
+    const context = this.context;
+
+    const modules = this.constructor.ModulesScope;
+    const mask = this.getPermissionsMask();
+
+    this.availableModulesList = modules
+      .filter(({ filter }) => !filter || filter(context))
+      .filter(
+        ({ permissions }) => (permissions.scope & mask) === permissions.scope,
+      );
+
+    const availableList = Object.freeze(
+      Object.fromEntries(
+        modules.map(({ name }) =>
+          this.availableModulesList.has(name) ? [name, true] : [name, false],
+        ),
+      ),
+    );
+
+    const moduleGetter = this.addModuleToSandbox.bind(this, vm);
+
+    Object.defineProperty(vm.sandbox, "module", {
+      value: moduleGetter,
+      writable: false,
+      configurable: false,
+      enumerable: true,
+    });
+
+    Object.defineProperty(vm.sandbox, "availableList", {
+      value: availableList,
+      writable: false,
+      configurable: false,
+      enumerable: true,
+    });
+
+    return;
+  }
+
   provideRegularProxy(regular) {
     const context = { primary: this.context, source: this.source };
     return new RegularProxy().with({ regular, context }).process();
+  }
+
+  async replace(string) {
+    const context = {
+      nesting: [],
+      inQuotes: null,
+      exitCode: Symbol("exitCode"),
+    };
+
+    const special = {
+      "{": (context, index) => context.nesting.push({ symbol: "{", index }),
+      "}": (context) => {
+        const brackets = context.nesting.filter(({ symbol }) => symbol === "{");
+        const remove = () => context.nesting.pop();
+        return brackets.length === 1 ? context.exitCode : remove();
+      },
+      '"': (context) => (context.inQuotes = '"'),
+      "'": (context) => (context.inQuotes = "'"),
+      "`": (context) => (context.inQuotes = "`"),
+      "\\": (context) => (context.skipOnce = true),
+    };
+
+    for (const index in string) {
+      const symbol = string[index];
+
+      if (symbol in special === false) {
+        continue;
+      }
+
+      if (context.skipOnce) {
+        context.skipOnce = false;
+        continue;
+      }
+
+      if (context.inQuotes === symbol) {
+        context.inQuotes = false;
+        continue;
+      }
+
+      const output = special[symbol].call(this, context, index);
+
+      if (output === context.exitCode) {
+        const openedBracket = context.nesting.find(
+          ({ symbol }) => symbol === "{",
+        );
+        const content = string.slice(openedBracket.index, index + 1);
+        const output = await this.getRegular(content.slice(1, -1));
+        string = string.replace(content, output);
+        break;
+      }
+    }
+
+    return string;
+  }
+
+  async replaceAll(string) {
+    const LIMIT = 10;
+
+    const context = {
+      before: string,
+      currentIteration: 0,
+    };
+    do {
+      context.before = string;
+      string = await this.replace(string);
+
+      context.currentIteration++;
+    } while (string !== context.before || context.currentIteration > LIMIT);
+
+    return string;
+  }
+
+  restrictContent(content, permissions) {
+    const mask = this.getPermissionsMask();
+
+    const circular = new Util.CircularProtocol();
+
+    if (
+      permissions.investigate &&
+      (mask & permissions.investigate) !== permissions.investigate
+    ) {
+      const replacer = (_key, value) => {
+        if (
+          (typeof value === "function" || typeof value === "object") &&
+          circular.pass(value) === false
+        ) {
+          return `[Circular* ${_key}]`;
+        }
+
+        if (typeof value === "function") {
+          const staticList = inspectStructure(value);
+          const prototype = inspectStructure(value["prototype"]);
+          return isConstruct(value)
+            ? { name: value.name, static: staticList, prototype }
+            : value.toString();
+        }
+
+        if (value instanceof Array) {
+          return JSON.stringify(value);
+        }
+
+        if (typeof value === "object") {
+          return inspectStructure(value);
+        }
+
+        return value;
+      };
+
+      content = JSON.parse(JSON.stringify(content, replacer));
+    }
+    return content;
   }
 
   async run(regular) {
@@ -627,10 +614,32 @@ class Template {
 }
 
 class RegularProxy {
-  with(data) {
-    Object.assign(this, data);
-    return this;
+  macroses = {
+    m: (context) => {
+      const { value } = context;
+      return `module("${value}")`;
+    },
+    id: ({ primary }) => {
+      const { executor } = primary.source;
+      return executor.id;
+    },
+    "3q": () => {
+      return "```";
+    },
+    debug: (context) => {
+      const { value } = context;
+      return `m'Util.inspect(${value})`;
+    },
+  };
+  findMacro(context) {
+    const { macro } = context;
+    return this.macroses[macro];
   }
+
+  onMacro(macro, context) {
+    return macro.call(this, context);
+  }
+
   process() {
     this.processMacroses();
     return this.regular;
@@ -663,31 +672,9 @@ class RegularProxy {
     );
   }
 
-  findMacro(context) {
-    const { macro } = context;
-    return this.macroses[macro];
+  with(data) {
+    Object.assign(this, data);
+    return this;
   }
-
-  onMacro(macro, context) {
-    return macro.call(this, context);
-  }
-
-  macroses = {
-    m: (context) => {
-      const { value } = context;
-      return `module("${value}")`;
-    },
-    id: ({ primary }) => {
-      const { executor } = primary.source;
-      return executor.id;
-    },
-    "3q": () => {
-      return "```";
-    },
-    debug: (context) => {
-      const { value } = context;
-      return `m'Util.inspect(${value})`;
-    },
-  };
 }
 export default Template;
