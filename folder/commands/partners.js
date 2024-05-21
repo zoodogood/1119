@@ -1,30 +1,42 @@
+import client from "#bot/client.js";
+import { Emoji } from "#constants/emojis.js";
+import { HOUR, SECOND } from "#constants/globals/time.js";
+import { Bosses_Flagsubcommand } from "#folder/commands/boss.js";
+import { default as CommmandInfo } from "#folder/commands/commandinfo.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import { Pager } from "#lib/DiscordPager.js";
+import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import { HOUR, SECOND } from "#constants/globals/time.js";
 import {
   dayjs,
+  ending,
   question,
   timestampDay,
   timestampToDate,
-  ending,
 } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
-import { ButtonStyle } from "discord.js";
-import { PermissionFlagsBits } from "discord.js";
 import { CliParser } from "@zoodogood/utils/primitives";
-import { default as CommmandInfo } from "#folder/commands/commandinfo.js";
-import DataManager from "#lib/modules/DataManager.js";
-import { Pager } from "#lib/DiscordPager.js";
-import { MessageInterface } from "#lib/DiscordMessageInterface.js";
-import { escapeMarkdown } from "discord.js";
-import client from "#bot/client.js";
-import { CategoryChannel } from "discord.js";
-import { Emoji } from "#constants/emojis.js";
-import { BaseInteraction } from "discord.js";
-import { Bosses_Flagsubcommand } from "#folder/commands/boss.js";
+import {
+  BaseInteraction,
+  ButtonStyle,
+  CategoryChannel,
+  PermissionFlagsBits,
+  escapeMarkdown,
+} from "discord.js";
 
 class Special {
+  static process_hasManagePermissions(context, reason) {
+    if (context.canManage()) {
+      return true;
+    }
+    context.channel.msg({
+      description: `Для этого действия необходимо право управлять сообщениями${reason ? `: ${reason}` : ""}`,
+      delete: 8 * SECOND,
+    });
+    return false;
+  }
   static processGuildPartner_isSetted(context, partnerField) {
     if (partnerField.isEnable) {
       return true;
@@ -48,35 +60,29 @@ class Special {
     });
     return false;
   }
-  static process_hasManagePermissions(context, reason) {
-    if (context.canManage()) {
-      return true;
-    }
-    context.channel.msg({
-      description: `Для этого действия необходимо право управлять сообщениями${reason ? `: ${reason}` : ""}`,
-      delete: 8 * SECOND,
-    });
-    return false;
-  }
 }
 
 class PartnerField {
-  static KEY = "partners";
   field;
   guild;
-  setGuild(guild) {
-    this.guild = guild;
-    this.field = guild.data[PartnerField.KEY] ||= {};
-    return this;
-  }
+  static KEY = "partners";
   get assert_field() {
     return (this.field ||= {});
   }
-  get isEnable() {
-    return !!this.field?.isEnable;
+  get bumpedAt() {
+    return this.field?.bumpedAt || 0;
   }
-  enable() {
-    return (this.assert_field.isEnable = true);
+  set bumpedAt(value) {
+    this.assert_field.bumpedAt = value;
+  }
+  get channelId() {
+    return this.field?.channelId;
+  }
+  get color() {
+    return this.field?.color;
+  }
+  set color(value) {
+    this.assert_field.color = value;
   }
   deactive() {
     return (this.assert_field.isEnable = false);
@@ -88,27 +94,9 @@ class PartnerField {
     this.assert_field.description = value;
     this.enable();
   }
-  get color() {
-    return this.field?.color;
+  enable() {
+    return (this.assert_field.isEnable = true);
   }
-  set color(value) {
-    this.assert_field.color = value;
-  }
-  get channelId() {
-    return this.field?.channelId;
-  }
-  setChannel(channel) {
-    this.assert_field.channelId = channel.id;
-  }
-
-  get bumpedAt() {
-    return this.field?.bumpedAt || 0;
-  }
-
-  set bumpedAt(value) {
-    this.assert_field.bumpedAt = value;
-  }
-
   get endlessLink() {
     return new Promise(async (resolve) => {
       if (!this.isEnable) {
@@ -129,6 +117,20 @@ class PartnerField {
       this.assert_field.endlessLink ||= invite?.url;
       resolve(this.assert_field.endlessLink);
     });
+  }
+
+  get isEnable() {
+    return !!this.field?.isEnable;
+  }
+
+  setChannel(channel) {
+    this.assert_field.channelId = channel.id;
+  }
+
+  setGuild(guild) {
+    this.guild = guild;
+    this.field = guild.data[PartnerField.KEY] ||= {};
+    return this;
   }
 
   async toMessageOptions() {
@@ -154,49 +156,12 @@ class PartnerField {
 // MARK: Flags
 
 class Setup_FlagSubcommand extends BaseFlagSubcommand {
+  _interface = new MessageInterface();
   static FLAG_DATA = {
     name: "--setup",
     capture: ["-s", "--setup"],
     description: "Конфигурация партнёрств на сервере",
   };
-  _interface = new MessageInterface();
-  onProcess() {
-    this.createInterface(this.context.interaction);
-  }
-  createInterface(channel) {
-    this._interface.setChannel(channel);
-    this._interface.setRender(() => this._getEmbed());
-    this.updateReactions();
-    this._interface.updateMessage();
-    this._interface.setUser(this.context.user);
-    this._interface.emitter.on(
-      MessageInterface.Events.allowed_collect,
-      this.onComponent.bind(this),
-    );
-    return this._interface;
-  }
-  updateReactions() {
-    const canManage = this.context.canManage();
-    this._interface.setReactions(
-      this.reactions
-        .filter(({ isHidden }) => !isHidden?.(this.context) && canManage)
-        .map(({ reaction }) => reaction),
-    );
-  }
-  async onComponent({ interaction }) {
-    if (
-      !Special.process_hasManagePermissions(
-        this.context,
-        "для настройки партнёрства",
-      )
-    ) {
-      return;
-    }
-    await this.reactions
-      .find(({ reaction }) => reaction === interaction.customId)
-      ?.callback?.(interaction);
-    this.updateReactions();
-  }
   reactions = [
     {
       reaction: "🪧",
@@ -264,7 +229,7 @@ class Setup_FlagSubcommand extends BaseFlagSubcommand {
       reaction: "🏝️",
       label: "Канал для партнёрств",
       key: "channelId",
-      callback: async (interaction) => {
+      callback: async () => {
         if (!(await new Channel_FlagSubcommand(this.context).onProcess())) {
           return;
         }
@@ -275,7 +240,7 @@ class Setup_FlagSubcommand extends BaseFlagSubcommand {
       reaction: "💥",
       label: "Деактивировать",
       isHidden: (context) => !context.partnerField.isEnable,
-      callback: async (interaction) => {
+      callback: async () => {
         this.context.partnerField.deactive();
         this.updateReactions();
         this._interface.updateMessage();
@@ -286,7 +251,7 @@ class Setup_FlagSubcommand extends BaseFlagSubcommand {
       label: "Активировать",
       isHidden: ({ partnerField }) =>
         partnerField.isEnable || !partnerField.description,
-      callback: async (interaction) => {
+      callback: async () => {
         this.context.partnerField.enable();
         this.updateReactions();
         this._interface.updateMessage();
@@ -324,6 +289,43 @@ class Setup_FlagSubcommand extends BaseFlagSubcommand {
     );
     return { ...options };
   }
+  createInterface(channel) {
+    this._interface.setChannel(channel);
+    this._interface.setRender(() => this._getEmbed());
+    this.updateReactions();
+    this._interface.updateMessage();
+    this._interface.setUser(this.context.user);
+    this._interface.emitter.on(
+      MessageInterface.Events.allowed_collect,
+      this.onComponent.bind(this),
+    );
+    return this._interface;
+  }
+  async onComponent({ interaction }) {
+    if (
+      !Special.process_hasManagePermissions(
+        this.context,
+        "для настройки партнёрства",
+      )
+    ) {
+      return;
+    }
+    await this.reactions
+      .find(({ reaction }) => reaction === interaction.customId)
+      ?.callback?.(interaction);
+    this.updateReactions();
+  }
+  onProcess() {
+    this.createInterface(this.context.interaction);
+  }
+  updateReactions() {
+    const canManage = this.context.canManage();
+    this._interface.setReactions(
+      this.reactions
+        .filter(({ isHidden }) => !isHidden?.(this.context) && canManage)
+        .map(({ reaction }) => reaction),
+    );
+  }
 }
 
 class Preview_FlagSubcommand extends BaseFlagSubcommand {
@@ -333,23 +335,12 @@ class Preview_FlagSubcommand extends BaseFlagSubcommand {
     description: "Показать сообщение партнёрства",
   };
   partnerField = new PartnerField();
-  onProcess() {
-    this.setGuild(this.context.guild);
-    if (
-      !Special.processGuildPartner_isSetted(this.context, this.partnerField)
-    ) {
-      return true;
-    }
-    this.sendPreview(this.context.interaction);
-    return true;
+  _getBossesContent() {
+    return Bosses_Flagsubcommand.guildToField(this.guild).value;
   }
-  async sendPreview(channel) {
-    channel.msg(await this.getEmbed());
-  }
-  setGuild(guild) {
-    this.guild = guild;
-    this.partnerField.setGuild(guild);
-    return this;
+  _getClansContent() {}
+  _getTreeContent() {
+    return `Уровень дерева: ${this.guild.data.tree?.level || "ещё не появилось"}`;
   }
   async getEmbed() {
     const options = await this.partnerField.toMessageOptions();
@@ -369,12 +360,23 @@ class Preview_FlagSubcommand extends BaseFlagSubcommand {
     options.ephemeral = true;
     return options;
   }
-  _getClansContent() {}
-  _getTreeContent() {
-    return `Уровень дерева: ${this.guild.data.tree?.level || "ещё не появилось"}`;
+  onProcess() {
+    this.setGuild(this.context.guild);
+    if (
+      !Special.processGuildPartner_isSetted(this.context, this.partnerField)
+    ) {
+      return true;
+    }
+    this.sendPreview(this.context.interaction);
+    return true;
   }
-  _getBossesContent() {
-    return Bosses_Flagsubcommand.guildToField(this.guild).value;
+  async sendPreview(channel) {
+    channel.msg(await this.getEmbed());
+  }
+  setGuild(guild) {
+    this.guild = guild;
+    this.partnerField.setGuild(guild);
+    return this;
   }
 }
 
@@ -386,48 +388,6 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
     description:
       "Разослать приглашение о вступлении подписанным на партнёрство серверам",
   };
-  onProcess() {
-    if (
-      !Special.processGuildPartner_isSetted(
-        this.context,
-        this.context.partnerField,
-      )
-    ) {
-      return;
-    }
-    if (this.processPartnerAlreadyInPull() || !this.process_cooldown()) {
-      return;
-    }
-    this.bump();
-  }
-
-  process_cooldown() {
-    const field = this.context.partnerField;
-    const cooldown_end =
-      field.bumpedAt + Bump_FlagSubcommand.BUMP_COOLDOWN - Date.now();
-
-    if (cooldown_end < 0) {
-      field.bumpedAt = Date.now();
-      return true;
-    }
-
-    const { interaction } = this.context;
-    const percent = 1 - cooldown_end / Bump_FlagSubcommand.BUMP_COOLDOWN;
-    const MAX_LINE_WIDTH = 30;
-    const line = `\`[${"=".repeat(Math.ceil(percent * MAX_LINE_WIDTH))}${" ".repeat(Math.floor((1 - percent) * MAX_LINE_WIDTH))}]\` ${Math.ceil(percent * 100)}%`;
-    interaction.msg({
-      reference:
-        interaction instanceof BaseInteraction ? null : interaction.message.id,
-      description: `${line}\nПерезарядка: ${timestampToDate(cooldown_end)}\nКто-то уже бампнул до вас..`,
-      fetchReply: true,
-      footer: {
-        iconURL: interaction.user.avatarURL(),
-        text: interaction.user.username,
-      },
-      delete: 8 * SECOND,
-    });
-    return false;
-  }
   async bump() {
     const { context } = this;
     const { guild } = context;
@@ -463,6 +423,48 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
       }),
     });
   }
+
+  onProcess() {
+    if (
+      !Special.processGuildPartner_isSetted(
+        this.context,
+        this.context.partnerField,
+      )
+    ) {
+      return;
+    }
+    if (this.processPartnerAlreadyInPull() || !this.process_cooldown()) {
+      return;
+    }
+    this.bump();
+  }
+  process_cooldown() {
+    const field = this.context.partnerField;
+    const cooldown_end =
+      field.bumpedAt + Bump_FlagSubcommand.BUMP_COOLDOWN - Date.now();
+
+    if (cooldown_end < 0) {
+      field.bumpedAt = Date.now();
+      return true;
+    }
+
+    const { interaction } = this.context;
+    const percent = 1 - cooldown_end / Bump_FlagSubcommand.BUMP_COOLDOWN;
+    const MAX_LINE_WIDTH = 30;
+    const line = `\`[${"=".repeat(Math.ceil(percent * MAX_LINE_WIDTH))}${" ".repeat(Math.floor((1 - percent) * MAX_LINE_WIDTH))}]\` ${Math.ceil(percent * 100)}%`;
+    interaction.msg({
+      reference:
+        interaction instanceof BaseInteraction ? null : interaction.message.id,
+      description: `${line}\nПерезарядка: ${timestampToDate(cooldown_end)}\nКто-то уже бампнул до вас..`,
+      fetchReply: true,
+      footer: {
+        iconURL: interaction.user.avatarURL(),
+        text: interaction.user.username,
+      },
+      delete: 8 * SECOND,
+    });
+    return false;
+  }
   processPartnerAlreadyInPull() {
     const daemon = this.context.command.daemon;
     const already = daemon.pull.isPartnerInPull(this.context.guild.id);
@@ -489,24 +491,6 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
     capture: ["-h", "--help"],
     description: "Получить обзор команды",
   };
-  onProcess() {
-    this.sendHelp(this.context.interaction);
-  }
-  sendHelp(channel) {
-    return channel.msg({
-      title: "Команда вызвана с параметром --help",
-      description: `${this.context.command.options.media.description}.\n\nНастройте сообщение для вовлечения, а после используйте \`--bump\`, чтобы поделится сервером с теми, кто настроил партнёрство`,
-      fields: [
-        {
-          name: "Кнопки",
-          value: `❔ — Вызвать !commandinfo ${this.context.command.options.name}\n⬆️ — Вызвать !partners --bump`,
-        },
-      ],
-      image: CommmandInfo.MESSAGE_THEME.poster,
-      components: justButtonComponents(...this.components),
-    });
-  }
-
   get components() {
     const context = this.context;
     return [
@@ -538,10 +522,32 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
       },
     ];
   }
+  onProcess() {
+    this.sendHelp(this.context.interaction);
+  }
+
+  sendHelp(channel) {
+    return channel.msg({
+      title: "Команда вызвана с параметром --help",
+      description: `${this.context.command.options.media.description}.\n\nНастройте сообщение для вовлечения, а после используйте \`--bump\`, чтобы поделится сервером с теми, кто настроил партнёрство`,
+      fields: [
+        {
+          name: "Кнопки",
+          value: `❔ — Вызвать !commandinfo ${this.context.command.options.name}\n⬆️ — Вызвать !partners --bump`,
+        },
+      ],
+      image: CommmandInfo.MESSAGE_THEME.poster,
+      components: justButtonComponents(...this.components),
+    });
+  }
 }
 
 class List_FlagSubcommand_Filter {
   _interface = new MessageInterface();
+  static Events = {
+    update: "update",
+  };
+
   filters = [
     {
       component: { label: "Есть босс", customId: "boss" },
@@ -594,39 +600,18 @@ class List_FlagSubcommand_Filter {
       event,
     );
   }
-
-  static Events = {
-    update: "update",
-  };
 }
 
 class List_FlagSubcommand extends BaseFlagSubcommand {
+  _interface = new Pager();
+
+  filters = {};
   static FLAG_DATA = {
     name: "--list",
     capture: ["-l", "--list"],
     description: "Отобразить перечень всех гильдий участвующих в партнёрстве",
   };
-
-  _interface = new Pager();
   partners = [];
-  filters = {};
-
-  onProcess() {
-    this.sendList(this.context.interaction);
-    return true;
-  }
-  sendList(channel) {
-    this.partners = this.fetch();
-    this.createInterface(channel);
-  }
-  fetch() {
-    return DataManager.data.guilds
-      .filter((guildData) => guildData[PartnerField.KEY]?.isEnable)
-      .map((guildData) => ({
-        guildData,
-        field: guildData[PartnerField.KEY],
-      }));
-  }
 
   createInterface(channel) {
     const { _interface } = this;
@@ -648,9 +633,36 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
       this.onComponent.bind(this),
     );
   }
+  fetch() {
+    return DataManager.data.guilds
+      .filter((guildData) => guildData[PartnerField.KEY]?.isEnable)
+      .map((guildData) => ({
+        guildData,
+        field: guildData[PartnerField.KEY],
+      }));
+  }
+  async getEmbed() {
+    const index = this._interface.currentPage;
+    const { guildData } = this.partners?.[index] || {};
+    const guild = client.guilds.cache.get(guildData?.id);
+    if (guild) {
+      return await new Preview_FlagSubcommand(this.context)
+        .setGuild(guild)
+        .getEmbed();
+    }
+
+    return {
+      description: "Погодите, но почему здесь пусто?",
+    };
+  }
 
   onComponent({ interaction }) {
     this.process_filter_component(interaction);
+  }
+
+  onProcess() {
+    this.sendList(this.context.interaction);
+    return true;
   }
 
   process_filter_component(interaction) {
@@ -683,19 +695,9 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
     );
   }
 
-  async getEmbed() {
-    const index = this._interface.currentPage;
-    const { guildData } = this.partners?.[index] || {};
-    const guild = client.guilds.cache.get(guildData?.id);
-    if (guild) {
-      return await new Preview_FlagSubcommand(this.context)
-        .setGuild(guild)
-        .getEmbed();
-    }
-
-    return {
-      description: "Погодите, но почему здесь пусто?",
-    };
+  sendList(channel) {
+    this.partners = this.fetch();
+    this.createInterface(channel);
   }
 }
 
@@ -711,18 +713,18 @@ class Daemon_FlagSubcommand extends BaseFlagSubcommand {
     return daemon;
   }
 
-  onProcess() {
-    this.sendStats(this.context.interaction);
-  }
-  sendStats(channel) {
-    channel.msg(this.getEmbed());
-  }
   getEmbed() {
     const daemon = this.daemon();
     const timestamp = daemon.fetchTimeEvent()?.timestamp;
     return {
       description: `:gear:\nПулл заполнен: ${daemon.pull.length}/${daemon.pull.LIMIT}. Чистка пула <t:${Math.floor(timestamp / SECOND)}:R>`,
     };
+  }
+  onProcess() {
+    this.sendStats(this.context.interaction);
+  }
+  sendStats(channel) {
+    channel.msg(this.getEmbed());
   }
 }
 
@@ -735,6 +737,18 @@ class Channel_FlagSubcommand extends BaseFlagSubcommand {
 
   async onProcess() {
     return await this.setupChannel();
+  }
+  process_parseChannel(context, value) {
+    const channelId = value.match(/\d{16,22}/)?.[0];
+    const channel = context.guild.channels.cache.get(channelId);
+    if (channel) {
+      return channel;
+    }
+    context.channel.msg({
+      description: `Метка не является каналом или канал не найден, channelId: ${channelId}`,
+      delete: 8 * SECOND,
+    });
+    return false;
   }
   async setupChannel() {
     const { interaction } = this.context;
@@ -752,22 +766,18 @@ class Channel_FlagSubcommand extends BaseFlagSubcommand {
     this.context.partnerField.setChannel(channel);
     return true;
   }
-  process_parseChannel(context, value) {
-    const channelId = value.match(/\d{16,22}/)?.[0];
-    const channel = context.guild.channels.cache.get(channelId);
-    if (channel) {
-      return channel;
-    }
-    context.channel.msg({
-      description: `Метка не является каналом или канал не найден, channelId: ${channelId}`,
-      delete: 8 * SECOND,
-    });
-    return false;
-  }
 }
 
 // MARK: CommandRunContext
 class CommandRunContext extends BaseCommandRunContext {
+  captures;
+  partnerField = new PartnerField();
+
+  canManage() {
+    return (this._canManage ||= this.guild.members
+      .resolve(this.user)
+      ?.permissions.has(PermissionFlagsBits.ManageGuild));
+  }
   static async new(...params) {
     const context = new this(...params);
     context.partnerField.setGuild(context.guild);
@@ -781,25 +791,13 @@ class CommandRunContext extends BaseCommandRunContext {
     this.captures = parsed.captures;
     return parsed;
   }
-
-  canManage() {
-    return (this._canManage ||= this.guild.members
-      .resolve(this.user)
-      ?.permissions.has(PermissionFlagsBits.ManageGuild));
-  }
-  partnerField = new PartnerField();
-  captures;
 }
 
 class PartnersDaemon {
-  pull = new DaemonPull();
   EVENT_NAME = "partner-daemon";
-  fetchTimeEvent() {
-    const day = timestampDay(this.ms_to_timeEvent() + Date.now());
-    return TimeEventsManager.findEventInRange(
-      ({ name }) => name === this.EVENT_NAME,
-      [day, day],
-    );
+  pull = new DaemonPull();
+  _createTimeEvent() {
+    TimeEventsManager.create(this.EVENT_NAME, this.ms_to_timeEvent());
   }
   checkTimeEvent() {
     const expected = this.fetchTimeEvent();
@@ -808,6 +806,16 @@ class PartnersDaemon {
       this._createTimeEvent();
     }
   }
+  fetchTimeEvent() {
+    const day = timestampDay(this.ms_to_timeEvent() + Date.now());
+    return TimeEventsManager.findEventInRange(
+      ({ name }) => name === this.EVENT_NAME,
+      [day, day],
+    );
+  }
+  ms_to_timeEvent() {
+    return dayjs().endOf("week").add(2, "day").set("hour", 20) - Date.now();
+  }
   onPartnerBump(context) {
     this.pull.push(context.guild.id);
   }
@@ -815,39 +823,156 @@ class PartnersDaemon {
     this.pull.empty();
     this._createTimeEvent();
   }
-  ms_to_timeEvent() {
-    return dayjs().endOf("week").add(2, "day").set("hour", 20) - Date.now();
-  }
-  _createTimeEvent() {
-    TimeEventsManager.create(this.EVENT_NAME, this.ms_to_timeEvent());
-  }
 }
 
 class DaemonPull extends Array {
   LIMIT = 20;
-  push(...values) {
-    super.push(...values);
-    this.process_queue();
+  isPartnerInPull(guildId) {
+    return this.includes(guildId);
   }
   process_queue() {
     while (this.length > this.LIMIT) {
       this.shift();
     }
   }
-  isPartnerInPull(guildId) {
-    return this.includes(guildId);
+  push(...values) {
+    super.push(...values);
+    this.process_queue();
   }
 }
 
 class Command extends BaseCommand {
+  componentsCallbacks = {
+    [Command.ComponentsCallbacks.show_help]: async ({ interaction }) => {
+      const context = await CommandRunContext.new(interaction, this);
+      return new Help_FlagSubcommand(context).onProcess();
+    },
+    [Command.ComponentsCallbacks.setup]: async ({ interaction }) => {
+      const context = await CommandRunContext.new(interaction, this);
+      return new Setup_FlagSubcommand(context).onProcess();
+    },
+    [Command.ComponentsCallbacks.preview]: async ({ interaction }) => {
+      const context = await CommandRunContext.new(interaction, this);
+      return new Preview_FlagSubcommand(context).onProcess();
+    },
+    [Command.ComponentsCallbacks.list]: async ({ interaction }) => {
+      const context = await CommandRunContext.new(interaction, this);
+      return new List_FlagSubcommand(context).onProcess();
+    },
+    [Command.ComponentsCallbacks.bump]: async ({ interaction }) => {
+      const context = await CommandRunContext.new(interaction, this);
+      return new Bump_FlagSubcommand(context).onProcess();
+    },
+  };
+  static ComponentsCallbacks = {
+    show_help: "show_help",
+    setup: "setup",
+    preview: "preview",
+    list: "list",
+    bump: "bump",
+  };
+  daemon;
+  options = {
+    name: "partners",
+    id: 67,
+    media: {
+      description:
+        "Объединяйтесь с другими серверами, которые используют бота Призрак. Ходите в гости",
+      example: `!partners --help`,
+    },
+    alias:
+      "партнёры партнёрства партнёрство партнёр партнеры партнерства партнерство партнер partner",
+    allowDM: true,
+    cooldown: 10_000,
+    cooldownTry: 3,
+    type: "guild",
+    cliParser: {
+      flags: [
+        Setup_FlagSubcommand.FLAG_DATA,
+        Preview_FlagSubcommand.FLAG_DATA,
+        Bump_FlagSubcommand.FLAG_DATA,
+        Help_FlagSubcommand.FLAG_DATA,
+        List_FlagSubcommand.FLAG_DATA,
+        Daemon_FlagSubcommand.FLAG_DATA,
+        Channel_FlagSubcommand.FLAG_DATA,
+      ],
+    },
+    accessibility: {
+      publicized_on_level: 2,
+    },
+  };
   constructor() {
     super();
     this.usePartnersDaemon();
   }
-  daemon;
-  usePartnersDaemon() {
-    this.daemon = new PartnersDaemon(this);
-    this.daemon.checkTimeEvent();
+  async onChatInput(message, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+  onComponent({ params: raw, interaction }) {
+    const [target, ...params] = raw.split(":");
+    this.componentsCallbacks[target].call(this, { interaction, params });
+  }
+  async processBump_flag(context) {
+    const value = context.captures.get("--bump");
+    if (!value) {
+      return false;
+    }
+    await new Bump_FlagSubcommand(context).onProcess();
+    return true;
+  }
+  async processChannel_flag(context) {
+    const value = context.captures.get("--channel");
+    if (!value) {
+      return false;
+    }
+    await new Channel_FlagSubcommand(context).onProcess();
+    return true;
+  }
+  async processDaemon_flag(context) {
+    const value = context.captures.get("--daemon");
+    if (!value) {
+      return false;
+    }
+    await new Daemon_FlagSubcommand(context).onProcess();
+    return true;
+  }
+  async processDefaultBehaviour(context) {
+    await new Help_FlagSubcommand(context).onProcess();
+    return true;
+  }
+  async processHelp_flag(context) {
+    const value = context.captures.get("--help");
+    if (!value) {
+      return false;
+    }
+    await new Help_FlagSubcommand(context).onProcess();
+    return true;
+  }
+  async processList_flag(context) {
+    const value = context.captures.get("--list");
+    if (!value) {
+      return false;
+    }
+    await new List_FlagSubcommand(context).onProcess();
+    return true;
+  }
+  async processPreview_flag(context) {
+    const value = context.captures.get("--preview");
+    if (!value) {
+      return false;
+    }
+    await new Preview_FlagSubcommand(context).onProcess();
+    return true;
+  }
+  async processSetup_flag(context) {
+    const value = context.captures.get("--setup");
+    if (!value) {
+      return false;
+    }
+    await new Setup_FlagSubcommand(context).onProcess();
+    return true;
   }
   /**
    *
@@ -880,133 +1005,10 @@ class Command extends BaseCommand {
     await this.processDefaultBehaviour(context);
     return;
   }
-  async onChatInput(message, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
+  usePartnersDaemon() {
+    this.daemon = new PartnersDaemon(this);
+    this.daemon.checkTimeEvent();
   }
-  onComponent({ params: raw, interaction }) {
-    const [target, ...params] = raw.split(":");
-    this.componentsCallbacks[target].call(this, { interaction, params });
-  }
-  static ComponentsCallbacks = {
-    show_help: "show_help",
-    setup: "setup",
-    preview: "preview",
-    list: "list",
-    bump: "bump",
-  };
-  componentsCallbacks = {
-    [Command.ComponentsCallbacks.show_help]: async ({ interaction }) => {
-      const context = await CommandRunContext.new(interaction, this);
-      return new Help_FlagSubcommand(context).onProcess();
-    },
-    [Command.ComponentsCallbacks.setup]: async ({ interaction }) => {
-      const context = await CommandRunContext.new(interaction, this);
-      return new Setup_FlagSubcommand(context).onProcess();
-    },
-    [Command.ComponentsCallbacks.preview]: async ({ interaction }) => {
-      const context = await CommandRunContext.new(interaction, this);
-      return new Preview_FlagSubcommand(context).onProcess();
-    },
-    [Command.ComponentsCallbacks.list]: async ({ interaction }) => {
-      const context = await CommandRunContext.new(interaction, this);
-      return new List_FlagSubcommand(context).onProcess();
-    },
-    [Command.ComponentsCallbacks.bump]: async ({ interaction }) => {
-      const context = await CommandRunContext.new(interaction, this);
-      return new Bump_FlagSubcommand(context).onProcess();
-    },
-  };
-  async processSetup_flag(context) {
-    const value = context.captures.get("--setup");
-    if (!value) {
-      return false;
-    }
-    await new Setup_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  async processPreview_flag(context) {
-    const value = context.captures.get("--preview");
-    if (!value) {
-      return false;
-    }
-    await new Preview_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  async processChannel_flag(context) {
-    const value = context.captures.get("--channel");
-    if (!value) {
-      return false;
-    }
-    await new Channel_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  async processDaemon_flag(context) {
-    const value = context.captures.get("--daemon");
-    if (!value) {
-      return false;
-    }
-    await new Daemon_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  async processHelp_flag(context) {
-    const value = context.captures.get("--help");
-    if (!value) {
-      return false;
-    }
-    await new Help_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  async processBump_flag(context) {
-    const value = context.captures.get("--bump");
-    if (!value) {
-      return false;
-    }
-    await new Bump_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  async processList_flag(context) {
-    const value = context.captures.get("--list");
-    if (!value) {
-      return false;
-    }
-    await new List_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  async processDefaultBehaviour(context) {
-    await new Help_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  options = {
-    name: "partners",
-    id: 67,
-    media: {
-      description:
-        "Объединяйтесь с другими серверами, которые используют бота Призрак. Ходите в гости",
-      example: `!partners --help`,
-    },
-    alias:
-      "партнёры партнёрства партнёрство партнёр партнеры партнерства партнерство партнер partner",
-    allowDM: true,
-    cooldown: 10_000,
-    cooldownTry: 3,
-    type: "guild",
-    cliParser: {
-      flags: [
-        Setup_FlagSubcommand.FLAG_DATA,
-        Preview_FlagSubcommand.FLAG_DATA,
-        Bump_FlagSubcommand.FLAG_DATA,
-        Help_FlagSubcommand.FLAG_DATA,
-        List_FlagSubcommand.FLAG_DATA,
-        Daemon_FlagSubcommand.FLAG_DATA,
-        Channel_FlagSubcommand.FLAG_DATA,
-      ],
-    },
-    accessibility: {
-      publicized_on_level: 2,
-    },
-  };
 }
 
 export default Command;
