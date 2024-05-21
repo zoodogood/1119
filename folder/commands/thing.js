@@ -1776,8 +1776,9 @@ class Command extends BaseCommand {
         [
           {
             action: async ({ scene }) => {
-              const value =
-                Util.random(55, 110) + DataManager.data.bot.berrysPrice / 10;
+              const value = Math.floor(
+                Util.random(55, 110) + DataManager.data.bot.berrysPrice / 10,
+              );
               DataManager.data.bot.berrysPrice -= value;
               scene.value = value;
             },
