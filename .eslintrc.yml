@@ -16,6 +16,7 @@ extends:
 plugins:
   - prettier
   - svelte
+  - perfectionist
 parserOptions:
   ecmaVersion: latest
   sourceType: module
@@ -36,3 +37,5 @@ rules:
   no-unused-vars:
     - error
     - { argsIgnorePattern: "^_" }
+  perfectionist/sort-classes:
+    - error
