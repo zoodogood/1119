@@ -983,12 +983,14 @@ class CurseManager {
             const userData = user.data;
             const puppet = userData[this.EFFECT_ID];
 
+            const effects = puppet.effects || [];
             const compare = (effect) => effect.uid === data.uid;
-            const target = (puppet.effects || []).find(compare);
-            if (!target) {
+            const target = effects.findIndex(compare);
+            if (target === -1) {
               return;
             }
-            UserEffectManager.removeEffect({ effect: target, user });
+
+            effects.splice(target, 1);
             data.preventDefault();
           },
           timeEventCurseTimeoutEnd: (user, curse, data) => {
@@ -999,11 +1001,13 @@ class CurseManager {
             const puppet = userData[this.EFFECT_ID];
 
             const compare = (curse) => curse.timestamp === data.timestamp;
-            const target = (puppet.curses || []).find(compare);
-            if (!curse) {
+            const curses = puppet.curses || [];
+            const target = curses.findIndex(compare);
+            if (target === -1) {
               return;
             }
-            CurseManager.removeCurse({ user, curse: target });
+
+            curses.splice(target, 1);
             data.preventDefault();
           },
         },
@@ -1360,7 +1364,9 @@ class CurseManager {
             const effectsToHear = Object.fromEntries(
               [ActionsMap.resourceChange].map((action) => [action, true]),
             );
-            provideTunnel(target, user, effectsToHear);
+            provideTunnel(target, user, effectsToHear, {
+              source: "curseManager.curse.learnTogether",
+            });
           },
           resourceChange(user, curse, context) {
             const { value, resource } = context;
