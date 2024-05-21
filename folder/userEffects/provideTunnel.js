@@ -5,7 +5,7 @@ function provideTunnel(target, sourceUser, actionsToHear = {}, values = {}) {
   return UserEffectManager.justEffect({
     effectId: "provideTunnel",
     user: target,
-    values: { source: sourceUser.id, heared: actionsToHear, ...values },
+    values: { sourceUserId: sourceUser.id, heared: actionsToHear, ...values },
   });
 }
 
@@ -15,12 +15,12 @@ export default {
     [ActionsMap.any](targetUser, effect, { actionName, data }) {
       const { client } = targetUser;
 
-      const { source, heared } = effect.values;
+      const { sourceUserId, heared } = effect.values;
       if (actionName in heared === false) {
         return;
       }
 
-      const sourceUser = client.users.cache.get(source);
+      const sourceUser = client.users.cache.get(sourceUserId);
       const context = {
         targetUser,
         actionName,
