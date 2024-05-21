@@ -1,18 +1,18 @@
 import config from "#config";
 
-import { ending } from "@zoodogood/utils/primitives";
-import {
-  omit,
-  CustomCollector,
-  GlitchText,
-  rangeToArray,
-  getRandomElementFromArray,
-  DotNotatedInterface,
-} from "@zoodogood/utils/objectives";
 import { dayjs } from "#lib/dayjs.js";
+import {
+  CustomCollector,
+  DotNotatedInterface,
+  GlitchText,
+  getRandomElementFromArray,
+  omit,
+  rangeToArray,
+} from "@zoodogood/utils/objectives";
+import { ending } from "@zoodogood/utils/primitives";
 
-import yaml from "yaml";
 import Path from "path";
+import yaml from "yaml";
 
 export function objectToLocaleDeveloperString(value, deep = 0) {
   if (typeof value !== "object" || value === null) {
@@ -385,12 +385,12 @@ class TimeAuditor {
     this.stamps = {};
   }
 
-  start(id = 0) {
-    this.stamps[id] = Date.now();
-  }
-
   getDifference(id = 0) {
     return Date.now() - this.stamps[id];
+  }
+
+  start(id = 0) {
+    this.stamps[id] = Date.now();
   }
 }
 
@@ -417,42 +417,53 @@ export function clamp(min, value, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+export class CircularProtocol {
+  collection = new Map();
+  pass(element) {
+    if (this.collection.has(element)) {
+      return false;
+    }
+
+    this.collection.set(element, true);
+  }
+}
+
 export {
-  ending,
-  omit,
   CustomCollector,
   DotNotatedInterface,
   GlitchText,
+  NumberFormatLetterize,
+  ReplaceTemplate,
   TimeAuditor,
   dayjs,
-  yaml,
-  sleep,
-  rangeToArray,
-  getRandomElementFromArray,
-  random,
-  match,
+  ending,
   escapeRegexp,
-  ReplaceTemplate,
-  similarity,
+  fetchFromInnerApi,
+  getRandomElementFromArray,
   getSimilar,
   joinWithAndSeparator,
-  NumberFormatLetterize,
-  uid,
-  toDayDate,
-  timestampDay,
-  timestampToDate,
+  match,
+  omit,
+  parseDocumentLocate,
+  parseLocationBase,
+  parsePagesPath,
+  random,
+  rangeToArray,
   resolveDate,
   resolveGithubPath,
-  parseDocumentLocate,
-  parsePagesPath,
-  parseLocationBase,
-  fetchFromInnerApi,
+  similarity,
+  sleep,
+  timestampDay,
+  timestampToDate,
+  toDayDate,
+  uid,
+  yaml,
 };
 
 export { relativeSiteRoot } from "#site/lib/util.js";
 export { MarkdownMetadata } from "./MarkdownMetadata.js";
 export {
-  romanToDigit,
-  digitToRoman,
   ROMAN_NUMERALS_TABLE,
+  digitToRoman,
+  romanToDigit,
 } from "./romanNumerals.js";
