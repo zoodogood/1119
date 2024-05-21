@@ -986,7 +986,7 @@ class CurseManager {
             const compare = (effect) => effect.uid === data.uid;
             const target = (puppet.effects || []).find(compare);
             if (!target) {
-              throw new Error("Effect not found");
+              return;
             }
             UserEffectManager.removeEffect({ effect: target, user });
             data.preventDefault();
@@ -1001,7 +1001,7 @@ class CurseManager {
             const compare = (curse) => curse.timestamp === data.timestamp;
             const target = (puppet.curses || []).find(compare);
             if (!curse) {
-              throw new Error("Curse not found");
+              return;
             }
             CurseManager.removeCurse({ user, curse: target });
             data.preventDefault();
