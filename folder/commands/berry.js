@@ -7,7 +7,7 @@ import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 class Command extends BaseCommand {
   static INFLATION = 0.2;
-  static BERRYS_LIMIT = 35_000;
+  static BERRYS_LIMIT = 1_500;
   static TAX = 0.02;
 
   static getMaxCountForBuy(coins, price) {
