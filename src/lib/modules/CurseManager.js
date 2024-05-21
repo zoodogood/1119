@@ -933,7 +933,7 @@ class CurseManager {
         description: "На время заменяет ваш профиль пустышкой",
         SYNCED_KEYS: ["reminds", "praises"],
         values: {
-          timer: () => HOUR * 2,
+          timer: () => HOUR,
         },
         callback: {
           curseTimeEnd(user, curse, target) {
@@ -943,12 +943,22 @@ class CurseManager {
 
             const userData = user.data;
             const puppet = userData[this.EFFECT_ID];
+            if (!puppet) {
+              throw new Error("Puppet not found");
+            }
             for (const key of Object.keys(userData)) {
               delete userData[key];
             }
+
             Object.assign(userData, puppet);
+
+            const main_curse = userData.curses.find(
+              (compare) =>
+                compare.timestamp === curse.timestamp &&
+                compare.id === "pacifier",
+            );
             target.preventDefault();
-            CurseManager.interface({ user, curse }).success();
+            CurseManager.interface({ user, curse: main_curse }).success();
           },
           curseInit(user, curse, target) {
             if (curse !== target.curse) {
@@ -976,7 +986,7 @@ class CurseManager {
             const compare = (effect) => effect.uid === data.uid;
             const target = (puppet.effects || []).find(compare);
             if (!target) {
-              return;
+              throw new Error("Effect not found");
             }
             UserEffectManager.removeEffect({ effect: target, user });
             data.preventDefault();
@@ -991,7 +1001,7 @@ class CurseManager {
             const compare = (curse) => curse.timestamp === data.timestamp;
             const target = (puppet.curses || []).find(compare);
             if (!curse) {
-              return;
+              throw new Error("Curse not found");
             }
             CurseManager.removeCurse({ user, curse: target });
             data.preventDefault();
