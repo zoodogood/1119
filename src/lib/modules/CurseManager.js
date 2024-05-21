@@ -1,22 +1,19 @@
 import { Collection } from "@discordjs/collection";
 
-import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import { AttachmentBuilder } from "discord.js";
-import CommandsManager from "#lib/modules/CommandsManager.js";
-import EventsManager from "#lib/modules/EventsManager.js";
-import QuestManager from "#lib/modules/QuestManager.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { ActionsMap } from "#constants/enums/actionsMap.js";
-import DataManager from "#lib/modules/DataManager.js";
-import { RanksUtils } from "#folder/commands/top.js";
-import { justButtonComponents } from "@zoodogood/utils/discordjs";
-import Executor from "#lib/modules/Executor.js";
-import UserEffectManager from "#lib/modules/EffectsManager.js";
-import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
-import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
-import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
-import { MessageMentions } from "discord.js";
 import app from "#app";
+import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
+import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { RanksUtils } from "#folder/commands/top.js";
+import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
+import CommandsManager from "#lib/modules/CommandsManager.js";
+import DataManager from "#lib/modules/DataManager.js";
+import EventsManager from "#lib/modules/EventsManager.js";
+import Executor from "#lib/modules/Executor.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import QuestManager from "#lib/modules/QuestManager.js";
+import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import {
   DotNotatedInterface,
   clamp,
@@ -27,62 +24,10 @@ import {
   yaml,
 } from "#lib/safe-utils.js";
 import { addResource, overTheMessageSpamLimit } from "#lib/util.js";
-import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
+import { justButtonComponents } from "@zoodogood/utils/discordjs";
+import { AttachmentBuilder, MessageMentions } from "discord.js";
 
 class CurseManager {
-  static generate({ hard = null, user, context }) {
-    const MAXIMAL_HARD = 2;
-    if (hard > MAXIMAL_HARD) {
-      hard = MAXIMAL_HARD;
-    }
-
-    const curseBase = this.getGeneratePull(user, context)
-      .filter((curseBase) => hard === null || curseBase.hard === hard)
-      .random({ weights: true });
-
-    const curse = this.generateOfBase({ user, curseBase, context });
-    return curse;
-  }
-
-  static getGeneratePull(user, context) {
-    return [...CurseManager.cursesBase.values()].filter(
-      (curseBase) =>
-        !curseBase.filter || curseBase.filter.call(curseBase, user, context),
-    );
-  }
-
-  static generateOfBase({ curseBase, user, context }) {
-    const curse = {
-      id: curseBase.id,
-      values: {},
-      timestamp: Date.now(),
-    };
-
-    Object.entries(curseBase.values).forEach(
-      ([key, callback]) =>
-        (curse.values[key] = callback.call(curseBase, user, curse, context)),
-    );
-
-    return curse;
-  }
-  static init({ curse, user }) {
-    if (!user.data.curses) {
-      user.data.curses = [];
-    }
-
-    user.data.curses.push(curse);
-    const curseBase = this.cursesBase.get(curse.id);
-    const callbackMap = (user.data.cursesCallbackMap ||= {});
-    Object.keys(curseBase.callback).map((key) => (callbackMap[key] = true));
-
-    if (curse.values.timer) {
-      const args = [user.id, curse.timestamp];
-      TimeEventsManager.create("curse-timeout-end", curse.values.timer, args);
-    }
-
-    user.action(ActionsMap.curseInit, { curse });
-  }
-
   static cursesBase = new Collection(
     [
       {
@@ -1771,83 +1716,12 @@ class CurseManager {
       // },
     ].map((curse) => [curse.id, curse]),
   );
-  static interface({ curse, user }) {
-    const incrementProgress = (value) => {
-      setProgress((+curse.values.progress || 0) + value);
-      CurseManager.checkAvailable({ curse, user });
-      return curse.values.progress;
-    };
 
-    const _setProgress = (value) => {
-      curse.values.progress = value;
-      CurseManager.checkAvailable({ curse, user });
-      return curse.values.progress;
-    };
-    const setProgress = (value) => {
-      user.action(ActionsMap.curseBeforeSetProgress);
-      _setProgress(value);
-    };
-
-    const toString = () => {
-      const curseBase = CurseManager.cursesBase.get(curse.id);
-
-      if (Object.hasOwnProperty.call(curseBase, "toString")) {
-        return curseBase.toString(user, curse);
-      }
-
-      const description = (() => {
-        const { description } = curseBase;
-        return typeof description === "function"
-          ? description.call(curseBase, user, curse)
-          : description;
-      })();
-      const progressContent = curse.values.goal
-        ? `Прогресс: ${curse.values.progress || 0}/${curse.values.goal}`
-        : `Прогресс: ${curse.values.progress || 0}`;
-
-      const timer = curse.values.timer
-        ? `\nТаймер: <t:${Math.floor(
-            (curse.timestamp + curse.values.timer) / 1000,
-          )}:R> будет провалено`
-        : "";
-
-      const content = `${description}\n${progressContent}${timer}`;
-      return content;
-    };
-
-    const success = () => {
-      this.curseIndexOnUser({ curse, user }) !== null &&
-        CurseManager.curseEnd({ lost: false, user, curse });
-    };
-
-    const fail = () => {
-      this.curseIndexOnUser({ curse, user }) !== null &&
-        CurseManager.curseEnd({ lost: true, user, curse });
-    };
-
-    const silentEnd = () => {
-      this.curseIndexOnUser({ curse, user }) !== null &&
-        CurseManager._curseEnd({ lost: false, user, curse });
-    };
-    return {
-      incrementProgress,
-      setProgress,
-      _setProgress,
-      toString,
-      fail,
-      success,
-      silentEnd,
-    };
+  static _curseEnd({ lost, user, curse }) {
+    user.action(ActionsMap.curseEnd, { isLost: lost, curse });
+    this.removeCurse({ user, curse });
   }
 
-  static curseIndexOnUser({ curse, user }) {
-    const index = user.data.curses.indexOf(curse);
-    if (index === -1) {
-      return null;
-    }
-
-    return index;
-  }
   static checkAvailable({ curse, user }) {
     if (!curse) {
       return null;
@@ -1881,30 +1755,6 @@ class CurseManager {
   }
   static checkAvailableAll(user) {
     user.data.curses?.forEach((curse) => this.checkAvailable({ curse, user }));
-  }
-
-  static removeCurse({ user, curse }) {
-    const index = this.curseIndexOnUser({ curse, user });
-    if (index === null) {
-      return null;
-    }
-
-    user.data.curses.splice(index, 1);
-
-    const keysToRemove = (callbackKey) =>
-      !user.data.curses.some(
-        ({ id }) => callbackKey in this.cursesBase.get(id).callback,
-      );
-
-    const callbackMap = user.data.cursesCallbackMap;
-    Object.keys(callbackMap)
-      .filter(keysToRemove)
-      .forEach((key) => delete callbackMap[key]);
-  }
-
-  static _curseEnd({ lost, user, curse }) {
-    user.action(ActionsMap.curseEnd, { isLost: lost, curse });
-    this.removeCurse({ user, curse });
   }
 
   static curseEnd({ lost, user, curse }) {
@@ -2035,6 +1885,154 @@ class CurseManager {
 
       return;
     }
+  }
+  static curseIndexOnUser({ curse, user }) {
+    const index = user.data.curses.indexOf(curse);
+    if (index === -1) {
+      return null;
+    }
+
+    return index;
+  }
+
+  static generate({ hard = null, user, context }) {
+    const MAXIMAL_HARD = 2;
+    if (hard > MAXIMAL_HARD) {
+      hard = MAXIMAL_HARD;
+    }
+
+    const curseBase = this.getGeneratePull(user, context)
+      .filter((curseBase) => hard === null || curseBase.hard === hard)
+      .random({ weights: true });
+
+    const curse = this.generateOfBase({ user, curseBase, context });
+    return curse;
+  }
+  static generateOfBase({ curseBase, user, context }) {
+    const curse = {
+      id: curseBase.id,
+      values: {},
+      timestamp: Date.now(),
+    };
+
+    Object.entries(curseBase.values).forEach(
+      ([key, callback]) =>
+        (curse.values[key] = callback.call(curseBase, user, curse, context)),
+    );
+
+    return curse;
+  }
+  static getGeneratePull(user, context) {
+    return [...CurseManager.cursesBase.values()].filter(
+      (curseBase) =>
+        !curseBase.filter || curseBase.filter.call(curseBase, user, context),
+    );
+  }
+
+  static init({ curse, user }) {
+    if (!user.data.curses) {
+      user.data.curses = [];
+    }
+
+    user.data.curses.push(curse);
+    const curseBase = this.cursesBase.get(curse.id);
+    const callbackMap = (user.data.cursesCallbackMap ||= {});
+    Object.keys(curseBase.callback).map((key) => (callbackMap[key] = true));
+
+    if (curse.values.timer) {
+      const args = [user.id, curse.timestamp];
+      TimeEventsManager.create("curse-timeout-end", curse.values.timer, args);
+    }
+
+    user.action(ActionsMap.curseInit, { curse });
+  }
+
+  static interface({ curse, user }) {
+    const incrementProgress = (value) => {
+      setProgress((+curse.values.progress || 0) + value);
+      CurseManager.checkAvailable({ curse, user });
+      return curse.values.progress;
+    };
+
+    const _setProgress = (value) => {
+      curse.values.progress = value;
+      CurseManager.checkAvailable({ curse, user });
+      return curse.values.progress;
+    };
+    const setProgress = (value) => {
+      user.action(ActionsMap.curseBeforeSetProgress);
+      _setProgress(value);
+    };
+
+    const toString = () => {
+      const curseBase = CurseManager.cursesBase.get(curse.id);
+
+      if (Object.hasOwnProperty.call(curseBase, "toString")) {
+        return curseBase.toString(user, curse);
+      }
+
+      const description = (() => {
+        const { description } = curseBase;
+        return typeof description === "function"
+          ? description.call(curseBase, user, curse)
+          : description;
+      })();
+      const progressContent = curse.values.goal
+        ? `Прогресс: ${curse.values.progress || 0}/${curse.values.goal}`
+        : `Прогресс: ${curse.values.progress || 0}`;
+
+      const timer = curse.values.timer
+        ? `\nТаймер: <t:${Math.floor(
+            (curse.timestamp + curse.values.timer) / 1000,
+          )}:R> будет провалено`
+        : "";
+
+      const content = `${description}\n${progressContent}${timer}`;
+      return content;
+    };
+
+    const success = () => {
+      this.curseIndexOnUser({ curse, user }) !== null &&
+        CurseManager.curseEnd({ lost: false, user, curse });
+    };
+
+    const fail = () => {
+      this.curseIndexOnUser({ curse, user }) !== null &&
+        CurseManager.curseEnd({ lost: true, user, curse });
+    };
+
+    const silentEnd = () => {
+      this.curseIndexOnUser({ curse, user }) !== null &&
+        CurseManager._curseEnd({ lost: false, user, curse });
+    };
+    return {
+      incrementProgress,
+      setProgress,
+      _setProgress,
+      toString,
+      fail,
+      success,
+      silentEnd,
+    };
+  }
+
+  static removeCurse({ user, curse }) {
+    const index = this.curseIndexOnUser({ curse, user });
+    if (index === null) {
+      return null;
+    }
+
+    user.data.curses.splice(index, 1);
+
+    const keysToRemove = (callbackKey) =>
+      !user.data.curses.some(
+        ({ id }) => callbackKey in this.cursesBase.get(id).callback,
+      );
+
+    const callbackMap = user.data.cursesCallbackMap;
+    Object.keys(callbackMap)
+      .filter(keysToRemove)
+      .forEach((key) => delete callbackMap[key]);
   }
 }
 
