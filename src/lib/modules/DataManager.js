@@ -27,7 +27,6 @@ class DataManager {
       this.data.users.push(data);
       return data;
     };
-
     return this.data.users.find((user) => user.id === id) ?? createUser(id);
   }
 
@@ -77,11 +76,11 @@ class DataManager {
         if ("cacheData" in this) {
           return this.cacheData;
         }
-        const user = manager.getUser(this.id);
+        const userData = manager.getUser(this.id);
         Object.defineProperty(this, "cacheData", {
-          value: user,
+          value: userData,
         });
-        return user;
+        return userData;
       },
     });
   }
