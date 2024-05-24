@@ -1,5 +1,6 @@
 // @ts-check
 import { BaseContext } from "#lib/BaseContext.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 
 class BaseCommandRunContext extends BaseContext {
   cliParsed = null;
@@ -10,7 +11,11 @@ class BaseCommandRunContext extends BaseContext {
   options = {};
   whenRunExecuted = null;
   constructor(interaction, command) {
-    super(`command.${command.options.name}`, interaction);
+    super(`command.${command.options.name}`, {
+      interaction,
+      primary: interaction,
+      ...takeInteractionProperties(interaction),
+    });
     this.command = command;
     this.interaction = interaction;
     interaction.extend && Object.assign(this.options, interaction.extend);
