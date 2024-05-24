@@ -13,6 +13,7 @@ import {
   update_attack_cooldown,
   update_attack_damage_multiplayer,
 } from "#folder/entities/boss/attack.js";
+import { update_health_thresholder } from "#root/folder/entities/boss/health.js";
 import { RewardSystem } from "#folder/entities/boss/reward.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import {
@@ -2384,8 +2385,7 @@ class BossManager {
     const guild = app.client.guilds.cache.get(boss.guildId);
 
     boss.level = toLevel;
-    boss.healthThresholder =
-      BossManager.calculateHealthPointThresholder(toLevel);
+    update_health_thresholder(boss);
 
     if (boss.level >= this.MAXIMUM_LEVEL) {
       this.victory(guild);
