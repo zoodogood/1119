@@ -8,17 +8,6 @@ import * as Util from "#lib/util.js";
 const { addResource } = Util;
 
 class ProfessionsUtils {
-  static removeUnavailableProfessions({ guild, professions }) {
-    if (!professions) {
-      return null;
-    }
-    for (const id of Object.keys(professions)) {
-      !guild.roles.cache.get(id) && delete professions[id];
-    }
-
-    return professions;
-  }
-
   static createReports({ guild, professions }) {
     let expenditure = 0;
     const salaryTable = {};
@@ -36,9 +25,96 @@ class ProfessionsUtils {
 
     return { expenditure, salaryTable };
   }
+
+  static removeUnavailableProfessions({ guild, professions }) {
+    if (!professions) {
+      return null;
+    }
+    for (const id of Object.keys(professions)) {
+      !guild.roles.cache.get(id) && delete professions[id];
+    }
+
+    return professions;
+  }
 }
 
 class Command extends BaseCommand {
+  options = {
+    name: "bank",
+    id: 50,
+    media: {
+      description:
+        "Во-первых, банк позволяет не смешивать приключения с обязанностями, а во-вторых, это просто удобно.\nТакже с их помощью вы можете создать на сервере профессии с автоматически выдаваемыми зарплатами!",
+      examople: `!bank <"взять" | "положить"> <coins | "+"> #"+" обозначает "Все коины, которые у вас есть"`,
+      poster:
+        "https://cdn.discordapp.com/attachments/769566192846635010/872463081672949890/bank.gif",
+    },
+    accessibility: {
+      publicized_on_level: 2,
+    },
+    alias: "cash банк казна скарбниця",
+    allowDM: true,
+    cooldown: 50_000,
+    cooldownTry: 3,
+    type: "guild",
+  };
+
+  async displayMessageInterface(context) {
+    const { guildData, isAdmin, interaction } = context;
+
+    const embed = {
+      title: "Казна сервера",
+      description: `В хранилище **${Util.NumberFormatLetterize(
+        guildData.coins,
+      )}** <:coin:637533074879414272>\n\n<a:message:794632668137652225> ⠿ Заработные платы\n<:meow:637290387655884800> ⠿ Положить\n<:merunna:755844134677512273> ${[
+        ..."⠯⠷⠟⠻",
+      ].random()} Взять`,
+      author: {
+        name: interaction.guild.name,
+        iconURL: interaction.guild.iconURL(),
+      },
+      image:
+        "https://media.discordapp.net/attachments/629546680840093696/830774000597991434/96-967226_tree-forest-green-vector-map-of-the-trees.png",
+    };
+
+    const startsCoinsCount = guildData.coins;
+    let react;
+    const reactions = [
+      "637290387655884800",
+      isAdmin ? "755844134677512273" : null,
+      "794632668137652225",
+    ];
+    let message = await interaction.channel.msg(embed);
+    embed.edit = true;
+
+    while (true) {
+      message = await message.msg(embed);
+      react = await message.awaitReact(
+        { user: interaction.user, removeType: "all" },
+        ...reactions,
+      );
+
+      await this.onReaction({ react, embed, message }, context);
+      if (context.isEnd) {
+        return;
+      }
+
+      embed.description += `\n\nВ хранилище: ${Util.ending(
+        guildData.coins,
+        "золот",
+        "ых",
+        "ая",
+        "ых",
+      )}!\nКоличество коинов ${
+        guildData.coins - startsCoinsCount === 0
+          ? "не изменилось"
+          : guildData.coins - startsCoinsCount > 0
+            ? "увеличилось на " + (guildData.coins - startsCoinsCount)
+            : "уменьшилось на " + (startsCoinsCount - guildData.coins)
+      } <:coin:637533074879414272>`;
+    }
+  }
+
   getContext(interaction) {
     const guildData = interaction.guild.data;
     const isAdmin = !interaction.member.wastedPermissions(32n)[0];
@@ -62,7 +138,6 @@ class Command extends BaseCommand {
 
     return context;
   }
-
   async interactWithBank(context, { value, isPut, cause }) {
     const { guildData, interaction, isAdmin } = context;
     const { user, channel } = interaction;
@@ -252,6 +327,90 @@ class Command extends BaseCommand {
     }
   }
 
+  async onChatInput(msg, interaction) {
+    const context = this.getContext(interaction);
+
+    if (context.parsedParams) {
+      const { action, coins, cause } = context.parsedParams;
+      if (action === "положить" || action === "put") {
+        await this.interactWithBank(context, {
+          value: coins,
+          isPut: true,
+          cause,
+        });
+        return;
+      }
+
+      if (action === "взять" || action === "take") {
+        await this.interactWithBank(context, {
+          value: coins,
+          isPut: false,
+          cause,
+        });
+        return;
+      }
+    }
+
+    await this.displayMessageInterface(context);
+  }
+
+  onDayStats(guild, context) {
+    const { professions } = guild.data;
+    ProfessionsUtils.removeUnavailableProfessions({ guild, professions });
+
+    const entries = Object.entries(professions ?? {});
+    if (!entries.length) {
+      delete guild.data.professions;
+      return;
+    }
+
+    const { expenditure, salaryTable } = ProfessionsUtils.createReports({
+      guild,
+      professions,
+    });
+
+    if (guild.data.coins < expenditure) {
+      guild.logSend({
+        title: `Сегодня не были выданы зарплаты`,
+        description: `В казне сервера слишком мало коинов, лишь ${guild.data.coins}, в то время как на выплаты требуется ${expenditure} <:coin:637533074879414272>`,
+        color: "#ffff00",
+      });
+      return;
+    }
+
+    for (const [userId, salary] of Object.entries(salaryTable)) {
+      const user = guild.members.cache.get(userId).user;
+      addResource({
+        user,
+        value: salary,
+        executor: null,
+        source: "command.bank.salary",
+        resource: PropertiesEnum.coins,
+        context: {
+          primary: context,
+          ...context,
+          guild,
+          expenditure,
+          salaryTable,
+        },
+      });
+    }
+
+    guild.data.coins -= expenditure;
+    guild.logSend({
+      title: `Были выданы зарплаты`,
+      description: `С казны было автоматически списано ${Util.ending(
+        expenditure,
+        "коин",
+        "ов",
+        "",
+        "а",
+      )} на заработные платы пользователям\nИх список вы можете просмотреть в команде \`!банк\`\nУчастников получило коины: ${
+        Object.keys(salaryTable).length
+      }`,
+    });
+  }
+
   async onReaction(data, context) {
     const { interaction, isAdmin } = context;
 
@@ -432,7 +591,7 @@ class Command extends BaseCommand {
           }
 
           if (data.react === "❎") {
-            data.questionMessage = interaction.channel.msg({
+            data.questionMessage = await interaction.channel.msg({
               title: "Укажите айди роли профессии, для её удаления",
             });
             data.answer = await interaction.channel.awaitMessage({
@@ -468,165 +627,6 @@ class Command extends BaseCommand {
         return data.message.delete();
     }
   }
-  async displayMessageInterface(context) {
-    const { guildData, isAdmin, interaction } = context;
-
-    const embed = {
-      title: "Казна сервера",
-      description: `В хранилище **${Util.NumberFormatLetterize(
-        guildData.coins,
-      )}** <:coin:637533074879414272>\n\n<a:message:794632668137652225> ⠿ Заработные платы\n<:meow:637290387655884800> ⠿ Положить\n<:merunna:755844134677512273> ${[
-        ..."⠯⠷⠟⠻",
-      ].random()} Взять`,
-      author: {
-        name: interaction.guild.name,
-        iconURL: interaction.guild.iconURL(),
-      },
-      image:
-        "https://media.discordapp.net/attachments/629546680840093696/830774000597991434/96-967226_tree-forest-green-vector-map-of-the-trees.png",
-    };
-
-    const startsCoinsCount = guildData.coins;
-    let react;
-    const reactions = [
-      "637290387655884800",
-      isAdmin ? "755844134677512273" : null,
-      "794632668137652225",
-    ];
-    let message = await interaction.channel.msg(embed);
-    embed.edit = true;
-
-    while (true) {
-      message = await message.msg(embed);
-      react = await message.awaitReact(
-        { user: interaction.user, removeType: "all" },
-        ...reactions,
-      );
-
-      await this.onReaction({ react, embed, message }, context);
-      if (context.isEnd) {
-        return;
-      }
-
-      embed.description += `\n\nВ хранилище: ${Util.ending(
-        guildData.coins,
-        "золот",
-        "ых",
-        "ая",
-        "ых",
-      )}!\nКоличество коинов ${
-        guildData.coins - startsCoinsCount === 0
-          ? "не изменилось"
-          : guildData.coins - startsCoinsCount > 0
-            ? "увеличилось на " + (guildData.coins - startsCoinsCount)
-            : "уменьшилось на " + (startsCoinsCount - guildData.coins)
-      } <:coin:637533074879414272>`;
-    }
-  }
-
-  async onChatInput(msg, interaction) {
-    const context = this.getContext(interaction);
-
-    if (context.parsedParams) {
-      const { action, coins, cause } = context.parsedParams;
-      if (action === "положить" || action === "put") {
-        await this.interactWithBank(context, {
-          value: coins,
-          isPut: true,
-          cause,
-        });
-        return;
-      }
-
-      if (action === "взять" || action === "take") {
-        await this.interactWithBank(context, {
-          value: coins,
-          isPut: false,
-          cause,
-        });
-        return;
-      }
-    }
-
-    await this.displayMessageInterface(context);
-  }
-
-  onDayStats(guild, context) {
-    const { professions } = guild.data;
-    ProfessionsUtils.removeUnavailableProfessions({ guild, professions });
-
-    const entries = Object.entries(professions ?? {});
-    if (!entries.length) {
-      delete guild.data.professions;
-      return;
-    }
-
-    const { expenditure, salaryTable } = ProfessionsUtils.createReports({
-      guild,
-      professions,
-    });
-
-    if (guild.data.coins < expenditure) {
-      guild.logSend({
-        title: `Сегодня не были выданы зарплаты`,
-        description: `В казне сервера слишком мало коинов, лишь ${guild.data.coins}, в то время как на выплаты требуется ${expenditure} <:coin:637533074879414272>`,
-        color: "#ffff00",
-      });
-      return;
-    }
-
-    for (const [userId, salary] of Object.entries(salaryTable)) {
-      const user = guild.members.cache.get(userId).user;
-      addResource({
-        user,
-        value: salary,
-        executor: null,
-        source: "command.bank.salary",
-        resource: PropertiesEnum.coins,
-        context: {
-          primary: context,
-          ...context,
-          guild,
-          expenditure,
-          salaryTable,
-        },
-      });
-    }
-
-    guild.data.coins -= expenditure;
-    guild.logSend({
-      title: `Были выданы зарплаты`,
-      description: `С казны было автоматически списано ${Util.ending(
-        expenditure,
-        "коин",
-        "ов",
-        "",
-        "а",
-      )} на заработные платы пользователям\nИх список вы можете просмотреть в команде \`!банк\`\nУчастников получило коины: ${
-        Object.keys(salaryTable).length
-      }`,
-    });
-  }
-
-  options = {
-    name: "bank",
-    id: 50,
-    media: {
-      description:
-        "Во-первых, банк позволяет не смешивать приключения с обязанностями, а во-вторых, это просто удобно.\nТакже с их помощью вы можете создать на сервере профессии с автоматически выдаваемыми зарплатами!",
-      examople: `!bank <"взять" | "положить"> <coins | "+"> #"+" обозначает "Все коины, которые у вас есть"`,
-      poster:
-        "https://cdn.discordapp.com/attachments/769566192846635010/872463081672949890/bank.gif",
-    },
-    accessibility: {
-      publicized_on_level: 2,
-    },
-    alias: "cash банк казна скарбниця",
-    allowDM: true,
-    cooldown: 50_000,
-    cooldownTry: 3,
-    type: "guild",
-  };
 }
 
 export default Command;
