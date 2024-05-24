@@ -12,6 +12,23 @@
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 
     <script defer src="build/svelte-bundle/bundle.js"></script>
+    <script async>
+      window.addEventListener(
+        "load",
+        async () => {
+          const scopedName = "/pwa_worker_up";
+          const previous = await navigator.serviceWorker.getRegistrations();
+          if (
+            previous.some(({ active }) => active.scriptURL.includes(scopedName))
+          ) {
+            return;
+          }
+
+          navigator.serviceWorker.register(scopedName);
+        },
+        { once: true },
+      );
+    </script>
   </head>
 
   <body></body>

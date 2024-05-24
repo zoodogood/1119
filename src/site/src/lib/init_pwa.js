@@ -10,7 +10,5 @@ export async function init_pwa_worker() {
     href: "manifest.json",
     id: unique,
   });
-  console.log(manifestNode);
   document.head.appendChild(manifestNode);
-  await navigator.serviceWorker.register("/pwa_worker_up");
 }

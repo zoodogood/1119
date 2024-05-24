@@ -9,6 +9,10 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+addEventListener("activate", async () => {
+  await self.registration.navigationPreload.enable();
+});
+
 async function precache() {
   const cache = await caches.open(CACHE_NAME);
   return await cache.addAll(PRECACHED);

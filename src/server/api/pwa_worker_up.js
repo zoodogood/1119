@@ -6,7 +6,7 @@ import Path from "path";
 
 const ROOT = "static";
 const root = Path.join(process.cwd(), ROOT);
-const target = "service_worker.js";
+const target = "pwa_service_worker.js";
 
 class Route extends BaseRoute {
   prefix = PREFIX;
