@@ -1,10 +1,35 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
+import { SECOND } from "#constants/globals/time.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import { PermissionFlagsBits } from "discord.js";
+import { ParserTime } from "#lib/parsers.js";
+import { dayjs, sleep } from "#lib/safe-utils.js";
+import { CliParser } from "@zoodogood/utils/CliParser";
+import { FormattingPatterns, PermissionFlagsBits } from "discord.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "mute",
+    id: 17,
+    media: {
+      description:
+        "Заглушает пользователя во всех каналах сервера не давая ему отправлять сообщения. Необходимо её использовать, когда участники мешают беседе или нарушают правила.\n\n❓ Вы можете указать время, через которое пользователь автоматически снова сможет общаться.\nСм. также !unmute",
+      example:
+        "!mute {memb} <cause> <time> #Вы можете вводить аргументы в любом порядке, время в формате 1 день 3 с 15min",
+      poster:
+        "https://images-ext-2.discordapp.net/external/fBq1I0O3Tdhoi-DeVVm7nDadXN-uzdgKveyekp-Vm88/https/media.discordapp.net/attachments/769566192846635010/872776969341796382/mute.gif",
+    },
+    accessibility: {
+      publicized_on_level: 7,
+    },
+    alias: "мут мьют заглушить заглушити",
+    expectMention: true,
+    allowDM: true,
+    type: "guild",
+    myPermissions: 268435456n,
+    Permissions: 4194304n,
+  };
+
   async onChatInput(msg, interaction) {
     const guild = interaction.guild;
     const guildMember = guild.members.resolve(interaction.mention);
@@ -14,21 +39,21 @@ class Command extends BaseCommand {
       return msg.msg({
         title: "Вы не можете выдать себе мут, могу только вам его прописать.",
         author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
     if (interaction.mention === client.user)
       return msg.msg({
         title:
           "Попробуйте другие способы меня замутить, например, объявите за мою поимку награду в 100 000 коинов <:coin:637533074879414272>",
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
     if (interaction.mention.bot)
       return msg.msg({
         title: "Если этот бот вам надоедает, то знайте — мне он тоже надоел",
         description: "Но замутить его я все-равно не могу.",
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
     if (
@@ -38,55 +63,28 @@ class Command extends BaseCommand {
       return msg.msg({
         title: "Вы не можете выдать мут участнику, роли которого выше ваших",
         author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
     if (guildMember.permissions.has(PermissionFlagsBits.Administrator))
       return msg.msg({
         title: "Вы не можете выдать мут участнику, с правами Администратора",
         author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
-    interaction.params = interaction.params
-      .replace(RegExp(`<@!?${interaction.mention.id}>`), "")
-      .trim();
+    const parsed = new CliParser()
+      .setText(interaction.params)
+      .captureByMatch({ regex: FormattingPatterns.User, name: "memb" })
+      .captureByMatch({ regex: new ParserTime().regex, name: "target_time" })
+      .captureResidue({ name: "cause" })
+      .collect();
 
-    // parse timestamps
-    let timeToEnd = 0;
+    const timeToEnd = ParserTime.toNumber(
+      parsed.captures.get("target_time")?.toString(),
+    );
 
-    while (true) {
-      const regBase = "(\\d+?)\\s*(d|д|h|ч|m|м|s|с)[a-zA-Zа-яА-Я]*";
-      const reg = RegExp(`^${regBase}|${regBase}$`);
-      const matched = interaction.params.match(reg);
-
-      if (!matched) {
-        break;
-      }
-
-      if (matched[3]) {
-        matched[1] = matched[3];
-        matched[2] = matched[4];
-      }
-
-      const [value, timeType] = [matched[1], matched[2]];
-
-      interaction.params = interaction.params.replace(matched[0], "").trim();
-      timeToEnd +=
-        value *
-        {
-          s: 1000,
-          m: 60000,
-          h: 3600000,
-          d: 84000000,
-          с: 1000,
-          м: 60000,
-          ч: 3600000,
-          д: 84000000,
-        }[timeType];
-    }
-
-    const cause = interaction.params;
+    const cause = parsed.captures.get("cause")?.toString();
 
     // find muted role
     if (guild.data.mute_role)
@@ -116,23 +114,19 @@ class Command extends BaseCommand {
         msg.guild.id,
         guildMember.id,
       ]);
-      timeToEnd = new Intl.DateTimeFormat("ru-ru", {
-        day: "numeric",
-        month: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(Date.now() + timeToEnd);
     }
 
     guildMember.roles.add(role, `Muted from ${msg.author.id}`);
 
-    await Util.sleep(700);
+    await sleep(700);
 
     const embed = {
       description: `Пользователь ${guildMember} был замучен.${
         cause ? `\nПричина: ${cause}` : ""
       }${
-        timeToEnd ? `\nОграничения автоматически будут сняты ${timeToEnd}` : ""
+        timeToEnd
+          ? `\nОграничения автоматически будут сняты ${dayjs(timeToEnd + Date.now()).format("MM.DD, HH:mm")}`
+          : ""
       }`,
       color: "#de3c37",
       author: {
@@ -147,26 +141,6 @@ class Command extends BaseCommand {
     msg.guild.logSend({ ...embed, title: "Участнику выдан мут" });
     msg.msg({ ...embed, title: "Участник был замучен" });
   }
-
-  options = {
-    name: "mute",
-    id: 17,
-    media: {
-      description:
-        "Заглушает пользователя во всех каналах сервера не давая ему отправлять сообщения. Необходимо её использовать, когда участники мешают беседе или нарушают правила.\n\n❓ Вы можете указать время, через которое пользователь автоматически снова сможет общаться.\n\n✏️\n```python\n!mute {memb} <cause> <time> #Вы можете вводить аргументы в любом порядке, время в формате 1 день 3 с 15min\n```",
-      poster:
-        "https://images-ext-2.discordapp.net/external/fBq1I0O3Tdhoi-DeVVm7nDadXN-uzdgKveyekp-Vm88/https/media.discordapp.net/attachments/769566192846635010/872776969341796382/mute.gif",
-    },
-    accessibility: {
-      publicized_on_level: 7,
-    },
-    alias: "мут мьют заглушить заглушити",
-    expectMention: true,
-    allowDM: true,
-    type: "guild",
-    myPermissions: 268435456n,
-    Permissions: 4194304n,
-  };
 }
 
 export default Command;
