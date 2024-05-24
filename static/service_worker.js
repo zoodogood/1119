@@ -1,3 +1,5 @@
+// ========================================= Use service worker =========================================
+
 const ANY_PAGE_ENDPOINT = "/pages";
 const PRECACHED = ["/", ANY_PAGE_ENDPOINT];
 const CACHE_NAME = "cache_v1";
@@ -7,13 +9,13 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-
 async function precache() {
   const cache = await caches.open(CACHE_NAME);
   return await cache.addAll(PRECACHED);
 }
 
 function process_pages_path({ event, url }) {
+  // Regex must equal to src/server/api/pages.js some regexp
   if (!url.pathname.match(/^\/(?:(?:ru|ua|en)\/)?pages/)) {
     return false;
   }
