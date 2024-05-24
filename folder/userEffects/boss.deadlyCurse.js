@@ -1,9 +1,7 @@
 import app from "#app";
 import { MINUTE } from "#constants/globals/time.js";
-import BossManager, {
-  BossEffects,
-  update_attack_cooldown,
-} from "#lib/modules/BossManager.js";
+import { update_attack_cooldown } from "#folder/entities/boss/attack.js";
+import BossManager, { BossEffects } from "#lib/modules/BossManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 

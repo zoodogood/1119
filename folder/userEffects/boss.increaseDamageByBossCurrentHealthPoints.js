@@ -1,4 +1,4 @@
-import BossManager from "#lib/modules/BossManager.js";
+import { current_health } from "#folder/entities/boss/boss.js";
 import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 
 export default {
@@ -17,9 +17,7 @@ export default {
       const { attackContext, boss } = data;
       const { power, multiplayer } = effect.values;
 
-      const thresholder = BossManager.calculateHealthPointThresholder(
-        boss.level,
-      );
+      const thresholder = current_health(boss);
       const currentHealth = thresholder - boss.damageTaken;
       const damage = Math.floor(currentHealth * power * multiplayer);
       attackContext.baseDamage += damage;
