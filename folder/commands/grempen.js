@@ -1,13 +1,13 @@
 // @ts-check
-import { BaseCommand } from "#lib/BaseCommand.js";
-import DataManager from "#lib/modules/DataManager.js";
-import { Actions } from "#lib/modules/ActionManager.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { DAY } from "#constants/globals/time.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { addResource, ending, joinWithAndSeparator, sleep } from "#lib/util.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import { Actions } from "#lib/modules/ActionManager.js";
+import DataManager from "#lib/modules/DataManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { addResource, ending, joinWithAndSeparator, sleep } from "#lib/util.js";
 
 async function get_products() {
   const { grempen_products } = await import(
@@ -17,6 +17,12 @@ async function get_products() {
 }
 
 class Slot {
+  emoji;
+  index;
+  isBoughted = false;
+  label;
+  price;
+  product;
   constructor(product, resolved, index) {
     this.product = product;
     this.index = index;
@@ -25,15 +31,14 @@ class Slot {
     this.label = label;
     this.price = price;
   }
-  product;
-  isBoughted = false;
-  index;
-  price;
-  label;
-  emoji;
 }
 
 class BoughtContext extends BaseContext {
+  commandRunContext;
+  phrase;
+  price;
+  product;
+  slot;
   constructor(commandRunContext, slot) {
     super("command.grempen.bought", commandRunContext);
     this.commandRunContext = commandRunContext;
@@ -41,11 +46,6 @@ class BoughtContext extends BaseContext {
     this.product = slot.product;
     this.price = slot.price;
   }
-  product;
-  price;
-  commandRunContext;
-  slot;
-  phrase;
 }
 // MARK: TodayProducts
 function slotIsBoughted(userData, index) {
@@ -56,11 +56,11 @@ function slotIsBoughted(userData, index) {
 }
 
 class CommandRunContext extends BaseCommandRunContext {
+  _interface = new MessageInterface();
+  options = {};
   /**@type {Slot[]} */
   slots = [];
   userData;
-  options = {};
-  _interface = new MessageInterface();
 
   static async new(interaction, command) {
     const context = new this(interaction, command);
@@ -149,6 +149,123 @@ async function process_bought(boughtContext) {
   });
 }
 class Command extends BaseCommand {
+  options = {
+    name: "grempen",
+    id: 25,
+    media: {
+      description:
+        "Лавка бесполезных вещей, цены которых невероятно завышены, на удивление, заведение имеет хорошую репутацию и постоянных клиентов.",
+      example: `!grempen #без аргументов`,
+    },
+    alias:
+      "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop шалун ґремпенс крамниця магазин",
+    allowDM: true,
+    cooldown: 2_000,
+    cooldownTry: 2,
+    type: "other",
+    myChannelPermissions: 8256n,
+  };
+
+  async createInterface(context) {
+    const { _interface, userData } = context;
+    _interface.setChannel(context.channel);
+    _interface.setUser(context.user);
+    _interface.setRender(async () => await this.getEmbed(context));
+    const reactions = () => {
+      const slots = context.slots.filter(
+        (slot) =>
+          !slot.isBoughted &&
+          (isNaN(slot.price) || slot.price <= userData.coins),
+      );
+      return slots.length ? slots.map(({ emoji }) => emoji) : ["❌"];
+    };
+
+    _interface.setReactions(reactions());
+    _interface.emitter.on(
+      MessageInterface.Events.allowed_collect,
+      async ({ interaction }) => {
+        await this.onReaction(interaction, context, _interface);
+        _interface.setReactions(reactions());
+        _interface.updateMessage();
+      },
+    );
+
+    _interface.emitter.on(MessageInterface.Events.before_close, () => {
+      context.grempenIsClosed = true;
+    });
+
+    _interface.updateMessage();
+  }
+  async getEmbed(context) {
+    const { userData, channel } = context;
+    if (userData.coins < 80) {
+      channel.sendTyping();
+      await sleep(1200);
+
+      return {
+        title: "У вас ещё остались коины? Нет? Ну и проваливайте!",
+        edit: true,
+        delete: 3_500,
+      };
+    }
+
+    if (context.grempenIsClosed) {
+      return {
+        title: "Лавка закрыта, приходите ещё <:grempen:753287402101014649>",
+        edit: true,
+        color: "#400606",
+        description:
+          "Чтобы открыть её снова, введите команду `!grempen`, новые товары появляются каждый день.",
+        image:
+          "https://cdn.discordapp.com/attachments/629546680840093696/847381047939432478/grempen.png",
+      };
+    }
+    const slots_to_fields = () => {
+      return context.slots.map((slot) => {
+        const { emoji, label } = slot;
+        const value = slot.isBoughted ? "Куплено" : slot.price;
+        const name = `${emoji} ${label}`;
+
+        return { name, value, inline: true };
+      });
+    };
+
+    const _default = {
+      title: "<:grempen:753287402101014649> Зловещая лавка",
+      description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${userData.coins}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`,
+      fields: slots_to_fields(),
+      color: "#400606",
+      footer: { text: "Только сегодня, самые горячие цены!" },
+    };
+
+    if (context.slots.some((slot) => slot.isBoughted)) {
+      Object.assign(_default, {
+        description: `У вас есть-остались коины? Отлично! **${userData.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`,
+        footer: { text: "Приходите ещё, акции каждый день!" },
+      });
+    }
+
+    return _default;
+  }
+
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
+  async onReaction(interaction, context, _interface) {
+    const { customId } = interaction;
+    if (customId === "❌") {
+      context.grempenIsClosed = true;
+      return;
+    }
+    const slot = context.slots.find(
+      (slot) => slot.emoji === interaction.customId,
+    );
+    await bought_slot(slot.index, context);
+  }
+
   process_mention(context) {
     const { interaction, channel } = context;
     if (!interaction.mention) {
@@ -198,11 +315,6 @@ class Command extends BaseCommand {
     return true;
   }
 
-  async onChatInput(msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
-  }
   async run(context) {
     const { interaction } = context;
     const { channel } = interaction;
@@ -275,118 +387,6 @@ class Command extends BaseCommand {
 
     this.createInterface(context);
   }
-
-  async getEmbed(context) {
-    const { userData, channel } = context;
-    if (userData.coins < 80) {
-      channel.sendTyping();
-      await sleep(1200);
-
-      return {
-        title: "У вас ещё остались коины? Нет? Ну и проваливайте!",
-        edit: true,
-        delete: 3_500,
-      };
-    }
-
-    if (context.grempenIsClosed) {
-      return {
-        title: "Лавка закрыта, приходите ещё <:grempen:753287402101014649>",
-        edit: true,
-        color: "#400606",
-        description:
-          "Чтобы открыть её снова, введите команду `!grempen`, новые товары появляются каждый день.",
-        image:
-          "https://cdn.discordapp.com/attachments/629546680840093696/847381047939432478/grempen.png",
-      };
-    }
-    const slots_to_fields = () => {
-      return context.slots.map((slot) => {
-        const { emoji, label } = slot;
-        const value = slot.isBoughted ? "Куплено" : slot.price;
-        const name = `${emoji} ${label}`;
-
-        return { name, value, inline: true };
-      });
-    };
-
-    const _default = {
-      title: "<:grempen:753287402101014649> Зловещая лавка",
-      description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${userData.coins}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`,
-      fields: slots_to_fields(),
-      color: "#400606",
-      footer: { text: "Только сегодня, самые горячие цены!" },
-    };
-
-    if (context.slots.some((slot) => slot.isBoughted)) {
-      Object.assign(_default, {
-        description: `У вас есть-остались коины? Отлично! **${userData.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`,
-        footer: { text: "Приходите ещё, акции каждый день!" },
-      });
-    }
-
-    return _default;
-  }
-
-  async onReaction(interaction, context, _interface) {
-    const { customId } = interaction;
-    if (customId === "❌") {
-      context.grempenIsClosed = true;
-      return;
-    }
-    const slot = context.slots.find(
-      (slot) => slot.emoji === interaction.customId,
-    );
-    await bought_slot(slot.index, context);
-  }
-
-  async createInterface(context) {
-    const { _interface, userData } = context;
-    _interface.setChannel(context.channel);
-    _interface.setUser(context.user);
-    _interface.setRender(async () => await this.getEmbed(context));
-    const reactions = () => {
-      const slots = context.slots.filter(
-        (slot) =>
-          !slot.isBoughted &&
-          (isNaN(slot.price) || slot.price <= userData.coins),
-      );
-      return slots.length ? slots.map(({ emoji }) => emoji) : ["❌"];
-    };
-
-    _interface.setReactions(reactions());
-    _interface.emitter.on(
-      MessageInterface.Events.allowed_collect,
-      async ({ interaction }) => {
-        await this.onReaction(interaction, context, _interface);
-        _interface.setReactions(reactions());
-        _interface.updateMessage();
-      },
-    );
-
-    _interface.emitter.on(MessageInterface.Events.before_close, () => {
-      context.grempenIsClosed = true;
-    });
-
-    _interface.updateMessage();
-  }
-
-  options = {
-    name: "grempen",
-    id: 25,
-    media: {
-      description:
-        "Лавка бесполезных вещей, цены которых невероятно завышены, на удивление, заведение имеет хорошую репутацию и постоянных клиентов.",
-      example: `!grempen #без аргументов`,
-    },
-    alias:
-      "гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop шалун ґремпенс крамниця магазин",
-    allowDM: true,
-    cooldown: 2_000,
-    cooldownTry: 2,
-    type: "other",
-    myChannelPermissions: 8256n,
-  };
 }
 
 export default Command;
