@@ -1,6 +1,7 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
@@ -186,8 +187,9 @@ class Command extends BaseCommand {
         return;
       }
 
-      const _context = new BaseContext(`comamnd.bank.interacted`, context);
-      Object.assign(_context, {
+      const _context = new BaseContext(`comamnd.bank.interacted`, {
+        primary: context,
+        ...takeInteractionProperties(context),
         value,
         cause,
         isPut,
