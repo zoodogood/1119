@@ -1,11 +1,15 @@
+import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import * as Util from "#lib/util.js";
 import * as SnowyEvent from "#lib/snowyEvent.js";
-import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
+import * as Util from "#lib/util.js";
 
 class Event extends BaseEvent {
+  options = {
+    name: "users/getCoinsFromMessage",
+  };
+
   constructor() {
     const EVENT = "users/getCoinsFromMessage";
     super(EventsManager.emitter, EVENT);
@@ -22,7 +26,7 @@ class Event extends BaseEvent {
 
     if (guild && "cloverEffect" in guild.data) {
       const value = CALCULATE_CLOVER_MULTIPLAYER(guild.data.cloverEffect.uses);
-      const multiplayer = value * 2 ** (userData.voidMysticClover ?? 0);
+      const multiplayer = value * 1.2 ** (userData.voidMysticClover ?? 0);
       k += multiplayer;
     }
 
@@ -90,10 +94,6 @@ class Event extends BaseEvent {
     this.onGetCoinsFromMessage({ user, message });
     SnowyEvent.onGetCoinsFromMessage({ user, message });
   }
-
-  options = {
-    name: "users/getCoinsFromMessage",
-  };
 }
 
 export default Event;

@@ -1,12 +1,12 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
-import DataManager from "#lib/modules/DataManager.js";
-import { Actions } from "#lib/modules/ActionManager.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
   KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
   KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
 } from "#constants/users/commands.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
+import { Actions } from "#lib/modules/ActionManager.js";
+import DataManager from "#lib/modules/DataManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
   bonusesBase = [
@@ -209,7 +209,7 @@ class Command extends BaseCommand {
     {
       emoji: "🍵",
       id: "updateCloverEffect",
-      description: `Удваивает для вас всякий бонус клевера\nНесколько бонусов складываются`,
+      description: `На 20% усиливает для вас всякий бонус клевера\nНесколько бонусов складываются`,
       _weight: 2,
       action(user, interaction) {
         Util.addResource({
@@ -471,6 +471,83 @@ class Command extends BaseCommand {
     },
   ];
 
+  options = {
+    name: "witch",
+    id: 48,
+    media: {
+      description:
+        "Котелок даёт неплохие бонусы, а так же вводит концовку в боте — используя котёл 20 раз, вы раскроете её, попутно читая небольшой рассказ и уничтожив парочку вселенных.",
+      example: `!witch #без аргументов`,
+    },
+    accessibility: {
+      publicized_on_level: 7,
+    },
+    alias: "boiler котёл котел ведьма відьма",
+    allowDM: true,
+    type: "user",
+  };
+
+  async boilerChoise({ interaction, boiler }) {
+    const user = interaction.user;
+
+    const getWeight = (bonus) =>
+      typeof bonus._weight === "function"
+        ? bonus._weight(user, interaction)
+        : bonus._weight;
+
+    const bonusesList = this.bonusesBase
+      .filter((bonus) => !bonus.filter || bonus.filter(user, interaction))
+      .map((bonus) => ({ ...bonus, _weight: getWeight(bonus) }));
+
+    const bonuses = [...new Array(3)].map(() =>
+      bonusesList.random({ pop: true, weights: true }),
+    );
+
+    const getDescription = (bonus) =>
+      typeof bonus.description === "function"
+        ? bonus.description(user, interaction)
+        : bonus.description;
+    const bonusesDescriptionContent = bonuses
+      .map((bonus) => `${bonus.emoji}${getDescription(bonus)}`)
+      .join("\n\n");
+
+    await boiler.msg({
+      title:
+        "<a:placeForVoid:780051490357641226> Выберите второстепенный бонус",
+      description: `Вы можете выбрать всего одно сокровище, хорошенько подумайте, прежде чем что-то взять.\n${bonusesDescriptionContent}`,
+      edit: true,
+      color: "#3d17a0",
+    });
+
+    const react =
+      (await boiler.awaitReact(
+        { user: interaction.user, removeType: "all" },
+        ...bonuses.map((bonus) => bonus.emoji),
+      )) || bonuses.random().emoji;
+
+    bonuses.find((bonus) => bonus.emoji === react).action(user, interaction);
+
+    boiler.msg({
+      title: "Ритуал завершен...",
+      description: `Вы выбрали ${react}\nОстальные бонусы более недоступны.\n\n${bonusesDescriptionContent}`,
+      color: "#3d17a0",
+      edit: true,
+    });
+    return;
+  }
+
+  calculateExperienceBonus(userData) {
+    return Math.max(0.97716 ** userData.voidRituals, 0.625);
+  }
+
+  calculateRitualPrice(userData, guildData) {
+    const treeLevelBonus = Math.floor((guildData.treeLevel ?? 0) / 10);
+
+    const basic = Math.min(2 + userData.voidRituals, 20) - treeLevelBonus;
+    const multiplayer = 1 - 0.1 * (userData.voidPrice || 0);
+    return Math.floor(basic * multiplayer);
+  }
+
   displayStory(interaction) {
     let storyContent = "";
     const add = (content) => (storyContent = `${content}\n${storyContent}`);
@@ -561,63 +638,6 @@ class Command extends BaseCommand {
     });
   }
 
-  calculateRitualPrice(userData, guildData) {
-    const treeLevelBonus = Math.floor((guildData.treeLevel ?? 0) / 10);
-
-    const basic = Math.min(2 + userData.voidRituals, 20) - treeLevelBonus;
-    const multiplayer = 1 - 0.1 * (userData.voidPrice || 0);
-    return Math.floor(basic * multiplayer);
-  }
-
-  async boilerChoise({ interaction, boiler }) {
-    const user = interaction.user;
-
-    const getWeight = (bonus) =>
-      typeof bonus._weight === "function"
-        ? bonus._weight(user, interaction)
-        : bonus._weight;
-
-    const bonusesList = this.bonusesBase
-      .filter((bonus) => !bonus.filter || bonus.filter(user, interaction))
-      .map((bonus) => ({ ...bonus, _weight: getWeight(bonus) }));
-
-    const bonuses = [...new Array(3)].map(() =>
-      bonusesList.random({ pop: true, weights: true }),
-    );
-
-    const getDescription = (bonus) =>
-      typeof bonus.description === "function"
-        ? bonus.description(user, interaction)
-        : bonus.description;
-    const bonusesDescriptionContent = bonuses
-      .map((bonus) => `${bonus.emoji}${getDescription(bonus)}`)
-      .join("\n\n");
-
-    await boiler.msg({
-      title:
-        "<a:placeForVoid:780051490357641226> Выберите второстепенный бонус",
-      description: `Вы можете выбрать всего одно сокровище, хорошенько подумайте, прежде чем что-то взять.\n${bonusesDescriptionContent}`,
-      edit: true,
-      color: "#3d17a0",
-    });
-
-    const react =
-      (await boiler.awaitReact(
-        { user: interaction.user, removeType: "all" },
-        ...bonuses.map((bonus) => bonus.emoji),
-      )) || bonuses.random().emoji;
-
-    bonuses.find((bonus) => bonus.emoji === react).action(user, interaction);
-
-    boiler.msg({
-      title: "Ритуал завершен...",
-      description: `Вы выбрали ${react}\nОстальные бонусы более недоступны.\n\n${bonusesDescriptionContent}`,
-      color: "#3d17a0",
-      edit: true,
-    });
-    return;
-  }
-
   displayVoidNotEnought({ interaction, userData, reference = null }) {
     const description = `Добудьте ещё ${Util.ending(
       interaction.minusVoids - userData.void,
@@ -653,33 +673,8 @@ class Command extends BaseCommand {
     });
   }
 
-  calculateExperienceBonus(userData) {
-    return Math.max(0.97716 ** userData.voidRituals, 0.625);
-  }
-
   getContext(interaction) {
     return { interaction };
-  }
-
-  process_displayMemberBoiler(interaction) {
-    if (!interaction.mention) {
-      return false;
-    }
-    const userData = interaction.mention.data;
-    interaction.channel.msg({
-      title:
-        "<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг",
-      description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${
-        userData.name
-      }, использовал котёл ${userData.voidRituals} раз.\nЕго бонус к опыту: ${(
-        100 *
-        (1 / this.calculateExperienceBonus(userData))
-      ).toFixed(
-        2,
-      )}% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`,
-      color: "#3d17a0",
-    });
-    return true;
   }
 
   async onChatInput(msg, interaction) {
@@ -772,21 +767,26 @@ class Command extends BaseCommand {
     return;
   }
 
-  options = {
-    name: "witch",
-    id: 48,
-    media: {
-      description:
-        "Котелок даёт неплохие бонусы, а так же вводит концовку в боте — используя котёл 20 раз, вы раскроете её, попутно читая небольшой рассказ и уничтожив парочку вселенных.",
-      example: `!witch #без аргументов`,
-    },
-    accessibility: {
-      publicized_on_level: 7,
-    },
-    alias: "boiler котёл котел ведьма відьма",
-    allowDM: true,
-    type: "user",
-  };
+  process_displayMemberBoiler(interaction) {
+    if (!interaction.mention) {
+      return false;
+    }
+    const userData = interaction.mention.data;
+    interaction.channel.msg({
+      title:
+        "<a:cotik:768047054772502538> Друг странного светящегося кота — мой друг",
+      description: `Сегодня Вы просматриваете профиль другого человека. Законно ли это? Конечно законно, он не против.\n${
+        userData.name
+      }, использовал котёл ${userData.voidRituals} раз.\nЕго бонус к опыту: ${(
+        100 *
+        (1 / this.calculateExperienceBonus(userData))
+      ).toFixed(
+        2,
+      )}% от котла.\n<a:placeForVoid:780051490357641226>\n\nСъешь ещё этих французких булок, да выпей чаю`,
+      color: "#3d17a0",
+    });
+    return true;
+  }
 }
 
 export default Command;
