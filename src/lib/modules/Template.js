@@ -37,6 +37,12 @@ function isConstruct(fn) {
   return true;
 }
 
+const PERMISSIONS_MASK_ENUM = {
+  USER: 1,
+  GUILD_MANAGER: 2,
+  DEVELOPER: 7,
+};
+
 function inspectStructure(structure) {
   if (!structure) {
     return null;
@@ -64,31 +70,31 @@ class Template {
         },
         name: "interaction",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       constants: {
         getContent: () => Constants,
         name: "constants",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       config: {
         getContent: () => config,
         name: "config",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       CurrentGuildSpace: {
         getContent: (context) => new GuildVariablesManager(context.guild.data),
         name: "CurrentGuildSpace",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
+          scope: PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
         },
         filter: (context) => "guild" in context,
       },
@@ -96,8 +102,8 @@ class Template {
         getContent: (context) => context.guild.data,
         name: "guildData",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
         filter: (context) => "guild" in context,
       },
@@ -105,8 +111,8 @@ class Template {
         getContent: (context) => context.user.data,
         name: "userData",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
         filter: (context) => "user" in context,
       },
@@ -133,149 +139,149 @@ class Template {
           ),
         name: "Util",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.USER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.USER,
         },
       },
       ErrorsHandler: {
         getContent: () => ErrorsHandler,
         name: "ErrorsHandler",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       CommandsManager: {
         getContent: () => CommandsManager,
         name: "CommandsManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       EventsManager: {
         getContent: () => EventsManager,
         name: "EventsManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       UserEffectManager: {
         getContent: () => UserEffectManager,
         name: "UserEffectManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       BossManager: {
         getContent: () => BossManager,
         name: "BossManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       CurseManager: {
         getContent: () => CurseManager,
         name: "CurseManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       DataManager: {
         getContent: () => DataManager,
         name: "DataManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       TimeEventsManager: {
         getContent: () => TimeEventsManager,
         name: "TimeEventsManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       ActionManager: {
         getContent: () => ActionManager,
         name: "ActionManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       QuestManager: {
         getContent: () => QuestManager,
         name: "QuestManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       GuildVariablesManager: {
         getContent: () => GuildVariablesManager,
         name: "GuildVariablesManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       PropertiesManager: {
         getContent: () => PropertiesManager,
         name: "PropertiesManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       StorageManager: {
         getContent: () => StorageManager,
         name: "StorageManager",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       Discord: {
         getContent: () => Discord,
         name: "Discord",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       client: {
         getContent: () => client,
         name: "client",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
-          investigate: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       process: {
         getContent: () => process,
         name: "process",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       fetch: {
         getContent: () => fetch,
         name: "fetch",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       FileSystem: {
         getContent: () => FileSystem,
         name: "FileSystem",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.DEVELOPER,
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       executeCommand: {
@@ -301,8 +307,8 @@ class Template {
         },
         name: "executeCommand",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.USER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.USER,
         },
       },
       addEvaluateTemplateEffect: {
@@ -325,8 +331,8 @@ class Template {
         },
         name: "addEvaluateTemplateEffect",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.USER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.USER,
         },
       },
       ___: {
@@ -352,18 +358,12 @@ class Template {
         },
         name: "___",
         permissions: {
-          scope: this.PERMISSIONS_MASK_ENUM.USER,
-          investigate: this.PERMISSIONS_MASK_ENUM.USER,
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.USER,
         },
       },
     }),
   );
-
-  static PERMISSIONS_MASK_ENUM = {
-    USER: 1,
-    GUILD_MANAGER: 2,
-    DEVELOPER: 7,
-  };
 
   static sourceTypes = {
     /** Can be called independently from executor */
