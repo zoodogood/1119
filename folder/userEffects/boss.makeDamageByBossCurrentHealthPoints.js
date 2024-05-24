@@ -1,4 +1,4 @@
-import { current_health } from "#folder/entities/boss/boss.js";
+import { current_health } from "#folder/entities/boss/health.js";
 import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 
 export default {
