@@ -34,7 +34,7 @@ export default {
           UserEffectManager.removeEffect({ effect, user: targetUser });
         },
       };
-      sourceUser.action(ActionsMap.tunnelMessageReceive, context);
+      sourceUser?.action(ActionsMap.tunnelMessageReceive, context);
 
       const hasResponse = context.pong === true;
       if (!hasResponse) {
