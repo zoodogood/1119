@@ -543,7 +543,7 @@ export const grempen_products = transformToCollectionUsingKey([
       const curse = CurseManager.generate({
         hard: null,
         user,
-        boughtContext,
+        context: boughtContext,
       });
       CurseManager.init({ user, curse });
       const descriptionContent = CurseManager.interface({
