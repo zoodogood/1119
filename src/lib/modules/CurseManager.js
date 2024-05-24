@@ -1696,7 +1696,7 @@ class CurseManager {
           },
         },
         reward: 5,
-        filter: (user) => user.data.curses.length,
+        filter: (user) => user.data.curses?.length,
       },
       // MARK: End of curses list
       // {
