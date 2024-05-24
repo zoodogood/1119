@@ -1,5 +1,6 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { BaseContext } from "#lib/BaseContext.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { TimeEventsManager } from "#lib/modules/mod.js";
 import * as Utils from "#lib/util.js";
@@ -30,9 +31,13 @@ class Core {
 
     const _context = new BaseContext(
       `effectsManager.applyEffect.${effect.id}`,
-      context,
+      {
+        primary: context,
+        ...takeInteractionProperties(context),
+        effect,
+        ...createDefaultPreventable(),
+      },
     );
-    Object.assign(_context, { effect, ...createDefaultPreventable() });
     user.action(ActionsMap.beforeEffectInit, _context);
 
     if (_context.defaultPrevented()) {
