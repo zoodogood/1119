@@ -1,13 +1,13 @@
+import { DAY } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
+import { Actions } from "#lib/modules/ActionManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
-import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import { Actions } from "#lib/modules/ActionManager.js";
-import { Collection } from "@discordjs/collection";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
 import EventsManager from "#lib/modules/EventsManager.js";
-import { DAY } from "#constants/globals/time.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
+import * as Util from "#lib/util.js";
+import { Collection } from "@discordjs/collection";
 
 const { addResource } = Util;
 
@@ -64,6 +64,36 @@ const elementsEnum = Object.fromEntries(
 );
 
 class Command extends BaseCommand {
+  static BASIC_COINS_COEFFICIENT = 20;
+
+  static boss = {
+    manager: import("#lib/modules/BossManager.js").then(
+      (module) => (this.boss.manager = module.BossManager),
+    ),
+
+    ELEMENT_DAMAGE_MULTIPLAYER: 2,
+    isAvailable: (guild) => {
+      return this.boss.manager.isArrivedIn(guild);
+    },
+    makeDamage: (guild, user, { elementType }) => {
+      const boss = guild.data.boss;
+      const BASE_DAMAGE = 400;
+      const DAMAGE_SOURCE_TYPE = this.boss.manager.DAMAGE_SOURCES.thing;
+
+      const multiplayer =
+        boss.elementType === elementType
+          ? this.boss.ELEMENT_DAMAGE_MULTIPLAYER
+          : 1;
+      const damage = BASE_DAMAGE * multiplayer;
+
+      const dealt = this.boss.manager.makeDamage(boss, damage, {
+        sourceUser: user,
+        damageSourceType: DAMAGE_SOURCE_TYPE,
+      });
+      return dealt;
+    },
+  };
+
   static Elements = Elements;
 
   static EVENTS_LIST = [
@@ -1371,7 +1401,7 @@ class Command extends BaseCommand {
         const { user, userData } = context;
         addResource({
           user,
-          value: -Math.floor(userData.coins),
+          value: -Math.floor(userData.coins * 0.02),
           executor: user,
           source: "command.thing.event.curseOfWealth.earth.0",
           resource: PropertiesEnum.coins,
@@ -1383,7 +1413,7 @@ class Command extends BaseCommand {
           {
             action: async () => true,
             textOutput:
-              "Даже среди ваших верных друзей нашлись предатели: 2% золота было похищено.",
+              "Не стоит понапрасту разбрасываться деньгами, даже если у вас их много. Это может закончится плохо: 2% золота было разобрано.",
           },
           false,
           false,
@@ -1834,241 +1864,23 @@ class Command extends BaseCommand {
     },
   ];
 
-  static BASIC_COINS_COEFFICIENT = 20;
-
-  async run({ user, elementBase, channel, level, interaction }) {
-    const guild = channel.guild;
-    const userData = user.data;
-
-    const coefficient = Util.random(this.constructor.BASIC_COINS_COEFFICIENT, {
-      round: false,
-    });
-    const scene = {};
-    const context = {
-      user,
-      elementBase,
-      channel,
-      scene,
-      level,
-      guild,
-      userData,
-      coefficient,
-      interaction,
-    };
-
-    const _transformWeightOf = (event) =>
-      typeof event._weight === "function"
-        ? { ...event, _weight: event._weight(context) }
-        : event;
-    const needSkip = (event) =>
-      "filter" in event === false || event.filter(context);
-
-    const eventBase = this.constructor.EVENTS_LIST.filter(needSkip)
-      .map(_transformWeightOf)
-      .random({ weights: true });
-
-    const actionBase = eventBase.variability[elementBase.index]
-      .filter((action, i) => i <= context.level && action)
-      .random();
-
-    eventBase.onInit && eventBase.onInit(context);
-
-    await actionBase.action(context);
-    const output = actionBase.textOutput.replace(/\{.+?\}/g, (raw) =>
-      eval(raw.slice(1, -1)),
-    );
-
-    const income = Math.round(
-        elementBase.incomeCoefficient *
-          (context.level + 2.5) *
-          (coefficient + 5),
-      ),
-      titlePhrase = [
-        "Это птица? Это самолёт! Нет, это штука!",
-        "Вдумайтесь..",
-        "Ученье – свет, а неученье – штука.",
-        "Игрушка!",
-        "Случайности случайны.",
-        "**ШТУКОВИНА**",
-        "Используйте !штука я, чтобы поменять стихию",
-        "Используйте !штука улучшить, чтобы открыть новые события",
-      ].random(),
-      footerPhrase = [
-        "кубик рубика",
-        "сапог",
-        "звёзду",
-        "снеговика",
-        "зайца",
-        "большой город",
-        "огненную обезьяну",
-        "ананас",
-        "кефир",
-      ].random();
-
-    const contents = {
-      guildTakeCoins: `Вы помогли серверу — он получил ${Util.ending(
-        income,
-        "коин",
-        "ов",
-        "",
-        "а",
-      )}`,
-      event:
-        eventBase.id === "day"
-          ? ""
-          : "\nЗа это время также произошло интересное событие:",
-      description:
-        typeof eventBase.description === "function"
-          ? eventBase.description(context)
-          : eventBase.description,
-    };
-
-    channel.guild.data.coins += income;
-    const message = channel.msg({
-      title: titlePhrase,
-      description: `${contents.guildTakeCoins}${contents.event}`,
-      color: elementBase.color,
-      author: { iconURL: user.avatarURL(), name: user.username },
-      fields: [
-        { name: "Если коротко..", value: `**${contents.description}**\n⠀` },
-        {
-          name: `${elementBase.emoji} ${context.level + 1} ур.`,
-          value: output,
-        },
-      ],
-      footer: {
-        text: `Скажем так: эта вещь чем-то похожа на ${footerPhrase}..`,
-      },
-    });
-
-    user.action(Actions.thing, {
-      message,
-      contents,
-      titlePhrase,
-      footerPhrase,
-      income,
-      actionBase,
-      output,
-      eventBase,
-      elementBase,
-      primary: context,
-      scene,
-      coefficient,
-    });
-  }
-
-  getCooldownInfo() {
-    const COOLDOWN = 10_800_000;
-    const COOLDOWN_TRY = 2;
-    const cooldownThresholder = Date.now() + COOLDOWN * (COOLDOWN_TRY - 1);
-
-    return { COOLDOWN, COOLDOWN_TRY, cooldownThresholder };
-  }
-
-  displayUserInfo({ interaction, element }) {
-    if (!element) {
-      interaction.channel.msg({
-        description: "Упомянутый пользователь пока не открыл штуку..",
-      });
-      return;
-    }
-
-    const username = interaction.mention.username;
-
-    const color = element.color;
-    const emoji = element.emoji;
-
-    const mentionContent = [
-      username.toUpperCase(),
-      username.toLowerCase(),
-      username.toLowerCase(),
-    ].join("-");
-
-    const { cooldownThresholder } = this.getCooldownInfo();
-    const inCooldownContent = ["Нет.", "Да."][
-      +(interaction.mention.data.CD_52 > cooldownThresholder)
-    ];
-
-    const description = `${mentionContent}...\nВыбранная стихия: ${emoji}\nУровень штуки: ${
-      (interaction.mention.data.elementLevel || 0) + 1
-    }\n\n${element.description}\nНа перезарядке: ${inCooldownContent}`;
-    interaction.channel.msg({ description, color });
-    return;
-  }
-
   static MAX_LEVEL = 4;
 
-  async displayThingIsClosed(interaction) {
-    const description =
-      "Вам ещё недоступна эта команда\nдля её открытия совершите хотя бы один ритуал, используя команду !котёл.\nВ будущем она будет генерировать коины для сервера, а также активировать случайные события.";
-    interaction.channel.msg({
-      title: "Штуке требуется немного магии котла,\nчтобы она могла работать.",
-      description,
-      delete: 22_000,
-      reactions: ["763804850508136478"],
-    });
-    return;
-  }
-
-  async displayThingIsInCooldown({
-    interaction,
-    cooldownThresholder,
-    elementBase,
-  }) {
-    const userData = interaction.user.data;
-
-    const title = `${elementBase.emoji} Штука перезаряжается!`;
-    const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${Util.timestampToDate(
-      userData.CD_52 - cooldownThresholder,
-    )}`;
-
-    interaction.channel.msg({ title, description, color: elementBase.color });
-    return;
-  }
-
-  async displaySelectElementInterface(interaction) {
-    const Elements = this.constructor.Elements;
-    const userData = interaction.user.data;
-
-    const embed = {
-      title: "Говорят, звёзды приносят удачу",
+  options = {
+    name: "thing",
+    id: 52,
+    media: {
       description:
-        "Каждая из них имеет свои недостатки и особенности, просто выберите ту, которая вам по нраву.",
-      author: {
-        name: interaction.user.username,
-        iconURL: interaction.user.avatarURL(),
-      },
-      footer: {
-        text: 'Вы всегда сможете изменить выбор — "!штука я"\nТакже не забывайте улучшать её способности командой "!штука улучшить"',
-      },
-      fields: Elements.map((elementBase) => ({
-        name: `**${elementBase.emoji} ${elementBase.name}**`,
-        value: `${elementBase.label}.`,
-      })),
-    };
-
-    const message = await interaction.channel.msg(embed);
-    const reactions = Elements.map((elementBase) => elementBase.emoji);
-    const react = await message.awaitReact(
-      { user: interaction.user, removeType: "all" },
-      ...reactions,
-    );
-    message.delete();
-
-    const index = reactions.indexOf(react);
-    if (~index === 0) {
-      return;
-    }
-
-    userData.element = index;
-    const elementBase = Elements.at(index);
-    interaction.channel.msg({
-      title: `${elementBase.name} ${elementBase.emoji} — Вы выбрали элемент`,
-      description: elementBase.description,
-    });
-
-    return;
-  }
+        "Повезло-повезло:\n1) Даёт деньги в банк сервера\n2) Абсолютно рандомная и непредсказуемая фигня\n3) Также даёт неплохие бонусы\nПссс, человек, я принимаю идеи по добавлению новых ивентов, надеюсь, ты знаешь где меня искать..",
+      example: `!thing <"улучшить" | "я">`,
+    },
+    accessibility: {
+      publicized_on_level: 7,
+    },
+    alias: "шутка штука aught аугт нечто штуковина щось річ",
+    allowDM: true,
+    type: "other",
+  };
 
   async displayIncreaseLevelInterface(interaction) {
     const { user } = interaction;
@@ -2192,6 +2004,117 @@ class Command extends BaseCommand {
     return;
   }
 
+  async displaySelectElementInterface(interaction) {
+    const Elements = this.constructor.Elements;
+    const userData = interaction.user.data;
+
+    const embed = {
+      title: "Говорят, звёзды приносят удачу",
+      description:
+        "Каждая из них имеет свои недостатки и особенности, просто выберите ту, которая вам по нраву.",
+      author: {
+        name: interaction.user.username,
+        iconURL: interaction.user.avatarURL(),
+      },
+      footer: {
+        text: 'Вы всегда сможете изменить выбор — "!штука я"\nТакже не забывайте улучшать её способности командой "!штука улучшить"',
+      },
+      fields: Elements.map((elementBase) => ({
+        name: `**${elementBase.emoji} ${elementBase.name}**`,
+        value: `${elementBase.label}.`,
+      })),
+    };
+
+    const message = await interaction.channel.msg(embed);
+    const reactions = Elements.map((elementBase) => elementBase.emoji);
+    const react = await message.awaitReact(
+      { user: interaction.user, removeType: "all" },
+      ...reactions,
+    );
+    message.delete();
+
+    const index = reactions.indexOf(react);
+    if (~index === 0) {
+      return;
+    }
+
+    userData.element = index;
+    const elementBase = Elements.at(index);
+    interaction.channel.msg({
+      title: `${elementBase.name} ${elementBase.emoji} — Вы выбрали элемент`,
+      description: elementBase.description,
+    });
+
+    return;
+  }
+
+  async displayThingIsClosed(interaction) {
+    const description =
+      "Вам ещё недоступна эта команда\nдля её открытия совершите хотя бы один ритуал, используя команду !котёл.\nВ будущем она будет генерировать коины для сервера, а также активировать случайные события.";
+    interaction.channel.msg({
+      title: "Штуке требуется немного магии котла,\nчтобы она могла работать.",
+      description,
+      delete: 22_000,
+      reactions: ["763804850508136478"],
+    });
+    return;
+  }
+
+  async displayThingIsInCooldown({
+    interaction,
+    cooldownThresholder,
+    elementBase,
+  }) {
+    const userData = interaction.user.data;
+
+    const title = `${elementBase.emoji} Штука перезаряжается!`;
+    const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${Util.timestampToDate(
+      userData.CD_52 - cooldownThresholder,
+    )}`;
+
+    interaction.channel.msg({ title, description, color: elementBase.color });
+    return;
+  }
+
+  displayUserInfo({ interaction, element }) {
+    if (!element) {
+      interaction.channel.msg({
+        description: "Упомянутый пользователь пока не открыл штуку..",
+      });
+      return;
+    }
+
+    const username = interaction.mention.username;
+
+    const color = element.color;
+    const emoji = element.emoji;
+
+    const mentionContent = [
+      username.toUpperCase(),
+      username.toLowerCase(),
+      username.toLowerCase(),
+    ].join("-");
+
+    const { cooldownThresholder } = this.getCooldownInfo();
+    const inCooldownContent = ["Нет.", "Да."][
+      +(interaction.mention.data.CD_52 > cooldownThresholder)
+    ];
+
+    const description = `${mentionContent}...\nВыбранная стихия: ${emoji}\nУровень штуки: ${
+      (interaction.mention.data.elementLevel || 0) + 1
+    }\n\n${element.description}\nНа перезарядке: ${inCooldownContent}`;
+    interaction.channel.msg({ description, color });
+    return;
+  }
+
+  getCooldownInfo() {
+    const COOLDOWN = 10_800_000;
+    const COOLDOWN_TRY = 2;
+    const cooldownThresholder = Date.now() + COOLDOWN * (COOLDOWN_TRY - 1);
+
+    return { COOLDOWN, COOLDOWN_TRY, cooldownThresholder };
+  }
+
   async onChatInput(msg, interaction) {
     if (interaction.mention) {
       const userData = interaction.mention.data;
@@ -2247,49 +2170,126 @@ class Command extends BaseCommand {
     userData.CD_52 = Math.max(userData.CD_52 ?? 0, Date.now()) + COOLDOWN;
   }
 
-  static boss = {
-    manager: import("#lib/modules/BossManager.js").then(
-      (module) => (this.boss.manager = module.BossManager),
-    ),
+  async run({ user, elementBase, channel, level, interaction }) {
+    const guild = channel.guild;
+    const userData = user.data;
 
-    ELEMENT_DAMAGE_MULTIPLAYER: 2,
-    isAvailable: (guild) => {
-      return this.boss.manager.isArrivedIn(guild);
-    },
-    makeDamage: (guild, user, { elementType }) => {
-      const boss = guild.data.boss;
-      const BASE_DAMAGE = 400;
-      const DAMAGE_SOURCE_TYPE = this.boss.manager.DAMAGE_SOURCES.thing;
+    const coefficient = Util.random(this.constructor.BASIC_COINS_COEFFICIENT, {
+      round: false,
+    });
+    const scene = {};
+    const context = {
+      user,
+      elementBase,
+      channel,
+      scene,
+      level,
+      guild,
+      userData,
+      coefficient,
+      interaction,
+    };
 
-      const multiplayer =
-        boss.elementType === elementType
-          ? this.boss.ELEMENT_DAMAGE_MULTIPLAYER
-          : 1;
-      const damage = BASE_DAMAGE * multiplayer;
+    const _transformWeightOf = (event) =>
+      typeof event._weight === "function"
+        ? { ...event, _weight: event._weight(context) }
+        : event;
+    const needSkip = (event) =>
+      "filter" in event === false || event.filter(context);
 
-      const dealt = this.boss.manager.makeDamage(boss, damage, {
-        sourceUser: user,
-        damageSourceType: DAMAGE_SOURCE_TYPE,
-      });
-      return dealt;
-    },
-  };
+    const eventBase = this.constructor.EVENTS_LIST.filter(needSkip)
+      .map(_transformWeightOf)
+      .random({ weights: true });
 
-  options = {
-    name: "thing",
-    id: 52,
-    media: {
+    const actionBase = eventBase.variability[elementBase.index]
+      .filter((action, i) => i <= context.level && action)
+      .random();
+
+    eventBase.onInit && eventBase.onInit(context);
+
+    await actionBase.action(context);
+    const output = actionBase.textOutput.replace(/\{.+?\}/g, (raw) =>
+      eval(raw.slice(1, -1)),
+    );
+
+    const income = Math.round(
+        elementBase.incomeCoefficient *
+          (context.level + 2.5) *
+          (coefficient + 5),
+      ),
+      titlePhrase = [
+        "Это птица? Это самолёт! Нет, это штука!",
+        "Вдумайтесь..",
+        "Ученье – свет, а неученье – штука.",
+        "Игрушка!",
+        "Случайности случайны.",
+        "**ШТУКОВИНА**",
+        "Используйте !штука я, чтобы поменять стихию",
+        "Используйте !штука улучшить, чтобы открыть новые события",
+      ].random(),
+      footerPhrase = [
+        "кубик рубика",
+        "сапог",
+        "звёзду",
+        "снеговика",
+        "зайца",
+        "большой город",
+        "огненную обезьяну",
+        "ананас",
+        "кефир",
+      ].random();
+
+    const contents = {
+      guildTakeCoins: `Вы помогли серверу — он получил ${Util.ending(
+        income,
+        "коин",
+        "ов",
+        "",
+        "а",
+      )}`,
+      event:
+        eventBase.id === "day"
+          ? ""
+          : "\nЗа это время также произошло интересное событие:",
       description:
-        "Повезло-повезло:\n1) Даёт деньги в банк сервера\n2) Абсолютно рандомная и непредсказуемая фигня\n3) Также даёт неплохие бонусы\nПссс, человек, я принимаю идеи по добавлению новых ивентов, надеюсь, ты знаешь где меня искать..",
-      example: `!thing <"улучшить" | "я">`,
-    },
-    accessibility: {
-      publicized_on_level: 7,
-    },
-    alias: "шутка штука aught аугт нечто штуковина щось річ",
-    allowDM: true,
-    type: "other",
-  };
+        typeof eventBase.description === "function"
+          ? eventBase.description(context)
+          : eventBase.description,
+    };
+
+    channel.guild.data.coins += income;
+    const message = channel.msg({
+      title: titlePhrase,
+      description: `${contents.guildTakeCoins}${contents.event}`,
+      color: elementBase.color,
+      author: { iconURL: user.avatarURL(), name: user.username },
+      fields: [
+        { name: "Если коротко..", value: `**${contents.description}**\n⠀` },
+        {
+          name: `${elementBase.emoji} ${context.level + 1} ур.`,
+          value: output,
+        },
+      ],
+      footer: {
+        text: `Скажем так: эта вещь чем-то похожа на ${footerPhrase}..`,
+      },
+    });
+
+    user.action(Actions.thing, {
+      message,
+      contents,
+      titlePhrase,
+      footerPhrase,
+      income,
+      actionBase,
+      output,
+      eventBase,
+      elementBase,
+      primary: context,
+      scene,
+      coefficient,
+    });
+  }
 }
 
 export default Command;
