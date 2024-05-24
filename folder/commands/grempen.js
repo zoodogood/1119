@@ -4,6 +4,7 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
@@ -40,7 +41,10 @@ class BoughtContext extends BaseContext {
   product;
   slot;
   constructor(commandRunContext, slot) {
-    super("command.grempen.bought", commandRunContext);
+    super("command.grempen.bought", {
+      primary: commandRunContext,
+      ...takeInteractionProperties(commandRunContext),
+    });
     this.commandRunContext = commandRunContext;
     this.slot = slot;
     this.product = slot.product;
