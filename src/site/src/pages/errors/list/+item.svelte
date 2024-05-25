@@ -1,7 +1,7 @@
 <script>
-  import svelteApp from "#site/core/svelte-app.js";
   import Layout from "#site-component/Layout";
   import Icon from "#site-component/iconic";
+  import svelteApp from "#site/core/svelte-app.js";
 
   import {
     dayjs,
@@ -82,9 +82,9 @@
           item.githubURL = resolveGithubPath(
             Path.relative(
               svelteApp.enviroment.cwd,
-              item.stackData.fileOfError ?? ".",
+              item.stackData?.fileOfError ?? ".",
             ),
-            item.stackData.strokeOfError,
+            item.stackData?.strokeOfError,
           );
         } catch (error) {
           console.error(error);
