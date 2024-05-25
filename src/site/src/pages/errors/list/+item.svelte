@@ -79,13 +79,14 @@
         item.fileOfError = item.stackData?.fileOfError;
 
         try {
-          item.githubURL = resolveGithubPath(
-            Path.relative(
-              svelteApp.enviroment.cwd,
-              item.stackData?.fileOfError ?? ".",
-            ),
-            item.stackData?.strokeOfError,
-          );
+          item.stackData &&
+            (item.githubURL = resolveGithubPath(
+              Path.relative(
+                svelteApp.enviroment.cwd,
+                item.stackData.fileOfError ?? ".",
+              ),
+              item.stackData.strokeOfError,
+            ));
         } catch (error) {
           console.error(error);
         }
