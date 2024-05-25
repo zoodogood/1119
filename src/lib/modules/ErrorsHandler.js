@@ -1,36 +1,36 @@
-import { dayjs, mapGetOrInsert } from "#lib/util.js";
 import StorageManager from "#lib/modules/StorageManager.js";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
+import { dayjs, mapGetOrInsert } from "#lib/util.js";
 
 const { stringify, parse } = JSON;
 
 class Metadata {
   #updateRequested = false;
 
+  static defaults = {};
+
   constructor() {
     const { defaults } = this.constructor;
     Object.assign(this, defaults);
   }
 
+  appendMetadata() {
+    throw new Error("Must be implemented");
+  }
+
+  static from(props) {
+    return Object.assign(Object.create(this.prototype), props);
+  }
+
+  requestUpdate() {
+    this.#updateRequested = true;
+  }
   get updateRequested() {
     return this.#updateRequested;
   }
 
   set updateRequested(value) {
     this.#updateRequested = value;
-  }
-
-  requestUpdate() {
-    this.#updateRequested = true;
-  }
-
-  appendMetadata() {
-    throw new Error("Must be implemented");
-  }
-  static defaults = {};
-
-  static from(props) {
-    return Object.assign(Object.create(this.prototype), props);
   }
 }
 
@@ -46,20 +46,8 @@ class SessionMetadata extends Metadata {
     this.commentsCount = value;
   }
 
-  appendTags(uniqueTags) {
-    for (const tag of uniqueTags) {
-      this.uniqueTags.add(tag);
-    }
-  }
-
   appendErrorsCount(value) {
     this.errorsCount = value;
-  }
-
-  appendUniqueErrors(messages) {
-    for (const message of messages) {
-      this.uniqueErrors.add(message);
-    }
   }
 
   appendMetadata({ commentsCount, uniqueTags, errorsCount, uniqueErrors }) {
@@ -68,19 +56,24 @@ class SessionMetadata extends Metadata {
     errorsCount && this.appendErrorsCount(errorsCount);
     uniqueErrors && this.appendUniqueErrors(uniqueErrors);
   }
+
+  appendTags(uniqueTags) {
+    for (const tag of uniqueTags) {
+      this.uniqueTags.add(tag);
+    }
+  }
+
+  appendUniqueErrors(messages) {
+    for (const message of messages) {
+      this.uniqueErrors.add(message);
+    }
+  }
 }
 
 class GroupMetadata extends Metadata {
   appendComment(data) {
     this.comments ||= [];
     this.comments.push(data);
-  }
-
-  appendTags(tags) {
-    this.uniqueTags ||= new Set();
-    for (const tag of tags) {
-      this.uniqueTags.add(tag);
-    }
   }
 
   appendErrorsCount(value) {
@@ -91,6 +84,13 @@ class GroupMetadata extends Metadata {
     comments && this.appendComment(comments);
     tags && this.appendTags(tags);
     errorsCount && this.appendErrorsCount(errorsCount);
+  }
+
+  appendTags(tags) {
+    this.uniqueTags ||= new Set();
+    for (const tag of tags) {
+      this.uniqueTags.add(tag);
+    }
   }
 }
 
@@ -108,20 +108,16 @@ class ErrorData {
     this.context = context ?? null;
   }
 
-  get stack() {
-    return this.error.stack;
-  }
-
-  get message() {
-    return this.error.message;
-  }
-
   static from(data) {
     return Object.assign(Object.create(ErrorData.prototype), data);
   }
 
   static fromError(error, context) {
     new ErrorData(error, context);
+  }
+
+  get message() {
+    return this.error.message;
   }
 
   parseErrorStack({ node_modules } = {}) {
@@ -147,6 +143,10 @@ class ErrorData {
     }
     return { ...groups, stack };
   }
+
+  get stack() {
+    return this.error.stack;
+  }
 }
 
 class Group {
@@ -156,8 +156,10 @@ class Group {
     this.key = key;
   }
 
-  pushError(errorData) {
-    this.errors.push(errorData);
+  addComment({ responseText, id }) {
+    const meta = this.meta;
+    const comment = { responseText, id };
+    meta.appendComment(comment);
   }
 
   onErrorReceive(errorData) {
@@ -169,15 +171,18 @@ class Group {
     });
   }
 
-  addComment({ responseText, id }) {
-    const meta = this.meta;
-    const comment = { responseText, id };
-    meta.appendComment(comment);
+  pushError(errorData) {
+    this.errors.push(errorData);
   }
 }
 
 class SessionsMetadataCache {
   #cache = new Map();
+
+  async _fetchAndSet(key) {
+    const json = await FileUtils.readFile(key);
+    this.#cache.set(key, json?.meta);
+  }
 
   async fetch(key) {
     const cache = this.#cache;
@@ -185,27 +190,23 @@ class SessionsMetadataCache {
 
     return cache.get(key);
   }
-
-  async _fetchAndSet(key) {
-    const json = await FileUtils.readFile(key);
-    this.#cache.set(key, json?.meta);
-  }
 }
 
 class FileUtils {
+  static directory = `errors`;
+
+  static async keys() {
+    const files = await StorageManager.keys(this.directory);
+    const suffix = ".json";
+    const filtered = files.filter((name) => name.endsWith(suffix));
+    const keys = filtered.map((name) => name.replace(suffix, ""));
+    return keys;
+  }
   static normalizeName(name) {
     if (name.endsWith(".json")) {
       name = name.replace(/\.json$/, "");
     }
     return name;
-  }
-
-  static directory = `errors`;
-  static async write(fileName, data) {
-    const path = `${this.directory}/${fileName}.json`;
-
-    data = stringify(data);
-    await StorageManager.write(path, data);
   }
 
   static async readFile(file) {
@@ -214,12 +215,11 @@ class FileUtils {
     return parse(data);
   }
 
-  static async keys() {
-    const files = await StorageManager.keys(this.directory);
-    const suffix = ".json";
-    const filtered = files.filter((name) => name.endsWith(suffix));
-    const keys = filtered.map((name) => name.replace(suffix, ""));
-    return keys;
+  static async write(fileName, data) {
+    const path = `${this.directory}/${fileName}.json`;
+
+    data = stringify(data);
+    await StorageManager.write(path, data);
   }
 }
 
@@ -229,11 +229,20 @@ class Core {
    @property {Map<string, Group>} errorGroups
    @property { SessionMetadata } meta
   */
+  static cache = new SessionsMetadataCache();
+
+  static filesList = [];
+
   /**@type {ICoreStore} */
   static session = {
     errorGroups: new Map(),
     meta: new SessionMetadata(),
   };
+  static toJSON() {
+    const { errorGroups, meta } = this.session;
+    const groups = [...errorGroups.values()];
+    return { groups, meta };
+  }
 
   static updateSessionMetadata({ force = false } = {}) {
     const { errorGroups, meta } = this.session;
@@ -256,28 +265,46 @@ class Core {
     });
     meta.updateRequested = false;
   }
-
-  static cache = new SessionsMetadataCache();
-  static filesList = [];
-
-  static toJSON() {
-    const { errorGroups, meta } = this.session;
-    const groups = [...errorGroups.values()];
-    return { groups, meta };
-  }
 }
 
 class Manager {
   static Core = Core;
   static File = FileUtils;
 
-  static session() {
-    return Core.session;
-  }
-
   static actualSessionMetadata() {
     Core.updateSessionMetadata();
     return Core.session.meta;
+  }
+
+  static errorLogger(error) {
+    console.error(`[${dayjs().format("HH:mm")}]`, error);
+  }
+
+  static async fetchManyMetadata() {
+    const current = this.actualSessionMetadata();
+    const cache = [
+      ...(
+        await Promise.all(Core.filesList.map((key) => Core.cache.fetch(key)))
+      ).values(),
+    ];
+    return { current, cache };
+  }
+
+  /**
+   *
+   * @param {string} key
+   * @returns {Group}
+   */
+  static getErrorsGroupBy(key) {
+    return mapGetOrInsert(Core.session.errorGroups, key, new Group(key));
+  }
+
+  static async importFileErrorsList() {
+    const keys = (await FileUtils.keys()).filter(
+      (key) => !Core.filesList.includes(key),
+    );
+    Core.filesList.push(...keys);
+    return Core.filesList;
   }
 
   static onErrorReceive(error, context) {
@@ -294,23 +321,14 @@ class Manager {
     }
   }
 
-  static errorLogger(error) {
-    console.error(`[${dayjs().format("HH:mm")}]`, error);
-  }
-
-  /**
-   *
-   * @param {string} key
-   * @returns {Group}
-   */
-  static getErrorsGroupBy(key) {
-    return mapGetOrInsert(Core.session.errorGroups, key, new Group(key));
-  }
-
   static pushToSessionErrors(errorData, context) {
     const { message: key } = errorData;
     const group = this.getErrorsGroupBy(key);
     group.onErrorReceive(errorData, context);
+  }
+
+  static session() {
+    return Core.session;
   }
 
   static async sessionWriteFile() {
@@ -318,24 +336,6 @@ class Manager {
     const data = Core.toJSON();
     const timestamp = Date.now();
     return await FileUtils.write(timestamp, data);
-  }
-
-  static async importFileErrorsList() {
-    const keys = (await FileUtils.keys()).filter(
-      (key) => !Core.filesList.includes(key),
-    );
-    Core.filesList.push(...keys);
-    return Core.filesList;
-  }
-
-  static async fetchManyMetadata() {
-    const current = this.actualSessionMetadata();
-    const cache = [
-      ...(
-        await Promise.all(Core.filesList.map((key) => Core.cache.fetch(key)))
-      ).values(),
-    ];
-    return { current, cache };
   }
 }
 
@@ -347,5 +347,4 @@ export function util_store_and_send_audit(context, error) {
 }
 
 export default Manager;
-export { GroupMetadata, ErrorData, Group };
-export { Manager as ErrorsHandler };
+export { ErrorData, Manager as ErrorsHandler, Group, GroupMetadata };
