@@ -22,7 +22,7 @@ class Route extends BaseRoute {
     const { message, stack } = data;
     const error = new Error(message);
     error.stack = stack;
-    ErrorsHandler.onErrorReceive(error, { type: "site" });
+    ErrorsHandler.onErrorReceive(error, { type: "site", cause: data.cause });
   }
 }
 
