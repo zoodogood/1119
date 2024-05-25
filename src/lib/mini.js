@@ -30,3 +30,7 @@ export function sortByResolve(array, resolve, { reverse } = {}) {
     ? array.sort((a, b) => resolve(a) - resolve(b))
     : array.sort((a, b) => resolve(b) - resolve(a));
 }
+
+export function isObject(target) {
+  return target && typeof target === "object";
+}
