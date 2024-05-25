@@ -1,7 +1,9 @@
 <script>
+  import { isObject } from "#lib/mini.js";
   import { fetchFromInnerApi, timestampToDate } from "#lib/safe-utils.js";
   import Layout from "#site-component/Layout";
   import svelteApp from "#site/core/svelte-app.js";
+  import { ButtonResponse } from "#site/lib/ButtonResponse.js";
 
   const i18n = svelteApp.i18n.pages.openChest;
   const Resources = {
@@ -12,26 +14,29 @@
     loggerList: [],
   };
 
-  async function clickHandler() {
-    const headers = { Authorization: svelteApp.storage.getToken() };
-    const json = await fetchFromInnerApi("user/chest-open", {
-      headers,
-      method: "POST",
+  async function clickHandler(event) {
+    return ButtonResponse("open_chest.clickHandler", event, async () => {
+      const headers = { Authorization: svelteApp.storage.getToken() };
+      const json = await fetchFromInnerApi("user/chest_open", {
+        headers,
+        method: "POST",
+      });
+
+      if (!isObject(json)) {
+        throw new Error("Response is empty");
+      }
+
+      if (json.notAllowed) {
+        State.loggerList = [i18n.chestOnCooldown, timestampToDate(json.value)];
+        return;
+      }
+
+      State.loggerList = [
+        `${i18n.bonuses}: ${json.openCount}`,
+        `${i18n.treasures}: ${Object.keys(json.treasures).length}:`,
+        ...Object.entries(json.treasures).map((entrie) => entrie.join(" ")),
+      ];
     });
-    if (!json) {
-      return;
-    }
-
-    if (json.notAllowed) {
-      State.loggerList = [i18n.chestOnCooldown, timestampToDate(json.value)];
-      return;
-    }
-
-    State.loggerList = [
-      `${i18n.bonuses}: ${json.openCount}`,
-      `${i18n.treasures}: ${Object.keys(json.treasures).length}:`,
-      ...Object.entries(json.treasures).map((entrie) => entrie.join(" ")),
-    ];
   }
 </script>
 
@@ -67,8 +72,7 @@
   button {
     margin-top: 10px;
     transition: transform 1s;
-    width: 10em;
-    height: 3em;
+    padding: 0.9em 1.2em;
     font-size: 1.2em;
   }
 
