@@ -45,6 +45,8 @@ class BoughtContext extends BaseContext {
       primary: commandRunContext,
       ...takeInteractionProperties(commandRunContext),
     });
+    this.userData = this.user.data;
+    this.interaction = commandRunContext.interaction;
     this.commandRunContext = commandRunContext;
     this.slot = slot;
     this.product = slot.product;
