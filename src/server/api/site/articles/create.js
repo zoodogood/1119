@@ -1,8 +1,8 @@
+import { parse_body } from "#lib/express_utils.js";
+import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
+import { omit } from "#lib/safe-utils.js";
 import { BaseRoute } from "#server/router.js";
 import { ArticlesManager } from "./.mod.js";
-import { omit } from "#lib/safe-utils.js";
-import bodyParser from "body-parser";
-import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 
 const PREFIX = "/site/articles/create";
 
@@ -19,22 +19,20 @@ class Route extends BaseRoute {
       return;
     }
 
-    await new Promise((resolve) =>
-      bodyParser.raw()(request, response, resolve),
-    );
+    await parse_body(request);
 
     const author = omit(user, (key) =>
       ["id", "username", "discriminator"].includes(key),
     );
     author.avatarURL = user.avatarURL();
 
-    const filename = request.headers.filename;
+    const { filename } = request.headers;
 
     if (filename.includes("..")) {
       response.status(400).send();
       return;
     }
-    const content = String(request.body);
+    const content = request.body;
 
     const data = await ArticlesManager.createArticle({
       content,
