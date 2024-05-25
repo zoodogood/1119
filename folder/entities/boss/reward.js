@@ -14,8 +14,8 @@ export class RewardSystem {
         this.VOID_REWARD_DENOMINATOR;
 
       const limit = level * this.VOID_LIMIT_MULTIPLAYER;
-      const value = Math.floor(byDamage) + this.DEFAULT_VOID;
-      return Math.min(limit, value);
+      const value = byDamage + this.DEFAULT_VOID;
+      return Math.floor(Math.min(limit, value));
     },
     calculateKeys(userStats) {
       const value = Math.floor(userStats.damageDealt / this.DAMAGE_FOR_KEY);
