@@ -1096,6 +1096,7 @@ class BossManager {
 
           collector.on("end", () => message.delete());
         },
+        filter: ({ boss }) => boss.level <= 10,
       },
       selectLegendaryWearon: {
         weight: Infinity,
