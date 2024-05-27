@@ -26,7 +26,7 @@ class Event extends BaseEvent {
 
     if (guild && "cloverEffect" in guild.data) {
       const value = CALCULATE_CLOVER_MULTIPLAYER(guild.data.cloverEffect.uses);
-      const multiplayer = value * 1.1 ** (userData.voidMysticClover ?? 0);
+      const multiplayer = value * 1.12 ** (userData.voidMysticClover ?? 0);
       k += multiplayer;
     }
 
