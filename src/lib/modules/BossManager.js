@@ -57,7 +57,7 @@ export async function emulate_user_attack({ boss, user, channel, event_ids }) {
     context.attackContext.listOfEvents.push(event);
   }
   core_make_attack(context);
-  context.context.message = display_attack(context);
+  context.message = display_attack(context);
 }
 
 class Speacial {
@@ -897,7 +897,7 @@ class BossManager {
         id: "superMegaAttack",
         description: "Супер мега атака",
         callback: async (parentContext) => {
-          const { user, boss, channel, userStats } = parentContext;
+          const { user, boss, channel } = parentContext;
           const ActionsEnum = {
             Hit: "hit",
             Leave: "leave",
@@ -921,7 +921,7 @@ class BossManager {
               customId: ActionsEnum.Hit,
             },
             color: Elements.at(boss.elementType).color,
-            reference: executorMessage.id,
+            reference: executorMessage?.id,
           };
 
           /**
@@ -1114,7 +1114,7 @@ class BossManager {
         },
       },
       selectLegendaryWearon: {
-        weight: ({ userStats }) => (userStats.attacksCount || 0) * 10,
+        weight: Infinity,
         id: "selectLegendaryWearon",
         description: "Требуется совершить выбор",
         callback: async (context) => {
@@ -1183,7 +1183,10 @@ class BossManager {
         },
 
         filter: ({ userStats, boss }) =>
-          !userStats.haveLegendaryWearon && boss.level >= 5,
+          !userStats.haveLegendaryWearon &&
+          boss.level >= 5 &&
+          userStats.attacksCount >= 7 &&
+          userStats.attacksCount % 3 === 1,
       },
       choiseCreatePotion: {
         weight: 300,
@@ -2646,7 +2649,7 @@ class BossManager {
     }
 
     core_make_attack(context);
-    primary.message = display_attack(context);
+    context.message = await display_attack(context);
   }
   static victory(guild) {
     const boss = guild.data.boss;
