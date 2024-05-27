@@ -13,7 +13,6 @@ import {
   update_attack_cooldown,
   update_attack_damage_multiplayer,
 } from "#folder/entities/boss/attack.js";
-import { update_health_thresholder } from "#root/folder/entities/boss/health.js";
 import { RewardSystem } from "#folder/entities/boss/reward.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import {
@@ -38,6 +37,7 @@ import {
   timestampDay,
   timestampToDate,
 } from "#lib/util.js";
+import { update_health_thresholder } from "#root/folder/entities/boss/health.js";
 import { Collection } from "@discordjs/collection";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { ButtonStyle, ComponentType } from "discord.js";
@@ -71,12 +71,12 @@ class Speacial {
         },
       },
       percentDamage: {
-        description: "Базовый урон атак равен 0.04% от текущего здоровья босса",
+        description:
+          "Дополнительный урон атак равен 0.03% от текущего здоровья босса",
         effect: "boss.makeDamageByBossCurrentHealthPoints",
         emoji: "🩸",
         values: {
-          power: () => 0.002,
-          multiplayer: () => 0.8,
+          power: () => 0.003,
         },
       },
       manyEvent: {
@@ -798,7 +798,7 @@ class BossManager {
         id: "applyManyCurses",
         description: "Много проклятий",
         callback: ({ user, boss, channel }) => {
-          for (let i = 0; i < random(3, 5); i++) {
+          for (let i = 0; i < random(2, 3); i++) {
             const hard = (random(boss.level) > 20) + (random(boss.level) > 50);
             const curse = CurseManager.generate({
               user,
@@ -1329,12 +1329,12 @@ class BossManager {
                 },
               },
               "🩸🩸🩸": {
-                description: "Босс теряет 7% от своего текущего здоровья",
+                description: "Босс теряет 2% от своего текущего здоровья",
                 callback: (message, embed) => {
                   const thresholder =
                     BossManager.calculateHealthPointThresholder(boss.level);
                   const currentHealth = thresholder - boss.damageTaken;
-                  const damage = Math.floor(currentHealth * 0.07);
+                  const damage = Math.floor(currentHealth * 0.02);
                   BossManager.makeDamage(boss, damage, { sourceUser: user });
 
                   embed.edit = true;
