@@ -36,14 +36,15 @@ export class Bosses_Flagsubcommand {
     this.context = context;
   }
   static guildToField(guild) {
-    const { boss } = guild.data;
+    const { boss, partners } = guild.data;
     const isArrived = boss.isArrived;
     const { name } = guild;
     const contents = {
       endsAt: boss.endingAtDay ? toDayDate(boss.endingAtDay * DAY) : "Никогда",
+      partnersIcon: partners?.isSetted ? "👋" : "",
     };
     const value = isArrived
-      ? `Пришёл (${boss.level} ур.), уйдет ${contents.endsAt}`
+      ? `Пришёл (${boss.level} ур.), уйдет ${contents.endsAt}${contents.partnersIcon}`
       : `Придёт ${toDayDate((boss.apparanceAtDay + 1) * DAY)}`;
     return { name, value };
   }
