@@ -105,7 +105,8 @@ export function core_make_attack_context(boss, user, channel, primary = {}) {
     message: null,
   };
 
-  const context = new BaseContext("", primary, {
+  const context = new BaseContext("", {
+    primary,
     attackContext,
     boss,
     channel,
