@@ -428,7 +428,7 @@ export class CircularProtocol {
   }
 }
 
-export function toFixedAfterZero(value, digits) {
+export function toFixedAfterZero(value, digits = 1) {
   if (value === 0) {
     return "0";
   }
