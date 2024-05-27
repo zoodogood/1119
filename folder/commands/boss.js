@@ -1,15 +1,22 @@
 import { client } from "#bot/client.js";
 import config from "#config";
 import { DAY } from "#constants/globals/time.js";
+import { core_make_attack_context } from "#folder/entities/boss/attack.js";
+import { resolve_attack_events_pull } from "#folder/entities/boss/attack_events.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { sortByResolve } from "#lib/mini.js";
 import {
   BossEffects,
   BossManager,
   emulate_user_attack,
 } from "#lib/modules/BossManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
-import * as Util from "#lib/util.js";
+import {
+  toDayDate,
+  toFixedAfterZero,
+  toLocaleDeveloperString,
+} from "#lib/safe-utils.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { ButtonStyle, ComponentType } from "discord.js";
 
@@ -34,13 +41,11 @@ export class Bosses_Flagsubcommand {
     const isArrived = boss.isArrived;
     const { name } = guild;
     const contents = {
-      endsAt: boss.endingAtDay
-        ? Util.toDayDate(boss.endingAtDay * DAY)
-        : "Никогда",
+      endsAt: boss.endingAtDay ? toDayDate(boss.endingAtDay * DAY) : "Никогда",
     };
     const value = isArrived
       ? `Пришёл (${boss.level} ур.), уйдет ${contents.endsAt}`
-      : `Придёт ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`;
+      : `Придёт ${toDayDate((boss.apparanceAtDay + 1) * DAY)}`;
     return { name, value };
   }
 
@@ -48,7 +53,7 @@ export class Bosses_Flagsubcommand {
     const { interaction } = this.context;
     const memb = interaction.mention || interaction.user;
     const { guilds } = memb;
-    const fields = Util.sortByResolve(
+    const fields = sortByResolve(
       guilds.filter((guild) => guild.data.boss),
       ({ data: { boss } }) =>
         boss.isArrived ? Number.MIN_SAFE_INTEGER : +boss.apparanceAtDay || 0,
@@ -94,6 +99,34 @@ class Dev_Flagsubcommand extends BaseFlagSubcommand {
       user,
       channel,
       event_ids: value.split(","),
+    });
+  }
+}
+
+class Events_Flagsubcommand extends BaseFlagSubcommand {
+  onProcess() {
+    const { boss, user, channel } = this.context;
+    const boss_context = core_make_attack_context(
+      boss,
+      user,
+      channel,
+      this.context,
+    );
+    const pull = resolve_attack_events_pull(boss_context);
+    const weightSum = pull.reduce(
+      (acc, value) => acc + (value._weight || 0),
+      0,
+    );
+    const content = sortByResolve(pull, ({ _weight }) => _weight)
+      .map(
+        ({ _weight, id }) =>
+          `- ${id} — ${toFixedAfterZero((_weight / weightSum) * 100, 1)}%`,
+      )
+      .join("\n");
+
+    channel.msg({
+      title: "События способные выпасть при атаке",
+      description: content,
     });
   }
 }
@@ -189,7 +222,7 @@ class Command extends BaseCommand {
         : Math.ceil(currentHealthPointPercent * 100),
 
       leaveDay: `Уйдет ${
-        boss.endingAtDay ? Util.toDayDate(boss.endingAtDay * DAY) : "Никогда"
+        boss.endingAtDay ? toDayDate(boss.endingAtDay * DAY) : "Никогда"
       }`,
       level: `Уровень: ${boss.level}.`,
     };
@@ -199,9 +232,7 @@ class Command extends BaseCommand {
       {
         name: "Пользователь",
         value: Object.entries(userStats)
-          .map(
-            ([key, value]) => `${key}: ${Util.toLocaleDeveloperString(value)}`,
-          )
+          .map(([key, value]) => `${key}: ${toLocaleDeveloperString(value)}`)
           .join("\n"),
       },
       {
@@ -425,7 +456,7 @@ class Command extends BaseCommand {
     const { boss, channel } = context;
     if (!boss.isArrived) {
       const description = boss.apparanceAtDay
-        ? `Прибудет лишь ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`
+        ? `Прибудет лишь ${toDayDate((boss.apparanceAtDay + 1) * DAY)}`
         : "Момент появления босса пока неизвестен";
 
       channel.msg({ description, color: "#000000" });
@@ -506,6 +537,15 @@ class Command extends BaseCommand {
     return true;
   }
 
+  async processEventsFlag(context) {
+    const value = context.cliParsed.at(0).captures.get("--events");
+    if (!value) {
+      return;
+    }
+    await new Events_Flagsubcommand(context, value).onProcess();
+    return true;
+  }
+
   async processHelpFlag(context) {
     const values = context.cliParsed.at(1);
     if (!values.get("--help")) {
@@ -544,6 +584,9 @@ class Command extends BaseCommand {
       return;
     }
     if (await this.processDevFlag(context)) {
+      return;
+    }
+    if (await this.processEventsFlag(context)) {
       return;
     }
     await this.processDefaultBehavior(context);
