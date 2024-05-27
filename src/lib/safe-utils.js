@@ -428,6 +428,16 @@ export class CircularProtocol {
   }
 }
 
+export function toFixedAfterZero(value, digits) {
+  if (value === 0) {
+    return "0";
+  }
+  const taget = 1 / value;
+  const BASE = 10;
+  const zeros = Math.max(0, Math.ceil(Math.log(taget) / Math.log(BASE)));
+  return value.toFixed(digits + zeros);
+}
+
 export {
   CustomCollector,
   DotNotatedInterface,
