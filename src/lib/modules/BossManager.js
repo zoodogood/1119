@@ -936,7 +936,7 @@ class BossManager {
             return;
           }
 
-          const base = 1500 + 5 * 1.2 ** boss.level;
+          const base = 1500 + 10 * 1.2 ** boss.level;
 
           const per_level = base / 15;
           const damage = boss.level * per_level + base;
@@ -989,8 +989,8 @@ class BossManager {
               }
 
               const addable = (Math.random(base) + 0.5 + base) / 17.5;
-              const per_iteration = base / 20;
-              const per_level = base / 15;
+              const per_iteration = addable / 10;
+              const per_level = addable / 15;
               const damage =
                 per_level * boss.level + per_iteration * counter + addable;
 
@@ -2081,10 +2081,10 @@ class BossManager {
       baseOfPercentage: {
         weight: 200,
         id: "baseOfPercentage",
-        description: "Базовый урон равен 0.002% от масимального здоровья босса",
+        description: "Базовый урон равен 0.007% от масимального здоровья босса",
         callback: async ({ attackContext, boss }) => {
           attackContext.baseDamage = Math.ceil(
-            current_health_thresholder(boss) * 0.00002,
+            current_health_thresholder(boss) * 0.00007,
           );
         },
         filter: ({ boss }) => boss.level >= 10 && boss.level <= 30,
