@@ -400,8 +400,7 @@ class Template {
 
     if (availableList[moduleName] === false) {
       const mask = this.getPermissionsMask();
-      const missing = Object.entries(this.constructor.PERMISSIONS_MASK_ENUM)
-        /* eslint-disable-next-line no-unused-vars*/
+      const missing = Object.entries(PERMISSIONS_MASK_ENUM)
         .filter(([_, bit]) => permissions.scope === bit && !(mask & bit))
         .map(([key]) => key)
         .join(", ");
@@ -433,7 +432,7 @@ class Template {
 
     const source = this.source;
     const context = this.context;
-    const permissionsEnum = this.constructor.PERMISSIONS_MASK_ENUM;
+    const { DEVELOPER, GUILD_MANAGER, USER } = PERMISSIONS_MASK_ENUM;
 
     const isUser = !!source.executor;
     const isGuildManager = context.guild?.members
@@ -442,9 +441,9 @@ class Template {
     const isDelevoper = config.developers.includes(source.executor.id);
 
     const mask =
-      (isDelevoper * permissionsEnum.DEVELOPER) |
-      (isGuildManager * permissionsEnum.GUILD_MANAGER) |
-      (isUser * permissionsEnum.USER);
+      (isDelevoper * DEVELOPER) |
+      (isGuildManager * GUILD_MANAGER) |
+      (isUser * USER);
 
     this.mask = mask;
     return mask;
