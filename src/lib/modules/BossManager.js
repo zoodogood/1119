@@ -38,7 +38,10 @@ import {
   timestampDay,
   timestampToDate,
 } from "#lib/util.js";
-import { update_health_thresholder } from "#root/folder/entities/boss/health.js";
+import {
+  current_health_thresholder,
+  update_health_thresholder,
+} from "#root/folder/entities/boss/health.js";
 import { Collection } from "@discordjs/collection";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { ButtonStyle, ComponentType } from "discord.js";
@@ -2070,6 +2073,18 @@ class BossManager {
             this.EFFECT_ID in userStats === false
           );
         },
+      },
+      baseOfPercentage: {
+        weight: 200,
+        id: "baseOfPercentage",
+        description:
+          "Базовый урон равен 0.0002% от масимального здоровья босса",
+        callback: async ({ attackContext, boss }) => {
+          attackContext.baseDamage = Math.ceil(
+            current_health_thresholder(boss) * 0.000002,
+          );
+        },
+        filter: ({ boss }) => boss.level >= 10 && boss.level <= 30,
       },
       // ______e4example: {
       //   weight: 2,
