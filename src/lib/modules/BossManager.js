@@ -13,6 +13,7 @@ import {
   update_attack_cooldown,
   update_attack_damage_multiplayer,
 } from "#folder/entities/boss/attack.js";
+import { resolve_attack_events_pull } from "#folder/entities/boss/attack_events.js";
 import { RewardSystem } from "#folder/entities/boss/reward.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import {
@@ -1791,6 +1792,7 @@ class BossManager {
         id: "seemed",
         description: "Требуется совершить выбор",
         callback: async ({ user, boss, channel, userStats }) => {
+          // to-do
           const embed = {
             author: { name: user.username, iconURL: user.avatarURL() },
             description:
@@ -2004,6 +2006,24 @@ class BossManager {
             this.EFFECT_ID in userStats === false
           );
         },
+      },
+      firstPest: {
+        weight: 0,
+        id: "firstPest",
+        description: "Первый клоп",
+        callback: async ({ user, boss, channel, userStats }) => {},
+      },
+      secondPest: {
+        weight: 0,
+        id: "secondPest",
+        description: "Второй клоп",
+        callback: async ({ user, boss, channel, userStats }) => {},
+      },
+      thirdPest: {
+        weight: 0,
+        id: "thirdPest",
+        description: "Первый клоп",
+        callback: async ({ user, boss, channel, userStats }) => {},
       },
       // ______e4example: {
       //   weight: 2,
@@ -2541,16 +2561,7 @@ class BossManager {
       return;
     }
 
-    const pull = [...BossManager.eventBases.values()]
-      .filter((base) => !base.filter || base.filter(context))
-      .map((event) => ({
-        ...event,
-        _weight:
-          typeof event.weight === "function"
-            ? event.weight(context)
-            : event.weight,
-      }));
-
+    const pull = resolve_attack_events_pull(context);
     for (let i = 0; i < attackContext.eventsCount; i++) {
       const base = pull.random({ weights: true });
 
