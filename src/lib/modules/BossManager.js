@@ -936,7 +936,7 @@ class BossManager {
             return;
           }
 
-          const base = 1500 + 10 * 1.2 ** boss.level;
+          const base = 1500 + 30 * 1.2 ** boss.level;
 
           const per_level = base / 15;
           const damage = boss.level * per_level + base;
@@ -947,7 +947,7 @@ class BossManager {
 
           update_attack_cooldown(user, boss, "", parentContext, MINUTE * 30);
 
-          embed.description = `Нанесено ${dealt} ед. урона.`;
+          embed.description = `Нанесено ${NumberFormatLetterize(dealt)} ед. урона.`;
 
           (async () => {
             embed.components = [
@@ -988,8 +988,8 @@ class BossManager {
                 return;
               }
 
-              const addable = (Math.random(base) + 0.5 + base) / 17.5;
-              const per_iteration = addable / 10;
+              const addable = (Math.random(base) + 0.5 + base) / 10;
+              const per_iteration = addable / 7;
               const per_level = addable / 15;
               const damage =
                 per_level * boss.level + per_iteration * counter + addable;
@@ -997,7 +997,7 @@ class BossManager {
               const dealt = BossManager.makeDamage(boss, damage, {
                 sourceUser: user,
               });
-              embed.description += `\n~ Нанесено ещё ${dealt} ед. урона`;
+              embed.description += `\n~ Нанесено ещё ${NumberFormatLetterize(dealt)} ед. урона`;
 
               counter++;
               if (counter >= 5) {
