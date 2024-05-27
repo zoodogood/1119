@@ -1,17 +1,17 @@
-import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
+import config from "#config";
+import { DAY } from "#constants/globals/time.js";
+import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import {
-  BossManager,
   BossEffects,
+  BossManager,
   emulate_user_attack,
 } from "#lib/modules/BossManager.js";
-import { ButtonStyle, ComponentType } from "discord.js";
 import CurseManager from "#lib/modules/CurseManager.js";
-import { DAY } from "#constants/globals/time.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import * as Util from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
-import config from "#config";
+import { ButtonStyle, ComponentType } from "discord.js";
 
 function attackBoss(boss, user, channel) {
   return BossManager.userAttack({ boss, user, channel });
@@ -29,6 +29,21 @@ export class Bosses_Flagsubcommand {
   constructor(context) {
     this.context = context;
   }
+  static guildToField(guild) {
+    const { boss } = guild.data;
+    const isArrived = boss.isArrived;
+    const { name } = guild;
+    const contents = {
+      endsAt: boss.endingAtDay
+        ? Util.toDayDate(boss.endingAtDay * DAY)
+        : "Никогда",
+    };
+    const value = isArrived
+      ? `Пришёл (${boss.level} ур.), уйдет ${contents.endsAt}`
+      : `Придёт ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`;
+    return { name, value };
+  }
+
   onProcess() {
     const { interaction } = this.context;
     const memb = interaction.mention || interaction.user;
@@ -47,21 +62,6 @@ export class Bosses_Flagsubcommand {
       description: "Ваши сервера с боссом",
       fields,
     });
-  }
-
-  static guildToField(guild) {
-    const { boss } = guild.data;
-    const isArrived = boss.isArrived;
-    const { name } = guild;
-    const contents = {
-      endsAt: boss.endingAtDay
-        ? Util.toDayDate(boss.endingAtDay * DAY)
-        : "Никогда",
-    };
-    const value = isArrived
-      ? `Пришёл (${boss.level} ур.), уйдет ${contents.endsAt}`
-      : `Придёт ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`;
-    return { name, value };
   }
 }
 
@@ -99,10 +99,18 @@ class Dev_Flagsubcommand extends BaseFlagSubcommand {
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  memb;
   boss;
-  userStats;
+  memb;
   userEffects;
+  userStats;
+  static async new(interaction, command) {
+    const context = new this(interaction, command);
+    const memb = interaction.mention ?? interaction.user;
+    const boss = interaction.guild.data.boss ?? {};
+    Object.assign(context, { memb, boss });
+    return context;
+  }
+
   parseCli(params) {
     const parsed = new CliParser()
       .setText(params)
@@ -113,17 +121,62 @@ class CommandRunContext extends BaseCommandRunContext {
     const values = parsed.resolveValues((capture) => capture?.toString());
     this.setCliParsed(parsed, values);
   }
-
-  static async new(interaction, command) {
-    const context = new this(interaction, command);
-    const memb = interaction.mention ?? interaction.user;
-    const boss = interaction.guild.data.boss ?? {};
-    Object.assign(context, { memb, boss });
-    return context;
-  }
 }
 
 class Command extends BaseCommand {
+  options = {
+    name: "boss",
+    id: 59,
+    media: {
+      description:
+        "Босс страшен. Победите его вместе или проиграйте по-одиночке. Он появляется один раз месяц и уходит спустя три дня.",
+      example: "!boss <member>",
+    },
+    cliParser: {
+      flags: [
+        {
+          name: "--help",
+          capture: ["--help", "-h"],
+          description: "Для чего босс приходит и что с ним делать",
+        },
+        {
+          name: "--attack",
+          capture: ["--attack", "-a"],
+          description: "Незамедлительно проведите атаку",
+        },
+        {
+          name: "--shop",
+          capture: ["--shop", "-s"],
+          description: "Незамедлительно открывает лавку босса",
+        },
+        {
+          name: "--bosses",
+          capture: ["--bosses"],
+          description:
+            "Показывает перечень серверов, где вы находитесь, с активными или предшествующими боссами",
+        },
+        {
+          name: "--events",
+          capture: ["--events"],
+          description: "Отображает события, способные вам попасться",
+        },
+        {
+          name: "--dev",
+          capture: ["--dev"],
+          description: "Для разработчиков",
+          expectValue: true,
+          hidden: true,
+        },
+      ],
+    },
+    accessibility: {
+      publicized_on_level: 7,
+    },
+    alias: "босс бос",
+    allowDM: true,
+    type: "other",
+  };
+
   createEmbed({ userEffects, userStats, memb, boss }) {
     const currentHealthPointPercent =
       1 - boss.damageTaken / boss.healthThresholder;
@@ -167,164 +220,6 @@ class Command extends BaseCommand {
     };
 
     return embed;
-  }
-
-  async onChatInput(msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
-  }
-
-  async run(context) {
-    context.parseCli(context.interaction.params);
-    if (await this.processHelpFlag(context)) {
-      return;
-    }
-    if (await this.processShopFlag(context)) {
-      return;
-    }
-    if (await this.processAttackFlag(context)) {
-      return;
-    }
-    if (await this.processBossesFlag(context)) {
-      return;
-    }
-    if (await this.processDevFlag(context)) {
-      return;
-    }
-    await this.processDefaultBehavior(context);
-  }
-
-  async processHelpFlag(context) {
-    const values = context.cliParsed.at(1);
-    if (!values.get("--help")) {
-      return;
-    }
-    await new Help_Flagsubcommand(context).onProcess();
-    return true;
-  }
-
-  async processDevFlag(context) {
-    const value = context.cliParsed.at(0).captures.get("--dev");
-    if (!value) {
-      return;
-    }
-    if (!config.developers.includes(context.user.id)) {
-      return;
-    }
-    await new Dev_Flagsubcommand(context, value).onProcess();
-    return true;
-  }
-
-  async processBossesFlag(context) {
-    const values = context.cliParsed.at(1);
-    if (!values.get("--bosses")) {
-      return;
-    }
-    await new Bosses_Flagsubcommand(context).onProcess();
-    return true;
-  }
-
-  async processShopFlag(context) {
-    const values = context.cliParsed.at(1);
-    if (!values.get("--shop")) {
-      return;
-    }
-
-    if (!this.processBossIsExists(context)) {
-      return true;
-    }
-
-    await createShop(context.guild, context.user, context.channel);
-    return true;
-  }
-
-  async processAttackFlag(context) {
-    const values = context.cliParsed.at(1);
-    if (!values.get("--attack")) {
-      return;
-    }
-
-    if (!this.processBossIsExists(context)) {
-      return true;
-    }
-
-    await attackBoss(context.boss, context.user, context.channel);
-    await this.processDefaultBehavior(context);
-    return true;
-  }
-
-  processBossIsExists(context) {
-    const { boss, channel } = context;
-    if (!boss.isArrived) {
-      const description = boss.apparanceAtDay
-        ? `Прибудет лишь ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`
-        : "Момент появления босса пока неизвестен";
-
-      channel.msg({ description, color: "#000000" });
-      return;
-    }
-
-    return true;
-  }
-
-  async processDefaultBehavior(context) {
-    const { boss, memb, channel } = context;
-
-    if (!this.processBossIsExists(context)) {
-      return;
-    }
-
-    const userStats = BossManager.getUserStats(boss, memb.id);
-    const userEffects = BossEffects.effectsOf({ boss, user: memb });
-
-    Object.assign(context, {
-      userStats,
-      userEffects,
-    });
-
-    if (userStats.heroIsDead) {
-      this.displayHeadstone(context);
-      return;
-    }
-
-    const REACTIONS = [
-      {
-        emoji: "⚔️",
-        filter: ({ boss }) => !BossManager.isDefeated(boss),
-      },
-      {
-        emoji: "🕋",
-        filter: () => true,
-      },
-    ];
-
-    const embed = this.createEmbed(context);
-    const reactions = REACTIONS.filter((reaction) =>
-      reaction.filter(context),
-    ).map(({ emoji }) => emoji);
-
-    const message = await channel.msg({ ...embed, reactions });
-
-    const filter = (reaction, user) =>
-      user.id !== client.user.id && reactions.includes(reaction.emoji.name);
-    const collector = message.createReactionCollector({ filter, time: 60_000 });
-    collector.on("collect", async (reaction, user) => {
-      reaction.users.remove(user);
-
-      if (reaction.emoji.name === "⚔️") {
-        attackBoss(boss, user, channel);
-      }
-
-      if (reaction.emoji.name === "🕋") {
-        createShop(channel.guild, user, channel);
-      }
-
-      const embed = this.createEmbed(context);
-      message.msg({ ...embed, edit: true });
-    });
-
-    collector.on("end", () => message.reactions.removeAll());
   }
 
   async displayHeadstone({ interaction, memb, boss, userStats }) {
@@ -496,53 +391,163 @@ class Command extends BaseCommand {
     collector.on("end", () => message.msg({ edit: true, components: [] }));
   }
 
-  options = {
-    name: "boss",
-    id: 59,
-    media: {
-      description:
-        "Босс страшен. Победите его вместе или проиграйте по-одиночке. Он появляется один раз месяц и уходит спустя три дня.",
-      example: "!boss <member>",
-    },
-    cliParser: {
-      flags: [
-        {
-          name: "--help",
-          capture: ["--help", "-h"],
-          description: "Для чего босс приходит и что с ним делать",
-        },
-        {
-          name: "--attack",
-          capture: ["--attack", "-a"],
-          description: "Незамедлительно проведите атаку",
-        },
-        {
-          name: "--shop",
-          capture: ["--shop", "-s"],
-          description: "Незамедлительно открывает лавку босса",
-        },
-        {
-          name: "--bosses",
-          capture: ["--bosses"],
-          description:
-            "Показывает перечень серверов, где вы находитесь, с активными или предшествующими боссами",
-        },
-        {
-          name: "--dev",
-          capture: ["--dev"],
-          description: "Для разработчиков",
-          expectValue: true,
-          hidden: true,
-        },
-      ],
-    },
-    accessibility: {
-      publicized_on_level: 7,
-    },
-    alias: "босс бос",
-    allowDM: true,
-    type: "other",
-  };
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
+  async processAttackFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--attack")) {
+      return;
+    }
+
+    if (!this.processBossIsExists(context)) {
+      return true;
+    }
+
+    await attackBoss(context.boss, context.user, context.channel);
+    await this.processDefaultBehavior(context);
+    return true;
+  }
+
+  async processBossesFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--bosses")) {
+      return;
+    }
+    await new Bosses_Flagsubcommand(context).onProcess();
+    return true;
+  }
+
+  processBossIsExists(context) {
+    const { boss, channel } = context;
+    if (!boss.isArrived) {
+      const description = boss.apparanceAtDay
+        ? `Прибудет лишь ${Util.toDayDate((boss.apparanceAtDay + 1) * DAY)}`
+        : "Момент появления босса пока неизвестен";
+
+      channel.msg({ description, color: "#000000" });
+      return;
+    }
+
+    return true;
+  }
+
+  async processDefaultBehavior(context) {
+    const { boss, memb, channel } = context;
+
+    if (!this.processBossIsExists(context)) {
+      return;
+    }
+
+    const userStats = BossManager.getUserStats(boss, memb.id);
+    const userEffects = BossEffects.effectsOf({ boss, user: memb });
+
+    Object.assign(context, {
+      userStats,
+      userEffects,
+    });
+
+    if (userStats.heroIsDead) {
+      this.displayHeadstone(context);
+      return;
+    }
+
+    const REACTIONS = [
+      {
+        emoji: "⚔️",
+        filter: ({ boss }) => !BossManager.isDefeated(boss),
+      },
+      {
+        emoji: "🕋",
+        filter: () => true,
+      },
+    ];
+
+    const embed = this.createEmbed(context);
+    const reactions = REACTIONS.filter((reaction) =>
+      reaction.filter(context),
+    ).map(({ emoji }) => emoji);
+
+    const message = await channel.msg({ ...embed, reactions });
+
+    const filter = (reaction, user) =>
+      user.id !== client.user.id && reactions.includes(reaction.emoji.name);
+    const collector = message.createReactionCollector({ filter, time: 60_000 });
+    collector.on("collect", async (reaction, user) => {
+      reaction.users.remove(user);
+
+      if (reaction.emoji.name === "⚔️") {
+        attackBoss(boss, user, channel);
+      }
+
+      if (reaction.emoji.name === "🕋") {
+        createShop(channel.guild, user, channel);
+      }
+
+      const embed = this.createEmbed(context);
+      message.msg({ ...embed, edit: true });
+    });
+
+    collector.on("end", () => message.reactions.removeAll());
+  }
+
+  async processDevFlag(context) {
+    const value = context.cliParsed.at(0).captures.get("--dev");
+    if (!value) {
+      return;
+    }
+    if (!config.developers.includes(context.user.id)) {
+      return;
+    }
+    await new Dev_Flagsubcommand(context, value).onProcess();
+    return true;
+  }
+
+  async processHelpFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--help")) {
+      return;
+    }
+    await new Help_Flagsubcommand(context).onProcess();
+    return true;
+  }
+
+  async processShopFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--shop")) {
+      return;
+    }
+
+    if (!this.processBossIsExists(context)) {
+      return true;
+    }
+
+    await createShop(context.guild, context.user, context.channel);
+    return true;
+  }
+
+  async run(context) {
+    context.parseCli(context.interaction.params);
+    if (await this.processHelpFlag(context)) {
+      return;
+    }
+    if (await this.processShopFlag(context)) {
+      return;
+    }
+    if (await this.processAttackFlag(context)) {
+      return;
+    }
+    if (await this.processBossesFlag(context)) {
+      return;
+    }
+    if (await this.processDevFlag(context)) {
+      return;
+    }
+    await this.processDefaultBehavior(context);
+  }
 }
 
 export default Command;
