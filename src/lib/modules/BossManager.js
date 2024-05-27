@@ -1596,6 +1596,70 @@ class BossManager {
         repeats: true,
         filter: ({ boss }) => boss.level >= 10,
       },
+      firstPest: {
+        weight: 30,
+        id: "firstPest",
+        description: "Уменьшающий урон клоп",
+        callback: async (context) => {
+          const { attackContext, user, boss } = context;
+          const { listOfEvents } = attackContext;
+          if (listOfEvents.length >= attackContext.eventsCount) {
+            return;
+          }
+          update_attack_damage_multiplayer(
+            user,
+            boss,
+            "firstPest",
+            context,
+            (previous) => previous * 0.9,
+          );
+
+          if (random(1)) {
+            return;
+          }
+          attackContext.eventsCount--;
+          const event = BossManager.eventBases.get("secondPest");
+          event.callback(context);
+          attackContext.listOfEvents.push(event);
+        },
+        filter: ({ boss }) => boss.level >= 1,
+      },
+      secondPest: {
+        weight: 0,
+        id: "secondPest",
+        description: "Увеличивающий перезарядку клоп",
+        callback: async (context) => {
+          const { attackContext, user, boss } = context;
+          const { listOfEvents } = attackContext;
+          if (listOfEvents.length >= attackContext.eventsCount) {
+            return;
+          }
+          if (random(1)) {
+            return;
+          }
+          attackContext.eventsCount--;
+          const event = BossManager.eventBases.get("thirdPest");
+          update_attack_cooldown(
+            user,
+            boss,
+            "secondPest",
+            context,
+            SECOND * 15,
+          );
+          event.callback(context);
+          attackContext.listOfEvents.push(event);
+        },
+        filter: () => false,
+      },
+      thirdPest: {
+        weight: 0,
+        id: "thirdPest",
+        description: "Добавляющий событий клоп",
+        callback: async (context) => {
+          context.attackContext.eventsCount += 4;
+        },
+        filter: () => false,
+      },
       death: {
         weight: 70,
         id: "death",
@@ -2006,24 +2070,6 @@ class BossManager {
             this.EFFECT_ID in userStats === false
           );
         },
-      },
-      firstPest: {
-        weight: 0,
-        id: "firstPest",
-        description: "Первый клоп",
-        callback: async ({ user, boss, channel, userStats }) => {},
-      },
-      secondPest: {
-        weight: 0,
-        id: "secondPest",
-        description: "Второй клоп",
-        callback: async ({ user, boss, channel, userStats }) => {},
-      },
-      thirdPest: {
-        weight: 0,
-        id: "thirdPest",
-        description: "Первый клоп",
-        callback: async ({ user, boss, channel, userStats }) => {},
       },
       // ______e4example: {
       //   weight: 2,
@@ -2586,7 +2632,7 @@ class BossManager {
     }
 
     core_make_attack(context);
-    primary.message = display_attack(primary);
+    primary.message = display_attack(context);
   }
   static victory(guild) {
     const boss = guild.data.boss;
