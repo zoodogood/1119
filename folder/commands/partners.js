@@ -898,7 +898,7 @@ class Command extends BaseCommand {
       ],
     },
     accessibility: {
-      publicized_on_level: 2,
+      publicized_on_level: 7,
     },
   };
   constructor() {
