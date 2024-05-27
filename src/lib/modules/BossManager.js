@@ -32,6 +32,7 @@ import {
   NumberFormatLetterize,
   addResource,
   ending,
+  getRandomElementFromArray,
   question,
   random,
   sleep,
@@ -45,20 +46,6 @@ import {
 import { Collection } from "@discordjs/collection";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { ButtonStyle, ComponentType } from "discord.js";
-
-export async function emulate_user_attack({ boss, user, channel, event_ids }) {
-  const context = core_make_attack_context(boss, user, channel, {});
-  if (!process_before_attack(context)) {
-    return;
-  }
-  for (const event_id of event_ids) {
-    const event = BossManager.eventBases.get(event_id);
-    event.callback.call(event, context);
-    context.attackContext.listOfEvents.push(event);
-  }
-  core_make_attack(context);
-  context.message = display_attack(context);
-}
 
 class Speacial {
   static AVATAR_OF_SNOW_QUEEN =
@@ -948,9 +935,10 @@ class BossManager {
             return;
           }
 
-          const BASE_DAMAGE = 1500;
-          const DAMAGE_PER_LEVEL = 100;
-          const damage = boss.level * DAMAGE_PER_LEVEL + BASE_DAMAGE;
+          const base = 1500 + 5 * 1.2 ** boss.level;
+
+          const per_level = base / 15;
+          const damage = boss.level * per_level + base;
 
           const dealt = BossManager.makeDamage(boss, damage, {
             sourceUser: user,
@@ -999,15 +987,11 @@ class BossManager {
                 return;
               }
 
-              const BASE_DAMAGE = 120;
-              const DAMAGE_PER_ITERATION = 90;
-              const ADDING_DAMAGE = Math.round((Math.random() / 2 + 0.5) * 10);
-              const DAMAGE_PER_LEVEL = 20;
+              const addable = (Math.random(base) + 0.5 + base) / 17.5;
+              const per_iteration = base / 20;
+              const per_level = base / 15;
               const damage =
-                boss.level * DAMAGE_PER_LEVEL +
-                BASE_DAMAGE +
-                ADDING_DAMAGE +
-                DAMAGE_PER_ITERATION * counter;
+                per_level * boss.level + per_iteration * counter + addable;
 
               const dealt = BossManager.makeDamage(boss, damage, {
                 sourceUser: user,
@@ -1365,11 +1349,26 @@ class BossManager {
                   "Наносит ещё одну атаку с увеличенным уроном. Множитель урона Х4",
                 callback: (message, embed) => {
                   const previousDamage = attackContext.damageDealt;
-                  const damage = previousDamage * 4;
-                  BossManager.makeDamage(boss, damage, { sourceUser: user });
+
+                  const _context = core_make_attack_context(
+                    boss,
+                    user,
+                    channel,
+                    context,
+                  );
+                  _context.attackContext.addableDamage += previousDamage * 4;
+                  event.callback(_context);
+                  const event = getRandomElementFromArray(
+                    resolve_attack_events_pull(_context),
+                    { associatedWeights: true },
+                  );
+                  _context.attackContext.listOfEvents.push(event);
+                  const { dealt } = _context.afterAttack;
 
                   embed.edit = true;
-                  embed.author = { name: `Нанесено ${damage}ед. урона` };
+                  embed.author = {
+                    name: `Нанесено ${NumberFormatLetterize(dealt)}ед. урона`,
+                  };
                   message.msg(embed);
                 },
               },
@@ -1628,7 +1627,7 @@ class BossManager {
           event.callback(context);
           attackContext.listOfEvents.push(event);
         },
-        filter: ({ boss }) => boss.level >= 1,
+        filter: ({ boss }) => boss.level >= 10 && boss.level <= 40,
       },
       secondPest: {
         weight: 0,
@@ -2087,6 +2086,24 @@ class BossManager {
           );
         },
         filter: ({ boss }) => boss.level >= 10 && boss.level <= 30,
+      },
+      periodOfPlenty: {
+        weight: 100,
+        repeats: true,
+        id: "periodOfPlenty",
+        description: "Период изобилия",
+        callback: async (context) => {
+          const { user, boss } = context;
+          const SUPER_MULTIPLAYER = 10;
+          update_attack_damage_multiplayer(
+            user,
+            boss,
+            "",
+            context,
+            (previous) => previous + SUPER_MULTIPLAYER,
+          );
+        },
+        filter: ({ boss }) => boss.level >= 15 && boss.level <= 30,
       },
       // ______e4example: {
       //   weight: 2,
