@@ -226,7 +226,7 @@ class Command extends BaseCommand {
     {
       emoji: "📿",
       id: "transformKeys",
-      KEYS_PER_VOID: 100,
+      KEYS_PER_VOID: 120,
       calculate(user) {
         const voids = Math.floor(user.data.keys / this.KEYS_PER_VOID);
         const keys = user.data.keys - (user.data.keys % this.KEYS_PER_VOID);
