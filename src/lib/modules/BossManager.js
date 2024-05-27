@@ -38,6 +38,7 @@ import {
   sleep,
   timestampDay,
   timestampToDate,
+  toFixedAfterZero,
 } from "#lib/util.js";
 import {
   current_health_thresholder,
@@ -2260,9 +2261,7 @@ class BossManager {
       } ${((mainDamage.at(1) / boss.damageTaken) * 100).toFixed(1)}%**`,
       weakestDamageType: `Худший источник: ${
         BossManager.DAMAGE_SOURCES[weakestDamage.at(0)].label
-      } — ${((weakestDamage.at(1) / boss.damageTaken) * 100).toFixed(
-        2,
-      )}% (${weakestDamage.at(1)} ед.)`,
+      } — ${toFixedAfterZero((weakestDamage.at(1) / boss.damageTaken) * 100)}% (${weakestDamage.at(1)} ед.)`,
       attacksCount: `Совершено прямых атак: ${boss.stats.userAttacksCount}`,
       usersCount: `Приняло участие: ${ending(
         participants.length,
