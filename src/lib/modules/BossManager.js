@@ -2077,11 +2077,10 @@ class BossManager {
       baseOfPercentage: {
         weight: 200,
         id: "baseOfPercentage",
-        description:
-          "Базовый урон равен 0.0002% от масимального здоровья босса",
+        description: "Базовый урон равен 0.002% от масимального здоровья босса",
         callback: async ({ attackContext, boss }) => {
           attackContext.baseDamage = Math.ceil(
-            current_health_thresholder(boss) * 0.000002,
+            current_health_thresholder(boss) * 0.00002,
           );
         },
         filter: ({ boss }) => boss.level >= 10 && boss.level <= 30,
