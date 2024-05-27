@@ -178,3 +178,24 @@ export function process_before_attack(context) {
   }
   return true;
 }
+
+// MARK: Optional
+export async function make_attack_with_events({
+  boss,
+  user,
+  channel,
+  event_ids,
+  primary = {},
+}) {
+  const context = core_make_attack_context(boss, user, channel, primary);
+  if (!process_before_attack(context)) {
+    return;
+  }
+  for (const event_id of event_ids) {
+    const event = BossManager.eventBases.get(event_id);
+    event.callback.call(event, context);
+    context.attackContext.listOfEvents.push(event);
+  }
+  core_make_attack(context);
+  context.message = display_attack(context);
+}
