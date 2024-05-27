@@ -1,34 +1,23 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
 import { client } from "#bot/client.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 import DataManager from "#lib/modules/DataManager.js";
 import Discord from "discord.js";
 
 class Command extends BaseCommand {
-  removeAllUserPraises(context) {
-    const { userData, user } = context;
-    const names = [];
-    const currentPraises = userData.praise || [];
-
-    currentPraises.forEach((id) => {
-      const target = client.users.cache.get(id);
-      if (!target) {
-        return;
-      }
-
-      names.push(target.username);
-
-      const targetPraisesList = target.data.praiseMe;
-      const index = targetPraisesList.indexOf(user.id);
-      if (index === -1) {
-        return;
-      }
-
-      targetPraisesList.splice(index, 1);
-    });
-
-    userData.praise = [];
-    return { names };
-  }
+  options = {
+    name: "praises",
+    id: 6,
+    media: {
+      description:
+        "Отображает список людей, которых вы похвалили и которые похвалили вас.",
+      example: `!praises <memb>`,
+    },
+    alias: "похвалы похвали лайки likes",
+    allowDM: true,
+    cooldown: 20_000,
+    cooldownTry: 2,
+    type: "user",
+  };
 
   getContext(interaction) {
     const userData = interaction.user.data;
@@ -298,20 +287,31 @@ class Command extends BaseCommand {
     }
   }
 
-  options = {
-    name: "praises",
-    id: 6,
-    media: {
-      description:
-        "Отображает список людей, которых вы похвалили и которые похвалили вас.",
-      example: `!praises <memb>`,
-    },
-    alias: "похвалы похвали лайки likes",
-    allowDM: true,
-    cooldown: 20_000,
-    cooldownTry: 2,
-    type: "user",
-  };
+  removeAllUserPraises(context) {
+    const { userData, user } = context;
+    const names = [];
+    const currentPraises = userData.praise || [];
+
+    currentPraises.forEach((id) => {
+      const target = client.users.cache.get(id);
+      if (!target) {
+        return;
+      }
+
+      names.push(target.username);
+
+      const targetPraisesList = target.data.praiseMe || [];
+      const index = targetPraisesList.indexOf(user.id);
+      if (index === -1) {
+        return;
+      }
+
+      targetPraisesList.splice(index, 1);
+    });
+
+    userData.praise = [];
+    return { names };
+  }
 }
 
 export default Command;
