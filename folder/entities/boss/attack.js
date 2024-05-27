@@ -103,6 +103,7 @@ export function core_make_attack_context(boss, user, channel, primary = {}) {
     eventsCount: Math.floor(boss.level ** 0.5) + random(-1, 1),
     listOfEvents: [],
     message: null,
+    addableDamage: 0,
   };
 
   const context = new BaseContext("", {
@@ -126,12 +127,13 @@ export function core_make_attack_context(boss, user, channel, primary = {}) {
 export async function core_make_attack(context) {
   const { user, boss } = context;
   const { attackContext, userStats } = context;
-  const damage = Math.ceil(
+  const damage =
     (userStats.attacksDamageMultiplayer ?? 1) *
       attackContext.baseDamage *
-      attackContext.damageMultiplayer,
-  );
-  attackContext.damageDealt = damage;
+      attackContext.damageMultiplayer +
+    attackContext.addableDamage;
+
+  attackContext.damageDealt = Math.ceil(damage);
 
   const damageSourceType = BossManager.DAMAGE_SOURCES.attack;
   context.afterAttack.dealt = BossManager.makeDamage(boss, damage, {
