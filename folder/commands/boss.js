@@ -1,6 +1,6 @@
 import { client } from "#bot/client.js";
 import config from "#config";
-import { DAY } from "#constants/globals/time.js";
+import { DAY, SECOND } from "#constants/globals/time.js";
 import { core_make_attack_context } from "#folder/entities/boss/attack.js";
 import { resolve_attack_events_pull } from "#folder/entities/boss/attack_events.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
@@ -106,6 +106,9 @@ class Dev_Flagsubcommand extends BaseFlagSubcommand {
 class Events_Flagsubcommand extends BaseFlagSubcommand {
   onProcess() {
     const { boss, user, channel } = this.context;
+    if (!this.process_arrived()) {
+      return;
+    }
     const boss_context = core_make_attack_context(
       boss,
       user,
@@ -125,9 +128,21 @@ class Events_Flagsubcommand extends BaseFlagSubcommand {
       .join("\n");
 
     channel.msg({
-      title: "События способные выпасть при атаке",
+      title: "События, способные выпасть при атаке",
       description: content,
     });
+  }
+  process_arrived() {
+    const { channel, boss } = this.context;
+    if (boss.isArrived) {
+      return true;
+    }
+
+    channel.msg({
+      description: "Момент появления босса пока неизвестен",
+      delete: 12 * SECOND,
+    });
+    return false;
   }
 }
 
