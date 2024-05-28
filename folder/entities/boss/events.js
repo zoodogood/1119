@@ -33,11 +33,11 @@ import {
   ending,
   getRandomElementFromArray,
   random,
+  sleep,
   timestampToDate,
 } from "#lib/safe-utils.js";
 import { addResource } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
-import { sleep } from "bun";
 import { ButtonStyle, ComponentType } from "discord.js";
 
 export const eventBases = transformToCollectionUsingKey([
