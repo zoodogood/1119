@@ -1,4 +1,5 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { attack_event_callback } from "#folder/entities/boss/attack_events.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
@@ -192,9 +193,9 @@ export async function make_attack_with_events({
     return;
   }
   for (const event_id of event_ids) {
-    const event = BossManager.eventBases.get(event_id);
-    event.callback.call(event, context);
-    context.attackContext.listOfEvents.push(event);
+    const base = BossManager.eventBases.get(event_id);
+    attack_event_callback(base, context);
+    context.attackContext.listOfEvents.push(base);
   }
   core_make_attack(context);
   context.message = display_attack(context);
