@@ -122,7 +122,7 @@
     {/if}
 
     <ul class="errors">
-      {#each Component.errors.filter(Search.filter) as element, i}
+      {#each Component.errors.filter(Search.filter) as element}
         {@const { key, errors: array, meta } = element}
         <li class="error-file" id={key}>
           <h2>{key}</h2>
