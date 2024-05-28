@@ -3,7 +3,6 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
-import EventsManager from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import * as Util from "#lib/util.js";
@@ -725,7 +724,7 @@ class Command extends BaseCommand {
                 user,
                 value: -berrys,
                 executor: user,
-                source: "command.thing.event.berrys.wind.3",
+                source: "command.thing.event.berrys.fire.3",
                 resource: PropertiesEnum.berrys,
                 context,
               });
@@ -733,7 +732,7 @@ class Command extends BaseCommand {
                 user,
                 value: bonuses,
                 executor: user,
-                source: "command.thing.event.berrys.wind.3",
+                source: "command.thing.event.berrys.fire.3",
                 resource: PropertiesEnum.chestBonus,
                 context,
               });
@@ -1244,7 +1243,7 @@ class Command extends BaseCommand {
           false,
           {
             action: async (context) => {
-              const { user, channel } = context;
+              const { user } = context;
               addResource({
                 user,
                 value: -16_000,
@@ -1252,24 +1251,6 @@ class Command extends BaseCommand {
                 source: "command.thing.event.school.wind.3",
                 resource: PropertiesEnum.coins,
                 context,
-              });
-
-              const counter = 0;
-              const filter = (message) => message.author.id === user.id;
-              const collector = new Util.CustomCollector({
-                target: channel.client,
-                event: "message",
-                filter,
-                time: 600_000,
-              });
-              collector.setCallback((message) => {
-                if (counter >= 15) {
-                  collector.end();
-                }
-                EventsManager.emitter.emit("users/getCoinsFromMessage", {
-                  user,
-                  message,
-                });
               });
             },
             textOutput: "Вы передали 16 000 коинов на ремонтные работы",
