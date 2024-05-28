@@ -6,10 +6,9 @@ import Discord from "discord.js";
 
 import { inspect as _inspect } from "util";
 
-import { Collection } from "@discordjs/collection";
 import app from "#app";
-import { Message } from "discord.js";
-import { ComponentType } from "discord.js";
+import { Collection } from "@discordjs/collection";
+import { ComponentType, Message } from "discord.js";
 
 export async function awaitUserAccept({ name, message, channel, userData }) {
   const prefix = "userAccept_";
@@ -80,6 +79,11 @@ export function overTheMessageSpamLimit(user) {
   );
 }
 
+/**
+ *
+ * @param {Array<T>} array
+ * @returns {Collection<string, T>}
+ */
 export function transformToCollectionUsingKey(array) {
   const entries = array.map((object) => [object.key, object]);
   return new Collection(entries);
