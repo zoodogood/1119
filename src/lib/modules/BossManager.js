@@ -13,7 +13,10 @@ import {
   update_attack_cooldown,
   update_attack_damage_multiplayer,
 } from "#folder/entities/boss/attack.js";
-import { resolve_attack_events_pull } from "#folder/entities/boss/attack_events.js";
+import {
+  attack_event_callback,
+  resolve_attack_events_pull,
+} from "#folder/entities/boss/attack_events.js";
 import { RewardSystem } from "#folder/entities/boss/reward.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import {
@@ -25,7 +28,6 @@ import {
   CommandsManager,
   CurseManager,
   DataManager,
-  ErrorsHandler,
   Properties,
 } from "#lib/modules/mod.js";
 import {
@@ -1349,7 +1351,7 @@ class BossManager {
               "🍯🩸🩸": {
                 description:
                   "Наносит ещё одну атаку с увеличенным уроном. Множитель урона Х4",
-                callback: (message, embed) => {
+                callback: async (message, embed) => {
                   const previousDamage = attackContext.damageDealt;
 
                   const _context = core_make_attack_context(
@@ -1359,12 +1361,14 @@ class BossManager {
                     context,
                   );
                   _context.attackContext.addableDamage += previousDamage * 4;
-                  event.callback(_context);
-                  const event = getRandomElementFromArray(
-                    resolve_attack_events_pull(_context),
-                    { associatedWeights: true },
-                  );
+                  const pull = resolve_attack_events_pull(_context);
+                  const event = getRandomElementFromArray(pull, {
+                    associatedWeights: pull.map(({ _weight }) => _weight),
+                  });
+                  attack_event_callback(event, _context);
                   _context.attackContext.listOfEvents.push(event);
+                  core_make_attack(_context);
+                  _context.message = await display_attack(_context);
                   const { dealt } = _context.afterAttack;
 
                   embed.edit = true;
@@ -1626,7 +1630,7 @@ class BossManager {
           }
           attackContext.eventsCount--;
           const event = BossManager.eventBases.get("secondPest");
-          event.callback(context);
+          attack_event_callback(event, context);
           attackContext.listOfEvents.push(event);
         },
         filter: ({ boss }) => boss.level >= 10 && boss.level <= 40,
@@ -1653,7 +1657,7 @@ class BossManager {
             context,
             SECOND * 15,
           );
-          event.callback(context);
+          attack_event_callback(event, context);
           attackContext.listOfEvents.push(event);
         },
         filter: () => false,
@@ -2652,16 +2656,7 @@ class BossManager {
         const index = pull.indexOf(base);
         ~index && pull.splice(index, 1);
       }
-      try {
-        base.callback.call(base, context);
-      } catch (error) {
-        ErrorsHandler.onErrorReceive(error, { source: "BossAttackAction" });
-        channel.msg({
-          title: `Источник исключения: ${base.id}. Он был убран из списка возможных событий на неопределенный срок`,
-          description: `**${error.message}:**\n${error.stack}`,
-        });
-        BossManager.eventBases.delete(base.id);
-      }
+      attack_event_callback(base, context);
       attackContext.listOfEvents.push(base);
     }
 
