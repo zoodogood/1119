@@ -1,9 +1,9 @@
 <script>
-  import svelteApp from "#site/core/svelte-app.js";
-  import Layout from "#site-component/Layout";
   import { dayjs, fetchFromInnerApi } from "#lib/safe-utils.js";
-  import PagesRouter from "#site/lib/Router.js";
+  import Layout from "#site-component/Layout";
   import Icon from "#site-component/iconic";
+  import svelteApp from "#site/core/svelte-app.js";
+  import PagesRouter from "#site/lib/Router.js";
 
   const Component = {
     errors: [],
@@ -54,8 +54,8 @@
                 <ul>
                   <li data-value={errorFile.errorsCount ?? null}>
                     {i18n.uniqueMessages}
-                    {errorFile.errorsCount}
-                    {i18n.units}
+                    {errorFile.uniqueErrors?.length || 0}
+                    {i18n.units} ・ {errorFile.errorsCount}
                   </li>
                   <li data-value={errorFile.uniqueTags?.length || null}>
                     {i18n.tags}
