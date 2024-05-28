@@ -508,7 +508,7 @@ export const grempen_products = transformToCollectionUsingKey([
     fn(boughtContext) {
       const { userData } = boughtContext;
       userData.grempenBoughted = 0;
-      boughtContext.slots.forEach((slot) => (slot.isBoughted = false));
+      boughtContext.primary.slots.forEach((slot) => (slot.isBoughted = false));
       return " как дорогостоящий завоз товаров. Заходите ко мне через пару минут за новыми товарами";
     },
   },
