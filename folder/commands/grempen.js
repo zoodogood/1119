@@ -7,6 +7,7 @@ import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import DataManager from "#lib/modules/DataManager.js";
+import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { addResource, ending, joinWithAndSeparator, sleep } from "#lib/util.js";
 
@@ -111,12 +112,10 @@ async function process_bought(boughtContext) {
     try {
       return product.fn(boughtContext);
     } catch (error) {
-      return error;
+      ErrorsHandler.onErrorReceive(error, { source: "command.grempen.bought" });
+      return error.message;
     }
   })();
-  if (phrase instanceof Error) {
-    throw phrase;
-  }
 
   boughtContext.phrase = `Благодарю за покупку ${emoji} !\nЦена в ${ending(
     !isNaN(boughtContext.price) ? boughtContext.price : 0,
