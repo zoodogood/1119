@@ -17,6 +17,10 @@ export async function pushMessage(options) {
     try {
       return await justSendMessage(target, options);
     } catch (error) {
+      if (error.message.includes("Unknown Message")) {
+        // assert options.edit === true
+        return;
+      }
       if (!error.message.includes("Invalid Form Body")) {
         console.error(target, options);
         console.error(error);
