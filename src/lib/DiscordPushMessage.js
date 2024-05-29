@@ -1,7 +1,7 @@
-import { justSendMessage } from "@zoodogood/utils/discordjs";
-import { sendErrorInfo } from "#lib/sendErrorInfo.js";
-import { Message, InteractionResponse } from "discord.js";
 import config from "#config";
+import { sendErrorInfo } from "#lib/sendErrorInfo.js";
+import { justSendMessage } from "@zoodogood/utils/discordjs";
+import { InteractionResponse, Message } from "discord.js";
 
 export async function pushMessage(options) {
   options.color ||= config.development ? "#000100" : "#23ee23";
@@ -18,7 +18,8 @@ export async function pushMessage(options) {
       return await justSendMessage(target, options);
     } catch (error) {
       if (!error.message.includes("Invalid Form Body")) {
-        console.error(options);
+        console.error(target, options);
+        console.error(error);
         throw error;
       }
       await sendErrorInfo({
