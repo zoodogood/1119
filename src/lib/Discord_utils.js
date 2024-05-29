@@ -63,7 +63,6 @@ export async function justModalQuestion({
     filter: (interaction) => customId === interaction.customId,
     time: MINUTE * 5,
   });
-  console.log({ result });
 
   thanks &&
     result?.msg({
