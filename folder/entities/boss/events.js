@@ -530,14 +530,16 @@ export const eventBases = transformToCollectionUsingKey([
                 }
 
                 gotTable[user.id] = true;
-                const userStats = BossManager.getUserStats(boss, user.id);
-                const current = userStats.attackCooldown;
-                userStats.attackCooldown = Math.floor(
-                  userStats.attackCooldown * 0.8,
+                const difference = update_attack_cooldown(
+                  user,
+                  boss,
+                  "",
+                  context,
+                  (current) => current * 0.8,
                 );
 
                 const description = `Кулдаун снизился на ${timestampToDate(
-                  current - userStats.attackCooldown,
+                  difference,
                 )}`;
 
                 message.msg({
