@@ -653,7 +653,7 @@ class Command extends BaseCommand {
               const { user } = context;
               const isBerrysCountIncreased = Util.random(1);
 
-              if (isBerrysCountIncreased)
+              isBerrysCountIncreased &&
                 addResource({
                   user,
                   value: 1,
@@ -812,7 +812,7 @@ class Command extends BaseCommand {
         [
           {
             action: async (context) => {
-              const isWin = Util.random(0);
+              const isWin = Util.random(1);
               const { scene, user } = context;
               addResource({
                 user,
