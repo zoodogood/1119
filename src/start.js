@@ -1,33 +1,34 @@
 console.clear();
 
-import "dotenv/config";
 import "#lib/polifiles.js";
+import "dotenv/config";
 
 import { ActivityType, AuditLogEvent } from "discord.js";
 
-import * as Util from "#lib/util.js";
-import {
-  DataManager,
-  BossManager,
-  TimeEventsManager,
-  CommandsManager,
-  ActionManager,
-  EventsManager,
-} from "#lib/modules/mod.js";
 import client from "#bot/client.js";
 import config from "#config";
+import {
+  ActionManager,
+  BossManager,
+  CommandsManager,
+  DataManager,
+  EventsManager,
+  TimeEventsManager,
+} from "#lib/modules/mod.js";
+import * as Util from "#lib/util.js";
 
 import app from "#app";
-import FileSystem from "fs";
-import { Actions } from "#lib/modules/ActionManager.js";
+import { Events } from "#constants/app/events.js";
 import {
   LEVELINCREASE_EXPERIENCE_PER_LEVEL,
   MESSAGES_SPAM_FILTER_TARGET_ALWAYS,
   MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
 } from "#constants/users/events.js";
+import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { Events } from "#constants/app/events.js";
+import FileSystem from "fs";
 
+import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import "#lib/expand_prototype.js";
 
 client.on("ready", async () => {
@@ -272,10 +273,7 @@ async function eventHundler(message) {
       perEffect * (userData.voidCooldown ?? 0);
 
     if (Util.random(1, 85 * 0.9 ** userData.voidCoins) === 1) {
-      EventsManager.emitter.emit("users/getCoinsFromMessage", {
-        user,
-        message: message,
-      });
+      addCoinFromMessage(message);
     }
 
     Util.addResource({
@@ -604,6 +602,8 @@ class Command {
 class ReactionsManager {
   static path = "./data/reactions.json";
 
+  static reactData = [];
+
   constructor(id, channel, guild, type, reactions) {
     const reactionObject = { id, channel, guild, type, reactions };
     const isExists = ReactionsManager.reactData.find(
@@ -620,13 +620,6 @@ class ReactionsManager {
       (err, input) => false,
     );
     ReactionsManager.reactData = ReactionsManager.getMain();
-  }
-
-  static reactData = [];
-
-  static async readFile() {
-    // const { default: data } = await import(this.path, {assert: {type: "json"}});
-    //return data;
   }
 
   static async getMain() {
@@ -661,6 +654,11 @@ class ReactionsManager {
 
   static async loadReactionsFromFile() {
     ReactionsManager.reactData = await ReactionsManager.getMain();
+  }
+
+  static async readFile() {
+    // const { default: data } = await import(this.path, {assert: {type: "json"}});
+    //return data;
   }
 }
 

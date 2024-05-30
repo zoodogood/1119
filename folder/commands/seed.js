@@ -2,6 +2,7 @@ import { client } from "#bot/client.js";
 import { Events } from "#constants/app/events.js";
 import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import BerryCommand from "#folder/commands/berry.js";
+import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import DataManager from "#lib/modules/DataManager.js";
@@ -103,10 +104,7 @@ class Command extends BaseCommand {
       });
       collector.setCallback((message) => {
         collector.end();
-        EventsManager.emitter.emit("users/getCoinsFromMessage", {
-          user,
-          message,
-        });
+        addCoinFromMessage(message);
       });
     };
 

@@ -5,11 +5,11 @@ import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { RanksUtils } from "#folder/commands/top.js";
+import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import DataManager from "#lib/modules/DataManager.js";
-import EventsManager from "#lib/modules/EventsManager.js";
 import Executor from "#lib/modules/Executor.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import QuestManager from "#lib/modules/QuestManager.js";
@@ -310,10 +310,7 @@ class CurseManager {
             const data = user.data;
             const previousCoins = data.coins;
 
-            EventsManager.emitter.emit("users/getCoinsFromMessage", {
-              user,
-              message,
-            });
+            addCoinFromMessage(message);
             const difference = data.coins - previousCoins;
 
             data.coins -= difference * 2;
@@ -1148,10 +1145,7 @@ class CurseManager {
               return;
             }
             if (random(20) === 0) {
-              EventsManager.emitter.emit("users/getCoinsFromMessage", {
-                user,
-                message,
-              });
+              addCoinFromMessage(message);
             }
           },
           async inputCommandParsed(user, curse, context) {
