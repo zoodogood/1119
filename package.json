@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.18631",
+  "version": "2.0.0-alpha.20107",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -64,6 +64,7 @@
     "bun": "^1.1.8",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-perfectionist": "^2.10.0",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-svelte": "^2.39.0",
     "prettier": "^3.2.5",
