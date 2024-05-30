@@ -5,6 +5,11 @@ import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as SnowyEvent from "#lib/snowyEvent.js";
 import * as Util from "#lib/util.js";
 
+export function addCoinFromMessage(message) {
+  EventsManager.emitter.emit("users/getCoinsFromMessage", {
+    message,
+  });
+}
 class Event extends BaseEvent {
   options = {
     name: "users/getCoinsFromMessage",
