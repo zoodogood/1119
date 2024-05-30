@@ -20,7 +20,7 @@ class Route extends BaseRoute {
     const body = await parse_body(request);
     client.channels.cache.get(config.guild.logChannelId).msg({
       title: "Github push webhook handler",
-      description: `${body.slice(0, 4000)}`,
+      description: `${String(body).slice(0, 4000)}`,
     });
   }
 }
