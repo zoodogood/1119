@@ -1,38 +1,12 @@
 import { client } from "#bot/client.js";
-import { Events } from "#constants/app/events.js";
 import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import BerryCommand from "#folder/commands/berry.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import DataManager from "#lib/modules/DataManager.js";
-import EventsManager from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
-
-// to-do: developer crunch will be removed
-EventsManager.emitter.on(Events.BeforeLogin, (event) => {
-  const _replacer = Object.entries({
-    treeLevel: "level",
-    berrys: "berrys",
-    treeEntryTimestamp: "entryTimestamp",
-    treeSeedEntry: "seedEntry",
-    treeMisstakes: "damage",
-  });
-  for (const guildData of DataManager.data.guilds) {
-    guildData.tree ||= {};
-    _replacer.forEach(([primary, key]) => {
-      if (primary in guildData === false) {
-        return;
-      }
-      guildData.tree[key] = guildData[primary];
-      delete guildData[primary];
-    });
-    if (Object.keys(guildData.tree).length === 0) {
-      delete guildData.tree;
-    }
-  }
-});
 
 class CommandRunContext extends BaseCommandRunContext {
   berrysCollected = 0;
