@@ -1,13 +1,13 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
-import DataManager from "#lib/modules/DataManager.js";
+import { Events } from "#constants/app/events.js";
+import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import BerryCommand from "#folder/commands/berry.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import DataManager from "#lib/modules/DataManager.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
-import { Events } from "#constants/app/events.js";
+import * as Util from "#lib/util.js";
 
 // to-do: developer crunch will be removed
 EventsManager.emitter.on(Events.BeforeLogin, (event) => {
@@ -34,10 +34,10 @@ EventsManager.emitter.on(Events.BeforeLogin, (event) => {
 });
 
 class CommandRunContext extends BaseCommandRunContext {
-  guildData;
-  costsUp = null;
-  interfaceMessage = null;
   berrysCollected = 0;
+  costsUp = null;
+  guildData;
+  interfaceMessage = null;
 
   static new(interaction, command) {
     const context = new this(interaction, command);
@@ -55,53 +55,98 @@ class CommandRunContext extends BaseCommandRunContext {
 }
 
 class Command extends BaseCommand {
-  async run(context) {
-    const { channel, treeField } = context;
-    const embed = this.createEmbed(context);
-    context.setInterfaceMessage(await channel.msg(embed));
+  COSTS_TABLE = [1, 1, 1, 3, 2, 2, 2, 4, 2, 2, 2, 5, 3, 3, 3, 7, 4, 4, 4, 10];
+  GLOBAL_MESSAGES_NEED_MULTIPLAYER = 0.3;
 
-    const { interfaceMessage } = context;
+  GROWTH_SPEED_TABLE = [
+    0, 0.8, 1.2, 1.8, 2.5, 5, 7.5, 10, 12, 15.6, 21, 24, 42, 54, 66, 84, 108,
+    144, 252, 360, 450, 792,
+  ];
 
-    if (context.level < 20) {
-      await interfaceMessage.react("🌱");
-    }
+  MESSAGES_NEED_TABLE = [
+    0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700,
+    3200, 3700, 4500, 5400, 7400, 12000,
+  ];
 
-    if (treeField.berrys >= 1) {
-      await interfaceMessage.react("756114492055617558");
-    }
+  options = {
+    name: "seed",
+    id: 54,
+    media: {
+      description:
+        'Клубничное дерево? М-м, вкусно, а говорят они на деревьях не ростут..\nОно общее и распространяется по серверу. Будет приносить ягоды, которые может собрать каждый\n_Будьте осторожны, растение может засохнуть, если на сервере недостаточно "актива"_',
+      example: `!tree #без аргументов`,
+    },
+    accessibility: {
+      publicized_on_level: 15,
+    },
+    alias:
+      "tree livetree семечко berrystree дерево клубничноедерево живоедерево",
+    allowDM: true,
+    type: "other",
+  };
+  THUMBAIL_IMAGES_TABLE = [
+    null,
+    "https://cdn.discordapp.com/attachments/629546680840093696/875367772916445204/t1.png",
+    "https://cdn.discordapp.com/attachments/629546680840093696/875367713411858492/t2.png",
+    "https://cdn.discordapp.com/attachments/629546680840093696/875367267318247444/t3.png",
+    "https://cdn.discordapp.com/attachments/629546680840093696/875366344642662510/t4_digital_art_x4.png",
+    "https://cdn.discordapp.com/attachments/629546680840093696/875366096952246312/t9.png",
+  ];
+  becomeCoinMessage({ user }) {
+    const become = async (user) => {
+      const filter = (message) => message.author.id === user.id;
+      const collector = new Util.CustomCollector({
+        target: client,
+        event: "message",
+        filter,
+        time: 500_000,
+      });
+      collector.setCallback((message) => {
+        collector.end();
+        EventsManager.emitter.emit("users/getCoinsFromMessage", {
+          user,
+          message,
+        });
+      });
+    };
 
-    const filter = (reaction, user) =>
-      user.id !== client.user.id &&
-      (reaction.emoji.name === "🌱" ||
-        reaction.emoji.id === "756114492055617558");
-    const collector = interfaceMessage.createReactionCollector({
-      filter,
-      time: MINUTE * 3,
-    });
-    collector.on("collect", async (reaction, user) => {
-      this.onCollect(reaction, user, context);
-    });
-
-    collector.on("end", interfaceMessage.reactions.removeAll);
+    !Util.random(0, 5) && become(user);
   }
-  async onChatInput(msg, interaction) {
-    const context = CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
+  calculateBerrysTake({ treeField, level, userData }) {
+    const isBerryMany = treeField.berrys > this.getSpeedGrowth({ level }) * 3;
+
+    const farmerBonus = userData.voidTreeFarm ?? 0;
+
+    const basic = 1 + farmerBonus;
+    const berryManyBonus = isBerryMany
+      ? Util.random(0, 3 + farmerBonus * 2, { round: false })
+      : 0;
+
+    const berrys = basic + berryManyBonus;
+
+    return Math.floor(Math.min(berrys, treeField.berrys));
   }
 
-  updateBerrysCount(context) {
-    const { level, treeField } = context;
-    const timePassed = Date.now() - treeField.entryTimestamp || 0;
-    const speedGrowth = this.getSpeedGrowth({ level });
-    const limit = speedGrowth * 360;
+  calculateCooldown(context) {
+    return Math.max(
+      (86_400_000 / this.getSpeedGrowth(context)) * (1 + context.level),
+      7_200_000,
+    );
+  }
 
-    const adding = (timePassed / 86_400_000) * speedGrowth;
-    const berrys = (treeField.berrys || 0) + adding;
-    treeField.berrys = Math.min(berrys, limit);
+  calculateMessagesNeed({ level, guildData, guild, treeField }) {
+    const basic = this.MESSAGES_NEED_TABLE[level];
+    const byMembersCount = guild.memberCount * 3;
+    const byDayAverage = (guildData.day_average || 0) / 5;
 
-    treeField.entryTimestamp = Date.now();
-    return;
+    const treeMistakesMultiplayer =
+      "damage" in treeField ? 1 - 0.1 * treeField.damage : 1;
+    const globalMultiplayer = this.GLOBAL_MESSAGES_NEED_MULTIPLAYER;
+    const count =
+      (basic + byMembersCount + byDayAverage) *
+      globalMultiplayer *
+      treeMistakesMultiplayer;
+    return Math.floor(count);
   }
 
   createEmbed(context) {
@@ -231,41 +276,6 @@ class Command extends BaseCommand {
     return embed;
   }
 
-  MESSAGES_NEED_TABLE = [
-    0, 70, 120, 180, 255, 370, 490, 610, 730, 930, 1270, 1500, 1720, 2200, 2700,
-    3200, 3700, 4500, 5400, 7400, 12000,
-  ];
-  GROWTH_SPEED_TABLE = [
-    0, 0.8, 1.2, 1.8, 2.5, 5, 7.5, 10, 12, 15.6, 21, 24, 42, 54, 66, 84, 108,
-    144, 252, 360, 450, 792,
-  ];
-  COSTS_TABLE = [1, 1, 1, 3, 2, 2, 2, 4, 2, 2, 2, 5, 3, 3, 3, 7, 4, 4, 4, 10];
-  THUMBAIL_IMAGES_TABLE = [
-    null,
-    "https://cdn.discordapp.com/attachments/629546680840093696/875367772916445204/t1.png",
-    "https://cdn.discordapp.com/attachments/629546680840093696/875367713411858492/t2.png",
-    "https://cdn.discordapp.com/attachments/629546680840093696/875367267318247444/t3.png",
-    "https://cdn.discordapp.com/attachments/629546680840093696/875366344642662510/t4_digital_art_x4.png",
-    "https://cdn.discordapp.com/attachments/629546680840093696/875366096952246312/t9.png",
-  ];
-
-  GLOBAL_MESSAGES_NEED_MULTIPLAYER = 0.3;
-
-  calculateMessagesNeed({ level, guildData, guild, treeField }) {
-    const basic = this.MESSAGES_NEED_TABLE[level];
-    const byMembersCount = guild.memberCount * 3;
-    const byDayAverage = (guildData.day_average || 0) / 5;
-
-    const treeMistakesMultiplayer =
-      "damage" in treeField ? 1 - 0.1 * treeField.damage : 1;
-    const globalMultiplayer = this.GLOBAL_MESSAGES_NEED_MULTIPLAYER;
-    const count =
-      (basic + byMembersCount + byDayAverage) *
-      globalMultiplayer *
-      treeMistakesMultiplayer;
-    return Math.floor(count);
-  }
-
   getCostsUp({ level }) {
     return this.COSTS_TABLE[level];
   }
@@ -274,20 +284,49 @@ class Command extends BaseCommand {
     return this.GROWTH_SPEED_TABLE[level];
   }
 
-  async onLevelUp(context) {
-    const { interfaceMessage, channel, treeField } = context;
-    treeField.seedEntry = 0;
-    context.level = treeField.level = (treeField.level ?? 0) + 1;
-    context.costsUp = this.COSTS_TABLE[context.level];
-    treeField.berrys++;
+  async onBerryCollect(berrys, user, context) {
+    const { treeField, channel } = context;
+    const userData = user.data;
 
-    await interfaceMessage.react("756114492055617558");
-
-    channel.msg({
-      title: "Дерево немного подросло",
-      description: `После очередного семечка 🌱, дерево стало больше и достигло уровня ${context.level}!`,
+    Util.addResource({
+      user,
+      value: berrys,
+      resource: PropertiesEnum.berrys,
+      executor: user,
+      context,
+      source: "command.seed.onBerryCollect",
     });
-    delete treeField.damage;
+    treeField.berrys -= berrys;
+    context.berrysCollected += berrys;
+
+    DataManager.data.bot.berrysPrice += berrys * BerryCommand.INFLATION;
+    await channel.msg({
+      title: "Вы успешно собрали клубнику",
+      author: { name: user.username, iconURL: user.avatarURL() },
+      description: `${
+        berrys > 5
+          ? berrys
+          : ["Ноль", "Одна", "Две", "Три", "Четыре", "Пять"][berrys]
+      } ${Util.ending(berrys, "ягод", "", "а", "ы", {
+        unite: (_quantity, word) => word,
+      })} ${Util.ending(berrys, "попа", "дают", "ла", "ли", {
+        unite: (_quantity, word) => word,
+      })} в ваш карман <:berry:756114492055617558>`,
+      delete: 9000,
+    });
+    userData.CD_54 = Date.now() + this.calculateCooldown(context);
+
+    this.becomeCoinMessage({ user });
+
+    if (treeField.berrys < 1) {
+      context.interfaceMessage.reactions.resolve("756114492055617558").remove();
+    }
+  }
+
+  async onChatInput(msg, interaction) {
+    const context = CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
   }
 
   async onCollect(reaction, user, context) {
@@ -361,89 +400,6 @@ class Command extends BaseCommand {
     await interfaceMessage.msg({ ...embed, edit: true });
   }
 
-  onSeedEntry(user, context) {
-    const { channel, treeField } = context;
-    Util.addResource({
-      user,
-      value: -1,
-      resource: PropertiesEnum.seed,
-      executor: user,
-      context,
-      source: "command.seed.onSeedEntry",
-    });
-    treeField.seedEntry = (treeField.seedEntry ?? 0) + 1;
-    channel.msg({
-      title: `Спасибо за семечко, ${user.username}`,
-      description: `🌱 `,
-      delete: 7_000,
-    });
-
-    if (treeField.seedEntry >= context.costsUp) {
-      this.onLevelUp(context);
-    }
-  }
-
-  async onBerryCollect(berrys, user, context) {
-    const { treeField, channel } = context;
-    const userData = user.data;
-
-    Util.addResource({
-      user,
-      value: berrys,
-      resource: PropertiesEnum.berrys,
-      executor: user,
-      context,
-      source: "command.seed.onBerryCollect",
-    });
-    treeField.berrys -= berrys;
-    context.berrysCollected += berrys;
-
-    DataManager.data.bot.berrysPrice += berrys * BerryCommand.INFLATION;
-    await channel.msg({
-      title: "Вы успешно собрали клубнику",
-      author: { name: user.username, iconURL: user.avatarURL() },
-      description: `${
-        berrys > 5
-          ? berrys
-          : ["Ноль", "Одна", "Две", "Три", "Четыре", "Пять"][berrys]
-      } ${Util.ending(berrys, "ягод", "", "а", "ы", {
-        unite: (_quantity, word) => word,
-      })} ${Util.ending(berrys, "попа", "дают", "ла", "ли", {
-        unite: (_quantity, word) => word,
-      })} в ваш карман <:berry:756114492055617558>`,
-      delete: 9000,
-    });
-    userData.CD_54 = Date.now() + this.calculateCooldown(context);
-
-    this.becomeCoinMessage({ user });
-
-    if (treeField.berrys < 1) {
-      context.interfaceMessage.reactions.resolve("756114492055617558").remove();
-    }
-  }
-
-  calculateBerrysTake({ treeField, level, userData }) {
-    const isBerryMany = treeField.berrys > this.getSpeedGrowth({ level }) * 3;
-
-    const farmerBonus = userData.voidTreeFarm ?? 0;
-
-    const basic = 1 + farmerBonus;
-    const berryManyBonus = isBerryMany
-      ? Util.random(0, 3 + farmerBonus * 2, { round: false })
-      : 0;
-
-    const berrys = basic + berryManyBonus;
-
-    return Math.floor(Math.min(berrys, treeField.berrys));
-  }
-
-  calculateCooldown(context) {
-    return Math.max(
-      (86_400_000 / this.getSpeedGrowth(context)) * (1 + context.level),
-      7_200_000,
-    );
-  }
-
   onDayStats(guild, eventContext) {
     const guildData = guild.data;
     const treeField = guildData.tree;
@@ -478,43 +434,87 @@ class Command extends BaseCommand {
     }
   }
 
-  becomeCoinMessage({ user }) {
-    const become = async (user) => {
-      const filter = (message) => message.author.id === user.id;
-      const collector = new Util.CustomCollector({
-        target: client,
-        event: "message",
-        filter,
-        time: 500_000,
-      });
-      collector.setCallback((message) => {
-        collector.end();
-        EventsManager.emitter.emit("users/getCoinsFromMessage", {
-          user,
-          message,
-        });
-      });
-    };
+  async onLevelUp(context) {
+    const { interfaceMessage, channel, treeField } = context;
+    treeField.seedEntry = 0;
+    context.level = treeField.level = (treeField.level ?? 0) + 1;
+    context.costsUp = this.COSTS_TABLE[context.level];
+    treeField.berrys++;
 
-    !Util.random(0, 5) && become(user);
+    await interfaceMessage.react("756114492055617558");
+
+    channel.msg({
+      title: "Дерево немного подросло",
+      description: `После очередного семечка 🌱, дерево стало больше и достигло уровня ${context.level}!`,
+    });
+    delete treeField.damage;
   }
 
-  options = {
-    name: "seed",
-    id: 54,
-    media: {
-      description:
-        'Клубничное дерево? М-м, вкусно, а говорят они на деревьях не ростут..\nОно общее и распространяется по серверу. Будет приносить ягоды, которые может собрать каждый\n_Будьте осторожны, растение может засохнуть, если на сервере недостаточно "актива"_',
-      example: `!tree #без аргументов`,
-    },
-    accessibility: {
-      publicized_on_level: 15,
-    },
-    alias:
-      "tree livetree семечко berrystree дерево клубничноедерево живоедерево",
-    allowDM: true,
-    type: "other",
-  };
+  onSeedEntry(user, context) {
+    const { channel, treeField } = context;
+    Util.addResource({
+      user,
+      value: -1,
+      resource: PropertiesEnum.seed,
+      executor: user,
+      context,
+      source: "command.seed.onSeedEntry",
+    });
+    treeField.seedEntry = (treeField.seedEntry ?? 0) + 1;
+    channel.msg({
+      title: `Спасибо за семечко, ${user.username}`,
+      description: `🌱 `,
+      delete: 7_000,
+    });
+
+    if (treeField.seedEntry >= context.costsUp) {
+      this.onLevelUp(context);
+    }
+  }
+
+  async run(context) {
+    const { channel, treeField } = context;
+    const embed = this.createEmbed(context);
+    context.setInterfaceMessage(await channel.msg(embed));
+
+    const { interfaceMessage } = context;
+
+    if (context.level < 20) {
+      await interfaceMessage.react("🌱");
+    }
+
+    if (treeField.berrys >= 1) {
+      await interfaceMessage.react("756114492055617558");
+    }
+
+    const filter = (reaction, user) =>
+      user.id !== client.user.id &&
+      (reaction.emoji.name === "🌱" ||
+        reaction.emoji.id === "756114492055617558");
+    const collector = interfaceMessage.createReactionCollector({
+      filter,
+      time: MINUTE * 3,
+    });
+    collector.on("collect", async (reaction, user) => {
+      this.onCollect(reaction, user, context);
+    });
+
+    collector.on("end", interfaceMessage.reactions.removeAll);
+  }
+
+  updateBerrysCount(context) {
+    const { level, treeField } = context;
+    const timePassed = Date.now() - treeField.entryTimestamp || 0;
+    const speedGrowth = this.getSpeedGrowth({ level });
+    const limit = speedGrowth * 360;
+
+    const adding = (timePassed / 86_400_000) * speedGrowth;
+    const berrys = (treeField.berrys || 0) + adding;
+    treeField.berrys = Math.min(berrys, limit);
+
+    treeField.entryTimestamp = Date.now();
+    return;
+  }
 }
 
 export default Command;
