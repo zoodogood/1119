@@ -1,4 +1,5 @@
-import { DAY } from "#constants/globals/time.js";
+import { DAY, MINUTE } from "#constants/globals/time.js";
+import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
@@ -1243,7 +1244,7 @@ class Command extends BaseCommand {
           false,
           {
             action: async (context) => {
-              const { user } = context;
+              const { user, channel } = context;
               addResource({
                 user,
                 value: -16_000,
@@ -1251,6 +1252,13 @@ class Command extends BaseCommand {
                 source: "command.thing.event.school.wind.3",
                 resource: PropertiesEnum.coins,
                 context,
+              });
+              const collector = channel.createMessageCollector({
+                time: MINUTE * 15,
+              });
+
+              collector.on("collect", (message) => {
+                !Util.random(25) && addCoinFromMessage(message);
               });
             },
             textOutput: "Вы передали 16 000 коинов на ремонтные работы",
