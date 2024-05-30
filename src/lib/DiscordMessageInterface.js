@@ -28,74 +28,53 @@ class AbstractHideDisabledComponents {
 }
 
 export class MessageInterface_Options {
-  user = null;
   components = [];
-  reactions = [];
   hideDisabledComponents = null;
+  reactions = [];
   render = null;
+  time = MINUTE * 5;
+  user = null;
 }
 export class MessageInterface {
-  emitter = new EventsEmitter();
-  message = null;
-  channel = null;
-  embed = {};
-  options = new MessageInterface_Options();
-  _collectors = [];
   _closed = false;
+  _collectors = [];
+  channel = null;
+  static CollectType = {
+    component: "component",
+    reaction: "reaction",
+  };
+  embed = {};
+  emitter = new EventsEmitter();
+  static Events = {
+    before_close: "before_close",
+    before_collect: "before_collect",
+    collect: "collect",
+    allowed_collect: "allowed_collect",
+    disallowed_collect: "disallowed_collect",
+    before_update: "before_update",
+  };
+
+  message = null;
+
+  options = new MessageInterface_Options();
 
   constructor(channel) {
     this.setChannel(channel);
   }
 
-  _setOptions(data) {
-    Object.assign(this.options, data);
-  }
+  async _beforeCollect(type, interaction) {
+    const event = {
+      type,
+      interaction,
+      force_allow() {
+        this.allowed_force = true;
+      },
+      ...createStopPromise(),
+    };
+    this.emitter.emit(MessageInterface.Events.before_collect, event);
+    await event.whenStopPromises();
 
-  setChannel(channel) {
-    this.channel = channel;
-  }
-
-  setUser(user) {
-    this._setOptions({ user });
-  }
-
-  setDefaultMessageState(addable) {
-    Object.assign(this.embed, addable);
-  }
-
-  setRender(callback) {
-    this._setOptions({ render: callback });
-  }
-
-  setComponents(components) {
-    this._setOptions({ components });
-  }
-
-  setReactions(reactions) {
-    this._setOptions({ reactions });
-  }
-
-  setHideDisabledComponents(value) {
-    this._setOptions({ hideDisabledComponents: value });
-  }
-
-  close() {
-    if (this._closed) {
-      return;
-    }
-    this.emitter.emit(MessageInterface.Events.before_close);
-    this.emitter.removeAllListeners();
-    for (const collector of this._collectors) {
-      collector.stop();
-    }
-    this._closed = true;
-    this._clean();
-  }
-
-  updateMessage(target = null) {
-    return this.message
-      ? this._editMessage(target)
-      : this._createMessage(target);
+    this._onCollect(type, interaction, { force_allow: event.allowed_force });
   }
 
   _clean(target = null) {
@@ -119,9 +98,33 @@ export class MessageInterface {
     this._collectors.push(this._createReactionCollector());
   }
 
+  _createComponentCollector() {
+    const collector = this.message.createMessageComponentCollector({
+      time: this.options.time,
+    });
+    collector.on("collect", (interaction) =>
+      this._onCollect.call(
+        this,
+        MessageInterface.CollectType.component,
+        interaction,
+      ),
+    );
+    collector.once("end", () => this.close());
+    return collector;
+  }
+
+  async _createMessage(target) {
+    target ||= this.channel;
+    this.message = await this._renderPage(target, {
+      ...(await this._getMessageOptions()),
+    });
+    this._createCollectors();
+    return this.message;
+  }
+
   _createReactionCollector() {
     const collector = this.message.createReactionCollector({
-      time: MINUTE * 3,
+      time: this.options.time,
     });
     const { client } = this.message;
     collector.on(
@@ -138,19 +141,13 @@ export class MessageInterface {
     return collector;
   }
 
-  _createComponentCollector() {
-    const collector = this.message.createMessageComponentCollector({
-      time: MINUTE * 3,
+  async _editMessage(target) {
+    target ||= this.message;
+    this._clean_missing_reactions(target);
+    return await this._renderPage(target, {
+      ...(await this._getMessageOptions()),
+      edit: true,
     });
-    collector.on("collect", (interaction) =>
-      this._onCollect.call(
-        this,
-        MessageInterface.CollectType.component,
-        interaction,
-      ),
-    );
-    collector.once("end", () => this.close());
-    return collector;
   }
 
   async _getMessageOptions() {
@@ -163,51 +160,6 @@ export class MessageInterface {
       ...this.embed,
       ...((await this.options.render?.()) || {}),
     };
-  }
-
-  async _editMessage(target) {
-    target ||= this.message;
-    this._clean_missing_reactions(target);
-    return await this._renderPage(target, {
-      ...(await this._getMessageOptions()),
-      edit: true,
-    });
-  }
-
-  async _createMessage(target) {
-    target ||= this.channel;
-    this.message = await this._renderPage(target, {
-      ...(await this._getMessageOptions()),
-    });
-    this._createCollectors();
-    return this.message;
-  }
-
-  async _renderPage(target, value) {
-    const event = {
-      target,
-      me: this,
-      ...createStopPromise(),
-      value,
-    };
-    this.emitter.emit(MessageInterface.Events.before_update, event);
-    await event.whenStopPromises();
-    return target.msg(value);
-  }
-
-  async _beforeCollect(type, interaction) {
-    const event = {
-      type,
-      interaction,
-      force_allow() {
-        this.allowed_force = true;
-      },
-      ...createStopPromise(),
-    };
-    this.emitter.emit(MessageInterface.Events.before_collect, event);
-    await event.whenStopPromises();
-
-    this._onCollect(type, interaction, { force_allow: event.allowed_force });
   }
 
   _onCollect(type, interaction, { force_allow = false } = {}) {
@@ -235,17 +187,85 @@ export class MessageInterface {
     return data;
   }
 
-  static CollectType = {
-    component: "component",
-    reaction: "reaction",
-  };
+  _recreateMessage(target, force = false) {
+    if (this._closed && !force) {
+      throw new Error("MessageInterface is closed");
+    }
+    this._closed = false;
+    for (const collector of this._collectors) {
+      collector.ended = true;
+    }
+    this._collectors.empty();
+    this._createMessage(target);
+  }
 
-  static Events = {
-    before_close: "before_close",
-    before_collect: "before_collect",
-    collect: "collect",
-    allowed_collect: "allowed_collect",
-    disallowed_collect: "disallowed_collect",
-    before_update: "before_update",
-  };
+  async _renderPage(target, value) {
+    const event = {
+      target,
+      me: this,
+      ...createStopPromise(),
+      value,
+    };
+    this.emitter.emit(MessageInterface.Events.before_update, event);
+    await event.whenStopPromises();
+    return target.msg(value);
+  }
+
+  _setOptions(data) {
+    Object.assign(this.options, data);
+  }
+
+  close() {
+    if (this._closed) {
+      return;
+    }
+    this.emitter.emit(MessageInterface.Events.before_close);
+    this.emitter.removeAllListeners();
+    for (const collector of this._collectors) {
+      collector.stop();
+    }
+    this._closed = true;
+    this._clean();
+  }
+
+  setChannel(channel) {
+    this.channel = channel;
+  }
+
+  setComponents(components) {
+    this._setOptions({ components });
+  }
+
+  setDefaultMessageState(addable) {
+    Object.assign(this.embed, addable);
+  }
+
+  setHideDisabledComponents(value) {
+    this._setOptions({ hideDisabledComponents: value });
+  }
+
+  setReactions(reactions) {
+    this._setOptions({ reactions });
+  }
+
+  setRender(callback) {
+    this._setOptions({ render: callback });
+  }
+
+  setUser(user) {
+    this._setOptions({ user });
+  }
+
+  async updateMessage(target = null) {
+    try {
+      return await (this.message
+        ? this._editMessage(target)
+        : this._createMessage(target));
+    } catch (error) {
+      if (error.message.includes("Unknown Message")) {
+        return await this._recreateMessage(target);
+      }
+      throw error;
+    }
+  }
 }
