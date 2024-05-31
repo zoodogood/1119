@@ -21,7 +21,8 @@ class Route extends BaseRoute {
   async post(request, response) {
     const eventName = request.headers["x-github-event"];
 
-    await parse_body(request, response, { method: "json" });
+    const body = await parse_body(request, response, { method: "json" });
+    const { sender } = body ?? {};
     response.sendStatus(202);
     const description = Object.entries(request.body)
       .map(([key, value]) => `- ${key} => ${toLocaleDeveloperTypes(value)}`)
@@ -30,6 +31,7 @@ class Route extends BaseRoute {
     client.channels.cache.get(config.guild.logChannelId).msg({
       title: `Github \`${eventName}\` webhook handler`,
       description,
+      author: { iconURL: sender.avatar_url, name: sender.type },
     });
 
     EventsManager.emitter.emit(Events.Commit, request.body);
