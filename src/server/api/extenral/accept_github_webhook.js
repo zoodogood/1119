@@ -1,6 +1,5 @@
 import client from "#bot/client.js";
 import config from "#config";
-import { parse_body } from "#lib/express_utils.js";
 import { BaseRoute } from "#server/router.js";
 
 const PREFIX = "/accept_github_commit_webhook";
@@ -17,10 +16,9 @@ class Route extends BaseRoute {
     const eventName = request.headers["x-github-event"];
     console.log(request, eventName);
     response.sendStatus(202);
-    const body = await parse_body(request);
     client.channels.cache.get(config.guild.logChannelId).msg({
       title: "Github `push` webhook handler",
-      description: `${JSON.stringify(body).slice(0, 4000)}`,
+      description: `${JSON.stringify(request.body).slice(0, 4000)}`,
     });
   }
 }
