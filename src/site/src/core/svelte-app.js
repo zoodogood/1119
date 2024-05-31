@@ -1,22 +1,40 @@
-import HashController from "#site/lib/HashController.js";
 import {
-  parseDocumentLocate,
-  omit,
-  fetchFromInnerApi,
   ReplaceTemplate,
+  fetchFromInnerApi,
+  omit,
+  parseDocumentLocate,
 } from "#lib/safe-utils.js";
+import HashController from "#site/lib/HashController.js";
 import { createDialog } from "#site/lib/createDialog.js";
 
-import { whenDocumentReadyStateIsComplete } from "#site/lib/util.js";
 import enviroment from "#site/enviroment/mod.js";
+import { whenDocumentReadyStateIsComplete } from "#site/lib/util.js";
 
-import PagesURLs from "#static/build/svelte-pages/enum[builded].mjs";
 import config from "#config";
+import { DAY } from "#constants/globals/time.js";
 import PagesRouter from "#site/lib/Router.js";
+import PagesURLs from "#static/build/svelte-pages/enum[builded].mjs";
 
 class StorageManager {
+  getSelectedLocale() {
+    return localStorage.getItem("selected_locale") ?? null;
+  }
+
   getToken() {
     return localStorage.getItem("access_token");
+  }
+
+  getUserData() {
+    return JSON.parse(localStorage.getItem("user") ?? null);
+  }
+
+  setLocale(locale) {
+    if (locale === null) {
+      localStorage.removeItem("selected_locale");
+      return;
+    }
+
+    localStorage.setItem("selected_locale", locale);
   }
 
   setToken(token) {
@@ -26,10 +44,6 @@ class StorageManager {
     }
 
     return localStorage.setItem("access_token", token);
-  }
-
-  getUserData() {
-    return JSON.parse(localStorage.getItem("user") ?? null);
   }
 
   setUserData(user) {
@@ -43,41 +57,28 @@ class StorageManager {
     return localStorage.setItem("user", JSON.stringify(user));
   }
 
-  getSelectedLocale() {
-    return localStorage.getItem("selected_locale") ?? null;
-  }
-
-  setLocale(locale) {
-    if (locale === null) {
-      localStorage.removeItem("selected_locale");
-      return;
-    }
-
-    localStorage.setItem("selected_locale", locale);
-  }
-
   yetTokenHeat() {
     if (sessionStorage.tokenHeat > Date.now()) {
       return true;
     }
 
-    const HEAT_DELAY = 60_000 * 5;
+    const HEAT_DELAY = DAY * 14;
     sessionStorage.tokenHeat = Date.now() + HEAT_DELAY;
     return false;
   }
 }
 
 class SvelteApp {
-  document = document;
   Date = new Date();
-  HashData;
-  Hash = this.#createHashController();
+  document = document;
   enviroment = enviroment;
-  url = parseDocumentLocate(this.document.location);
+  Hash = this.#createHashController();
+  HashData;
+  i18n = null;
   PagesURLs = PagesURLs;
   storage = new StorageManager();
+  url = parseDocumentLocate(this.document.location);
   user = this.storage.getUserData();
-  i18n = null;
 
   constructor() {
     this.lang = this.url.base.lang ?? this.storage.getSelectedLocale() ?? "ru";
@@ -87,42 +88,6 @@ class SvelteApp {
     this.#checkExternalUserDataByToken();
     this.#checkURLLocaleProtocol();
     console.info(this);
-  }
-
-  get href() {
-    return this.document.location.href;
-  }
-
-  getBot() {
-    const bot = this.enviroment.bot ?? {
-      id: null,
-      username: "Призрак",
-      discriminator: "1119",
-      displayAvatarURL: `${config.server.origin}/static/favicon.ico`,
-      invite: null,
-    };
-
-    return bot;
-  }
-
-  #checkOrigin() {
-    if (config.server.origin !== this.document.location.origin) {
-      throw new Error(
-        `You need set in config server.origin equal to ${this.document.location.origin}\nCurrent: ${this.document.location.origin}`,
-      );
-    }
-  }
-
-  #createHashController() {
-    const controller = new HashController().subscribe();
-    controller.store.subscribe(this.#onHashUpdate.bind(this));
-    return controller;
-  }
-
-  #onHashUpdate(hash) {
-    const data = (this.HashData ||= { hash: {} });
-    data.currentHash = hash;
-    Object.assign(data.hash, hash);
   }
 
   async #checkExternalUserDataByToken() {
@@ -160,6 +125,14 @@ class SvelteApp {
     this.storage.setUserData(user);
   }
 
+  #checkOrigin() {
+    if (config.server.origin !== this.document.location.origin) {
+      throw new Error(
+        `You need set in config server.origin equal to ${this.document.location.origin}\nCurrent: ${this.document.location.origin}`,
+      );
+    }
+  }
+
   #checkURLLocaleProtocol() {
     const locale = this.url.base.lang;
     if (!locale) {
@@ -167,6 +140,34 @@ class SvelteApp {
     }
 
     this.storage.setLocale(locale);
+  }
+
+  #createHashController() {
+    const controller = new HashController().subscribe();
+    controller.store.subscribe(this.#onHashUpdate.bind(this));
+    return controller;
+  }
+
+  #onHashUpdate(hash) {
+    const data = (this.HashData ||= { hash: {} });
+    data.currentHash = hash;
+    Object.assign(data.hash, hash);
+  }
+
+  getBot() {
+    const bot = this.enviroment.bot ?? {
+      id: null,
+      username: "Призрак",
+      discriminator: "1119",
+      displayAvatarURL: `${config.server.origin}/static/favicon.ico`,
+      invite: null,
+    };
+
+    return bot;
+  }
+
+  get href() {
+    return this.document.location.href;
   }
 }
 
