@@ -9,7 +9,13 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { addResource, ending, joinWithAndSeparator, sleep } from "#lib/util.js";
+import {
+  NumberFormatLetterize,
+  addResource,
+  ending,
+  joinWithAndSeparator,
+  sleep,
+} from "#lib/util.js";
 
 async function get_products() {
   const { grempen_products } = await import(
@@ -237,7 +243,7 @@ class Command extends BaseCommand {
 
     const _default = {
       title: "<:grempen:753287402101014649> Зловещая лавка",
-      description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${userData.coins}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`,
+      description: `Добро пожаловать в мою лавку, меня зовут Гремпленс и сегодня у нас скидки!\nО, вижу у вас есть **${NumberFormatLetterize(userData.coins)}** <:coin:637533074879414272>, не желаете ли чего нибудь приобрести?`,
       fields: slots_to_fields(),
       color: "#400606",
       footer: { text: "Только сегодня, самые горячие цены!" },
@@ -245,7 +251,7 @@ class Command extends BaseCommand {
 
     if (context.slots.some((slot) => slot.isBoughted)) {
       Object.assign(_default, {
-        description: `У вас есть-остались коины? Отлично! **${userData.coins}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`,
+        description: `У вас есть-остались коины? Отлично! **${NumberFormatLetterize(userData.coins)}** <:coin:637533074879414272> хватит, чтобы прикупить чего-нибудь ещё!`,
         footer: { text: "Приходите ещё, акции каждый день!" },
       });
     }
