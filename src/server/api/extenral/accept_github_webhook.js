@@ -31,7 +31,7 @@ class Route extends BaseRoute {
     client.channels.cache.get(config.guild.logChannelId).msg({
       title: `Github \`${eventName}\` webhook handler`,
       description,
-      author: { iconURL: sender.avatar_url, name: sender.type },
+      author: { iconURL: sender?.avatar_url, name: sender?.type },
     });
 
     EventsManager.emitter.emit(Events.Commit, request.body);
