@@ -6,6 +6,7 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { Pager } from "#lib/DiscordPager.js";
 import { jsonFile } from "#lib/Discord_utils.js";
 import CurseManager from "#lib/modules/CurseManager.js";
+import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { toLocaleDeveloperString } from "#lib/safe-utils.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
@@ -61,11 +62,19 @@ class List_FlagSubcommand {
   sendList(context, channel) {
     const bases = CurseManager.cursesBase;
     const contents = bases.map((base) => {
-      const description = resolve_description({
-        curse: { values: {} },
-        user: context.user,
-        curseBase: base,
-      });
+      let description;
+      try {
+        description = resolve_description({
+          curse: { values: {} },
+          user: context.user,
+          curseBase: base,
+        });
+      } catch (error) {
+        ErrorsHandler.onErrorReceive(error, {
+          source: "command.curses.sendList.resolve_description",
+        });
+        description = `упс: ${error.message}`;
+      }
 
       return `- \`${base.id}\`\nШанс: ${base._weight}, сложность: !${base.hard + 1}, награда: X${base.reward}\nОписание: ${description.replaceAll("undefined", "{X}")}.`;
     });
