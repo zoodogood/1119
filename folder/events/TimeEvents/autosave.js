@@ -1,12 +1,18 @@
 import config from "#config";
+import { Events } from "#constants/app/events.js";
 import {
-  TimeEventsManager,
-  DataManager,
   CounterManager,
+  DataManager,
+  EventsManager,
+  TimeEventsManager,
 } from "#lib/modules/mod.js";
 
 class Event {
   static INTERVAL = 60_000 * 5;
+
+  options = {
+    name: "TimeEvent/autosave",
+  };
 
   run() {
     if (config.development) {
@@ -16,12 +22,9 @@ class Event {
     DataManager.file.write();
     TimeEventsManager.file.write();
     CounterManager.file.write();
+    EventsManager.emitter.emit(Events.RequestSave);
     return TimeEventsManager.create("autosave", this.constructor.INTERVAL);
   }
-
-  options = {
-    name: "TimeEvent/autosave",
-  };
 }
 
 export default Event;
