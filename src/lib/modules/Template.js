@@ -6,6 +6,7 @@ import { VM } from "vm2";
 import {
   ActionManager,
   BossManager,
+  ChangelogDaemon,
   CommandsManager,
   CurseManager,
   DataManager,
@@ -282,6 +283,14 @@ class Template {
         name: "FileSystem",
         permissions: {
           scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+        },
+      },
+      ChangelogDaemon: {
+        getContent: () => ChangelogDaemon,
+        name: "ChangelogDaemon",
+        permissions: {
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       executeCommand: {
