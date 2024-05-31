@@ -7,6 +7,7 @@ import * as Util from "#lib/util.js";
 
 export function addCoinFromMessage(message) {
   EventsManager.emitter.emit("users/getCoinsFromMessage", {
+    user: message.author,
     message,
   });
 }
