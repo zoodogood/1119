@@ -558,7 +558,7 @@ class Command extends BaseCommand {
    */
   async run(context) {
     context.parseCli();
-    if (this.processHelpCommand(context)) {
+    if (await this.processHelpCommand(context)) {
       return;
     }
 
