@@ -33,6 +33,7 @@ export class ChangelogDaemon {
     }
     for (const change of addable.split("\n+").slice(1)) {
       this.data.push({
+        message,
         addable,
         change,
         createdAt: Date.now(),
