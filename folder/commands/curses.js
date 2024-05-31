@@ -30,12 +30,12 @@ class List_FlagSubcommand {
     this.context = context;
   }
 
-  onProcess() {
+  async onProcess() {
     const { context } = this;
     if (this.processJSONFlag(context)) {
       return;
     }
-    this.sendList(context, context.channel);
+    await this.sendList(context, context.channel);
   }
   processJSONFlag(context) {
     const [parsed] = context.cliParsed;
@@ -350,12 +350,12 @@ class At_FlagSubcommand {
     this.sendCurseEmbed(interaction, embed);
   }
 
-  onProcess() {
+  async onProcess() {
     const { context } = this;
     if (this.processJSONFlag(context)) {
       return;
     }
-    this.processSendCurse(context, context.channel);
+    await this.processSendCurse(context, context.channel);
   }
   processJSONFlag(context, value) {
     const [parsed] = context.cliParsed;
@@ -375,7 +375,7 @@ class At_FlagSubcommand {
     return true;
   }
 
-  processSendCurse(context, channel) {
+  async processSendCurse(context, channel) {
     const { value } = this;
     const { curse, memb, curses } = this.getCurseByValue(value);
     if (!curse) {
@@ -387,7 +387,7 @@ class At_FlagSubcommand {
       return;
     }
 
-    this.sendCurseEmbed(channel, this.createEmbed(curse, memb));
+    await this.sendCurseEmbed(channel, this.createEmbed(curse, memb));
   }
 
   async sendCurseEmbed(target, embed) {
@@ -509,7 +509,7 @@ class Command extends BaseCommand {
     this.run(context);
     return context;
   }
-  processAtCommand(context) {
+  async processAtCommand(context) {
     const [parsed, values] = context.cliParsed;
     const value =
       parsed.captures.get("--at")?.content.groups.value ||
@@ -522,33 +522,33 @@ class Command extends BaseCommand {
     return true;
   }
 
-  processDefaultBehavior(context) {
-    new Help_FlagSubcommand(context).onProcess();
+  async processDefaultBehavior(context) {
+    return await new Help_FlagSubcommand(context).onProcess();
   }
 
-  processHelpCommand(context) {
+  async processHelpCommand(context) {
     const values = context.cliParsed.at(1);
     if (!values.get("--help")) {
       return;
     }
-    new Help_FlagSubcommand(context).onProcess();
+    await new Help_FlagSubcommand(context).onProcess();
     return true;
   }
 
-  processListCommand(context) {
+  async processListCommand(context) {
     const values = context.cliParsed.at(1);
     if (!values.get("--list")) {
       return;
     }
-    new List_FlagSubcommand(context).onProcess();
+    await new List_FlagSubcommand(context).onProcess();
     return true;
   }
-  processMembersCommand(context) {
+  async processMembersCommand(context) {
     const values = context.cliParsed.at(1);
     if (!values.get("--members")) {
       return;
     }
-    new Members_FlagSubcommand(context).onProcess();
+    await new Members_FlagSubcommand(context).onProcess();
     return true;
   }
 
@@ -562,19 +562,19 @@ class Command extends BaseCommand {
       return;
     }
 
-    if (this.processAtCommand(context)) {
+    if (await this.processAtCommand(context)) {
       return;
     }
 
-    if (this.processListCommand(context)) {
+    if (await this.processListCommand(context)) {
       return;
     }
 
-    if (this.processMembersCommand(context)) {
+    if (await this.processMembersCommand(context)) {
       return;
     }
 
-    this.processDefaultBehavior(context);
+    await this.processDefaultBehavior(context);
   }
 }
 
