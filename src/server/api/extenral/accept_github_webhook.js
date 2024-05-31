@@ -17,7 +17,7 @@ class Route extends BaseRoute {
     console.log(request, eventName);
     response.sendStatus(202);
     client.channels.cache.get(config.guild.logChannelId).msg({
-      title: "Github `push` webhook handler",
+      title: `Github \`${eventName}\` webhook handler`,
       description: `${JSON.stringify(request.body).slice(0, 4000)}`,
     });
   }
