@@ -1,15 +1,15 @@
+import { HOUR } from "#constants/globals/time.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
-import QuestManager, { part_of_made } from "#lib/modules/QuestManager.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import DataManager from "#lib/modules/DataManager.js";
+import QuestManager, { part_of_made } from "#lib/modules/QuestManager.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { FormattingPatterns } from "discord.js";
-import { HOUR } from "#constants/globals/time.js";
-import DataManager from "#lib/modules/DataManager.js";
 
 class Achievement_FlagSubcommand extends BaseFlagSubcommand {
   static FLAG_DATA = {
     name: "--achievement",
-    capture: ["--achievement"],
+    capture: ["--achievement", "-a"],
     expectValue: true,
     description: "Показать описание достужения",
     example: '!quests --achievement "Первый друг"',
@@ -29,33 +29,61 @@ class Achievement_FlagSubcommand extends BaseFlagSubcommand {
       title,
       description: `## ${description}`,
       footer: {
-        text: `Опыта: ${data.reward}. Успешно выполнило: ${(part_of_made(data) * 100).toFixed(4)}%`,
+        text: `Опыта: ${data.reward}. Успешно выполнило: ${(part_of_made(data) * 100).toFixed(4)}% от всех пользователей`,
       },
       image: Command.MESSAGE_THEME.thumbnail,
     });
   }
 
   process_not_found() {
+    const achievements = QuestManager.questsBase
+      .filter((base) => base.isGlobal && !base.isSecret)
+      .map(({ id, description }) => `> \`${id}\`\n> || ${description} ||`)
+      .join("\n\n");
     this.context.interaction.msg({
-      description: QuestManager.questsBase
-        .filter((base) => base.isGlobal && !base.isSecret)
-        .map(({ id }) => `- ${id}`)
-        .join("\n"),
+      title: "Список достижений",
+      description: `Используйте !quests --achievement {имя_достижения}, чтобы увидеть подробности\n${achievements}`,
     });
   }
 }
 class MembersFlag_Manager {
-  constructor(context) {
-    this.context = context;
-  }
-
   description =
     "Список участников сервер, сгруппированных по их ежедневному квесту";
+
+  static flag = {
+    name: "--members",
+    capture: ["--members", "-m"],
+    description: "Показывает перечень сегодняшних ежедневных квестов сервера",
+  };
 
   GROUP_SPECIAL = {
     Null: "null",
     Complete: "complete",
   };
+
+  constructor(context) {
+    this.context = context;
+  }
+
+  groupToLabel(group) {
+    const [key] = group;
+    if (key === this.GROUP_SPECIAL.Null) {
+      return "Ждём новых квестов :sparkles:";
+    }
+
+    if (key === this.GROUP_SPECIAL.Complete) {
+      return "Выполнено";
+    }
+
+    return QuestManager.questsBase.get(key).description;
+  }
+
+  groupToValue(group) {
+    const LIMIT = 30;
+    const members = group.at(1);
+    const content = members.slice(0, LIMIT).map(String).join(", ");
+    return `${content}${members.length > LIMIT ? " ..." : ""}`;
+  }
 
   onProcess() {
     const { guild, channel } = this.context;
@@ -96,40 +124,30 @@ class MembersFlag_Manager {
       ...Command.MESSAGE_THEME,
     });
   }
-
-  groupToLabel(group) {
-    const [key] = group;
-    if (key === this.GROUP_SPECIAL.Null) {
-      return "Ждём новых квестов :sparkles:";
-    }
-
-    if (key === this.GROUP_SPECIAL.Complete) {
-      return "Выполнено";
-    }
-
-    return QuestManager.questsBase.get(key).description;
-  }
-
-  groupToValue(group) {
-    const LIMIT = 30;
-    const members = group.at(1);
-    const content = members.slice(0, LIMIT).map(String).join(", ");
-    return `${content}${members.length > LIMIT ? " ..." : ""}`;
-  }
-
-  static flag = {
-    name: "--members",
-    capture: ["--members", "-m"],
-    description: "Показывает перечень сегодняшних ежедневных квестов сервера",
-  };
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  memb;
   dailyQuest;
   dailyQuestBase;
+  memb;
   membData;
   membQuests;
+  addMembData(memb) {
+    const membData = memb.data;
+
+    QuestManager.checkAvailable({ user: memb });
+
+    const membQuests = (membData.questsGlobalCompleted ?? "")
+      .split(" ")
+      .filter(Boolean);
+
+    const dailyQuest = membData.quest;
+    const dailyQuestBase = QuestManager.questsBase.get(dailyQuest.id);
+
+    Object.assign(this, { membData, membQuests, dailyQuestBase, dailyQuest });
+    return this;
+  }
+
   static new(interaction, command) {
     const context = new this(interaction, command);
     context.parseParams(interaction.params);
@@ -160,22 +178,6 @@ class CommandRunContext extends BaseCommandRunContext {
     this.addMembData(memb);
     return this;
   }
-
-  addMembData(memb) {
-    const membData = memb.data;
-
-    QuestManager.checkAvailable({ user: memb });
-
-    const membQuests = (membData.questsGlobalCompleted ?? "")
-      .split(" ")
-      .filter(Boolean);
-
-    const dailyQuest = membData.quest;
-    const dailyQuestBase = QuestManager.questsBase.get(dailyQuest.id);
-
-    Object.assign(this, { membData, membQuests, dailyQuestBase, dailyQuest });
-    return this;
-  }
 }
 
 class Command extends BaseCommand {
@@ -184,10 +186,67 @@ class Command extends BaseCommand {
       "https://media.discordapp.net/attachments/549096893653975049/830749264928964608/5.png?width=300&height=88",
     thumbnail: "https://cdn.discordapp.com/emojis/830740711493861416.png?v=1",
   };
-  async onChatInput(msg, interaction) {
-    const context = CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
+  options = {
+    name: "quests",
+    id: 47,
+    media: {
+      description:
+        "Ежедневные и глобальные квесты помогают поднять актив на сервере, ставят цели и награждают за их достижения.\nИспользуя команду, вы можете просмотреть их список, а также статистику.",
+      example: `!quests <memb>`,
+    },
+    alias: "quest квесты квести достижения досягнення",
+    cliParser: {
+      flags: [MembersFlag_Manager.flag, Achievement_FlagSubcommand.FLAG_DATA],
+    },
+    accessibility: {
+      publicized_on_level: 3,
+    },
+    allowDM: true,
+    cooldown: 5_000,
+    type: "user",
+  };
+
+  getAchievementsContent(context) {
+    const { membQuests } = context;
+    const secretAchievements = this.getSecretGlobalQuests();
+    const displayedGlobalQuests = this.getDisplayedGlobalQuests();
+    return [
+      {
+        name: "Прогресс достижений:",
+        value: `Достигнуто: \`${
+          displayedGlobalQuests.filter((quest) => membQuests.includes(quest.id))
+            .size
+        }/${displayedGlobalQuests.size}\`\nСекретных: \`${
+          secretAchievements.filter((quest) => membQuests.includes(quest.id))
+            .size
+        }/${secretAchievements.size}\``,
+      },
+    ];
+  }
+
+  getDailyQuestContent(context) {
+    const { dailyQuest, dailyQuestBase } = context;
+    const contents = {
+      nextContent: `До обновления: \`${+(
+        (new Date().setHours(23, 59, 50) - Date.now()) /
+        HOUR
+      ).toFixed(1)}ч\``,
+    };
+
+    const fields = [
+      {
+        name: "Сведения последнего квеста:",
+        value: `Множитель награды: \`X${dailyQuestBase.reward.toFixed(
+          1,
+        )}\`\nПрогресс: \`${
+          dailyQuest.isCompleted
+            ? "Выполнено"
+            : `${dailyQuest.progress}/${dailyQuest.goal}`
+        }\`\nНазвание: \`${dailyQuest.id}\`\n${contents.nextContent}`,
+      },
+    ];
+
+    return fields;
   }
 
   getDisplayedGlobalQuests() {
@@ -206,26 +265,35 @@ class Command extends BaseCommand {
     return QuestManager.questsBase.filter(isSecret);
   }
 
-  async run(context) {
-    if (this.processMembersFlag(context)) {
-      return;
-    }
-
-    if (this.processAchievementsFlag(context)) {
-      return;
-    }
-
-    this.processDefaultBehavior(context);
+  getSeedContent(context) {
+    const { membData } = context;
+    return [
+      {
+        name: "Дневные задачи:",
+        value: `Выполнено: \`${membData.dayQuests || 0}\`\nДо следующей метки: \`${
+          Math.ceil((membData.dayQuests + 1) / 50) * 50 - membData.dayQuests ||
+          50
+        }\``,
+      },
+    ];
   }
 
-  processMembersFlag(context) {
-    const values = context.cliParsed.at(1);
-    if (!values.get("--members")) {
-      return;
-    }
+  globalQuestsToContent(pull, context) {
+    return pull
+      .map((quest) => this.globalQuestToString(quest, context))
+      .join("\n");
+  }
 
-    new MembersFlag_Manager(context).onProcess();
-    return true;
+  globalQuestToString({ id, title }, { membQuests }) {
+    return membQuests.includes(id)
+      ? `<a:yes:763371572073201714> **${title}**`
+      : `<a:Yno:763371626908876830> ${title}`;
+  }
+
+  async onChatInput(msg, interaction) {
+    const context = CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
   }
 
   processAchievementsFlag(context) {
@@ -258,93 +326,27 @@ class Command extends BaseCommand {
     });
   }
 
-  globalQuestToString({ id, title }, { membQuests }) {
-    return membQuests.includes(id)
-      ? `<a:yes:763371572073201714> **${title}**`
-      : `<a:Yno:763371626908876830> ${title}`;
+  processMembersFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--members")) {
+      return;
+    }
+
+    new MembersFlag_Manager(context).onProcess();
+    return true;
   }
 
-  globalQuestsToContent(pull, context) {
-    return pull
-      .map((quest) => this.globalQuestToString(quest, context))
-      .join("\n");
+  async run(context) {
+    if (this.processMembersFlag(context)) {
+      return;
+    }
+
+    if (this.processAchievementsFlag(context)) {
+      return;
+    }
+
+    this.processDefaultBehavior(context);
   }
-
-  getDailyQuestContent(context) {
-    const { dailyQuest, dailyQuestBase } = context;
-    const contents = {
-      nextContent: `До обновления: \`${+(
-        (new Date().setHours(23, 59, 50) - Date.now()) /
-        HOUR
-      ).toFixed(1)}ч\``,
-    };
-
-    const fields = [
-      {
-        name: "Сведения последнего квеста:",
-        value: `Множитель награды: \`X${dailyQuestBase.reward.toFixed(
-          1,
-        )}\`\nПрогресс: \`${
-          dailyQuest.isCompleted
-            ? "Выполнено"
-            : `${dailyQuest.progress}/${dailyQuest.goal}`
-        }\`\nНазвание: \`${dailyQuest.id}\`\n${contents.nextContent}`,
-      },
-    ];
-
-    return fields;
-  }
-
-  getAchievementsContent(context) {
-    const { membQuests } = context;
-    const secretAchievements = this.getSecretGlobalQuests();
-    const displayedGlobalQuests = this.getDisplayedGlobalQuests();
-    return [
-      {
-        name: "Прогресс достижений:",
-        value: `Достигнуто: \`${
-          displayedGlobalQuests.filter((quest) => membQuests.includes(quest.id))
-            .size
-        }/${displayedGlobalQuests.size}\`\nСекретных: \`${
-          secretAchievements.filter((quest) => membQuests.includes(quest.id))
-            .size
-        }/${secretAchievements.size}\``,
-      },
-    ];
-  }
-
-  getSeedContent(context) {
-    const { membData } = context;
-    return [
-      {
-        name: "Дневные задачи:",
-        value: `Выполнено: \`${membData.dayQuests || 0}\`\nДо следующей метки: \`${
-          Math.ceil((membData.dayQuests + 1) / 50) * 50 - membData.dayQuests ||
-          50
-        }\``,
-      },
-    ];
-  }
-
-  options = {
-    name: "quests",
-    id: 47,
-    media: {
-      description:
-        "Ежедневные и глобальные квесты помогают поднять актив на сервере, ставят цели и награждают за их достижения.\nИспользуя команду, вы можете просмотреть их список, а также статистику.",
-      example: `!quests <memb>`,
-    },
-    alias: "quest квесты квести достижения досягнення",
-    cliParser: {
-      flags: [MembersFlag_Manager.flag, Achievement_FlagSubcommand.FLAG_DATA],
-    },
-    accessibility: {
-      publicized_on_level: 3,
-    },
-    allowDM: true,
-    cooldown: 5_000,
-    type: "user",
-  };
 }
 
 export default Command;
