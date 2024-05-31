@@ -24,6 +24,20 @@ export class ChangelogDaemon {
   };
 
   onCommit(event) {
-    this.data.push(event);
+    const { message } = event;
+    if (!message) {
+      return;
+    }
+    const addable = message?.match(/(?<=^.+?\n\n)(.|\n)+/m)?.[0];
+    if (!addable) {
+      return;
+    }
+    for (const change of addable.split("\n+").slice(1)) {
+      this.data.push({
+        addable,
+        change,
+        createdAt: Date.now(),
+      });
+    }
   }
 }
