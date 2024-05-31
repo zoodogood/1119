@@ -7,12 +7,14 @@ import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { Pager } from "#lib/DiscordPager.js";
+import { justModalQuestion } from "#lib/Discord_utils.js";
 import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import {
   dayjs,
   ending,
   question,
+  sleep,
   timestampDay,
   timestampToDate,
 } from "#lib/util.js";
@@ -154,6 +156,24 @@ class PartnerField {
 }
 
 // MARK: Flags
+
+class Search_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--search",
+    capture: ["--search"],
+    expectValue: true,
+    description: "Укажите подстроку имени сервера для поиска",
+  };
+
+  onProcess() {
+    const manager = new List_FlagSubcommand(this.context);
+    const partners = manager
+      .fetch()
+      .filter(({ guildData }) => guildData.name.includes(this.value));
+    manager.partners = partners;
+    manager.createInterface(this.context.interaction);
+  }
+}
 
 class Setup_FlagSubcommand extends BaseFlagSubcommand {
   _interface = new MessageInterface();
@@ -551,7 +571,44 @@ class List_FlagSubcommand_Filter {
   filters = [
     {
       component: { label: "Есть босс", customId: "boss" },
+      handleInteraction(interaction, filter) {
+        filter.isEnable = !filter.isEnable;
+        return { replitable: interaction };
+      },
       check: (guildData) => guildData.boss?.isArrived,
+    },
+    {
+      component: { label: "Имя сервера", customId: "name" },
+      async handleInteraction(interaction, filter) {
+        const { result, fields } = await justModalQuestion({
+          title: "Имя сервера",
+          components: [
+            { label: "Поиск", placeholder: 'Введите "-", чтобы отключить' },
+          ],
+          interaction,
+        });
+
+        if (!result) {
+          interaction.msg({
+            content: "Не удалось получить имя сервера",
+            ephemeral: true,
+          });
+          return { isFail: true };
+        }
+        const { value } = [...fields.values()].at(0);
+        if (value === "-") {
+          filter.isEnable = false;
+          return { replitable: result };
+        }
+
+        filter.value = value;
+        filter.isEnable = true;
+
+        return { replitable: result };
+      },
+      params: { value: null },
+      check: (guildData, filter) =>
+        guildData.name.includes(filter.params.value),
     },
   ];
 
@@ -565,13 +622,17 @@ class List_FlagSubcommand_Filter {
     _interface.setChannel(interaction.channel);
     _interface.setUser(interaction.user);
 
-    // _interface.setComponents();
     _interface.setRender(() => ({
-      description: "Используйте кнопки, чтобы переключать фильтры",
+      description: "Используйте кнопки, чтобы переключать фильтры :point_down:",
       fetchReply: true,
-      ephemeral: true,
       components: justButtonComponents(
-        ...this.filters.map(({ component }) => component),
+        ...this.filters.map((filter) =>
+          Object.assign(filter.component, {
+            style: filter.isEnable
+              ? ButtonStyle.Success
+              : ButtonStyle.Secondary,
+          }),
+        ),
       ),
     }));
     _interface.emitter.on(
@@ -582,30 +643,39 @@ class List_FlagSubcommand_Filter {
     return _interface;
   }
 
-  onComponent({ interaction }) {
+  async onComponent({ interaction }) {
     const filter = this.filters.find(
       ({ component }) => component.customId === interaction.customId,
     );
     if (!filter) {
       return;
     }
-    filter.isEnable = !filter.isEnable;
+    const { replitable, isFail } = await filter.handleInteraction(
+      interaction,
+      filter,
+    );
+    if (isFail) {
+      return;
+    }
     const event = {
       response(options) {
-        return interaction.msg(options);
+        return replitable?.msg(options);
       },
+      filter,
     };
     this._interface.emitter.emit(
       List_FlagSubcommand_Filter.Events.update,
       event,
     );
+    await sleep(5000);
+    this._interface.updateMessage();
   }
 }
 
 class List_FlagSubcommand extends BaseFlagSubcommand {
   _interface = new Pager();
 
-  filters = {};
+  filter_manager = null;
   static FLAG_DATA = {
     name: "--list",
     capture: ["-l", "--list"],
@@ -625,6 +695,10 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
         label: "Фильтры",
         style: ButtonStyle.Success,
         customId: "filter",
+        get disabled() {
+          console.log(!!this.filter_manager);
+          return !!this.filter_manager;
+        },
       }),
     );
     _interface.updateMessage();
@@ -658,10 +732,12 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
 
   onComponent({ interaction }) {
     this.process_filter_component(interaction);
+    this._interface.updateMessage();
   }
 
   onProcess() {
-    this.sendList(this.context.interaction);
+    this.partners = this.fetch();
+    this.createInterface(this.context.interaction);
     return true;
   }
 
@@ -669,21 +745,25 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
     if (interaction.customId !== "filter") {
       return;
     }
-    const manager = new List_FlagSubcommand_Filter(this, interaction);
-    manager.createInterface();
-    manager._interface.emitter.on(
+    if (this.filter_manager) {
+      return;
+    }
+    this.filter_manager = new List_FlagSubcommand_Filter(this, interaction);
+    this.filter_manager.createInterface();
+    this.filter_manager._interface.emitter.on(
       List_FlagSubcommand_Filter.Events.update,
-      ({ response }) => {
+      ({ response, filter }) => {
         const previousLength = this.partners.length;
         this.partners = this.fetch().filter(({ guildData }) =>
-          manager.filters
+          this.filter_manager.filters
             .filter(({ isEnable }) => isEnable)
-            .every((filter) => filter.check(guildData)),
+            .every((filter) => filter.check(guildData, filter)),
         );
         const { length } = this.partners;
         response({
-          description: `Количество серверов: ${previousLength} => ${length}`,
+          description: `Использован фильтр ${filter.isEnable ? "" : "!"}${filter.component.label} ・ найдено серверов: ${previousLength} => ${length}`,
           ephemeral: true,
+          edit: true,
         });
         this._interface.setPagesLength(length);
         this._interface.currentPage = Math.min(
@@ -693,11 +773,6 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
         this._interface.updateMessage();
       },
     );
-  }
-
-  sendList(channel) {
-    this.partners = this.fetch();
-    this.createInterface(channel);
   }
 }
 
@@ -895,6 +970,7 @@ class Command extends BaseCommand {
         List_FlagSubcommand.FLAG_DATA,
         Daemon_FlagSubcommand.FLAG_DATA,
         Channel_FlagSubcommand.FLAG_DATA,
+        Search_FlagSubcommand.FLAG_DATA,
       ],
     },
     accessibility: {
