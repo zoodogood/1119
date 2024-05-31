@@ -27,11 +27,11 @@ export class ChangelogDaemon {
     if (!message) {
       return;
     }
-    const addable = message?.match(/(?<=^.+?\n\n)(.|\n)+/m)?.[0];
-    // to-do developer crutch
-    // if (!addable) {
-    //   return;
-    // }
+    const addable = message.match(/(?<=^.+?\n\s*\n)(.|\n)+/m)?.[0];
+
+    if (!addable) {
+      return;
+    }
     for (const change of addable.split("\n+ ").slice(1)) {
       this.data.push({
         message,
