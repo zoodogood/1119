@@ -8,6 +8,8 @@ import { ImportDirectory } from "@zoodogood/import-directory";
 const PATH = "./folder/events";
 
 class BaseEvent {
+  options = {};
+
   constructor(target, eventName, options = {}) {
     this.eventTarget = target;
     this.eventName = eventName;
@@ -17,31 +19,6 @@ class BaseEvent {
     this.options = options;
   }
 
-  handle() {
-    if (this.isListeningNow === true) {
-      throw new Error("Listening now");
-    }
-
-    const callback = this.callback;
-    const eventName = this.eventName;
-    const target = this.eventTarget;
-
-    target.on(eventName, callback);
-    this.isListeningNow = true;
-  }
-
-  freeze() {
-    this.isListeningNow = false;
-
-    const callback = this.callback;
-    const eventName = this.eventName;
-    const target = this.eventTarget;
-    target.removeListener(eventName, callback);
-  }
-
-  #logger({ event, args }) {
-    console.info(`Event: ${this.eventName}`);
-  }
   async #beforeRun(...args) {
     this.#logger({ event: this, args });
 
@@ -59,7 +36,30 @@ class BaseEvent {
     }
   }
 
-  options = {};
+  #logger({ event, args }) {
+    console.info(`Event: ${this.eventName}`);
+  }
+  freeze() {
+    this.isListeningNow = false;
+
+    const callback = this.callback;
+    const eventName = this.eventName;
+    const target = this.eventTarget;
+    target.removeListener(eventName, callback);
+  }
+
+  handle() {
+    if (this.isListeningNow === true) {
+      throw new Error("Listening now");
+    }
+
+    const callback = this.callback;
+    const eventName = this.eventName;
+    const target = this.eventTarget;
+
+    target.on(eventName, callback);
+    this.isListeningNow = true;
+  }
 }
 
 class EventsManager {
@@ -94,5 +94,5 @@ class EventsManager {
   }
 }
 
-export { EventsManager, BaseEvent };
+export { BaseEvent, EventsManager };
 export default EventsManager;
