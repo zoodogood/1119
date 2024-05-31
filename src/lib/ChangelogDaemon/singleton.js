@@ -9,4 +9,4 @@ EventsManager.emitter.once(AppEvents.BeforeLogin, async () => {
   await singleton.file.load();
 });
 EventsManager.emitter.on(AppEvents.RequestSave, () => singleton.file.write());
-EventsManager.emitter.on(Events.Commit, (event) => singleton.onCommit(event));
+EventsManager.emitter.on(Events.Commit, (event) => singleton.onPush(event));
