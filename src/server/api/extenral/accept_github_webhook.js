@@ -19,9 +19,13 @@ class Route extends BaseRoute {
 
     await parse_body(request, response, { method: "json" });
     response.sendStatus(202);
+    const description = Object.entries(request.body)
+      .map(([key, value]) => `- ${key} => ${toLocaleDeveloperTypes(value)}`)
+      .join("\n")
+      .slice(0, 4000);
     client.channels.cache.get(config.guild.logChannelId).msg({
       title: `Github \`${eventName}\` webhook handler`,
-      description: `${toLocaleDeveloperTypes(request.body).slice(0, 4000)}`,
+      description,
     });
   }
 }
