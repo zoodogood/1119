@@ -2,15 +2,40 @@
   import { dayjs, ending, fetchFromInnerApi } from "#lib/safe-utils.js";
   import Layout from "#site-component/Layout";
 
+  const GroupSymbols = [
+    { label: "Fix", symbol: "#", alias: ["fix", "bug"] },
+    {
+      label: "Balance change",
+      symbol: "$",
+      alias: ["balance", "balance change"],
+    },
+    { label: "Add feature", symbol: "-", alias: ["add feature", "feature"] },
+    { label: "Improve", symbol: "%", alias: ["improve"] },
+  ];
+
+  const SeasonEmoji = ["⛄", "🌸", "☀️", "🍁"];
+
   const _interface_promise = (async () => {
     const changes = await fetchFromInnerApi(
       "modules/changelog_daemon/changelog",
     );
-    console.log({ changes });
     const flat = changes.map(({ createdAt, change, message }) => {
       const period = dayjs(+createdAt).format("MM.YYYY");
-      const groupName = change.match(/^(\S+):/)?.[1];
-      return { period, groupName, message, change };
+      const lowed_change = change.toLowerCase();
+      const group_base = GroupSymbols.find(({ alias }) =>
+        alias.some((alias) => lowed_change.startsWith(alias)),
+      );
+      const group_symbol = group_base?.symbol || "x";
+      const short_change = group_base ? change.replace(/^.+?:\s*/, "") : change;
+      return {
+        period,
+        group_symbol,
+        message,
+        change,
+        lowed_change,
+        group_base,
+        short_change,
+      };
     });
     const first_change = changes[0];
     return { data: changes, flat, first_change };
@@ -29,12 +54,12 @@
 
   const changes_filter_factory =
     (queries) =>
-    ({ message }) =>
+    ({ lowed_change }) =>
       !queries ||
       queries.every((query) =>
         query.startsWith("!")
-          ? !message.toLowerCase().includes(query.slice(1))
-          : message.toLowerCase().includes(query),
+          ? !lowed_change.includes(query.slice(1))
+          : lowed_change.includes(query),
       );
 </script>
 
@@ -63,17 +88,32 @@
         "а",
       )}..
       <p>
-        Количество: {ending(_interface.flat?.length, "изменени", "й", "е", "я")}
+        {ending(_interface.flat?.length, "изменени", "й", "е", "я")}:
       </p>
     </h5>
+    <small>
+      Условные обозначения: {GroupSymbols.map(
+        ({ label, symbol }) => `${symbol} ・ ${label}`,
+      ).join(",  ")}
+    </small>
     {#key filtered_flat}
       {#each Object.entries(Object.groupBy(filtered_flat, ({ period }) => period)) as [period, changes]}
-        <p>{period}</p>
-        {#each changes as { message, change }}
-          <ul>
-            <li title={message}>{change}</li>
-          </ul>
-        {/each}
+        <p>
+          <span period_emoji>
+            {SeasonEmoji[Math.floor((period.split(".")[0] - 1) / 4)]}
+          </span>{period}
+        </p>
+        <ul>
+          {#each Object.entries(Object.groupBy(changes, ({ group_symbol }) => group_symbol)) as [_, changes]}
+            {#each changes as { short_change, group_symbol, message }}
+              <li change_item change_item_symbol={group_symbol} title={message}>
+                {short_change}
+              </li>
+            {/each}
+            <br />
+          {/each}
+          <hr style="width: 100%;" />
+        </ul>
       {/each}
     {/key}
   {:catch error}
@@ -82,27 +122,36 @@
 </Layout>
 
 <style>
-  [resource_paragpraph] {
-    text-transform: capitalize;
-    position: sticky;
-    top: 0;
-  }
-
-  [resource_group_element] {
+  [change_item] {
     font-size: 0.8em;
     display: flex;
     flex-wrap: wrap;
+    list-style: none;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
   }
 
-  [resource_group_element]:nth-child(2n) {
+  [change_item]::before {
+    content: attr(change_item_symbol);
+    width: 1em;
+    position: absolute;
+    left: -1em;
+    opacity: 0.8;
+    color: var(--text-theme-accent);
+    font-size: 0.8em;
+  }
+
+  [change_item]:hover:before {
+    opacity: 1;
+  }
+
+  [change_item]:nth-child(2n) {
     color: color-mix(in srgb, currentColor, transparent 15%);
   }
 
-  [resource_group_element_key] {
-    width: 70%;
-  }
-  [resource_group_element_value] {
-    width: 30%;
-    text-align: center;
+  [period_emoji] {
+    width: 1em;
   }
 </style>
