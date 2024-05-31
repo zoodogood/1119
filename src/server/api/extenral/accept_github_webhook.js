@@ -1,11 +1,15 @@
 import client from "#bot/client.js";
 import config from "#config";
 import { parse_body } from "#lib/express_utils.js";
+import EventsManager from "#lib/modules/EventsManager.js";
 import { toLocaleDeveloperTypes } from "#lib/safe-utils.js";
 import { BaseRoute } from "#server/router.js";
 
-const PREFIX = "/accept_github_commit_webhook";
+const PREFIX = "/accept_github_webhook";
 
+export const Events = {
+  Commit: "accept_github_webhook__Commit",
+};
 class Route extends BaseRoute {
   isHidden = true;
   prefix = PREFIX;
@@ -27,6 +31,8 @@ class Route extends BaseRoute {
       title: `Github \`${eventName}\` webhook handler`,
       description,
     });
+
+    EventsManager.emitter.emit(Events.Commit, request.body);
   }
 }
 
