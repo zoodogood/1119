@@ -14,7 +14,7 @@ export async function writeError(error) {
     body: JSON.stringify({
       message: error.message,
       stack: error.stack,
-      cause: error?.cause.message,
+      cause: error.cause?.message,
     }),
     headers: { "Content-Type": "text/plain" },
     method: "POST",
