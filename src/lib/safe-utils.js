@@ -50,6 +50,31 @@ export function toLocaleDeveloperString(value) {
   return String(value);
 }
 
+export function toLocaleDeveloperTypes(value) {
+  if (!value) {
+    return String(value);
+  }
+
+  if (typeof value === "string") {
+    return `[String]`;
+  }
+
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (typeof value === "function") {
+    return "fn()";
+  }
+
+  if (typeof value === "object") {
+    const keys = Object.keys(value);
+    return `${value.constructor.name}(${keys.length}) <${keys}>`;
+  }
+
+  return String(value);
+}
+
 function sleep(ms) {
   return new Promise((response) => setTimeout(response, ms));
 }
