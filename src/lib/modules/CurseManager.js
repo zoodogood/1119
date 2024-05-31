@@ -5,6 +5,7 @@ import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { RanksUtils } from "#folder/commands/top.js";
+import { resolve_description } from "#folder/entities/curses/curse.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
@@ -1965,12 +1966,7 @@ class CurseManager {
         return curseBase.toString(user, curse);
       }
 
-      const description = (() => {
-        const { description } = curseBase;
-        return typeof description === "function"
-          ? description.call(curseBase, user, curse)
-          : description;
-      })();
+      const description = resolve_description({ curse, user, curseBase });
       const progressContent = curse.values.goal
         ? `Прогресс: ${curse.values.progress || 0}/${curse.values.goal}`
         : `Прогресс: ${curse.values.progress || 0}`;
