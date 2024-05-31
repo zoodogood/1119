@@ -1,14 +1,15 @@
+import { justSelectMenuComponent } from "#bot/util.js";
 import { MINUTE } from "#constants/globals/time.js";
+import { resolve_description } from "#folder/entities/curses/curse.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { Pager } from "#lib/DiscordPager.js";
+import { jsonFile } from "#lib/Discord_utils.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { toLocaleDeveloperString } from "#lib/safe-utils.js";
-import { justSelectMenuComponent } from "#bot/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { FormattingPatterns } from "discord.js";
-import { jsonFile } from "#lib/Discord_utils.js";
 
 class Utils {
   static getCursesProgressContent(curses) {
@@ -23,9 +24,11 @@ class Utils {
 }
 
 class List_FlagSubcommand {
+  sendList_CHUNK_SIZE = 15;
   constructor(context) {
     this.context = context;
   }
+
   onProcess() {
     const { context } = this;
     if (this.processJSONFlag(context)) {
@@ -33,7 +36,6 @@ class List_FlagSubcommand {
     }
     this.sendList(context, context.channel);
   }
-
   processJSONFlag(context) {
     const [parsed] = context.cliParsed;
     const hasJSONFlag = parsed.captures.get("--json");
@@ -55,15 +57,17 @@ class List_FlagSubcommand {
     });
     return true;
   }
+
   sendList(context, channel) {
     const bases = CurseManager.cursesBase;
-    const contents = bases.map((curse) => {
-      const description =
-        typeof curse.description === "function"
-          ? curse.description(context.memb, { values: {} }, {})
-          : curse.description;
+    const contents = bases.map((base) => {
+      const description = resolve_description({
+        curse: { values: {} },
+        user: context.user,
+        curseBase: base,
+      });
 
-      return `- \`${curse.id}\`\nШанс: ${curse._weight}, сложность: !${curse.hard + 1}, награда: X${curse.reward}\nОписание: ${description.replaceAll("undefined", "{X}")}.`;
+      return `- \`${base.id}\`\nШанс: ${base._weight}, сложность: !${base.hard + 1}, награда: X${base.reward}\nОписание: ${description.replaceAll("undefined", "{X}")}.`;
     });
 
     const SIZE = this.sendList_CHUNK_SIZE;
@@ -78,8 +82,6 @@ class List_FlagSubcommand {
     pager.addPages(...pages);
     pager.updateMessage();
   }
-
-  sendList_CHUNK_SIZE = 15;
 
   sendList_calculatePagesCount(pages, contentsArray) {
     return Math.ceil(
@@ -171,6 +173,27 @@ class Help_FlagSubcommand {
   constructor(context) {
     this.context = context;
   }
+  getCurrentCursesContent(context) {
+    const { curses } = context;
+
+    if (!curses.length) {
+      return "Нет.";
+    }
+
+    const names = curses.map((curse) => `- *\`${curse.id}\`*`).join("\n");
+    const progresses = Utils.getCursesProgressContent(curses);
+    return `\n${names}\n${progresses}`;
+  }
+
+  onCurseSelect(interaction, _message) {
+    const value = interaction.values.at(0);
+    const manager = new At_FlagSubcommand(this.context, +value);
+    const { curse, memb } = manager.getCurseByValue(+value);
+    const embed = manager.createEmbed(curse, memb);
+    embed.ephemeral = true;
+    embed.fetchReply = true;
+    manager.sendCurseEmbed(interaction, embed);
+  }
   onProcess() {
     const { context } = this;
     if (this.processJSONFlag(context)) {
@@ -197,17 +220,6 @@ class Help_FlagSubcommand {
       delete: MINUTE,
     });
     return true;
-  }
-  getCurrentCursesContent(context) {
-    const { curses } = context;
-
-    if (!curses.length) {
-      return "Нет.";
-    }
-
-    const names = curses.map((curse) => `- *\`${curse.id}\`*`).join("\n");
-    const progresses = Utils.getCursesProgressContent(curses);
-    return `\n${names}\n${progresses}`;
   }
 
   async sendHelp(context, channel) {
@@ -247,16 +259,6 @@ class Help_FlagSubcommand {
       message.msg({ components: [], edit: true });
     });
   }
-
-  onCurseSelect(interaction, _message) {
-    const value = interaction.values.at(0);
-    const manager = new At_FlagSubcommand(this.context, +value);
-    const { curse, memb } = manager.getCurseByValue(+value);
-    const embed = manager.createEmbed(curse, memb);
-    embed.ephemeral = true;
-    embed.fetchReply = true;
-    manager.sendCurseEmbed(interaction, embed);
-  }
 }
 
 class At_FlagSubcommand {
@@ -264,30 +266,40 @@ class At_FlagSubcommand {
     this.context = context;
     this.value = value;
   }
-  onProcess() {
+  createEmbed(curse, memb) {
     const { context } = this;
-    if (this.processJSONFlag(context)) {
-      return;
-    }
-    this.processSendCurse(context, context.channel);
+    const { curses } = context;
+
+    const fields = this.getDefaultFields(context, curse);
+    const description = CurseManager.interface({
+      user: memb,
+      curse,
+    }).toString();
+
+    const embed = {
+      description,
+      fields,
+      fetchReply: true,
+      ...context.command.MESSAGE_THEME,
+      components: justButtonComponents(
+        curses.length
+          ? justSelectMenuComponent({
+              placeholder: `Отобразить проклятие: (их ${curses.length})`,
+              labels: curses.map((curse) => curse.id),
+            })
+          : {
+              disabled: true,
+              label: "Нет проклятий",
+            },
+      ),
+    };
+    return embed;
   }
 
-  processJSONFlag(context, value) {
-    const [parsed] = context.cliParsed;
-    const hasJSONFlag = parsed.captures.get("--json");
-
-    if (!hasJSONFlag) {
-      return;
-    }
-
-    const { curse, memb } = this.getCurseByValue(value);
-    context.channel.msg({
-      description: `Проклятие ${curse.id} пользователя ${memb.toString()} .json`,
-      color: context.command.MESSAGE_THEME.color,
-      files: [jsonFile(curse, "cursesManager_curse.json")],
-      delete: MINUTE,
-    });
-    return true;
+  getCurseByValue(value) {
+    const { memb, curses } = this.context;
+    const curse = curses.at(value);
+    return { curse, memb, curses };
   }
 
   getDefaultFields(context, curse) {
@@ -321,41 +333,39 @@ class At_FlagSubcommand {
     return fields;
   }
 
-  getCurseByValue(value) {
-    const { memb, curses } = this.context;
-    const curse = curses.at(value);
-    return { curse, memb, curses };
+  onCurseSelect(interaction, _message) {
+    const value = interaction.values.at(0);
+    const { curse, memb } = this.getCurseByValue(+value);
+    const embed = this.createEmbed(curse, memb);
+    embed.edit = true;
+    this.sendCurseEmbed(interaction, embed);
   }
 
-  createEmbed(curse, memb) {
+  onProcess() {
     const { context } = this;
-    const { curses } = context;
-
-    const fields = this.getDefaultFields(context, curse);
-    const description = CurseManager.interface({
-      user: memb,
-      curse,
-    }).toString();
-
-    const embed = {
-      description,
-      fields,
-      fetchReply: true,
-      ...context.command.MESSAGE_THEME,
-      components: justButtonComponents(
-        curses.length
-          ? justSelectMenuComponent({
-              placeholder: `Отобразить проклятие: (их ${curses.length})`,
-              labels: curses.map((curse) => curse.id),
-            })
-          : {
-              disabled: true,
-              label: "Нет проклятий",
-            },
-      ),
-    };
-    return embed;
+    if (this.processJSONFlag(context)) {
+      return;
+    }
+    this.processSendCurse(context, context.channel);
   }
+  processJSONFlag(context, value) {
+    const [parsed] = context.cliParsed;
+    const hasJSONFlag = parsed.captures.get("--json");
+
+    if (!hasJSONFlag) {
+      return;
+    }
+
+    const { curse, memb } = this.getCurseByValue(value);
+    context.channel.msg({
+      description: `Проклятие ${curse.id} пользователя ${memb.toString()} .json`,
+      color: context.command.MESSAGE_THEME.color,
+      files: [jsonFile(curse, "cursesManager_curse.json")],
+      delete: MINUTE,
+    });
+    return true;
+  }
+
   processSendCurse(context, channel) {
     const { value } = this;
     const { curse, memb, curses } = this.getCurseByValue(value);
@@ -386,22 +396,24 @@ class At_FlagSubcommand {
       message.msg({ components: [], edit: true });
     });
   }
-
-  onCurseSelect(interaction, _message) {
-    const value = interaction.values.at(0);
-    const { curse, memb } = this.getCurseByValue(+value);
-    const embed = this.createEmbed(curse, memb);
-    embed.edit = true;
-    this.sendCurseEmbed(interaction, embed);
-  }
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  memb = null;
-  curses = [];
-  user;
   channel;
+  curses = [];
   guild;
+  memb = null;
+  user;
+
+  constructor(interaction, command) {
+    super(interaction, command);
+    const { user, channel, guild } = interaction;
+    Object.assign(this, { user, channel, guild });
+  }
+
+  static async new(interaction, command) {
+    return new this(interaction, command);
+  }
 
   parseCli() {
     const parser = new CliParser().setText(this.interaction.params);
@@ -430,95 +442,13 @@ class CommandRunContext extends BaseCommandRunContext {
     this.curses = memb.data.curses || [];
     return this;
   }
-
-  static async new(interaction, command) {
-    return new this(interaction, command);
-  }
-
-  constructor(interaction, command) {
-    super(interaction, command);
-    const { user, channel, guild } = interaction;
-    Object.assign(this, { user, channel, guild });
-  }
 }
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    this.run(context);
-    return context;
-  }
-
   MESSAGE_THEME = {
     color: "#1f2022",
     thumbnail:
       "https://media.discordapp.net/attachments/629546680840093696/1174372547941384272/skull.png?ex=65e88daa&is=65d618aa&hm=c4c1b827a6db040cc9053682057f6c9ca6647012da687bd44fc90e4bf270eda5&=&format=webp&quality=lossless",
   };
-  /**
-   *
-   * @param {CommandRunContext} context
-   */
-  async run(context) {
-    context.parseCli();
-    if (this.processHelpCommand(context)) {
-      return;
-    }
-
-    if (this.processAtCommand(context)) {
-      return;
-    }
-
-    if (this.processListCommand(context)) {
-      return;
-    }
-
-    if (this.processMembersCommand(context)) {
-      return;
-    }
-
-    this.processDefaultBehavior(context);
-  }
-  processHelpCommand(context) {
-    const values = context.cliParsed.at(1);
-    if (!values.get("--help")) {
-      return;
-    }
-    new Help_FlagSubcommand(context).onProcess();
-    return true;
-  }
-
-  processListCommand(context) {
-    const values = context.cliParsed.at(1);
-    if (!values.get("--list")) {
-      return;
-    }
-    new List_FlagSubcommand(context).onProcess();
-    return true;
-  }
-
-  processAtCommand(context) {
-    const [parsed, values] = context.cliParsed;
-    const value =
-      parsed.captures.get("--at")?.content.groups.value ||
-      values.get("rest").match(/(?:\s*|^)-?\d+(?:\s*|$)/)?.[0];
-
-    if (!value) {
-      return;
-    }
-    new At_FlagSubcommand(context, value).onProcess();
-    return true;
-  }
-
-  processMembersCommand(context) {
-    const values = context.cliParsed.at(1);
-    if (!values.get("--members")) {
-      return;
-    }
-    new Members_FlagSubcommand(context).onProcess();
-    return true;
-  }
-  processDefaultBehavior(context) {
-    new Help_FlagSubcommand(context).onProcess();
-  }
 
   options = {
     name: "curses",
@@ -565,6 +495,78 @@ class Command extends BaseCommand {
       publicized_on_level: 7,
     },
   };
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    this.run(context);
+    return context;
+  }
+  processAtCommand(context) {
+    const [parsed, values] = context.cliParsed;
+    const value =
+      parsed.captures.get("--at")?.content.groups.value ||
+      values.get("rest").match(/(?:\s*|^)-?\d+(?:\s*|$)/)?.[0];
+
+    if (!value) {
+      return;
+    }
+    new At_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+
+  processDefaultBehavior(context) {
+    new Help_FlagSubcommand(context).onProcess();
+  }
+
+  processHelpCommand(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--help")) {
+      return;
+    }
+    new Help_FlagSubcommand(context).onProcess();
+    return true;
+  }
+
+  processListCommand(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--list")) {
+      return;
+    }
+    new List_FlagSubcommand(context).onProcess();
+    return true;
+  }
+  processMembersCommand(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--members")) {
+      return;
+    }
+    new Members_FlagSubcommand(context).onProcess();
+    return true;
+  }
+
+  /**
+   *
+   * @param {CommandRunContext} context
+   */
+  async run(context) {
+    context.parseCli();
+    if (this.processHelpCommand(context)) {
+      return;
+    }
+
+    if (this.processAtCommand(context)) {
+      return;
+    }
+
+    if (this.processListCommand(context)) {
+      return;
+    }
+
+    if (this.processMembersCommand(context)) {
+      return;
+    }
+
+    this.processDefaultBehavior(context);
+  }
 }
 
 export default Command;
