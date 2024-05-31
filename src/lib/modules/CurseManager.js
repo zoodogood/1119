@@ -1638,7 +1638,7 @@ class CurseManager {
         _weight: 1,
         id: "4elements_of_thing",
         description(user, curse) {
-          return `Решите задачу: ${curse.values.generated.map((i) => this.EMOJIS[i]).join("")}`;
+          return `Решите задачу: ${curse.values.generated?.map((i) => this.EMOJIS[i]).join("")}`;
         },
         EMOJIS: ["🍃", "☁️", "🔥", "👾"],
         hard: 1,
