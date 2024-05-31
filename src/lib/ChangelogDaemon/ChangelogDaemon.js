@@ -32,11 +32,11 @@ export class ChangelogDaemon {
     if (!addable) {
       return;
     }
-    for (const change of addable.split("\n+ ").slice(1)) {
+    for (const change of addable.split(/(?<=^|\n)\+/).slice(1)) {
       this.data.push({
         message,
         addable,
-        change,
+        change: change.trim(),
         createdAt: Date.now(),
       });
     }
