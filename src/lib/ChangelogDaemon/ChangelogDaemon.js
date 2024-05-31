@@ -22,9 +22,8 @@ export class ChangelogDaemon {
     },
     defaultData: [],
   };
-
-  onCommit(event) {
-    const { message } = event;
+  onCommit(commit) {
+    const { message } = commit;
     if (!message) {
       return;
     }
@@ -38,6 +37,12 @@ export class ChangelogDaemon {
         change,
         createdAt: Date.now(),
       });
+    }
+  }
+  onPush(event) {
+    const { commits } = event;
+    for (const commit of commits) {
+      this.onCommit(commit);
     }
   }
 }
