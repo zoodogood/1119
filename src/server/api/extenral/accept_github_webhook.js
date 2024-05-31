@@ -9,13 +9,13 @@ class Route extends BaseRoute {
   isHidden = true;
   prefix = PREFIX;
 
-  constructor(express) {
+  constructor() {
     super();
   }
 
   async post(request, response) {
     const eventName = request.headers["x-github-event"];
-    await parse_body(request);
+    await parse_body(request, response, { method: "json" });
     response.sendStatus(202);
     client.channels.cache.get(config.guild.logChannelId).msg({
       title: `Github \`${eventName}\` webhook handler`,
