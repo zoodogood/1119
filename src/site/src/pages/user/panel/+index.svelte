@@ -1,20 +1,22 @@
 <script>
+  import ChangeLanguage from "#site-component/ChangeLanguage";
   import Layout from "#site-component/Layout";
   import {
-    UserSettings,
-    GuildSettings,
     GuildProgress,
+    GuildSettings,
     UserProgress,
+    UserSettings,
   } from "#site/components/frames/entityData/mod.svelte";
-  import ChangeLanguage from "#site-component/ChangeLanguage";
 
+  import Image from "#site-component/Image";
+
+  import { fetchFromInnerApi } from "#lib/safe-utils.js";
   import svelteApp from "#site/core/svelte-app.js";
   import PagesRouter from "#site/lib/Router.js";
-  import { fetchFromInnerApi } from "#lib/safe-utils.js";
   import { onMount } from "svelte";
 
-  import { getNotificationsContext } from "svelte-notifications";
   import { init_pwa_worker } from "#site/lib/init_pwa.js";
+  import { getNotificationsContext } from "svelte-notifications";
   const { addNotification } = getNotificationsContext();
   const hashStore = svelteApp.Hash.store;
 
@@ -117,6 +119,7 @@
         State.target.id !== guild.id
           ? svelteApp.Hash.include({ key: "guildId", value: guild.id }).apply()
           : svelteApp.Hash.remove("guildId").apply()}
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <li
         title="Сервер {guild.name}"
         class:selected={State.target.id === guild.id}
@@ -142,7 +145,7 @@
             )}
       >
         {#if guild.iconURL}
-          <img src={guild.iconURL} alt="guild-icon" class="icon" />
+          <Image src={guild.iconURL} alt="guild-icon" class="icon guild_icon" />
         {:else}
           <span class="icon">{guild.name.at(0)}</span>
         {/if}
@@ -162,7 +165,11 @@
     <section>
       <span class="icon-container">
         {#if State.target.icon}
-          <img src={State.target.icon} alt="guild-icon" class="icon" />
+          <Image
+            src={State.target.icon}
+            alt="guild-icon"
+            class="icon guild_icon"
+          />
         {:else}
           <span class="icon">{State.target.name?.at(0) ?? "/"}</span>
         {/if}
@@ -376,6 +383,5 @@
     width: calc(3vw + 30px);
     aspect-ratio: 1 / 1;
     border-radius: 15px;
-    overflow: hidden;
   }
 </style>
