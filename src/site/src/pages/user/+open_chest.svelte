@@ -1,6 +1,7 @@
 <script>
   import { isObject } from "#lib/mini.js";
   import { fetchFromInnerApi, timestampToDate } from "#lib/safe-utils.js";
+  import Image from "#site-component/Image";
   import Layout from "#site-component/Layout";
   import svelteApp from "#site/core/svelte-app.js";
   import { ButtonResponse } from "#site/lib/ButtonResponse.js";
@@ -56,7 +57,7 @@
       >
     </main>
     <section class="logger">
-      <img src={Resources.imageURL} alt="chest" />
+      <Image src={Resources.imageURL} alt="chest" className="chest_image" />
       <ul class="logger-list">
         {#each State.loggerList as log, i}
           {#key log}
@@ -127,7 +128,7 @@
     }
   }
 
-  img {
+  .logger :global(.chest_image) {
     max-width: min(100%, 50vw);
   }
 </style>
