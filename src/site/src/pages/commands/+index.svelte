@@ -1,9 +1,10 @@
 <script>
   import { fetchFromInnerApi } from "#lib/safe-utils.js";
-  import Layout from "#site-component/Layout";
   import EditableMarkdown from "#site-component/EditableMarkdown";
+  import Layout from "#site-component/Layout";
   import svelteApp from "#site/core/svelte-app.js";
 
+  import Image from "#site-component/Image";
   const i18n = svelteApp.i18n.pages.commandsIndex;
 
   const CategoryEnum = {
@@ -29,17 +30,16 @@
   <section>
     <ul>
       {#each commands as command}
-        <li>
+        <li command_item>
           <h2>{command.name}</h2>
           <EditableMarkdown source={command.media.description.trim()} />
           <footer>
             <span class="category">{CategoryEnum[command.type]}</span>
             {#if command.media.poster}
-              <img
+              <Image
                 src={command.media.poster}
                 alt="poster"
-                fetchpriority="low"
-                loading="lazy"
+                className="image_poster"
               />
             {/if}
             <h6>
@@ -82,12 +82,12 @@
     text-transform: uppercase;
   }
 
-  img {
+  [command_item] :global(.image_poster) {
     opacity: 0.8;
     transition: opacity 1s;
   }
 
-  img:hover {
+  [command_item] :global(.image_poster):hover {
     opacity: 1;
   }
 

@@ -1,17 +1,17 @@
 <script>
-  import EditableMarkdown from "#site-component/EditableMarkdown";
-  import Layout from "#site-component/Layout";
-  import Giscus from "#site-component/Giscus";
-  import Icon from "#site-component/iconic";
-
-  import svelteApp from "#site/core/svelte-app.js";
   import {
-    fetchFromInnerApi,
     MarkdownMetadata,
-    timestampToDate,
-    dayjs,
     ReplaceTemplate,
+    dayjs,
+    fetchFromInnerApi,
+    timestampToDate,
   } from "#lib/safe-utils.js";
+  import EditableMarkdown from "#site-component/EditableMarkdown";
+  import Giscus from "#site-component/Giscus";
+  import Image from "#site-component/Image";
+  import Layout from "#site-component/Layout";
+  import Icon from "#site-component/iconic";
+  import svelteApp from "#site/core/svelte-app.js";
   import PagesRouter from "#site/lib/Router.js";
 
   const i18n = svelteApp.i18n.pages.articlesItem;
@@ -64,7 +64,11 @@
     <main class="container">
       <section class="article-info">
         <group class="article-author">
-          <img src={data.author?.avatarURL} alt="avatar" />
+          <Image
+            src={data.author?.avatarURL}
+            alt="avatar"
+            className="user_avatar"
+          />
           <span>
             <b>{i18n.article.author}</b>
             <p>
@@ -199,7 +203,7 @@
     border-radius: 50%;
   }
 
-  .article-author img {
+  .article-author :global(.user_avatar) {
     border-radius: 50%;
     height: 100%;
     aspect-ratio: 1 / 1;

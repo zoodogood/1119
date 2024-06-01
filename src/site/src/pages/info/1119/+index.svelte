@@ -1,4 +1,5 @@
 <script>
+  import Image from "#site-component/Image";
   import Layout from "#site-component/Layout";
   import { AuditDaily, Statistic } from "#site-component/frames/statistic";
   import AuthorProjects from "#site/components/frames/external/author/Projects.svelte";
@@ -37,9 +38,10 @@
 <Layout>
   <header>
     <element-wrapper>
-      <img
+      <Image
         src="https://i.ibb.co/JrhvjFB/mute-command-gif.gif"
         alt="muteCommand"
+        className="image_muteCommand"
       />
     </element-wrapper>
   </header>
@@ -120,7 +122,7 @@
     align-items: center;
   }
 
-  header element-wrapper img {
+  header element-wrapper :global(.image_muteCommand) {
     object-fit: cover;
     object-position: left;
     height: 100%;

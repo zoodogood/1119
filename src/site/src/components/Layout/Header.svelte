@@ -1,9 +1,9 @@
 <script>
   import config from "#config";
+  import Image from "#site-component/Image";
   import ThemeSwitcher from "#site-component/ThemeSwitcher";
   import svelteApp from "#site/core/svelte-app.js";
   import PagesRouter from "#site/lib/Router.js";
-
   const i18n = svelteApp.i18n.components.Layout.Header;
 
   const Header = {
@@ -86,7 +86,11 @@
         on:keydown={({ target }) => target.click()}
       >
         <span class="user-avatar-container">
-          <img src={svelteApp.user.avatarURL} alt="avatar" />
+          <Image
+            src={svelteApp.user.avatarURL}
+            alt="avatar"
+            className="user_avatar"
+          />
         </span>
         <hr />
       </section>
@@ -193,7 +197,7 @@
     transform: translateY(-10%);
   }
 
-  .user-avatar-container img {
+  .user-avatar-container :global(.user_avatar) {
     width: 100%;
     border-radius: 1.5em;
   }

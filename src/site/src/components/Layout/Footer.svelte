@@ -1,8 +1,9 @@
 <script>
   import config from "#config";
+  import { dayjs } from "#lib/safe-utils.js";
+  import Image from "#site-component/Image";
   import svelteApp from "#site/core/svelte-app.js";
   import PagesRouter from "#site/lib/Router.js";
-  import { dayjs } from "#lib/safe-utils.js";
 
   const bot = svelteApp.getBot();
   const i18n = svelteApp.i18n.components.Layout.Footer;
@@ -76,7 +77,7 @@
       <main class="bottom-main">
         <aside class="bottom-main-title">
           <span class="bot-icon">
-            <img src={bot.displayAvatarURL} alt="bot avatar" />
+            <Image src={bot.displayAvatarURL} alt="bot avatar" />
           </span>
           <span>{bot.username}</span>
         </aside>
