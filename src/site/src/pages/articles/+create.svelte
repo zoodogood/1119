@@ -1,10 +1,10 @@
 <script>
-  import Layout from "#site-component/Layout";
   import Dialog from "#site-component/Dialog";
+  import Layout from "#site-component/Layout";
 
-  import PagesRouter from "#site/lib/Router.js";
   import { fetchFromInnerApi, MarkdownMetadata } from "#lib/safe-utils.js";
   import { svelteApp } from "#site/core/svelte-app.js";
+  import PagesRouter from "#site/lib/Router.js";
 
   const i18n = svelteApp.i18n.pages.articlesCreate;
   const Contents = {
@@ -53,6 +53,7 @@
 
   <main>
     <section class="main-buttons">
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <label
         for="load-file"
         bind:this={labelNode}
