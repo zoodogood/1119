@@ -10,14 +10,16 @@
   {src}
   loading="lazy"
   decoding="async"
+  fetchpriority="low"
   class={className}
+  style:border-radius={broken ? "0" : false}
   class:broken
   on:error={() => (broken = true)}
 />
 
 <style>
   img.broken {
-    overflow: visible;
+    border-radius: 0;
   }
 
   img[alt]::after {
@@ -35,7 +37,7 @@
     justify-content: end;
 
     font-family: "Icon";
-    font-size: 1.2em;
+    font-size: 1.2rem;
     color: color-mix(in srgb, currentColor, transparent 50%);
   }
 </style>
