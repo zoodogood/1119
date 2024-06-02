@@ -322,6 +322,10 @@ function NumberFormatLetterize(numb) {
   return `${numb}${SPACE}${letter}`;
 }
 
+export function numberFormat(value) {
+  return new Intl.NumberFormat("ru-ru").format(value);
+}
+
 function resolveDate(day, month, year) {
   const date = new Date();
   if (day) {
