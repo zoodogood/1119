@@ -211,6 +211,7 @@ class Command extends BaseCommand {
       id: "updateCloverEffect",
       description: `На 12% усиливает для вас всякий бонус клевера\nНесколько бонусов складываются`,
       _weight: 2,
+      MAX_COUNT: 50,
       action(user, interaction) {
         Util.addResource({
           user,
@@ -221,6 +222,10 @@ class Command extends BaseCommand {
           context: { interaction },
         });
         return;
+      },
+      filter(user) {
+        const current = user.data.voidMysticClover || 0;
+        return current < this.MAX_COUNT;
       },
     },
     {
