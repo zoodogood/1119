@@ -107,7 +107,7 @@ class AttributesShop {
         emoji: "🧩",
         keyword: "puzzle",
         description: "Множитель атаки: 1.25",
-        basePrice: 100,
+        basePrice: 200,
         priceMultiplayer: 2,
         resource: "coins",
         callback: (context) => {
