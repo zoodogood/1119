@@ -2,7 +2,7 @@ import { current_health } from "#folder/entities/boss/health.js";
 import { EffectInfluenceEnum } from "#lib/modules/EffectsManager.js";
 
 export default {
-  id: "boss.increaseDamageByBossCurrentHealthPoints",
+  id: "boss.makeDamageByBossCurrentHealthPoints",
   callback: {
     bossBeforeAttack: (user, effect, data) => {
       const {
