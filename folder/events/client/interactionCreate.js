@@ -32,6 +32,9 @@ class Event extends BaseEvent {
       .flat()
       .find((component) => component.customId === interaction.customId);
 
+    if (!component) {
+      return;
+    }
     component.style = ButtonStyle.Danger;
     interaction.message.msg({
       edit: true,
