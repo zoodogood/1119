@@ -9,7 +9,7 @@
       symbol: "$",
       alias: ["balance", "balance change"],
     },
-    { label: "Add feature", symbol: "-", alias: ["add feature", "feature"] },
+    { label: "Add feature", symbol: "+", alias: ["add feature", "feature"] },
     { label: "Improve", symbol: "%", alias: ["improve"] },
   ];
 
@@ -97,10 +97,10 @@
       ).join(",  ")}
     </small>
     {#key filtered_flat}
-      {#each Object.entries(Object.groupBy(filtered_flat, ({ period }) => period)) as [period, changes]}
+      {#each Object.entries(Object.groupBy(filtered_flat, ({ period }) => period)).reverse() as [period, changes]}
         <p>
           <span period_emoji>
-            {SeasonEmoji[Math.floor((period.split(".")[0] - 1) / 4)]}
+            {SeasonEmoji[Math.floor((+period.split(".")[0] + 2) / 4)]}
           </span>{period}
         </p>
         <ul>
@@ -131,10 +131,13 @@
     align-items: center;
     justify-content: center;
     width: fit-content;
+
+    text-transform: capitalize;
   }
 
   [change_item]::before {
     content: attr(change_item_symbol);
+    font-family: "Icon", sans-serif;
     width: 1em;
     position: absolute;
     left: -1em;
