@@ -2,6 +2,7 @@
 
 import app from "#app";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { NOT_BREAKING_SPACE } from "#constants/globals/characters.js";
 import { DAY, HOUR, MINUTE, MONTH } from "#constants/globals/time.js";
 import { elementsEnum } from "#folder/commands/thing.js";
 import {
@@ -24,6 +25,7 @@ import { DataManager, Properties } from "#lib/modules/mod.js";
 import {
   NumberFormatLetterize,
   ending,
+  numberFormat,
   random,
   sleep,
   timestampDay,
@@ -208,12 +210,20 @@ class AttributesShop {
         "",
         "а",
         "ы",
+        {
+          unite: (value, end) =>
+            `${numberFormat(value)}${NOT_BREAKING_SPACE}${end}`,
+        },
       )} <:coin:637533074879414272> и ${ending(
         data.keys,
         "ключ",
         "ей",
         "",
         "а",
+        {
+          unite: (value, end) =>
+            `${numberFormat(value)}${NOT_BREAKING_SPACE}${end}`,
+        },
       )} 🔩 на руках`;
       const description = `${descriptionContent}\n\n${productsContent}`;
 
