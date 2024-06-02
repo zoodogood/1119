@@ -91,10 +91,11 @@
         {ending(_interface.flat?.length, "изменени", "й", "е", "я")}:
       </p>
     </h5>
-    <small>
-      Условные обозначения: {GroupSymbols.map(
-        ({ label, symbol }) => `${symbol} ・ ${label}`,
-      ).join(",  ")}
+    <small symbols_list>
+      <span>Условные обозначения:</span>
+      {#each GroupSymbols.map(({ label, symbol }, i, array) => `${symbol} ・ ${label}${array.length - 1 !== i ? ", " : ""}`) as string}
+        <span>{string}</span>
+      {/each}
     </small>
     {#key filtered_flat}
       {#each Object.entries(Object.groupBy(filtered_flat, ({ period }) => period)).reverse() as [period, changes]}
@@ -140,10 +141,11 @@
     font-family: "Icon", sans-serif;
     width: 1em;
     position: absolute;
-    left: -1em;
+    left: -1.05em;
     opacity: 0.8;
     color: var(--text-theme-accent);
     font-size: 0.8em;
+    height: 100%;
   }
 
   [change_item]:hover:before {
@@ -156,5 +158,12 @@
 
   [period_emoji] {
     width: 1em;
+  }
+
+  [symbols_list] {
+    display: flex;
+    gap: 0.75em;
+    flex-wrap: wrap;
+    align-items: center;
   }
 </style>
