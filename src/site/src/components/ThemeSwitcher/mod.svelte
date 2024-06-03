@@ -1,7 +1,7 @@
 <script context="module">
   const DEFAULT_THEME = "darkGreen";
   const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
-  import { writable, get } from "svelte/store";
+  import { get, writable } from "svelte/store";
 
   const Theme = {
     current: writable(localStorage[STORAGE_KEY] ?? DEFAULT_THEME),
@@ -26,10 +26,26 @@
       }
     },
 
+    onClick(event) {
+      event.shiftKey ? this.switchToPrevious() : this.switchToNext();
+    },
+
     switchToNext() {
       const themes = [...Theme.collection.keys()];
       const index = themes.indexOf(get(Theme.current));
       const themeName = themes.at((index + 1) % themes.length);
+
+      const previousName = themes.at(index);
+      Theme.remove(previousName);
+
+      Theme.current.set(themeName);
+      Theme.apply(themeName);
+    },
+
+    switchToPrevious() {
+      const themes = [...Theme.collection.keys()];
+      const index = themes.indexOf(get(Theme.current));
+      const themeName = themes.at(index - 1);
 
       const previousName = themes.at(index);
       Theme.remove(previousName);
@@ -64,7 +80,7 @@
 <button
   class="switch-theme"
   data-current={Theme.current}
-  on:click={() => Theme.switchToNext() & CallBulbAnimation(node)}
+  on:click={(event) => Theme.onClick(event) & CallBulbAnimation(node)}
   bind:this={node}
 >
   <Icon code="" />
