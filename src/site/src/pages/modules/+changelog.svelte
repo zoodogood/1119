@@ -9,6 +9,11 @@
       symbol: "$",
       alias: ["balance", "balance change"],
     },
+    {
+      label: "Major",
+      symbol: "!",
+      alias: ["major", "important"],
+    },
     { label: "Add feature", symbol: "+", alias: ["add feature", "feature"] },
     { label: "Improve", symbol: "%", alias: ["improve"] },
   ];
@@ -108,7 +113,7 @@
           {#each Object.entries(Object.groupBy(changes, ({ group_symbol }) => group_symbol)) as [_, changes]}
             {#each changes as { short_change, group_symbol, message }}
               <li change_item change_item_symbol={group_symbol} title={message}>
-                {short_change}
+                {short_change}.
               </li>
             {/each}
             <br />
@@ -132,8 +137,6 @@
     align-items: center;
     justify-content: center;
     width: fit-content;
-
-    text-transform: capitalize;
   }
 
   [change_item]::before {
@@ -145,11 +148,7 @@
     opacity: 0.8;
     color: var(--text-theme-accent);
     font-size: 0.8em;
-    height: 100%;
-  }
-
-  [change_item]:hover:before {
-    opacity: 1;
+    line-height: 0;
   }
 
   [change_item]:nth-child(2n) {
@@ -165,5 +164,7 @@
     gap: 0.75em;
     flex-wrap: wrap;
     align-items: center;
+
+    font-family: "Icon", sans-serif;
   }
 </style>
