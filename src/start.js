@@ -41,12 +41,12 @@ client.on("ready", async () => {
   }
 
   if (config.development) {
-    client.user.setActivity("Кабзец тебе, Хозяин", {
+    client.user?.setActivity("Кабзец тебе, Хозяин", {
       type: ActivityType.Streaming,
       url: "https://www.twitch.tv/monstercat",
     });
   } else {
-    client.user.setActivity("намана", {
+    client.user?.setActivity("намана", {
       type: ActivityType.Watching,
     });
   }
