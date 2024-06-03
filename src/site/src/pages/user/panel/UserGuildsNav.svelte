@@ -175,8 +175,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--dark);
-    color: var(--white);
+    background-color: var(--background-theme-accent);
+    color: var(--text-theme-accent);
     width: 100%;
     height: 100%;
 
@@ -210,7 +210,7 @@
 
   .nav_item.invite .icon {
     font-weight: 100;
-    color: var(--white);
+    color: var(--text-theme-accent);
     transition:
       transform 300ms,
       background-color 1s,
