@@ -407,6 +407,9 @@ class Command extends BaseCommand {
         "ов",
         "",
         "а",
+        {
+          unite: (value, end) => `${Util.NumberFormatLetterize(value)} ${end}`,
+        },
       )} на заработные платы пользователям\nИх список вы можете просмотреть в команде \`!банк\`\nУчастников получило коины: ${
         Object.keys(salaryTable).length
       }`,
