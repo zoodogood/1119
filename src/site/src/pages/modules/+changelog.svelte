@@ -30,7 +30,7 @@
       const group_base = GroupSymbols.find(({ alias }) =>
         alias.some((alias) => lowed_change.startsWith(alias)),
       );
-      const group_symbol = group_base?.symbol || "x";
+      const group_symbol = group_base?.symbol || "/";
       const short_change = group_base ? change.replace(/^.+?:\s*/, "") : change;
       return {
         period,
@@ -135,14 +135,14 @@
 
 <style>
   [change_item] {
-    font-size: 0.8em;
-    display: flex;
+    --font-size: 0.8rem;
+    --line-height: 1.2;
+    font-size: var(--font-size);
+    line-height: var(--line-height);
     flex-wrap: wrap;
     list-style: none;
     position: relative;
-    align-items: center;
-    justify-content: center;
-    width: fit-content;
+    text-align: justify;
   }
 
   [change_item]::before {
@@ -150,11 +150,15 @@
     font-family: "Icon", sans-serif;
     width: 1em;
     position: absolute;
-    left: -1.05em;
+    left: calc(var(--font-size) * -1.05);
     opacity: 0.8;
     color: var(--text-theme-accent);
-    font-size: 0.8em;
-    line-height: 0;
+    font-size: 0.65rem;
+    height: calc(var(--font-size) * var(--line-height));
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   [change_item]:nth-child(2n) {
