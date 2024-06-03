@@ -4,6 +4,22 @@ import { client } from "#bot/client.js";
 import Discord from "discord.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "embeds",
+    id: 26,
+    media: {
+      description:
+        "– Знаете.. Дискорд ужасная платформа для написания документаций и другой работы с текстом при использовании ботов. Чтобы сделать маленькую поправку, зачастую нужно заново отправлять каждое сообщение.",
+      example: `!embeds <messageID> # messageID нужен только если в канале больше 100 эмбедов`,
+    },
+    accessibility: {
+      publicized_on_level: 15,
+    },
+    alias: "эмбедс эмбеды ембеды ембедс",
+    allowDM: true,
+    type: "guild",
+  };
+
   async onChatInput(msg, interaction) {
     let answer = await Util.awaitUserAccept({
       name: "embeds",
@@ -198,22 +214,6 @@ class Command extends BaseCommand {
       }
     } while (true);
   }
-
-  options = {
-    name: "embeds",
-    id: 26,
-    media: {
-      description:
-        "– Знаете.. Дискорд ужасная платформа для написания документаций и другой работы с текстом при использовании ботов. Чтобы сделать маленькую поправку, зачастую нужно заново отправлять каждое сообщение.",
-      example: `!embeds <messageID> # messageID нужен только если в канале больше 100 эмбедов`,
-    },
-    accessibility: {
-      publicized_on_level: 15,
-    },
-    alias: "эмбедс эмбеды ембеды ембедс",
-    allowDM: true,
-    type: "guild",
-  };
 }
 
 export default Command;

@@ -1,6 +1,24 @@
 import { NULL_WIDTH_SPACE } from "#constants/globals/characters.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 class Command extends BaseCommand {
+  options = {
+    name: "warn",
+    id: 7,
+    media: {
+      description: "Выдаёт формальное предупреждение пользователю — —",
+      example: `!warn {memb}`,
+    },
+    accessibility: {
+      publicized_on_level: 5,
+    },
+    alias: "пред варн попередити",
+    expectMention: true,
+    allowDM: true,
+    cooldown: 120_000,
+    type: "guild",
+    Permissions: 4194304n,
+  };
+
   async onChatInput(msg, interaction) {
     const memb = interaction.mention;
 
@@ -47,24 +65,6 @@ class Command extends BaseCommand {
       color: "#ff0000",
     });
   }
-
-  options = {
-    name: "warn",
-    id: 7,
-    media: {
-      description: "Выдаёт формальное предупреждение пользователю — —",
-      example: `!warn {memb}`,
-    },
-    accessibility: {
-      publicized_on_level: 5,
-    },
-    alias: "пред варн попередити",
-    expectMention: true,
-    allowDM: true,
-    cooldown: 120_000,
-    type: "guild",
-    Permissions: 4194304n,
-  };
 }
 
 export default Command;

@@ -1,5 +1,17 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 class Command extends BaseCommand {
+  options = {
+    name: "voice",
+    id: 21,
+    media: {
+      description: "Старые тестирования муз. команд.",
+      example: `!voice #без аргументов`,
+    },
+    alias: "войс голосовий",
+    allowDM: true,
+    type: "dev",
+  };
+
   async onChatInput(msg, interaction) {
     return false;
     let connection;
@@ -12,18 +24,6 @@ class Command extends BaseCommand {
     );
     //main/images/one.mp3
   }
-
-  options = {
-    name: "voice",
-    id: 21,
-    media: {
-      description: "Старые тестирования муз. команд.",
-      example: `!voice #без аргументов`,
-    },
-    alias: "войс голосовий",
-    allowDM: true,
-    type: "dev",
-  };
 }
 
 export default Command;

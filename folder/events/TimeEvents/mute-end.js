@@ -1,6 +1,10 @@
 import { client } from "#bot/client.js";
 
 class Event {
+  options = {
+    name: "TimeEvent/mute-end",
+  };
+
   run(eventData, guildId, memberId) {
     const guild = client.guilds.cache.get(guildId);
     const member = guild.members.resolve(memberId);
@@ -21,10 +25,6 @@ class Event {
     });
     member.roles.remove(guild.data.mute_role);
   }
-
-  options = {
-    name: "TimeEvent/mute-end",
-  };
 }
 
 export default Event;

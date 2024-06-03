@@ -20,6 +20,9 @@ import {
 } from "#lib/safe-utils.js";
 
 class Flag_open {
+  capture;
+
+  context;
   static FLAG_DATA = {
     name: "--open",
     capture: ["--open", "-o"],
@@ -28,11 +31,17 @@ class Flag_open {
       "Мгновенно открывает выбранную вкладку или показывает их перечень",
   };
 
-  context;
-  capture;
-
   constructor(context) {
     this.context = context;
+  }
+
+  display_value_is_ignored() {
+    const leaderboards = RanksUtils.leaderboardTypes
+      .map((leaderboard) => leaderboard.key)
+      .join(", ");
+    this.context.channel.msg({
+      content: `Флаг --open был проигнорирован. Используйте его с одним из этих значений: ${leaderboards}`,
+    });
   }
 
   parse_and_process() {
@@ -67,43 +76,15 @@ class Flag_open {
     this.context.selected = value;
     return value;
   }
-
-  display_value_is_ignored() {
-    const leaderboards = RanksUtils.leaderboardTypes
-      .map((leaderboard) => leaderboard.key)
-      .join(", ");
-    this.context.channel.msg({
-      content: `Флаг --open был проигнорирован. Используйте его с одним из этих значений: ${leaderboards}`,
-    });
-  }
 }
 
 class Flag_property {
-  constructor(context) {
-    this.context = context;
-  }
-  parse_and_process() {
-    const capture = this.context.cliParsed
-      .at(0)
-      .captures.get(this.constructor.FLAG_DATA.name);
-
-    if (!capture) {
-      return false;
-    }
-
-    this.capture = capture;
-    this.process_use_capture();
-  }
-  process_use_capture() {
-    this.context.advanced_property_flag = this.capture.valueOfFlag();
-  }
   static FLAG_DATA = {
     name: "--property",
     capture: ["--property"],
     description: "Позволяет указать свойство для сортировки",
     expectValue: true,
   };
-
   static RankBase = {
     key: "advanced_property",
     component: {
@@ -123,24 +104,89 @@ class Flag_property {
       return { name, value };
     },
   };
+  constructor(context) {
+    this.context = context;
+  }
+  parse_and_process() {
+    const capture = this.context.cliParsed
+      .at(0)
+      .captures.get(this.constructor.FLAG_DATA.name);
+
+    if (!capture) {
+      return false;
+    }
+
+    this.capture = capture;
+    this.process_use_capture();
+  }
+
+  process_use_capture() {
+    this.context.advanced_property_flag = this.capture.valueOfFlag();
+  }
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  sortedPull = null;
-  users;
   boss;
-  snowyEvent;
-  selected = RanksUtils.leaderboardTypes.at(0);
-  values = null;
-  pager = new Pager();
   flag_displayHidden_value;
   PAGE_SIZE = 15;
+  pager = new Pager();
+  selected = RanksUtils.leaderboardTypes.at(0);
+  snowyEvent;
+  sortedPull = null;
+  users;
+  values = null;
+
+  _createValues() {
+    const pull = (this.sortedPull =
+      this.sortedPull ?? RanksUtils.createPull(this.users));
+
+    const resolver = this.selected.value;
+    for (const entrie of pull) {
+      entrie[1] = resolver(entrie[0], this) ?? 0;
+    }
+
+    return RanksUtils.sortMutableAndFilterPull(pull);
+  }
+
+  calculatePages(elementsCount) {
+    return Math.ceil(elementsCount / this.PAGE_SIZE);
+  }
+
+  createUsers() {
+    const { interaction, flag_displayHidden_value: flag_displayHidden } = this;
+    const needDisplay = (user) => {
+      return (
+        flag_displayHidden ||
+        user.id === interaction.user.id ||
+        (!user.bot && !user.data.profile_confidentiality)
+      );
+    };
+    const users = interaction.guild.members.cache
+      .map((element) => element.user)
+      .filter(needDisplay);
+
+    this.users = users;
+  }
 
   static async new(interaction, command) {
     const context = new this(interaction, command);
     const { boss, showEvent } = interaction.guild.data;
     Object.assign(context, { boss: boss || {}, showEvent: showEvent || {} });
     return context;
+  }
+
+  parseCli(params) {
+    const parsed = new CliParser()
+      .setText(params)
+      .captureFlags(this.command.options.cliParser.flags)
+      .collect();
+
+    const values = parsed.resolveValues((capture) => capture?.toString());
+    this.flag_displayHidden_value = values.get("--show-hidden");
+    this.setCliParsed(parsed, values);
+
+    new Flag_open(this).parse_and_process();
+    new Flag_property(this).parse_and_process();
   }
 
   setupPager() {
@@ -174,55 +220,9 @@ class CommandRunContext extends BaseCommandRunContext {
     );
   }
 
-  parseCli(params) {
-    const parsed = new CliParser()
-      .setText(params)
-      .captureFlags(this.command.options.cliParser.flags)
-      .collect();
-
-    const values = parsed.resolveValues((capture) => capture?.toString());
-    this.flag_displayHidden_value = values.get("--show-hidden");
-    this.setCliParsed(parsed, values);
-
-    new Flag_open(this).parse_and_process();
-    new Flag_property(this).parse_and_process();
-  }
-
-  createUsers() {
-    const { interaction, flag_displayHidden_value: flag_displayHidden } = this;
-    const needDisplay = (user) => {
-      return (
-        flag_displayHidden ||
-        user.id === interaction.user.id ||
-        (!user.bot && !user.data.profile_confidentiality)
-      );
-    };
-    const users = interaction.guild.members.cache
-      .map((element) => element.user)
-      .filter(needDisplay);
-
-    this.users = users;
-  }
-
-  calculatePages(elementsCount) {
-    return Math.ceil(elementsCount / this.PAGE_SIZE);
-  }
-
   updateValues() {
     this.values = this._createValues();
     this.pager.setPagesLength(this.calculatePages(this.values.length));
-  }
-
-  _createValues() {
-    const pull = (this.sortedPull =
-      this.sortedPull ?? RanksUtils.createPull(this.users));
-
-    const resolver = this.selected.value;
-    for (const entrie of pull) {
-      entrie[1] = resolver(entrie[0], this) ?? 0;
-    }
-
-    return RanksUtils.sortMutableAndFilterPull(pull);
   }
 }
 class RanksUtils {
@@ -488,27 +488,35 @@ class RanksUtils {
 }
 
 class Command extends BaseCommand {
-  onPagerBeforePageRender(event, context) {
-    Object.assign(event.value, this.createEmbed({ context }));
-  }
-
-  async onPagerComponent(interaction, context) {
-    this.process_onSelectLeaderboard(interaction, context);
-  }
-
-  async process_onSelectLeaderboard(interaction, context) {
-    if (interaction.customId !== "selectFilter") {
-      return;
-    }
-
-    const leaderboardId = interaction.values.at(0);
-    context.selected = RanksUtils.leaderboardTypes.find(
-      (leaderboard) => leaderboard.component.value === leaderboardId,
-    );
-    context.updateValues(context);
-    context.pager.updateMessage(interaction);
-    return true;
-  }
+  options = {
+    name: "top",
+    id: 16,
+    media: {
+      description:
+        "Отображает список лидеров на сервере по различным показателям.",
+      example: `!top #без аргументов`,
+    },
+    alias: "топ ранги rank ranks rangs лидеры leaderboard leaders лідери",
+    cliParser: {
+      flags: [
+        {
+          name: "--show-hidden",
+          capture: ["--show-hidden", "-sh"],
+          description: "Показывает скрытые элементы, тех, кто сокрылся",
+        },
+        Flag_open.FLAG_DATA,
+        Flag_property.FLAG_DATA,
+      ],
+    },
+    accessibility: {
+      publicized_on_level: 3,
+    },
+    allowDM: true,
+    cooldown: 20_000,
+    cooldownTry: 2,
+    type: "user",
+    Permissions: 16384n,
+  };
 
   createEmbed({ context }) {
     const { pager, selected, values, PAGE_SIZE } = context;
@@ -560,6 +568,28 @@ class Command extends BaseCommand {
     return context;
   }
 
+  onPagerBeforePageRender(event, context) {
+    Object.assign(event.value, this.createEmbed({ context }));
+  }
+
+  async onPagerComponent(interaction, context) {
+    this.process_onSelectLeaderboard(interaction, context);
+  }
+
+  async process_onSelectLeaderboard(interaction, context) {
+    if (interaction.customId !== "selectFilter") {
+      return;
+    }
+
+    const leaderboardId = interaction.values.at(0);
+    context.selected = RanksUtils.leaderboardTypes.find(
+      (leaderboard) => leaderboard.component.value === leaderboardId,
+    );
+    context.updateValues(context);
+    context.pager.updateMessage(interaction);
+    return true;
+  }
+
   async run(context) {
     const { interaction } = context;
     context.parseCli(interaction.params);
@@ -568,36 +598,6 @@ class Command extends BaseCommand {
     context.setupPager();
     context.pager.updateMessage();
   }
-
-  options = {
-    name: "top",
-    id: 16,
-    media: {
-      description:
-        "Отображает список лидеров на сервере по различным показателям.",
-      example: `!top #без аргументов`,
-    },
-    alias: "топ ранги rank ranks rangs лидеры leaderboard leaders лідери",
-    cliParser: {
-      flags: [
-        {
-          name: "--show-hidden",
-          capture: ["--show-hidden", "-sh"],
-          description: "Показывает скрытые элементы, тех, кто сокрылся",
-        },
-        Flag_open.FLAG_DATA,
-        Flag_property.FLAG_DATA,
-      ],
-    },
-    accessibility: {
-      publicized_on_level: 3,
-    },
-    allowDM: true,
-    cooldown: 20_000,
-    cooldownTry: 2,
-    type: "user",
-    Permissions: 16384n,
-  };
 }
 
 export default Command;

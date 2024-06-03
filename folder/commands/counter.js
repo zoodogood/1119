@@ -5,6 +5,65 @@ import { CommandsManager } from "#lib/modules/mod.js";
 import { NULL_WIDTH_SPACE } from "#constants/globals/characters.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "counter",
+    id: 42,
+    media: {
+      description:
+        "Отличный способ отображать статистику — с помощью шаблонов создайте динамический текст, который будет меняться каждые 15 минут. Счётчики могут менять как имя любого канала, так и содержание сообщения.",
+      example: `!counter #без аргументов`,
+    },
+    accessibility: {
+      publicized_on_level: 15,
+    },
+    alias: "счётчик счетчик count рахівник",
+    allowDM: true,
+    type: "guild",
+    Permissions: 16n,
+  };
+
+  async displayCreateOutput({ interaction, result, counter }) {
+    const embed = {
+      title: "Счётчик создан",
+      description: `**Результат:** ${
+        result instanceof Error ? "исключение" : "успех"
+      }.\n${escapeMarkdown(String(result).slice(0, 1000))}`,
+      components: [
+        {
+          type: ComponentType.Button,
+          customId: "open-list",
+          label: "Показать список счётчиков сервера",
+          style: ButtonStyle.Secondary,
+        },
+        {
+          type: ComponentType.Button,
+          customId: "delete-counter",
+          label: "Удалить этот счётчик",
+          style: ButtonStyle.Secondary,
+        },
+      ],
+    };
+    const message = await interaction.message.msg(embed);
+
+    const filter = ({ user }) => interaction.user === user;
+    const collector = message.createMessageComponentCollector({
+      max: 1,
+      filter,
+      time: 100_000,
+    });
+
+    const countersCommand = CommandsManager.callMap.get("counters");
+    collector.on("collect", async (interaction) => {
+      const customId = interaction.customId;
+      customId === "delete-counter" && CounterManager.delete(counter);
+      customId === "open-list" &&
+        countersCommand.onChatInput(interaction.message, interaction);
+    });
+    collector.on("end", () => message.msg({ edit: true, components: [] }));
+
+    return;
+  }
+
   async onChatInput(msg, interaction) {
     if (
       CounterManager.data.filter(
@@ -83,65 +142,6 @@ class Command extends BaseCommand {
     const { result } = await CounterManager.create(counter);
     await this.displayCreateOutput({ interaction, result });
   }
-
-  async displayCreateOutput({ interaction, result, counter }) {
-    const embed = {
-      title: "Счётчик создан",
-      description: `**Результат:** ${
-        result instanceof Error ? "исключение" : "успех"
-      }.\n${escapeMarkdown(String(result).slice(0, 1000))}`,
-      components: [
-        {
-          type: ComponentType.Button,
-          customId: "open-list",
-          label: "Показать список счётчиков сервера",
-          style: ButtonStyle.Secondary,
-        },
-        {
-          type: ComponentType.Button,
-          customId: "delete-counter",
-          label: "Удалить этот счётчик",
-          style: ButtonStyle.Secondary,
-        },
-      ],
-    };
-    const message = await interaction.message.msg(embed);
-
-    const filter = ({ user }) => interaction.user === user;
-    const collector = message.createMessageComponentCollector({
-      max: 1,
-      filter,
-      time: 100_000,
-    });
-
-    const countersCommand = CommandsManager.callMap.get("counters");
-    collector.on("collect", async (interaction) => {
-      const customId = interaction.customId;
-      customId === "delete-counter" && CounterManager.delete(counter);
-      customId === "open-list" &&
-        countersCommand.onChatInput(interaction.message, interaction);
-    });
-    collector.on("end", () => message.msg({ edit: true, components: [] }));
-
-    return;
-  }
-
-  options = {
-    name: "counter",
-    id: 42,
-    media: {
-      description:
-        "Отличный способ отображать статистику — с помощью шаблонов создайте динамический текст, который будет меняться каждые 15 минут. Счётчики могут менять как имя любого канала, так и содержание сообщения.",
-      example: `!counter #без аргументов`,
-    },
-    accessibility: {
-      publicized_on_level: 15,
-    },
-    alias: "счётчик счетчик count рахівник",
-    allowDM: true,
-    type: "guild",
-    Permissions: 16n,
-  };
 }
 
 export default Command;

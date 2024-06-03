@@ -2,6 +2,10 @@ import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
 import { BaseEvent } from "#lib/modules/EventsManager.js";
 
 class Event extends BaseEvent {
+  options = {
+    name: "process/unhandledRejection",
+  };
+
   constructor() {
     const EVENT = "unhandledRejection";
     super(process, EVENT);
@@ -19,10 +23,6 @@ class Event extends BaseEvent {
 
     ErrorsHandler.onErrorReceive(error, { uncaughtException: true });
   }
-
-  options = {
-    name: "process/unhandledRejection",
-  };
 }
 
 export default Event;

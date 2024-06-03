@@ -1,16 +1,5 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    if (!interaction.params) {
-      return;
-    }
-
-    msg.msg({
-      description:
-        "Эта бонусная функция доступна только для пользователей поддерживающих нас :green_heart: \nХотите быть одним из них? [**Поддержите нас!**](https://www.youtube.com/watch?v=MX-CO5i5S9g)",
-    });
-  }
-
   options = {
     name: "delete",
     id: 1,
@@ -27,6 +16,17 @@ class Command extends BaseCommand {
     cooldown: 5_000,
     type: "other",
   };
+
+  async onChatInput(msg, interaction) {
+    if (!interaction.params) {
+      return;
+    }
+
+    msg.msg({
+      description:
+        "Эта бонусная функция доступна только для пользователей поддерживающих нас :green_heart: \nХотите быть одним из них? [**Поддержите нас!**](https://www.youtube.com/watch?v=MX-CO5i5S9g)",
+    });
+  }
 }
 
 export default Command;

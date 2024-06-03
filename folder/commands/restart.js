@@ -26,10 +26,6 @@ class Timeout_Flagsubcommand extends BaseFlagSubcommand {
     await this.sleep();
   }
 
-  async sleep() {
-    await sleep(this.value * MINUTE);
-  }
-
   setupBotUserStatus() {
     const time = dayjs().add(this.value, "minute").format("HH:mm");
     client.user?.setActivity(`${time} — перезапуск`, {
@@ -37,11 +33,15 @@ class Timeout_Flagsubcommand extends BaseFlagSubcommand {
       url: "https://www.twitch.tv/monstercat",
     });
   }
+
+  async sleep() {
+    await sleep(this.value * MINUTE);
+  }
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  needPull;
   needBuild;
+  needPull;
   parseCli(input) {
     const parsed = new CliParser()
       .setText(input)
@@ -79,6 +79,45 @@ class Command extends BaseCommand {
     },
   ];
 
+  options = {
+    name: "restart",
+    id: 61,
+    media: {
+      description: "Перезапускает процесс",
+    },
+    cliParser: {
+      flags: [
+        {
+          name: "--pull",
+          capture: ["--pull"],
+          description: "Найти и получить обновления из репозитория",
+        },
+        {
+          name: "--build",
+          capture: ["--build"],
+          description: "Применить команду сборки сайта",
+        },
+        {
+          name: "--timeout",
+          capture: ["--timeout"],
+          expectValue: true,
+          description: "Запланировать перезапуск на N минут вперёд",
+        },
+      ],
+    },
+    alias: "перезапустить перезапуск рестарт",
+    allowDM: true,
+    cooldown: MINUTE,
+    cooldownTry: 5,
+    type: "dev",
+  };
+
+  async onChatInput(_msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
   async run(context) {
     context.parseCli(context.interaction.params);
 
@@ -114,45 +153,6 @@ class Command extends BaseCommand {
       pager.updateMessage();
     }
   }
-
-  async onChatInput(_msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
-  }
-
-  options = {
-    name: "restart",
-    id: 61,
-    media: {
-      description: "Перезапускает процесс",
-    },
-    cliParser: {
-      flags: [
-        {
-          name: "--pull",
-          capture: ["--pull"],
-          description: "Найти и получить обновления из репозитория",
-        },
-        {
-          name: "--build",
-          capture: ["--build"],
-          description: "Применить команду сборки сайта",
-        },
-        {
-          name: "--timeout",
-          capture: ["--timeout"],
-          expectValue: true,
-          description: "Запланировать перезапуск на N минут вперёд",
-        },
-      ],
-    },
-    alias: "перезапустить перезапуск рестарт",
-    allowDM: true,
-    cooldown: MINUTE,
-    cooldownTry: 5,
-    type: "dev",
-  };
 }
 
 export default Command;

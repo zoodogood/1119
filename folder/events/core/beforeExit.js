@@ -9,6 +9,11 @@ import {
 import { ActivityType } from "discord.js";
 
 class Event extends BaseEvent {
+  options = {
+    name: "process/beforeExit",
+    once: true,
+  };
+
   constructor() {
     const EVENT = "beforeExit";
     super(EventsManager.emitter, EVENT);
@@ -31,11 +36,6 @@ class Event extends BaseEvent {
 
     process.exit();
   }
-
-  options = {
-    name: "process/beforeExit",
-    once: true,
-  };
 }
 
 export default Event;

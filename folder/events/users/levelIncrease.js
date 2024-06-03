@@ -4,6 +4,10 @@ import { LEVELINCREASE_EXPERIENCE_PER_LEVEL as EXPERIENCE_PER_LEVEL } from "#con
 import { sleep } from "#lib/safe-utils.js";
 
 class Event extends BaseEvent {
+  options = {
+    name: "users/levelIncrease",
+  };
+
   constructor() {
     const EVENT = "users/levelIncrease";
     super(EventsManager.emitter, EVENT);
@@ -42,10 +46,6 @@ class Event extends BaseEvent {
   async run({ user, message }) {
     this.onLevelIncrease(user, message);
   }
-
-  options = {
-    name: "users/levelIncrease",
-  };
 }
 
 export default Event;

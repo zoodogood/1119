@@ -3,6 +3,20 @@ import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "emojis",
+    id: 23,
+    media: {
+      description:
+        "Отправляет список смайликов на сервере или подробную информацию об одном из них.",
+      example: `!emojis <emoji|emojiID>`,
+    },
+    alias: "emoji смайлики эмодзи эмоджи емодзі",
+    allowDM: true,
+    cooldown: 7_000,
+    type: "other",
+  };
+
   async onChatInput(msg, interaction) {
     if (interaction.params) {
       const id = Util.match(interaction.params, /\d{17,21}/);
@@ -106,20 +120,6 @@ class Command extends BaseCommand {
       );
     }
   }
-
-  options = {
-    name: "emojis",
-    id: 23,
-    media: {
-      description:
-        "Отправляет список смайликов на сервере или подробную информацию об одном из них.",
-      example: `!emojis <emoji|emojiID>`,
-    },
-    alias: "emoji смайлики эмодзи эмоджи емодзі",
-    allowDM: true,
-    cooldown: 7_000,
-    type: "other",
-  };
 }
 
 export default Command;

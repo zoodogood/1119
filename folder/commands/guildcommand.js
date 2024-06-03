@@ -3,6 +3,21 @@ import * as Util from "#lib/util.js";
 import Template from "#lib/modules/Template.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "guildcommand",
+    id: 36,
+    media: {
+      description:
+        "Создание пользовательских команд на сервере — ещё один этап к многофункциональной системе шаблонов и переменных сервера, обязательно комбинируйте эти технологии\n_устарело*_",
+      example: `!guildCommand #без аргументов`,
+    },
+    alias:
+      "guildcommands createcommand командасерверу командасервера customcommand",
+    allowDM: true,
+    type: "guild",
+    Permissions: 8n,
+  };
+
   async onChatInput(msg, interaction) {
     return;
     const heAccpet = await Util.awaitUserAccept({
@@ -179,21 +194,6 @@ class Command extends BaseCommand {
       description: `Вы создали команду \`!${cmd.name}\`. Самое время её опробовать 😋`,
     });
   }
-
-  options = {
-    name: "guildcommand",
-    id: 36,
-    media: {
-      description:
-        "Создание пользовательских команд на сервере — ещё один этап к многофункциональной системе шаблонов и переменных сервера, обязательно комбинируйте эти технологии\n_устарело*_",
-      example: `!guildCommand #без аргументов`,
-    },
-    alias:
-      "guildcommands createcommand командасерверу командасервера customcommand",
-    allowDM: true,
-    type: "guild",
-    Permissions: 8n,
-  };
 }
 
 export default Command;

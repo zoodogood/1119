@@ -3,6 +3,23 @@ import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "iq",
+    id: 31,
+    media: {
+      description:
+        "Хотя мы не знаем ваш настоящий IQ, можем предложить наш собственный..\nВозможно, когда-то у нас появится тест на ICQ",
+      example: `!iq <memb>`,
+    },
+    accessibility: {
+      publicized_on_level: 2,
+    },
+    alias: "iqmeme icq айкю айкью iqbanana iqmonkey",
+    allowDM: true,
+    cooldown: 15_000,
+    type: "user",
+  };
+
   async onChatInput(msg, interaction) {
     const memb =
       interaction.mention ||
@@ -37,23 +54,6 @@ class Command extends BaseCommand {
       author: { iconURL: memb.avatarURL(), name: memb.username },
     });
   }
-
-  options = {
-    name: "iq",
-    id: 31,
-    media: {
-      description:
-        "Хотя мы не знаем ваш настоящий IQ, можем предложить наш собственный..\nВозможно, когда-то у нас появится тест на ICQ",
-      example: `!iq <memb>`,
-    },
-    accessibility: {
-      publicized_on_level: 2,
-    },
-    alias: "iqmeme icq айкю айкью iqbanana iqmonkey",
-    allowDM: true,
-    cooldown: 15_000,
-    type: "user",
-  };
 }
 
 export default Command;

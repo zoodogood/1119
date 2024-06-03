@@ -8,17 +8,42 @@ import Template from "#lib/modules/Template.js";
 import { HOUR } from "#constants/globals/time.js";
 
 class Command extends BaseCommand {
-  getUsedCommandsCountOfGuild(guild) {
-    return Object.values(guild.data.commandsUsed).reduce(
-      (acc, count) => acc + count,
-      0,
-    );
+  options = {
+    name: "server",
+    id: 28,
+    media: {
+      description:
+        "Отображает основную информацию и статистику о сервере, в том числе бонусы связанные с этим ботом.\nВ неё входят: количество пользователей, каналов, сообщений или эффект клевера (если есть), а также установленные каналы, дата создания и другое",
+      example: `!server #без аргументов`,
+    },
+    alias: "сервер guild гильдия",
+    allowDM: true,
+    type: "guild",
+  };
+
+  getCloverData(guild) {
+    const { cloverEffect } = guild.data;
+    if (!cloverEffect) {
+      return null;
+    }
+    const day = Util.timestampDay(cloverEffect.timestamp);
+    const filter = ({ name, _params_as_json }) =>
+      name === "clover-end" && _params_as_json.includes(guild.id);
+    const event = TimeEventsManager.at(day)?.find(filter);
+
+    if (!event) {
+      return null;
+    }
+
+    const timeToEnd = event.timestamp - Date.now();
+    const multiplayer = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses);
+
+    return { timeToEnd, multiplayer, cloverEffect };
   }
 
   getCommandsLaunchedOfPreviousDaysInGuild(guild) {
     return guild.data.commandsLaunched || 0;
   }
-
   getContext(interaction) {
     const { guild } = interaction;
     return {
@@ -28,6 +53,33 @@ class Command extends BaseCommand {
         this.getCommandsLaunchedOfPreviousDaysInGuild(guild),
     };
   }
+
+  getCreatedAtContent(guild) {
+    return `Сервер был создан ${Util.timestampToDate(Date.now() - guild.createdTimestamp, 3)} назад.`;
+  }
+  async getGuildDescription(guild) {
+    const field = guild.data.description;
+    if (!field) {
+      return "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера";
+    }
+    const resolveTemplate = () => {
+      return new Template({
+        executor: field.authorId,
+        type: Template.sourceTypes.involuntarily,
+      })
+        .createVM()
+        .run(field.content);
+    };
+    return field.isTemplate ? await resolveTemplate() : field.content;
+  }
+
+  getUsedCommandsCountOfGuild(guild) {
+    return Object.values(guild.data.commandsUsed).reduce(
+      (acc, count) => acc + count,
+      0,
+    );
+  }
+
   async onChatInput(msg, interaction) {
     const context = this.getContext(interaction);
     const { guild } = context;
@@ -138,58 +190,6 @@ class Command extends BaseCommand {
       fields,
     });
   }
-
-  async getGuildDescription(guild) {
-    const field = guild.data.description;
-    if (!field) {
-      return "Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера";
-    }
-    const resolveTemplate = () => {
-      return new Template({
-        executor: field.authorId,
-        type: Template.sourceTypes.involuntarily,
-      })
-        .createVM()
-        .run(field.content);
-    };
-    return field.isTemplate ? await resolveTemplate() : field.content;
-  }
-  getCreatedAtContent(guild) {
-    return `Сервер был создан ${Util.timestampToDate(Date.now() - guild.createdTimestamp, 3)} назад.`;
-  }
-
-  getCloverData(guild) {
-    const { cloverEffect } = guild.data;
-    if (!cloverEffect) {
-      return null;
-    }
-    const day = Util.timestampDay(cloverEffect.timestamp);
-    const filter = ({ name, _params_as_json }) =>
-      name === "clover-end" && _params_as_json.includes(guild.id);
-    const event = TimeEventsManager.at(day)?.find(filter);
-
-    if (!event) {
-      return null;
-    }
-
-    const timeToEnd = event.timestamp - Date.now();
-    const multiplayer = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect.uses);
-
-    return { timeToEnd, multiplayer, cloverEffect };
-  }
-
-  options = {
-    name: "server",
-    id: 28,
-    media: {
-      description:
-        "Отображает основную информацию и статистику о сервере, в том числе бонусы связанные с этим ботом.\nВ неё входят: количество пользователей, каналов, сообщений или эффект клевера (если есть), а также установленные каналы, дата создания и другое",
-      example: `!server #без аргументов`,
-    },
-    alias: "сервер guild гильдия",
-    allowDM: true,
-    type: "guild",
-  };
 }
 
 export default Command;

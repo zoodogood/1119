@@ -4,6 +4,24 @@ import CommandsManager from "#lib/modules/CommandsManager.js";
 import { BirthdayMember } from "#folder/commands/birthdays.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "setprofile",
+    id: 20,
+    media: {
+      description:
+        "Настройки вашего профиля: Цвет, описание, день рождения и режим конфиденциальности",
+      example: `!setProfile {"осебе" | "цвет" | "др" | "конфиденциальность"} {value} #для реж. конфиденциальности аргумент value не нужен`,
+    },
+    accessibility: {
+      publicized_on_level: 10,
+    },
+    alias: "настроитьпрофиль about осебе sp нп налаштуватипрофіль",
+    allowDM: true,
+    cooldown: 200_000,
+    cooldownTry: 5,
+    type: "user",
+  };
+
   async onChatInput(msg, interaction) {
     const userData = interaction.userData,
       args = interaction.params.split(" "),
@@ -187,24 +205,6 @@ class Command extends BaseCommand {
         break;
     }
   }
-
-  options = {
-    name: "setprofile",
-    id: 20,
-    media: {
-      description:
-        "Настройки вашего профиля: Цвет, описание, день рождения и режим конфиденциальности",
-      example: `!setProfile {"осебе" | "цвет" | "др" | "конфиденциальность"} {value} #для реж. конфиденциальности аргумент value не нужен`,
-    },
-    accessibility: {
-      publicized_on_level: 10,
-    },
-    alias: "настроитьпрофиль about осебе sp нп налаштуватипрофіль",
-    allowDM: true,
-    cooldown: 200_000,
-    cooldownTry: 5,
-    type: "user",
-  };
 }
 
 export default Command;

@@ -2,6 +2,22 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "invites",
+    id: 56,
+    media: {
+      description:
+        'Присвойте ссылкам их уникальную роль. Как это работает?\nВы как администратор создаете роль, назовём её \\"Фунтик\\" и решаете, какие пользователи будут получать её при входе на сервер. Есть несколько типов условий, которые это определяют, они указаны в порядке приоритета и их может быть несколько.',
+      example: `!invites #без аргументов`,
+    },
+    accessibility: {
+      publicized_on_level: 7,
+    },
+    alias: "приглашения запрошення",
+    allowDM: true,
+    type: "guild",
+  };
+
   async onChatInput(msg, interaction) {
     if (interaction.mention) {
       const member = msg.guild.members.resolve(interaction.mention);
@@ -121,22 +137,6 @@ class Command extends BaseCommand {
       };\n\nОтлично, `;
     }
   }
-
-  options = {
-    name: "invites",
-    id: 56,
-    media: {
-      description:
-        'Присвойте ссылкам их уникальную роль. Как это работает?\nВы как администратор создаете роль, назовём её \\"Фунтик\\" и решаете, какие пользователи будут получать её при входе на сервер. Есть несколько типов условий, которые это определяют, они указаны в порядке приоритета и их может быть несколько.',
-      example: `!invites #без аргументов`,
-    },
-    accessibility: {
-      publicized_on_level: 7,
-    },
-    alias: "приглашения запрошення",
-    allowDM: true,
-    type: "guild",
-  };
 }
 
 export default Command;

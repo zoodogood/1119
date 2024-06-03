@@ -4,6 +4,22 @@ import EventsManager from "#lib/modules/EventsManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "postpone",
+    id: 30,
+    media: {
+      description:
+        "Отправляет сообщение от вашего имени в указанное время;\nУдалено в связи с тем, что время пользователей может отличатся от времени бота",
+      example: `!postpone {content} {time} #время в формате 15:30`,
+    },
+    alias: "отложить отложи відкласти відклади",
+    allowDM: true,
+    expectParams: true,
+    cooldown: 1_800_000,
+    type: "delete",
+    myChannelPermissions: 536870912n,
+  };
+
   async onChatInput(msg, interaction) {
     let splited = interaction.params.split(" "),
       time = splited[0],
@@ -50,22 +66,6 @@ class Command extends BaseCommand {
       delete: 5000,
     });
   }
-
-  options = {
-    name: "postpone",
-    id: 30,
-    media: {
-      description:
-        "Отправляет сообщение от вашего имени в указанное время;\nУдалено в связи с тем, что время пользователей может отличатся от времени бота",
-      example: `!postpone {content} {time} #время в формате 15:30`,
-    },
-    alias: "отложить отложи відкласти відклади",
-    allowDM: true,
-    expectParams: true,
-    cooldown: 1_800_000,
-    type: "delete",
-    myChannelPermissions: 536870912n,
-  };
 }
 
 export default Command;

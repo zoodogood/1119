@@ -4,159 +4,6 @@ import GuildVariablesManager from "#lib/modules/GuildVariablesManager.js";
 import { escapeMarkdown } from "discord.js";
 
 class Command extends BaseCommand {
-  static MAIN_COLOR = "#ffc135";
-
-  displayListOf({ interaction, targetName, entries }) {
-    const listContent = entries.length
-      ? entries
-          .map(
-            ([name, value]) =>
-              `${name}・${
-                value.length > 20 ? `${value.slice(0, 15)}..` : value
-              }`,
-          )
-          .join("\n")
-      : "Здесь пусто";
-
-    interaction.message.msg({
-      color: this.constructor.MAIN_COLOR,
-      description: `> Переменные ${targetName}\n${escapeMarkdown(listContent)}`,
-      footer: {
-        text: `Создано (${entries.length}/${GuildVariablesManager.LIMIT})`,
-      },
-    });
-    return;
-  }
-
-  displayGetValue({ interaction, targetName, name, value }) {
-    interaction.message.msg({
-      title: "Значение переменной",
-      description: `Переменная ${targetName}, \`${name}\` сейчас установлена в значении ${
-        value ?? "void (не существует)"
-      }.\n🙊`,
-      color: this.constructor.MAIN_COLOR,
-    });
-  }
-
-  displaySetValue({ interaction, targetName, name, value }) {
-    interaction.message.msg({
-      title: "Значение переменной изменено",
-      description: `Переменная ${targetName}, \`${name}\` успешно уставновлена в значение ${value}.\n🐵`,
-      color: this.constructor.MAIN_COLOR,
-    });
-  }
-
-  parseParams(params) {
-    params = params.split(" ");
-    const targetId = params.at(0).match(/\d{17,19}/);
-    if (targetId) {
-      params.splice(0, 1);
-    }
-
-    const name = params.splice(0, 1).at(0);
-    const value = params.join(" ");
-    return { targetId, name, value };
-  }
-
-  takeNameFor(targetId, interaction) {
-    return targetId === interaction.guild.id
-      ? "Сервера"
-      : `Пользователя <@${targetId}>`;
-  }
-
-  async onChatInput(msg, interaction) {
-    const manager = new GuildVariablesManager(msg.guild.data);
-    const isAdmin = !interaction.member?.wastedPermissions(32)[0];
-
-    if (interaction.params) {
-      const params = this.parseParams(interaction.params);
-
-      const targetId = params.targetId ?? interaction.guild.id;
-      const targetName = this.takeNameFor(targetId, interaction);
-
-      if (!params.name && !params.value) {
-        const entries = manager.interface.entriesOf(targetId);
-        this.displayListOf({ interaction, targetName, entries });
-        return;
-      }
-
-      if (!valueParameter) {
-        const value = manager.interface.get(targetId, params.name);
-        this.displayGetValue({
-          interaction,
-          targetName,
-          name: params.name,
-          value,
-        });
-        return;
-      }
-
-      if (params.name && params.value) {
-        const needIncrease =
-          params.value.startsWith("+") || params.value.startsWith("-");
-
-        const method = needIncrease
-          ? manager.interface.increase
-          : manager.interface.set;
-
-        const value = method.apply(manager.interface, [
-          targetId,
-          params.name,
-          params.value,
-        ]);
-        this.displaySetValue({
-          interaction,
-          targetName,
-          name: params.name,
-          value,
-        });
-        return;
-      }
-    }
-
-    return this.createController({ interaction, manager });
-  }
-
-  async createController({ interaction, manager }) {
-    const isAdmin = !interaction.member?.wastedPermissions(32)[0];
-
-    const data = manager.data;
-
-    const count = Object.values(data).reduce(
-      (acc, target) => acc + Object.keys(target).length,
-      0,
-    );
-    const countOfYou = manager.interface.entriesOf(interaction.user.id).length;
-    const embed = {
-      title: "Окно управления переменными сервера",
-      description: `Количество переменных сервера: ${count}${
-        countOfYou ? `\nУ вас свойств: ${countOfYou}` : ""
-      }\n\n${this.constructor.actionsList
-        .map(({ emoji, description }) => `${emoji} ${description}`)
-        .join("\n")}`,
-      color: this.constructor.MAIN_COLOR,
-      reactions: this.constructor.actionsList
-        .filter((action) => !action.checkPermission || isAdmin === true)
-        .map(({ emoji }) => emoji),
-    };
-    interaction.controllerMessage = await interaction.channel.msg(embed);
-    const filter = (reaction, user) => user === interaction.user && reaction.me;
-    const collector = interaction.controllerMessage.createReactionCollector({
-      filter,
-      time: 100_000,
-    });
-    collector.on("collect", (reaction) => {
-      const action = this.constructor.actionsList.find(
-        (action) => action.emoji === reaction.emoji.name,
-      );
-      action.callback.call(this, interaction, manager);
-    });
-
-    collector.on("end", () =>
-      interaction.controllerMessage.reactions.removeAll(),
-    );
-  }
-
   static actionsList = [
     {
       id: "set",
@@ -387,6 +234,8 @@ class Command extends BaseCommand {
     },
   ];
 
+  static MAIN_COLOR = "#ffc135";
+
   options = {
     name: "variables",
     id: 35,
@@ -403,6 +252,157 @@ class Command extends BaseCommand {
     type: "guild",
     Permissions: 256n,
   };
+
+  async createController({ interaction, manager }) {
+    const isAdmin = !interaction.member?.wastedPermissions(32)[0];
+
+    const data = manager.data;
+
+    const count = Object.values(data).reduce(
+      (acc, target) => acc + Object.keys(target).length,
+      0,
+    );
+    const countOfYou = manager.interface.entriesOf(interaction.user.id).length;
+    const embed = {
+      title: "Окно управления переменными сервера",
+      description: `Количество переменных сервера: ${count}${
+        countOfYou ? `\nУ вас свойств: ${countOfYou}` : ""
+      }\n\n${this.constructor.actionsList
+        .map(({ emoji, description }) => `${emoji} ${description}`)
+        .join("\n")}`,
+      color: this.constructor.MAIN_COLOR,
+      reactions: this.constructor.actionsList
+        .filter((action) => !action.checkPermission || isAdmin === true)
+        .map(({ emoji }) => emoji),
+    };
+    interaction.controllerMessage = await interaction.channel.msg(embed);
+    const filter = (reaction, user) => user === interaction.user && reaction.me;
+    const collector = interaction.controllerMessage.createReactionCollector({
+      filter,
+      time: 100_000,
+    });
+    collector.on("collect", (reaction) => {
+      const action = this.constructor.actionsList.find(
+        (action) => action.emoji === reaction.emoji.name,
+      );
+      action.callback.call(this, interaction, manager);
+    });
+
+    collector.on("end", () =>
+      interaction.controllerMessage.reactions.removeAll(),
+    );
+  }
+
+  displayGetValue({ interaction, targetName, name, value }) {
+    interaction.message.msg({
+      title: "Значение переменной",
+      description: `Переменная ${targetName}, \`${name}\` сейчас установлена в значении ${
+        value ?? "void (не существует)"
+      }.\n🙊`,
+      color: this.constructor.MAIN_COLOR,
+    });
+  }
+
+  displayListOf({ interaction, targetName, entries }) {
+    const listContent = entries.length
+      ? entries
+          .map(
+            ([name, value]) =>
+              `${name}・${
+                value.length > 20 ? `${value.slice(0, 15)}..` : value
+              }`,
+          )
+          .join("\n")
+      : "Здесь пусто";
+
+    interaction.message.msg({
+      color: this.constructor.MAIN_COLOR,
+      description: `> Переменные ${targetName}\n${escapeMarkdown(listContent)}`,
+      footer: {
+        text: `Создано (${entries.length}/${GuildVariablesManager.LIMIT})`,
+      },
+    });
+    return;
+  }
+
+  displaySetValue({ interaction, targetName, name, value }) {
+    interaction.message.msg({
+      title: "Значение переменной изменено",
+      description: `Переменная ${targetName}, \`${name}\` успешно уставновлена в значение ${value}.\n🐵`,
+      color: this.constructor.MAIN_COLOR,
+    });
+  }
+
+  async onChatInput(msg, interaction) {
+    const manager = new GuildVariablesManager(msg.guild.data);
+    const isAdmin = !interaction.member?.wastedPermissions(32)[0];
+
+    if (interaction.params) {
+      const params = this.parseParams(interaction.params);
+
+      const targetId = params.targetId ?? interaction.guild.id;
+      const targetName = this.takeNameFor(targetId, interaction);
+
+      if (!params.name && !params.value) {
+        const entries = manager.interface.entriesOf(targetId);
+        this.displayListOf({ interaction, targetName, entries });
+        return;
+      }
+
+      if (!valueParameter) {
+        const value = manager.interface.get(targetId, params.name);
+        this.displayGetValue({
+          interaction,
+          targetName,
+          name: params.name,
+          value,
+        });
+        return;
+      }
+
+      if (params.name && params.value) {
+        const needIncrease =
+          params.value.startsWith("+") || params.value.startsWith("-");
+
+        const method = needIncrease
+          ? manager.interface.increase
+          : manager.interface.set;
+
+        const value = method.apply(manager.interface, [
+          targetId,
+          params.name,
+          params.value,
+        ]);
+        this.displaySetValue({
+          interaction,
+          targetName,
+          name: params.name,
+          value,
+        });
+        return;
+      }
+    }
+
+    return this.createController({ interaction, manager });
+  }
+
+  parseParams(params) {
+    params = params.split(" ");
+    const targetId = params.at(0).match(/\d{17,19}/);
+    if (targetId) {
+      params.splice(0, 1);
+    }
+
+    const name = params.splice(0, 1).at(0);
+    const value = params.join(" ");
+    return { targetId, name, value };
+  }
+
+  takeNameFor(targetId, interaction) {
+    return targetId === interaction.guild.id
+      ? "Сервера"
+      : `Пользователя <@${targetId}>`;
+  }
 }
 
 export default Command;

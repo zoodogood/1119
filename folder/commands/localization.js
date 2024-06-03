@@ -3,11 +3,6 @@ import { MongoDBDriver } from "#lib/MongoDBDriver.js";
 import { MessagePayload } from "discord.js";
 
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    Promise.reject(new Error("Resource not yet loaded!"));
-    throw new Error("i18n is not defined");
-  }
-
   options = {
     name: "localization",
     id: 64,
@@ -23,6 +18,11 @@ class Command extends BaseCommand {
     hidden: true,
     type: "other",
   };
+
+  async onChatInput(msg, interaction) {
+    Promise.reject(new Error("Resource not yet loaded!"));
+    throw new Error("i18n is not defined");
+  }
 }
 
 export default Command;

@@ -4,6 +4,19 @@ import * as Util from "#lib/util.js";
 import { AttachmentBuilder } from "discord.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "puzzle",
+    id: 34,
+    media: {
+      description:
+        "Только величайшие из невеличайших смогут разгадать этот пазл, и то, почему-же он удалён...\n🧐",
+      example: `!puzzle <answer> #answer — ответ на головоломку, ответите правильно, получите 3000 золотых`,
+    },
+    alias: "пазл ёлка елка",
+    allowDM: true,
+    type: "delete",
+  };
+
   async onChatInput(msg, interaction) {
     const { default: canvas } = await import("canvas");
 
@@ -155,19 +168,6 @@ class Command extends BaseCommand {
     message.delete();
     msg.msg({ title: phrase, color: "#f2fafa", delete: 9000 });
   }
-
-  options = {
-    name: "puzzle",
-    id: 34,
-    media: {
-      description:
-        "Только величайшие из невеличайших смогут разгадать этот пазл, и то, почему-же он удалён...\n🧐",
-      example: `!puzzle <answer> #answer — ответ на головоломку, ответите правильно, получите 3000 золотых`,
-    },
-    alias: "пазл ёлка елка",
-    allowDM: true,
-    type: "delete",
-  };
 }
 
 export default Command;

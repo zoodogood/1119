@@ -3,6 +3,23 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import { client } from "#bot/client.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "youtube",
+    id: 55,
+    media: {
+      description:
+        "Совместный Ютуб — новая возможность дискорда, в отличии от музыкальных команд видео транслируется напрямую из ютуба, а не к боту и уже потом к каналу. Нагрузка на бота при таком подходе сводится к нулю.\nСамая скучная по своим внутренностям команда.",
+      example: `!youtube #без аргументов`,
+    },
+    accessibility: {
+      publicized_on_level: 12,
+    },
+    alias: "ютуб ютубвместе youtubetogether ютьюб",
+    allowDM: true,
+    type: "other",
+    myPermissions: 1n,
+  };
+
   async onChatInput(msg, interaction) {
     if (msg.member.voice.channel) {
       const request = {
@@ -49,23 +66,6 @@ class Command extends BaseCommand {
       delete: 7000,
     });
   }
-
-  options = {
-    name: "youtube",
-    id: 55,
-    media: {
-      description:
-        "Совместный Ютуб — новая возможность дискорда, в отличии от музыкальных команд видео транслируется напрямую из ютуба, а не к боту и уже потом к каналу. Нагрузка на бота при таком подходе сводится к нулю.\nСамая скучная по своим внутренностям команда.",
-      example: `!youtube #без аргументов`,
-    },
-    accessibility: {
-      publicized_on_level: 12,
-    },
-    alias: "ютуб ютубвместе youtubetogether ютьюб",
-    allowDM: true,
-    type: "other",
-    myPermissions: 1n,
-  };
 }
 
 export default Command;

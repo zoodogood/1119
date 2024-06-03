@@ -44,30 +44,6 @@ class Loader {
     this.storeValue = storeValue;
   }
 
-  async process_wait_load() {
-    await this.createInterface();
-    if (!this.storeValue.isFulled) {
-      const dispose = this.store.emitter.disposable(Store.Events.idea, () =>
-        this.onMessageCollected(),
-      );
-      this.store.emitter.once(Store.Events.collect_end, dispose);
-    }
-    const { promise } = this.storeValue;
-    await promise;
-    this._interface.updateMessage();
-  }
-
-  ideas() {
-    return this.storeValue.ideas;
-  }
-
-  async onMessageCollected() {
-    if (this.storeValue.ideas.size % 100 !== 0) {
-      return;
-    }
-    await this._interface.updateMessage();
-  }
-
   async createInterface() {
     const { context, _interface } = this;
     _interface.setChannel(context.channel);
@@ -85,12 +61,43 @@ class Loader {
       description: ideas.size ? `Получено идей: ${ideas.size}` : null,
     };
   }
+
+  ideas() {
+    return this.storeValue.ideas;
+  }
+
+  async onMessageCollected() {
+    if (this.storeValue.ideas.size % 100 !== 0) {
+      return;
+    }
+    await this._interface.updateMessage();
+  }
+
+  async process_wait_load() {
+    await this.createInterface();
+    if (!this.storeValue.isFulled) {
+      const dispose = this.store.emitter.disposable(Store.Events.idea, () =>
+        this.onMessageCollected(),
+      );
+      this.store.emitter.once(Store.Events.collect_end, dispose);
+    }
+    const { promise } = this.storeValue;
+    await promise;
+    this._interface.updateMessage();
+  }
 }
 
 class Store extends TimedCache {
+  static Events = {
+    ...super.Events,
+    message: "message",
+    idea: "idea",
+    collect_end: "collect_end",
+  };
   constructor() {
     super();
   }
+
   fetch() {
     const channel = getChannel();
     const ideas = new Collection();
@@ -104,22 +111,6 @@ class Store extends TimedCache {
     })();
     data.promise = promise;
     return data;
-  }
-
-  process_message(message) {
-    if (!this.isCached()) {
-      return;
-    }
-    this.emitter.emit(Store.Events.message, message);
-
-    const { ideas } = this.value();
-    const metadata = this.idea_parse_metadata(message);
-    if (!metadata) {
-      return;
-    }
-    this.value().isSorted = false;
-    this.emitter.emit(Store.Events.idea, { message, metadata });
-    ideas.set(metadata.index, metadata);
   }
 
   idea_parse_metadata(message) {
@@ -148,6 +139,33 @@ class Store extends TimedCache {
     };
   }
 
+  async lastIdea() {
+    // @ts-expect-error
+    const messages = await getChannel().messages.fetch();
+    const message = messages.find((message) => message.author === client.user);
+    return this.idea_parse_metadata(message);
+  }
+
+  onNewIdea(message) {
+    this.process_message(message);
+  }
+
+  process_message(message) {
+    if (!this.isCached()) {
+      return;
+    }
+    this.emitter.emit(Store.Events.message, message);
+
+    const { ideas } = this.value();
+    const metadata = this.idea_parse_metadata(message);
+    if (!metadata) {
+      return;
+    }
+    this.value().isSorted = false;
+    this.emitter.emit(Store.Events.idea, { message, metadata });
+    ideas.set(metadata.index, metadata);
+  }
+
   async sort() {
     if (!this.isCached()) {
       return;
@@ -160,24 +178,6 @@ class Store extends TimedCache {
     ideas.sort((b, a) => a.index - b.index);
     this.value().isSorted = true;
   }
-
-  async lastIdea() {
-    // @ts-expect-error
-    const messages = await getChannel().messages.fetch();
-    const message = messages.find((message) => message.author === client.user);
-    return this.idea_parse_metadata(message);
-  }
-
-  onNewIdea(message) {
-    this.process_message(message);
-  }
-
-  static Events = {
-    ...super.Events,
-    message: "message",
-    idea: "idea",
-    collect_end: "collect_end",
-  };
 }
 
 class JSON_Flagsubcommand {
@@ -189,6 +189,14 @@ class JSON_Flagsubcommand {
 
   constructor(context) {
     this.context = context;
+  }
+
+  ideasToJSON(ideas) {
+    return ideas.map((idea) => this.ideaToJson(idea));
+  }
+
+  ideaToJson(idea) {
+    return idea;
   }
 
   async onProcess() {
@@ -204,14 +212,6 @@ class JSON_Flagsubcommand {
     const data = this.ideasToJSON(ideas);
     this.context.channel.msg({ files: [jsonFile(data, "ideas.json")] });
   }
-
-  ideasToJSON(ideas) {
-    return ideas.map((idea) => this.ideaToJson(idea));
-  }
-
-  ideaToJson(idea) {
-    return idea;
-  }
 }
 
 class At_Flagsubcommand {
@@ -222,38 +222,14 @@ class At_Flagsubcommand {
     description: "Возвращает информацию об идее за её номером",
   };
   pager;
-  value;
   store;
+  value;
   constructor(context, value) {
     this.context = context;
     this.store = this.context.command.store;
     this.value = value - 1;
     this.pager = new Pager(context.channel);
   }
-  async onProcess() {
-    if (!this.process_validate_value()) {
-      return true;
-    }
-    const loader = new Loader(this.context);
-    await loader.process_wait_load();
-    this.ideas = loader.ideas();
-    await this.createInterface();
-    return true;
-  }
-
-  process_validate_value() {
-    const { value } = this;
-    if (!isNaN(value)) {
-      return true;
-    }
-
-    this.context.channel.msg({
-      description: "Значение флага --at должно быть числом",
-      delete: 8 * SECOND,
-      color: Command.MESSAGE_THEME.color,
-    });
-  }
-
   createInterface() {
     const { pager } = this;
     pager.currentPage = this.value;
@@ -321,6 +297,30 @@ class At_Flagsubcommand {
       },
     };
   }
+
+  async onProcess() {
+    if (!this.process_validate_value()) {
+      return true;
+    }
+    const loader = new Loader(this.context);
+    await loader.process_wait_load();
+    this.ideas = loader.ideas();
+    await this.createInterface();
+    return true;
+  }
+
+  process_validate_value() {
+    const { value } = this;
+    if (!isNaN(value)) {
+      return true;
+    }
+
+    this.context.channel.msg({
+      description: "Значение флага --at должно быть числом",
+      delete: 8 * SECOND,
+      color: Command.MESSAGE_THEME.color,
+    });
+  }
 }
 
 class Edit_Flagsubcommand {
@@ -331,14 +331,44 @@ class Edit_Flagsubcommand {
     description: "Автор идеи может переписать её содержание за её номером",
   };
   pager;
-  value;
   store;
   targetMessage;
+  value;
   constructor(context, value) {
     this.context = context;
     this.value = +value;
     this.pager = new Pager(context.channel);
   }
+  async editMessage() {
+    const { targetMessage } = this;
+    const { embed } = targetMessage;
+    const { title, color, author } = embed;
+    await targetMessage.msg({
+      title,
+      color,
+      author,
+      description: this.context.cliParsed.at(1).get("phrase"),
+      edit: true,
+    });
+
+    this.context.channel.msg({
+      title: "Идея отредактирована!",
+      description: `Старое содержание:\n${embed.description}`,
+    });
+  }
+
+  async fetchMessage() {
+    const { ideasChannel, storeValue } = this.context;
+    const message = await ideasChannel.messages.fetch(
+      storeValue.ideas.get(this.value)?.id,
+    );
+    if (!this.process_idea_exists(message)) {
+      return false;
+    }
+    this.targetMessage = message;
+    return true;
+  }
+
   async onProcess() {
     if (!this.process_validate_value()) {
       return true;
@@ -354,18 +384,6 @@ class Edit_Flagsubcommand {
     }
 
     await this.editMessage();
-    return true;
-  }
-
-  async fetchMessage() {
-    const { ideasChannel, storeValue } = this.context;
-    const message = await ideasChannel.messages.fetch(
-      storeValue.ideas.get(this.value)?.id,
-    );
-    if (!this.process_idea_exists(message)) {
-      return false;
-    }
-    this.targetMessage = message;
     return true;
   }
 
@@ -414,32 +432,11 @@ class Edit_Flagsubcommand {
       color: Command.MESSAGE_THEME.color,
     });
   }
-
-  async editMessage() {
-    const { targetMessage } = this;
-    const { embed } = targetMessage;
-    const { title, color, author } = embed;
-    await targetMessage.msg({
-      title,
-      color,
-      author,
-      description: this.context.cliParsed.at(1).get("phrase"),
-      edit: true,
-    });
-
-    this.context.channel.msg({
-      title: "Идея отредактирована!",
-      description: `Старое содержание:\n${embed.description}`,
-    });
-  }
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  _storeValue;
   _ideasChannel;
-  get storeValue() {
-    return (this._storeValue ||= this.command.store.value());
-  }
+  _storeValue;
   get ideasChannel() {
     return getChannel();
   }
@@ -453,63 +450,49 @@ class CommandRunContext extends BaseCommandRunContext {
     const values = parsed.resolveValues((capture) => capture?.toString());
     this.setCliParsed(parsed, values);
   }
+  get storeValue() {
+    return (this._storeValue ||= this.command.store.value());
+  }
 }
 
 class Command extends BaseCommand {
-  store = new Store();
-
   static MESSAGE_THEME = {
     color: "#00ffaf",
   };
 
-  async processAggree(context) {
-    const { channel, user, interaction } = context;
-    const heAccpet = await Util.awaitUserAccept({
-      name: "idea",
-      message: {
-        title: "<a:crystal:637290417360076822> Подать идею",
-        description:
-          "После подтверждения этого сообщения, текст, который вы ввели вместе с командой, будет отправлен разработчику.\nВсё идеи попадают **[сюда.](https://discord.gg/76hCg2h7r8)**",
-      },
-      channel,
-      userData: interaction.userData,
-    });
-    if (heAccpet) {
-      return true;
-    }
-    user.msg({
-      title: "Ваша идея не была отправлена, ведь Вы не подтвердили отправку",
-      description: `Текст идеи:\n${interaction.params}`,
-      color: "#ff0000",
-    });
-    return false;
-  }
+  options = {
+    name: "idea",
+    id: 24,
+    media: {
+      description:
+        "Если у вас есть идеи как можно улучшить бота — с помощью этой команды отправьте её на сервер.\nНе забудьте позже обсудить её в чате, подробно расписывая особенности вы повышаете вероятность того, что она будет реализована.",
+      example: `!idea {content}`,
+    },
+    cliParser: {
+      flags: [
+        Edit_Flagsubcommand.FLAG_DATA,
+        At_Flagsubcommand.FLAG_DATA,
+        JSON_Flagsubcommand.FLAG_DATA,
+      ],
+    },
+    alias: "идея innovation новвоведение ідея proposal предложение",
+    allowDM: true,
+    expectParams: true,
+    cooldown: MINUTE * 3,
+    cooldownTry: 3,
+    type: "bot",
+  };
+
+  store = new Store();
 
   async lastIdeaNumber() {
     const { index } = (await this.store.lastIdea()) || {};
     return index || 0;
   }
-  async run(context) {
-    context.parseCli(context.interaction.params);
-    if (await this.process_json_flag(context)) {
-      return true;
-    }
-    if (await this.process_at_flag(context)) {
-      return true;
-    }
-    if (await this.process_edit_flag(context)) {
-      return true;
-    }
-    this.processDefaultBehaviour(context);
-  }
-
-  async process_edit_flag(context) {
-    const value = context.cliParsed.at(1).get("--edit");
-    if (!value) {
-      return false;
-    }
-    await new Edit_Flagsubcommand(context, value).onProcess();
-    return true;
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
   }
 
   async process_at_flag(context) {
@@ -518,6 +501,15 @@ class Command extends BaseCommand {
       return false;
     }
     await new At_Flagsubcommand(context, value).onProcess();
+    return true;
+  }
+
+  async process_edit_flag(context) {
+    const value = context.cliParsed.at(1).get("--edit");
+    if (!value) {
+      return false;
+    }
+    await new Edit_Flagsubcommand(context, value).onProcess();
     return true;
   }
 
@@ -553,6 +545,28 @@ class Command extends BaseCommand {
     });
   }
 
+  async processAggree(context) {
+    const { channel, user, interaction } = context;
+    const heAccpet = await Util.awaitUserAccept({
+      name: "idea",
+      message: {
+        title: "<a:crystal:637290417360076822> Подать идею",
+        description:
+          "После подтверждения этого сообщения, текст, который вы ввели вместе с командой, будет отправлен разработчику.\nВсё идеи попадают **[сюда.](https://discord.gg/76hCg2h7r8)**",
+      },
+      channel,
+      userData: interaction.userData,
+    });
+    if (heAccpet) {
+      return true;
+    }
+    user.msg({
+      title: "Ваша идея не была отправлена, ведь Вы не подтвердили отправку",
+      description: `Текст идеи:\n${interaction.params}`,
+      color: "#ff0000",
+    });
+    return false;
+  }
   async processDefaultBehaviour(context) {
     if (!(await this.processAggree(context))) {
       return;
@@ -585,34 +599,20 @@ class Command extends BaseCommand {
 
     await this.store.onNewIdea(message);
   }
-  async onChatInput(msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
-  }
 
-  options = {
-    name: "idea",
-    id: 24,
-    media: {
-      description:
-        "Если у вас есть идеи как можно улучшить бота — с помощью этой команды отправьте её на сервер.\nНе забудьте позже обсудить её в чате, подробно расписывая особенности вы повышаете вероятность того, что она будет реализована.",
-      example: `!idea {content}`,
-    },
-    cliParser: {
-      flags: [
-        Edit_Flagsubcommand.FLAG_DATA,
-        At_Flagsubcommand.FLAG_DATA,
-        JSON_Flagsubcommand.FLAG_DATA,
-      ],
-    },
-    alias: "идея innovation новвоведение ідея proposal предложение",
-    allowDM: true,
-    expectParams: true,
-    cooldown: MINUTE * 3,
-    cooldownTry: 3,
-    type: "bot",
-  };
+  async run(context) {
+    context.parseCli(context.interaction.params);
+    if (await this.process_json_flag(context)) {
+      return true;
+    }
+    if (await this.process_at_flag(context)) {
+      return true;
+    }
+    if (await this.process_edit_flag(context)) {
+      return true;
+    }
+    this.processDefaultBehaviour(context);
+  }
 }
 
 export default Command;

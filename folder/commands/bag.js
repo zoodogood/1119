@@ -160,21 +160,17 @@ function movePrepare(moveDetailes, context) {
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  defaultPreventable = createDefaultPreventable();
-  userData;
   action;
   count;
-  itemRaw;
+  defaultPreventable = createDefaultPreventable();
   item;
-  preventDefault() {
-    this.defaultPreventable.preventDefault();
-  }
+  itemRaw;
+  userData;
   static new(interaction, command) {
     const context = new this(interaction, command);
     context.userData = interaction.user.data;
     return context;
   }
-
   parseCli(params) {
     const parser = new CliParser()
       .setText(params)
@@ -229,6 +225,10 @@ class CommandRunContext extends BaseCommandRunContext {
       const DEFAULT_COUNT = 1;
       values.set("count", DEFAULT_COUNT);
     }
+  }
+
+  preventDefault() {
+    this.defaultPreventable.preventDefault();
   }
 }
 
@@ -321,14 +321,8 @@ class Clean_FlagSubcommand extends BaseFlagSubcommand {
 }
 
 class Mention_Subcommand extends BaseFlagSubcommand {
-  processIsAuthor() {
-    const { mention, user } = this.context.interaction;
-    if (mention !== user) {
-      return false;
-    }
-
-    displayBag(this.context);
-    return true;
+  onProcess() {
+    return this.processIsAuthor() || this.processDefault();
   }
   processDefault() {
     const { message } = this.context.interaction;
@@ -342,35 +336,41 @@ class Mention_Subcommand extends BaseFlagSubcommand {
     });
     return true;
   }
-  onProcess() {
-    return this.processIsAuthor() || this.processDefault();
+  processIsAuthor() {
+    const { mention, user } = this.context.interaction;
+    if (mention !== user) {
+      return false;
+    }
+
+    displayBag(this.context);
+    return true;
   }
 }
 
 class Item {
+  display(...args) {
+    return this.ending(...args);
+  }
+
   static from(itemData) {
     const item = Object.assign(Object.create(this.prototype), itemData);
     this.normalize(item);
     return item;
   }
 
-  static normalize(item) {
-    item.names = [...item.names].map((alias) => alias.toLowerCase());
-  }
-
-  display(...args) {
-    return this.ending(...args);
+  getLimit() {
+    return this.limit || null;
   }
   // Default getter
   getter({ target }) {
     return target[this.key];
   }
-  setter({ target, count }) {
-    return (target[this.key] = count);
+  static normalize(item) {
+    item.names = [...item.names].map((alias) => alias.toLowerCase());
   }
 
-  getLimit() {
-    return this.limit || null;
+  setter({ target, count }) {
+    return (target[this.key] = count);
   }
 }
 
@@ -631,6 +631,35 @@ const ITEMS = [
 class Command extends BaseCommand {
   static items = ITEMS.map((itemData) => Item.from(itemData));
 
+  options = {
+    name: "bag",
+    id: 58,
+    media: {
+      description:
+        "Никто кроме владельца не может просматривать содержимое сумки. В неё можно положить любой предмет будь то нестабильность, клубника и даже бонусы\nСумка это альтернатива использования казны как личного хранилища. При этом она всегда под рукой!",
+      example: `!bag <"take" | "put"> <item> <count | "+"> # аргументы могут быть указаны в любом порядке`,
+    },
+    accessibility: {
+      publicized_on_level: 5,
+    },
+    cliParser: {
+      flags: [
+        TakeAll_FlagSubcommand.FLAG_DATA,
+        PutAll_FlagSubcommand.FLAG_DATA,
+        Clean_FlagSubcommand.FLAG_DATA,
+      ],
+    },
+    cooldown: 3 * SECOND,
+    cooldownTry: 3,
+    alias: "сумка рюкзак",
+    allowDM: true,
+    type: "user",
+  };
+
+  findItem(item = "") {
+    return this.findItemByKey(item) || this.findItemByAlias(item);
+  }
+
   findItemByAlias(alias) {
     return Command.items.find((item) =>
       item.names.includes(alias.toLowerCase()),
@@ -643,8 +672,42 @@ class Command extends BaseCommand {
     );
   }
 
-  findItem(item = "") {
-    return this.findItemByKey(item) || this.findItemByAlias(item);
+  moveItem(context, key, count, isToBag) {
+    const { interaction, user } = context;
+
+    const moveDetailes = checkMoveDetailes({ user, isToBag, count, key });
+    movePrepare(moveDetailes, context);
+
+    const { targetFrom, item } = moveDetailes;
+
+    const currentCount = item.getter({ target: targetFrom });
+    if (currentCount < count) {
+      const description = `Надо на ${item.ending(count - currentCount)} больше!`;
+      interaction.channel.msg({
+        title: "Недостаточно ресурса",
+        delete: 7_000,
+        description,
+      });
+      return;
+    }
+
+    moveDetailes.context = context;
+    const moved = _moveItem(moveDetailes);
+
+    const bagDescription = isToBag
+      ? "в а-ля вакуумный объект"
+      : "из черной дыры";
+    const description = `Вы успешно ${
+      isToBag ? "положили" : "взяли"
+    } ${item.ending(moveDetailes.count)} ${bagDescription}.`;
+
+    interaction.channel.msg({
+      title: `Действие с сумка ${interaction.user.tag}`,
+      delete: 9_000,
+      description,
+    });
+
+    return moved;
   }
 
   async onActionUseItem(context) {
@@ -721,6 +784,89 @@ class Command extends BaseCommand {
     return context;
   }
 
+  async processCleanFlag(context) {
+    const value = context.cliParsed.at(1).get("--clean");
+    if (!value) {
+      return false;
+    }
+    await new Clean_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+
+  async processDefaultBehaviour(context) {
+    const { count, item, userData } = context;
+
+    if (context.isUseAction) {
+      this.onActionUseItem(context);
+      return;
+    }
+
+    if (!this.processItemIsExists(context)) {
+      return;
+    }
+
+    if (item) {
+      const isToBag = context.isPutAction;
+      userData.bag ||= {};
+      this.moveItem(context, item.key, count, isToBag);
+      return;
+    }
+
+    await displayBag(context);
+    return;
+  }
+
+  processItemIsExists(context) {
+    const { action, count, item, itemRaw, channel } = context;
+    if (!action || !count) {
+      return true;
+    }
+    if (item) {
+      return true;
+    }
+    const list = Command.items.reduce(
+      (acc, item) => acc.concat(item.names),
+      [],
+    );
+    const similarItem = Util.getSimilar(list, itemRaw);
+    channel.msg({
+      title: "Не удалось найти такой предмет:",
+      description: `\`${itemRaw}\`${
+        similarItem ? `\n\nВозможно, Вы имели ввиду: ${similarItem}?` : ""
+      }`,
+      delete: 7000,
+    });
+    return false;
+  }
+
+  async processMention(context) {
+    const { mention } = context.interaction;
+    if (!mention) {
+      return false;
+    }
+
+    new Mention_Subcommand(context).onProcess();
+    return true;
+  }
+
+  async processPutAllFlag(context) {
+    const value = context.cliParsed.at(1).get("--put-all");
+    if (!value) {
+      return false;
+    }
+    await new PutAll_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+
+  async processTakeAllFlag(context) {
+    const value = context.cliParsed.at(1).get("--take-all");
+    if (!value) {
+      return false;
+    }
+    await new TakeAll_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+
   async run(context) {
     context.parseCli(context.interaction.params);
     if (await this.processMention(context)) {
@@ -749,152 +895,6 @@ class Command extends BaseCommand {
 
     this.processDefaultBehaviour(context);
   }
-
-  async processDefaultBehaviour(context) {
-    const { count, item, userData } = context;
-
-    if (context.isUseAction) {
-      this.onActionUseItem(context);
-      return;
-    }
-
-    if (!this.processItemIsExists(context)) {
-      return;
-    }
-
-    if (item) {
-      const isToBag = context.isPutAction;
-      userData.bag ||= {};
-      this.moveItem(context, item.key, count, isToBag);
-      return;
-    }
-
-    await displayBag(context);
-    return;
-  }
-
-  async processMention(context) {
-    const { mention } = context.interaction;
-    if (!mention) {
-      return false;
-    }
-
-    new Mention_Subcommand(context).onProcess();
-    return true;
-  }
-
-  async processTakeAllFlag(context) {
-    const value = context.cliParsed.at(1).get("--take-all");
-    if (!value) {
-      return false;
-    }
-    await new TakeAll_FlagSubcommand(context, value).onProcess();
-    return true;
-  }
-
-  async processPutAllFlag(context) {
-    const value = context.cliParsed.at(1).get("--put-all");
-    if (!value) {
-      return false;
-    }
-    await new PutAll_FlagSubcommand(context, value).onProcess();
-    return true;
-  }
-
-  async processCleanFlag(context) {
-    const value = context.cliParsed.at(1).get("--clean");
-    if (!value) {
-      return false;
-    }
-    await new Clean_FlagSubcommand(context, value).onProcess();
-    return true;
-  }
-
-  processItemIsExists(context) {
-    const { action, count, item, itemRaw, channel } = context;
-    if (!action || !count) {
-      return true;
-    }
-    if (item) {
-      return true;
-    }
-    const list = Command.items.reduce(
-      (acc, item) => acc.concat(item.names),
-      [],
-    );
-    const similarItem = Util.getSimilar(list, itemRaw);
-    channel.msg({
-      title: "Не удалось найти такой предмет:",
-      description: `\`${itemRaw}\`${
-        similarItem ? `\n\nВозможно, Вы имели ввиду: ${similarItem}?` : ""
-      }`,
-      delete: 7000,
-    });
-    return false;
-  }
-
-  moveItem(context, key, count, isToBag) {
-    const { interaction, user } = context;
-
-    const moveDetailes = checkMoveDetailes({ user, isToBag, count, key });
-    movePrepare(moveDetailes, context);
-
-    const { targetFrom, item } = moveDetailes;
-
-    const currentCount = item.getter({ target: targetFrom });
-    if (currentCount < count) {
-      const description = `Надо на ${item.ending(count - currentCount)} больше!`;
-      interaction.channel.msg({
-        title: "Недостаточно ресурса",
-        delete: 7_000,
-        description,
-      });
-      return;
-    }
-
-    moveDetailes.context = context;
-    const moved = _moveItem(moveDetailes);
-
-    const bagDescription = isToBag
-      ? "в а-ля вакуумный объект"
-      : "из черной дыры";
-    const description = `Вы успешно ${
-      isToBag ? "положили" : "взяли"
-    } ${item.ending(moveDetailes.count)} ${bagDescription}.`;
-
-    interaction.channel.msg({
-      title: `Действие с сумка ${interaction.user.tag}`,
-      delete: 9_000,
-      description,
-    });
-
-    return moved;
-  }
-
-  options = {
-    name: "bag",
-    id: 58,
-    media: {
-      description:
-        "Никто кроме владельца не может просматривать содержимое сумки. В неё можно положить любой предмет будь то нестабильность, клубника и даже бонусы\nСумка это альтернатива использования казны как личного хранилища. При этом она всегда под рукой!",
-      example: `!bag <"take" | "put"> <item> <count | "+"> # аргументы могут быть указаны в любом порядке`,
-    },
-    accessibility: {
-      publicized_on_level: 5,
-    },
-    cliParser: {
-      flags: [
-        TakeAll_FlagSubcommand.FLAG_DATA,
-        PutAll_FlagSubcommand.FLAG_DATA,
-        Clean_FlagSubcommand.FLAG_DATA,
-      ],
-    },
-    cooldown: 3 * SECOND,
-    cooldownTry: 3,
-    alias: "сумка рюкзак",
-    allowDM: true,
-    type: "user",
-  };
 }
 
 export default Command;

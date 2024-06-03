@@ -4,6 +4,10 @@ import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { CurseManager } from "#lib/modules/mod.js";
 
 class Event {
+  options = {
+    name: "TimeEvent/curse-timeout-end",
+  };
+
   run(timeEventData, userId, timestamp) {
     const user = client.users.cache.get(userId);
     if (!user) {
@@ -34,10 +38,6 @@ class Event {
 
     CurseManager.checkAvailable({ user, curse });
   }
-
-  options = {
-    name: "TimeEvent/curse-timeout-end",
-  };
 }
 
 export default Event;

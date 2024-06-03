@@ -8,8 +8,8 @@ import Template from "#lib/modules/Template.js";
 import { DotNotatedInterface } from "@zoodogood/utils/objectives";
 
 class CommandRunContext extends BaseCommandRunContext {
-  intefaceMessage;
   guildData;
+  intefaceMessage;
 
   static new(interaction, command) {
     const context = new this(interaction, command);
@@ -17,21 +17,58 @@ class CommandRunContext extends BaseCommandRunContext {
     return context;
   }
 
-  setInterfaceMessage(message) {
-    this.intefaceMessage = message;
-  }
-
   parseCli() {}
 
   get randomEmoji() {
     return (this._randomEmoji ||= ["🔧", "🔨", "💣", "🛠️", "🔏"].random());
   }
+
+  setInterfaceMessage(message) {
+    this.intefaceMessage = message;
+  }
 }
 class Command_GuildChannels_Manager {
+  CHANNELS = [
+    {
+      key: "chatChannel",
+      label: "Чат",
+      emoji: "🔥",
+    },
+    {
+      key: "logChannel",
+      label: "Для логов",
+      emoji: "📒",
+    },
+    {
+      key: "hiChannel",
+      label: "Для приветствий",
+      emoji: "👌",
+    },
+  ];
+
   constructor(context) {
     this.context = context;
   }
 
+  channelBaseToString(channelBase) {
+    const { guildData, guild } = this.context;
+
+    const value = this.isChannelInstalled(guild, channelBase)
+      ? this.getChannelOfChannelBase(guild, channelBase).toString()
+      : channelBase.key in guildData
+        ? "не найден"
+        : "не установлен";
+
+    return `${channelBase.emoji} ${channelBase.label}: ${value}`;
+  }
+
+  getChannelOfChannelBase(guild, channelBase) {
+    return guild.channels.cache.get(guild.data[channelBase.key]);
+  }
+
+  isChannelInstalled(guild, channelBase) {
+    return !!this.getChannelOfChannelBase(guild, channelBase);
+  }
   async onProcess() {
     const { user, channel } = this.context;
     await question({
@@ -51,22 +88,6 @@ class Command_GuildChannels_Manager {
     });
   }
 
-  channelBaseToString(channelBase) {
-    const { guildData, guild } = this.context;
-
-    const value = this.isChannelInstalled(guild, channelBase)
-      ? this.getChannelOfChannelBase(guild, channelBase).toString()
-      : channelBase.key in guildData
-        ? "не найден"
-        : "не установлен";
-
-    return `${channelBase.emoji} ${channelBase.label}: ${value}`;
-  }
-
-  getChannelOfChannelBase(guild, channelBase) {
-    return guild.channels.cache.get(guild.data[channelBase.key]);
-  }
-
   processChannelIsExists(channel, channelBase) {
     if (channel) {
       return true;
@@ -74,27 +95,6 @@ class Command_GuildChannels_Manager {
     const { guild } = this.context;
     delete guild.data[channelBase.key];
   }
-  isChannelInstalled(guild, channelBase) {
-    return !!this.getChannelOfChannelBase(guild, channelBase);
-  }
-
-  CHANNELS = [
-    {
-      key: "chatChannel",
-      label: "Чат",
-      emoji: "🔥",
-    },
-    {
-      key: "logChannel",
-      label: "Для логов",
-      emoji: "📒",
-    },
-    {
-      key: "hiChannel",
-      label: "Для приветствий",
-      emoji: "👌",
-    },
-  ];
 }
 
 class Command_GuildBanner_Manager {
@@ -234,14 +234,14 @@ class Command_GuildPartners_Manager {
 }
 
 class Command_GuildChatFilter_Manager {
-  constructor(context) {
-    this.context = context;
-  }
-
   emojiEnum = {
     enable: "685057435161198594",
     disable: "763804850508136478",
   };
+
+  constructor(context) {
+    this.context = context;
+  }
 
   async onProcess() {
     const { user, channel, guild } = this.context;
@@ -276,6 +276,37 @@ class CommandDefaultBehavior {
     this.context = context;
     this.command = this.context.command;
   }
+  createDescription(context) {
+    const { guild, command } = context;
+    const guildData = guild.data;
+    const channels = new Command_GuildChannels_Manager(context);
+
+    const channelContent = channels.CHANNELS.map((channelBase) =>
+      channels.channelBaseToString(channelBase),
+    ).join("\n");
+
+    const on_emoji = Emoji.animation_tick_block.toString();
+    const target = new DotNotatedInterface(guildData);
+
+    const instrumentsContent = command.SETTING_FIELDS.map(
+      ({ key, label_on, label_off, emoji }) =>
+        target.hasItem(key)
+          ? `${on_emoji} ${label_on}`
+          : `${emoji} ${label_off}`,
+    ).join("\n");
+
+    return `Каналы:\n${channelContent}\nИнструменты:\n${instrumentsContent}`;
+  }
+
+  createEmbed(context) {
+    const emoji = context.randomEmoji;
+    return {
+      title: `Настроим сервер?... ${emoji}`,
+      description: this.createDescription(context),
+      reactions: this.command.SETTING_FIELDS.map((field) => field.emoji),
+    };
+  }
+
   async onProcess() {
     const { context } = this;
     const { channel } = context;
@@ -313,58 +344,23 @@ class CommandDefaultBehavior {
 
     return false;
   }
-
-  createEmbed(context) {
-    const emoji = context.randomEmoji;
-    return {
-      title: `Настроим сервер?... ${emoji}`,
-      description: this.createDescription(context),
-      reactions: this.command.SETTING_FIELDS.map((field) => field.emoji),
-    };
-  }
-
-  createDescription(context) {
-    const { guild, command } = context;
-    const guildData = guild.data;
-    const channels = new Command_GuildChannels_Manager(context);
-
-    const channelContent = channels.CHANNELS.map((channelBase) =>
-      channels.channelBaseToString(channelBase),
-    ).join("\n");
-
-    const on_emoji = Emoji.animation_tick_block.toString();
-    const target = new DotNotatedInterface(guildData);
-
-    const instrumentsContent = command.SETTING_FIELDS.map(
-      ({ key, label_on, label_off, emoji }) =>
-        target.hasItem(key)
-          ? `${on_emoji} ${label_on}`
-          : `${emoji} ${label_off}`,
-    ).join("\n");
-
-    return `Каналы:\n${channelContent}\nИнструменты:\n${instrumentsContent}`;
-  }
 }
 
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
-  }
-
-  async run(context) {
-    context.parseCli();
-    await this.processDefaultBehavior(context);
-  }
-
-  /**
-   * Process the default behavior using the provided context.
-   * @param {CommandRunContext} context - the context object containing channel information
-   */
-  async processDefaultBehavior(context) {
-    await new CommandDefaultBehavior(context).onProcess();
-  }
+  options = {
+    name: "editserver",
+    id: 29,
+    media: {
+      description:
+        "Настройки сервера (бот) — Фильтр чата, канал логов, основной чат, описание и баннер для команды `!сервер` — способы управления сервером.",
+      example: `!editserver #без аргументов`,
+    },
+    alias:
+      "настроитьсервер серватиус servatius налагодитисервер серватіус настройки налаштування settings",
+    allowDM: true,
+    type: "guild",
+    Permissions: 32n,
+  };
 
   SETTING_FIELDS = [
     {
@@ -414,20 +410,24 @@ class Command extends BaseCommand {
     },
   ];
 
-  options = {
-    name: "editserver",
-    id: 29,
-    media: {
-      description:
-        "Настройки сервера (бот) — Фильтр чата, канал логов, основной чат, описание и баннер для команды `!сервер` — способы управления сервером.",
-      example: `!editserver #без аргументов`,
-    },
-    alias:
-      "настроитьсервер серватиус servatius налагодитисервер серватіус настройки налаштування settings",
-    allowDM: true,
-    type: "guild",
-    Permissions: 32n,
-  };
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
+  /**
+   * Process the default behavior using the provided context.
+   * @param {CommandRunContext} context - the context object containing channel information
+   */
+  async processDefaultBehavior(context) {
+    await new CommandDefaultBehavior(context).onProcess();
+  }
+
+  async run(context) {
+    context.parseCli();
+    await this.processDefaultBehavior(context);
+  }
 }
 
 export default Command;

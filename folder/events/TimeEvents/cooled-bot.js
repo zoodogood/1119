@@ -1,6 +1,10 @@
 import { client } from "#bot/client.js";
 
 class Event {
+  options = {
+    name: "TimeEvent/cooled-bot",
+  };
+
   run(eventData, guildId) {
     const guild = client.guilds.cache.get(guildId);
     if (!guild) {
@@ -8,10 +12,6 @@ class Event {
     }
     delete guild.data.stupid_evil;
   }
-
-  options = {
-    name: "TimeEvent/cooled-bot",
-  };
 }
 
 export default Event;

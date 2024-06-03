@@ -10,66 +10,38 @@ import { FormattingPatterns } from "discord.js";
 import { Emoji } from "#constants/emojis.js";
 
 class CommandRunContext extends BaseCommandRunContext {
-  title;
-  description;
-  winners = 1;
-  winnerRoleId;
   _interface = new MessageInterface();
-
-  interface_reactions() {
-    return this.command.reactions
-      .filter(({ filter }) => !filter || filter(this))
-      .map(({ emoji }) => emoji);
-  }
+  description;
+  title;
+  winnerRoleId;
+  winners = 1;
 
   end() {
     this._interface.close();
     this._interface.message.delete();
     super.end();
   }
+
+  interface_reactions() {
+    return this.command.reactions
+      .filter(({ filter }) => !filter || filter(this))
+      .map(({ emoji }) => emoji);
+  }
 }
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.createInterface(context));
-    return context;
-  }
-
-  createInterface(context) {
-    const { _interface } = context;
-    _interface.setChannel(context.channel);
-    _interface.setUser(context.user);
-    _interface.setRender(() => {
-      const fieldsContent = this.reactions
-        .filter(({ hidden }) => !hidden)
-        .map(({ emoji, key, label, required }) => {
-          const icon = !context[key]
-            ? emoji
-            : Emoji.animation_tick_block.toString();
-          return `◖${icon} ${label}${required ? " 🚩" : ""}`;
-        })
-        .join("\n");
-      return {
-        title: "🌲 Создание раздачи",
-        description: `Используйте реакции ниже, чтобы настроить раздачу!\n${fieldsContent}`,
-        color: "#4a7e31",
-        footer: { text: "🚩 Обязательные пункты перед началом" },
-      };
-    });
-    _interface.setReactions(context.interface_reactions());
-    _interface.emitter.on(
-      MessageInterface.Events.allowed_collect,
-      async ({ interaction }) => {
-        await this.reactions
-          .find(({ emoji }) => emoji === interaction.customId)
-          ?.callback(interaction, context);
-        !context.isEnded &&
-          _interface.setReactions(context.interface_reactions());
-        !context.isEnded && _interface.updateMessage();
-      },
-    );
-    _interface.updateMessage();
-  }
+  options = {
+    name: "giveaway",
+    id: 45,
+    media: {
+      description:
+        "Хотите порадовать участников сервера? Поднять планку ажиотажа? :tada:\nС помощью этой команды вы сможете разыграть награду между пользователями, а какую именно — решать только вам, будь это роль, ключик от игры или мешочек коинов?",
+      example: `!giveaway #без аргументов`,
+    },
+    alias: "раздача розыгрыш розіграш",
+    allowDM: true,
+    type: "guild",
+    Permissions: 32n,
+  };
 
   reactions = [
     {
@@ -240,19 +212,47 @@ class Command extends BaseCommand {
     },
   ];
 
-  options = {
-    name: "giveaway",
-    id: 45,
-    media: {
-      description:
-        "Хотите порадовать участников сервера? Поднять планку ажиотажа? :tada:\nС помощью этой команды вы сможете разыграть награду между пользователями, а какую именно — решать только вам, будь это роль, ключик от игры или мешочек коинов?",
-      example: `!giveaway #без аргументов`,
-    },
-    alias: "раздача розыгрыш розіграш",
-    allowDM: true,
-    type: "guild",
-    Permissions: 32n,
-  };
+  createInterface(context) {
+    const { _interface } = context;
+    _interface.setChannel(context.channel);
+    _interface.setUser(context.user);
+    _interface.setRender(() => {
+      const fieldsContent = this.reactions
+        .filter(({ hidden }) => !hidden)
+        .map(({ emoji, key, label, required }) => {
+          const icon = !context[key]
+            ? emoji
+            : Emoji.animation_tick_block.toString();
+          return `◖${icon} ${label}${required ? " 🚩" : ""}`;
+        })
+        .join("\n");
+      return {
+        title: "🌲 Создание раздачи",
+        description: `Используйте реакции ниже, чтобы настроить раздачу!\n${fieldsContent}`,
+        color: "#4a7e31",
+        footer: { text: "🚩 Обязательные пункты перед началом" },
+      };
+    });
+    _interface.setReactions(context.interface_reactions());
+    _interface.emitter.on(
+      MessageInterface.Events.allowed_collect,
+      async ({ interaction }) => {
+        await this.reactions
+          .find(({ emoji }) => emoji === interaction.customId)
+          ?.callback(interaction, context);
+        !context.isEnded &&
+          _interface.setReactions(context.interface_reactions());
+        !context.isEnded && _interface.updateMessage();
+      },
+    );
+    _interface.updateMessage();
+  }
+
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.createInterface(context));
+    return context;
+  }
 }
 
 export default Command;

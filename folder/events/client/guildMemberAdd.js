@@ -34,6 +34,19 @@ class LeaveRolesUtil {
 }
 
 class WelcomerUtil {
+  static installWelcomeRoles(member) {
+    const { guild } = member;
+    const rolesId = guild.data.hi?.rolesId;
+    if (!rolesId) {
+      return;
+    }
+
+    for (const roleId of rolesId) {
+      const role = guild.roles.cache.get(roleId);
+      role && member.roles.add(role);
+    }
+  }
+
   static async processWelcomer(member) {
     this.installWelcomeRoles(member);
     this.sendWelcomeMessage(member);
@@ -68,30 +81,9 @@ class WelcomerUtil {
     });
     channel.msg({ content: "👋", delete: 180_000 });
   }
-
-  static installWelcomeRoles(member) {
-    const { guild } = member;
-    const rolesId = guild.data.hi?.rolesId;
-    if (!rolesId) {
-      return;
-    }
-
-    for (const roleId of rolesId) {
-      const role = guild.roles.cache.get(roleId);
-      role && member.roles.add(role);
-    }
-  }
 }
 
 class BotLoggerUtil {
-  static processNewMember(member) {
-    if (!member.user.bot) {
-      return;
-    }
-
-    this.prepareAndWriteLog(member);
-  }
-
   static async getInformation(member) {
     const { guild } = member;
     const whoAdded = await guild.Audit(
@@ -132,15 +124,17 @@ class BotLoggerUtil {
     });
     return;
   }
+
+  static processNewMember(member) {
+    if (!member.user.bot) {
+      return;
+    }
+
+    this.prepareAndWriteLog(member);
+  }
 }
 
 class EnterLoggerUtil {
-  static async processNewMember(member) {
-    const { invite, inviter } = (await this.fetchInviter(member)) ?? {};
-    this.writeLog({ invite, inviter, member });
-    invite && this.processInviter({ invite, inviter, member });
-  }
-
   static async fetchInviter(member) {
     const { guild } = member;
     const guildInvites = await guild.invites.fetch().catch(() => {});
@@ -163,18 +157,6 @@ class EnterLoggerUtil {
     return { invite, inviter };
   }
 
-  static writeLog({ inviter, member, invite }) {
-    const { guild } = member;
-    const description = `Имя: ${member.user.tag}\nПригласивший: ${inviter?.tag}\nПриглашение использовано: ${invite?.uses}`;
-
-    guild.logSend({
-      title: "Новый участник!",
-      description,
-      footer: { text: "Приглашение создано: " },
-      timestamp: invite?.createdTimestamp,
-    });
-  }
-
   static async processInviter({ invite, inviter, member }) {
     const { guild } = member;
     const previous = guild.invitesUsesCache.get(invite.code);
@@ -186,9 +168,31 @@ class EnterLoggerUtil {
 
     inviter.data.invites = (inviter.data.invites ?? 0) + 1;
   }
+
+  static async processNewMember(member) {
+    const { invite, inviter } = (await this.fetchInviter(member)) ?? {};
+    this.writeLog({ invite, inviter, member });
+    invite && this.processInviter({ invite, inviter, member });
+  }
+
+  static writeLog({ inviter, member, invite }) {
+    const { guild } = member;
+    const description = `Имя: ${member.user.tag}\nПригласивший: ${inviter?.tag}\nПриглашение использовано: ${invite?.uses}`;
+
+    guild.logSend({
+      title: "Новый участник!",
+      description,
+      footer: { text: "Приглашение создано: " },
+      timestamp: invite?.createdTimestamp,
+    });
+  }
 }
 
 class Event extends BaseEvent {
+  options = {
+    name: "client/guildMemberAdd",
+  };
+
   constructor() {
     const EVENT = "guildMemberAdd";
     super(client, EVENT);
@@ -200,10 +204,6 @@ class Event extends BaseEvent {
     BotLoggerUtil.processNewMember(member);
     EnterLoggerUtil.processNewMember(member);
   }
-
-  options = {
-    name: "client/guildMemberAdd",
-  };
 }
 
 export default Event;

@@ -81,6 +81,17 @@ class Display_CommandManager {
     });
   }
 
+  sendTodos(todos, includeId = true) {
+    const { channel, task } = this.context;
+    todos ||= task.todos;
+    const contents = {
+      todos: this.todosToString(todos, includeId),
+    };
+    channel.msg({
+      content: `${contents.todos}`,
+    });
+  }
+
   todosToString(todos, includeId = false) {
     const idLength = todos.reduce(
       (acc, current) => Math.max(acc, String(current.id).length),
@@ -102,17 +113,6 @@ class Display_CommandManager {
       : "";
     return `${isDone ? "●" : "○"}${idContent} ${label}`;
   }
-
-  sendTodos(todos, includeId = true) {
-    const { channel, task } = this.context;
-    todos ||= task.todos;
-    const contents = {
-      todos: this.todosToString(todos, includeId),
-    };
-    channel.msg({
-      content: `${contents.todos}`,
-    });
-  }
 }
 class HelpCommandManager {
   subcommand;
@@ -120,20 +120,33 @@ class HelpCommandManager {
     this.context = context;
   }
 
-  sendHelpTodos(channel) {
-    const content = `## Todo
-Подзадачи помогают идти к цели неспешно
-- \`task todo\` - псевдоним для "task help todo" или "task todo list"
-- \`task todo add {label1}\\n{label2}...{labelN}\` - добавляет подзадачи
-- \`task todo list\` - отображение подзадач
-- \`task todo done {displayed id|label|+}\` - пометить подзадачу как выполненную
-`;
+  onProcess() {
+    const parsed = this.context.cliParsed.at(0);
+    parsed.parser
+      .captureByMatch({ name: "subcommand", regex: /(^|\s+)\S+/ })
+      .captureResidue({ name: "rest" });
+    this.subcommand = parsed.captures.get("subcommand")?.toString().trim();
 
-    channel.msg({
-      title: "Вызвана команда с параметром help todo",
-      description: content,
-      thumbnail: "https://www.emojiall.com/images/240/openmoji/1f7e9.png",
-    });
+    if (this.processTodoSubcommand()) {
+      return true;
+    }
+
+    this.processDefaultBehavior();
+    return true;
+  }
+
+  processDefaultBehavior() {
+    const { channel } = this.context;
+    this.sendHelp(channel);
+    return true;
+  }
+
+  processTodoSubcommand() {
+    if (this.subcommand !== "todo") {
+      return;
+    }
+    this.sendHelpTodos(this.context.channel);
+    return true;
   }
 
   sendHelp(channel) {
@@ -166,42 +179,48 @@ class HelpCommandManager {
     });
   }
 
-  onProcess() {
-    const parsed = this.context.cliParsed.at(0);
-    parsed.parser
-      .captureByMatch({ name: "subcommand", regex: /(^|\s+)\S+/ })
-      .captureResidue({ name: "rest" });
-    this.subcommand = parsed.captures.get("subcommand")?.toString().trim();
+  sendHelpTodos(channel) {
+    const content = `## Todo
+Подзадачи помогают идти к цели неспешно
+- \`task todo\` - псевдоним для "task help todo" или "task todo list"
+- \`task todo add {label1}\\n{label2}...{labelN}\` - добавляет подзадачи
+- \`task todo list\` - отображение подзадач
+- \`task todo done {displayed id|label|+}\` - пометить подзадачу как выполненную
+`;
 
-    if (this.processTodoSubcommand()) {
-      return true;
-    }
-
-    this.processDefaultBehavior();
-    return true;
-  }
-
-  processTodoSubcommand() {
-    if (this.subcommand !== "todo") {
-      return;
-    }
-    this.sendHelpTodos(this.context.channel);
-    return true;
-  }
-
-  processDefaultBehavior() {
-    const { channel } = this.context;
-    this.sendHelp(channel);
-    return true;
+    channel.msg({
+      title: "Вызвана команда с параметром help todo",
+      description: content,
+      thumbnail: "https://www.emojiall.com/images/240/openmoji/1f7e9.png",
+    });
   }
 }
 
 class TodoCommandManager {
-  subcommand;
   params;
+  subcommand;
   constructor(context) {
     this.context = context;
   }
+  createTodoData(value) {
+    const { task } = this.context;
+    const id = task.todos.length + 1;
+    return {
+      id,
+      label: value,
+      isDone: false,
+    };
+  }
+
+  doneTodos(todos) {
+    const targets = todos.filter((todo) => !todo.isDone);
+    for (const todo of targets) {
+      todo.isDone = true;
+    }
+
+    return true;
+  }
+
   onProcess() {
     const parsed = this.context.cliParsed.at(0);
     parsed.parser
@@ -247,15 +266,15 @@ class TodoCommandManager {
     return true;
   }
 
-  processValidateParams() {
-    if (this.params) {
+  processDefaultBehavior() {
+    const { channel } = this.context;
+    const { task } = this.context;
+    if (task.todos?.length) {
+      new Display_CommandManager(this.context).sendTodos();
       return true;
     }
-    const { channel } = this.context;
-    channel.msg({
-      content: "Ожидалось значение подзадачи :yellow_square:",
-    });
-    return false;
+    new HelpCommandManager(this.context).sendHelpTodos(channel);
+    return true;
   }
 
   processDoneSubcommand() {
@@ -281,12 +300,18 @@ class TodoCommandManager {
     return true;
   }
 
-  doneTodos(todos) {
-    const targets = todos.filter((todo) => !todo.isDone);
-    for (const todo of targets) {
-      todo.isDone = true;
+  processListSubcommand() {
+    if (this.subcommand !== "list") {
+      return;
+    }
+    if (!this.processTaskIsExists()) {
+      return true;
     }
 
+    if (this.processTodosIsEmpty()) {
+      return true;
+    }
+    new Display_CommandManager(this.context).sendTodos();
     return true;
   }
 
@@ -304,34 +329,6 @@ class TodoCommandManager {
     return false;
   }
 
-  processTodosIsExists(todos) {
-    if (todos.length) {
-      return true;
-    }
-    const { channel } = this.context;
-    const { params } = this;
-    channel.msg({
-      content: `По поисковому \`${params}\` не удалось найти подзадачу. Требуется или точное совпадение по имени, или номер подзадачи :yellow_square:`,
-    });
-    new Display_CommandManager(this.context).sendTodos();
-    return false;
-  }
-
-  processListSubcommand() {
-    if (this.subcommand !== "list") {
-      return;
-    }
-    if (!this.processTaskIsExists()) {
-      return true;
-    }
-
-    if (this.processTodosIsEmpty()) {
-      return true;
-    }
-    new Display_CommandManager(this.context).sendTodos();
-    return true;
-  }
-
   processTodosIsEmpty() {
     const { task } = this.context;
     if (task.todos?.length) {
@@ -345,25 +342,28 @@ class TodoCommandManager {
     return true;
   }
 
-  processDefaultBehavior() {
-    const { channel } = this.context;
-    const { task } = this.context;
-    if (task.todos?.length) {
-      new Display_CommandManager(this.context).sendTodos();
+  processTodosIsExists(todos) {
+    if (todos.length) {
       return true;
     }
-    new HelpCommandManager(this.context).sendHelpTodos(channel);
-    return true;
+    const { channel } = this.context;
+    const { params } = this;
+    channel.msg({
+      content: `По поисковому \`${params}\` не удалось найти подзадачу. Требуется или точное совпадение по имени, или номер подзадачи :yellow_square:`,
+    });
+    new Display_CommandManager(this.context).sendTodos();
+    return false;
   }
 
-  createTodoData(value) {
-    const { task } = this.context;
-    const id = task.todos.length + 1;
-    return {
-      id,
-      label: value,
-      isDone: false,
-    };
+  processValidateParams() {
+    if (this.params) {
+      return true;
+    }
+    const { channel } = this.context;
+    channel.msg({
+      content: "Ожидалось значение подзадачи :yellow_square:",
+    });
+    return false;
   }
 }
 
@@ -386,18 +386,6 @@ class New_CommandManager {
     new Display_CommandManager(this.context).onProcess();
   }
 
-  processValidateRest(rest) {
-    if (rest) {
-      return true;
-    }
-
-    const { channel } = this.context;
-    channel.msg({
-      content: "Ожидался заголовок задачи :yellow_square:",
-    });
-    return false;
-  }
-
   processUserAlreadyHasTask() {
     const { task } = this.context;
     if (task?.isDone === false) {
@@ -412,6 +400,18 @@ class New_CommandManager {
     return;
   }
 
+  processValidateRest(rest) {
+    if (rest) {
+      return true;
+    }
+
+    const { channel } = this.context;
+    channel.msg({
+      content: "Ожидался заголовок задачи :yellow_square:",
+    });
+    return false;
+  }
+
   setNewTask(value) {
     const { taskManager } = this.context;
     const task = taskManager.getUserTaskField();
@@ -422,6 +422,11 @@ class New_CommandManager {
 class IDidItCommandManager {
   constructor(context) {
     this.context = context;
+  }
+
+  doneTask() {
+    const { task } = this.context;
+    task.isDone = true;
   }
 
   onProcess() {
@@ -440,19 +445,6 @@ class IDidItCommandManager {
     });
   }
 
-  processTaskIsExists() {
-    const { task, channel } = this.context;
-    if (task?.isDone !== undefined) {
-      return true;
-    }
-
-    channel.msg({
-      description:
-        "Нет активной задачи. Создать новую: !task new {label} :yellow_square:",
-    });
-    return false;
-  }
-
   processTaskIsDone() {
     const { task, channel } = this.context;
     if (task.isDone === true) {
@@ -465,18 +457,39 @@ class IDidItCommandManager {
     return;
   }
 
-  doneTask() {
-    const { task } = this.context;
-    task.isDone = true;
+  processTaskIsExists() {
+    const { task, channel } = this.context;
+    if (task?.isDone !== undefined) {
+      return true;
+    }
+
+    channel.msg({
+      description:
+        "Нет активной задачи. Создать новую: !task new {label} :yellow_square:",
+    });
+    return false;
   }
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  memb = null;
-  user;
   channel;
   guild;
+  memb = null;
   taskManager;
+  user;
+
+  constructor(interaction, command) {
+    super(interaction, command);
+    const { user, channel, guild } = interaction;
+    Object.assign(this, { user, channel, guild });
+  }
+
+  static async new(interaction, command) {
+    const context = new this(interaction, command);
+    context.taskManager = new TaskManager(context);
+    context.task = context.taskManager.getUserTaskField();
+    return context;
+  }
 
   parseCli() {
     const parser = new CliParser().setText(this.interaction.params);
@@ -489,52 +502,53 @@ class CommandRunContext extends BaseCommandRunContext {
     const values = parsed.resolveValues((capture) => capture?.toString());
     this.setCliParsed(parsed, values);
   }
-
-  static async new(interaction, command) {
-    const context = new this(interaction, command);
-    context.taskManager = new TaskManager(context);
-    context.task = context.taskManager.getUserTaskField();
-    return context;
-  }
-
-  constructor(interaction, command) {
-    super(interaction, command);
-    const { user, channel, guild } = interaction;
-    Object.assign(this, { user, channel, guild });
-  }
 }
 class Command extends BaseCommand {
+  options = {
+    name: "task",
+    id: 66,
+    media: {
+      description:
+        "Обозначьте единственную цель и возвращайтесь к ней до полного выполнения — таков концепт",
+    },
+    alias: "таск цель ціль t т",
+    allowDM: true,
+    cooldown: 2_000,
+    cooldownTry: 3,
+    type: "other",
+    cliParser: {
+      flags: [
+        {
+          name: "--json",
+          capture: ["-j", "--json"],
+          description: "Возвращает *.json задачи",
+        },
+        {
+          name: "--todo-add",
+          capture: ["-j", "--json"],
+          description: "Возвращает *.json задачи",
+        },
+      ],
+    },
+    accessibility: {
+      publicized_on_level: 5,
+    },
+  };
+
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
     context.setWhenRunExecuted(this.run(context));
     return context;
   }
-
-  /**
-   *
-   * @param {CommandRunContext} context
-   */
-  async run(context) {
-    context.parseCli();
-
-    if (this.processHelpCommand(context)) {
+  processDefaultBehavior(context) {
+    const { channel, task } = context;
+    if (task?.isDone !== undefined) {
+      new Display_CommandManager(context).onProcess();
       return;
     }
-
-    if (this.processNewCommand(context)) {
-      return;
-    }
-
-    if (this.processTodoCommand(context)) {
-      return;
-    }
-
-    if (this.processIDidItCommand(context)) {
-      return;
-    }
-
-    this.processDefaultBehavior(context);
+    new HelpCommandManager(context).sendHelp(channel);
   }
+
   processHelpCommand(context) {
     const values = context.cliParsed.at(1);
     const value = values.get("command");
@@ -566,7 +580,6 @@ class Command extends BaseCommand {
     new New_CommandManager(context).onProcess();
     return true;
   }
-
   processTodoCommand(context) {
     const values = context.cliParsed.at(1);
     const value = values.get("command");
@@ -577,45 +590,32 @@ class Command extends BaseCommand {
     new TodoCommandManager(context).onProcess();
     return true;
   }
-  processDefaultBehavior(context) {
-    const { channel, task } = context;
-    if (task?.isDone !== undefined) {
-      new Display_CommandManager(context).onProcess();
+
+  /**
+   *
+   * @param {CommandRunContext} context
+   */
+  async run(context) {
+    context.parseCli();
+
+    if (this.processHelpCommand(context)) {
       return;
     }
-    new HelpCommandManager(context).sendHelp(channel);
-  }
 
-  options = {
-    name: "task",
-    id: 66,
-    media: {
-      description:
-        "Обозначьте единственную цель и возвращайтесь к ней до полного выполнения — таков концепт",
-    },
-    alias: "таск цель ціль t т",
-    allowDM: true,
-    cooldown: 2_000,
-    cooldownTry: 3,
-    type: "other",
-    cliParser: {
-      flags: [
-        {
-          name: "--json",
-          capture: ["-j", "--json"],
-          description: "Возвращает *.json задачи",
-        },
-        {
-          name: "--todo-add",
-          capture: ["-j", "--json"],
-          description: "Возвращает *.json задачи",
-        },
-      ],
-    },
-    accessibility: {
-      publicized_on_level: 5,
-    },
-  };
+    if (this.processNewCommand(context)) {
+      return;
+    }
+
+    if (this.processTodoCommand(context)) {
+      return;
+    }
+
+    if (this.processIDidItCommand(context)) {
+      return;
+    }
+
+    this.processDefaultBehavior(context);
+  }
 }
 
 export default Command;

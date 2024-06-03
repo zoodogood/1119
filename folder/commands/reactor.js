@@ -5,6 +5,25 @@ import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "reactor",
+    id: 19,
+    media: {
+      description:
+        'Реактор — команда позволяющая создавать "роли за реакции" — возможность пользователям выбирать себе роли нажимая реакции под сообщением.',
+      example: `!reactor #без аргументов`,
+    },
+    accessibility: {
+      publicized_on_level: 9,
+    },
+    alias: "реактор",
+    allowDM: true,
+    cooldown: 30_000,
+    type: "guild",
+    myPermissions: 268435456n,
+    Permissions: 268435488n,
+  };
+
   async askChannel(interaction) {
     let answer = await Util.awaitUserAccept({
       name: "reactor",
@@ -210,25 +229,6 @@ class Command extends BaseCommand {
         .join("\n")}`,
     });
   }
-
-  options = {
-    name: "reactor",
-    id: 19,
-    media: {
-      description:
-        'Реактор — команда позволяющая создавать "роли за реакции" — возможность пользователям выбирать себе роли нажимая реакции под сообщением.',
-      example: `!reactor #без аргументов`,
-    },
-    accessibility: {
-      publicized_on_level: 9,
-    },
-    alias: "реактор",
-    allowDM: true,
-    cooldown: 30_000,
-    type: "guild",
-    myPermissions: 268435456n,
-    Permissions: 268435488n,
-  };
 }
 
 export default Command;

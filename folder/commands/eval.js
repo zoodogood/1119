@@ -1,12 +1,11 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 
 import { client } from "#bot/client.js";
-import Template from "#lib/modules/Template.js";
 import config from "#config";
+import Template from "#lib/modules/Template.js";
 
-import { escapeCodeBlock, WebhookClient } from "discord.js";
 import { Pager } from "#lib/DiscordPager.js";
+import { escapeCodeBlock, WebhookClient } from "discord.js";
 
 const DEFAULT_CODE_CONTENT = 'module("userData")';
 
@@ -24,6 +23,44 @@ function resolve_page(raw) {
   return raw;
 }
 class Command extends BaseCommand {
+  options = {
+    name: "eval",
+    id: 51,
+    media: {
+      description:
+        "Хотя это и команда разработчика, вы можете просмотреть ваши данные из базы данных в JSON формате, для этого просто не вводите никаких аргументов. Список доступных модулей: !eval availableList",
+      example: `!eval #без аргументов`,
+    },
+    accessibility: {
+      publicized_on_level: 20,
+    },
+    alias: "dev евал эвал vm worker",
+    allowDM: true,
+    type: "other",
+  };
+
+  async loggerProtocol({ interaction }) {
+    if (!process.env.EVAL_WEBHOOK_ID_AND_TOKEN) {
+      return;
+    }
+
+    const [id, token] = process.env.EVAL_WEBHOOK_ID_AND_TOKEN.split(" ");
+    const hook = new WebhookClient({ id, token });
+    interaction.messageForLogging = await hook.msg({
+      author: {
+        name: `${interaction.user.username}, в #${interaction.channel.id}`,
+        iconURL: client.user.avatarURL(),
+      },
+      description: `\`\`\`js\n${interaction.codeContent}\`\`\``,
+      color: "#1f2022",
+      footer: {
+        iconURL: client.emojis.cache.get(interaction.emojiByType).imageURL(),
+        text: "Вызвана команда !eval",
+      },
+    });
+    return;
+  }
+
   async onChatInput(msg, interaction) {
     const fetchReferense = async (reference) => {
       if (!reference) {
@@ -118,44 +155,6 @@ class Command extends BaseCommand {
     pager.addPages(...interaction.pages.map(resolve_page));
     pager.updateMessage();
   }
-
-  async loggerProtocol({ interaction }) {
-    if (!process.env.EVAL_WEBHOOK_ID_AND_TOKEN) {
-      return;
-    }
-
-    const [id, token] = process.env.EVAL_WEBHOOK_ID_AND_TOKEN.split(" ");
-    const hook = new WebhookClient({ id, token });
-    interaction.messageForLogging = await hook.msg({
-      author: {
-        name: `${interaction.user.username}, в #${interaction.channel.id}`,
-        iconURL: client.user.avatarURL(),
-      },
-      description: `\`\`\`js\n${interaction.codeContent}\`\`\``,
-      color: "#1f2022",
-      footer: {
-        iconURL: client.emojis.cache.get(interaction.emojiByType).imageURL(),
-        text: "Вызвана команда !eval",
-      },
-    });
-    return;
-  }
-
-  options = {
-    name: "eval",
-    id: 51,
-    media: {
-      description:
-        "Хотя это и команда разработчика, вы можете просмотреть ваши данные из базы данных в JSON формате, для этого просто не вводите никаких аргументов. Список доступных модулей: !eval availableList",
-      example: `!eval #без аргументов`,
-    },
-    accessibility: {
-      publicized_on_level: 20,
-    },
-    alias: "dev евал эвал vm worker",
-    allowDM: true,
-    type: "other",
-  };
 }
 
 export default Command;

@@ -12,6 +12,16 @@ class CliFlagsField {
   constructor(context) {
     this.context = context;
   }
+  flagToString(flag) {
+    const { capture, expectValue } = flag;
+    const isMultiple = capture.length > 1;
+    const toString = (capture) =>
+      `\`${expectValue ? `${capture} {}` : capture}\``;
+
+    const content = capture.map(toString).join("|");
+    return isMultiple ? `[${content}]` : content;
+  }
+
   processFlags() {
     const {
       targetCommand: { options },
@@ -24,16 +34,6 @@ class CliFlagsField {
       name: "Флаги команды:",
       value: flags.map((flag) => this.flagToString(flag)).join(", "),
     });
-  }
-
-  flagToString(flag) {
-    const { capture, expectValue } = flag;
-    const isMultiple = capture.length > 1;
-    const toString = (capture) =>
-      `\`${expectValue ? `${capture} {}` : capture}\``;
-
-    const content = capture.map(toString).join("|");
-    return isMultiple ? `[${content}]` : content;
   }
 }
 
@@ -66,10 +66,10 @@ class FlagsCommandManager {
 }
 
 class CommandRunContext extends BaseCommandRunContext {
-  targetCommand;
+  addableFields = [];
   cliParsed;
   meta;
-  addableFields = [];
+  targetCommand;
   targetMessage;
 
   static new(interaction, command) {
@@ -81,30 +81,6 @@ class CommandRunContext extends BaseCommandRunContext {
     }
     context.processFlags();
     return context;
-  }
-
-  setTargetCommand(command) {
-    this.targetCommand = command;
-    return this;
-  }
-
-  setCommandMeta(meta) {
-    this.meta = meta;
-    return this;
-  }
-
-  processCommandInfo() {
-    const values = this.cliParsed.at(1);
-    const raw = values.get("commandRaw");
-    if (!raw) {
-      return null;
-    }
-    this.setTargetCommand(CommandsManager.callMap.get(raw));
-
-    this.setCommandMeta(
-      this.targetCommand ? TargetCommandMetadata.new(this) : null,
-    );
-    return this;
   }
 
   parseCli() {
@@ -125,6 +101,20 @@ class CommandRunContext extends BaseCommandRunContext {
     this.setCliParsed(parsed, values);
   }
 
+  processCommandInfo() {
+    const values = this.cliParsed.at(1);
+    const raw = values.get("commandRaw");
+    if (!raw) {
+      return null;
+    }
+    this.setTargetCommand(CommandsManager.callMap.get(raw));
+
+    this.setCommandMeta(
+      this.targetCommand ? TargetCommandMetadata.new(this) : null,
+    );
+    return this;
+  }
+
   processFlags() {
     const { meta } = this;
     if (!meta) {
@@ -132,22 +122,20 @@ class CommandRunContext extends BaseCommandRunContext {
     }
     new CliFlagsField(this).processFlags();
   }
+
+  setCommandMeta(meta) {
+    this.meta = meta;
+    return this;
+  }
+
+  setTargetCommand(command) {
+    this.targetCommand = command;
+    return this;
+  }
 }
 
 class TargetCommandMetadata {
-  id;
-  options;
-  category;
-  commandNameId;
   aliases;
-  media;
-  usedCount;
-  githubURL;
-  static new(context) {
-    const meta = new this();
-    Object.assign(meta, meta.fetchCommandMetadata(context.targetCommand));
-    return meta;
-  }
   static CategoriesEnum = {
     dev: "Команда в разработке или доступна только разработчику",
     delete: "Команда была удалена",
@@ -156,18 +144,20 @@ class TargetCommandMetadata {
     bot: "Бот",
     other: "Другое",
   };
-
-  resolveGithubPathOf(commandNameId) {
-    return Util.resolveGithubPath(`./folder/commands/${commandNameId}.js`);
+  category;
+  commandNameId;
+  githubURL;
+  id;
+  media;
+  options;
+  usedCount;
+  calculateCommandsUsedTotally() {
+    const used = Object.values(DataManager.data.bot.commandsUsed);
+    return used.reduce((acc, count) => acc + count, 0);
   }
 
-  permissionsToLocaledArray(permissions, locale) {
-    const strings = permissionsBitsToI18nArray(permissions, locale);
-    const formatted = strings.map((permission) => {
-      return permission.toLowerCase();
-    });
-
-    return Util.capitalize(Util.joinWithAndSeparator(formatted));
+  get commandUsedTotally() {
+    return this.calculateCommandsUsedTotally();
   }
 
   fetchCommandMetadata(command) {
@@ -193,13 +183,23 @@ class TargetCommandMetadata {
     };
   }
 
-  get commandUsedTotally() {
-    return this.calculateCommandsUsedTotally();
+  static new(context) {
+    const meta = new this();
+    Object.assign(meta, meta.fetchCommandMetadata(context.targetCommand));
+    return meta;
   }
 
-  calculateCommandsUsedTotally() {
-    const used = Object.values(DataManager.data.bot.commandsUsed);
-    return used.reduce((acc, count) => acc + count, 0);
+  permissionsToLocaledArray(permissions, locale) {
+    const strings = permissionsBitsToI18nArray(permissions, locale);
+    const formatted = strings.map((permission) => {
+      return permission.toLowerCase();
+    });
+
+    return Util.capitalize(Util.joinWithAndSeparator(formatted));
+  }
+
+  resolveGithubPathOf(commandNameId) {
+    return Util.resolveGithubPath(`./folder/commands/${commandNameId}.js`);
   }
 }
 
@@ -208,11 +208,57 @@ class Command extends BaseCommand {
     poster:
       "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg",
   };
+  options = {
+    name: "commandinfo",
+    id: 53,
+    media: {
+      description:
+        "Показывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение",
+      example: `!commandInfo {command}`,
+    },
+    cliParser: {
+      flags: [
+        {
+          name: "--flags",
+          capture: ["-f", "--flags"],
+          description: "Отображает флаги целевой команды и их описания",
+        },
+      ],
+    },
+    alias: "command команда command_info",
+    allowDM: true,
+    expectParams: true,
+    cooldown: 5_000,
+    type: "bot",
+  };
+  formatMediaDescription(media) {
+    const { description, example } = media;
+    const exampleContent = `\n\n✏️\n\`\`\`python\n${example}\n\`\`\``;
+    return `${description ?? "Описание для этой команды пока отсуствует..."}${example ? exampleContent : ""}`;
+  }
+
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
   async onComponent({ interaction, params }) {
     interaction.params = params;
     const context = await CommandRunContext.new(interaction, this);
     await this.processDefaultBehaviour(context);
   }
+  processCommandExists(context) {
+    const { targetCommand } = context;
+
+    if (!targetCommand) {
+      this.sendHelpMessage(context);
+      return;
+    }
+
+    return true;
+  }
+
   async processDefaultBehaviour(context) {
     const { meta, user, interaction } = context;
     const {
@@ -267,32 +313,6 @@ class Command extends BaseCommand {
     return true;
   }
 
-  formatMediaDescription(media) {
-    const { description, example } = media;
-    const exampleContent = `\n\n✏️\n\`\`\`python\n${example}\n\`\`\``;
-    return `${description ?? "Описание для этой команды пока отсуствует..."}${example ? exampleContent : ""}`;
-  }
-
-  processCommandExists(context) {
-    const { targetCommand } = context;
-
-    if (!targetCommand) {
-      this.sendHelpMessage(context);
-      return;
-    }
-
-    return true;
-  }
-  async run(context) {
-    if (!(await this.processCommandExists(context))) {
-      return;
-    }
-    if (await this.processFlagsFlag(context)) {
-      return;
-    }
-    return await this.processDefaultBehaviour(context);
-  }
-
   async processFlagsFlag(context) {
     const values = context.cliParsed.at(1);
     if (!values.get("--flags")) {
@@ -302,10 +322,14 @@ class Command extends BaseCommand {
     return true;
   }
 
-  async onChatInput(msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
+  async run(context) {
+    if (!(await this.processCommandExists(context))) {
+      return;
+    }
+    if (await this.processFlagsFlag(context)) {
+      return;
+    }
+    return await this.processDefaultBehaviour(context);
   }
 
   async sendHelpMessage(context) {
@@ -329,30 +353,6 @@ class Command extends BaseCommand {
 
     return;
   }
-
-  options = {
-    name: "commandinfo",
-    id: 53,
-    media: {
-      description:
-        "Показывает информацию об указанной команде, собственно, на её основе вы и видите это сообщение",
-      example: `!commandInfo {command}`,
-    },
-    cliParser: {
-      flags: [
-        {
-          name: "--flags",
-          capture: ["-f", "--flags"],
-          description: "Отображает флаги целевой команды и их описания",
-        },
-      ],
-    },
-    alias: "command команда command_info",
-    allowDM: true,
-    expectParams: true,
-    cooldown: 5_000,
-    type: "bot",
-  };
 }
 
 export default Command;

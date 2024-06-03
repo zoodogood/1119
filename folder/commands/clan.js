@@ -4,6 +4,20 @@ import { client } from "#bot/client.js";
 import { ButtonStyle, ComponentType } from "discord.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "clan",
+    id: 62,
+    media: {
+      description: "пока тут пусто",
+    },
+    accessibility: {
+      publicized_on_level: 9,
+    },
+    alias: "клан",
+    hidden: true,
+    type: "other",
+  };
+
   createEmbed({}) {
     const contents = {};
 
@@ -27,20 +41,6 @@ class Command extends BaseCommand {
     msg.msg({ description: "создайте его, в своём воображении" });
     return;
   }
-
-  options = {
-    name: "clan",
-    id: 62,
-    media: {
-      description: "пока тут пусто",
-    },
-    accessibility: {
-      publicized_on_level: 9,
-    },
-    alias: "клан",
-    hidden: true,
-    type: "other",
-  };
 }
 
 export default Command;

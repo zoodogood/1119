@@ -1,15 +1,6 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    await msg.msg({ content: `**${interaction.params}**` });
-
-    msg.guild?.logSend({
-      title: `${msg.author.username}:`,
-      description: `\n!c ${interaction.params}`,
-    });
-  }
-
   options = {
     name: "send",
     id: 2,
@@ -26,6 +17,15 @@ class Command extends BaseCommand {
     type: "other",
     myChannelPermissions: 8192n,
   };
+
+  async onChatInput(msg, interaction) {
+    await msg.msg({ content: `**${interaction.params}**` });
+
+    msg.guild?.logSend({
+      title: `${msg.author.username}:`,
+      description: `\n!c ${interaction.params}`,
+    });
+  }
 }
 
 export default Command;

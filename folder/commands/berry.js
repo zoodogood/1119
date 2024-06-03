@@ -6,21 +6,7 @@ import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 class Command extends BaseCommand {
-  static INFLATION = 0.2;
   static BERRYS_LIMIT = 1_500;
-  static TAX = 0.02;
-
-  static getMaxCountForBuy(coins, price) {
-    const a = this.INFLATION / 2;
-    const b = price;
-    const c = -coins;
-
-    const discriminant = b ** 2 - 4 * a * c;
-    const x2 = (discriminant ** 0.5 - b) / (2 * a);
-
-    return x2;
-  }
-
   static calculatePrice = (quantity, marketPrice, isBuying = false) => {
     quantity = isBuying
       ? quantity
@@ -34,6 +20,52 @@ class Command extends BaseCommand {
     const price = Math.round((marketPrice + inflation) * quantity * tax);
     return price;
   };
+  static INFLATION = 0.2;
+
+  options = {
+    name: "berry",
+    id: 27,
+    media: {
+      description:
+        "Клубника — яркий аналог золотых слитков, цена которых зависит от спроса.\nЧерез эту команду осуществляется её покупка и продажа, тут-же можно увидеть курс.",
+      example: `!berry <"продать" | "купить"> <count>`,
+    },
+    accessibility: {
+      publicized_on_level: 3,
+    },
+    alias: "клубника клубнички ягода ягоды berrys берри полуниця полуниці",
+    allowDM: true,
+    cooldown: 15_000,
+    cooldownTry: 3,
+    type: "user",
+  };
+
+  static TAX = 0.02;
+
+  displayUserBerrys(context) {
+    const { interaction, marketPrice } = context;
+    const user = interaction.mention;
+    const berrys = user.data.berrys || 0;
+
+    interaction.channel.msg({
+      title: "Клубника пользователя",
+      description: `Клубничек — **${berrys}** <:berry:756114492055617558>\nРыночная цена — **${Math.round(
+        marketPrice,
+      )}** <:coin:637533074879414272>`,
+      author: {
+        name: user.tag,
+        iconURL: user.avatarURL(),
+      },
+      footer: {
+        text: `Общая цена ягодок: ${Command.calculatePrice(
+          berrys,
+          marketPrice,
+          -1,
+        )}`,
+      },
+    });
+    return;
+  }
 
   exchanger(context, quantity, isBuying) {
     const { interaction, userData, marketPrice } = context;
@@ -140,71 +172,6 @@ class Command extends BaseCommand {
     });
   }
 
-  displayUserBerrys(context) {
-    const { interaction, marketPrice } = context;
-    const user = interaction.mention;
-    const berrys = user.data.berrys || 0;
-
-    interaction.channel.msg({
-      title: "Клубника пользователя",
-      description: `Клубничек — **${berrys}** <:berry:756114492055617558>\nРыночная цена — **${Math.round(
-        marketPrice,
-      )}** <:coin:637533074879414272>`,
-      author: {
-        name: user.tag,
-        iconURL: user.avatarURL(),
-      },
-      footer: {
-        text: `Общая цена ягодок: ${Command.calculatePrice(
-          berrys,
-          marketPrice,
-          -1,
-        )}`,
-      },
-    });
-    return;
-  }
-
-  handleParams(context) {
-    const { interaction } = context;
-    const parsed = interaction.params.split(" ").filter(Boolean);
-    const [action, quantity] = parsed;
-
-    if (action === "buy" || action === "купить") {
-      this.exchanger(context, quantity, true);
-    }
-    if (action === "sell" || action === "продать") {
-      this.exchanger(context, quantity, false);
-    }
-  }
-
-  async updateMessageInterface(context) {
-    const { interaction, userData, marketPrice } = context;
-    const isMessageExists = !!context.interfaceMessage;
-    const target = isMessageExists
-      ? context.interfaceMessage
-      : interaction.channel;
-    context.interfaceMessage = await target.msg({
-      edit: isMessageExists ? true : false,
-      description: `У вас клубничек — **${
-        userData.berrys
-      }** <:berry:756114492055617558>\nРыночная цена — **${Math.round(
-        marketPrice,
-      )}** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${Command.calculatePrice(
-        userData.berrys,
-        marketPrice,
-      )} (с учётом налога ${
-        context.TAX * 100
-      }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`,
-      author: {
-        name: interaction.user.tag,
-        iconURL: interaction.user.avatarURL(),
-      },
-    });
-
-    return context.interfaceMessage;
-  }
-
   getContext(interaction) {
     const MAX_LIMIT = this.constructor.BERRYS_LIMIT;
     const INFLATION = this.constructor.INFLATION;
@@ -226,6 +193,30 @@ class Command extends BaseCommand {
     };
 
     return context;
+  }
+
+  static getMaxCountForBuy(coins, price) {
+    const a = this.INFLATION / 2;
+    const b = price;
+    const c = -coins;
+
+    const discriminant = b ** 2 - 4 * a * c;
+    const x2 = (discriminant ** 0.5 - b) / (2 * a);
+
+    return x2;
+  }
+
+  handleParams(context) {
+    const { interaction } = context;
+    const parsed = interaction.params.split(" ").filter(Boolean);
+    const [action, quantity] = parsed;
+
+    if (action === "buy" || action === "купить") {
+      this.exchanger(context, quantity, true);
+    }
+    if (action === "sell" || action === "продать") {
+      this.exchanger(context, quantity, false);
+    }
   }
 
   async onChatInput(msg, interaction) {
@@ -300,23 +291,32 @@ class Command extends BaseCommand {
     }
   }
 
-  options = {
-    name: "berry",
-    id: 27,
-    media: {
-      description:
-        "Клубника — яркий аналог золотых слитков, цена которых зависит от спроса.\nЧерез эту команду осуществляется её покупка и продажа, тут-же можно увидеть курс.",
-      example: `!berry <"продать" | "купить"> <count>`,
-    },
-    accessibility: {
-      publicized_on_level: 3,
-    },
-    alias: "клубника клубнички ягода ягоды berrys берри полуниця полуниці",
-    allowDM: true,
-    cooldown: 15_000,
-    cooldownTry: 3,
-    type: "user",
-  };
+  async updateMessageInterface(context) {
+    const { interaction, userData, marketPrice } = context;
+    const isMessageExists = !!context.interfaceMessage;
+    const target = isMessageExists
+      ? context.interfaceMessage
+      : interaction.channel;
+    context.interfaceMessage = await target.msg({
+      edit: isMessageExists ? true : false,
+      description: `У вас клубничек — **${
+        userData.berrys
+      }** <:berry:756114492055617558>\nРыночная цена — **${Math.round(
+        marketPrice,
+      )}** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${Command.calculatePrice(
+        userData.berrys,
+        marketPrice,
+      )} (с учётом налога ${
+        context.TAX * 100
+      }% и инфляции)\n\n📥 - Покупка | 📤 - Продажа;`,
+      author: {
+        name: interaction.user.tag,
+        iconURL: interaction.user.avatarURL(),
+      },
+    });
+
+    return context.interfaceMessage;
+  }
 }
 
 export default Command;

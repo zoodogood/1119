@@ -4,11 +4,27 @@ import { AttachmentBuilder } from "discord.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 
 class Command extends BaseCommand {
+  #FONT_FAMILY = "VAG World";
   isInited = false;
+  options = {
+    name: "level",
+    id: 33,
+    media: {
+      description:
+        "Отправляет красивое [изображние-карточку](https://media.discordapp.net/attachments/781902008973393940/784507304350580826/level.png) вашего уровня!\nСогласитесь, выглядит [неплохо](https://cdn.discordapp.com/attachments/781902008973393940/784513626413072404/level.png).",
+      example: `!level <memb>`,
+    },
+    accessibility: {
+      publicized_on_level: 20,
+    },
+    alias: "уровень rang rank ранг ранк lvl лвл рівень левел",
+    allowDM: true,
+    type: "dev",
+  };
   constructor() {
     super();
   }
-  #FONT_FAMILY = "VAG World";
+
   async #init() {
     if (this.isInited) {
       return;
@@ -27,17 +43,13 @@ class Command extends BaseCommand {
       },
     );
   }
-
-  process_module_exists(interaction) {
-    if (this.canvasModule) {
-      return true;
-    }
-
-    interaction.channel.msg({
-      description:
-        "Модуль холста был отключен. Команды на его основе недоступны",
-    });
-    return false;
+  addBackground(context) {
+    const { ctx } = context;
+    const gradient = ctx.createLinearGradient(0, 225, 900, 0);
+    gradient.addColorStop(0, "#777");
+    gradient.addColorStop(1, "#aaa");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 900, 225);
   }
   async getContext(interaction) {
     const canvasModule = this.canvasModule;
@@ -55,6 +67,17 @@ class Command extends BaseCommand {
       member,
     };
   }
+
+  getUserPreferColor(member) {
+    const value =
+      member.data.profile_color ??
+      member.accentColor?.toString(16).padStart(6, "0") ??
+      "00cc00";
+
+    const hex = `#${value}`;
+    return hex;
+  }
+
   async onChatInput(msg, interaction) {
     await this.#init();
     const context = await this.getContext(interaction);
@@ -188,40 +211,17 @@ class Command extends BaseCommand {
     });
   }
 
-  getUserPreferColor(member) {
-    const value =
-      member.data.profile_color ??
-      member.accentColor?.toString(16).padStart(6, "0") ??
-      "00cc00";
+  process_module_exists(interaction) {
+    if (this.canvasModule) {
+      return true;
+    }
 
-    const hex = `#${value}`;
-    return hex;
-  }
-
-  addBackground(context) {
-    const { ctx } = context;
-    const gradient = ctx.createLinearGradient(0, 225, 900, 0);
-    gradient.addColorStop(0, "#777");
-    gradient.addColorStop(1, "#aaa");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 900, 225);
-  }
-
-  options = {
-    name: "level",
-    id: 33,
-    media: {
+    interaction.channel.msg({
       description:
-        "Отправляет красивое [изображние-карточку](https://media.discordapp.net/attachments/781902008973393940/784507304350580826/level.png) вашего уровня!\nСогласитесь, выглядит [неплохо](https://cdn.discordapp.com/attachments/781902008973393940/784513626413072404/level.png).",
-      example: `!level <memb>`,
-    },
-    accessibility: {
-      publicized_on_level: 20,
-    },
-    alias: "уровень rang rank ранг ранк lvl лвл рівень левел",
-    allowDM: true,
-    type: "dev",
-  };
+        "Модуль холста был отключен. Команды на его основе недоступны",
+    });
+    return false;
+  }
 }
 
 export default Command;

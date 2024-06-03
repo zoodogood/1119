@@ -3,6 +3,25 @@ import { client } from "#bot/client.js";
 import { PermissionFlagsBits } from "discord.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "unmute",
+    id: 18,
+    media: {
+      description:
+        "Мут наоборот — снимает ограничения на общение в чатах для пользователей.",
+      example: `!unmute {memb}`,
+    },
+    accessibility: {
+      publicized_on_level: 7,
+    },
+    alias: "анмут анмьют відглушити",
+    expectMention: true,
+    allowDM: true,
+    type: "guild",
+    myPermissions: 268435456n,
+    Permissions: 4194304n,
+  };
+
   async onChatInput(msg, interaction) {
     const guild = msg.guild;
     const guildMember = guild.members.resolve(interaction.mention);
@@ -76,25 +95,6 @@ class Command extends BaseCommand {
     msg.guild.logSend({ title: "С участника снят мут", ...embed });
     msg.msg({ title: "С участника сняли мут", ...embed });
   }
-
-  options = {
-    name: "unmute",
-    id: 18,
-    media: {
-      description:
-        "Мут наоборот — снимает ограничения на общение в чатах для пользователей.",
-      example: `!unmute {memb}`,
-    },
-    accessibility: {
-      publicized_on_level: 7,
-    },
-    alias: "анмут анмьют відглушити",
-    expectMention: true,
-    allowDM: true,
-    type: "guild",
-    myPermissions: 268435456n,
-    Permissions: 4194304n,
-  };
 }
 
 export default Command;

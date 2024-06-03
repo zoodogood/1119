@@ -3,6 +3,20 @@ import client from "#bot/client.js";
 import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "welcomer",
+    id: 13,
+    media: {
+      description:
+        "Бот будет приветствовать новых пользователей именно так, как вы ему скажете, может выдавать новичкам роли, отправлять в канал ваше сообщение или просто помахать рукой.",
+      example: `!welcomer (без аргументов)`,
+    },
+    alias: "установитьприветствие sethello приветствие привітання",
+    allowDM: true,
+    type: "guild",
+    Permissions: 32n,
+  };
+
   async onChatInput(msg, interaction) {
     const guild = msg.guild;
     let answer;
@@ -155,20 +169,6 @@ class Command extends BaseCommand {
       delete: 15000,
     });
   }
-
-  options = {
-    name: "welcomer",
-    id: 13,
-    media: {
-      description:
-        "Бот будет приветствовать новых пользователей именно так, как вы ему скажете, может выдавать новичкам роли, отправлять в канал ваше сообщение или просто помахать рукой.",
-      example: `!welcomer (без аргументов)`,
-    },
-    alias: "установитьприветствие sethello приветствие привітання",
-    allowDM: true,
-    type: "guild",
-    Permissions: 32n,
-  };
 }
 
 export default Command;

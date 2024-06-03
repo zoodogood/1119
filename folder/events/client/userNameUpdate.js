@@ -2,35 +2,38 @@ import { REASON_FOR_CHANGE_NICKNAME as CHILLI_REASON_FOR_CHANGE_NICKNAME } from 
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 import { AuditLogEvent } from "discord.js";
 
-
-
 class Event extends BaseEvent {
+  options = {
+    name: "client/userNameUpdate",
+  };
+
   constructor() {
     const EVENT = "client/userNameUpdate";
     super(EventsManager.emitter, EVENT);
   }
 
-  async checkAudit(newState){
-    const {guild, user} = newState;
+  async checkAudit(newState) {
+    const { guild, user } = newState;
 
-    if (!guild){
+    if (!guild) {
       return;
     }
-    
-    const entry = await guild.Audit((entry) => entry.target.id === user.id, {type: AuditLogEvent.MemberUpdate});
-    
-    
-    if (!entry){
+
+    const entry = await guild.Audit((entry) => entry.target.id === user.id, {
+      type: AuditLogEvent.MemberUpdate,
+    });
+
+    if (!entry) {
       return null;
     }
 
     return entry;
   }
 
-  async getContext(previousState, newState){
+  async getContext(previousState, newState) {
     const guild = newState.guild;
 
-    const {reason} = await this.checkAudit(newState) ?? {};
+    const { reason } = (await this.checkAudit(newState)) ?? {};
 
     const isChangedOnlyDisplayName =
       previousState.displayName !== newState.displayName;
@@ -46,36 +49,40 @@ class Event extends BaseEvent {
       newState,
       isChangedOnlyDisplayName,
       previousValue,
-      newValue
+      newValue,
     };
   }
 
   async run(previousState, newState) {
     const context = await this.getContext(previousState, newState);
-    
 
     const { isChangedOnlyDisplayName, guild, reason } = context;
-   
 
     if (!isChangedOnlyDisplayName) {
       newState.user.data.name = newState.user.username;
     }
 
-
     const isLogNeed = reason !== CHILLI_REASON_FOR_CHANGE_NICKNAME && guild;
-    
-    if (isLogNeed){
+
+    if (isLogNeed) {
       this.sendAuditLog(context);
     }
   }
 
-  sendAuditLog(context){
-    const {guild, isChangedOnlyDisplayName, newState, previousValue, newValue, reason} = context;
+  sendAuditLog(context) {
+    const {
+      guild,
+      isChangedOnlyDisplayName,
+      newState,
+      previousValue,
+      newValue,
+      reason,
+    } = context;
     const title = `Новое имя: ${newValue}`;
 
     guild.logSend({
       title,
-      description: reason ? `Указанная причина: ${ reason }` : null,
+      description: reason ? `Указанная причина: ${reason}` : null,
       author: {
         name: isChangedOnlyDisplayName
           ? "На сервере изменился\nник пользователя"
@@ -85,10 +92,6 @@ class Event extends BaseEvent {
       footer: { text: `Старый никнейм: ${previousValue}` },
     });
   }
-
-  options = {
-    name: "client/userNameUpdate",
-  };
 }
 
 export default Event;

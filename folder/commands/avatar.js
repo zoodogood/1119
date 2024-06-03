@@ -1,12 +1,5 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    const avatarURL = (interaction.mention || msg.author).avatarURL({
-      dynamic: true,
-    });
-    msg.msg({ content: avatarURL });
-  }
-
   options = {
     name: "avatar",
     id: 41,
@@ -20,6 +13,13 @@ class Command extends BaseCommand {
     cooldown: 12_000,
     type: "other",
   };
+
+  async onChatInput(msg, interaction) {
+    const avatarURL = (interaction.mention || msg.author).avatarURL({
+      dynamic: true,
+    });
+    msg.msg({ content: avatarURL });
+  }
 }
 
 export default Command;

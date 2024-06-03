@@ -1,6 +1,10 @@
 import { client } from "#bot/client.js";
 
 class Event {
+  options = {
+    name: "TimeEvent/postpone",
+  };
+
   async run(timeEventData, authorId, channelId, content) {
     if (timeEventData.isLost)
       client.users.cache.get(authorId).msg({
@@ -19,10 +23,6 @@ class Event {
     await webhook.msg({ content });
     webhook.delete();
   }
-
-  options = {
-    name: "TimeEvent/postpone",
-  };
 }
 
 export default Event;

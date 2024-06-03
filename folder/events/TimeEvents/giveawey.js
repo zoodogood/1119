@@ -2,6 +2,10 @@ import { client } from "#bot/client.js";
 import { sleep } from "#src/lib/util.js";
 
 class Event {
+  options = {
+    name: "TimeEvent/giveaway",
+  };
+
   async run(eventData, channelId, messageId, winnersCount, roleId) {
     const channel = client.channels.cache.get(channelId);
     if (!channel) {
@@ -56,10 +60,6 @@ class Event {
     await sleep(1000);
     giveaway.reactions.cache.get("🌲").remove();
   }
-
-  options = {
-    name: "TimeEvent/giveaway",
-  };
 }
 
 export default Event;

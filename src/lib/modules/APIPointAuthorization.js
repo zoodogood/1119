@@ -6,6 +6,24 @@ import { User } from "discord.js";
 class TokensUsersExchanger {
   static #cacheMap = new Map();
 
+  static addToCache(token, userId) {
+    this.#cacheMap.set(token, userId);
+    return;
+  }
+
+  static fetchMutualGuilds(user) {
+    return client.users.cache.get(user.id).guilds.map((guild) => guild.id);
+  }
+
+  static fillGuilds(guilds) {
+    for (const guild of guilds)
+      guild.iconURL = guild.icon
+        ? client.rest.cdn.icon(guild.id, guild.icon)
+        : null;
+
+    return;
+  }
+
   static fromCache(token) {
     const id = this.#cacheMap.get(token);
     if (!id) {
@@ -13,11 +31,6 @@ class TokensUsersExchanger {
     }
 
     return client.users.cache.get(id) ?? null;
-  }
-
-  static addToCache(token, userId) {
-    this.#cacheMap.set(token, userId);
-    return;
   }
 
   static async fromOAuth(token) {
@@ -56,19 +69,6 @@ class TokensUsersExchanger {
     this.addToCache(token, user.id);
     return user;
   }
-
-  static fillGuilds(guilds) {
-    for (const guild of guilds)
-      guild.iconURL = guild.icon
-        ? client.rest.cdn.icon(guild.id, guild.icon)
-        : null;
-
-    return;
-  }
-
-  static fetchMutualGuilds(user) {
-    return client.users.cache.get(user.id).guilds.map((guild) => guild.id);
-  }
 }
 
 async function authorizationProtocol(
@@ -99,12 +99,12 @@ async function authorizationProtocol(
 
 class APIPointAuthorizationManager {
   static authorizationProtocol = authorizationProtocol;
-  static TokensUsersExchanger = TokensUsersExchanger;
   static OAuth = null;
+  static TokensUsersExchanger = TokensUsersExchanger;
 
   static onClientReady() {
     this.OAuth = new OAuth2({
-      clientId: client.user.id,
+      clientId: client.user?.id,
       clientSecret: process.env.DISCORD_OAUTH2_TOKEN,
 
       scopes: ["identify", "guilds"],

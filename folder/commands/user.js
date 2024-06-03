@@ -11,6 +11,21 @@ import { Emoji } from "#constants/emojis.js";
 import { PresenceUpdateStatus } from "discord.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "user",
+    id: 3,
+    media: {
+      description:
+        "Отображает профиль пользователя — ежедневный квест, количество коинов, уровень, содержимое инвентаря и тому подобное.",
+      example: `!user <memb>`,
+    },
+    alias: "юзер u ю profile профиль користувач",
+    allowDM: true,
+    cooldown: 20_000,
+    cooldownTry: 3,
+    type: "user",
+  };
+
   async onChatInput(msg, interaction) {
     const target = interaction.params
         ? interaction.mention ??
@@ -343,21 +358,6 @@ class Command extends BaseCommand {
       }
     }
   }
-
-  options = {
-    name: "user",
-    id: 3,
-    media: {
-      description:
-        "Отображает профиль пользователя — ежедневный квест, количество коинов, уровень, содержимое инвентаря и тому подобное.",
-      example: `!user <memb>`,
-    },
-    alias: "юзер u ю profile профиль користувач",
-    allowDM: true,
-    cooldown: 20_000,
-    cooldownTry: 3,
-    type: "user",
-  };
 }
 
 export default Command;

@@ -6,24 +6,16 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { MINUTE } from "#constants/globals/time.js";
 
 class CommandRunContext extends BaseCommandRunContext {
-  embed = {};
   addable = {
     reactions: null,
     webhook: null,
   };
+  channel;
+  embed = {};
+  guild;
   previewMessage = null;
   reactionsPool = null;
   user;
-  channel;
-  guild;
-
-  updatePreviewMessage() {
-    this.previewMessage.msg({ edit: true, ...this.embed });
-  }
-
-  static async new(interaction, command) {
-    return new this(interaction, command);
-  }
 
   constructor(interaction, command) {
     super(interaction, command);
@@ -31,29 +23,17 @@ class CommandRunContext extends BaseCommandRunContext {
     Object.assign(this, { user, channel, guild });
     this.reactionsPool = this.command.DEFAULT_REACTIONS_POOL;
   }
+
+  static async new(interaction, command) {
+    return new this(interaction, command);
+  }
+
+  updatePreviewMessage() {
+    this.previewMessage.msg({ edit: true, ...this.embed });
+  }
 }
 
 class Command extends BaseCommand {
-  createBaseEmbed(json) {
-    const title = "Эмбед конструктор";
-    const description = `С помощью реакций создайте великое сообщение, \nкоторое не останется незамеченным\nПосле чего отправьте его в любое место этого сервера!\n\n📌 - заглавие/название\n🎨 - цвет\n🎬 - описание\n👤 - автор\n🎏 - подгруппа\n🪤 - изображение сверху\n🪄 - изображение снизу\n🧱 - добавить область\n🕵️ - установить вебхук\n😆 - добавить реакции\n📥 - футер\n\n⭑ После завершения жмякайте <:arrowright:640449832799961088>\n`;
-
-    const embed = {
-      title,
-      description,
-    };
-
-    if (json) {
-      const parsed = JSON.parse(json);
-      Object.assign(embed, parsed);
-    }
-
-    return embed;
-  }
-
-  DEFAULT_WEBHOOK_ICON_URL =
-    "https://www.emojiall.com/images/240/openmoji/1f7e9.png";
-
   actions = [
     {
       emoji: "📌",
@@ -386,6 +366,8 @@ class Command extends BaseCommand {
     },
   ];
 
+  BEFORE_SEND_REACTIONS_POOL = ["✏️", "❌", "640449832799961088"];
+
   DEFAULT_REACTIONS_POOL = [
     "📌",
     "🎨",
@@ -396,6 +378,24 @@ class Command extends BaseCommand {
     "😆",
     "640449832799961088",
   ];
+
+  DEFAULT_WEBHOOK_ICON_URL =
+    "https://www.emojiall.com/images/240/openmoji/1f7e9.png";
+  options = {
+    name: "embed",
+    id: 9,
+    media: {
+      description:
+        "Создаёт эмбед конструктор — позволяет настроить красивое сообщение и отправить в канал на вашем сервере.",
+      example: `!embed <JSON>`,
+    },
+    alias: "ембед эмбед",
+    allowDM: true,
+    cooldown: 10_000,
+    cooldownTry: 3,
+    type: "guild",
+    ChannelPermissions: 16384n,
+  };
   WHEN_UNCOVERED_REACTIONS_POOL = [
     "640449848050712587",
     "🧱",
@@ -403,7 +403,23 @@ class Command extends BaseCommand {
     "🪤",
     "🕵️",
   ];
-  BEFORE_SEND_REACTIONS_POOL = ["✏️", "❌", "640449832799961088"];
+
+  createBaseEmbed(json) {
+    const title = "Эмбед конструктор";
+    const description = `С помощью реакций создайте великое сообщение, \nкоторое не останется незамеченным\nПосле чего отправьте его в любое место этого сервера!\n\n📌 - заглавие/название\n🎨 - цвет\n🎬 - описание\n👤 - автор\n🎏 - подгруппа\n🪤 - изображение сверху\n🪄 - изображение снизу\n🧱 - добавить область\n🕵️ - установить вебхук\n😆 - добавить реакции\n📥 - футер\n\n⭑ После завершения жмякайте <:arrowright:640449832799961088>\n`;
+
+    const embed = {
+      title,
+      description,
+    };
+
+    if (json) {
+      const parsed = JSON.parse(json);
+      Object.assign(embed, parsed);
+    }
+
+    return embed;
+  }
 
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
@@ -436,25 +452,33 @@ class Command extends BaseCommand {
       context.updatePreviewMessage();
     }
   }
-
-  options = {
-    name: "embed",
-    id: 9,
-    media: {
-      description:
-        "Создаёт эмбед конструктор — позволяет настроить красивое сообщение и отправить в канал на вашем сервере.",
-      example: `!embed <JSON>`,
-    },
-    alias: "ембед эмбед",
-    allowDM: true,
-    cooldown: 10_000,
-    cooldownTry: 3,
-    type: "guild",
-    ChannelPermissions: 16384n,
-  };
 }
 
 class EmbedSendProcessor {
+  static async getOrInsertWebhookIn(channel, context) {
+    const {
+      user,
+      addable: { webhook },
+    } = context;
+    const webhooks = await channel.fetchWebhooks();
+
+    let hook = webhooks.find((compare) => compare.name === webhook.name);
+
+    if (hook && webhook.avatar) {
+      await webhook.edit({ avatar: webhook.avatar });
+    }
+
+    if (!hook) {
+      const { name, avatar } = webhook;
+
+      hook = await channel.createWebhook({
+        name,
+        avatar,
+        reason: `${user.tag} (${user.id}) Created a message with Embed-constructor`,
+      });
+    }
+    return hook;
+  }
   static isUserCanSendEmbedToChannel(target, user) {
     return !!target.guild.members
       .resolve(user)
@@ -507,41 +531,6 @@ class EmbedSendProcessor {
     const sended = await this.sendEmbedMessageTo(target, context);
     this.writeAuditLog(context, sended);
   }
-  static writeAuditLog(context, sended) {
-    const title = "Пользователь отправил эмбед";
-    const description = sended.url;
-    const { guild, user } = context;
-    guild.logSend({
-      title,
-      description,
-      footer: { iconURL: user.avatarURL(), text: user.username },
-    });
-  }
-
-  static async getOrInsertWebhookIn(channel, context) {
-    const {
-      user,
-      addable: { webhook },
-    } = context;
-    const webhooks = await channel.fetchWebhooks();
-
-    let hook = webhooks.find((compare) => compare.name === webhook.name);
-
-    if (hook && webhook.avatar) {
-      await webhook.edit({ avatar: webhook.avatar });
-    }
-
-    if (!hook) {
-      const { name, avatar } = webhook;
-
-      hook = await channel.createWebhook({
-        name,
-        avatar,
-        reason: `${user.tag} (${user.id}) Created a message with Embed-constructor`,
-      });
-    }
-    return hook;
-  }
 
   static async sendEmbedMessageTo(channel, context) {
     const {
@@ -553,6 +542,17 @@ class EmbedSendProcessor {
       : channel;
 
     return target.msg({ ...embed, reactions });
+  }
+
+  static writeAuditLog(context, sended) {
+    const title = "Пользователь отправил эмбед";
+    const description = sended.url;
+    const { guild, user } = context;
+    guild.logSend({
+      title,
+      description,
+      footer: { iconURL: user.avatarURL(), text: user.username },
+    });
   }
 }
 

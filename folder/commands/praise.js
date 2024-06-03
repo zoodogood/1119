@@ -3,6 +3,21 @@ import * as Util from "#lib/util.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "praise",
+    id: 5,
+    media: {
+      description:
+        "Можете похвалить пользователя, например, если он классный. Однако количество похвал ограничено и зависит от уровня в профиле.",
+      example: `!praise {memb}`,
+    },
+    alias:
+      "похвалить like лайк лайкнуть похвалити лайкнути simpatico симпатико сімпатіко",
+    expectMention: true,
+    allowDM: true,
+    type: "user",
+  };
+
   async onChatInput(msg, interaction) {
     const memb = interaction.mention,
       userData = interaction.userData,
@@ -64,21 +79,6 @@ class Command extends BaseCommand {
       memb: msg.author,
     });
   }
-
-  options = {
-    name: "praise",
-    id: 5,
-    media: {
-      description:
-        "Можете похвалить пользователя, например, если он классный. Однако количество похвал ограничено и зависит от уровня в профиле.",
-      example: `!praise {memb}`,
-    },
-    alias:
-      "похвалить like лайк лайкнуть похвалити лайкнути simpatico симпатико сімпатіко",
-    expectMention: true,
-    allowDM: true,
-    type: "user",
-  };
 }
 
 export default Command;

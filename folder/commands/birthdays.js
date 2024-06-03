@@ -10,45 +10,16 @@ class Birthdays {}
 
 class BirthdayMember {
   PRICES_FOR_UPDATE_BIRTHDAY = [1200, 3000, 12000];
-  calculateUpdatePrice() {
-    return this.PRICES_FOR_UPDATE_BIRTHDAY[this.userData.chestLevel];
-  }
   constructor(user) {
     this.user = user;
     this.userData = user.data;
   }
+  calculateUpdatePrice() {
+    return this.PRICES_FOR_UPDATE_BIRTHDAY[this.userData.chestLevel];
+  }
 
   isValidDate(day, month) {
     return day && month && day <= 31 && day >= 1 && month >= 1 && month <= 12;
-  }
-
-  async processUpdate(channel, value) {
-    const { user } = this;
-    const parsed = value.match(/\d\d\.\d\d/)?.[0];
-
-    const [day, month] = parsed?.split(".").map(Number) || [];
-
-    if (!this.isValidDate(day, month)) {
-      channel.msg({
-        title: 'Ожидалось значение в формате "19.11", — день, месяц',
-        color: "#ff0000",
-        delete: 5000,
-      });
-      return;
-    }
-
-    if (!(await this.processExistsBeforeUpdate(channel))) {
-      return;
-    }
-
-    this.setBirhday(user, parsed);
-    channel.msg({ title: "Установлено! 🎉", delete: 5_000 });
-    return true;
-  }
-
-  setBirhday(user, value) {
-    user.data.BDay = value;
-    user.action(ActionsMap.globalQuest, { name: "setBirthday" });
   }
 
   async processExistsBeforeUpdate(channel) {
@@ -95,6 +66,35 @@ class BirthdayMember {
     });
 
     return true;
+  }
+
+  async processUpdate(channel, value) {
+    const { user } = this;
+    const parsed = value.match(/\d\d\.\d\d/)?.[0];
+
+    const [day, month] = parsed?.split(".").map(Number) || [];
+
+    if (!this.isValidDate(day, month)) {
+      channel.msg({
+        title: 'Ожидалось значение в формате "19.11", — день, месяц',
+        color: "#ff0000",
+        delete: 5000,
+      });
+      return;
+    }
+
+    if (!(await this.processExistsBeforeUpdate(channel))) {
+      return;
+    }
+
+    this.setBirhday(user, parsed);
+    channel.msg({ title: "Установлено! 🎉", delete: 5_000 });
+    return true;
+  }
+
+  setBirhday(user, value) {
+    user.data.BDay = value;
+    user.action(ActionsMap.globalQuest, { name: "setBirthday" });
   }
 }
 
@@ -211,35 +211,6 @@ class CommandRunContext extends BaseCommandRunContext {
   }
 }
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    const context = await CommandRunContext.new(interaction, this);
-    context.setWhenRunExecuted(this.run(context));
-    return context;
-  }
-
-  async run(context) {
-    context.parseCli();
-    if (this.processUpdateCommand(context)) {
-      return;
-    }
-    this.processDefaultBehavior(context);
-  }
-
-  processUpdateCommand(context) {
-    const { captures } = context.cliParsed.at(0);
-    const value = captures.get("--set-birthday")?.valueOfFlag();
-    if (!value) {
-      return;
-    }
-    const { channel } = context;
-    new BirthdayMember(context.user).processUpdate(channel, value);
-    return true;
-  }
-
-  processDefaultBehavior(context) {
-    new MembersCommandManager(context).onProcess();
-  }
-
   options = {
     name: "birthdays",
     id: 22,
@@ -266,6 +237,35 @@ class Command extends BaseCommand {
     cooldown: 15_000,
     type: "user",
   };
+
+  async onChatInput(msg, interaction) {
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
+  processDefaultBehavior(context) {
+    new MembersCommandManager(context).onProcess();
+  }
+
+  processUpdateCommand(context) {
+    const { captures } = context.cliParsed.at(0);
+    const value = captures.get("--set-birthday")?.valueOfFlag();
+    if (!value) {
+      return;
+    }
+    const { channel } = context;
+    new BirthdayMember(context.user).processUpdate(channel, value);
+    return true;
+  }
+
+  async run(context) {
+    context.parseCli();
+    if (this.processUpdateCommand(context)) {
+      return;
+    }
+    this.processDefaultBehavior(context);
+  }
 }
 
 export default Command;

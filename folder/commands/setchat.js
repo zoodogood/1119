@@ -1,18 +1,5 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 class Command extends BaseCommand {
-  async onChatInput(msg, interaction) {
-    const type = "chatChannel";
-    const guild = msg.guild;
-    const channel = msg.mentions.channels.first() ?? msg.channel;
-    guild.data[type] = channel.id;
-    msg.msg({ title: `#${channel.name} канал стал чатом!`, delete: 9000 });
-
-    guild.logSend({
-      description: `Каналу #${channel.name} установили метку "чат"`,
-      author: { name: msg.author.username, avatarURL: msg.author.avatarURL() },
-    });
-  }
-
   options = {
     name: "setchat",
     id: 11,
@@ -26,6 +13,19 @@ class Command extends BaseCommand {
     type: "guild",
     Permissions: 32n,
   };
+
+  async onChatInput(msg, interaction) {
+    const type = "chatChannel";
+    const guild = msg.guild;
+    const channel = msg.mentions.channels.first() ?? msg.channel;
+    guild.data[type] = channel.id;
+    msg.msg({ title: `#${channel.name} канал стал чатом!`, delete: 9000 });
+
+    guild.logSend({
+      description: `Каналу #${channel.name} установили метку "чат"`,
+      author: { name: msg.author.username, avatarURL: msg.author.avatarURL() },
+    });
+  }
 }
 
 export default Command;

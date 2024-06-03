@@ -3,6 +3,21 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import Discord from "discord.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "archive",
+    id: 10,
+    media: {
+      description:
+        "Архивирует сообщения в канале и отправляет содержимое пользователю в виде файла.",
+      example: `!archive #без аргументов`,
+    },
+    alias: "arhive архив архів",
+    allowDM: true,
+    cooldown: HOUR,
+    type: "delete",
+    Permissions: 16n,
+  };
+
   async onChatInput(msg, interaction) {
     let channel = msg.channel,
       sum_messages = [],
@@ -51,21 +66,6 @@ class Command extends BaseCommand {
     });
     if (time > 35) msg.msg({ title: "Вот ваша печенька ожидания 🍪" });
   }
-
-  options = {
-    name: "archive",
-    id: 10,
-    media: {
-      description:
-        "Архивирует сообщения в канале и отправляет содержимое пользователю в виде файла.",
-      example: `!archive #без аргументов`,
-    },
-    alias: "arhive архив архів",
-    allowDM: true,
-    cooldown: HOUR,
-    type: "delete",
-    Permissions: 16n,
-  };
 }
 
 export default Command;

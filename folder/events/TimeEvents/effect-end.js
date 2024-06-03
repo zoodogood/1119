@@ -4,23 +4,9 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
 
 class Event {
-  run(...params) {
-    const context = this.getContext(...params);
-    const { user, defaultPrevented } = context;
-
-    user.action(Actions.timeEventEffectTimeoutEnd, context);
-    if (defaultPrevented()) {
-      return;
-    }
-    const { effect } = context;
-    if (!effect) {
-      return;
-    }
-    Object.assign(context, { effect });
-    user.action(Actions.effectTimeEnd, context);
-
-    this.removeEffect(context);
-  }
+  options = {
+    name: "TimeEvent/effect-end",
+  };
 
   findEffect(context) {
     const { user, uid } = context;
@@ -28,15 +14,6 @@ class Event {
 
     const compare = (effect) => effect.uid === uid;
     return effects.find(compare);
-  }
-
-  removeEffect(context) {
-    const { defaultPrevented, effect, user } = context;
-    if (defaultPrevented()) {
-      return;
-    }
-
-    UserEffectManager.removeEffect({ effect, user });
   }
 
   getContext(timeEventData, userId, uid) {
@@ -55,9 +32,32 @@ class Event {
     return context;
   }
 
-  options = {
-    name: "TimeEvent/effect-end",
-  };
+  removeEffect(context) {
+    const { defaultPrevented, effect, user } = context;
+    if (defaultPrevented()) {
+      return;
+    }
+
+    UserEffectManager.removeEffect({ effect, user });
+  }
+
+  run(...params) {
+    const context = this.getContext(...params);
+    const { user, defaultPrevented } = context;
+
+    user.action(Actions.timeEventEffectTimeoutEnd, context);
+    if (defaultPrevented()) {
+      return;
+    }
+    const { effect } = context;
+    if (!effect) {
+      return;
+    }
+    Object.assign(context, { effect });
+    user.action(Actions.effectTimeEnd, context);
+
+    this.removeEffect(context);
+  }
 }
 
 export default Event;

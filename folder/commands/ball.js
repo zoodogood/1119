@@ -2,6 +2,23 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "ball",
+    id: 40,
+    media: {
+      description:
+        'Всегда отвечающий "нет" Шар, почему все думают, что он всевидящий?',
+      example: "!ball {question?} # Не спрашивайте у него как его дела",
+      poster:
+        "https://media.discordapp.net/attachments/769566192846635010/872442452152307762/ball.gif",
+    },
+    alias: "8ball шар куля",
+    allowDM: true,
+    expectParams: true,
+    cooldown: 3_000,
+    type: "other",
+  };
+
   async onChatInput(msg, interaction) {
     if (!interaction.params.includes(" ")) {
       return msg.msg({
@@ -28,23 +45,6 @@ class Command extends BaseCommand {
     ].random({ weights: true }).answer;
     msg.msg({ content: answer, reference: msg.id });
   }
-
-  options = {
-    name: "ball",
-    id: 40,
-    media: {
-      description:
-        'Всегда отвечающий "нет" Шар, почему все думают, что он всевидящий?',
-      example: "!ball {question?} # Не спрашивайте у него как его дела",
-      poster:
-        "https://media.discordapp.net/attachments/769566192846635010/872442452152307762/ball.gif",
-    },
-    alias: "8ball шар куля",
-    allowDM: true,
-    expectParams: true,
-    cooldown: 3_000,
-    type: "other",
-  };
 }
 
 export default Command;

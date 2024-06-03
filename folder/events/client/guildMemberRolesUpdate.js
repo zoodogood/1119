@@ -1,7 +1,10 @@
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 
-
 class Event extends BaseEvent {
+  options = {
+    name: "client/guildMemberRolesUpdate",
+  };
+
   constructor() {
     const EVENT = "clent/guildMemberRolesUpdate";
     super(EventsManager.emitter, EVENT);
@@ -13,20 +16,21 @@ class Event extends BaseEvent {
 
     const role = isRemoved
       ? previousState.roles.cache.find(
-        (role) => !newState.roles.cache.get(role.id)
-      )
+          (role) => !newState.roles.cache.get(role.id),
+        )
       : previousState.roles.cache.find(
-        (role) => !newState.roles.cache.get(role.id)
-      );
+          (role) => !newState.roles.cache.get(role.id),
+        );
 
     if (role.id === newState.guild.data.mute_role) {
-      EventsManager.emitter.emit("users/muteStateUpdate", newState.user, role, isRemoved);
+      EventsManager.emitter.emit(
+        "users/muteStateUpdate",
+        newState.user,
+        role,
+        isRemoved,
+      );
     }
   }
-
-  options = {
-    name: "client/guildMemberRolesUpdate",
-  };
 }
 
 export default Event;

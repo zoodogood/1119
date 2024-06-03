@@ -6,6 +6,10 @@ import BankCommand from "#folder/commands/bank.js";
 import { ending, NumberFormatLetterize } from "#src/lib/util.js";
 
 class Event {
+  options = {
+    name: "TimeEvent/day-stats",
+  };
+
   run(eventData) {
     const next =
       new Date(Date.now() + 14500000).setHours(20, 0, 0) - Date.now();
@@ -43,7 +47,6 @@ class Event {
     const messagesOfDay = guildData.day_msg || 0;
     const { guildsStatsContext } = context;
 
-    
     const { treeMessagesNeed } = guildsStatsContext[guild.id] || {};
 
     guild.data.coins += 2 * guild.memberCount;
@@ -96,10 +99,6 @@ class Event {
 
     guild.chatSend({ title: "Статистика сервера", description });
   }
-
-  options = {
-    name: "TimeEvent/day-stats",
-  };
 }
 
 export default Event;

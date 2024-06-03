@@ -3,19 +3,63 @@ import { ButtonStyle, ComponentType } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 
 class Guidances {
-  get selectOptions() {
-    return this.guidances.map(({ id, label }) => ({ label, value: id }));
-  }
-
   guidances = [
     {
       id: "basics",
       label: "Основы",
     },
   ];
+
+  get selectOptions() {
+    return this.guidances.map(({ id, label }) => ({ label, value: id }));
+  }
 }
 
 class Command extends BaseCommand {
+  options = {
+    name: "help",
+    id: 4,
+    slash: {
+      name: "help",
+      description: "Have a nice {{advanced}}",
+    },
+    media: {
+      description:
+        "Стандартная команда отображающую основную информацию о возможностях бота. Она нужна чтобы помочь новым пользователям. Её так же можно вызвать отправив `/help`",
+      example: `!help #без аргументов`,
+    },
+    alias: "хелп помощь cmds commands команды х допомога info інфо",
+    allowDM: true,
+    cooldown: 15_000,
+    type: "other",
+  };
+
+  createGuidances() {
+    return new Guidances();
+  }
+
+  async onChatInput(msg, interaction) {
+    this.run(interaction);
+  }
+
+  onComponent({ params, interaction }) {
+    const content =
+      "Новая года. Читатель, люби каждый день как новый год. Люби новый год за то, что ты можешь выйти на улицу и увидеть вокруг себя людей. Или опустевшие улицы";
+
+    params === "guidances-preview" &&
+      interaction.msg({
+        content,
+        ephemeral: true,
+      });
+  }
+
+  async onSlashCommand(interaction) {
+    await interaction.msg({
+      description: ":green_book:",
+    });
+    this.run(interaction);
+  }
+
   run(interaction) {
     const guildCommands = [];
     const commands = CommandsManager.collection;
@@ -106,50 +150,6 @@ class Command extends BaseCommand {
 
     interaction.channel.msg(embed);
   }
-
-  async onChatInput(msg, interaction) {
-    this.run(interaction);
-  }
-
-  async onSlashCommand(interaction) {
-    await interaction.msg({
-      description: ":green_book:",
-    });
-    this.run(interaction);
-  }
-
-  createGuidances() {
-    return new Guidances();
-  }
-
-  onComponent({ params, interaction }) {
-    const content =
-      "Новая года. Читатель, люби каждый день как новый год. Люби новый год за то, что ты можешь выйти на улицу и увидеть вокруг себя людей. Или опустевшие улицы";
-
-    params === "guidances-preview" &&
-      interaction.msg({
-        content,
-        ephemeral: true,
-      });
-  }
-
-  options = {
-    name: "help",
-    id: 4,
-    slash: {
-      name: "help",
-      description: "Have a nice {{advanced}}",
-    },
-    media: {
-      description:
-        "Стандартная команда отображающую основную информацию о возможностях бота. Она нужна чтобы помочь новым пользователям. Её так же можно вызвать отправив `/help`",
-      example: `!help #без аргументов`,
-    },
-    alias: "хелп помощь cmds commands команды х допомога info інфо",
-    allowDM: true,
-    cooldown: 15_000,
-    type: "other",
-  };
 }
 
 export default Command;

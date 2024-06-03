@@ -4,11 +4,22 @@ import Discord from "discord.js";
 import CounterManager from "#lib/modules/CounterManager.js";
 
 class Command extends BaseCommand {
-  fetchCountersInGuild(guild) {
-    return CounterManager.data.filter(
-      (counter) => counter.guildId === guild.id,
-    );
-  }
+  options = {
+    name: "counters",
+    id: 43,
+    media: {
+      description:
+        "Отображает список существующих счётчиков на сервере. См. команду `!counter`",
+      example: `!counters #без аргументов`,
+    },
+    accessibility: {
+      publicized_on_level: 15,
+    },
+    alias: "счётчики счетчики рахівники",
+    allowDM: false,
+    cooldown: 10_000_000,
+    type: "guild",
+  };
 
   createEmbed({ interaction, counters }) {
     const toValue = (counter) =>
@@ -38,6 +49,12 @@ class Command extends BaseCommand {
       title: "Счётчики сервера",
       fields,
     };
+  }
+
+  fetchCountersInGuild(guild) {
+    return CounterManager.data.filter(
+      (counter) => counter.guildId === guild.id,
+    );
   }
 
   async onChatInput(msg, interaction) {
@@ -132,23 +149,6 @@ class Command extends BaseCommand {
       }
     }
   }
-
-  options = {
-    name: "counters",
-    id: 43,
-    media: {
-      description:
-        "Отображает список существующих счётчиков на сервере. См. команду `!counter`",
-      example: `!counters #без аргументов`,
-    },
-    accessibility: {
-      publicized_on_level: 15,
-    },
-    alias: "счётчики счетчики рахівники",
-    allowDM: false,
-    cooldown: 10_000_000,
-    type: "guild",
-  };
 }
 
 export default Command;

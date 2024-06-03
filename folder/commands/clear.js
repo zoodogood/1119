@@ -18,92 +18,17 @@ const RemoveStatus = {
 // MARK: Remover
 class Remover {
   _interface = null;
-  removedCount = 0;
   canceled = false;
   MAX_BULK_REMOVE_AVAILABLE = 50;
+  removedCount = 0;
   removeStatus = RemoveStatus.Idle;
   constructor(context, fetchedMessages) {
     this.context = context;
     this.fetchedMessages = fetchedMessages;
   }
 
-  async onProcess() {
-    this.createInterface();
-    await Util.sleep(3000);
-
-    if (this.fetchedMessages.length > 120) {
-      this.context.channel.sendTyping();
-    }
-
-    await this.start_remove();
-    this._interface.setDefaultMessageState({ delete: SECOND * 5 });
-    this._interface.updateMessage();
-    this._interface.close();
-
-    new Logger(this.context, this).onProcess();
-  }
-
-  async removeMessages({ messages, channel, isBulk }) {
-    const result = await (isBulk
-      ? channel.bulkDelete(messages)
-      : (async () => {
-          for (const message of messages) {
-            await message.delete();
-          }
-        })());
-
-    this.removedCount += messages.length;
-    return result;
-  }
-  async start_remove() {
-    this.removeStatus = RemoveStatus.Running;
-    const { channel } = this.context;
-    const [byBulkDelete, byOneDelete] = this.resolveRemovableGroups();
-    while (byBulkDelete.length) {
-      if (this.canceled) {
-        break;
-      }
-      await this.removeMessages({
-        messages: byBulkDelete.splice(0, this.MAX_BULK_REMOVE_AVAILABLE),
-        channel,
-        isBulk: true,
-      });
-      this._interface.updateMessage();
-    }
-
-    while (byOneDelete.length) {
-      if (this.canceled) {
-        break;
-      }
-      await this.removeMessages({
-        messages: byOneDelete.splice(0, Util.random(5, 15)),
-        channel,
-        isBulk: false,
-      });
-      this._interface.updateMessage();
-    }
-    this.removeStatus = RemoveStatus.Ended;
-  }
-
-  resolveRemovableGroups() {
-    const { fetchedMessages, context } = this;
-    const byBulkDelete = [];
-    const byOneDelete = [];
-    const { twoWeekAgo_stamp } = context;
-    const inDM = context.channel_isDMBased;
-
-    fetchedMessages.forEach((message) => {
-      const isMoreThanDiscordBulkDeletePeriod =
-        message.createdTimestamp - twoWeekAgo_stamp < 0;
-      if (inDM || isMoreThanDiscordBulkDeletePeriod) {
-        byOneDelete.push(message);
-        return;
-      }
-
-      byBulkDelete.push(message);
-    });
-
-    return [byBulkDelete, byOneDelete];
+  cancel() {
+    this.canceled = true;
   }
 
   createInterface() {
@@ -121,26 +46,6 @@ class Remover {
     );
     return _interface;
   }
-
-  process_collectCallback(interaction) {
-    this.process_cancelCallback(interaction);
-  }
-
-  process_cancelCallback(interaction) {
-    const canCancel =
-      interaction.user === this.context.user ||
-      (() =>
-        interaction.guild.members
-          .resolve(interaction.user)
-          ?.permissions.has(PermissionFlagsBits.Administrator))();
-
-    if (!canCancel) {
-      return;
-    }
-
-    this.cancel();
-  }
-
   getEmbed() {
     return {
       title: this.getEmbedTitle(),
@@ -187,8 +92,103 @@ class Remover {
     }
   }
 
-  cancel() {
-    this.canceled = true;
+  async onProcess() {
+    this.createInterface();
+    await Util.sleep(3000);
+
+    if (this.fetchedMessages.length > 120) {
+      this.context.channel.sendTyping();
+    }
+
+    await this.start_remove();
+    this._interface.setDefaultMessageState({ delete: SECOND * 5 });
+    this._interface.updateMessage();
+    this._interface.close();
+
+    new Logger(this.context, this).onProcess();
+  }
+
+  process_cancelCallback(interaction) {
+    const canCancel =
+      interaction.user === this.context.user ||
+      (() =>
+        interaction.guild.members
+          .resolve(interaction.user)
+          ?.permissions.has(PermissionFlagsBits.Administrator))();
+
+    if (!canCancel) {
+      return;
+    }
+
+    this.cancel();
+  }
+
+  process_collectCallback(interaction) {
+    this.process_cancelCallback(interaction);
+  }
+
+  async removeMessages({ messages, channel, isBulk }) {
+    const result = await (isBulk
+      ? channel.bulkDelete(messages)
+      : (async () => {
+          for (const message of messages) {
+            await message.delete();
+          }
+        })());
+
+    this.removedCount += messages.length;
+    return result;
+  }
+
+  resolveRemovableGroups() {
+    const { fetchedMessages, context } = this;
+    const byBulkDelete = [];
+    const byOneDelete = [];
+    const { twoWeekAgo_stamp } = context;
+    const inDM = context.channel_isDMBased;
+
+    fetchedMessages.forEach((message) => {
+      const isMoreThanDiscordBulkDeletePeriod =
+        message.createdTimestamp - twoWeekAgo_stamp < 0;
+      if (inDM || isMoreThanDiscordBulkDeletePeriod) {
+        byOneDelete.push(message);
+        return;
+      }
+
+      byBulkDelete.push(message);
+    });
+
+    return [byBulkDelete, byOneDelete];
+  }
+
+  async start_remove() {
+    this.removeStatus = RemoveStatus.Running;
+    const { channel } = this.context;
+    const [byBulkDelete, byOneDelete] = this.resolveRemovableGroups();
+    while (byBulkDelete.length) {
+      if (this.canceled) {
+        break;
+      }
+      await this.removeMessages({
+        messages: byBulkDelete.splice(0, this.MAX_BULK_REMOVE_AVAILABLE),
+        channel,
+        isBulk: true,
+      });
+      this._interface.updateMessage();
+    }
+
+    while (byOneDelete.length) {
+      if (this.canceled) {
+        break;
+      }
+      await this.removeMessages({
+        messages: byOneDelete.splice(0, Util.random(5, 15)),
+        channel,
+        isBulk: false,
+      });
+      this._interface.updateMessage();
+    }
+    this.removeStatus = RemoveStatus.Ended;
   }
 }
 
@@ -197,34 +197,6 @@ class Logger {
   constructor(context, remover) {
     this.context = context;
     this.remover = remover;
-  }
-
-  onProcess() {
-    if (!this.process_guild_is_exists) {
-      return false;
-    }
-
-    this.sendLog();
-  }
-
-  process_guild_is_exists() {
-    if (!this.context.guild) {
-      return false;
-    }
-    return true;
-  }
-
-  sendLog() {
-    const { guild } = this.context;
-
-    guild.logSend({
-      title: this.getEmbedTitle(),
-      description: this.getEmbedDescription(),
-    });
-  }
-
-  getEmbedTitle() {
-    return `Удалено ${Util.ending(this.remover.removedCount, "сообщени", "й", "е", "я")}`;
   }
 
   getEmbedDescription() {
@@ -259,20 +231,48 @@ class Logger {
 
     return `${contents.channel}\n${contents.user}\n${contents.label}: ${Util.capitalize(contents.mode)}${contents.canceled}`;
   }
+
+  getEmbedTitle() {
+    return `Удалено ${Util.ending(this.remover.removedCount, "сообщени", "й", "е", "я")}`;
+  }
+
+  onProcess() {
+    if (!this.process_guild_is_exists) {
+      return false;
+    }
+
+    this.sendLog();
+  }
+
+  process_guild_is_exists() {
+    if (!this.context.guild) {
+      return false;
+    }
+    return true;
+  }
+
+  sendLog() {
+    const { guild } = this.context;
+
+    guild.logSend({
+      title: this.getEmbedTitle(),
+      description: this.getEmbedDescription(),
+    });
+  }
 }
 
 // MARK: Fetcher
 class Fetcher {
-  processedMessagesCount = 0;
-  hasSpecialTarget = null;
-  limitCount = null;
-  targetUserId;
-  targetPhrase = null;
-  targetReference = null;
   fetchedMessages = [];
-
+  hasSpecialTarget = null;
   isLimit = false;
   isTargetFounded = false;
+  limitCount = null;
+  processedMessagesCount = 0;
+  targetPhrase = null;
+
+  targetReference = null;
+  targetUserId;
   constructor(context) {
     this.context = context;
   }
@@ -295,20 +295,14 @@ class Fetcher {
       this.fetchedMessages.push(message);
     }
   }
-  setOptions({
-    targetPhrase,
-    targetReference,
-    targetUserId,
-    hasSpecialTarget,
-    limitCount,
-  }) {
-    Object.assign(this, {
-      targetPhrase,
-      targetReference,
-      targetUserId,
-      hasSpecialTarget,
-      limitCount,
-    });
+  processFetchedMessage_isAllowed(message) {
+    const { context } = this;
+    const filterByUser =
+      !this.targetUserId || message.author.id === this.targetUserId;
+    const isUserInDMCHannel =
+      context.channel_isDMBased && message.author.id !== client.user.id;
+
+    return !message.pinned && !isUserInDMCHannel && filterByUser;
   }
 
   processMessageIsSpecialFetched(message) {
@@ -329,56 +323,32 @@ class Fetcher {
     return isLimit;
   }
 
-  processFetchedMessage_isAllowed(message) {
-    const { context } = this;
-    const filterByUser =
-      !this.targetUserId || message.author.id === this.targetUserId;
-    const isUserInDMCHannel =
-      context.channel_isDMBased && message.author.id !== client.user.id;
-
-    return !message.pinned && !isUserInDMCHannel && filterByUser;
+  setOptions({
+    targetPhrase,
+    targetReference,
+    targetUserId,
+    hasSpecialTarget,
+    limitCount,
+  }) {
+    Object.assign(this, {
+      targetPhrase,
+      targetReference,
+      targetUserId,
+      hasSpecialTarget,
+      limitCount,
+    });
   }
 }
 
 // MARK: CommandRunContext
 class CommandRunContext extends BaseCommandRunContext {
-  referenceId;
   channel_isDMBased;
-  messagesFetcher;
-  DEFAULT_CLEAN_COUNT = 75;
   CLEAN_COUNT_LIMIT = 1_000;
+  DEFAULT_CLEAN_COUNT = 75;
   DEFAULT_CLEAN_FOUND_FOR_SPECIAL_TARGET = 500;
+  messagesFetcher;
+  referenceId;
 
-  hasSpecialTarget() {
-    const values = this.cliParsed.at(1);
-    return values.get("by_phrase").trim() || this.referenceId;
-  }
-  static async new(interaction, command) {
-    const context = new this(interaction, command);
-    context.referenceId = context.fetchReferenseId();
-    context.channel_isDMBased = interaction.channel.isDMBased();
-    context.messagesFetcher = new Fetcher(context);
-    return context;
-  }
-
-  fetchReferenseId() {
-    const { message } = this.interaction;
-    const { reference } = message;
-    return reference?.messageId;
-  }
-  parseCli(input) {
-    const parsed = new CliParser()
-      .setText(input)
-      .captureByMatch({
-        regex: new RegExp(`${FormattingPatterns.User.source}`),
-        name: "target_user",
-      })
-      .captureByMatch({ regex: /\d{1,16}/, name: "clean_count" })
-      .captureResidue({ name: "by_phrase" })
-      .collect();
-    const values = parsed.resolveValues((capture) => capture?.content);
-    this.setCliParsed(parsed, values);
-  }
   calculateMessagesForClean_count() {
     const {
       DEFAULT_CLEAN_COUNT,
@@ -395,7 +365,6 @@ class CommandRunContext extends BaseCommandRunContext {
         : DEFAULT_CLEAN_COUNT);
     return Math.min(count, CLEAN_COUNT_LIMIT);
   }
-
   async fetchMessagesToClean() {
     const values = this.cliParsed.at(1);
     this.messagesFetcher.setOptions({
@@ -408,6 +377,37 @@ class CommandRunContext extends BaseCommandRunContext {
     await this.messagesFetcher.fetch();
   }
 
+  fetchReferenseId() {
+    const { message } = this.interaction;
+    const { reference } = message;
+    return reference?.messageId;
+  }
+  hasSpecialTarget() {
+    const values = this.cliParsed.at(1);
+    return values.get("by_phrase").trim() || this.referenceId;
+  }
+  static async new(interaction, command) {
+    const context = new this(interaction, command);
+    context.referenceId = context.fetchReferenseId();
+    context.channel_isDMBased = interaction.channel.isDMBased();
+    context.messagesFetcher = new Fetcher(context);
+    return context;
+  }
+
+  parseCli(input) {
+    const parsed = new CliParser()
+      .setText(input)
+      .captureByMatch({
+        regex: new RegExp(`${FormattingPatterns.User.source}`),
+        name: "target_user",
+      })
+      .captureByMatch({ regex: /\d{1,16}/, name: "clean_count" })
+      .captureResidue({ name: "by_phrase" })
+      .collect();
+    const values = parsed.resolveValues((capture) => capture?.content);
+    this.setCliParsed(parsed, values);
+  }
+
   get twoWeekAgo_stamp() {
     return Date.now() - DAY * 14;
   }
@@ -415,13 +415,62 @@ class CommandRunContext extends BaseCommandRunContext {
 
 // MARK: Command
 class Command extends BaseCommand {
-  removeCallMessage(context) {
-    return context.interaction.message.delete().catch(() => {});
-  }
+  options = {
+    name: "clear",
+    id: 8,
+    media: {
+      description:
+        '**Чистит сообщения в канале и имеет четыре режима:**\n1. Количесвенная чистка — удаляет указанное число.\n2. "Удалить до" — чистит всё до сообщения с указанным содержимым.\n3. Сообщения пользователя — стирает только сообщения отправленные указанным пользователем.\n4. Если не указать аргументов, будет удалено 75 последних сообщений.',
+      example:
+        "!clear <memb | count | messageContent> #messageContent — содержимое сообщения до которого провести чистку, не учитывает эмбеды и форматирование текста*",
+      poster:
+        "https://media.discordapp.net/attachments/769566192846635010/872526568965177385/clear.gif",
+    },
+    alias: "очистить очисти очисть клир клиар клір очистити",
+    allowDM: true,
+    cooldown: 10_000,
+    type: "guild",
+    myChannelPermissions: 8192n,
+    ChannelPermissions: 8192n,
+  };
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
     context.setWhenRunExecuted(this.run(context));
     return context;
+  }
+
+  processFetchedNessagesIsEmpty(context) {
+    const { messagesFetcher } = context;
+    const { fetchedMessages } = messagesFetcher;
+    if (fetchedMessages.length !== 0) {
+      return false;
+    }
+    const { channel } = context;
+    channel.msg({
+      title: "Вроде-как удалено 0 сообщений",
+      delete: 7_000,
+      description: "Я серьёзно! Не удалено ни единого сообщения!",
+    });
+    return true;
+  }
+
+  processIsSpecialTargetNotFound(context) {
+    if (!context.hasSpecialTarget() || !context.messagesFetcher.isLimit) {
+      return false;
+    }
+    const { channel, interaction } = context;
+    const { params } = interaction;
+    channel.msg({
+      title: "Не удалось найти сообщение",
+      color: "#ff0000",
+      delete: 7_000,
+      description: params,
+    });
+    return true;
+  }
+
+  removeCallMessage(context) {
+    return context.interaction.message.delete().catch(() => {});
   }
 
   async run(context) {
@@ -446,55 +495,6 @@ class Command extends BaseCommand {
     const remover = new Remover(context, fetchedMessages);
     await remover.onProcess();
   }
-
-  processIsSpecialTargetNotFound(context) {
-    if (!context.hasSpecialTarget() || !context.messagesFetcher.isLimit) {
-      return false;
-    }
-    const { channel, interaction } = context;
-    const { params } = interaction;
-    channel.msg({
-      title: "Не удалось найти сообщение",
-      color: "#ff0000",
-      delete: 7_000,
-      description: params,
-    });
-    return true;
-  }
-
-  processFetchedNessagesIsEmpty(context) {
-    const { messagesFetcher } = context;
-    const { fetchedMessages } = messagesFetcher;
-    if (fetchedMessages.length !== 0) {
-      return false;
-    }
-    const { channel } = context;
-    channel.msg({
-      title: "Вроде-как удалено 0 сообщений",
-      delete: 7_000,
-      description: "Я серьёзно! Не удалено ни единого сообщения!",
-    });
-    return true;
-  }
-
-  options = {
-    name: "clear",
-    id: 8,
-    media: {
-      description:
-        '**Чистит сообщения в канале и имеет четыре режима:**\n1. Количесвенная чистка — удаляет указанное число.\n2. "Удалить до" — чистит всё до сообщения с указанным содержимым.\n3. Сообщения пользователя — стирает только сообщения отправленные указанным пользователем.\n4. Если не указать аргументов, будет удалено 75 последних сообщений.',
-      example:
-        "!clear <memb | count | messageContent> #messageContent — содержимое сообщения до которого провести чистку, не учитывает эмбеды и форматирование текста*",
-      poster:
-        "https://media.discordapp.net/attachments/769566192846635010/872526568965177385/clear.gif",
-    },
-    alias: "очистить очисти очисть клир клиар клір очистити",
-    allowDM: true,
-    cooldown: 10_000,
-    type: "guild",
-    myChannelPermissions: 8192n,
-    ChannelPermissions: 8192n,
-  };
 }
 
 export default Command;

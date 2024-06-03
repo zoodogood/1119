@@ -5,34 +5,23 @@ import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
-  parseParams(interaction) {
-    let bet = interaction.params.match(/\d+|\+/);
-
-    if (bet === null) {
-      interaction.channel.msg({
-        title: "Укажите Ставку в числовом виде!",
-        color: "#ff0000",
-        delete: 3000,
-      });
-      return null;
-    }
-    bet = bet[0];
-
-    if (bet === "+") {
-      bet = interaction.userData.coins;
-    }
-
-    bet = Math.max(0, Math.floor(bet));
-
-    return { bet };
-  }
-  setCooldown(user) {
-    const COOLDOWN = 300_000;
-    const { id } = this.options;
-    const key = `CD_${id}`;
-    CooldownManager.api(user.data, key, { perCall: COOLDOWN }).call();
-  }
-
+  options = {
+    name: "casino",
+    id: 57,
+    media: {
+      description:
+        "Меня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки",
+      example: `!casino {coinsBet | "+"}`,
+    },
+    accessibility: {
+      publicized_on_level: 9,
+    },
+    alias: "казино bet ставка",
+    expectParams: true,
+    allowDM: true,
+    cooldown: true,
+    type: "other",
+  };
   async onChatInput(msg, interaction) {
     const { bet } = this.parseParams(interaction) ?? {};
     if (!bet) {
@@ -88,23 +77,34 @@ ${
     msg.msg(embed);
   }
 
-  options = {
-    name: "casino",
-    id: 57,
-    media: {
-      description:
-        "Меня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки",
-      example: `!casino {coinsBet | "+"}`,
-    },
-    accessibility: {
-      publicized_on_level: 9,
-    },
-    alias: "казино bet ставка",
-    expectParams: true,
-    allowDM: true,
-    cooldown: true,
-    type: "other",
-  };
+  parseParams(interaction) {
+    let bet = interaction.params.match(/\d+|\+/);
+
+    if (bet === null) {
+      interaction.channel.msg({
+        title: "Укажите Ставку в числовом виде!",
+        color: "#ff0000",
+        delete: 3000,
+      });
+      return null;
+    }
+    bet = bet[0];
+
+    if (bet === "+") {
+      bet = interaction.userData.coins;
+    }
+
+    bet = Math.max(0, Math.floor(bet));
+
+    return { bet };
+  }
+
+  setCooldown(user) {
+    const COOLDOWN = 300_000;
+    const { id } = this.options;
+    const key = `CD_${id}`;
+    CooldownManager.api(user.data, key, { perCall: COOLDOWN }).call();
+  }
 }
 
 export default Command;
