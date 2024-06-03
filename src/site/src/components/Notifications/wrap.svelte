@@ -8,7 +8,7 @@
 
 <style>
   :global(.notification) {
-    filter: brightness(0.7) contrast(0.9) opacity(0.9);
+    filter: brightness(0.9) contrast(0.8) opacity(0.9);
     color: var(--text-theme-accent) !important;
     background-color: var(--background-theme-accent) !important;
     border-radius: 20px !important;
@@ -29,7 +29,7 @@
   }
 
   :global(.notification-button) {
-    color: var(--white) !important;
+    color: var(--text-theme-accent) !important;
     border: none !important;
   }
 </style>
