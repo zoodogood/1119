@@ -7,9 +7,9 @@ class BaseCommand {
    */
   onChatInput(message, interaction) {}
 
-  onSlash() {}
-
   onComponent() {}
+
+  onSlash() {}
 }
 
 class BaseFlagSubcommand {

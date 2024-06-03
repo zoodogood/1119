@@ -3,20 +3,18 @@ import { ArticlesManager } from "./.mod.js";
 
 const PREFIX = "/site/articles";
 
-
 class Route extends BaseRoute {
-	prefix = PREFIX;
+  prefix = PREFIX;
 
-	constructor(express){
-		super();
-	}
+  constructor(express) {
+    super();
+  }
 
-	async get(request, response){
-		const list = await ArticlesManager.fetchArticles();
-		const metadata = ArticlesManager.CacheData.getBulk();
-		response.json({list, metadata});
-	}
-
+  async get(request, response) {
+    const list = await ArticlesManager.fetchArticles();
+    const metadata = ArticlesManager.CacheData.getBulk();
+    response.json({ list, metadata });
+  }
 }
 
 export default Route;

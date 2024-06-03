@@ -10,17 +10,6 @@ const target = "index.html";
 class Route extends BaseRoute {
   prefix = /^\/(?:(?:ru|ua|en)\/)?pages/;
 
-  constructor() {
-    super();
-  }
-
-  async get(request, response) {
-    const targetPath = Path.join(root, target);
-    response.sendFile(targetPath);
-
-    this.statistic.increment(request);
-  }
-
   statistic = {
     increment(request) {
       const subpath = parsePagesPath(request.path).subpath.join("/");
@@ -32,6 +21,17 @@ class Route extends BaseRoute {
       siteData.entersToPagesToday++;
     },
   };
+
+  constructor() {
+    super();
+  }
+
+  async get(request, response) {
+    const targetPath = Path.join(root, target);
+    response.sendFile(targetPath);
+
+    this.statistic.increment(request);
+  }
 }
 
 export default Route;

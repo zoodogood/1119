@@ -4,24 +4,22 @@ import CommandsManager from "#lib/modules/CommandsManager.js";
 
 const PREFIX = "/client/statistic/general";
 
-
-
 class Route extends BaseRoute {
-	prefix = PREFIX;
+  prefix = PREFIX;
 
-	constructor(express){
-		super();
-	}
+  constructor(express) {
+    super();
+  }
 
-	async get(request, response){
-		const data = {
-			guilds: client.guilds.cache.size,
-			users: client.users.cache.size,
-			channels: client.channels.cache.size,
-			commands: CommandsManager.collection.size
-		}
-		response.json(data);
-	}
+  async get(request, response) {
+    const data = {
+      guilds: client.guilds.cache.size,
+      users: client.users.cache.size,
+      channels: client.channels.cache.size,
+      commands: CommandsManager.collection.size,
+    };
+    response.json(data);
+  }
 }
 
 export default Route;

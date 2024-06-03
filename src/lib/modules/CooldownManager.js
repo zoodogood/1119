@@ -6,21 +6,6 @@ class Cooldown {
     this.heat = heat;
   }
 
-  getCurrentCooldownEnd() {
-    return this.target[this.key];
-  }
-
-  getCooldownThreshold() {
-    const current = this.getCurrentCooldownEnd();
-    const threshold = current - this.perCall * (this.heat - 1);
-    return threshold || 0;
-  }
-
-  setCooldownThreshold(timestamp) {
-    this.target[this.key] = timestamp;
-    return this;
-  }
-
   call() {
     const now = Math.max(Date.now(), this.getCurrentCooldownEnd() ?? 0);
     this.setCooldownThreshold(now + this.perCall);
@@ -33,6 +18,21 @@ class Cooldown {
 
   diff() {
     return this.getCooldownThreshold() - Date.now();
+  }
+
+  getCooldownThreshold() {
+    const current = this.getCurrentCooldownEnd();
+    const threshold = current - this.perCall * (this.heat - 1);
+    return threshold || 0;
+  }
+
+  getCurrentCooldownEnd() {
+    return this.target[this.key];
+  }
+
+  setCooldownThreshold(timestamp) {
+    this.target[this.key] = timestamp;
+    return this;
   }
 }
 

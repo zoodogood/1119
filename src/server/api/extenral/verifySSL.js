@@ -2,18 +2,17 @@ import { BaseRoute } from "#server/router.js";
 
 const PREFIX = "/.well-known/pki-validation/<secret>.txt";
 
-
 class Route extends BaseRoute {
-	prefix = PREFIX;
-	isHidden = true;
+  isHidden = true;
+  prefix = PREFIX;
 
-	constructor(express){
-		super();
-	}
+  constructor(express) {
+    super();
+  }
 
-	async get(request, response){
-		response.json(`<Спрятано>`)
-	}
+  async get(request, response) {
+    response.json(`<Спрятано>`);
+  }
 }
 
 export default Route;

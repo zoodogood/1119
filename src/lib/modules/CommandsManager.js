@@ -94,22 +94,66 @@ function parseInputCommandFromMessage(message) {
 class CommandsManager {
   static collection = null;
 
-  static parseInputCommandFromMessage = parseInputCommandFromMessage;
   static CommandInteraction = CommandInteraction;
-
   static emitter = new EventsEmitter();
 
-  static checkParams() {}
+  static EXECUTION_TYPES = {
+    slash: {
+      type: "slash",
+      call: async (command, interaction) => {
+        return await command.onSlashCommand(interaction);
+      },
+      condition: (interaction) =>
+        interaction instanceof DiscordCommandInteraction,
+    },
+    input: {
+      type: "input",
+      call: async (command, interaction) => {
+        command.options.removeCallMessage ? interaction.message.delete() : null;
+        const output = await command.onChatInput(
+          interaction.message,
+          interaction,
+        );
+        return output;
+      },
+      condition: (interaction) => "message" in interaction,
+    },
+  };
 
-  static async importCommands() {
-    const commands = (await new ImportDirectory().import(COMMANDS_PATH)).map(
-      ({ default: Command }) => new Command(),
-    );
+  static parseInputCommandFromMessage = parseInputCommandFromMessage;
 
-    const entries = commands.map((command) => [command.options.name, command]);
+  static statistics = {
+    increase: ({ interaction: { guild }, command }) => {
+      const commandOptions = command.options;
 
-    this.collection = new Collection(entries);
-  }
+      const botData = DataManager.data.bot;
+      const guildData = guild?.data;
+
+      if (guildData) {
+        guildData.commandsUsed ||= {};
+        guildData.commandsUsed[commandOptions.id] ||= 0;
+        guildData.commandsUsed[commandOptions.id]++;
+      }
+
+      if (botData) {
+        botData.commandsUsed[commandOptions.id] ||= 0;
+        botData.commandsUsed[commandOptions.id]++;
+
+        botData.commandsUsedToday ||= 0;
+        botData.commandsUsedToday++;
+      }
+    },
+
+    getUsesCount: (id, guildData) => {
+      if (guildData) {
+        guildData.commandsUsed ||= {};
+        return guildData.commandsUsed[id] || 0;
+      }
+
+      const botData = DataManager.data.bot;
+      return botData.commandsUsed[id] || 0;
+    },
+  };
 
   static checkAvailable(command, interaction) {
     const problems = [];
@@ -282,37 +326,23 @@ class CommandsManager {
     return false;
   }
 
-  static EXECUTION_TYPES = {
-    slash: {
-      type: "slash",
-      call: async (command, interaction) => {
-        return await command.onSlashCommand(interaction);
-      },
-      condition: (interaction) =>
-        interaction instanceof DiscordCommandInteraction,
-    },
-    input: {
-      type: "input",
-      call: async (command, interaction) => {
-        command.options.removeCallMessage ? interaction.message.delete() : null;
-        const output = await command.onChatInput(
-          interaction.message,
-          interaction,
-        );
-        return output;
-      },
-      condition: (interaction) => "message" in interaction,
-    },
-  };
+  static checkParams() {}
 
-  static getExecuteContext(primary) {
-    const { command, interaction } = primary;
-    const options = command.options;
-    const typeBase = Object.values(this.EXECUTION_TYPES).find(({ condition }) =>
-      condition(interaction),
-    );
+  static createCallMap() {
+    const map = new Map();
+    const setToMap = (list, command) =>
+      list.forEach((item) => map.set(item, command));
+    const createList = (command) =>
+      [
+        command.options.name,
+        ...command.options.alias.split(" "),
+        command.options.slash?.name,
+        String(command.options.id),
+      ].filter(Boolean);
 
-    return { ...primary, typeBase, options };
+    this.collection.each((command) => setToMap(createList(command), command));
+    this.callMap = map;
+    return map;
   }
 
   static async execute(command, interaction, { preventCooldown = false } = {}) {
@@ -363,54 +393,24 @@ class CommandsManager {
     return _context;
   }
 
-  static statistics = {
-    increase: ({ interaction: { guild }, command }) => {
-      const commandOptions = command.options;
+  static getExecuteContext(primary) {
+    const { command, interaction } = primary;
+    const options = command.options;
+    const typeBase = Object.values(this.EXECUTION_TYPES).find(({ condition }) =>
+      condition(interaction),
+    );
 
-      const botData = DataManager.data.bot;
-      const guildData = guild?.data;
+    return { ...primary, typeBase, options };
+  }
 
-      if (guildData) {
-        guildData.commandsUsed ||= {};
-        guildData.commandsUsed[commandOptions.id] ||= 0;
-        guildData.commandsUsed[commandOptions.id]++;
-      }
+  static async importCommands() {
+    const commands = (await new ImportDirectory().import(COMMANDS_PATH)).map(
+      ({ default: Command }) => new Command(),
+    );
 
-      if (botData) {
-        botData.commandsUsed[commandOptions.id] ||= 0;
-        botData.commandsUsed[commandOptions.id]++;
+    const entries = commands.map((command) => [command.options.name, command]);
 
-        botData.commandsUsedToday ||= 0;
-        botData.commandsUsedToday++;
-      }
-    },
-
-    getUsesCount: (id, guildData) => {
-      if (guildData) {
-        guildData.commandsUsed ||= {};
-        return guildData.commandsUsed[id] || 0;
-      }
-
-      const botData = DataManager.data.bot;
-      return botData.commandsUsed[id] || 0;
-    },
-  };
-
-  static createCallMap() {
-    const map = new Map();
-    const setToMap = (list, command) =>
-      list.forEach((item) => map.set(item, command));
-    const createList = (command) =>
-      [
-        command.options.name,
-        ...command.options.alias.split(" "),
-        command.options.slash?.name,
-        String(command.options.id),
-      ].filter(Boolean);
-
-    this.collection.each((command) => setToMap(createList(command), command));
-    this.callMap = map;
-    return map;
+    this.collection = new Collection(entries);
   }
 }
 

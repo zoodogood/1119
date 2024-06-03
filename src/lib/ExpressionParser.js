@@ -372,76 +372,9 @@ class ExpressionParser {
     },
   };
 
-  static lexAnalyze(expression) {
-    const tokens = expression.matchAll(
-      new RegExp(
-        Object.values(this.Tokens)
-          .map(({ regexp, key }) => `(?<${key}>${regexp})`)
-          .join("|"),
-        "g",
-      ),
-    );
-
-    return [...tokens].map((iterator) => {
-      const groups = iterator.groups;
-      const key = Object.keys(groups).find((name) => !!groups[name]);
-      const raw = groups[key];
-      return this.createToken(raw, key);
-    });
-  }
-
-  static normalizeExpression(expression) {
-    expression = expression.replaceAll(/\s|\./g, "");
-
-    expression = this.insertMultiplicationsNearBrackets(
-      this.processUnaryOperator(expression),
-    );
-    const tokens = this.validateTokens(this.lexAnalyze(expression));
-    return tokens.map(({ raw }) => raw).join("");
-  }
-
-  static processUnaryOperator(expression) {
-    return expression.replaceAll(/.?~.+$/g, (value) => {
-      const indexOfTilda = value.indexOf("~");
-      const needFrontBracket = indexOfTilda === 0 || value[0] !== "(";
-      const needBackBracket = value[indexOfTilda + 1] !== "(";
-      const raw = value.slice(indexOfTilda + 1);
-
-      const content = this.processUnaryOperator(raw);
-      return (
-        (indexOfTilda !== 0 ? value[0] : "") +
-        (needFrontBracket ? "(" : "") +
-        "~" +
-        (needBackBracket ? "(" : "") +
-        content +
-        (needFrontBracket ? ")" : "") +
-        (needBackBracket ? ")" : "")
-      );
-    });
-  }
-
-  static insertMultiplicationsNearBrackets(expression) {
-    return expression.replaceAll(/(?<=\d)\(|\)(?=\d)/g, (bracket) =>
-      bracket === "(" ? "*(" : ")*",
-    );
-  }
-
-  static validateTokens(tokens) {
-    const filtered = [];
-    for (let index = 0; index < tokens.length; index++) {
-      const element = tokens[index];
-      const base = this.Tokens[element.key];
-      const isValided = base.validate({
-        token: element,
-        previousToken: tokens[index - 1],
-        nextToken: tokens[index + 1],
-      });
-
-      isValided && filtered.push(element);
-      !isValided && tokens.splice(index--, 1);
-    }
-
-    return filtered;
+  static createToken(raw, key) {
+    const base = this.Tokens[key];
+    return { type: base.type, raw: String(raw), key };
   }
 
   static findBracketBorders(expression) {
@@ -466,68 +399,6 @@ class ExpressionParser {
       throw new Error();
     }
     return null;
-  }
-
-  static toNumber(expression) {
-    while (true) {
-      const position = this.findBracketBorders(expression);
-      if (!position) {
-        break;
-      }
-      const { from, to } = position;
-      const replaced = this.foldTokens(
-        this.lexAnalyze(expression.slice(from + 1, to)),
-      );
-      expression =
-        expression.slice(0, from) + replaced + expression.slice(to + 1);
-    }
-
-    return this.foldTokens(this.lexAnalyze(expression));
-  }
-
-  static getSortedTokensBase() {
-    if ("SortedTokensBase" in this.#memory) {
-      return this.#memory.SortedTokensBase;
-    }
-
-    const bases = [...Object.values(this.Tokens)].sort(
-      (a, b) => (b.operatorPriority ?? 0) - (a.operatorPriority ?? 0),
-    );
-    this.#memory.SortedTokensBase = bases;
-    return bases;
-  }
-
-  static getTokenOperationsPriorities() {
-    return [
-      ...new Set(
-        this.getSortedTokensBase()
-          .filter((base) => "operatorPriority" in base)
-          .map((base) => base.operatorPriority),
-      ),
-    ];
-  }
-
-  static processTokenAtIndex(tokens, index) {
-    const base = this.Tokens[tokens.at(index).key];
-
-    const token = tokens[index];
-    const previousToken = index === 0 ? null : tokens.at(index - 1);
-    const nextToken = index === tokens.length - 1 ? null : tokens.at(index + 1);
-    const newTokens = base
-      .merge({
-        token,
-        previousToken,
-        nextToken,
-      })
-      .filter(Boolean);
-
-    tokens.splice(
-      index !== 0 ? index - 1 : 0,
-      index !== 0 ? 3 : 2,
-      ...newTokens,
-    );
-
-    return true;
   }
 
   static foldTokens(_tokens) {
@@ -562,13 +433,142 @@ class ExpressionParser {
     return tokens.at(0).raw;
   }
 
-  static createToken(raw, key) {
-    const base = this.Tokens[key];
-    return { type: base.type, raw: String(raw), key };
+  static getSortedTokensBase() {
+    if ("SortedTokensBase" in this.#memory) {
+      return this.#memory.SortedTokensBase;
+    }
+
+    const bases = [...Object.values(this.Tokens)].sort(
+      (a, b) => (b.operatorPriority ?? 0) - (a.operatorPriority ?? 0),
+    );
+    this.#memory.SortedTokensBase = bases;
+    return bases;
+  }
+
+  static getTokenOperationsPriorities() {
+    return [
+      ...new Set(
+        this.getSortedTokensBase()
+          .filter((base) => "operatorPriority" in base)
+          .map((base) => base.operatorPriority),
+      ),
+    ];
+  }
+
+  static insertMultiplicationsNearBrackets(expression) {
+    return expression.replaceAll(/(?<=\d)\(|\)(?=\d)/g, (bracket) =>
+      bracket === "(" ? "*(" : ")*",
+    );
+  }
+
+  static lexAnalyze(expression) {
+    const tokens = expression.matchAll(
+      new RegExp(
+        Object.values(this.Tokens)
+          .map(({ regexp, key }) => `(?<${key}>${regexp})`)
+          .join("|"),
+        "g",
+      ),
+    );
+
+    return [...tokens].map((iterator) => {
+      const groups = iterator.groups;
+      const key = Object.keys(groups).find((name) => !!groups[name]);
+      const raw = groups[key];
+      return this.createToken(raw, key);
+    });
+  }
+
+  static normalizeExpression(expression) {
+    expression = expression.replaceAll(/\s|\./g, "");
+
+    expression = this.insertMultiplicationsNearBrackets(
+      this.processUnaryOperator(expression),
+    );
+    const tokens = this.validateTokens(this.lexAnalyze(expression));
+    return tokens.map(({ raw }) => raw).join("");
+  }
+
+  static processTokenAtIndex(tokens, index) {
+    const base = this.Tokens[tokens.at(index).key];
+
+    const token = tokens[index];
+    const previousToken = index === 0 ? null : tokens.at(index - 1);
+    const nextToken = index === tokens.length - 1 ? null : tokens.at(index + 1);
+    const newTokens = base
+      .merge({
+        token,
+        previousToken,
+        nextToken,
+      })
+      .filter(Boolean);
+
+    tokens.splice(
+      index !== 0 ? index - 1 : 0,
+      index !== 0 ? 3 : 2,
+      ...newTokens,
+    );
+
+    return true;
+  }
+
+  static processUnaryOperator(expression) {
+    return expression.replaceAll(/.?~.+$/g, (value) => {
+      const indexOfTilda = value.indexOf("~");
+      const needFrontBracket = indexOfTilda === 0 || value[0] !== "(";
+      const needBackBracket = value[indexOfTilda + 1] !== "(";
+      const raw = value.slice(indexOfTilda + 1);
+
+      const content = this.processUnaryOperator(raw);
+      return (
+        (indexOfTilda !== 0 ? value[0] : "") +
+        (needFrontBracket ? "(" : "") +
+        "~" +
+        (needBackBracket ? "(" : "") +
+        content +
+        (needFrontBracket ? ")" : "") +
+        (needBackBracket ? ")" : "")
+      );
+    });
   }
 
   static toDigit(expression) {
     return +this.toNumber(this.normalizeExpression(expression));
+  }
+
+  static toNumber(expression) {
+    while (true) {
+      const position = this.findBracketBorders(expression);
+      if (!position) {
+        break;
+      }
+      const { from, to } = position;
+      const replaced = this.foldTokens(
+        this.lexAnalyze(expression.slice(from + 1, to)),
+      );
+      expression =
+        expression.slice(0, from) + replaced + expression.slice(to + 1);
+    }
+
+    return this.foldTokens(this.lexAnalyze(expression));
+  }
+
+  static validateTokens(tokens) {
+    const filtered = [];
+    for (let index = 0; index < tokens.length; index++) {
+      const element = tokens[index];
+      const base = this.Tokens[element.key];
+      const isValided = base.validate({
+        token: element,
+        previousToken: tokens[index - 1],
+        nextToken: tokens[index + 1],
+      });
+
+      isValided && filtered.push(element);
+      !isValided && tokens.splice(index--, 1);
+    }
+
+    return filtered;
   }
 }
 

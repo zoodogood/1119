@@ -118,6 +118,10 @@ const PropertiesList = {
 };
 
 class Properties {
+  static emojiOf(propertyBase) {
+    return propertyBase.emoji;
+  }
+
   static endingOf(property, quantity) {
     const item = PropertiesList[property];
     if (!item) {
@@ -132,10 +136,6 @@ class Properties {
     return Util.ending(quantity, labelMeta.base, ...labelMeta.suffixes, {
       unite: (_, word) => word,
     });
-  }
-
-  static emojiOf(propertyBase) {
-    return propertyBase.emoji;
   }
 }
 

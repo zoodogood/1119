@@ -1,17 +1,5 @@
 class GuildVariablesManager {
   #data;
-  constructor(guildData) {
-    guildData.variablesList ||= {};
-    this.#data = guildData.variablesList;
-  }
-
-  get data() {
-    return this.#data;
-  }
-
-  static LIMIT = 120;
-  static LENGTH_LIMIT = 1024;
-
   interface = {
     keys: () => {
       return Object.keys(this.#data);
@@ -72,6 +60,18 @@ class GuildVariablesManager {
       return delete target[name];
     },
   };
+
+  static LENGTH_LIMIT = 1024;
+
+  static LIMIT = 120;
+  constructor(guildData) {
+    guildData.variablesList ||= {};
+    this.#data = guildData.variablesList;
+  }
+
+  get data() {
+    return this.#data;
+  }
 }
 
 export default GuildVariablesManager;

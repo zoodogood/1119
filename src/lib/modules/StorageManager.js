@@ -1,4 +1,11 @@
 class StorageManager {
+  static async keys(path) {
+    return await this.driver.keys(path);
+  }
+
+  static async read(name) {
+    return await this.driver.readFile(name);
+  }
   static async setDriver(driverId) {
     const module = await (() => {
       switch (driverId) {
@@ -17,15 +24,8 @@ class StorageManager {
 
     await this.driver.init();
   }
-
   static async write(name, content) {
     return await this.driver.writeFile(name, content);
-  }
-  static async read(name) {
-    return await this.driver.readFile(name);
-  }
-  static async keys(path) {
-    return await this.driver.keys(path);
   }
 }
 

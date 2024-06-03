@@ -3,14 +3,14 @@ import config from "#config";
 class Agent {
   failures = 0;
   successes = 0;
+  constructor(payload) {
+    Object.assign(this, payload);
+  }
   fail() {
     this.failures += 1;
   }
   success() {
     this.successes += 1;
-  }
-  constructor(payload) {
-    Object.assign(this, payload);
   }
 }
 class Balancer {

@@ -8,9 +8,7 @@ class StorageUtils {
   }
 }
 class I18nManager {
-  async load() {
-    this.data = await StorageUtils.readLocales();
-  }
+  static DEFAULT_LOCALE = "ru";
 
   f(...params) {
     return this.format(...params);
@@ -32,7 +30,9 @@ class I18nManager {
     return this.data[locale]?.[key];
   }
 
-  static DEFAULT_LOCALE = "ru";
+  async load() {
+    this.data = await StorageUtils.readLocales();
+  }
   static resolveLocale(locale) {
     locale ||= this.DEFAULT_LOCALE;
     return (

@@ -7,13 +7,6 @@ const directory = path.join(process.cwd(), ROOT);
 class Router {
   routes = [];
 
-  async fetch() {
-    this.fetchedRoutes = await new ImportDirectory({ subfolders: true }).import(
-      directory,
-    );
-    return this;
-  }
-
   bindAll(express) {
     for (const { default: Route } of this.fetchedRoutes) {
       const route = new Route(express);
@@ -21,6 +14,22 @@ class Router {
 
       this.routes.push(route);
     }
+  }
+
+  async decorate({ params, route, callback }) {
+    try {
+      await callback.apply(route, params);
+    } catch (error) {
+      const next = params.at(-1);
+      next(error);
+    }
+  }
+
+  async fetch() {
+    this.fetchedRoutes = await new ImportDirectory({ subfolders: true }).import(
+      directory,
+    );
+    return this;
   }
 
   getParsedRoutesList() {
@@ -55,15 +64,6 @@ class Router {
       express.post(route.prefix, (...params) =>
         this.decorate({ params, route, callback: route.post }),
       );
-  }
-
-  async decorate({ params, route, callback }) {
-    try {
-      await callback.apply(route, params);
-    } catch (error) {
-      const next = params.at(-1);
-      next(error);
-    }
   }
 }
 

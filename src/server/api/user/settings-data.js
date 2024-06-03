@@ -4,55 +4,54 @@ const PREFIX = "/user/settings-data";
 import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 
 class UserSettings {
-	static FIELDS = [
-		{
-			key: "chatChannelId",
-			validate: () => {
-
-			}
-		}
-	]
+  static FIELDS = [
+    {
+      key: "chatChannelId",
+      validate: () => {},
+    },
+  ];
 }
 
 class GuildSettings {
-	static FIELDS = {
-
-	}
+  static FIELDS = {};
 }
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+  isSimple = false;
 
-	constructor(express){
-		super();
-	}
-	isSimple = false;
+  prefix = PREFIX;
+  constructor(express) {
+    super();
+  }
 
-	async post(request, response){
-		const {data: user} = await authorizationProtocol(request, response);
-		if (!user){
-			return;
-		}
+  async get(request, response) {
+    const { data: user } = await authorizationProtocol(request, response);
+    if (!user) {
+      return;
+    }
 
-		const guildsId = request.headers.guilds ? JSON.parse(request.headers.guilds) : null;
-	}
+    const guildsId = request.headers.guilds
+      ? JSON.parse(request.headers.guilds)
+      : null;
+    // to-do: end
+    guildsId
+      .map((id) => client.guilds.cache.get(id))
+      .filter(Boolean)
+      .forEach((guild) => 1);
 
-	async get(request, response){
-		const {data: user} = await authorizationProtocol(request, response);
-		if (!user){
-			return;
-		}
+    response.json(guildsId);
+  }
 
-		const guildsId = request.headers.guilds ? JSON.parse(request.headers.guilds) : null;
-		// to-do: end
-		guildsId.map(id => 
-			client.guilds.cache.get(id)
-		)
-		.filter(Boolean)
-		.forEach(guild => 1);
+  async post(request, response) {
+    const { data: user } = await authorizationProtocol(request, response);
+    if (!user) {
+      return;
+    }
 
-		response.json(guildsId);
-	}
+    const guildsId = request.headers.guilds
+      ? JSON.parse(request.headers.guilds)
+      : null;
+  }
 }
 
 export default Route;

@@ -7,116 +7,6 @@ import app from "#app";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 
 class CounterManager {
-  static async create(counter) {
-    this.data.push(counter);
-    const result = await this.call(counter);
-
-    return { result, counter };
-  }
-
-  static delete(counterOrIndex) {
-    const index =
-      typeof counterOrIndex === "number"
-        ? counterOrIndex
-        : this.counterData.indexOf(counterOrIndex);
-
-    if (~index === 0) {
-      return false;
-    }
-
-    this.data.splice(index, 1);
-  }
-
-  static freeze(counter) {
-    counter.freezed = true;
-  }
-
-  static reportException(counter, error) {
-    const channel = app.client.channels.cache.get(counter.channelId);
-    const user = app.client.users.cache.get(counter.authorId);
-    const target = channel.isTextBased() ? channel : user;
-
-    const description = `Во время обработки счётчика в канале ${channel.toString()} произошло исключение.\n\nЗапускаемый счётчик заморожен до ручного возобновления. Узнать больше информации — через команду \`!счётчики\`.\nОн был создан/изменён пользователем:\n${
-      user.tag
-    } (ID: ${user.id}).`;
-    sendErrorInfo({ channel: target, error, description });
-  }
-
-  static resume(counter) {
-    delete counter.freezed;
-  }
-  static async *createGenerator() {
-    let i = 0;
-    const MINUTE = 60_000;
-    const MINUTES = 15;
-
-    while (true) {
-      const counter = this.data[i];
-      yield this.call(counter);
-
-      await sleep((MINUTE * MINUTES) / (this.data.length + 1));
-      i++;
-      i %= this.data.length;
-    }
-  }
-
-  static async handle() {
-    const queue = this.createGenerator();
-    for await (const _counter of queue) {
-    }
-  }
-  static async call(counter) {
-    if (!counter) {
-      return;
-    }
-
-    const client = app.client;
-
-    if (counter.freezed) {
-      return null;
-    }
-
-    try {
-      const channel = client.guilds.cache
-        .get(counter.guildId)
-        .channels.cache.get(counter.channelId);
-      const context = { client, counter, channel };
-      const templater = new Template(
-        { executor: counter.authorId, type: Template.sourceTypes.counter },
-        context,
-      );
-
-      const result = await this.countersTypes
-        .get(counter.type)
-        .handle(context, templater);
-      return result;
-    } catch (error) {
-      this.reportException(counter, error);
-      this.freeze(counter);
-      return error;
-    }
-  }
-
-  static file = {
-    path: `${process.cwd()}/folder/data/counters.json`,
-    load: async () => {
-      const path = this.file.path;
-      const content = FileSystem.readFileSync(path, "utf-8");
-      const data = JSON.parse(content);
-      this.data = data;
-    },
-    write: async () => {
-      const path = this.file.path;
-      const data = JSON.stringify(this.data);
-      await StorageManager.write("counters.json", data);
-      // to-do @deprecated. will be removed
-      FileSystem.writeFileSync(path, data);
-    },
-    defaultData: [],
-  };
-
-  static data = {};
-
   static countersTypes = new Collection(
     Object.entries({
       message: {
@@ -257,6 +147,116 @@ class CounterManager {
       },
     }),
   );
+
+  static data = {};
+
+  static file = {
+    path: `${process.cwd()}/folder/data/counters.json`,
+    load: async () => {
+      const path = this.file.path;
+      const content = FileSystem.readFileSync(path, "utf-8");
+      const data = JSON.parse(content);
+      this.data = data;
+    },
+    write: async () => {
+      const path = this.file.path;
+      const data = JSON.stringify(this.data);
+      await StorageManager.write("counters.json", data);
+      // to-do @deprecated. will be removed
+      FileSystem.writeFileSync(path, data);
+    },
+    defaultData: [],
+  };
+
+  static async call(counter) {
+    if (!counter) {
+      return;
+    }
+
+    const client = app.client;
+
+    if (counter.freezed) {
+      return null;
+    }
+
+    try {
+      const channel = client.guilds.cache
+        .get(counter.guildId)
+        .channels.cache.get(counter.channelId);
+      const context = { client, counter, channel };
+      const templater = new Template(
+        { executor: counter.authorId, type: Template.sourceTypes.counter },
+        context,
+      );
+
+      const result = await this.countersTypes
+        .get(counter.type)
+        .handle(context, templater);
+      return result;
+    } catch (error) {
+      this.reportException(counter, error);
+      this.freeze(counter);
+      return error;
+    }
+  }
+
+  static async create(counter) {
+    this.data.push(counter);
+    const result = await this.call(counter);
+
+    return { result, counter };
+  }
+  static async *createGenerator() {
+    let i = 0;
+    const MINUTE = 60_000;
+    const MINUTES = 15;
+
+    while (true) {
+      const counter = this.data[i];
+      yield this.call(counter);
+
+      await sleep((MINUTE * MINUTES) / (this.data.length + 1));
+      i++;
+      i %= this.data.length;
+    }
+  }
+
+  static delete(counterOrIndex) {
+    const index =
+      typeof counterOrIndex === "number"
+        ? counterOrIndex
+        : this.counterData.indexOf(counterOrIndex);
+
+    if (~index === 0) {
+      return false;
+    }
+
+    this.data.splice(index, 1);
+  }
+  static freeze(counter) {
+    counter.freezed = true;
+  }
+
+  static async handle() {
+    const queue = this.createGenerator();
+    for await (const _counter of queue) {
+    }
+  }
+
+  static reportException(counter, error) {
+    const channel = app.client.channels.cache.get(counter.channelId);
+    const user = app.client.users.cache.get(counter.authorId);
+    const target = channel.isTextBased() ? channel : user;
+
+    const description = `Во время обработки счётчика в канале ${channel.toString()} произошло исключение.\n\nЗапускаемый счётчик заморожен до ручного возобновления. Узнать больше информации — через команду \`!счётчики\`.\nОн был создан/изменён пользователем:\n${
+      user.tag
+    } (ID: ${user.id}).`;
+    sendErrorInfo({ channel: target, error, description });
+  }
+
+  static resume(counter) {
+    delete counter.freezed;
+  }
 }
 
 export default CounterManager;

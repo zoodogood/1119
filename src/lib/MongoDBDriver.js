@@ -15,6 +15,14 @@ class MongoDBDriver {
     return this;
   }
 
+  async keys(path) {
+    this.files.listIndexes();
+  }
+
+  async readFile(name) {
+    return await this.files.findOne({ name });
+  }
+
   async writeFile(name, content) {
     const options = { upsert: true };
     return await this.files.updateOne(
@@ -22,14 +30,6 @@ class MongoDBDriver {
       { $set: { name, content } },
       options,
     );
-  }
-
-  async readFile(name) {
-    return await this.files.findOne({ name });
-  }
-
-  async keys(path) {
-    this.files.listIndexes();
   }
 }
 

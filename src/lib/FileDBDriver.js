@@ -3,8 +3,41 @@ import Path from "path";
 
 class FileDBDriver {
   static root = `${process.cwd()}/folder/!localStorage`;
+  async _createDeepFolder(path) {
+    return FileSystem.mkdir(path, { recursive: true });
+  }
+
   async init() {
     return this;
+  }
+
+  async keys(path = "") {
+    const { root } = this.constructor;
+    const fullpath = `${root}/${path}`;
+    try {
+      const result = await FileSystem.readdir(fullpath);
+      return result;
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        await this._createDeepFolder(Path.resolve(fullpath, "."));
+        const result = await this.keys(path);
+        return result;
+      }
+      throw error;
+    }
+  }
+  async readFile(name) {
+    const { root } = this.constructor;
+    const path = `${root}/${name}`;
+    try {
+      const result = await FileSystem.readFile(path);
+      return result;
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async writeFile(name, content) {
@@ -21,39 +54,6 @@ class FileDBDriver {
       }
       throw error;
     }
-  }
-
-  async readFile(name) {
-    const { root } = this.constructor;
-    const path = `${root}/${name}`;
-    try {
-      const result = await FileSystem.readFile(path);
-      return result;
-    } catch (error) {
-      if (error.code === "ENOENT") {
-        return null;
-      }
-      throw error;
-    }
-  }
-  async keys(path = "") {
-    const { root } = this.constructor;
-    const fullpath = `${root}/${path}`;
-    try {
-      const result = await FileSystem.readdir(fullpath);
-      return result;
-    } catch (error) {
-      if (error.code === "ENOENT") {
-        await this._createDeepFolder(Path.resolve(fullpath, "."));
-        const result = await this.keys(path);
-        return result;
-      }
-      throw error;
-    }
-  }
-
-  async _createDeepFolder(path) {
-    return FileSystem.mkdir(path, { recursive: true });
   }
 }
 

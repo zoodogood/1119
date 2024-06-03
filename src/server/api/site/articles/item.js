@@ -1,36 +1,30 @@
 import { ArticlesManager } from "./.mod.js";
 import { BaseRoute } from "#server/router.js";
 
-
 const PREFIX = "/site/articles/item/**";
 
-
 class Route extends BaseRoute {
-	prefix = PREFIX;
-	directory = "static/articles";
+  directory = "static/articles";
+  prefix = PREFIX;
 
-	constructor(express){
-		super();
-	}
+  constructor(express) {
+    super();
+  }
 
-	async get(request, response){
-		const id = request.params[0];
-		const content = await ArticlesManager.getArticleContent(id);
-		if (content === null){
-			response.status(404).send();
-			return;
-		}
+  async delete(request, response) {}
 
-		response.json(content);
-	}
+  async get(request, response) {
+    const id = request.params[0];
+    const content = await ArticlesManager.getArticleContent(id);
+    if (content === null) {
+      response.status(404).send();
+      return;
+    }
 
-	async post(request, response){
+    response.json(content);
+  }
 
-	}
-
-	async delete(request, response){
-
-	}
+  async post(request, response) {}
 }
 
 export default Route;

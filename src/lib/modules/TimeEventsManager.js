@@ -10,25 +10,17 @@ import {
 } from "#lib/safe-utils.js";
 
 export class TimeEventData {
-  createdAt;
   _params_as_json;
+  createdAt;
+  isLost;
   name;
   timestamp;
-  isLost;
   constructor(name, timeTo, params) {
     const createdAt = Date.now();
     this.name = name;
     this.timestamp = createdAt + timeTo;
     this.createdAt = createdAt;
     this.params = params;
-  }
-
-  get params() {
-    return this._params_as_json ? JSON.parse(this._params_as_json) : null;
-  }
-
-  set params(value) {
-    this.setParams(value);
   }
 
   static from(name, timestamp, _params_as_json, createdAt) {
@@ -51,8 +43,21 @@ export class TimeEventData {
     );
   }
 
+  get params() {
+    return this._params_as_json ? JSON.parse(this._params_as_json) : null;
+  }
+
+  set params(value) {
+    this.setParams(value);
+  }
+
   setCreatedAt(createdAt) {
     this.createdAt = createdAt;
+    return this;
+  }
+
+  setIsLost(isLost) {
+    this.isLost = isLost;
     return this;
   }
 
@@ -63,23 +68,33 @@ export class TimeEventData {
     this._params_as_json = JSON.stringify(params);
     return this;
   }
-
-  setIsLost(isLost) {
-    this.isLost = isLost;
-    return this;
-  }
 }
 class TimeEventsManager {
   static #lastSeenDay;
 
-  static at(day) {
-    return this.data[day];
-  }
+  static data = {};
 
-  static create(eventName, ms, params) {
-    const event = new TimeEventData(eventName, ms, params);
-    return this._createEvent(event);
-  }
+  static emitter = new EventEmitter();
+
+  static file = {
+    path: `${process.cwd()}/folder/data/time.json`,
+    load: () => {
+      const path = this.file.path;
+      const content = FileSystem.readFileSync(path, "utf-8");
+      const events = JSON.parse(content, (key, value) =>
+        value.name ? TimeEventData.fromEventData(value) : value,
+      );
+      this.data = events;
+    },
+    write: async () => {
+      const path = this.file.path;
+      const data = JSON.stringify(this.data);
+      await StorageManager.write("timeEvents.json", data);
+      // to-do @deprecated. will be removed
+      FileSystem.writeFileSync(path, data);
+    },
+    defaultData: {},
+  };
 
   static _createEvent(event) {
     const day = timestampDay(event.timestamp);
@@ -98,25 +113,32 @@ class TimeEventsManager {
     return event;
   }
 
-  static findEventInRange(filter, range) {
-    const events = this.getEventsInRange(range);
-    return events.find(filter);
+  static at(day) {
+    return this.data[day];
+  }
+
+  static create(eventName, ms, params) {
+    const event = new TimeEventData(eventName, ms, params);
+    return this._createEvent(event);
+  }
+
+  static executeEvent(event) {
+    this.remove(event);
+
+    event.setIsLost(Date.now() - event.timestamp < -10_000);
+    this.emitter.emit("event", event);
+    console.info(`Ивент выполнен ${event.name}`);
+    return;
+  }
+
+  static fetchNextEvent() {
+    const dayEvents = this.getDistancePrefferedDayEvents();
+    return dayEvents?.at(0) ?? null;
   }
 
   static filterEventsInRange(filter, range) {
     const events = this.getEventsInRange(range);
     return events.filter(filter);
-  }
-
-  static getEventsInRange(range) {
-    const days = [...rangeToArray(range)];
-    const events = [];
-    for (const day of days) {
-      const todayEvents = this.at(day);
-      todayEvents && events.push(...todayEvents);
-    }
-
-    return events;
   }
 
   static findBulk(targetTimestamps, filter) {
@@ -155,49 +177,9 @@ class TimeEventsManager {
     return events;
   }
 
-  static remove(event) {
-    const day = timestampDay(event.timestamp);
-    if (!this.data[day]) {
-      return false;
-    }
-
-    const index = this.data[day].indexOf(event);
-
-    if (~index === 0) {
-      return false;
-    }
-    this.data[day].splice(index, 1);
-
-    if (this.data[day].length === 0) {
-      delete this.data[day];
-    }
-
-    this.handle();
-    return true;
-  }
-
-  static update(target, data) {
-    const endTimestampChanged = data.timestamp !== target.timestamp;
-    if (endTimestampChanged) {
-      this.remove(target);
-    }
-
-    Object.assign(
-      target,
-      omit(data, (key) =>
-        ["name", "timestamp", "params", "createdAt"].includes(key),
-      ),
-    );
-
-    if (endTimestampChanged) {
-      this._createEvent(target);
-    }
-    return target;
-  }
-
-  static fetchNextEvent() {
-    const dayEvents = this.getDistancePrefferedDayEvents();
-    return dayEvents?.at(0) ?? null;
+  static findEventInRange(filter, range) {
+    const events = this.getEventsInRange(range);
+    return events.find(filter);
   }
 
   static getDistancePrefferedDayEvents(needCache = true) {
@@ -216,6 +198,17 @@ class TimeEventsManager {
       return this.getDistancePrefferedDayEvents();
     }
     return dayEvents;
+  }
+
+  static getEventsInRange(range) {
+    const days = [...rangeToArray(range)];
+    const events = [];
+    for (const day of days) {
+      const todayEvents = this.at(day);
+      todayEvents && events.push(...todayEvents);
+    }
+
+    return events;
   }
 
   static getExistsDaysList() {
@@ -279,37 +272,44 @@ class TimeEventsManager {
     this.handle();
   }
 
-  static executeEvent(event) {
-    this.remove(event);
+  static remove(event) {
+    const day = timestampDay(event.timestamp);
+    if (!this.data[day]) {
+      return false;
+    }
 
-    event.setIsLost(Date.now() - event.timestamp < -10_000);
-    this.emitter.emit("event", event);
-    console.info(`Ивент выполнен ${event.name}`);
-    return;
+    const index = this.data[day].indexOf(event);
+
+    if (~index === 0) {
+      return false;
+    }
+    this.data[day].splice(index, 1);
+
+    if (this.data[day].length === 0) {
+      delete this.data[day];
+    }
+
+    this.handle();
+    return true;
   }
+  static update(target, data) {
+    const endTimestampChanged = data.timestamp !== target.timestamp;
+    if (endTimestampChanged) {
+      this.remove(target);
+    }
 
-  static file = {
-    path: `${process.cwd()}/folder/data/time.json`,
-    load: () => {
-      const path = this.file.path;
-      const content = FileSystem.readFileSync(path, "utf-8");
-      const events = JSON.parse(content, (key, value) =>
-        value.name ? TimeEventData.fromEventData(value) : value,
-      );
-      this.data = events;
-    },
-    write: async () => {
-      const path = this.file.path;
-      const data = JSON.stringify(this.data);
-      await StorageManager.write("timeEvents.json", data);
-      // to-do @deprecated. will be removed
-      FileSystem.writeFileSync(path, data);
-    },
-    defaultData: {},
-  };
+    Object.assign(
+      target,
+      omit(data, (key) =>
+        ["name", "timestamp", "params", "createdAt"].includes(key),
+      ),
+    );
 
-  static emitter = new EventEmitter();
-  static data = {};
+    if (endTimestampChanged) {
+      this._createEvent(target);
+    }
+    return target;
+  }
 }
 
 export default TimeEventsManager;

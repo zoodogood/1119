@@ -83,59 +83,6 @@ class Route extends BaseRoute {
 }
 
 class PathControll {
-  suggest(url) {
-    const [folderChunk, targetChunk] = this.parseURL(url);
-
-    const files = this.getFiles(folderChunk);
-    if (files === null) {
-      return null;
-    }
-
-    const target = this.getTarget({ files, targetChunk });
-    if (target === null) {
-      return files;
-    }
-
-    return this.createResponse({ folderChunk, target });
-  }
-
-  parseURL(url) {
-    const way = url.split("/").filter(Boolean).slice(1);
-
-    const folderChunk = way.slice(0, -1);
-    const target = way.at(-1);
-
-    return [folderChunk, target];
-  }
-
-  getFiles(folderPath) {
-    const pathToDirectory = path.join(root, folderPath.join("/"));
-
-    try {
-      return FileSystem.readdirSync(pathToDirectory);
-    } catch {
-      return null;
-    }
-  }
-
-  processQuerySymbol(target) {
-    return target.replace(/\?.*$/, "");
-  }
-
-  getTarget({ files, targetChunk }) {
-    targetChunk = this.processQuerySymbol(targetChunk);
-
-    const exact = (name) => name === targetChunk;
-    const include = (name) => name.includes(targetChunk);
-    const isIndex = (name) => name === "index.html";
-
-    if (!targetChunk) {
-      return files.find(isIndex) ?? null;
-    }
-
-    return files.find(exact) ?? files.find(include) ?? null;
-  }
-
   createResponse({ folderChunk, target }) {
     const pathToFile = path.join(root, folderChunk.join("/"), target);
 
@@ -155,6 +102,59 @@ class PathControll {
       const target = this.getTarget({ files, targetChunk: "index.html" });
       return target ? path.join(pathToFile, target) : files;
     }
+  }
+
+  getFiles(folderPath) {
+    const pathToDirectory = path.join(root, folderPath.join("/"));
+
+    try {
+      return FileSystem.readdirSync(pathToDirectory);
+    } catch {
+      return null;
+    }
+  }
+
+  getTarget({ files, targetChunk }) {
+    targetChunk = this.processQuerySymbol(targetChunk);
+
+    const exact = (name) => name === targetChunk;
+    const include = (name) => name.includes(targetChunk);
+    const isIndex = (name) => name === "index.html";
+
+    if (!targetChunk) {
+      return files.find(isIndex) ?? null;
+    }
+
+    return files.find(exact) ?? files.find(include) ?? null;
+  }
+
+  parseURL(url) {
+    const way = url.split("/").filter(Boolean).slice(1);
+
+    const folderChunk = way.slice(0, -1);
+    const target = way.at(-1);
+
+    return [folderChunk, target];
+  }
+
+  processQuerySymbol(target) {
+    return target.replace(/\?.*$/, "");
+  }
+
+  suggest(url) {
+    const [folderChunk, targetChunk] = this.parseURL(url);
+
+    const files = this.getFiles(folderChunk);
+    if (files === null) {
+      return null;
+    }
+
+    const target = this.getTarget({ files, targetChunk });
+    if (target === null) {
+      return files;
+    }
+
+    return this.createResponse({ folderChunk, target });
   }
 }
 

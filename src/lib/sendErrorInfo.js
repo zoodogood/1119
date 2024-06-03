@@ -15,90 +15,6 @@ import config from "#config";
 import client from "#bot/client.js";
 
 class UserInterfaceUtil {
-  static async sendErrorInfo({
-    channel,
-    error,
-    interaction = {},
-    primary = null,
-    description = "",
-  }) {
-    const { fileOfError, strokeOfError, stack } =
-      ErrorData.prototype.parseErrorStack.call(
-        { error },
-        { node_modules: false },
-      ) ?? {};
-
-    if (stack?.length >= 1900) {
-      stack.length = 1900;
-    }
-
-    const components = [
-      {
-        type: ComponentType.Button,
-        style: ButtonStyle.Secondary,
-        label: "Получить отчёт",
-        customId: "getErrorInfo",
-        emoji: "〽️",
-      },
-      {
-        type: ComponentType.Button,
-        style: ButtonStyle.Link,
-        label: "В Github",
-        url: resolveGithubPath(
-          Path.relative(process.cwd(), fileOfError ?? "."),
-          strokeOfError,
-        ),
-        disabled: !fileOfError,
-      },
-      {
-        type: ComponentType.Button,
-        style: ButtonStyle.Success,
-        label: "Сообщение",
-        customId: "setAddableInformationForError",
-      },
-      {
-        type: ComponentType.Button,
-        style: ButtonStyle.Success,
-        label: "Контекст",
-        customId: "readPrimaryContext",
-        disabled: !primary,
-      },
-    ];
-    const embed = {
-      title: "— Данные об панике 🙄",
-      description: `> ${error.message}\n\n${description}`,
-      color: "#d8bb40",
-      components,
-      reference: interaction.message?.id ?? null,
-    };
-    const message = await channel.msg(embed);
-
-    const context = {
-      error,
-      stack,
-      interaction,
-      channel,
-      description,
-      primary,
-    };
-
-    const collector = message.createMessageComponentCollector({
-      time: 3_600_000,
-    });
-    collector.on("collect", async (interaction) =>
-      this.onComponent({ interaction, context }),
-    );
-    collector.on("end", () => message.edit({ components: [] }));
-    return { context, message };
-  }
-
-  static onComponent({ interaction, context }) {
-    this.components[interaction.customId].call(this, {
-      interaction,
-      context,
-    });
-  }
-
   static components = {
     getErrorInfo({ interaction, context }) {
       const { stack } = context;
@@ -227,6 +143,90 @@ class UserInterfaceUtil {
       });
     },
   };
+
+  static onComponent({ interaction, context }) {
+    this.components[interaction.customId].call(this, {
+      interaction,
+      context,
+    });
+  }
+
+  static async sendErrorInfo({
+    channel,
+    error,
+    interaction = {},
+    primary = null,
+    description = "",
+  }) {
+    const { fileOfError, strokeOfError, stack } =
+      ErrorData.prototype.parseErrorStack.call(
+        { error },
+        { node_modules: false },
+      ) ?? {};
+
+    if (stack?.length >= 1900) {
+      stack.length = 1900;
+    }
+
+    const components = [
+      {
+        type: ComponentType.Button,
+        style: ButtonStyle.Secondary,
+        label: "Получить отчёт",
+        customId: "getErrorInfo",
+        emoji: "〽️",
+      },
+      {
+        type: ComponentType.Button,
+        style: ButtonStyle.Link,
+        label: "В Github",
+        url: resolveGithubPath(
+          Path.relative(process.cwd(), fileOfError ?? "."),
+          strokeOfError,
+        ),
+        disabled: !fileOfError,
+      },
+      {
+        type: ComponentType.Button,
+        style: ButtonStyle.Success,
+        label: "Сообщение",
+        customId: "setAddableInformationForError",
+      },
+      {
+        type: ComponentType.Button,
+        style: ButtonStyle.Success,
+        label: "Контекст",
+        customId: "readPrimaryContext",
+        disabled: !primary,
+      },
+    ];
+    const embed = {
+      title: "— Данные об панике 🙄",
+      description: `> ${error.message}\n\n${description}`,
+      color: "#d8bb40",
+      components,
+      reference: interaction.message?.id ?? null,
+    };
+    const message = await channel.msg(embed);
+
+    const context = {
+      error,
+      stack,
+      interaction,
+      channel,
+      description,
+      primary,
+    };
+
+    const collector = message.createMessageComponentCollector({
+      time: 3_600_000,
+    });
+    collector.on("collect", async (interaction) =>
+      this.onComponent({ interaction, context }),
+    );
+    collector.on("end", () => message.edit({ components: [] }));
+    return { context, message };
+  }
 }
 
 function sendErrorInfo(...params) {

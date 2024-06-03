@@ -17,15 +17,6 @@ class DefaultComponentsProcessor {
     this._initCallbacks();
   }
 
-  process() {
-    const { DefaultComponents } = Pager;
-    const components = justButtonComponents(
-      ...Object.values(structuredClone(DefaultComponents)),
-    );
-    this.processIsDisabledGetters(components);
-    this.pager.options.components.push(...components);
-  }
-
   _initCallbacks() {
     const { Next, Previous, Select } = Pager.DefaultComponents;
     this.callbacks = {
@@ -55,6 +46,15 @@ class DefaultComponentsProcessor {
         });
       },
     };
+  }
+
+  process() {
+    const { DefaultComponents } = Pager;
+    const components = justButtonComponents(
+      ...Object.values(structuredClone(DefaultComponents)),
+    );
+    this.processIsDisabledGetters(components);
+    this.pager.options.components.push(...components);
   }
 
   processIsDisabledGetters(components) {
@@ -126,14 +126,60 @@ class Pager_Options extends MessageInterface_Options {
 }
 
 export class Pager extends MessageInterface {
-  pages = [];
+  _callbacks = {
+    [Pager.DefaultComponents.Previous.customId]: (interaction) => {
+      this.currentPage--;
+      this.updateMessage(interaction);
+    },
+    [Pager.DefaultComponents.Next.customId]: (interaction) => {
+      this.currentPage++;
+      this.updateMessage(interaction);
+    },
+    [Pager.DefaultComponents.Select.customId]: async (interaction) => {
+      this.options.selectPageStrategy(this, interaction);
+    },
+  };
   currentPage = 0;
+  static DefaultComponents = {
+    Previous: { customId: "PAGER_PREVIOUS", emoji: Emoji.green_arrow_left.id },
+    Next: { customId: "PAGER_NEXT", emoji: Emoji.green_arrow_right.id },
+    Select: {
+      customId: "PAGER_SELECT",
+    },
+  };
+
+  static Events = {
+    ...super.Events,
+  };
+
   options = new Pager_Options();
+
+  pages = [];
 
   constructor(channel) {
     super();
     this.setChannel(channel);
     this._processDefaultComponents();
+  }
+
+  async _getMessageOptions() {
+    const properties = await super._getMessageOptions();
+    return {
+      ...properties,
+      ...this.pages[this.currentPage],
+    };
+  }
+
+  _onCollect(type, interaction) {
+    const data = super._onCollect_processData(type, interaction);
+    data.isAllowed &&
+      this._callbacks[interaction.customId]?.call(this, interaction);
+    super._onCollect_emit(data);
+  }
+
+  _processDefaultComponents(Processor = DefaultComponentsProcessor) {
+    const processor = new Processor(this);
+    processor.process();
   }
 
   addPages(...pages) {
@@ -148,9 +194,9 @@ export class Pager extends MessageInterface {
     this.pages.length = length;
   }
 
-  updateCurrentPageContent(value) {
-    const { currentPage } = this;
-    this.setPageAt(currentPage, value);
+  setSelectPageStrategyOption(strategy) {
+    this._setOptions({ selectPageStrategy: strategy });
+    return this;
   }
 
   /**
@@ -165,54 +211,8 @@ export class Pager extends MessageInterface {
     return options.components.splice(from, to, ...components);
   }
 
-  setSelectPageStrategyOption(strategy) {
-    this._setOptions({ selectPageStrategy: strategy });
-    return this;
+  updateCurrentPageContent(value) {
+    const { currentPage } = this;
+    this.setPageAt(currentPage, value);
   }
-
-  async _getMessageOptions() {
-    const properties = await super._getMessageOptions();
-    return {
-      ...properties,
-      ...this.pages[this.currentPage],
-    };
-  }
-
-  _processDefaultComponents(Processor = DefaultComponentsProcessor) {
-    const processor = new Processor(this);
-    processor.process();
-  }
-
-  _onCollect(type, interaction) {
-    const data = super._onCollect_processData(type, interaction);
-    data.isAllowed &&
-      this._callbacks[interaction.customId]?.call(this, interaction);
-    super._onCollect_emit(data);
-  }
-
-  _callbacks = {
-    [Pager.DefaultComponents.Previous.customId]: (interaction) => {
-      this.currentPage--;
-      this.updateMessage(interaction);
-    },
-    [Pager.DefaultComponents.Next.customId]: (interaction) => {
-      this.currentPage++;
-      this.updateMessage(interaction);
-    },
-    [Pager.DefaultComponents.Select.customId]: async (interaction) => {
-      this.options.selectPageStrategy(this, interaction);
-    },
-  };
-
-  static Events = {
-    ...super.Events,
-  };
-
-  static DefaultComponents = {
-    Previous: { customId: "PAGER_PREVIOUS", emoji: Emoji.green_arrow_left.id },
-    Next: { customId: "PAGER_NEXT", emoji: Emoji.green_arrow_right.id },
-    Select: {
-      customId: "PAGER_SELECT",
-    },
-  };
 }
