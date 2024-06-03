@@ -40,6 +40,7 @@
         lowed_change,
         group_base,
         short_change,
+        createdAt,
       };
     });
     const first_change = changes[0];
@@ -79,7 +80,7 @@
     />
     <small
       >— используйте «!» при поиске для исключения, например, !bug !fix, —
-      исключает источники со словами «bug» и «fix»</small
+      исключает источники, включающие «bug» и «fix»</small
     >
     <h2>Список изменений</h2>
     <h5>
@@ -111,8 +112,13 @@
         </p>
         <ul>
           {#each Object.entries(Object.groupBy(changes, ({ group_symbol }) => group_symbol)) as [_, changes]}
-            {#each changes as { short_change, group_symbol, message }}
-              <li change_item change_item_symbol={group_symbol} title={message}>
+            {#each changes as { short_change, group_symbol, message, createdAt }}
+              <li
+                change_item
+                change_item_symbol={group_symbol}
+                title={message}
+                id={`change_${short_change}_${createdAt}`}
+              >
                 {short_change}.
               </li>
             {/each}
