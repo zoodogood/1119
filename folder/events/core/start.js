@@ -1,64 +1,34 @@
 import { BaseEvent } from "#lib/modules/EventsManager.js";
-import { assert } from "console";
 import { omit } from "#src/lib/util.js";
+import { assert } from "console";
 
+import { client } from "#bot/client.js";
 import {
-  DataManager,
-  TimeEventsManager,
+  BossManager,
   CommandsManager,
   CounterManager,
-  EventsManager,
-  StorageManager,
-  BossManager,
-  UserEffectManager,
-  I18nManager,
+  DataManager,
   ErrorsHandler,
+  EventsManager,
+  I18nManager,
+  StorageManager,
+  TimeEventsManager,
+  UserEffectManager,
 } from "#lib/modules/mod.js";
-import { client } from "#bot/client.js";
 
 import app from "#app";
 import config from "#config";
-import { createStopPromise } from "#lib/createStopPromise.js";
 import { Events } from "#constants/app/events.js";
+import { createStopPromise } from "#lib/createStopPromise.js";
 
 class Event extends BaseEvent {
+  options = {
+    name: "core/start",
+  };
+
   constructor() {
     const EVENT = Events.Start;
     super(EventsManager.emitter, EVENT);
-  }
-
-  async run() {
-    await StorageManager.setDriver(config.database.driver);
-
-    EventsManager.listenAll();
-
-    await DataManager.file.load();
-    await TimeEventsManager.file.load();
-    // await ReactionsManager.loadReactionsFromFile();
-    await CounterManager.file.load();
-    await ErrorsHandler.importFileErrorsList();
-
-    this.checkDataManagerFullset();
-
-    await CommandsManager.importCommands();
-    CommandsManager.createCallMap();
-    await UserEffectManager.importEffects();
-    BossManager.BossEffects.updateBasesFromManager();
-
-    app.client = client;
-    app.i18n = new I18nManager();
-    await app.i18n.load();
-
-    this.processLogin();
-  }
-
-  async processLogin() {
-    const event = {
-      ...createStopPromise(),
-    };
-    EventsManager.emitter.emit(Events.BeforeLogin, event);
-    await event.whenStopPromises();
-    client.login(process.env.DISCORD_TOKEN);
   }
 
   checkDataManagerFullset() {
@@ -109,9 +79,39 @@ class Event extends BaseEvent {
     Data.bot.grempenItems ||= "123456";
   }
 
-  options = {
-    name: "core/start",
-  };
+  async processLogin() {
+    const event = {
+      ...createStopPromise(),
+    };
+    EventsManager.emitter.emit(Events.BeforeLogin, event);
+    await event.whenStopPromises();
+    client.login(process.env.DISCORD_TOKEN);
+  }
+
+  async run() {
+    await StorageManager.setDriver(config.database.driver);
+
+    EventsManager.listenAll();
+
+    await DataManager.file.load();
+    await TimeEventsManager.file.load();
+    // await ReactionsManager.loadReactionsFromFile();
+    await CounterManager.file.load();
+    await ErrorsHandler.importFileErrorsList();
+
+    this.checkDataManagerFullset();
+
+    await CommandsManager.importCommands();
+    CommandsManager.createCallMap();
+    await UserEffectManager.importEffects();
+    BossManager.BossEffects.updateBasesFromManager();
+
+    app.client = client;
+    app.i18n = new I18nManager();
+    await app.i18n.load();
+
+    this.processLogin();
+  }
 }
 
 export default Event;
