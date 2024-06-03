@@ -242,3 +242,7 @@ element-group {
   border-radius: 10px;
   border: 2px solid transparent;
 }
+
+br {
+  user-select: none;
+}
