@@ -1,5 +1,7 @@
 // @ts-check
 class BaseCommand {
+  componentsCallbacks = {};
+
   /**
    *
    * @param {import("discord.js").Message} message
@@ -7,7 +9,10 @@ class BaseCommand {
    */
   onChatInput(message, interaction) {}
 
-  onComponent() {}
+  onComponent({ params: rawParams, interaction }) {
+    const [target, ...params] = rawParams.split(":");
+    this.componentsCallbacks[target].call(this, interaction, ...params);
+  }
 
   onSlash() {}
 }
