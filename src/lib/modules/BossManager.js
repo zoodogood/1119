@@ -197,7 +197,7 @@ class AttributesShop {
       }))
         .map(
           ({ label, price, product }) =>
-            `${label}\n${numberFormat(price)} ${Properties.endingOf(
+            `${label}\n${NumberFormatLetterize(price)} ${Properties.endingOf(
               product.resource,
               price,
             )};`,
