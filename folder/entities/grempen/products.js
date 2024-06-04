@@ -1,6 +1,7 @@
 import client from "#bot/client.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { HOUR } from "#constants/globals/time.js";
+import { resolve_description } from "#folder/entities/curses/curse.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
@@ -546,10 +547,8 @@ export const grempen_products = transformToCollectionUsingKey([
         context: boughtContext,
       });
       CurseManager.init({ user, curse });
-      const descriptionContent = CurseManager.interface({
-        user,
-        curse,
-      }).toString();
+
+      const descriptionContent = resolve_description({ curse, user });
 
       return ` как новое проклятие. Чтобы избавится от бича камня: ${descriptionContent}.`;
     },
