@@ -309,9 +309,9 @@ class CommandDefaultBehavior {
 
   async onProcess() {
     const { context } = this;
-    const { channel } = context;
+    const { interaction } = context;
     /**@type {import("discord.js").Message} */
-    const message = await channel.msg(this.createEmbed(context));
+    const message = await interaction.msg(this.createEmbed(context));
 
     const collector = message.createReactionCollector();
     collector.on("collect", (reaction, user) => {
@@ -347,6 +347,14 @@ class CommandDefaultBehavior {
 }
 
 class Command extends BaseCommand {
+  componentsCallbacks = {
+    open(interaction) {
+      const context = CommandRunContext.new(interaction, this);
+      context.setWhenRunExecuted(this.onProcess(context));
+      return context;
+    },
+  };
+
   options = {
     name: "editserver",
     id: 29,
