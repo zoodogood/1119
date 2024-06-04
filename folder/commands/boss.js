@@ -145,18 +145,18 @@ class Events_Flagsubcommand extends BaseFlagSubcommand {
         description: "Босс не может появится на сервере, где не установлен чат",
         delete: 12 * SECOND,
         components: justButtonComponents({
-          label: "Открыть команлу",
+          label: "Открыть команду",
           customId: "@command/editserver/open",
         }),
       });
       return false;
     }
 
-    if (!guild.data.disabledBoss) {
+    if (guild.data.disabledBoss) {
       channel.msg({
         description: "Босс был вручную отключен на этом сервере",
         components: justButtonComponents({
-          label: "Открыть команлу",
+          label: "Открыть команду",
           customId: "@command/editserver/open",
         }),
         delete: 12 * SECOND,
@@ -493,24 +493,24 @@ class Command extends BaseCommand {
   }
 
   processBossIsExists(context) {
-    const { guild } = context;
+    const { guild, boss, channel } = context;
     if (!guild.data.chatChannel) {
       channel.msg({
         description: "Босс не может появится на сервере, где не установлен чат",
         delete: 12 * SECOND,
         components: justButtonComponents({
-          label: "Открыть команлу",
+          label: "Открыть команду",
           customId: "@command/editserver/open",
         }),
       });
       return false;
     }
 
-    if (!guild.data.disabledBoss) {
+    if (guild.data.disabledBoss) {
       channel.msg({
         description: "Босс был вручную отключен на этом сервере",
         components: justButtonComponents({
-          label: "Открыть команлу",
+          label: "Открыть команду",
           customId: "@command/editserver/open",
         }),
         delete: 12 * SECOND,
@@ -518,7 +518,6 @@ class Command extends BaseCommand {
       return false;
     }
 
-    const { boss, channel } = context;
     if (!boss.isArrived) {
       const description = boss.apparanceAtDay
         ? `Прибудет лишь ${toDayDate((boss.apparanceAtDay + 1) * DAY)}`
