@@ -905,6 +905,10 @@ class BossManager {
       return;
     }
 
+    if (!guild.data.chatChannel || guild.data.disableBoss) {
+      return;
+    }
+
     const guildData = guild.data;
 
     if (

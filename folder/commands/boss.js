@@ -16,6 +16,7 @@ import {
   toFixedAfterZero,
   toLocaleDeveloperString,
 } from "#lib/safe-utils.js";
+import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { ButtonStyle, ComponentType } from "discord.js";
 
@@ -133,11 +134,35 @@ class Events_Flagsubcommand extends BaseFlagSubcommand {
     });
   }
   process_arrived() {
-    const { channel, boss } = this.context;
+    const { channel, boss, guild } = this.context;
+
     if (boss.isArrived) {
       return true;
     }
 
+    if (!guild.data.chatChannel) {
+      channel.msg({
+        description: "Босс не может появится на сервере, где не установлен чат",
+        delete: 12 * SECOND,
+        components: justButtonComponents({
+          label: "Открыть команлу",
+          customId: "@command/editserver/open",
+        }),
+      });
+      return false;
+    }
+
+    if (!guild.data.disabledBoss) {
+      channel.msg({
+        description: "Босс был вручную отключен на этом сервере",
+        components: justButtonComponents({
+          label: "Открыть команлу",
+          customId: "@command/editserver/open",
+        }),
+        delete: 12 * SECOND,
+      });
+      return false;
+    }
     channel.msg({
       description: "Момент появления босса пока неизвестен",
       delete: 12 * SECOND,
@@ -468,6 +493,31 @@ class Command extends BaseCommand {
   }
 
   processBossIsExists(context) {
+    const { guild } = context;
+    if (!guild.data.chatChannel) {
+      channel.msg({
+        description: "Босс не может появится на сервере, где не установлен чат",
+        delete: 12 * SECOND,
+        components: justButtonComponents({
+          label: "Открыть команлу",
+          customId: "@command/editserver/open",
+        }),
+      });
+      return false;
+    }
+
+    if (!guild.data.disabledBoss) {
+      channel.msg({
+        description: "Босс был вручную отключен на этом сервере",
+        components: justButtonComponents({
+          label: "Открыть команлу",
+          customId: "@command/editserver/open",
+        }),
+        delete: 12 * SECOND,
+      });
+      return false;
+    }
+
     const { boss, channel } = context;
     if (!boss.isArrived) {
       const description = boss.apparanceAtDay
