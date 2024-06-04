@@ -79,7 +79,7 @@ client.on("ready", async () => {
     guild.invitesUsesCache?.set(invite.code, invite.uses);
   });
 
-  client.on("inviteDelete", async (invite) => {
+  client.on("inviteDelete", async (_) => {
     //let guild = invite.guild;
   });
 
