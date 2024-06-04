@@ -350,7 +350,7 @@ class Command extends BaseCommand {
   componentsCallbacks = {
     open(interaction) {
       const context = CommandRunContext.new(interaction, this);
-      context.setWhenRunExecuted(this.onProcess(context));
+      context.setWhenRunExecuted(this.run(context));
       return context;
     },
   };
