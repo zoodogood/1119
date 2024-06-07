@@ -1,16 +1,129 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import { getAddress, timestampToDate, ending, dayjs } from "#lib/util.js";
+import app from "#app";
 import { client } from "#bot/client.js";
 import config from "#config";
-import DataManager from "#lib/modules/DataManager.js";
+import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
-import app from "#app";
+import DataManager from "#lib/modules/DataManager.js";
 import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
+import { dayjs, ending, getAddress, timestampToDate } from "#lib/util.js";
 
+import { generateInviteFor } from "#lib/util.js";
 import { CreateModal } from "@zoodogood/utils/discordjs";
 import { ButtonStyle, ComponentType, TextInputStyle } from "discord.js";
-import { generateInviteFor } from "#lib/util.js";
 
+class CommandRunContext extends BaseCommandRunContext {
+  parseCli(input) {}
+}
+
+class CommandDefaultBehaviour extends BaseFlagSubcommand {
+  commandsUsedContent() {
+    const getThreeQuotes = () => "`".repeat(3);
+    const list = Object.entries(DataManager.data.bot.commandsUsed)
+      .sortBy(1, true)
+      .map(
+        ([id, uses], i) =>
+          `${String(i + 1) + ".".repeat(2 - String(i + 1).length)}.${
+            CommandsManager.callMap.get(id).options.name
+          }_${uses}(${+(
+            (uses / DataManager.data.bot.commandsLaunched) *
+            100
+          ).toFixed(2)})%`,
+      );
+    const maxLength = Math.max(...list.map((stroke) => stroke.length));
+
+    const lines = list.map(
+      (stroke) => `${stroke} ${" ".repeat(maxLength + 7 - stroke.length)}`,
+    );
+
+    let stroke = "";
+    while (lines.length) {
+      stroke += `${lines.splice(0, 2).join(" ")}\n`;
+    }
+
+    return `${getThreeQuotes()}js\nТут такое было.. ого-го\nᅠ\n${stroke}ᅠ${getThreeQuotes()}`;
+  }
+
+  getMainInterfaceComponents() {
+    const components = [
+      {
+        type: ComponentType.Button,
+        label: "Больше",
+        style: ButtonStyle.Success,
+        customId: "@command/bot/getMoreInfo",
+      },
+      {
+        type: ComponentType.Button,
+        label: "Сервер",
+        style: ButtonStyle.Link,
+        url: config.guild.url,
+        emoji: { name: "grempen", id: "753287402101014649" },
+      },
+      {
+        type: ComponentType.Button,
+        label: "Пригласить",
+        style: ButtonStyle.Link,
+        url: generateInviteFor(client),
+        emoji: { name: "berry", id: "756114492055617558" },
+      },
+    ];
+    return components;
+  }
+
+  onProcess() {
+    const { interaction } = this.context;
+    const { rss, heapTotal } = process.memoryUsage();
+    const address = app.server && getAddress(app.server);
+
+    const season = ["Зима", "Весна", "Лето", "Осень"][
+      Math.floor((new Date().getMonth() + 1) / 3) % 4
+    ];
+    const version = app.version ?? "0.0.0";
+
+    const contents = {
+      ping: `<:online:637544335037956096> Пинг: ${client.ws.ping}`,
+      version: `V${version}`,
+      season: `[#${season}](https://hytale.com/supersecretpage)`,
+      guilds: `Серваков...**${client.guilds.cache.size}**`,
+      commands: `Команд: ${CommandsManager.collection.size}`,
+      time: `Время сервера: ${new Intl.DateTimeFormat("ru-ru", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format()}`,
+      address: address ? `; Доступен по адрессу: ${address}` : "",
+      performance: `\`${(heapTotal / 1024 / 1024).toFixed(2)} мб / ${(
+        rss /
+        1024 /
+        1024
+      ).toFixed(2)} МБ\``,
+
+      errors: `Паник за текущий сеанс: ${Number(
+        ErrorsHandler.actualSessionMetadata().errorsCount,
+      )}`,
+      uniqueErrors: `Уникальных паник: ${
+        ErrorsHandler.actualSessionMetadata().uniqueErrors.size
+      }`,
+    };
+
+    const embed = {
+      title: "ну типа.. ай, да, я живой, да",
+      description: `${contents.ping} ${contents.version} ${contents.season}, что сюда ещё запихнуть?\n${contents.guilds}(?) ${contents.commands}\n${contents.performance}\n${contents.time}${contents.address}\n${contents.errors};\n${contents.uniqueErrors}`,
+      footer: {
+        text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${
+          DataManager.data.bot.addToNewGuildAt
+            ? timestampToDate(
+                Date.now() - DataManager.data.bot.addToNewGuildAt,
+                2,
+              )
+            : "Вечность"
+        }`,
+      },
+      components: this.getMainInterfaceComponents(),
+    };
+
+    interaction.channel.msg(embed);
+  }
+}
 class Command extends BaseCommand {
   componentsCallbacks = {
     removeMessage(interaction) {
@@ -225,7 +338,6 @@ class Command extends BaseCommand {
       return;
     },
   };
-
   options = {
     name: "bot",
     id: 15,
@@ -243,119 +355,15 @@ class Command extends BaseCommand {
     type: "bot",
   };
 
-  commandsUsedContent() {
-    const getThreeQuotes = () => "`".repeat(3);
-    const list = Object.entries(DataManager.data.bot.commandsUsed)
-      .sortBy(1, true)
-      .map(
-        ([id, uses], i) =>
-          `${String(i + 1) + ".".repeat(2 - String(i + 1).length)}.${
-            CommandsManager.callMap.get(id).options.name
-          }_${uses}(${+(
-            (uses / DataManager.data.bot.commandsLaunched) *
-            100
-          ).toFixed(2)})%`,
-      );
-    const maxLength = Math.max(...list.map((stroke) => stroke.length));
-
-    const lines = list.map(
-      (stroke) => `${stroke} ${" ".repeat(maxLength + 7 - stroke.length)}`,
-    );
-
-    let stroke = "";
-    while (lines.length) {
-      stroke += `${lines.splice(0, 2).join(" ")}\n`;
-    }
-
-    return `${getThreeQuotes()}js\nТут такое было.. ого-го\nᅠ\n${stroke}ᅠ${getThreeQuotes()}`;
-  }
-
-  displayMainInterface(interaction) {
-    const { rss, heapTotal } = process.memoryUsage();
-    const address = app.server && getAddress(app.server);
-
-    const season = ["Зима", "Весна", "Лето", "Осень"][
-      Math.floor((new Date().getMonth() + 1) / 3) % 4
-    ];
-    const version = app.version ?? "0.0.0";
-
-    const contents = {
-      ping: `<:online:637544335037956096> Пинг: ${client.ws.ping}`,
-      version: `V${version}`,
-      season: `[#${season}](https://hytale.com/supersecretpage)`,
-      guilds: `Серваков...**${client.guilds.cache.size}**`,
-      commands: `Команд: ${CommandsManager.collection.size}`,
-      time: `Время сервера: ${new Intl.DateTimeFormat("ru-ru", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format()}`,
-      address: address ? `; Доступен по адрессу: ${address}` : "",
-      performance: `\`${(heapTotal / 1024 / 1024).toFixed(2)} мб / ${(
-        rss /
-        1024 /
-        1024
-      ).toFixed(2)} МБ\``,
-
-      errors: `Паник за текущий сеанс: ${Number(
-        ErrorsHandler.actualSessionMetadata().errorsCount,
-      )}`,
-      uniqueErrors: `Уникальных паник: ${
-        ErrorsHandler.actualSessionMetadata().uniqueErrors.size
-      }`,
-    };
-
-    const embed = {
-      title: "ну типа.. ай, да, я живой, да",
-      description: `${contents.ping} ${contents.version} ${contents.season}, что сюда ещё запихнуть?\n${contents.guilds}(?) ${contents.commands}\n${contents.performance}\n${contents.time}${contents.address}\n${contents.errors};\n${contents.uniqueErrors}`,
-      footer: {
-        text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${
-          DataManager.data.bot.addToNewGuildAt
-            ? timestampToDate(
-                Date.now() - DataManager.data.bot.addToNewGuildAt,
-                2,
-              )
-            : "Вечность"
-        }`,
-      },
-      components: this.getMainInterfaceComponents(),
-    };
-
-    interaction.channel.msg(embed);
-  }
-
-  getMainInterfaceComponents() {
-    const components = [
-      {
-        type: ComponentType.Button,
-        label: "Больше",
-        style: ButtonStyle.Success,
-        customId: "@command/bot/getMoreInfo",
-      },
-      {
-        type: ComponentType.Button,
-        label: "Сервер",
-        style: ButtonStyle.Link,
-        url: config.guild.url,
-        emoji: { name: "grempen", id: "753287402101014649" },
-      },
-      {
-        type: ComponentType.Button,
-        label: "Пригласить",
-        style: ButtonStyle.Link,
-        url: generateInviteFor(client),
-        emoji: { name: "berry", id: "756114492055617558" },
-      },
-    ];
-    return components;
-  }
-
   async onChatInput(msg, interaction) {
-    this.displayMainInterface(interaction);
+    const context = await CommandRunContext.new(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
   }
 
-  onComponent({ params: rawParams, interaction }) {
-    const [target, ...params] = rawParams.split(":");
-    this.componentsCallbacks[target].call(this, interaction, ...params);
+  async run(context) {
+    context.parseCli(context.interaction.params);
+    await new CommandDefaultBehaviour(context).onProcess();
   }
 }
 
