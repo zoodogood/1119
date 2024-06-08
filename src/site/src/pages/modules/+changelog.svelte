@@ -97,12 +97,7 @@
         {ending(_interface.flat?.length, "изменени", "й", "е", "я")}:
       </p>
     </h5>
-    <small symbols_list>
-      <span>Условные обозначения:</span>
-      {#each GroupSymbols.map(({ label, symbol }, i, array) => `${symbol} ・ ${label}${array.length - 1 !== i ? ", " : ""}`) as string}
-        <span>{string}</span>
-      {/each}
-    </small>
+
     {#key filtered_flat}
       {#each Object.entries(Object.groupBy(filtered_flat, ({ period }) => period)).reverse() as [period, changes]}
         <p>
@@ -111,7 +106,13 @@
           </span>{period}
         </p>
         <ul>
-          {#each Object.entries(Object.groupBy(changes, ({ group_symbol }) => group_symbol)) as [_, changes]}
+          {#each Object.entries(Object.groupBy(changes, ({ group_symbol }) => group_symbol)) as [group_symbol, changes]}
+            {@const groupBase = GroupSymbols.find(
+              ({ symbol }) => symbol === group_symbol,
+            )}font-we
+            <p group_label>
+              {groupBase?.label || "Another"}
+            </p>
             {#each changes as { short_change, group_symbol, message, createdAt }}
               <li
                 change_item
@@ -169,12 +170,8 @@
     width: 1em;
   }
 
-  [symbols_list] {
-    display: flex;
-    gap: 0.75em;
-    flex-wrap: wrap;
-    align-items: center;
-
-    font-family: "Icon", sans-serif;
+  [group_label] {
+    font-size: 0.55em;
+    font-weight: 300;
   }
 </style>
