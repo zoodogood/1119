@@ -10,14 +10,16 @@ class Command extends BaseCommand {
     media: {
       description:
         "Только величайшие из невеличайших смогут разгадать этот пазл, и то, почему-же он удалён...\n🧐",
-      example: `!puzzle <answer> #answer — ответ на головоломку, ответите правильно, получите 3000 золотых`,
+      example: `!puzzle <answer> #answer — ответ на головоломку, ответите правильно, получите 3 000 золотых`,
     },
     alias: "пазл ёлка елка",
+    dev: true,
     allowDM: true,
     type: "delete",
   };
 
   async onChatInput(msg, interaction) {
+    return;
     const { default: canvas } = await import("canvas");
 
     let i = 9;
