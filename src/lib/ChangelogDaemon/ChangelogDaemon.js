@@ -1,4 +1,5 @@
 import StorageManager from "#lib/modules/StorageManager.js";
+import { from_short, short } from "#lib/serialize/optimize_keys.js";
 /**
 The change log is automatically stacked based on commits.
 The information of such a log should be relevant and understandable to users,
@@ -6,24 +7,34 @@ the internals of the structure can be omitted.
 Commits that explicitly have a message corresponding to a regular expression will be added.
 */
 
+const shortable_keys_table = {
+  commit_id: "cid",
+  message: "m",
+  addable: "a",
+  change: "c",
+  createdAt: "t",
+};
+
 export class ChangelogDaemon {
   file = {
     path: `changelog.json`,
     load: async () => {
       const path = this.file.path;
       const content = await StorageManager.read(path);
-      const data = content && JSON.parse(content);
+      const data =
+        content && from_short(JSON.parse(content), shortable_keys_table);
+
       this.data = data || this.file.defaultData;
     },
     write: async () => {
       const path = this.file.path;
-      const data = JSON.stringify(this.data);
+      const data = JSON.stringify(short(this.data, shortable_keys_table));
       await StorageManager.write(path, data);
     },
     defaultData: [],
   };
   onCommit(commit) {
-    const { message } = commit;
+    const { message, id } = commit;
     if (!message) {
       return;
     }
@@ -34,6 +45,7 @@ export class ChangelogDaemon {
     }
     for (const change of addable.split(/(?<=^|\n)\+/).slice(1)) {
       this.data.push({
+        commit_id: id,
         message,
         addable,
         change: change.trim(),
