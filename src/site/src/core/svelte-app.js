@@ -58,12 +58,12 @@ class StorageManager {
   }
 
   yetTokenHeat() {
-    if (sessionStorage.tokenHeat > Date.now()) {
+    if (localStorage.tokenHeat > Date.now()) {
       return true;
     }
 
     const HEAT_DELAY = DAY * 14;
-    sessionStorage.tokenHeat = Date.now() + HEAT_DELAY;
+    localStorage.tokenHeat = Date.now() + HEAT_DELAY;
     return false;
   }
 }
