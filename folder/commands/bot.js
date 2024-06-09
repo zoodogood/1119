@@ -2,18 +2,172 @@ import app from "#app";
 import { client } from "#bot/client.js";
 import config from "#config";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import {
+  change_to_string,
+  group_changes_by_default,
+} from "#lib/ChangelogDaemon/api/display.js";
+import { metadata } from "#lib/ChangelogDaemon/api/metadata.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { Pager } from "#lib/DiscordPager.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import DataManager from "#lib/modules/DataManager.js";
 import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
-import { dayjs, ending, getAddress, timestampToDate } from "#lib/util.js";
+import { ChangelogDaemon } from "#lib/modules/mod.js";
+import {
+  dayjs,
+  ending,
+  fetchFromInnerApi,
+  getAddress,
+  timestampToDate,
+} from "#lib/util.js";
 
 import { generateInviteFor } from "#lib/util.js";
+import { CliParser } from "@zoodogood/utils/CliParser";
 import { CreateModal } from "@zoodogood/utils/discordjs";
 import { ButtonStyle, ComponentType, TextInputStyle } from "discord.js";
 
+function website_get_useful_links() {
+  const { origin } = config.server;
+  return [
+    {
+      label: "Главная",
+      href: `${origin}/pages/navigation`,
+    },
+    {
+      label: "Страница ошибок",
+      href: `${origin}/pages/errors/list`,
+    },
+    {
+      label: "Список изменений",
+      href: `${origin}/pages/modules/changelog/`,
+    },
+    {
+      label: "Аудит ресурсов",
+      href: `${origin}/pages/info/audit/resources`,
+    },
+  ];
+}
+
+class Invite_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--invite",
+    capture: ["--invite"],
+  };
+  async onProcess() {
+    const { context } = this;
+    const link = generateInviteFor(client);
+    const content = `[Пригласить: discord.com/oauth2/authorize?client_id=${client.user.id}](${link})`;
+    context.interaction.msg({
+      content,
+    });
+  }
+}
+class Node_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--node",
+    capture: ["--node"],
+  };
+  async onProcess() {
+    const { context } = this;
+    const version = process.version;
+    const content = `Node js: ${version} [${process.arch}]`;
+    context.interaction.msg({
+      content,
+    });
+  }
+}
+class Website_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--website",
+    capture: ["--website"],
+  };
+  async onProcess() {
+    const status = await fetchFromInnerApi("toys/ping", { parseType: "text" });
+    const contents = {
+      status: `Статус сервера: ${status}, — проверяет доступность домена.`,
+      links: `Полезные сссылки:\n${website_get_useful_links()
+        .map(({ label, href }) => `- [${label}](${href})`)
+        .join("\n")}`,
+    };
+    const description = `${contents.status}\n\n${contents.links}`;
+
+    this.context.interaction.msg({
+      description,
+    });
+  }
+}
+class Errors_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--errors",
+    capture: ["--errors"],
+  };
+  async onProcess() {
+    const { context } = this;
+    const entries = [...ErrorsHandler.session().errorGroups.entries()];
+
+    if (!entries.length) {
+      context.interaction.msg({
+        content: "Сегодня тут пусто - нет ошибок текущего сеанса",
+      });
+      return;
+    }
+
+    const greeting = `Сообщение ошибки | [количество], время последнего появления`;
+
+    const meta = [greeting];
+    for (const [message, { errors }] of entries) {
+      const format_meta = (errors) =>
+        `[${errors.length}], <t:${Math.floor(errors.at(-1).createdAt / 1_000)}:R>`;
+      meta.push(`- ${message} | ${format_meta(errors)}`);
+    }
+    context.interaction.msg({ content: meta.join("\n") });
+  }
+}
+
+class Changelog_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--changelog",
+    capture: ["--changelog"],
+  };
+  getEmbed(groups, pager) {
+    const { currentPage } = pager;
+    const [period, bySymbol] = groups[currentPage];
+    const description = bySymbol
+      .map(
+        ([group_base, changes]) =>
+          `${group_base.label}:\n${changes.map(change_to_string).join("\n")}`,
+      )
+      .join("\n\n");
+
+    return {
+      title: `Список изменений за ${period}`,
+      description,
+    };
+  }
+
+  async onProcess() {
+    const { context } = this;
+
+    const groups = group_changes_by_default(ChangelogDaemon.data.map(metadata));
+    const pager = new Pager();
+    pager.setPagesLength(groups.length);
+    pager.setChannel(context.interaction.channel);
+    pager.setRender(() => this.getEmbed(groups, pager));
+    pager.updateMessage();
+  }
+}
+
 class CommandRunContext extends BaseCommandRunContext {
-  parseCli(input) {}
+  parseCli(input) {
+    const parsed = new CliParser()
+      .setText(input)
+      .captureFlags(this.command.options.cliParser.flags)
+      .collect();
+
+    const values = parsed.resolveValues((capture) => capture?.toString());
+    this.setCliParsed(parsed, values);
+    return parsed;
+  }
 }
 
 class CommandDefaultBehaviour extends BaseFlagSubcommand {
@@ -346,6 +500,15 @@ class Command extends BaseCommand {
         "Показывает интересную информацию о боте. Именно здесь находится ссылка для приглашения его на сервер.",
       example: `!bot #без аргументов`,
     },
+    cliParser: {
+      flags: [
+        Invite_FlagSubcommand.FLAG_DATA,
+        Node_FlagSubcommand.FLAG_DATA,
+        Website_FlagSubcommand.FLAG_DATA,
+        Errors_FlagSubcommand.FLAG_DATA,
+        Changelog_FlagSubcommand.FLAG_DATA,
+      ],
+    },
     accessibility: {
       publicized_on_level: 7,
     },
@@ -360,9 +523,64 @@ class Command extends BaseCommand {
     context.setWhenRunExecuted(this.run(context));
     return context;
   }
+  async processChangelogSubcommand(context) {
+    const value = context.cliParsed.at(1).get("--changelog");
+    if (!value) {
+      return false;
+    }
+    await new Changelog_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+  async processErrorsSubcommand(context) {
+    const value = context.cliParsed.at(1).get("--errors");
+    if (!value) {
+      return false;
+    }
+    await new Errors_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+  async processInviteSubcommand(context) {
+    const value = context.cliParsed.at(1).get("--invite");
+    if (!value) {
+      return false;
+    }
+    await new Invite_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+  async processNodeSubcommand(context) {
+    const value = context.cliParsed.at(1).get("--node");
+    if (!value) {
+      return false;
+    }
+    await new Node_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
+  async processWebsiteSubcommand(context) {
+    const value = context.cliParsed.at(1).get("--website");
+    if (!value) {
+      return false;
+    }
+    await new Website_FlagSubcommand(context, value).onProcess();
+    return true;
+  }
 
   async run(context) {
     context.parseCli(context.interaction.params);
+    if (await this.processInviteSubcommand(context)) {
+      return;
+    }
+    if (await this.processNodeSubcommand(context)) {
+      return;
+    }
+    if (await this.processWebsiteSubcommand(context)) {
+      return;
+    }
+    if (await this.processErrorsSubcommand(context)) {
+      return;
+    }
+    if (await this.processChangelogSubcommand(context)) {
+      return;
+    }
     await new CommandDefaultBehaviour(context).onProcess();
   }
 }
