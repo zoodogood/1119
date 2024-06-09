@@ -605,7 +605,7 @@ class CurseManager {
         hard: 1,
         description: (user, curse) => {
           const valueContent = new Intl.NumberFormat("ru-RU").format(
-            curse.values.maximum,
+            curse.values.maximum || 0,
           );
           return `Не получайте больше, чем ${valueContent} коинов, ни из какого источника`;
         },
