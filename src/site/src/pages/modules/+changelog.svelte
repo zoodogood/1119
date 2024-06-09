@@ -1,22 +1,8 @@
 <script>
+  import { group_changes } from "#lib/ChangelogDaemon/api/display.js";
+  import { metadata } from "#lib/ChangelogDaemon/api/metadata.js";
   import { dayjs, ending, fetchFromInnerApi } from "#lib/safe-utils.js";
   import Layout from "#site-component/Layout";
-
-  const GroupSymbols = [
-    { label: "Fix", symbol: "#", alias: ["fix", "bug"] },
-    {
-      label: "Balance change",
-      symbol: "$",
-      alias: ["balance", "balance change"],
-    },
-    {
-      label: "Major",
-      symbol: "!",
-      alias: ["major", "important"],
-    },
-    { label: "Add feature", symbol: "+", alias: ["add feature", "feature"] },
-    { label: "Improve", symbol: "%", alias: ["improve"] },
-  ];
 
   const SeasonEmoji = ["⛄", "🌸", "☀️", "🍁"];
 
@@ -24,25 +10,7 @@
     const changes = await fetchFromInnerApi(
       "modules/changelog_daemon/changelog",
     );
-    const flat = changes.map(({ createdAt, change, message }) => {
-      const period = dayjs(+createdAt).format("MM.YYYY");
-      const lowed_change = change.toLowerCase();
-      const group_base = GroupSymbols.find(({ alias }) =>
-        alias.some((alias) => lowed_change.startsWith(alias)),
-      );
-      const group_symbol = group_base?.symbol || "/";
-      const short_change = group_base ? change.replace(/^.+?:\s*/, "") : change;
-      return {
-        period,
-        group_symbol,
-        message,
-        change,
-        lowed_change,
-        group_base,
-        short_change,
-        createdAt,
-      };
-    });
+    const flat = changes.map(metadata);
     const first_change = changes[0];
     return { data: changes, flat, first_change };
   })();
@@ -99,21 +67,18 @@
     </h5>
 
     {#key filtered_flat}
-      {#each Object.entries(Object.groupBy(filtered_flat, ({ period }) => period)).reverse() as [period, changes]}
+      {#each group_changes(filtered_flat) as [period, byPeriod]}
         <p>
           <span period_emoji>
             {SeasonEmoji[Math.floor((+period.split(".")[0] + 2) / 4)]}
           </span>{period}
         </p>
         <ul>
-          {#each Object.entries(Object.groupBy(changes, ({ group_symbol }) => group_symbol)) as [group_symbol, changes]}
-            {@const groupBase = GroupSymbols.find(
-              ({ symbol }) => symbol === group_symbol,
-            )}font-we
+          {#each byPeriod as [group_base, byGroupSymbol]}
             <p group_label>
-              {groupBase?.label || "Another"}
+              {group_base?.label}
             </p>
-            {#each changes as { short_change, group_symbol, message, createdAt }}
+            {#each byGroupSymbol as { short_change, group_symbol, message, createdAt }}
               <li
                 change_item
                 change_item_symbol={group_symbol}
