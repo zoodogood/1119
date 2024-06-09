@@ -467,6 +467,11 @@ export function toFixedAfterZero(value, digits = 1) {
   return value.toFixed(digits + zeros);
 }
 
+export function season_of_month(month) {
+  // month format is 1-12
+  return ~~((month - 1) / 4);
+}
+
 export {
   CustomCollector,
   DotNotatedInterface,
