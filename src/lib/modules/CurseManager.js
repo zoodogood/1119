@@ -418,7 +418,7 @@ class CurseManager {
         hard: 0,
         values: {
           goal: () => 175 + random(5) * 5,
-          timer: () => 60_000 * 8,
+          timer: () => MINUTE * 8,
         },
         callback: {
           [ActionsMap.any]: (user, curse, { actionName, data }) => {
@@ -516,7 +516,7 @@ class CurseManager {
             QuestManager.init({ user, quest: newQuest });
           },
         },
-        reward: 5,
+        reward: 10,
       },
       {
         _weight: 0.5,
