@@ -1,5 +1,5 @@
 <script>
-  import { group_changes } from "#lib/ChangelogDaemon/api/display.js";
+  import { group_changes_by_default } from "#lib/ChangelogDaemon/api/display.js";
   import { metadata } from "#lib/ChangelogDaemon/api/metadata.js";
   import { dayjs, ending, fetchFromInnerApi } from "#lib/safe-utils.js";
   import Layout from "#site-component/Layout";
@@ -67,7 +67,7 @@
     </h5>
 
     {#key filtered_flat}
-      {#each group_changes(filtered_flat) as [period, byPeriod]}
+      {#each group_changes_by_default(filtered_flat) as [period, byPeriod]}
         <p>
           <span period_emoji>
             {SeasonEmoji[Math.floor((+period.split(".")[0] + 2) / 4)]}
