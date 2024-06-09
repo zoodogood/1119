@@ -1,3 +1,4 @@
+import { SECOND } from "#constants/globals/time.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { Pager } from "#lib/DiscordPager.js";
@@ -379,7 +380,7 @@ class Command extends BaseCommand {
 
       return `${stage}\n(${count}${
         isExpressionInstead(task) ? "*" : ""
-      }): ${timestampToDate(timeResult)}`;
+      }): ${Math.floor(timeResult / SECOND)}с.`;
     });
 
     while (fields.length) {
