@@ -363,17 +363,17 @@ class CurseManager {
         id: "anonSticksByExperinence",
         description:
           "Соберите столько палочек в команде !анон, сколько у Вас сейчас опыта",
-        hard: 0,
+        hard: 2,
         values: {
           goal: (user) => user.data.exp,
-          timer: () => 3_600_000 * 24,
+          timer: () => HOUR * 24,
         },
         callback: {
           anonTaskResolve: (user, curse, { primary, task }) => {
             const sticks = CommandsManager.collection
               .get("anon")
               .justCalculateStickCount(task, primary);
-            curse.values.goal = user.data.exp;
+            curse.values.goal = user.data.exp + (user.data.bag.exp || 0);
             CurseManager.interface({ user, curse }).incrementProgress(sticks);
           },
           beforeProfileDisplay: (user, curse) => {
