@@ -56,7 +56,7 @@ class Command extends BaseCommand {
     {
       resource: "seed",
       names: "seed семя семян семечек семечко семечка seeds",
-      gives: (n) => Util.ending(n, "сем", "ечек", "ечко", "ечка"),
+      gives: (n) => Util.ending(n, "сем", "ечек", "ечко", "ечка", "я", "ян"),
     },
 
     {
