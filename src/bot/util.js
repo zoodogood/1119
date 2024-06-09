@@ -31,6 +31,12 @@ export async function awaitUserAccept({ name, message, channel, userData }) {
   return false;
 }
 
+export function chunkBySize(array, size) {
+  return Array.from({ length: Math.ceil(array.length / size) }, (_, index) =>
+    array.slice(index * size, index * size + size),
+  );
+}
+
 export function awaitReactOrMessage({
   target,
   user,
