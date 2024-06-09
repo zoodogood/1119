@@ -18,6 +18,7 @@ import {
   ending,
   fetchFromInnerApi,
   getAddress,
+  season_of_month,
   timestampToDate,
 } from "#lib/util.js";
 
@@ -230,7 +231,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
     const address = app.server && getAddress(app.server);
 
     const season = ["Зима", "Весна", "Лето", "Осень"][
-      Math.floor((new Date().getMonth() + 1) / 3) % 4
+      season_of_month(new Date().getMonth() + 1)
     ];
     const version = app.version ?? "0.0.0";
 
