@@ -1,4 +1,4 @@
-import { justSelectMenuComponent } from "#bot/util.js";
+import { chunkBySize, justSelectMenuComponent } from "#bot/util.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { resolve_description } from "#folder/entities/curses/curse.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
@@ -80,11 +80,16 @@ class List_FlagSubcommand {
     });
 
     const SIZE = this.sendList_CHUNK_SIZE;
-    const pages = [];
-    while (contents.length) {
-      const chunk = contents.splice(0, SIZE);
-      pages.push(this.sendList_contentsToPage(pages, contents, chunk));
-    }
+    const pages_count = Math.floor(contents.length / this.sendList_CHUNK_SIZE);
+    const list_context = {
+      page_size: SIZE,
+      pages_count,
+      primary: context,
+    };
+
+    const pages = chunkBySize(contents, SIZE).map((chunk, index) =>
+      this.sendList_contentsToPage(chunk, index, list_context),
+    );
 
     const pager = new Pager(channel);
     pager.setUser(context.user);
@@ -92,18 +97,19 @@ class List_FlagSubcommand {
     pager.updateMessage();
   }
 
-  sendList_calculatePagesCount(pages, contentsArray) {
+  sendList_calculatePagesCount(currentCount, potentialContents) {
     return Math.ceil(
-      pages.length + contentsArray.length / this.sendList_CHUNK_SIZE + 1,
+      currentCount + potentialContents.length / this.sendList_CHUNK_SIZE + 1,
     );
   }
 
-  sendList_contentsToPage(pages, contentsArray, chunk) {
-    const description = chunk.join("\n");
+  sendList_contentsToPage(curses, currentPage, context) {
+    const { pages_count } = context;
+    const description = curses.join("\n");
     return {
       description,
       footer: {
-        text: `Страница ${pages.length + 1}/${this.sendList_calculatePagesCount(pages, contentsArray)}`,
+        text: `Страница ${currentPage + 1}/${pages_count + 1}`,
       },
     };
   }
