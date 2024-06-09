@@ -160,7 +160,7 @@ class CommandsManager {
     const options = command.options;
     const userData = interaction.user.data;
 
-    if (options.removed && interaction.user.id !== "921403577539387454") {
+    if (options.removed && interaction.user.id !== "921403577539387454", "836804013630029825") {
       problems.push("Эта команда была удалена и не может быть использована");
     }
 
