@@ -1,11 +1,30 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
-import { PropertiesList, PropertiesEnum } from "#lib/modules/Properties.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
+import { PropertiesEnum, PropertiesList } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
-import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 class Command extends BaseCommand {
+  options = {
+    name: "pay",
+    id: 14,
+    media: {
+      description:
+        "Используйте, чтобы передать коины другому пользователю в качестве доброго подарка или оплаты за помощь :wink:",
+      example: `!pay {memb} {coinsCount | "+"} <message> #аргументы можно указывать в любом порядке. "+" обозначает "Все коины, которые у вас есть"`,
+    },
+    accessibility: {
+      publicized_on_level: 2,
+    },
+    alias: "give дать передать заплатить дати заплатити передати",
+    expectMention: true,
+    allowDM: true,
+    cooldown: 7_000,
+    cooldownTry: 10,
+    type: "user",
+  };
+
   RESOURCES_MAP = [
     {
       resource: "coins",
@@ -56,7 +75,7 @@ class Command extends BaseCommand {
     {
       resource: "seed",
       names: "seed семя семян семечек семечко семечка seeds",
-      gives: (n) => Util.ending(n, "сем", "ечек", "ечко", "ечка", "я", "ян"),
+      gives: (n) => Util.ending(n, "сем", "ечек", "ечко", "ечка"),
     },
 
     {
@@ -83,50 +102,6 @@ class Command extends BaseCommand {
       gives: (n) => Util.ending(n, "перчат", "ок", "ку", "ки"),
     },
   ];
-
-  pay(context) {
-    const { interaction, memb } = context;
-    interaction.user.action(ActionsMap.beforeResourcePayed, context);
-    memb.action(ActionsMap.beforeResourcePayed, context);
-
-    const { resource, missive, numeric, item } = context;
-
-    if (context.defaultPrevented()) {
-      interaction.channel.msg({
-        description:
-          "Сделка заблокированна внешним эффектом, применнёным на одного из участников.\nСписок эффектов может быть просмотрен с около базовыми навыками работы с !eval",
-        color: "#ff0000",
-      });
-      return;
-    }
-
-    Util.addResource({
-      user: interaction.user,
-      value: -numeric,
-      executor: interaction.user,
-      source: "command.pay",
-      resource,
-      context: { interaction, context },
-    });
-
-    Util.addResource({
-      user: memb,
-      value: numeric,
-      executor: interaction.user,
-      source: "command.pay",
-      resource,
-      context: { interaction, context },
-    });
-
-    interaction.channel.msg({
-      description:
-        `${interaction.user.username} отправил ${item.gives(
-          numeric,
-        )} для ${memb.toString()}` +
-        (missive ? `\nС сообщением:\n${missive}` : ""),
-      author: { name: "Передача", iconURL: interaction.user.avatarURL() },
-    });
-  }
 
   getContext(interaction) {
     let { params } = interaction;
@@ -155,20 +130,6 @@ class Command extends BaseCommand {
       ...createDefaultPreventable(),
     };
     return context;
-  }
-
-  parseNumericRaw(context) {
-    const { numericRaw, resource, interaction } = context;
-    let value = numericRaw;
-    if (numericRaw === "+") {
-      value = +interaction.userData[resource];
-    }
-    value = Math.floor(value);
-
-    if (isNaN(value)) {
-      value = 0;
-    }
-    return value;
   }
 
   async onChatInput(msg, interaction) {
@@ -248,24 +209,63 @@ class Command extends BaseCommand {
     this.pay(context);
   }
 
-  options = {
-    name: "pay",
-    id: 14,
-    media: {
+  parseNumericRaw(context) {
+    const { numericRaw, resource, interaction } = context;
+    let value = numericRaw;
+    if (numericRaw === "+") {
+      value = +interaction.userData[resource];
+    }
+    value = Math.floor(value);
+
+    if (isNaN(value)) {
+      value = 0;
+    }
+    return value;
+  }
+
+  pay(context) {
+    const { interaction, memb } = context;
+    interaction.user.action(ActionsMap.beforeResourcePayed, context);
+    memb.action(ActionsMap.beforeResourcePayed, context);
+
+    const { resource, missive, numeric, item } = context;
+
+    if (context.defaultPrevented()) {
+      interaction.channel.msg({
+        description:
+          "Сделка заблокированна внешним эффектом, применнёным на одного из участников.\nСписок эффектов может быть просмотрен с около базовыми навыками работы с !eval",
+        color: "#ff0000",
+      });
+      return;
+    }
+
+    Util.addResource({
+      user: interaction.user,
+      value: -numeric,
+      executor: interaction.user,
+      source: "command.pay",
+      resource,
+      context: { interaction, context },
+    });
+
+    Util.addResource({
+      user: memb,
+      value: numeric,
+      executor: interaction.user,
+      source: "command.pay",
+      resource,
+      context: { interaction, context },
+    });
+
+    interaction.channel.msg({
       description:
-        "Используйте, чтобы передать коины другому пользователю в качестве доброго подарка или оплаты за помощь :wink:",
-      example: `!pay {memb} {coinsCount | "+"} <message> #аргументы можно указывать в любом порядке. "+" обозначает "Все коины, которые у вас есть"`,
-    },
-    accessibility: {
-      publicized_on_level: 2,
-    },
-    alias: "give дать передать заплатить дати заплатити передати",
-    expectMention: true,
-    allowDM: true,
-    cooldown: 7_000,
-    cooldownTry: 10,
-    type: "user",
-  };
+        `${interaction.user.username} отправил ${item.gives(
+          numeric,
+        )} для ${memb.toString()}` +
+        (missive ? `\nС сообщением:\n${missive}` : ""),
+      author: { name: "Передача", iconURL: interaction.user.avatarURL() },
+    });
+  }
 }
 
 export default Command;

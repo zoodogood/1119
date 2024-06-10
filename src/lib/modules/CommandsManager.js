@@ -1,25 +1,25 @@
 // @ts-check
+import config from "#config";
 import {
   Collection,
   CommandInteraction as DiscordCommandInteraction,
 } from "discord.js";
-import config from "#config";
 
-import * as Util from "#lib/util.js";
-import EventsEmitter from "events";
 import DataManager from "#lib/modules/DataManager.js";
 import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
 import Executor from "#lib/modules/Executor.js";
+import * as Util from "#lib/util.js";
+import EventsEmitter from "events";
 
 import CooldownManager from "#lib/modules/CooldownManager.js";
 
 import { Actions } from "#lib/modules/ActionManager.js";
 
-import { ImportDirectory } from "@zoodogood/import-directory";
-import { sendErrorInfo } from "#lib/sendErrorInfo.js";
-import { permissionRawToI18n } from "#lib/permissions.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import app from "#app";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { permissionRawToI18n } from "#lib/permissions.js";
+import { sendErrorInfo } from "#lib/sendErrorInfo.js";
+import { ImportDirectory } from "@zoodogood/import-directory";
 
 const COMMANDS_PATH = "./folder/commands";
 
