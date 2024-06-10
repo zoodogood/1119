@@ -461,6 +461,8 @@ export function toFixedAfterZero(value, digits = 1) {
   if (value === 0) {
     return "0";
   }
+  // 1 / 0.001 = 1000
+  // log10(1000) = 4
   const taget = 1 / value;
   const BASE = 10;
   const zeros = Math.max(0, Math.ceil(Math.log(taget) / Math.log(BASE)));
