@@ -2,6 +2,7 @@
   export let page;
 
   import Notifications from "#site-component-lib/Notifications/wrap.svelte";
+  import { PopupsHandler } from "#site-component-lib/Popups/index.js";
   import { MetaTags } from "svelte-meta-tags";
 
   import config from "#config";
@@ -39,6 +40,7 @@
 <Notifications>
   <svelte:component this={page} />
 </Notifications>
+<PopupsHandler />
 
 <MetaTags
   title={i18n.title}
