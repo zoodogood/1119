@@ -172,7 +172,7 @@ class CommandRunContext extends BaseCommandRunContext {
 }
 
 class CommandDefaultBehaviour extends BaseFlagSubcommand {
-  commandsUsedContent() {
+  static commandsUsedContent() {
     const getThreeQuotes = () => "`".repeat(3);
     const list = Object.entries(DataManager.data.bot.commandsUsed)
       .sortBy(1, true)
@@ -198,8 +198,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 
     return `${getThreeQuotes()}js\nТут такое было.. ого-го\nᅠ\n${stroke}ᅠ${getThreeQuotes()}`;
   }
-
-  getMainInterfaceComponents() {
+  static getMainInterfaceComponents() {
     const components = [
       {
         type: ComponentType.Button,
@@ -273,7 +272,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
             : "Вечность"
         }`,
       },
-      components: this.getMainInterfaceComponents(),
+      components: CommandDefaultBehaviour.getMainInterfaceComponents(),
     };
 
     interaction.channel.msg(embed);
@@ -328,7 +327,7 @@ class Command extends BaseCommand {
 
       interaction.msg(embed);
 
-      const components = this.getMainInterfaceComponents();
+      const components = CommandDefaultBehaviour.getMainInterfaceComponents();
       components.at(0).disabled = true;
 
       parent.msg({ edit: true, components });
@@ -344,7 +343,7 @@ class Command extends BaseCommand {
       interaction.msg({ content, delete: 15_000 });
     },
     commands(interaction) {
-      const content = this.commandsUsedContent();
+      const content = CommandDefaultBehaviour.commandsUsedContent();
       interaction.msg({ ephemeral: true, content });
     },
     postReview(interaction) {
