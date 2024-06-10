@@ -1,7 +1,14 @@
 <script>
   import { group_changes_by_default } from "#lib/ChangelogDaemon/api/display.js";
   import { metadata } from "#lib/ChangelogDaemon/api/metadata.js";
-  import { dayjs, ending, fetchFromInnerApi } from "#lib/safe-utils.js";
+  import {
+    dayjs,
+    ending,
+    fetchFromInnerApi,
+    fnv_algorithm_hash,
+    season_of_month,
+    use_memo,
+  } from "#lib/safe-utils.js";
   import Layout from "#site-component/Layout";
 
   const SeasonEmoji = ["⛄", "🌸", "☀️", "🍁"];
@@ -20,6 +27,8 @@
   let filtered_flat = [];
   // eslint-disable-next-line prefer-const
   let flat = [];
+
+  const hash_memo = use_memo((str) => fnv_algorithm_hash(str));
 
   _interface_promise.then(({ flat: value }) => (flat = value));
 
@@ -70,7 +79,7 @@
       {#each group_changes_by_default(filtered_flat) as [period, byPeriod]}
         <p>
           <span period_emoji>
-            {SeasonEmoji[Math.floor((+period.split(".")[0] + 2) / 4)]}
+            {SeasonEmoji[season_of_month(+period.split(".")[0])]}
           </span>{period}
         </p>
         <ul>
@@ -78,12 +87,13 @@
             <p group_label>
               {group_base?.label}
             </p>
-            {#each byGroupSymbol as { short_change, group_symbol, message, createdAt }}
+            {#each byGroupSymbol as { short_change, group_symbol, message, commit_id }}
               <li
                 change_item
                 change_item_symbol={group_symbol}
                 title={message}
-                id={`change_${short_change}_${createdAt}`}
+                data-commit={commit_id}
+                id={`_${hash_memo(commit_id + short_change)}`}
               >
                 {short_change}.
               </li>
