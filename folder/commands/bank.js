@@ -4,9 +4,12 @@ import { BaseContext } from "#lib/BaseContext.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import * as Util from "#lib/util.js";
-
-const { addResource } = Util;
+import {
+  NumberFormatLetterize,
+  ending,
+  numberFormat,
+} from "#lib/safe-utils.js";
+import { addResource, awaitUserAccept } from "#lib/util.js";
 
 class ProfessionsUtils {
   static createReports({ guild, professions }) {
@@ -65,7 +68,7 @@ class Command extends BaseCommand {
 
     const embed = {
       title: "Казна сервера",
-      description: `В хранилище **${Util.NumberFormatLetterize(
+      description: `В хранилище **${NumberFormatLetterize(
         guildData.coins,
       )}** <:coin:637533074879414272>\n\n<a:message:794632668137652225> ⠿ Заработные платы\n<:meow:637290387655884800> ⠿ Положить\n<:merunna:755844134677512273> ${[
         ..."⠯⠷⠟⠻",
@@ -100,12 +103,15 @@ class Command extends BaseCommand {
         return;
       }
 
-      embed.description += `\n\nВ хранилище: ${Util.ending(
+      embed.description += `\n\nВ хранилище: ${ending(
         guildData.coins,
         "золот",
         "ых",
         "ая",
         "ых",
+        {
+          unite: (value, end) => `${numberFormat(value)} ${end}`,
+        },
       )}!\nКоличество коинов ${
         guildData.coins - startsCoinsCount === 0
           ? "не изменилось"
@@ -165,7 +171,7 @@ class Command extends BaseCommand {
     }
 
     if (isPut) {
-      const heAccpet = await Util.awaitUserAccept({
+      const heAccpet = await awaitUserAccept({
         name: "bank_put",
         message: {
           title: "Вы точно хотите это сделать?",
@@ -217,9 +223,16 @@ class Command extends BaseCommand {
 
       interaction.guild.logSend({
         title: "Содержимое банка изменено:",
-        description: `${
-          interaction.member.displayName
-        } отнёс в казну ${Util.ending(value, "коин", "ов", "", "а")}`,
+        description: `${interaction.member.displayName} отнёс в казну ${ending(
+          value,
+          "коин",
+          "ов",
+          "",
+          "а",
+          {
+            unite: (value, end) => `${numberFormat(value)} ${end}`,
+          },
+        )}`,
         footer: {
           iconURL: interaction.user.avatarURL(),
           text: interaction.user.tag,
@@ -227,20 +240,16 @@ class Command extends BaseCommand {
       });
       interaction.message.react("👌");
       interaction.channel.msg({
-        title: `Вы успешно вложили **${Util.ending(
-          value,
-          "коин",
-          "ов",
-          "",
-          "а",
-        )}** на развитие сервера`,
+        title: `Вы успешно вложили **${ending(value, "коин", "ов", "", "а", {
+          unite: (value, end) => `${numberFormat(value)} ${end}`,
+        })}** на развитие сервера`,
         delete: 5000,
       });
       return;
     }
 
     if (!isPut) {
-      const heAccpet = await Util.awaitUserAccept({
+      const heAccpet = await awaitUserAccept({
         name: "bank",
         message: {
           title: "Осторожно, ответственность!",
@@ -259,22 +268,28 @@ class Command extends BaseCommand {
         );
       if (guildData.coins < value)
         problems.push(
-          `Похоже, тут пусто. В хранилище лишь ${Util.ending(
+          `Похоже, тут пусто. В хранилище лишь ${ending(
             guildData.coins,
             "коин",
             "ов",
             "",
             "а",
+            {
+              unite: (value, end) => `${numberFormat(value)} ${end}`,
+            },
           )}.`,
         );
       if (!cause)
         problems.push(
-          `Вы должны указать причину использования ${Util.ending(
+          `Вы должны указать причину использования ${ending(
             value,
             "коин",
             "ов",
             "а",
             "ов",
+            {
+              unite: (value, end) => `${numberFormat(value)} ${end}`,
+            },
           )}.`,
         );
       if (!cause || !cause.match(/.{2,}\s+?.{2,}/i))
@@ -304,25 +319,24 @@ class Command extends BaseCommand {
         title: "Содержимое банка изменено:",
         description: `${
           interaction.member.displayName
-        } обналичил казну на сумму **${Util.ending(
-          value,
-          "коин",
-          "ов",
-          "а",
-          "ов",
-        )}**\nПричина: ${cause}`,
+        } обналичил казну на сумму **${ending(value, "коин", "ов", "а", "ов", {
+          unite: (value, end) => `${numberFormat(value)} ${end}`,
+        })}**\nПричина: ${cause}`,
         footer: {
           iconURL: interaction.user.avatarURL(),
           text: interaction.user.tag,
         },
       });
       interaction.message.react("👌");
-      const title = `Вы успешно взяли **${Util.ending(
+      const title = `Вы успешно взяли **${ending(
         value,
         "коин",
         "ов",
         "а",
         "ов",
+        {
+          unite: (value, end) => `${numberFormat(value)} ${end}`,
+        },
       )}** из казны сервера\nПо причине: ${cause}`;
       interaction.channel.msg({ title, delete: 5000 });
       return;
@@ -401,14 +415,14 @@ class Command extends BaseCommand {
     guild.data.coins -= expenditure;
     guild.logSend({
       title: `Были выданы зарплаты`,
-      description: `С казны было автоматически списано ${Util.ending(
+      description: `С казны было автоматически списано ${ending(
         expenditure,
         "коин",
         "ов",
         "",
         "а",
         {
-          unite: (value, end) => `${Util.NumberFormatLetterize(value)} ${end}`,
+          unite: (value, end) => `${NumberFormatLetterize(value)} ${end}`,
         },
       )} на заработные платы пользователям\nИх список вы можете просмотреть в команде \`!банк\`\nУчастников получило коины: ${
         Object.keys(salaryTable).length
@@ -507,7 +521,7 @@ class Command extends BaseCommand {
 
               return `${interaction.guild.roles.cache.get(
                 professionId,
-              )}\n${salary} <:coin:637533074879414272> в день (${Util.ending(
+              )}\n${salary} <:coin:637533074879414272> в день (${ending(
                 getFromThisProfession,
                 "Пользовател",
                 "ей",
@@ -527,7 +541,7 @@ class Command extends BaseCommand {
             Object.keys(data.professions).length
           }/20**\n${data.workersContent}\n\n\`\`\`Доходы: ${
             interaction.guild.memberCount * 2
-          }\nРасходы: ${data.report.expenditure}\n${Util.ending(
+          }\nРасходы: ${data.report.expenditure}\n${ending(
             Object.keys(data.report.salaryTable).length,
             "пользовател",
             "ей",
