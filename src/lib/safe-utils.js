@@ -472,6 +472,29 @@ export function season_of_month(month) {
   return ~~((month - 1) / 4);
 }
 
+export function fnv_algorithm_hash(str) {
+  // init value
+  let hash = 2166136261;
+
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash +=
+      (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+  }
+
+  return (hash >>> 0).toString(16);
+}
+
+export function use_memo(fn) {
+  const cache = new Map();
+  return (param) => {
+    if (!cache.has(param)) {
+      cache.set(param, fn(param));
+    }
+    return cache.get(param);
+  };
+}
+
 export {
   CustomCollector,
   DotNotatedInterface,
