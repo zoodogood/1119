@@ -1019,6 +1019,10 @@ class CurseManager {
             const index = RanksUtils.sortMutableAndFilterPull(pull).findIndex(
               ([target]) => target.id === user.id,
             );
+            if (index === 0) {
+              CurseManager.interface({ curse, user }).success();
+              return;
+            }
             curse.values.previousRank =
               index === -1 ? Number.MAX_SAFE_INTEGER : index;
           },
