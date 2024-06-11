@@ -1,17 +1,17 @@
 // @ts-check
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { MINUTE, SECOND } from "#constants/globals/time.js";
-import { fetchMessagesWhile } from "#lib/fetchMessagesWhile.js";
-import { CliParser } from "@zoodogood/utils/primitives";
-import { MessageInterface } from "#lib/DiscordMessageInterface.js";
-import { TimedCache } from "#lib/TimedCache.js";
-import { jsonFile } from "#lib/Discord_utils.js";
 import config from "#config";
+import { MINUTE, SECOND } from "#constants/globals/time.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { Pager } from "#lib/DiscordPager.js";
+import { jsonFile } from "#lib/Discord_utils.js";
+import { TimedCache } from "#lib/TimedCache.js";
+import { fetchMessagesWhile } from "#lib/fetchMessagesWhile.js";
+import * as Util from "#lib/util.js";
 import { Collection } from "@discordjs/collection";
+import { CliParser } from "@zoodogood/utils/primitives";
 
 export function getChannel() {
   return client.channels.cache.get(config.guild.ideaChannelId);
@@ -434,6 +434,111 @@ class Edit_Flagsubcommand {
   }
 }
 
+class Delete_Flagsubcommand {
+  static FLAG_DATA = {
+    name: "--delete",
+    capture: ["--delete"],
+    expectValue: true,
+    description:
+      "Автор или администратор бота могут удалить идею за её номером",
+  };
+  pager;
+  store;
+  targetMessage;
+  value;
+  constructor(context, value) {
+    this.context = context;
+    this.value = +value;
+    this.pager = new Pager(context.channel);
+  }
+  async deleteMessage() {
+    const { targetMessage } = this;
+    const { embed } = targetMessage;
+    await targetMessage.delete();
+
+    this.context.channel.msg({
+      title: "Идея удалена!",
+      description: `Содержание:\n${embed.description}`,
+    });
+  }
+
+  async fetchMessage() {
+    const { ideasChannel, storeValue } = this.context;
+    const message = await ideasChannel.messages.fetch(
+      storeValue.ideas.get(this.value)?.id,
+    );
+    if (!this.process_idea_exists(message)) {
+      return false;
+    }
+    this.targetMessage = message;
+    return true;
+  }
+
+  async onProcess() {
+    if (!this.process_validate_value()) {
+      return true;
+    }
+    const loader = new Loader(this.context);
+    await loader.process_wait_load();
+    if (
+      !this.process_validate_value() ||
+      !(await this.fetchMessage()) ||
+      !this.process_validate_permission()
+    ) {
+      return;
+    }
+
+    await this.deleteMessage();
+    return true;
+  }
+
+  process_idea_exists(message) {
+    if (message) {
+      return true;
+    }
+
+    this.context.channel.msg({
+      description: "Идея с указанным номером не существует",
+      delete: 8 * SECOND,
+      color: Command.MESSAGE_THEME.color,
+    });
+    return false;
+  }
+
+  process_validate_permission() {
+    const { targetMessage, context } = this;
+    const { user } = context;
+    const author_id =
+      targetMessage.embed.author.iconURL.match(/\d{17,22}/)?.[0];
+    const isSame = author_id === user.id;
+    const isUserModerator = config.developers.includes(user.id);
+    if (isSame || isUserModerator) {
+      return true;
+    }
+
+    const idea_author = client.users.cache.get(author_id);
+    this.context.channel.msg({
+      description: `Автором идеи является ${idea_author?.username || null}`,
+      delete: 8 * SECOND,
+      color: Command.MESSAGE_THEME.color,
+    });
+  }
+
+  process_validate_value() {
+    const { value } = this;
+    if (!isNaN(value)) {
+      return true;
+    }
+
+    this.context.channel.msg({
+      description:
+        "Значение флага --edit должно быть числом и указывать на целевую идею",
+      delete: 8 * SECOND,
+      color: Command.MESSAGE_THEME.color,
+    });
+  }
+}
+
 class CommandRunContext extends BaseCommandRunContext {
   _ideasChannel;
   _storeValue;
@@ -471,6 +576,7 @@ class Command extends BaseCommand {
     cliParser: {
       flags: [
         Edit_Flagsubcommand.FLAG_DATA,
+        Delete_Flagsubcommand.FLAG_DATA,
         At_Flagsubcommand.FLAG_DATA,
         JSON_Flagsubcommand.FLAG_DATA,
       ],
@@ -501,6 +607,15 @@ class Command extends BaseCommand {
       return false;
     }
     await new At_Flagsubcommand(context, value).onProcess();
+    return true;
+  }
+
+  async process_delete_flag(context) {
+    const value = context.cliParsed.at(1).get("--delete");
+    if (!value) {
+      return false;
+    }
+    await new Delete_Flagsubcommand(context, value).onProcess();
     return true;
   }
 
@@ -609,6 +724,9 @@ class Command extends BaseCommand {
       return true;
     }
     if (await this.process_edit_flag(context)) {
+      return true;
+    }
+    if (await this.process_delete_flag(context)) {
       return true;
     }
     this.processDefaultBehaviour(context);
