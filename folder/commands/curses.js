@@ -1,16 +1,28 @@
-import { chunkBySize, justSelectMenuComponent } from "#bot/util.js";
+import { chunkBySize, justSelectMenuComponent, question } from "#bot/util.js";
+import { Emoji } from "#constants/emojis.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { resolve_description } from "#folder/entities/curses/curse.js";
-import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { Pager } from "#lib/DiscordPager.js";
-import { jsonFile } from "#lib/Discord_utils.js";
+import {
+  actionRowsToComponents,
+  jsonFile,
+  takeInteractionProperties,
+} from "#lib/Discord_utils.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
-import { toLocaleDeveloperString } from "#lib/safe-utils.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { ending, toLocaleDeveloperString } from "#lib/safe-utils.js";
+import { addResource } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
-import { FormattingPatterns } from "discord.js";
+import {
+  ButtonStyle,
+  FormattingPatterns,
+  PresenceUpdateStatus,
+} from "discord.js";
 
 class Utils {
   static getCursesProgressContent(curses) {
@@ -30,6 +42,16 @@ class List_FlagSubcommand {
     this.context = context;
   }
 
+  static onCommandButton({ interaction }) {
+    const manager = new List_FlagSubcommand(
+      new BaseContext("command.curses.list_flag.onCommandButton", {
+        interaction,
+        primary: interaction,
+        ...takeInteractionProperties(interaction),
+      }),
+    );
+    manager.sendList(manager.context, interaction);
+  }
   async onProcess() {
     const { context } = this;
     if (this.processJSONFlag(context)) {
@@ -37,6 +59,7 @@ class List_FlagSubcommand {
     }
     await this.sendList(context, context.channel);
   }
+
   processJSONFlag(context) {
     const [parsed] = context.cliParsed;
     const hasJSONFlag = parsed.captures.get("--json");
@@ -47,7 +70,7 @@ class List_FlagSubcommand {
 
     context.channel.msg({
       description: `Количество проклятий: ${CurseManager.cursesBase.size} .json`,
-      color: context.command.MESSAGE_THEME.color,
+      color: Command.MESSAGE_THEME.color,
       files: [
         jsonFile(
           [...CurseManager.cursesBase.values()],
@@ -108,6 +131,7 @@ class List_FlagSubcommand {
     const description = curses.join("\n");
     return {
       description,
+      fetchReply: true,
       footer: {
         text: `Страница ${currentPage + 1}/${pages_count + 1}`,
       },
@@ -153,7 +177,7 @@ class Members_FlagSubcommand {
 
     context.channel.msg({
       description,
-      color: context.command.MESSAGE_THEME.color,
+      color: Command.MESSAGE_THEME.color,
       files: [jsonFile(Object.fromEntries(pull), "cursesManager_members.json")],
       delete: MINUTE,
     });
@@ -179,7 +203,7 @@ class Members_FlagSubcommand {
     channel.msg({
       title: "Пользователи и их проклятия",
       description,
-      ...context.command.MESSAGE_THEME,
+      ...Command.MESSAGE_THEME,
     });
   }
 }
@@ -230,7 +254,7 @@ class Help_FlagSubcommand {
 
     context.channel.msg({
       description,
-      color: context.command.MESSAGE_THEME.color,
+      color: Command.MESSAGE_THEME.color,
       files: [jsonFile(curses, "cursesManager_list.json")],
       delete: MINUTE,
     });
@@ -250,7 +274,7 @@ class Help_FlagSubcommand {
     const message = await channel.msg({
       title: "Вызвана команда с параметром --help",
       description: `${contents.description} ${contents.found}\n${contents.current}\n\n**--help**\nПоказывает это меню.\n\n**--at {}**\nСокращение: \`!curses 1\`. Показывает больше информации об проклятии пользователя за номером. Вы можете упомянуть другого пользователя.\n\n**--list**\nПредоставляет перечисление всех существующих проклятий. Принимает параметр --json\n\n**--members**\nВозвращает перечень пользователей и проклятий`,
-      ...context.command.MESSAGE_THEME,
+      ...Command.MESSAGE_THEME,
       components: justButtonComponents(
         curses.length
           ? justSelectMenuComponent({
@@ -295,7 +319,7 @@ class At_FlagSubcommand {
       description,
       fields,
       fetchReply: true,
-      ...context.command.MESSAGE_THEME,
+      ...Command.MESSAGE_THEME,
       components: justButtonComponents(
         curses.length
           ? justSelectMenuComponent({
@@ -374,7 +398,7 @@ class At_FlagSubcommand {
     const { curse, memb } = this.getCurseByValue(value);
     context.channel.msg({
       description: `Проклятие ${curse.id} пользователя ${memb.toString()} .json`,
-      color: context.command.MESSAGE_THEME.color,
+      color: Command.MESSAGE_THEME.color,
       files: [jsonFile(curse, "cursesManager_curse.json")],
       delete: MINUTE,
     });
@@ -387,7 +411,7 @@ class At_FlagSubcommand {
     if (!curse) {
       channel.msg({
         description: `Проклятия под номером ${value} у этого человека нет, их же всего [${curses.map((_, i) => i).join(", ")}] и нумерация начинается с нуля!`,
-        color: context.command.MESSAGE_THEME.color,
+        color: Command.MESSAGE_THEME.color,
         delete: 15_000,
       });
       return;
@@ -410,6 +434,161 @@ class At_FlagSubcommand {
     collector.on("end", () => {
       message.msg({ components: [], edit: true });
     });
+  }
+}
+
+class Bought_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--bought",
+    capture: ["--bought"],
+  };
+  onProcess() {
+    const { user } = this.context;
+    this.context.interaction.msg({
+      ...Command.MESSAGE_THEME,
+      title: "Проклятия можно купить за дорого",
+      description:
+        "Приобретение проклятия для себя 30_000 коинов, для другого — 120_000 коинов",
+      components: justButtonComponents(
+        {
+          label: "Приобрести",
+          style: ButtonStyle.Success,
+          customId: "@command/curses/bought_curse",
+        },
+        {
+          label: "Список их идентификаторов",
+          customId: "@command/curses/list_flag",
+        },
+      ),
+      footer: { text: user.username, iconURL: user.avatarURL() },
+    });
+  }
+}
+
+class BoughtContext extends BaseContext {
+  curseBase;
+  prices = {
+    for_self: 30_000,
+    for_other: 120_000,
+  };
+  target;
+  async onBought() {
+    const { user, channel } = this.interaction;
+    const { content } = await question({
+      channel: this.interaction,
+      message: {
+        description:
+          "Укажите идентификатор проклятия и, по необходимости, упомяните пользователя",
+        fetchReply: true,
+        color: Command.MESSAGE_THEME.color,
+      },
+      user,
+    });
+
+    if (!content) {
+      channel.msg({
+        description: "Отмена",
+        color: Command.MESSAGE_THEME.color,
+        delete: 15_000,
+      });
+    }
+
+    const { membId, baseId } = Object.fromEntries(
+      new CliParser()
+        .setText(content)
+        .captureByMatch({ name: "membId", regex: /\d{16,23}/ })
+        .captureByMatch({ name: "baseId", regex: /[a-z_$\d]+/i })
+        .collect()
+        .resolveValues((capture) => capture?.toString())
+        .entries(),
+    );
+
+    const curseBase = CurseManager.cursesBase.get(baseId);
+    this.curseBase = curseBase;
+    if (!curseBase) {
+      channel.msg({
+        title: "Такого проклятия нет",
+        description: `\`${baseId}\``,
+        color: Command.MESSAGE_THEME.color,
+        delete: 15_000,
+      });
+      return;
+    }
+
+    const member = this.guild.members.cache.get(membId || user.id);
+    this.target = member;
+    if (!member) {
+      channel.msg({
+        title: "Такого пользователя не найдено",
+        description: `\`${membId || user.id}\``,
+        color: Command.MESSAGE_THEME.color,
+        delete: 15_000,
+      });
+      return;
+    }
+    if (member.id !== user.id && this.processMemberIsOffline()) {
+      return;
+    }
+
+    if (!this.processPay()) {
+      return;
+    }
+    const curse = CurseManager.generateOfBase({
+      curseBase,
+      user: member.user,
+      context: this,
+    });
+
+    CurseManager.init({ user: member.user, curse });
+    channel.msg({
+      content: ":coral:",
+    });
+
+    member.user.msg({
+      title: `Пользователь ${user.username} наложил на вас проклятие`,
+      description: `Проклятие: \`${curseBase.id}\`\n${CurseManager.interface({ curse, user: member.user }).toString()}\nВыполните его в срок и получите коины, в ином случае потеряете уровень`,
+      ...Command.MESSAGE_THEME.color,
+      timestamp: Date.now(),
+    });
+  }
+  processMemberIsOffline() {
+    const { target: member } = this;
+    if (
+      member.presence &&
+      member.presence.status !== PresenceUpdateStatus.Offline
+    ) {
+      return false;
+    }
+
+    this.channel.msg({
+      title: "Невозможно наложить проклятие на пользователя, который оффлайн",
+      color: Command.MESSAGE_THEME.color,
+      delete: 15_000,
+    });
+    return true;
+  }
+  processPay() {
+    const { target, user } = this;
+    const price =
+      target.id === user.id ? this.prices.for_self : this.prices.for_other;
+
+    if (user.data.coins < price) {
+      this.channel.msg({
+        title: "Недостаточно монет",
+        description: `Нужно на ${ending(price - user.data.coins, "коин", "ов", "", "а")} ${Emoji.coins.toString()} больше`,
+        color: Command.MESSAGE_THEME.color,
+      });
+      return false;
+    }
+
+    addResource({
+      user,
+      resource: PropertiesEnum.coins,
+      value: -price,
+      source: `command.curses.bought_flag.bought.${this.curseBase.id}`,
+      context: this,
+    });
+    return true;
   }
 }
 
@@ -459,7 +638,32 @@ class CommandRunContext extends BaseCommandRunContext {
   }
 }
 class Command extends BaseCommand {
-  MESSAGE_THEME = {
+  componentsCallbacks = {
+    list_flag(interaction) {
+      List_FlagSubcommand.onCommandButton({ interaction });
+
+      const current_components = actionRowsToComponents(
+        interaction.message.components,
+      );
+      const component = current_components
+        .flat()
+        .find((component) => component.customId === interaction.customId);
+      component.disabled = true;
+      interaction.message.msg({
+        edit: true,
+        components: current_components,
+      });
+    },
+    bought_curse(interaction) {
+      const bought = new BoughtContext("command.curses.bought_flag.bought", {
+        primary: interaction,
+        interaction,
+        ...takeInteractionProperties(interaction),
+      });
+      bought.onBought();
+    },
+  };
+  static MESSAGE_THEME = {
     color: "#1f2022",
     thumbnail:
       "https://media.discordapp.net/attachments/629546680840093696/1174372547941384272/skull.png?ex=65e88daa&is=65d618aa&hm=c4c1b827a6db040cc9053682057f6c9ca6647012da687bd44fc90e4bf270eda5&=&format=webp&quality=lossless",
@@ -504,6 +708,7 @@ class Command extends BaseCommand {
           hidden: true,
           description: "Возвращает результат команды как *.json",
         },
+        Bought_FlagSubcommand.FLAG_DATA,
       ],
     },
     accessibility: {
@@ -528,6 +733,15 @@ class Command extends BaseCommand {
     return true;
   }
 
+  async processBoughtFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--bought")) {
+      return false;
+    }
+    await new Bought_FlagSubcommand(context).onProcess();
+    return true;
+  }
+
   async processDefaultBehavior(context) {
     return await new Help_FlagSubcommand(context).onProcess();
   }
@@ -540,7 +754,6 @@ class Command extends BaseCommand {
     await new Help_FlagSubcommand(context).onProcess();
     return true;
   }
-
   async processListCommand(context) {
     const values = context.cliParsed.at(1);
     if (!values.get("--list")) {
@@ -549,6 +762,7 @@ class Command extends BaseCommand {
     await new List_FlagSubcommand(context).onProcess();
     return true;
   }
+
   async processMembersCommand(context) {
     const values = context.cliParsed.at(1);
     if (!values.get("--members")) {
@@ -577,6 +791,10 @@ class Command extends BaseCommand {
     }
 
     if (await this.processMembersCommand(context)) {
+      return;
+    }
+
+    if (await this.processBoughtFlag(context)) {
       return;
     }
 
