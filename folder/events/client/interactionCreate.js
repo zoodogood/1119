@@ -49,12 +49,10 @@ class Event extends BaseEvent {
       const { commandName } = interaction;
       const command = CommandsManager.callMap.get(commandName);
       CommandsManager.execute(command, interaction);
-      return;
     }
     if (customId.startsWith("@")) {
       const [type, target, params] = Executor.parseCustomId(customId) ?? [];
       type && Executor.emit(type, target, { params, interaction });
-      return;
     }
 
     this.cleanUnhandled(interaction);
