@@ -473,14 +473,19 @@ class BoughtContext extends BaseContext {
     for_self: 90_000,
     for_other: 300_000,
   };
+  reasons = [];
   target;
   async onBought() {
     const { user, channel } = this.interaction;
+    if (!this.processEnoughtCoins()) {
+      this.responseWithReasons();
+      return;
+    }
     const { content } = await question({
       channel: this.interaction,
       message: {
         description:
-          "Укажите идентификатор проклятия и, по необходимости, упомяните пользователя",
+          ":pen_ballpoint: Укажите идентификатор проклятия и, по необходимости, упомяните пользователя",
         fetchReply: true,
         color: Command.MESSAGE_THEME.color,
       },
@@ -508,36 +513,25 @@ class BoughtContext extends BaseContext {
     const curseBase = CurseManager.cursesBase.get(baseId);
     this.curseBase = curseBase;
     if (!curseBase) {
-      channel.msg({
-        title: "Такого проклятия нет",
-        description: `\`${baseId}\``,
-        color: Command.MESSAGE_THEME.color,
-        delete: 15_000,
-      });
-      return;
+      this.reasons.push(`Такого проклятия нет: \`${baseId}\``);
     }
 
     const member = this.guild.members.cache.get(membId || user.id);
     this.target = member;
     if (!member) {
-      channel.msg({
-        title: "Такого пользователя не найдено",
-        description: `\`${membId || user.id}\``,
-        color: Command.MESSAGE_THEME.color,
-        delete: 15_000,
-      });
+      this.reasons.push(`Такого пользователя не найдено: ${membId || user.id}`);
+    }
+    curseBase && this.processValidateCurseBase();
+    member && member.id !== user.id && this.processMemberIsOffline();
+
+    if (this.reasons.length) {
+      this.responseWithReasons();
       return;
     }
-    if (!this.processValidateCurseBase()) {
-      return;
-    }
-    if (member.id !== user.id && this.processMemberIsOffline()) {
-      return;
+    if (!this.processPay()) {
+      return this.responseWithReasons();
     }
 
-    if (!this.processPay()) {
-      return;
-    }
     const curse = CurseManager.generateOfBase({
       curseBase,
       user: member.user,
@@ -556,6 +550,17 @@ class BoughtContext extends BaseContext {
       timestamp: Date.now(),
     });
   }
+  processEnoughtCoins() {
+    const { user } = this;
+    const price = Math.min(...Object.values(this.prices));
+    if (user.data.coins >= price) {
+      return true;
+    }
+    this.reasons.push(
+      `У вас ${ending(user.data.coins, "коин", "ов", "", "а")}. Минимальная цена проклятия: ${price} ${Emoji.coins.toString()}`,
+    );
+    return false;
+  }
   processMemberIsOffline() {
     const { target: member } = this;
     if (
@@ -565,11 +570,9 @@ class BoughtContext extends BaseContext {
       return false;
     }
 
-    this.channel.msg({
-      title: "Невозможно наложить проклятие на пользователя, который оффлайн",
-      color: Command.MESSAGE_THEME.color,
-      delete: 15_000,
-    });
+    this.reasons.push(
+      "Невозможно наложить проклятие на пользователя, который оффлайн",
+    );
     return true;
   }
   processPay() {
@@ -578,11 +581,9 @@ class BoughtContext extends BaseContext {
       target.id === user.id ? this.prices.for_self : this.prices.for_other;
 
     if (user.data.coins < price) {
-      this.channel.msg({
-        title: "Недостаточно монет",
-        description: `Нужно на ${ending(price - user.data.coins, "коин", "ов", "", "а")} ${Emoji.coins.toString()} больше`,
-        color: Command.MESSAGE_THEME.color,
-      });
+      this.reasons.push(
+        `Нужно на ${ending(price - user.data.coins, "коин", "ов", "", "а")} ${Emoji.coins.toString()} больше`,
+      );
       return false;
     }
 
@@ -603,30 +604,30 @@ class BoughtContext extends BaseContext {
     if (canReceivedByOdds && isPassFilter) {
       return true;
     }
-    const { channel } = this;
 
     if (!canReceivedByOdds) {
-      channel.msg({
-        title:
-          "Можно получить только проклятия, имеющие вероятность их получения (с весом)",
-        description: `Проклятие ${curseBase} имеет параметр\`_weight: 0\``,
-        color: Command.MESSAGE_THEME.color,
-        delete: 15_000,
-      });
+      this.reasons.push(
+        `Можно получить только проклятия, имеющие вероятность их получения (с весом). Вес \`${curseBase.id}: ${curseBase._weight}\``,
+      );
       return false;
     }
 
     if (!isPassFilter) {
-      channel.msg({
-        title: "Проклятие не прошло фильтр — его нельзя получить",
-        color: Command.MESSAGE_THEME.color,
-        description: `\`\`\`js\n${escapeCodeBlock(curseBase.filter.toString())}\n\`\`\``,
-        delete: 15_000,
-      });
+      this.reasons.push(
+        `Проклятие не прошло фильтр — его нельзя получить\n\`\`\`js\n${escapeCodeBlock(curseBase.filter.toString())}\n\`\`\``,
+      );
       return false;
     }
 
     return false;
+  }
+  responseWithReasons(channel = null) {
+    channel ||= this.channel;
+    channel.msg({
+      description: this.reasons.map((reason) => `- ${reason}`).join("\n"),
+      ...Command.MESSAGE_THEME,
+      delete: 15_000,
+    });
   }
 }
 
