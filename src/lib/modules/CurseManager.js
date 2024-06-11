@@ -1799,7 +1799,7 @@ class CurseManager {
         executor: null,
         value: user.data.level > 1 ? -1 : 0,
         resource: PropertiesEnum.level,
-        source: "curseManager.curse.onEnd.lost",
+        source: `curseManager.curse.onEnd.lost.${curse.id}`,
         context: { curse },
       });
       const fields = getDefaultFields();
@@ -1847,7 +1847,7 @@ class CurseManager {
       addResource({
         user,
         value: coinsReward,
-        source: "curseManager.curse.onEnd",
+        source: `curseManager.curse.onEnd.success.${curseBase.id}`,
         executor: null,
         resource: PropertiesEnum.coins,
         context: { curse },
@@ -1855,7 +1855,7 @@ class CurseManager {
       addResource({
         user,
         value: voidReward,
-        source: "curseManager.curse.onEnd",
+        source: `curseManager.curse.onEnd.success.${curseBase.id}`,
         executor: null,
         resource: PropertiesEnum.void,
         context: { curse },
