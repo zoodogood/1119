@@ -704,7 +704,7 @@ class CurseManager {
               return;
             }
 
-            if (data.source === "curseManager.events.greedyChest") {
+            if (data.recursiveDangerous) {
               return;
             }
 
@@ -712,7 +712,7 @@ class CurseManager {
               user,
               value: Math.floor(data.value * 0.1),
               resource: PropertiesEnum.coins,
-              context: { curse, data },
+              context: { curse, data, recursiveDangerous: true },
               source: "curseManager.events.greedyChest",
               executor: null,
             });
@@ -724,10 +724,10 @@ class CurseManager {
       {
         _weight: 1,
         id: "generousChest",
-        EFFECT_ID: "curseManager.events.greedyChest",
+        EFFECT_ID: "curseManager.events.generousChest",
         hard: 1,
         description:
-          "Вы теряете и получаете на 5% больше коинов, откройте сундук",
+          "Вы теряете и получаете на 5% больше коинов, максимум 2_000, откройте сундук",
         values: {
           timer: () => DAY * 3,
           goal: () => 2,
@@ -741,20 +741,24 @@ class CurseManager {
               return;
             }
 
-            if (data.source === this.EFFECT_ID) {
+            if (data.recursiveDangerous) {
               return;
             }
 
+            const LIMIT = 2_000;
+            const value = clamp(-LIMIT, Math.floor(data.value * 0.05), LIMIT);
+
             addResource({
               user,
-              value: Math.floor(data.value * 0.05),
+              value,
               resource: PropertiesEnum.coins,
-              context: { curse, data },
+              context: { curse, data, recursiveDangerous: true },
               source: this.EFFECT_ID,
               executor: null,
             });
           },
         },
+        recursiveDangerous: true,
         reward: 5,
       },
       {
