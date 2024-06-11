@@ -54,7 +54,19 @@
     <h5>Ресурс -> источник: количество</h5>
     {#each Object.entries(_interface.groups) as [resource, groupValue]}
       {#key filter_by_source_value}
-        <p resource_paragpraph>{resource}</p>
+        <p resource_paragpraph>
+          {resource}
+          <small title="summarize"
+            >{NumberFormatLetterize(
+              groupValue
+                .filter(resource_group_filter)
+                .reduce(
+                  (acc, value) => console.log(value) || acc + value.value,
+                  0,
+                ),
+            )}</small
+          >
+        </p>
         <ul>
           {#each sortByResolve(groupValue, ({ value }) => value).filter(resource_group_filter) as { value, source }}
             <li resource_group_element>
