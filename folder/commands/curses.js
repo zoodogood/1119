@@ -1,6 +1,6 @@
 import { chunkBySize, justSelectMenuComponent, question } from "#bot/util.js";
 import { Emoji } from "#constants/emojis.js";
-import { MINUTE } from "#constants/globals/time.js";
+import { HOUR, MINUTE } from "#constants/globals/time.js";
 import { resolve_description } from "#folder/entities/curses/curse.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
@@ -11,6 +11,7 @@ import {
   jsonFile,
   takeInteractionProperties,
 } from "#lib/Discord_utils.js";
+import CooldownManager from "#lib/modules/CooldownManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
@@ -448,7 +449,7 @@ class Bought_FlagSubcommand extends BaseFlagSubcommand {
       ...Command.MESSAGE_THEME,
       title: "Проклятия можно купить за дорого",
       description:
-        "Приобретение проклятия для себя 30_000 коинов, для другого — 120_000 коинов",
+        "Приобретение проклятия для себя 90_000 коинов, для другого — 300_000 коинов",
       components: justButtonComponents(
         {
           label: "Приобрести",
@@ -468,8 +469,8 @@ class Bought_FlagSubcommand extends BaseFlagSubcommand {
 class BoughtContext extends BaseContext {
   curseBase;
   prices = {
-    for_self: 30_000,
-    for_other: 120_000,
+    for_self: 90_000,
+    for_other: 300_000,
   };
   target;
   async onBought() {
@@ -655,6 +656,23 @@ class Command extends BaseCommand {
       });
     },
     bought_curse(interaction) {
+      const cooldown = CooldownManager.api(
+        interaction.user.data,
+        "command.curses.bought_flag.bought_CD",
+        {
+          heat: 3,
+          perCall: HOUR,
+        },
+      );
+      if (cooldown.checkYet()) {
+        interaction.msg({
+          description: `Перезарядка: ${cooldown.diff()}`,
+          color: Command.MESSAGE_THEME.color,
+          delete: 15_000,
+        });
+        return;
+      }
+      cooldown.call();
       const bought = new BoughtContext("command.curses.bought_flag.bought", {
         primary: interaction,
         interaction,
