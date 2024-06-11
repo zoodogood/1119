@@ -37,6 +37,10 @@ export function addResource({
     });
   }
 
+  if (!source) {
+    throw new Error();
+  }
+
   user.action(ActionsMap.resourceChange, {
     value,
     executor,
