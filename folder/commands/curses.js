@@ -23,6 +23,7 @@ import {
   ButtonStyle,
   FormattingPatterns,
   PresenceUpdateStatus,
+  escapeCodeBlock,
 } from "discord.js";
 
 class Utils {
@@ -527,6 +528,9 @@ class BoughtContext extends BaseContext {
       });
       return;
     }
+    if (!this.processValidateCurseBase()) {
+      return;
+    }
     if (member.id !== user.id && this.processMemberIsOffline()) {
       return;
     }
@@ -590,6 +594,39 @@ class BoughtContext extends BaseContext {
       context: this,
     });
     return true;
+  }
+  processValidateCurseBase() {
+    const { curseBase } = this;
+    const canReceivedByOdds = !!curseBase._weight;
+    const isPassFilter =
+      !curseBase.filter || curseBase.filter.call(curseBase, this.user, this);
+    if (canReceivedByOdds && isPassFilter) {
+      return true;
+    }
+    const { channel } = this;
+
+    if (!canReceivedByOdds) {
+      channel.msg({
+        title:
+          "Можно получить только проклятия, имеющие вероятность их получения (с весом)",
+        description: `Проклятие ${curseBase} имеет параметр\`_weight: 0\``,
+        color: Command.MESSAGE_THEME.color,
+        delete: 15_000,
+      });
+      return false;
+    }
+
+    if (!isPassFilter) {
+      channel.msg({
+        title: "Проклятие не прошло фильтр — его нельзя получить",
+        color: Command.MESSAGE_THEME.color,
+        description: `\`\`\`js\n${escapeCodeBlock(curseBase.filter.toString())}\n\`\`\``,
+        delete: 15_000,
+      });
+      return false;
+    }
+
+    return false;
   }
 }
 
