@@ -450,7 +450,7 @@ class Bought_FlagSubcommand extends BaseFlagSubcommand {
       ...Command.MESSAGE_THEME,
       title: "Проклятия можно купить за дорого",
       description:
-        "Приобретение проклятия для себя 90_000 коинов, для другого — 300_000 коинов",
+        "Приобретение проклятия для себя стоит 90_000 коинов, для другого — 300_000 коинов",
       components: justButtonComponents(
         {
           label: "Приобрести",
