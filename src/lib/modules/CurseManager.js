@@ -339,14 +339,16 @@ class CurseManager {
             const guilds = user.guilds.filter(
               (guild) => guild.data.boss?.isArrived,
             );
-            const guild = guilds.reduce((maximalize, guild) =>
-              maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay
-                ? guild
-                : maximalize,
+            const guild = guilds.reduce(
+              (maximalize, guild) =>
+                maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay
+                  ? guild
+                  : maximalize,
+              null,
             );
-            const timestamp = guild.data.boss.endingAtDay * 86_400_000;
+            const timestamp = guild.data.boss.endingAtDay * DAY;
             const difference = timestamp - Date.now();
-            return Math.max(difference, 3_600_000);
+            return Math.max(difference, HOUR);
           },
         },
         callback: {
@@ -730,13 +732,13 @@ class CurseManager {
           "Вы теряете и получаете на 5% больше коинов, максимум 2_000, откройте сундук",
         values: {
           timer: () => DAY * 3,
-          goal: () => 2,
+          goal: () => 1,
         },
         callback: {
           openChest: (user, curse) => {
             CurseManager.interface({ user, curse }).incrementProgress(1);
           },
-          resourceChange: (user, curse, data) => {
+          resourceChange(user, curse, data) {
             if (data.resource !== PropertiesEnum.coins) {
               return;
             }
