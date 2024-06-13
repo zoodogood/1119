@@ -706,7 +706,7 @@ class CurseManager {
               return;
             }
 
-            if (data.recursiveDangerous) {
+            if (data.context.recursiveDangerous) {
               return;
             }
 
@@ -743,7 +743,7 @@ class CurseManager {
               return;
             }
 
-            if (data.recursiveDangerous) {
+            if (data.context.recursiveDangerous) {
               return;
             }
 
