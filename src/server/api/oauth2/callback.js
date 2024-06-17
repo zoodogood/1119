@@ -1,6 +1,7 @@
 const PREFIX = "/oauth2/callback";
 import config from "#config";
 import { APIPointAuthorizationManager } from "#lib/modules/APIPointAuthorization.js";
+import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { BaseRoute } from "#server/router.js";
 import PagesRouter from "#site/lib/Router.js";
 import Path from "path";
@@ -8,7 +9,7 @@ import Path from "path";
 class Route extends BaseRoute {
   prefix = PREFIX;
 
-  constructor(express) {
+  constructor() {
     super();
   }
 
@@ -17,7 +18,7 @@ class Route extends BaseRoute {
     const oauth = APIPointAuthorizationManager.OAuth;
 
     if (!oauth.clientSecret) {
-      throw new Error("Accessing OAuth2 without DISCORD_OAUTH2_TOKEN");
+      throw new Error("Accessing OAuth2 without env DISCORD_OAUTH2_TOKEN");
     }
 
     if (!code) {
@@ -25,8 +26,14 @@ class Route extends BaseRoute {
       return;
     }
     const exchangeResponse = await oauth.getOAuth2Data(code);
+    if (exchangeResponse.error) {
+      ErrorsHandler.onErrorReceive(
+        new Error(exchangeResponse.error_description),
+        { oauth: true },
+      );
+    }
     if (!exchangeResponse.access_token) {
-      response.status(500).json(exchangeResponse);
+      response.status(500).json({ exchangeResponse, status: "error" });
       return;
     }
 
