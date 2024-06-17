@@ -43,14 +43,14 @@ class Event extends BaseEvent {
   }
 
   async run(interaction) {
-    const customId = interaction.customId;
+    const { customId } = interaction;
 
     if (interaction.isCommand()) {
       const { commandName } = interaction;
       const command = CommandsManager.callMap.get(commandName);
       CommandsManager.execute(command, interaction);
     }
-    if (customId.startsWith("@")) {
+    if (customId?.startsWith("@")) {
       const [type, target, params] = Executor.parseCustomId(customId) ?? [];
       type && Executor.emit(type, target, { params, interaction });
     }
