@@ -1,13 +1,13 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 import CurseManager from "#lib/modules/CurseManager.js";
-import Template from "#lib/modules/Template.js";
 import QuestManager from "#lib/modules/QuestManager.js";
+import Template from "#lib/modules/Template.js";
+import * as Util from "#lib/util.js";
 
+import { Emoji } from "#constants/emojis.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import { Emoji } from "#constants/emojis.js";
 import { PresenceUpdateStatus } from "discord.js";
 
 class Command extends BaseCommand {
@@ -319,7 +319,7 @@ class Command extends BaseCommand {
             2,
           )}%)\nМонстр-защитник: ${~~user.voidMonster}/1\nКазино: ${~~user.voidCasino}/1\nСвобода проклятий: ${~~user.voidFreedomCurse}/1\nБонусы от перчаток: ${~~user.voidThief}\nУмение заворож. Клевер: ${
             user.voidMysticClover ?? 0
-          }\nФермер: ${user.voidTreeFarm ?? 0}\nНаграда коин-сообщений: ${
+          }/50\nФермер: ${user.voidTreeFarm ?? 0}\nНаграда коин-сообщений: ${
             35 + (user.coinsPerMessage || 0)
           }\`\`\``,
           inline: false,
