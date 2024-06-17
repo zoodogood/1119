@@ -1,8 +1,11 @@
 import { SECOND } from "#constants/globals/time.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
+import {
+  AnonExpressionParser,
+  TokenTypeEnum,
+} from "#lib/AnonExpressionParser.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { Pager } from "#lib/DiscordPager.js";
-import { ExpressionParser, TokenTypeEnum } from "#lib/ExpressionParser.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
@@ -102,7 +105,7 @@ class CommandGuidances {
       'Побитовые операторы:\n` "&" ` — побитовое и (and)\n` "|" ` — побитовое или (or)\n` "~" ` — побитовое не (not)\n` "^" ` — побитовое исключающее или (xor)\n, — побитовые операторы воздействуют на каждый бит числа.\nПример: `0b1|0b01=0b11=1|2=3`\n\nПереведите в привычную систему счисления:\nвозведите число 2 в степень номера разряда для каждого бита, суммируйте\nПример: `0b111=(2**3+2**1+2**0)`\n\nДополнительно:\n- оператор побитового "не", по сути, заменяет два действия:\n\\×(-1) и -1, а именно пример: `~3=(3×(-1)-1)=-4`',
       'Логические значения:\n` "1" `, или любое значение, не ноль — вернуть истину\n` "0" ` — вернуть ложь\nОператоры:\n` "&&" ` — оператор логического "и"\n` "||" ` — логическое "или"\n` ">" ` — "больше"\n` "<" ` — "меньше"\n` "===" ` — "равенство"\n` "!" ` — логическое "отрицание"\n, — логические операторы не могут вернуть значение отличное от "0" или "1"\nПримеры: `1&&0=0`, `2===3=0`, `!10=0`, `!0=1`',
       `Приоритет операторов:\n${(() => {
-        const tokens = Object.values(ExpressionParser.Tokens).filter(
+        const tokens = Object.values(AnonExpressionParser.Tokens).filter(
           (token) => token.type === TokenTypeEnum.Operator,
         );
 
@@ -240,7 +243,7 @@ class Command extends BaseCommand {
       return this.justCalculateStickCount(task, context);
     }
     expression = this.cleanExpression(expression, context);
-    return ExpressionParser.toDigit(expression);
+    return AnonExpressionParser.toDigit(expression);
   }
 
   calculateReward(context) {
@@ -300,7 +303,7 @@ class Command extends BaseCommand {
       romanToDigit(value.replaceAll(stick, "I")),
     );
 
-    expression = ExpressionParser.normalizeExpression(expression);
+    expression = AnonExpressionParser.normalizeExpression(expression);
 
     return expression;
   }

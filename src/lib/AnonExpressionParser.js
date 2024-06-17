@@ -15,7 +15,7 @@ function generalOperatorValidation({ previousToken, nextToken }) {
   );
 }
 
-class ExpressionParser {
+class AnonExpressionParser {
   static #memory = {};
   static Tokens = {
     Digit: {
@@ -572,5 +572,4 @@ class ExpressionParser {
   }
 }
 
-export { ExpressionParser };
-export { TokenTypeEnum };
+export { AnonExpressionParser, TokenTypeEnum };
