@@ -10,6 +10,7 @@
     use_memo,
   } from "#lib/safe-utils.js";
   import Layout from "#site-component/Layout";
+  import ChangeItem from "./change_item.svelte";
 
   const SeasonEmoji = ["⛄", "🌸", "☀️", "🍁"];
 
@@ -88,15 +89,13 @@
               {group_base?.label}
             </p>
             {#each byGroupSymbol as { short_change, group_symbol, message, commit_id }}
-              <li
-                change_item
-                change_item_symbol={group_symbol}
-                title={message}
-                data-commit={commit_id}
+              <ChangeItem
+                {short_change}
+                {group_symbol}
+                {message}
+                {commit_id}
                 id={`_${hash_memo(commit_id + short_change)}`}
-              >
-                {short_change}.
-              </li>
+              />
             {/each}
             <br />
           {/each}
@@ -110,37 +109,6 @@
 </Layout>
 
 <style>
-  [change_item] {
-    --font-size: 0.8rem;
-    --line-height: 1.2;
-    font-size: var(--font-size);
-    line-height: var(--line-height);
-    flex-wrap: wrap;
-    list-style: none;
-    position: relative;
-    text-align: justify;
-  }
-
-  [change_item]::before {
-    content: attr(change_item_symbol);
-    font-family: "Icon", sans-serif;
-    width: 1em;
-    position: absolute;
-    left: calc(var(--font-size) * -1.05);
-    opacity: 0.8;
-    color: var(--text-theme-accent);
-    font-size: 0.65rem;
-    height: calc(var(--font-size) * var(--line-height));
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  [change_item]:nth-child(2n) {
-    color: color-mix(in srgb, currentColor, transparent 15%);
-  }
-
   [period_emoji] {
     width: 1em;
   }
