@@ -1033,9 +1033,9 @@ export const eventBases = transformToCollectionUsingKey([
     async callback(context) {
       await sleep(1000);
       const { guild, channel, boss, user } = context;
-      const message = await context.fetchMessage();
       channel.sendTyping();
       await sleep(4000);
+      const message = await context.fetchMessage();
 
       const owner = (await guild.fetchOwner())?.user ?? user;
 
@@ -1068,9 +1068,9 @@ export const eventBases = transformToCollectionUsingKey([
       });
 
       const embed = {
-        reference: message.id,
+        reference: message?.id,
         description: `Ждем до ${
-          TIMEOUT / 60_000
+          TIMEOUT / MINUTE
         } м., пока ${owner.toString()} нанесёт урон боссу. Вы нанесёте в ${ending(
           MULTIPLAYER,
           "раз",
