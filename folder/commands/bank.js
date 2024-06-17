@@ -447,7 +447,7 @@ class Command extends BaseCommand {
         }
 
         data.cause = data.answer.content
-          .replace(/\d+/, (number) => {
+          .replace(/\d+|\+/, (number) => {
             data.value = number;
             return "";
           })
@@ -474,7 +474,7 @@ class Command extends BaseCommand {
         }
 
         data.cause = data.answer.content
-          .replace(/\d+/, (number) => {
+          .replace(/\d+|\+/, (number) => {
             data.value = number;
             return "";
           })
@@ -564,7 +564,7 @@ class Command extends BaseCommand {
             if (Object.keys(data.professions).length >= 20) {
               interaction.channel.msg({
                 title: `Лимит 20 профессий`,
-                delete: 4500,
+                delete: 9_500,
                 color: "#ff0000",
               });
               continue;
