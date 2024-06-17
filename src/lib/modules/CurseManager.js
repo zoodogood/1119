@@ -27,6 +27,7 @@ import {
 import { addResource, overTheMessageSpamLimit } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { AttachmentBuilder, MessageMentions } from "discord.js";
+import assert from "node:assert";
 
 class CurseManager {
   static cursesBase = new Collection(
@@ -339,12 +340,11 @@ class CurseManager {
             const guilds = user.guilds.filter(
               (guild) => guild.data.boss?.isArrived,
             );
-            const guild = guilds.reduce(
-              (maximalize, guild) =>
-                maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay
-                  ? guild
-                  : maximalize,
-              null,
+            assert(guilds.length);
+            const guild = guilds.reduce((maximalize, guild) =>
+              maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay
+                ? guild
+                : maximalize,
             );
             const timestamp = guild.data.boss.endingAtDay * DAY;
             const difference = timestamp - Date.now();
