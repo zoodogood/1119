@@ -1,7 +1,9 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
-import CommandsManager from "#lib/modules/CommandsManager.js";
 import { BirthdayMember } from "#folder/commands/birthdays.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
+import CommandsManager, {
+  CommandInteraction,
+} from "#lib/modules/CommandsManager.js";
+import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
   options = {
@@ -65,10 +67,16 @@ class Command extends BaseCommand {
 
       const helper = await CommandsManager.collection
         .get("commandinfo")
-        .onChatInput(interaction.message, {
-          ...interaction,
-          params: "setprofile",
-        });
+        .onChatInput(
+          interaction.message,
+          Object.assign(
+            Object.create(CommandInteraction.prototype),
+            interaction,
+            {
+              params: "setprofile",
+            },
+          ),
+        );
       await Util.sleep(20000);
       helper.delete();
       /**/

@@ -27,7 +27,7 @@ export const Events = {
   signal_command_flow_end: "signal_command_flow_end",
 };
 
-class CommandInteraction {
+export class CommandInteraction {
   constructor({ params, user, channel, guild, commandBase, message, client }) {
     this.params = params;
     this.user = user;
@@ -313,10 +313,16 @@ class CommandsManager {
 
       const helper = await CommandsManager.collection
         .get("commandinfo")
-        .onChatInput(interaction.message, {
-          ...interaction,
-          params: options.name,
-        });
+        .onChatInput(
+          interaction.message,
+          Object.assign(
+            Object.create(CommandInteraction.prototype),
+            interaction,
+            {
+              params: options.name,
+            },
+          ),
+        );
       await helper.whenRunExecuted;
       await Util.sleep(30_000);
       helper.targetMessage.delete();

@@ -22,7 +22,9 @@ import BossManager, {
   BossRelics,
   BossSpecial,
 } from "#lib/modules/BossManager.js";
-import CommandsManager from "#lib/modules/CommandsManager.js";
+import CommandsManager, {
+  CommandInteraction,
+} from "#lib/modules/CommandsManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
 import UserEffectManager, {
   EffectInfluenceEnum,
@@ -176,7 +178,13 @@ export const eventBases = transformToCollectionUsingKey([
 
       CommandsManager.collection
         .get("grempen")
-        .onChatInput(null, interactionClone);
+        .onChatInput(
+          null,
+          Object.assign(
+            Object.create(CommandInteraction.prototype),
+            interactionClone,
+          ),
+        );
     },
   },
   {
