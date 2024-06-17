@@ -139,8 +139,9 @@ export const eventBases = transformToCollectionUsingKey([
               return;
             }
             const { product } = data;
+            const value = isNaN(product.value) ? 0 : product.value;
 
-            const damage = BossManager.makeDamage(context.boss, product.value, {
+            const damage = BossManager.makeDamage(context.boss, value, {
               sourceUser: context.user,
               damageSourceType: BossManager.DAMAGE_SOURCES.other,
             });
