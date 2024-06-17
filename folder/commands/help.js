@@ -1,6 +1,6 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
-import { ButtonStyle, ComponentType } from "discord.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
+import { ButtonStyle, ComponentType } from "discord.js";
 
 class Guidances {
   guidances = [
@@ -73,7 +73,7 @@ class Command extends BaseCommand {
     const pretty_format = (command) => `\`!${command.options.name}\``;
 
     // to-do: developer crutch. Restore when interaction.guild?.data.commands analized and changed
-    if (false || interaction.guild?.data.commands) {
+    if (false && interaction.guild?.data.commands) {
       const list = interaction.guild.data.commands;
       guildCommands.push({
         name: "Кастомные команды <:cupS:806813704913682442>",
