@@ -1,23 +1,23 @@
 "use strict";
 import { BaseCommand } from "#lib/BaseCommand.js";
 
-import DataManager from "#lib/modules/DataManager.js";
-import { ComponentType } from "discord.js";
-import { Collection } from "@discordjs/collection";
-import BossManager from "#lib/modules/BossManager.js";
-import QuestManager from "#lib/modules/QuestManager.js";
-import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { Emoji } from "#constants/emojis.js";
+import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { CliParser } from "@zoodogood/utils/primitives";
 import { Pager } from "#lib/DiscordPager.js";
+import BossManager from "#lib/modules/BossManager.js";
+import DataManager from "#lib/modules/DataManager.js";
+import QuestManager from "#lib/modules/QuestManager.js";
 import {
+  DotNotatedInterface,
   NumberFormatLetterize,
+  ending,
   joinWithAndSeparator,
   random,
-  ending,
-  DotNotatedInterface,
 } from "#lib/safe-utils.js";
+import { Collection } from "@discordjs/collection";
+import { CliParser } from "@zoodogood/utils/primitives";
+import { ComponentType, escapeMarkdown } from "discord.js";
 
 class Flag_open {
   capture;
@@ -99,7 +99,7 @@ class Flag_property {
     },
     display: (element, output, index, context) => {
       const key = context.advanced_property_flag;
-      const name = `${index + 1}. ${element.username}`;
+      const name = `${index + 1}. ${escapeMarkdown(element.username)}`;
       const value = `${key}: ${output}`;
       return { name, value };
     },
@@ -243,7 +243,7 @@ class RanksUtils {
           );
         },
         display: (element, output, index) => {
-          const name = `${index + 1}. ${element.username}`;
+          const name = `${index + 1}. ${escapeMarkdown(element.username)}`;
           const value = `Уровень: **${
             element.data.level
           }** | Опыта: ${NumberFormatLetterize(output)}`;
@@ -264,7 +264,7 @@ class RanksUtils {
           );
         },
         display: (element, output, index) => {
-          const name = `${index + 1}. ${element.username}`;
+          const name = `${index + 1}. ${escapeMarkdown(element.username)}`;
           const value = `— ${element.data.coins} (${NumberFormatLetterize(
             output,
           )}) <:coin:637533074879414272>`;
@@ -282,7 +282,7 @@ class RanksUtils {
           return element.data.praiseMe?.length;
         },
         display: (element, output, index) => {
-          const name = `${index + 1}. ${element.username}`;
+          const name = `${index + 1}. ${escapeMarkdown(element.username)}`;
           const value = `— Был похвален ${ending(
             output,
             "раз",
@@ -304,7 +304,7 @@ class RanksUtils {
           return element.data.thiefCombo + ~~element.data.thiefWins / 5;
         },
         display: (element, output, index) => {
-          const name = `${index + 1}. ${element.username}`;
+          const name = `${index + 1}. ${escapeMarkdown(element.username)}`;
           const value = `Состояние перчаток: \`${element.data.thiefGloves}|${
             element.data.thiefCombo || 0
           }\` > Отбито атак: ${element.data.thiefWins | 0}`.replace(/-/g, "!");
@@ -330,7 +330,7 @@ class RanksUtils {
                 : index === 2
                   ? "<a:cupX:806813757832953876> "
                   : "";
-          const name = `${cup} ${index + 1}. ${element.username}`;
+          const name = `${cup} ${index + 1}. ${escapeMarkdown(element.username)}`;
           const globalQuests = (element.data.questsGlobalCompleted ?? "")
             .split(" ")
             .filter(Boolean);
@@ -354,7 +354,7 @@ class RanksUtils {
           const currentCount = element.curses?.length;
           const name = `${index + 1}. ${
             currentCount ? Emoji.curse.toString() : ""
-          } ${element.username}`;
+          } ${escapeMarkdown(element.username)}`;
           const value = `Пережито проклятий: ${ended} ${
             currentCount ? ` | Текущие: ${currentCount}` : ""
           }`;
@@ -375,7 +375,7 @@ class RanksUtils {
           const username =
             element.id === context.interaction.user.id
               ? "?".repeat(element.username.length)
-              : element.username;
+              : escapeMarkdown(element.username);
           const addingName =
             (index === 0 ? " <a:neonThumbnail:806176512159252512>" : "") +
             (random(9) ? "" : " <a:void:768047066890895360>");
@@ -398,7 +398,7 @@ class RanksUtils {
           return BossManager.getUserStats(context.boss, element.id).damageDealt;
         },
         display: (element, output, index, context) => {
-          const name = `${index + 1}. ${element.username}`;
+          const name = `${index + 1}. ${escapeMarkdown(element.username)}`;
           const value = `Великий воин нанёс ${NumberFormatLetterize(
             output,
           )} (${((output * 100) / context.boss.damageTaken).toFixed(
@@ -418,7 +418,7 @@ class RanksUtils {
           return element.data.chestBonus;
         },
         display: (element, output, index) => {
-          const name = `${index + 1}. ${element.username}`;
+          const name = `${index + 1}. ${escapeMarkdown(element.username)}`;
           const value = `0b${output.toString(2)} (${output})`;
           return { name, value };
         },
@@ -443,7 +443,7 @@ class RanksUtils {
           return snowflakes;
         },
         display: (element, snowflakes, index) => {
-          const name = `${index + 1}. ${element.username}`;
+          const name = `${index + 1}. ${escapeMarkdown(element.username)}`;
           const presents = element.data.presents;
           const presentsContent = presents
             ? `${ending(
@@ -543,13 +543,14 @@ class Command extends BaseCommand {
       });
     }
 
+    const { user } = context;
     return {
       title:
         executorIndex !== -1
-          ? `Вы находитесь на ${executorIndex + 1} месте, ${
-              context.user.username
-            }`
-          : `Вы не числитесь в этом топе, ${context.user.username}`,
+          ? `Вы находитесь на ${executorIndex + 1} месте, ${escapeMarkdown(
+              user.username,
+            )}`
+          : `Вы не числитесь в этом топе, ${escapeMarkdown(user.username)}`,
       fields,
       author: {
         name: `Топ на сервере ${context.guild.name}・${selected.component.label}`,
