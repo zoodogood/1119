@@ -285,7 +285,7 @@ class MemberRemindField {
   static fromTimeEvent(timeEvent) {
     const { params: userId, timestamp } = timeEvent;
     const user = client.users.cache.get(userId);
-    const field = this.fromUser(user, timestamp);
+    const field = user && this.fromUser(user, timestamp);
     if (!field) {
       return null;
     }
