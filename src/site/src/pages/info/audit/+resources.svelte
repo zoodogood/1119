@@ -60,10 +60,7 @@
             >{NumberFormatLetterize(
               groupValue
                 .filter(resource_group_filter)
-                .reduce(
-                  (acc, value) => console.log(value) || acc + value.value,
-                  0,
-                ),
+                .reduce((acc, value) => acc + value.value, 0),
             )}</small
           >
         </p>
