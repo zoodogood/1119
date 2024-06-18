@@ -103,14 +103,12 @@ class APIPointAuthorizationManager {
   static TokensUsersExchanger = TokensUsersExchanger;
 
   static onClientReady() {
-    console.log(123);
     this.oAuth = new OAuth({
       clientId: client.user?.id,
       clientSecret: process.env.DISCORD_OAUTH2_TOKEN,
 
       redirectUri: `${config.server.origin}/oauth2/callback`,
     });
-    console.log(this.oAuth);
   }
 }
 
