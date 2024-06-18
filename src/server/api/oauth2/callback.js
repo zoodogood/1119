@@ -15,7 +15,7 @@ class Route extends BaseRoute {
 
   async get(request, response) {
     const code = request.query.code;
-    const oauth = APIPointAuthorizationManager.OAuth;
+    const oauth = APIPointAuthorizationManager.oAuth;
 
     if (!oauth.clientSecret) {
       throw new Error("Accessing OAuth2 without env DISCORD_OAUTH2_TOKEN");
@@ -25,7 +25,11 @@ class Route extends BaseRoute {
       response.sendStatus(400);
       return;
     }
-    const exchangeResponse = await oauth.getOAuth2Data(code);
+    const exchangeResponse = await oauth.tokenRequest({
+      code,
+      grantType: "authorization_code",
+      scope: ["identify", "guilds"],
+    });
     if (exchangeResponse.error) {
       ErrorsHandler.onErrorReceive(
         new Error(exchangeResponse.error_description),

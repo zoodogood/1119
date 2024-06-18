@@ -1,6 +1,6 @@
 import client from "#bot/client.js";
 import config from "#config";
-import { OAuth2 } from "discord-oauth2-utils";
+import OAuth from "discord-oauth2";
 import { User } from "discord.js";
 
 class TokensUsersExchanger {
@@ -34,16 +34,15 @@ class TokensUsersExchanger {
   }
 
   static async fromOAuth(token) {
-    const data =
-      (await APIPointAuthorizationManager.OAuth.fetchUser(token)) ?? {};
-    const { user, guilds: _guilds } = data;
+    const { oAuth } = APIPointAuthorizationManager;
+    const data = (await oAuth.getUser(token)) ?? {};
+    const guilds = (await oAuth.getUserGuilds(token)) ?? {};
+    const { user } = data;
 
     if (!user?.id) {
       return null;
     }
-
-    user.guilds = _guilds.guilds instanceof Array ? _guilds.guilds : null;
-
+    user.guilds = guilds;
     return user;
   }
 
@@ -99,17 +98,19 @@ async function authorizationProtocol(
 
 class APIPointAuthorizationManager {
   static authorizationProtocol = authorizationProtocol;
-  static OAuth = null;
+  /** @type {OAuth|null} */
+  static oAuth = null;
   static TokensUsersExchanger = TokensUsersExchanger;
 
   static onClientReady() {
-    this.OAuth = new OAuth2({
+    console.log(123);
+    this.oAuth = new OAuth({
       clientId: client.user?.id,
       clientSecret: process.env.DISCORD_OAUTH2_TOKEN,
 
-      scopes: ["identify", "guilds"],
-      redirectURI: `${config.server.origin}/oauth2/callback`,
+      redirectUri: `${config.server.origin}/oauth2/callback`,
     });
+    console.log(this.oAuth);
   }
 }
 

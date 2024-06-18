@@ -1,6 +1,6 @@
 const PREFIX = "/oauth2/auth";
-import { BaseRoute } from "#server/router.js";
 import { APIPointAuthorizationManager } from "#lib/modules/APIPointAuthorization.js";
+import { BaseRoute } from "#server/router.js";
 
 class Route extends BaseRoute {
   prefix = PREFIX;
@@ -11,8 +11,9 @@ class Route extends BaseRoute {
 
   async get(request, response) {
     const siteRedirect = request.query.redirect;
-    const redirectURL = APIPointAuthorizationManager.OAuth.getLink({
+    const redirectURL = APIPointAuthorizationManager.oAuth.generateAuthUrl({
       state: siteRedirect,
+      scope: ["identify", "guilds"],
     });
 
     response.redirect(redirectURL);
