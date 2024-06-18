@@ -1,7 +1,6 @@
 const PREFIX = "/oauth2/user";
-import client from "#bot/client.js";
-import { BaseRoute } from "#server/router.js";
 import { TokensUsersExchanger } from "#lib/modules/APIPointAuthorization.js";
+import { BaseRoute } from "#server/router.js";
 
 class Route extends BaseRoute {
   prefix = PREFIX;
