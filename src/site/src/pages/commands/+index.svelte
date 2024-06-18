@@ -19,7 +19,7 @@
   let commands = [];
   (async () => {
     const _commands = await fetchFromInnerApi("client/commands/list");
-    console.log({ _commands });
+    console.info({ _commands });
     commands = _commands;
   })();
 </script>
