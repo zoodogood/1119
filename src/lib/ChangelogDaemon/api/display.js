@@ -27,7 +27,7 @@ function group_changes_by_periods(flat_with_metadata) {
   ).reverse();
 }
 
-function group_changes_by_group_symbol(flat_with_metadata) {
+export function group_changes_by_group_symbol(flat_with_metadata) {
   return Object.entries(
     Object.groupBy(flat_with_metadata, ({ group_symbol }) => group_symbol),
   ).map(([group_symbol, changes]) => [
