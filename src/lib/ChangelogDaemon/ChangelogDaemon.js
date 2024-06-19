@@ -1,5 +1,6 @@
 import StorageManager from "#lib/modules/StorageManager.js";
 import { from_short, short } from "#lib/serialize/optimize_keys.js";
+import EventEmitter from "events";
 /**
 The change log is automatically stacked based on commits.
 The information of such a log should be relevant and understandable to users,
@@ -16,6 +17,12 @@ const shortable_keys_table = {
 };
 
 export class ChangelogDaemon {
+  emitter = new EventEmitter();
+  static Events = {
+    beforePushHandler: "beforeCommitHandler",
+    pushHandlerEnd: "commitHandlerEnd",
+    changeParsed: "changeParsed",
+  };
   file = {
     path: `changelog.json`,
     load: async () => {
@@ -44,19 +51,23 @@ export class ChangelogDaemon {
       return;
     }
     for (const change of addable.split(/(?<=^|\n)\+/).slice(1)) {
-      this.data.push({
+      const data = {
         commit_id: id,
         message,
         addable,
         change: change.trim(),
         createdAt: Date.now(),
-      });
+      };
+      this.data.push(data);
+      this.emitter.emit(ChangelogDaemon.Events.changeParsed, { data, commit });
     }
   }
-  onPush(event) {
+  async onPush(event) {
     const { commits } = event;
+    this.emitter.emit(ChangelogDaemon.Events.beforePushHandler, event);
     for (const commit of commits) {
       this.onCommit(commit);
     }
+    this.emitter.emit(ChangelogDaemon.Events.pushHandlerEnd, event);
   }
 }
