@@ -15,18 +15,27 @@ class Route extends BaseRoute {
   async post(request, response) {
     const { data: user } = await authorizationProtocol(request, response);
 
-    console.log({ user });
     if (!user) {
       return;
     }
 
     const body = await parse_body(request);
-    const { target, previous, value } = body;
+    const { target, previous, value } = JSON.parse(body);
+
     const item = ChangelogDaemon.data.find(
       ({ createdAt }) => createdAt === target,
     );
 
-    item.change = item.change.replace(previous, value);
+    if (!item) {
+      response
+        .status(404)
+        .send(
+          `change not found to be edited createdAt = ${target}, previous = "${previous}"`,
+        );
+      return;
+    }
+
+    item.change = value;
     response.status(200).send("ok");
   }
 }

@@ -12,6 +12,7 @@
   export let message;
   export let commit_id;
   export let id;
+  export let change;
   export let group_symbol;
   export let short_change;
   export let createdAt;
@@ -48,6 +49,7 @@
         isDeveloper(svelteApp.user) && {
           label: "Отредактировать",
           action: async () => {
+            node.innerText = change;
             const previous = node.innerText;
             node.contentEditable = "true";
             node.focus();
@@ -59,6 +61,7 @@
               node.innerText = previous;
               return;
             }
+            const value = node.innerText.trim();
             addNotification({
               text: "Отправка на сервер",
               removeAfter: 10_000,
@@ -74,12 +77,12 @@
                   target: createdAt,
                   message,
                   previous,
-                  value: node.innerText,
+                  value,
                 }),
               },
             );
             addNotification({
-              text: `Статус отправки: ${JSON.stringify(result)}`,
+              text: `Статус отправки: ${JSON.stringify(result)}\nПерезагрузите страницу для синхронизации изменений`,
               position: "bottom-center",
               removeAfter: 10_000,
             });
