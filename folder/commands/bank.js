@@ -1,3 +1,4 @@
+import { Emoji } from "#constants/emojis.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
@@ -586,17 +587,18 @@ class Command extends BaseCommand {
               return;
             }
             data.answer = data.answer.content.split(" ");
+            const [id, salary] = data.answer;
 
-            const role = guild.roles.cache.get(data.answer[0]);
+            const role = guild.roles.cache.get(id);
             if (!role) {
               interaction.channel.msg({
-                title: `Не удалось найти роль с айди ${data.answer[0]}`,
+                title: `Не удалось найти роль с айди ${id}`,
                 delete: 4500,
                 color: "#ff0000",
               });
               continue;
             }
-            if (isNaN(data.answer[1]) || +data.answer[1] === 0) {
+            if (isNaN(salary) || +salary === 0) {
               interaction.channel.msg({
                 title: `Не указано выдаваемое количество коинов`,
                 delete: 4500,
@@ -609,11 +611,15 @@ class Command extends BaseCommand {
               1,
             );
             data.embed.description = `<a:message:794632668137652225> Вы успешно создали новую профессию!\n(${role} ${data.answer[1]} <:coin:637533074879414272>)`;
+            guild.logSend({
+              title: "Назначено создать профессию",
+              description: `${user.toString()}, профессия ${role.toString()} (${salary} ${Emoji.coins.toString()}) была создана`,
+            });
           }
 
           if (data.react === "❎") {
             data.questionMessage = await interaction.channel.msg({
-              title: "Укажите айди роли профессии, для её удаления",
+              title: "Укажите айди ролей профессий, для их удаления",
             });
             data.answer = await interaction.channel.awaitMessage({
               user: interaction.user,
@@ -624,17 +630,24 @@ class Command extends BaseCommand {
               data.professionManager.delete();
               return;
             }
-            if (data.answer.content in data.professions) {
-              delete data.professions[data.answer.content];
-              const role = guild.roles.cache.get(data.answer.content);
-              data.embed.description = `<a:message:794632668137652225> Вы успешно удалили профессию! ${role.toString()}`;
-            } else {
-              interaction.channel.msg({
-                title: `Не удалось найти роль с айди ${data.answer.content} для удаления связанной с ней профессии`,
-                delete: 4500,
-                color: "#ff0000",
-              });
-              continue;
+            const values = data.answer.content.split(" ");
+            for (const id of values) {
+              if (id in data.professions) {
+                const salary = data.professions[id];
+                delete data.professions[id];
+                const role = guild.roles.cache.get(id);
+                data.embed.description = `<a:message:794632668137652225> Вы успешно удалили профессию! ${role.toString()}`;
+                guild.logSend({
+                  title: "Назначено удалить профессию",
+                  description: `${user.toString()}, профессия ${role.toString()} (${salary} ${Emoji.coins.toString()}) была удалена`,
+                });
+              } else {
+                interaction.channel.msg({
+                  title: `Не удалось найти роль с айди ${id} для удаления связанной с ней профессии`,
+                  delete: 4500,
+                  color: "#ff0000",
+                });
+              }
             }
           }
           break;
