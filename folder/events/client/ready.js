@@ -84,6 +84,7 @@ class Event extends BaseEvent {
     if (process.env.IN_CONTAINER) {
       console.info(`PROCESS_ID: ${process.pid}`);
     }
+    EventsManager.emitter.emit(Events.Ready);
   }
 }
 
