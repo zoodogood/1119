@@ -65,6 +65,7 @@ class Command extends BaseCommand {
 
   async displayMessageInterface(context) {
     const { guildData, isAdmin, interaction } = context;
+    const { guild } = interaction;
 
     const embed = {
       title: "Казна сервера",
@@ -74,8 +75,8 @@ class Command extends BaseCommand {
         ..."⠯⠷⠟⠻",
       ].random()} Взять`,
       author: {
-        name: interaction.guild.name,
-        iconURL: interaction.guild.iconURL(),
+        name: guild.name,
+        iconURL: guild.iconURL(),
       },
       image:
         "https://media.discordapp.net/attachments/629546680840093696/830774000597991434/96-967226_tree-forest-green-vector-map-of-the-trees.png",
@@ -147,7 +148,7 @@ class Command extends BaseCommand {
   }
   async interactWithBank(context, { value, isPut, cause }) {
     const { guildData, interaction, isAdmin } = context;
-    const { user, channel } = interaction;
+    const { user, channel, guild } = interaction;
 
     if (value === "+") {
       value = isPut ? interaction.userData.coins : guildData.coins;
@@ -163,11 +164,12 @@ class Command extends BaseCommand {
     }
 
     if (value === 0) {
-      return interaction.channel.msg({
+      channel.msg({
         title: "Невозможно положить/взять 0 коинов",
         color: "#ff0000",
         delete: 5000,
       });
+      return;
     }
 
     if (isPut) {
@@ -178,13 +180,13 @@ class Command extends BaseCommand {
           description:
             "<a:message:794632668137652225> Отправленненные в общую казну коины более не будут предналежать вам, и вы не сможете ими свободно распоряжаться.\nПродолжить?",
         },
-        channel: interaction.channel,
+        channel,
         userData: interaction.userData,
       });
       if (!heAccpet) return;
 
       if (interaction.userData.coins < value) {
-        interaction.channel.msg({
+        channel.msg({
           title: "Образовались проблемки..",
           description: "Недостаточно коинов",
           color: "#ff0000",
@@ -221,7 +223,7 @@ class Command extends BaseCommand {
       });
       guildData.coins += value;
 
-      interaction.guild.logSend({
+      guild.logSend({
         title: "Содержимое банка изменено:",
         description: `${interaction.member.displayName} отнёс в казну ${ending(
           value,
@@ -256,7 +258,7 @@ class Command extends BaseCommand {
           description:
             "<a:message:794632668137652225> Не важно как сюда попадают коины, главное — они предналежат пользователям этого сервера\nРаспоряжайтесь ими с пользой, умом.",
         },
-        channel: interaction.channel,
+        channel,
         userData: interaction.userData,
       });
       if (!heAccpet) return;
@@ -315,7 +317,7 @@ class Command extends BaseCommand {
       });
       guildData.coins -= value;
 
-      interaction.guild.logSend({
+      guild.logSend({
         title: "Содержимое банка изменено:",
         description: `${
           interaction.member.displayName
@@ -432,6 +434,7 @@ class Command extends BaseCommand {
 
   async onReaction(data, context) {
     const { interaction, isAdmin } = context;
+    const { guild, user } = interaction;
 
     switch (data.react) {
       case "637290387655884800":
@@ -439,7 +442,7 @@ class Command extends BaseCommand {
           title: "Укажите сумму коинов, которую хотите внести в казну",
         });
         data.answer = await interaction.channel.awaitMessage({
-          user: interaction.user,
+          user,
         });
         data.questionMessage.delete();
         if (!data.answer) {
@@ -466,7 +469,7 @@ class Command extends BaseCommand {
             "Укажите сумму коинов. А также причину их извлечения из общей казны.",
         });
         data.answer = await interaction.channel.awaitMessage({
-          user: interaction.user,
+          user,
         });
         data.questionMessage.delete();
         if (!data.answer) {
@@ -489,8 +492,7 @@ class Command extends BaseCommand {
         break;
       case "794632668137652225":
         data.professions =
-          interaction.guild.data.professions ||
-          (interaction.guild.data.professions = {});
+          guild.data.professions || (guild.data.professions = {});
 
         data.workersList = [];
         data.report = { expenditure: 0, salaryTable: {} };
@@ -500,17 +502,17 @@ class Command extends BaseCommand {
 
         if (Object.keys(data.professions).length) {
           ProfessionsUtils.removeUnavailableProfessions({
-            guild: interaction.guild,
+            guild,
             professions: data.professions,
           });
 
           data.report = ProfessionsUtils.createReports({
-            guild: interaction.guild,
+            guild,
             professions: data.professions,
           });
 
           data.members = Object.keys(data.report.salaryTable).map((userId) =>
-            interaction.guild.members.cache.get(userId),
+            guild.members.cache.get(userId),
           );
 
           data.workersList = Object.entries(data.professions).map(
@@ -519,7 +521,7 @@ class Command extends BaseCommand {
                 member.roles.cache.has(professionId),
               ).length;
 
-              return `${interaction.guild.roles.cache.get(
+              return `${guild.roles.cache.get(
                 professionId,
               )}\n${salary} <:coin:637533074879414272> в день (${ending(
                 getFromThisProfession,
@@ -540,7 +542,7 @@ class Command extends BaseCommand {
           description: `**Созданные профессии ${
             Object.keys(data.professions).length
           }/20**\n${data.workersContent}\n\n\`\`\`Доходы: ${
-            interaction.guild.memberCount * 2
+            guild.memberCount * 2
           }\nРасходы: ${data.report.expenditure}\n${ending(
             Object.keys(data.report.salaryTable).length,
             "пользовател",
@@ -585,7 +587,7 @@ class Command extends BaseCommand {
             }
             data.answer = data.answer.content.split(" ");
 
-            const role = interaction.guild.roles.cache.get(data.answer[0]);
+            const role = guild.roles.cache.get(data.answer[0]);
             if (!role) {
               interaction.channel.msg({
                 title: `Не удалось найти роль с айди ${data.answer[0]}`,
@@ -602,7 +604,7 @@ class Command extends BaseCommand {
               });
               continue;
             }
-            interaction.guild.data.professions[data.answer[0]] = Math.max(
+            guild.data.professions[data.answer[0]] = Math.max(
               Math.floor(data.answer[1]),
               1,
             );
@@ -624,9 +626,8 @@ class Command extends BaseCommand {
             }
             if (data.answer.content in data.professions) {
               delete data.professions[data.answer.content];
-              data.embed.description = `<a:message:794632668137652225> Вы успешно удалили профессию! ${interaction.guild.roles.cache.get(
-                data.answer.content,
-              )}`;
+              const role = guild.roles.cache.get(data.answer.content);
+              data.embed.description = `<a:message:794632668137652225> Вы успешно удалили профессию! ${role.toString()}`;
             } else {
               interaction.channel.msg({
                 title: `Не удалось найти роль с айди ${data.answer.content} для удаления связанной с ней профессии`,
