@@ -1,5 +1,6 @@
 import { Events as AppEvents } from "#constants/app/events.js";
 import { ChangelogDaemon } from "#lib/ChangelogDaemon/ChangelogDaemon.js";
+import { ChannelPatchLogWriter } from "#lib/ChangelogDaemon/ChannelChangelogWriter.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { Events } from "#server/api/extenral/accept_github_webhook.js";
 
@@ -10,3 +11,6 @@ EventsManager.emitter.once(AppEvents.BeforeLogin, async () => {
 });
 EventsManager.emitter.on(AppEvents.RequestSave, () => singleton.file.write());
 EventsManager.emitter.on(Events.Commit, (event) => singleton.onPush(event));
+
+// MARK: Write to channel
+new ChannelPatchLogWriter(singleton).listen();
