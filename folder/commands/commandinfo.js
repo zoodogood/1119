@@ -1,12 +1,12 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import DataManager from "#lib/modules/DataManager.js";
+import * as Util from "#lib/util.js";
 
-import Discord from "discord.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import { permissionsBitsToI18nArray } from "#lib/permissions.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { CliParser } from "@zoodogood/utils/primitives";
+import Discord from "discord.js";
 
 class CliFlagsField {
   constructor(context) {
