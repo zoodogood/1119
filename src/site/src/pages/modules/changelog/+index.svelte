@@ -62,7 +62,7 @@
     >
     <h2>Список изменений</h2>
     <h5>
-      Давайте посмотрим, что изменилось за последние {ending(
+      Давайте посмотрим, что изменилось за {ending(
         dayjs
           .duration(Date.now() - _interface.first_change.createdAt)
           .get("months"),
