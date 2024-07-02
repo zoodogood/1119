@@ -1,6 +1,6 @@
+import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 import { BaseRoute } from "#server/router.js";
 const PREFIX = "/user/data";
-import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 
 class Route extends BaseRoute {
   isSimple = false;

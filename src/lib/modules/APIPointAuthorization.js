@@ -1,6 +1,6 @@
 import client from "#bot/client.js";
 import config from "#config";
-import OAuth from "discord-oauth2";
+import { OAuth } from "discord-oauth2-utils";
 import { User } from "discord.js";
 
 class TokensUsersExchanger {
@@ -35,11 +35,10 @@ class TokensUsersExchanger {
 
   static async fromOAuth(token) {
     const { oAuth } = APIPointAuthorizationManager;
-    const data = (await oAuth.getUser(token)) ?? {};
-    const guilds = (await oAuth.getUserGuilds(token)) ?? {};
-    const { user } = data;
+    const user = (await oAuth.fetchUser(token)) ?? {};
+    const guilds = (await oAuth.fetchGuilds(token)) ?? {};
 
-    if (!user?.id) {
+    if (!user.id) {
       return null;
     }
     user.guilds = guilds;
@@ -106,7 +105,7 @@ class APIPointAuthorizationManager {
     this.oAuth = new OAuth({
       clientId: client.user?.id,
       clientSecret: process.env.DISCORD_OAUTH2_TOKEN,
-
+      scopes: ["identify", "guilds"],
       redirectUri: `${config.server.origin}/oauth2/callback`,
     });
   }

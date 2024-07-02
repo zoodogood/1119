@@ -5,18 +5,17 @@ import { BaseRoute } from "#server/router.js";
 class Route extends BaseRoute {
   prefix = PREFIX;
 
-  constructor(express) {
+  constructor() {
     super();
   }
 
   async get(request, response) {
     const siteRedirect = request.query.redirect;
-    const redirectURL = APIPointAuthorizationManager.oAuth.generateAuthUrl({
+    const redirectUri = APIPointAuthorizationManager.oAuth.authorizationLink({
       state: siteRedirect,
-      scope: ["identify", "guilds"],
     });
 
-    response.redirect(redirectURL);
+    response.redirect(redirectUri);
     return;
   }
 }

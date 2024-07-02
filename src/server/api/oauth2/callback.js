@@ -25,11 +25,7 @@ class Route extends BaseRoute {
       response.sendStatus(400);
       return;
     }
-    const exchangeResponse = await oauth.tokenRequest({
-      code,
-      grantType: "authorization_code",
-      scope: ["identify", "guilds"],
-    });
+    const exchangeResponse = await oauth.requestToken(code);
     if (exchangeResponse.error) {
       ErrorsHandler.onErrorReceive(
         new Error(exchangeResponse.error_description),
@@ -37,7 +33,7 @@ class Route extends BaseRoute {
       );
     }
     if (!exchangeResponse.access_token) {
-      response.status(500).json({ exchangeResponse, status: "error" });
+      response.status(500).json({ exchangeResponse, status: "error", code });
       return;
     }
 
