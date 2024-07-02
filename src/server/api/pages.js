@@ -1,7 +1,7 @@
 import DataManager from "#lib/modules/DataManager.js";
+import { parsePagesPath } from "#lib/safe-utils.js";
 import { BaseRoute } from "#server/router.js";
 import Path from "path";
-import { parsePagesPath } from "#lib/safe-utils.js";
 
 const ROOT = "static";
 const root = Path.join(process.cwd(), ROOT);

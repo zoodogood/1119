@@ -1,12 +1,12 @@
 import "dotenv/config";
 
 import config from "#config";
-import express from "./express.js";
 import FileSystem from "fs/promises";
+import express from "./express.js";
 import { setMiddleware } from "./middleware.js";
 
-import { checkPort, getAddress } from "./util.js";
 import { sleep } from "#lib/util.js";
+import { checkPort, getAddress } from "./util.js";
 
 const SSLSecret =
   config.server.hasSSLCertificate &&

@@ -64,10 +64,15 @@ class Router {
       express.post(route.prefix, (...params) =>
         this.decorate({ params, route, callback: route.post }),
       );
+
+    route.put &&
+      express.post(route.prefix, (...params) =>
+        this.decorate({ params, route, callback: route.put }),
+      );
   }
 }
 
 class BaseRoute {}
 
 export default Router;
-export { Router, BaseRoute };
+export { BaseRoute, Router };

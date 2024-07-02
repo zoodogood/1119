@@ -1,7 +1,7 @@
-import Router from "./router.js";
+import { incrementEnterAPIStatistic } from "#server/util.js";
 import cors from "cors";
 import helmet from "helmet";
-import { incrementEnterAPIStatistic } from "#server/util.js";
+import Router from "./router.js";
 
 async function setMiddleware(express) {
   const router = await new Router().fetch();
