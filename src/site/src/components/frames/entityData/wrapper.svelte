@@ -1,13 +1,12 @@
 <section>
-	<slot/>
+  <slot />
 </section>
 
 <style>
-	section
-	{
-		display: flex;
-		flex-wrap: wrap;
-		
-		gap: 1em;
-	}
+  section {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 1em;
+  }
 </style>
