@@ -19,7 +19,7 @@ class Route extends BaseRoute {
       return;
     }
 
-    await parse_body(request);
+    await parse_body(request, null, { method: "raw" });
 
     const author = omit(user, (key) =>
       ["id", "username", "discriminator"].includes(key),
@@ -32,7 +32,7 @@ class Route extends BaseRoute {
       response.status(400).send();
       return;
     }
-    const content = request.body;
+    const content = String(request.body);
 
     const data = await ArticlesManager.createArticle({
       content,
