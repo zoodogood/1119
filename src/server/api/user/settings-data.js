@@ -1,31 +1,49 @@
 import client from "#bot/client.js";
+import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 import { BaseRoute } from "#server/router.js";
 const PREFIX = "/user/settings-data";
-import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 
 class UserSettings {
   static FIELDS = [
     {
       key: "chatChannelId",
-      validate: () => {},
+      validateClient: (previous, value, context) => {},
+      validateServer: (previus, value, context) => {},
+      onInput() {},
+      onChange() {},
+      createInput(context) {
+        return { component: "selectChannel", props: { values: context.x } };
+      },
     },
   ];
 }
 
 class GuildSettings {
-  static FIELDS = {};
+  static FIELDS = [
+    {
+      key: "chatChannelId",
+      description: "Укажите канал для отправки в него ежеденевной статистики",
+      validateClient: (previous, value, context) => {},
+      validateServer: (previus, value, context) => {},
+      onInput() {},
+      onChange() {},
+      createInput(context) {
+        return { component: "selectChannel", props: { values: context.x } };
+      },
+    },
+  ];
 }
 
 class Route extends BaseRoute {
   isSimple = false;
 
   prefix = PREFIX;
-  constructor(express) {
+  constructor() {
     super();
   }
 
   async get(request, response) {
-    const { data: user } = await authorizationProtocol(request, response);
+    const { user } = await authorizationProtocol(request, response);
     if (!user) {
       return;
     }
@@ -43,7 +61,7 @@ class Route extends BaseRoute {
   }
 
   async post(request, response) {
-    const { data: user } = await authorizationProtocol(request, response);
+    const { user } = await authorizationProtocol(request, response);
     if (!user) {
       return;
     }
