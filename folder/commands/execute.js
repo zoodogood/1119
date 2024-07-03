@@ -9,7 +9,7 @@ import { CliParser } from "@zoodogood/utils/CliParser";
 import { Message } from "discord.js";
 
 class CommandRunContext extends BaseCommandRunContext {
-  period_delay = 0;
+  gap_delay = 0;
   separator = ";";
   parseCli(input) {
     const parsed = new CliParser()
@@ -23,14 +23,14 @@ class CommandRunContext extends BaseCommandRunContext {
     this.separator =
       this.captures.get("--separator")?.valueOfFlag() || this.separator;
 
-    this.period = this.captures.get("--period")?.valueOfFlag() || this.period;
+    this.gap = this.captures.get("--gap")?.valueOfFlag() || this.gap;
     return parsed;
   }
 }
 
 class CommandDefaultBehaviour extends BaseFlagSubcommand {
   async onProcess() {
-    const { captures, separator, period } = this.context;
+    const { captures, separator, gap } = this.context;
     const residue = captures.get("residue").toString();
     const executable = residue.split(separator);
     const { message: original } = this.context.interaction;
@@ -51,7 +51,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
         CommandsManager.execute(command, commandContext);
       }
 
-      period && (await sleep(period));
+      gap && (await sleep(gap));
     }
   }
 }
@@ -84,10 +84,11 @@ class Command extends BaseCommand {
           description: "Символ разделитель между командами",
         },
         {
-          name: "--period",
-          capture: ["--period"],
+          name: "--gap",
+          capture: ["--gap"],
           expectValue: true,
-          description: "Вводит задержку между применениями",
+          description:
+            "Вводит задержку между применениями. Принимает время в миллисекундах",
         },
       ],
     },
