@@ -13,9 +13,9 @@
   const Component = {
     async getData() {
       const headers = { Authorization: svelteApp.storage.getToken() };
-      const data = await fetchFromInnerApi("user/data", { headers });
+      const userData = await fetchFromInnerApi("user/data", { headers });
 
-      return data;
+      return userData;
     },
   };
 
