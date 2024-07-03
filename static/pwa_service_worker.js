@@ -2,6 +2,15 @@
 
 const ANY_PAGE_ENDPOINT = "/pages";
 const PRECACHED = ["/", ANY_PAGE_ENDPOINT];
+const ALLOW_CACHE = [
+  {
+    regex: /^\/static+?/,
+  },
+  {
+    regex: /^\/(?:(?:ru|ua|en)\/)?pages/,
+    destination: ANY_PAGE_ENDPOINT,
+  },
+];
 const CACHE_NAME = "cache_v1";
 
 self.addEventListener("install", (event) => {
@@ -18,18 +27,12 @@ async function precache() {
   return await cache.addAll(PRECACHED);
 }
 
-function process_pages_path({ event, url }) {
-  // Regex must equal to src/server/api/pages.js some regexp
-  if (!url.pathname.match(/^\/(?:(?:ru|ua|en)\/)?pages/)) {
+function process_allow_cached({ event, url }) {
+  const controller = ALLOW_CACHE.find(({ regex }) => regex.test(url.pathname));
+  if (!controller) {
     return false;
   }
-
-  event.respondWith(fetch_or_cache(ANY_PAGE_ENDPOINT));
-  return true;
-}
-
-function process_static_path({ request, event }) {
-  event.respondWith(fetch_or_cache(request));
+  event.respondWith(fetch_or_cache(controller.destination || event.request));
   return true;
 }
 
@@ -65,12 +68,5 @@ self.addEventListener("fetch", (event) => {
     request,
   };
 
-  if (process_pages_path(context)) {
-    return;
-  }
-
-  if (process_static_path(context)) {
-    return;
-  }
-  event.respondWith(fetch(event.request.url));
+  process_allow_cached(context);
 });
