@@ -72,8 +72,7 @@
           <span>
             <b>{i18n.article.author}</b>
             <p>
-              {data.author?.username ?? null}#{+data.author?.discriminator ||
-                "0000"}
+              {data.author?.username ?? null}
             </p>
           </span>
         </group>
