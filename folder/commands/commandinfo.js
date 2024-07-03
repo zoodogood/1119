@@ -5,6 +5,7 @@ import * as Util from "#lib/util.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import { permissionsBitsToI18nArray } from "#lib/permissions.js";
+import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import Discord from "discord.js";
 
@@ -210,6 +211,11 @@ class Command extends BaseCommand {
       const context = await CommandRunContext.new(interaction, this);
       await this.processDefaultBehaviour(context);
     },
+    async flags_of(interaction, commandName) {
+      interaction.params = `${commandName} --flags`;
+      const context = await CommandRunContext.new(interaction, this);
+      await this.run(context);
+    },
   };
   static MESSAGE_THEME = {
     poster:
@@ -309,6 +315,14 @@ class Command extends BaseCommand {
         ...context.addableFields,
       ],
       footer: { text: `Уникальный идентификатор команды: ${id}` },
+      components: justButtonComponents(
+        ...[
+          context.addableFields.length && {
+            label: "Показать флаги",
+            customId: `@command/commandinfo/flags_of:${commandNameId}`,
+          },
+        ].filter(Boolean),
+      ),
     };
     const message = await interaction.msg(embed);
     context.targetMessage = message;
