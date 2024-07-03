@@ -9,12 +9,12 @@ const PREFIX = "/site/articles/create";
 class Route extends BaseRoute {
   prefix = PREFIX;
 
-  constructor(express) {
+  constructor() {
     super();
   }
 
   async post(request, response) {
-    const { data: user } = await authorizationProtocol(request, response);
+    const { user } = await authorizationProtocol(request, response);
     if (!user) {
       return;
     }

@@ -1,7 +1,7 @@
-import { BaseRoute } from "#server/router.js";
 import { ChestManager } from "#folder/commands/chest.js";
-const PREFIX = "/user/chest_open";
 import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
+import { BaseRoute } from "#server/router.js";
+const PREFIX = "/user/chest_open";
 
 class Route extends BaseRoute {
   prefix = PREFIX;
@@ -11,7 +11,7 @@ class Route extends BaseRoute {
   }
 
   async post(request, response) {
-    const { data: user } = await authorizationProtocol(request, response);
+    const { user } = await authorizationProtocol(request, response);
     if (!user) {
       return;
     }
