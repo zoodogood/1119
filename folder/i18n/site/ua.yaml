@@ -2,11 +2,11 @@ general:
   title: Скриня кота
   app:
     externalTokenDialog:
-      title: Пожалуйста, авторизуйтесь повторно
+      title: Будь ласка, авторизуйтесь повторно
       description: >-
-        Токен действителен в течении двух недель и становится недействительным.
-        Чтобы его обновить авторизуйтесь повторно; Если это сообщение возникает
-        чаще указаного срока, сообщите о проблеме для её решения.
+        Токен дійсний протягом двох тижнів і стає недійсним.
+        Щоб його оновити авторизуйтесь повторно; Якщо це повідомлення виникає
+        частіше зазначеного терміну, повідомте про проблему для її вирішення.
 
 
         <a href = ${ link }>${ _key }</a>
@@ -14,85 +14,85 @@ frames:
   AuditDaily:
     auditTypeEnum:
       enterToPages:
-        label: Посещений страниц
+        label: Відвідувань сторінок
       enterToAPI:
-        label: Обращений к API
+        label: Викликано API
       commandsUsed:
-        label: Использовано команд
+        label: Використано команд
       messages:
-        label: Отправлено сообщений
+        label: Відправлено повідомлень
       riches:
-        label: Богатство
+        label: Багатсв
       boss:
-        label: По боссу
+        label: По босові
     SectionManager:
       footerLabels:
-        general: "Общие"
+        general: "Загалом"
         for$day: "За"
-      emptyContent: "( Пусто )"
+      emptyContent: "( Порожньо )"
     section:
       selectionGroup:
-        label: "Выбранный график:"
-    serverIsNotAvailable: "Сервер недоступен"
+        label: "Обраний графік:"
+    serverIsNotAvailable: "Сервер недоступний"
 
   Statistic:
     statsEnum:
       guilds:
-        label: Гильдий
+        label: Гільдій
       users:
-        label: Пользователей
+        label: Користувачів
       commands:
         label: Команд
   externalAuthorProjects:
     aside:
-      stars: "Звёзд:"
+      stars: "Зірок:"
     projectesEnum:
       piramide:
-        label: Пирамидка
-        description: "Пользователю предстоит написать алгоритм для решения детской задачи — построить пирамидку, которая с высотой постепенно уменьшается в диаметре."
+        label: Пірамідка
+        description: "Гравцеві доведеться написати алгоритм для розв'язання дитячої задачі — побудувати пірамідку, яка з висотою поступово зменшується в діаметрі."
       letsbet:
         label: let-s-bet
-        description: "Бинарный поиск очень эффективен"
+        description: "Бінарний пошук досить ефективний"
       glitchBall:
         label: GlitchBall
-        description: "Если вы заполнили область за пределами этого круга — проиграли."
+        description: "Якщо ви заповнили область за межами цього кола — програли."
 pages:
   public:
-    hi: Привет!
-    cool: Сундук кота это круто
+    hi: Привіт!
+    cool: Скриня кота це круто
   publicExperiments:
-    thisPageNotingTranslate: "Эта страница не будет переведена"
+    thisPageNotingTranslate: "Ця сторінка не буде перекладена"
   commandsIndex:
     category:
       dev: "Доступна розробникам"
-      delete: "Видалина"
+      delete: "Видалена"
       user: "Користувачі"
       guild: "Гильдія"
       bot: "Бот"
       other: "Інше"
   openChest:
-    label: Сундук
+    label: Скриня
     mainInfo: >-
-      При нажатии на кнопку отправляется запрос на сервер. Обработчик запроса
-      содержится в отдельном файле по пути
-      <code>~/src/server/api/user/open-chest.js</code>. Импортирует класс
-      <code>ChestManager</code> из файла по пути
-      <code>~/folder/commands/chest.js</code>, применяя его методы.
-    logInAgain: ~ Войдите в систему ещё раз
-    open: Открыть сундук
-    chestOnCooldown: АААА СУНДУК НА ПЕРЕЗАРЯДКЕ!
-    bonuses: Бонусов
+      При натисканні на кнопку надсилається запит на сервер. Оброблювач запиту міститься в окремому файлі за шляхом
+
+      <code>~/src/server/api/user/open-chest.js</code>. Імпортує клас
+      <code>ChestManager</code> із файлу, за шляхом
+      <code>~/folder/commands/chest.js</code>, застосовуючи його методи.
+    logInAgain: ~ Увійдіть у систему ще раз
+    open: Відкрити скриню
+    chestOnCooldown: АААА СКРИНЯ НА ПЕРЕЗАРЯДЦІ!
+    bonuses: Бонусів
     treasures: Сокровищ
   articlesCreate:
-    label: Написать статью
-    atFirstAuthorize: Сначала авторизуйтесь*
-    uploadMarkdown: Загрузить .md файл
-    getDownToPage: Перейти к созданной странице
+    label: Написати статтю
+    atFirstAuthorize: Спочатку авторизуйтесь*
+    uploadMarkdown: Завантажити .md файл
+    getDownToPage: Перейти до сторінки
     generalCharacters:
-      public: После загрузки содержимое обретёт публичный характер.
-      editable: Вы сможете внести изменения в любой момент времени.
-      author: Ваши никнейм и аватар будут видны другим.
-      noWarnings: Других предупреждений нет.
+      public: Після завантаження вміст набуде публічного характеру.
+      editable: Ви зможете внести зміни в будь-який момент часу.
+      author: Ваші нікнейм і аватар буде видно іншим.
+      noWarnings: Інших попереджень немає.
     serverResponse: "Ответ сервера:"
     externalEditorSection:
       label: "Зовнішній редактор:"
@@ -100,17 +100,17 @@ pages:
         Це лише редактор із можливістю попереднього перегляду (його можливості значно відрізняються від класичного Markdown синтаксису). 
         Збережіть вміст у файл із розширенням .md і завантажте через кнопку вище.
   articlesIndex:
-    label: Статьи
+    label: Статті
     description: >-
-      Что может быть хуже экспериментов ради экспериментов.. Эта часть сайта
-      просто *существует* и, надеюсь, живёт своей жизнью. В будущем вы здесь
-      найдете тексты раскрывающие возможности бота.
-    filter: Фильтровать
+      Що може бути гірше за експерименти заради експериментів. Ця частина сайту
+      просто *існує* і, сподіваюся, живе своїм життям. У майбутньому ви тут
+      знайдете тексти, що розкривають можливості бота.
+    filter: Фільтрувати
     createInfo:
-      label: Создать
+      label: Створити
       content: >-
-        Чтобы написать статью авторизуйтесь и воспользуйтесь
-        <a href = ${ href }>этой ссылкой</a>.
+        Щоб написати статтю авторизуйтесь і скористайтеся
+        <a href = ${ href }>цим посиланням</a>.
     articlesList:
       label: "Написание статьи:"
       filesCount: "Количество файлов:"
@@ -191,36 +191,36 @@ pages:
       regexp: "Регулярные выражения:"
       regexpDescription: Не имеют чёткого адреса.
     other:
-      label: Другое
+      label: Інше
       server: Discord server
       github: Github
-      inviteBot: Пригласить бота
-      learnJavascript: Javascript учебник
+      inviteBot: Запросити бота
+      learnJavascript: Javascript підручник
     history:
-      label: История
+      label: Історія
 components:
   Giscus:
-    comments: Комментарии
-    identify: "Идентификатор:"
-    notSupported: Giscus не поддерживается
+    comments: Коментарі
+    identify: "Ідентифікатор:"
+    notSupported: Giscus не підтримується
   Layout:
     Header:
       ghost: Привид
       nav:
-        home: Главная
-        navigation: Навигация
-        discord: Дискорд
-      authorization: Войти
+        home: Головна
+        navigation: Навігація
+        discord: Діскорд
+      authorization: Увійти
     Footer:
-      imagine: Представьте себе...
+      imagine: Уявіть собі...
       info:
-        label: Информация
-        policy: Политика использования
-        thanks: Благодарности
+        label: Інформація
+        policy: Політика використання
+        thanks: Вдячність
       nav:
-        label: Навигация
-        invite: Пригласить
-        discord: Дискорд
-        github: Гитхаб
-        help: Помощь
-      invite: Пригласить
+        label: Навігація
+        invite: Запросити
+        discord: Діскорд
+        github: Гітхаб
+        help: Допомога
+      invite: Запросити
