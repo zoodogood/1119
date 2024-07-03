@@ -1,4 +1,5 @@
 import StorageManager from "#lib/modules/StorageManager.js";
+import { uid } from "#lib/safe-utils.js";
 import { from_short, short } from "#lib/serialize/optimize_keys.js";
 import EventEmitter from "events";
 /**
@@ -57,6 +58,7 @@ export class ChangelogDaemon {
         addable,
         change: change.trim(),
         createdAt: Date.now(),
+        uid: uid(),
       };
       this.data.push(data);
       this.emitter.emit(ChangelogDaemon.Events.changeParsed, { data, commit });
