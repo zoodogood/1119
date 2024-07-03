@@ -88,7 +88,7 @@
             <p group_label>
               {group_base?.label}
             </p>
-            {#each byGroupSymbol as { short_change, group_symbol, message, commit_id, createdAt, change }}
+            {#each byGroupSymbol as { short_change, group_symbol, message, commit_id, createdAt, change, uid }}
               <ChangeItem
                 {short_change}
                 {group_symbol}
@@ -96,7 +96,7 @@
                 {commit_id}
                 {createdAt}
                 {change}
-                id={`_${hash_memo(commit_id + short_change)}`}
+                {uid}
               />
             {/each}
             <br />

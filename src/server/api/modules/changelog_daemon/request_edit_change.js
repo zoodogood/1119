@@ -13,25 +13,21 @@ class Route extends BaseRoute {
   }
 
   async post(request, response) {
-    const { data: user } = await authorizationProtocol(request, response);
+    const { user } = await authorizationProtocol(request, response);
 
     if (!user) {
       return;
     }
 
     const body = await parse_body(request);
-    const { target, previous, value } = JSON.parse(body);
+    const { target, value } = JSON.parse(body);
 
-    const item = ChangelogDaemon.data.find(
-      ({ createdAt }) => createdAt === target,
-    );
+    const item = ChangelogDaemon.data.find(({ uid }) => uid === target);
 
     if (!item) {
       response
         .status(404)
-        .send(
-          `change not found to be edited createdAt = ${target}, previous = "${previous}"`,
-        );
+        .send(`change not found to be edited uid = "${target}"`);
       return;
     }
 

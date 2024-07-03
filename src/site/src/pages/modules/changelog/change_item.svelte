@@ -11,7 +11,7 @@
 
   export let message;
   export let commit_id;
-  export let id;
+  export let uid;
   export let change;
   export let group_symbol;
   export let short_change;
@@ -33,9 +33,9 @@
   };
   onMount(() => {
     const list = markupedList.value();
-    list.includes(id) && node.classList.add("markuped");
+    list.includes(uid) && node.classList.add("markuped");
 
-    document.location.hash.endsWith(id) &&
+    document.location.hash.endsWith(uid) &&
       (() => {
         node.classList.add("target");
         node.scrollIntoView({ behaviour: "smooth", block: "center" });
@@ -46,48 +46,49 @@
       x: event.pageX,
       y: event.pageY,
       items: [
-        isDeveloper(svelteApp.user) && {
-          label: "Отредактировать",
-          action: async () => {
-            node.innerText = change;
-            const previous = node.innerText;
-            node.contentEditable = "true";
-            node.focus();
-            const { resolve, promise } = Promise.withResolvers();
-            node.addEventListener("blur", resolve, { once: true });
-            await promise;
-            node.contentEditable = "false";
-            if (!confirm("Подтвердите отправку изменений")) {
-              node.innerText = previous;
-              return;
-            }
-            const value = node.innerText.trim();
-            addNotification({
-              text: "Отправка на сервер",
-              removeAfter: 10_000,
-              position: "bottom-center",
-            });
-            const result = await fetchFromInnerApi(
-              "modules/changelog_daemon/request_edit_change",
-              {
-                parseType: "text",
-                method: "POST",
-                headers: { Authorization: svelteApp.storage.getToken() },
-                body: JSON.stringify({
-                  target: createdAt,
-                  message,
-                  previous,
-                  value,
-                }),
-              },
-            );
-            addNotification({
-              text: `Статус отправки: ${JSON.stringify(result)}\nПерезагрузите страницу для синхронизации изменений`,
-              position: "bottom-center",
-              removeAfter: 10_000,
-            });
+        isDeveloper(svelteApp.user) &&
+          uid && {
+            label: "Отредактировать",
+            action: async () => {
+              node.innerText = change;
+              const previous = node.innerText;
+              node.contentEditable = "true";
+              node.focus();
+              const { resolve, promise } = Promise.withResolvers();
+              node.addEventListener("blur", resolve, { once: true });
+              await promise;
+              node.contentEditable = "false";
+              if (!confirm("Подтвердите отправку изменений")) {
+                node.innerText = previous;
+                return;
+              }
+              const value = node.innerText.trim();
+              addNotification({
+                text: "Отправка на сервер",
+                removeAfter: 10_000,
+                position: "bottom-center",
+              });
+              const result = await fetchFromInnerApi(
+                "modules/changelog_daemon/request_edit_change",
+                {
+                  parseType: "text",
+                  method: "POST",
+                  headers: { Authorization: svelteApp.storage.getToken() },
+                  body: JSON.stringify({
+                    target: uid,
+                    message,
+                    previous,
+                    value,
+                  }),
+                },
+              );
+              addNotification({
+                text: `Статус отправки: ${JSON.stringify(result)}\nПерезагрузите страницу для синхронизации изменений`,
+                position: "bottom-center",
+                removeAfter: 10_000,
+              });
+            },
           },
-        },
         commit_id && {
           label: "Открыть коммит",
           icon: "",
@@ -98,7 +99,7 @@
           icon: "",
           action: () => {
             markupedList.update((previous) => {
-              previous.push(id);
+              previous.push(uid);
               return previous;
             });
             node.classList.add("markuped");
@@ -109,7 +110,7 @@
           icon: "",
           action: () => {
             markupedList.update((previous) => {
-              const index = previous.indexOf(id);
+              const index = previous.indexOf(uid);
               index !== -1 && previous.splice(index, 1);
               return previous;
             });
@@ -154,7 +155,7 @@
   change_item_symbol={group_symbol}
   title={message}
   data-commit={commit_id}
-  {id}
+  id={uid}
   on:contextmenu={onContextMenu}
   bind:this={node}
 >
