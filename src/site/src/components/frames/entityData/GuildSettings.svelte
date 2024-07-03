@@ -1,17 +1,11 @@
-<Wrapper>
-	
-</Wrapper>
+<script>
+  export let target = {};
 
+  import Wrapper from "./wrapper.svelte";
+  console.log(target);
+</script>
+
+<Wrapper></Wrapper>
 
 <style>
-	
 </style>
-
-
-<script>
-	export let 
-		svelteApp = null,
-		target = {};
-
-	import Wrapper from "./wrapper.svelte";
-</script>
