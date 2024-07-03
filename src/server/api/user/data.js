@@ -6,7 +6,7 @@ class Route extends BaseRoute {
   isSimple = false;
 
   prefix = PREFIX;
-  constructor(express) {
+  constructor() {
     super();
   }
 

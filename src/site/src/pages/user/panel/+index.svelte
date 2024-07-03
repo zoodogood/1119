@@ -6,7 +6,7 @@
     GuildSettings,
     UserProgress,
     UserSettings,
-  } from "#site/components/frames/entityData/mod.svelte";
+  } from "#site/components/frames/entityData/mod.js";
 
   import Image from "#site-component/Image";
 
