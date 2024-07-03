@@ -92,7 +92,7 @@ async function authorizationProtocol(
     return { status: null, raw: rawUser };
   }
 
-  return { status: true, data: user };
+  return { status: true, user };
 }
 
 class APIPointAuthorizationManager {
