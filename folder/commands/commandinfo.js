@@ -204,6 +204,13 @@ class TargetCommandMetadata {
 }
 
 class Command extends BaseCommand {
+  componentsCallbacks = {
+    async display(interaction, commandName) {
+      interaction.params = commandName;
+      const context = await CommandRunContext.new(interaction, this);
+      await this.processDefaultBehaviour(context);
+    },
+  };
   static MESSAGE_THEME = {
     poster:
       "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg",
@@ -231,23 +238,18 @@ class Command extends BaseCommand {
     cooldown: 5_000,
     type: "bot",
   };
+
   formatMediaDescription(media) {
     const { description, example } = media;
     const exampleContent = `\n\n✏️\n\`\`\`python\n${example}\n\`\`\``;
     return `${description ?? "Описание для этой команды пока отсуствует..."}${example ? exampleContent : ""}`;
   }
-
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
     context.setWhenRunExecuted(this.run(context));
     return context;
   }
 
-  async onComponent({ interaction, params }) {
-    interaction.params = params;
-    const context = await CommandRunContext.new(interaction, this);
-    await this.processDefaultBehaviour(context);
-  }
   processCommandExists(context) {
     const { targetCommand } = context;
 
