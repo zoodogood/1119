@@ -538,7 +538,7 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
       },
       {
         emoji: "❔",
-        customId: `@command/commandinfo/${context.command.options.name}`,
+        customId: `@command/commandinfo/display:${context.command.options.name}`,
       },
     ];
   }
@@ -696,7 +696,6 @@ class List_FlagSubcommand extends BaseFlagSubcommand {
         style: ButtonStyle.Success,
         customId: "filter",
         get disabled() {
-          console.log(!!this.filter_manager);
           return !!this.filter_manager;
         },
       }),
