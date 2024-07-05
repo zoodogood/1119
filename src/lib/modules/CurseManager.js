@@ -837,11 +837,11 @@ class CurseManager {
       {
         _weight: 1,
         id: "pointOfNoReturn",
-        hard: 2,
+        hard: 1,
         description:
           "Таймер трёх проклятий должен пройти. В случае провала, вы теряете все ресурсы",
         values: {
-          timer: () => DAY * 100,
+          timer: () => DAY * 90,
           goal: () => 3,
         },
         callback: {
@@ -860,6 +860,11 @@ class CurseManager {
               PropertiesEnum.berrys,
               PropertiesEnum.void,
               PropertiesEnum.chestBonus,
+              PropertiesEnum.thiefGloves,
+              PropertiesEnum.monster,
+              PropertiesEnum.lollipops,
+              PropertiesEnum.chilli,
+              PropertiesEnum.coinsPerMessage,
             ]) {
               addResource({
                 user,
@@ -961,7 +966,9 @@ class CurseManager {
           },
         },
         reward: 5,
-        filter: (user) => user.data.level > 30,
+        filter(user) {
+          return user.data.level > 30 && !user.data[this.EFFECT_ID];
+        },
       },
       {
         _weight: 5,
