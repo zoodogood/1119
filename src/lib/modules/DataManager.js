@@ -96,6 +96,7 @@ class DataManager {
       commandsLaunched: 0,
       coins: 0,
       commandsUsed: {},
+      members: {},
     };
   }
 
