@@ -1,8 +1,8 @@
-import { TimeEventsManager, BossManager } from "#lib/modules/mod.js";
 import { client } from "#bot/client.js";
+import { BossManager, TimeEventsManager } from "#lib/modules/mod.js";
 
-import TreeCommand from "#folder/commands/seed.js";
 import BankCommand from "#folder/commands/bank.js";
+import TreeCommand from "#folder/commands/seed.js";
 import { ending, NumberFormatLetterize } from "#src/lib/util.js";
 
 class Event {
@@ -82,6 +82,20 @@ class Event {
     }
 
     guildData.day_msg = 0;
+
+    const messages_leader = (() => {
+      let current = { value: 0, userId: null };
+      for (const [userId, memberData] of Object.entries(guildData.members)) {
+        const value = memberData.messagesToday;
+        delete memberData.messagesToday;
+        if (value > current.value) {
+          current = { value, userId };
+        }
+      }
+      return current;
+    })();
+    messages_leader.userId &&
+      (description += `\nНаибольшее число от <@${messages_leader.userId}>: ${ending(messages_leader.value, "сообщени", "й", "е", "я")}`);
 
     if (!messagesOfDay) {
       return;
