@@ -67,9 +67,11 @@ client.on("ready", async () => {
       return;
     }
 
-    const memberData = (message.guild.data.members[message.author.id] ||= {});
-    memberData.messagesToday ||= 0;
-    memberData.messagesToday++;
+    if (message.guild) {
+      const memberData = (message.guild.data.members[message.author.id] ||= {});
+      memberData.messagesToday ||= 0;
+      memberData.messagesToday++;
+    }
 
     message.author.action(Actions.messageCreate, message);
 
