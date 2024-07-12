@@ -31,6 +31,13 @@ import FileSystem from "fs";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import "#lib/expand_prototype.js";
 
+// to-do: developer crutch will be remove
+EventsManager.emitter.once(Events.BeforeLogin, async () => {
+  for (const guildData of DataManager.data.guilds) {
+    guildData.members ||= {};
+  }
+});
+
 client.on("ready", async () => {
   for (const guild of client.guilds.cache.values()) {
     const invites = await guild.invites.fetch().catch(() => {});
@@ -59,6 +66,10 @@ client.on("ready", async () => {
     if (message.author.bot) {
       return;
     }
+
+    const memberData = (message.guild.data.members[message.author.id] ||= {});
+    memberData.messagesToday ||= 0;
+    memberData.messagesToday++;
 
     message.author.action(Actions.messageCreate, message);
 
