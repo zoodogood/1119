@@ -56,7 +56,6 @@ export const grempen_products = transformToCollectionUsingKey([
           resource: PropertiesEnum.keys,
           context: { interaction, product },
         });
-        userData.keys += count;
       }
 
       return phrase;
