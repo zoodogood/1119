@@ -187,7 +187,6 @@ class Members_FlagSubcommand {
   }
 
   async sendList(channel) {
-    const { context } = this;
     const pull = this.getPull().map(([user, curses]) => [
       user.toString(),
       curses.map((curse) => `\`${curse.id}\``).join(", "),
@@ -537,6 +536,7 @@ class BoughtContext extends BaseContext {
       user: member.user,
       context: this,
     });
+    curse.values.isBoughtedBy = user.id;
 
     CurseManager.init({ user: member.user, curse });
     channel.msg({
