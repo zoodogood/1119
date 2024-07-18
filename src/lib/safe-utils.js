@@ -536,3 +536,8 @@ export {
   digitToRoman,
   romanToDigit,
 } from "./romanNumerals.js";
+
+export function clone(object) {
+  const clone = Object.create(Object.getPrototypeOf(object));
+  return Object.assign(clone, object);
+}
