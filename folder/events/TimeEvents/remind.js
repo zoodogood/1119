@@ -1,3 +1,4 @@
+import client from "#bot/client.js";
 import { whenClientIsReady } from "#bot/util.js";
 import {
   Remind_AbstractEvaluate,
@@ -67,6 +68,8 @@ class Event {
   resolveParams(eventData) {
     const remindField = Remind_MemberField.fromTimeEvent(eventData) || {
       status: null,
+      remindData: {},
+      user: client.users.cache.get(eventData.params),
     };
     const { remindData, user } = remindField;
     const { channel } = remindData;
@@ -85,7 +88,6 @@ class Event {
     await whenClientIsReady();
     const context = this.resolveParams(eventData);
     const { isLost } = eventData;
-
     const { remindField, isDeleted } = context;
     if (isDeleted) {
       return;

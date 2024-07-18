@@ -9,7 +9,7 @@ import { getValuesByIndexes } from "#lib/features/primitives.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
-import { capitalize, ending, question } from "#lib/util.js";
+import { capitalize, clone, ending, question } from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { Message } from "discord.js";
 
@@ -112,7 +112,10 @@ class AbstractRemindRepeats {
     const timeTo = Date.now() - eventData.createdAt;
     const { user } = remindField;
     return MemberRemindField.create(user, {
-      remindData: { ...remindData, _repeatsCount: repeatsCount - 1 },
+      remindData: Object.assign(clone(remindData), {
+        _repeatsCount: repeatsCount - 1,
+        isDeleted: false,
+      }),
       timeTo,
     });
   }
@@ -675,10 +678,10 @@ class Command extends BaseCommand {
 }
 
 export {
-  RemindData,
   AbstractRemindEvaluate as Remind_AbstractEvaluate,
   AbstractRemindRepeats as Remind_AbstractRepeats,
   MemberRemindField as Remind_MemberField,
+  RemindData,
 };
 
 export default Command;
