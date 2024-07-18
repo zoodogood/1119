@@ -866,13 +866,14 @@ class CurseManager {
               PropertiesEnum.chilli,
               PropertiesEnum.coinsPerMessage,
             ]) {
-              addResource({
-                user,
-                value: -userData[resource],
-                resource,
-                executor: null,
-                source: "curseManager.events.pointOfNoReturn",
-              });
+              userData[resource] &&
+                addResource({
+                  user,
+                  value: -userData[resource],
+                  resource,
+                  executor: null,
+                  source: "curseManager.events.pointOfNoReturn",
+                });
             }
           },
         },
