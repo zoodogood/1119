@@ -10,6 +10,18 @@ export class ParserTime {
     /(?<time>\d\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
   time = 0;
 
+  static toNumber(string) {
+    const parser = new this();
+    const multipleRegex = RegExp(parser.regex, "g");
+    const matchs = string.matchAll(multipleRegex);
+    for (const { groups } of matchs) {
+      const key = this._getActiveGroupName(groups);
+      const item = { key, value: groups[key] };
+      parser.pushItem(item);
+    }
+    return parser.summarizeItems();
+  }
+
   static _getActiveGroupName(groups) {
     for (const group in groups) {
       if (groups[group]) {
@@ -36,16 +48,6 @@ export class ParserTime {
   appendTime(time) {
     const [hours, minutes] = time.split(":").map(Number);
     this.date = this.date.set("hour", hours).set("minute", minutes);
-  }
-
-  /**@type {ReturnType<dayjs>} */
-  get date() {
-    this.#date ||= dayjs();
-    return this.#date;
-  }
-
-  set date(value) {
-    this.#date = value;
   }
 
   diffDateTime(compare) {
@@ -94,15 +96,13 @@ export class ParserTime {
     return this.diffDateTime(Date.now()) + this.time;
   }
 
-  static toNumber(string) {
-    const parser = new this();
-    const multipleRegex = RegExp(parser.regex, "g");
-    const matchs = string.matchAll(multipleRegex);
-    for (const { groups } of matchs) {
-      const key = this._getActiveGroupName(groups);
-      const item = { key, value: groups[key] };
-      parser.pushItem(item);
-    }
-    return parser.summarizeItems();
+  /**@type {ReturnType<dayjs>} */
+  get date() {
+    this.#date ||= dayjs();
+    return this.#date;
+  }
+
+  set date(value) {
+    this.#date = value;
   }
 }
