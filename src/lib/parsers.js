@@ -7,7 +7,7 @@ export class ParserTime {
 
   items = [];
   regex =
-    /(?<time>\d\d:\d\d)|(?<date>\d\d\.\d\d)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
+    /(?<time>\d\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
   time = 0;
 
   static _getActiveGroupName(groups) {
@@ -20,8 +20,13 @@ export class ParserTime {
   }
 
   appendDate(date) {
-    const [day, month] = date.split(".").map(Number);
-    this.date = this.date.set("date", day).set("month", month - 1);
+    const [day, month, year] = date.split(".").map(Number);
+    const value = this.date.set("date", day).set("month", month - 1);
+
+    if (year) {
+      value.set("year", year);
+    }
+    this.date = value;
   }
 
   appendStamp(stamp) {
