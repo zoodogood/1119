@@ -28,9 +28,9 @@ class Command extends BaseCommand {
 
   async onChatInput(msg, interaction) {
     const target = interaction.params
-        ? interaction.mention ??
+        ? (interaction.mention ??
           client.users.cache.get(interaction.params) ??
-          msg.author
+          msg.author)
         : msg.author,
       member = msg.guild ? msg.guild.members.resolve(target) : null,
       user = target.data,
@@ -200,7 +200,7 @@ class Command extends BaseCommand {
 
       const embed = {
         title: `Статистика ${
-          member ? member.displayName : target.globalName ?? target.username
+          member ? member.displayName : (target.globalName ?? target.username)
         }`,
         color: interaction.embedColor,
         footer,
