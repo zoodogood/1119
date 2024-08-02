@@ -10,7 +10,7 @@ export class ParserTime {
     /(?<time>\d\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
   time = 0;
 
-  static toNumber(string) {
+  static toNumber(string = "") {
     const parser = new this();
     const multipleRegex = RegExp(parser.regex, "g");
     const matchs = string.matchAll(multipleRegex);
