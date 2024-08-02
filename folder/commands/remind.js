@@ -4,6 +4,7 @@ import config from "#config";
 import { SECOND, YEAR } from "#constants/globals/time.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { dayjs_ensure_coming_year } from "#lib/dayjs.js";
 import { Pager } from "#lib/DiscordPager.js";
 import { getValuesByIndexes } from "#lib/features/primitives.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
@@ -345,15 +346,16 @@ class ParamsProcessor {
 
   captureParamsLine() {
     const { cliParser, timeParser } = this;
+    // brackets
     cliParser.processBrackets();
     this.setParamsCliParserParams(cliParser.context.input);
-    // stage 1
+    // flags
     this.captureFlags(cliParser);
     this.setParamsCliParserParams(cliParser.context.input);
-    // stage 2
+    // time
     const _temp1_params = this.captureTime(timeParser);
     this.setParamsCliParserParams(_temp1_params);
-    // stagw 3
+    // residue
     this.captureResiduePhrase(cliParser);
     this.setParamsCliParserParams(cliParser.context.input);
     return this;
@@ -388,6 +390,7 @@ class ParamsProcessor {
       params = params.replace(match[0], "").trim();
     }
 
+    timeParser.date = dayjs_ensure_coming_year(timeParser.date);
     this.setParamsCliParserParams(params);
     return params;
   }

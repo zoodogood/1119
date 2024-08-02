@@ -1,5 +1,6 @@
 import { client } from "#bot/client.js";
-import { SECOND } from "#constants/globals/time.js";
+import { question } from "#bot/util.js";
+import { SECOND, YEAR } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
@@ -80,9 +81,30 @@ class Command extends BaseCommand {
       .captureResidue({ name: "cause" })
       .collect();
 
-    const timeToEnd = ParserTime.toNumber(
+    let timeToEnd = ParserTime.toNumber(
       parsed.captures.get("target_time")?.toString(),
     );
+
+    if (parsed < Date.now()) {
+      const { emoji } = await question({
+        message: {
+          title: "Эта дата уже прошла, хотите установить на следующий год?",
+        },
+        user: interaction.user,
+        channel: interaction.channel,
+        reactions: ["685057435161198594", "763807890573885456"],
+      });
+
+      if (emoji === "685057435161198594") {
+        timeToEnd += YEAR;
+      } else {
+        interaction.channel.msg({
+          title: "Операция отменена",
+          delete: 8 * SECOND,
+        });
+        return;
+      }
+    }
 
     const cause = parsed.captures.get("cause")?.toString();
 
