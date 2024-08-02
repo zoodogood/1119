@@ -5,13 +5,16 @@ import config from "#config";
 import Template from "#lib/modules/Template.js";
 
 import { Pager } from "#lib/DiscordPager.js";
-import { escapeCodeBlock, WebhookClient } from "discord.js";
+import { escapeCodeBlock, escapeMarkdown, WebhookClient } from "discord.js";
+import mol_global from "mol_tree2";
 
 const DEFAULT_CODE_CONTENT = 'module("userData")';
 
 function format_object(object) {
-  return `\`\`\`json\n${escapeCodeBlock(
-    JSON.stringify(object, null, "\t"),
+  const { $mol_tree2_from_json } = mol_global;
+
+  return `\`\`\`tree\n${escapeCodeBlock(
+    $mol_tree2_from_json(object).toString(),
   )}\`\`\``;
 }
 function resolve_page(raw) {
@@ -119,9 +122,19 @@ class Command extends BaseCommand {
       case typeof output === "object":
         interaction.pages = [
           format_object(output),
+          {
+            title: "Карта полей. По-порядку начиная с третьей страницы",
+            description: [
+              "Основной объект",
+              "*Вы здесь*",
+              ...Object.keys(output),
+            ]
+              .map((title, i) => `${i + 1}. ${escapeMarkdown(title)}`)
+              .join("\n"),
+          },
           ...Object.entries(output).map(([title, value]) => ({
             title: `Поле \`${title}\``,
-            description: format_object(value),
+            description: format_object(value || {}),
           })),
         ];
         interaction.emojiByType = "753916315755872266";
