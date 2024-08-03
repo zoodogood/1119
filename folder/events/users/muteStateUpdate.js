@@ -1,35 +1,40 @@
 import client from "#bot/client.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
-import { AuditLogEvent } from "discord.js";
+import { AuditLogEvent, PermissionFlagsBits } from "discord.js";
 
-async function setMuteState(member, isSetDisable = false) {
+export function is_mute_role(role) {
+  return role.id === role.guild.data.mute_role || is_mute_role_by_name(role);
+}
+export function is_mute_role_by_name(role) {
+  return "mute muted замучен мьют мут замьючен".includes(
+    role.name.toLowerCase(),
+  );
+}
+async function setMuteState(member, toDisable = false) {
   const guild = member.guild;
 
-  if (isSetDisable === true) {
+  if (toDisable === true) {
     guild.channels.cache.each(async (channel) => {
       await channel.permissionOverwrites.edit(member, {
-        SEND_MESSAGES: null,
-        ADD_REACTIONS: null,
-        SPEAK: null,
+        [PermissionFlagsBits.SendMessages]: null,
+        [PermissionFlagsBits.AddReactions]: null,
+        [PermissionFlagsBits.Speak]: null,
       });
-      const { allow, deny } = channel.permissionOverwrites.get(member.id) || {
-        allow: {},
-        deny: {},
-      };
 
-      if (allow.bitfield === 0 && deny.bitfield === 0)
-        channel.permissionOverwrites.get(member.id).delete();
+      const { allow, deny } =
+        channel.permissionOverwrites.valueOf().get(member.id) || {};
+
+      if (allow?.bitfield === 0 && deny?.bitfield === 0)
+        channel.permissionOverwrites.delete(member.id);
     });
     return;
   }
 
   guild.channels.cache.each(async (channel) => {
-    // let pastPermissions = channel.permissionOverwrites.get(memb.id);
-    // let {allow, deny} = pastPermissions || {};
     await channel.permissionOverwrites.edit(member, {
-      SEND_MESSAGES: false,
-      ADD_REACTIONS: false,
-      SPEAK: false,
+      [PermissionFlagsBits.SendMessages]: false,
+      [PermissionFlagsBits.AddReactions]: false,
+      [PermissionFlagsBits.Speak]: false,
     });
   });
 }
@@ -47,11 +52,13 @@ class Event extends BaseEvent {
   async run(user, role, isRemoved) {
     const guild = role.guild;
     const member = guild.members.resolve(user);
+
     setMuteState(member, isRemoved);
 
-    const executor = await guild.Audit((audit) => audit.target.id === user.id, {
-      type: AuditLogEvent.MemberRoleUpdate,
-    })?.executor;
+    const { executor } =
+      (await guild.Audit((audit) => audit.target.id === user.id, {
+        type: AuditLogEvent.MemberRoleUpdate,
+      })) || {};
 
     if (!executor) {
       return;

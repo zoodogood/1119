@@ -1,3 +1,4 @@
+import { is_mute_role } from "#folder/events/users/muteStateUpdate.js";
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 
 class Event extends BaseEvent {
@@ -6,7 +7,7 @@ class Event extends BaseEvent {
   };
 
   constructor() {
-    const EVENT = "clent/guildMemberRolesUpdate";
+    const EVENT = "client/guildMemberRolesUpdate";
     super(EventsManager.emitter, EVENT);
   }
 
@@ -16,13 +17,13 @@ class Event extends BaseEvent {
 
     const role = isRemoved
       ? previousState.roles.cache.find(
-          (role) => !newState.roles.cache.get(role.id),
+          (role) => !newState.roles.cache.has(role.id),
         )
-      : previousState.roles.cache.find(
-          (role) => !newState.roles.cache.get(role.id),
+      : newState.roles.cache.find(
+          (role) => !previousState.roles.cache.has(role.id),
         );
 
-    if (role.id === newState.guild.data.mute_role) {
+    if (is_mute_role(role)) {
       EventsManager.emitter.emit(
         "users/muteStateUpdate",
         newState.user,

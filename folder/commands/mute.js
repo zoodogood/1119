@@ -1,6 +1,7 @@
 import { client } from "#bot/client.js";
 import { question } from "#bot/util.js";
 import { SECOND, YEAR } from "#constants/globals/time.js";
+import { is_mute_role_by_name } from "#folder/events/users/muteStateUpdate.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
@@ -8,6 +9,15 @@ import { dayjs, sleep } from "#lib/safe-utils.js";
 import { CliParser } from "@zoodogood/utils/CliParser";
 import { FormattingPatterns, PermissionFlagsBits } from "discord.js";
 
+async function setup_mute_role(guild) {
+  const role = await guild.roles.create({
+    name: "MUTED",
+    color: "#a8a8a8",
+    permissions: [PermissionFlagsBits.ViewChannel],
+  });
+  guild.data.mute_role = role.id;
+  return role;
+}
 class Command extends BaseCommand {
   options = {
     name: "mute",
@@ -34,7 +44,6 @@ class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const guild = interaction.guild;
     const guildMember = guild.members.resolve(interaction.mention);
-    let role;
 
     if (interaction.mention === msg.author)
       return msg.msg({
@@ -107,24 +116,12 @@ class Command extends BaseCommand {
     }
 
     const cause = parsed.captures.get("cause")?.toString();
-
     // find muted role
-    if (guild.data.mute_role)
-      role = guild.roles.cache.get(guild.data.mute_role);
 
-    if (!role) {
-      role =
-        guild.roles.cache.find((e) =>
-          "mute muted замучен мьют мут замьючен".includes(e.name.toLowerCase()),
-        ) ||
-        (await guild.roles.create({
-          name: "MUTED",
-          color: "#a8a8a8",
-          permissions: [PermissionFlagsBits.ViewChannel],
-        }));
-
-      guild.data.mute_role = role.id;
-    }
+    const role =
+      guild.roles.cache.get(guild.data.mute_role) ||
+      guild.roles.cache.find(is_mute_role_by_name) ||
+      (await setup_mute_role(guild));
 
     if (guildMember.roles.cache.get(role.id)) {
       msg.msg({ title: "Участник уже находится в муте", color: "#ff0000" });
@@ -147,7 +144,7 @@ class Command extends BaseCommand {
         cause ? `\nПричина: ${cause}` : ""
       }${
         timeToEnd
-          ? `\nОграничения автоматически будут сняты ${dayjs(timeToEnd + Date.now()).format("MM.DD, HH:mm")}`
+          ? `\nОграничения автоматически будут сняты ${dayjs(timeToEnd + Date.now()).format("DD.MM.YYYY, HH:mm")}`
           : ""
       }`,
       color: "#de3c37",

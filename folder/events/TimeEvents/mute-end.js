@@ -7,11 +7,9 @@ class Event {
 
   run(eventData, guildId, memberId) {
     const guild = client.guilds.cache.get(guildId);
-    const member = guild.members.resolve(memberId);
-    if (!member.roles.cache.get(guild.data.mute_role)) {
-      return;
-    }
-    if (!guild) {
+    const member = guild?.members.resolve(memberId);
+    const role = member.roles.cache.get(guild.data.mute_role);
+    if (!role) {
       return;
     }
 
@@ -23,7 +21,7 @@ class Event {
         iconURL: member.user.displayAvatarURL(),
       },
     });
-    member.roles.remove(guild.data.mute_role);
+    member.roles.remove(role.id);
   }
 }
 
