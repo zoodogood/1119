@@ -19,6 +19,7 @@ import {
   UserEffectManager,
 } from "#lib/modules/mod.js";
 import * as Util from "#lib/util.js";
+import mol_global from "mol_tree2";
 
 import * as PropertiesManager from "#lib/modules/Properties.js";
 
@@ -342,6 +343,14 @@ class Template {
         permissions: {
           scope: PERMISSIONS_MASK_ENUM.USER,
           investigate: PERMISSIONS_MASK_ENUM.USER,
+        },
+      },
+      mol_global: {
+        getContent: () => mol_global,
+        name: "mol_global",
+        permissions: {
+          scope: PERMISSIONS_MASK_ENUM.DEVELOPER,
+          investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
       ___: {
