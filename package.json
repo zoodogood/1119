@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.21949",
+  "version": "2.0.0-alpha.22009",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -45,11 +45,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "helmet": "^7.1.0",
-    "json5": "^2.2.3",
     "mol_tree2": "^1.0.791",
     "vm2": "^3.9.19",
-    "yaml": "^2.5.0",
-    "yamljs": "^0.3.0"
+    "yaml": "^2.5.0"
   },
   "// comment it's be ignored": {
     "optional_dependencies": {
