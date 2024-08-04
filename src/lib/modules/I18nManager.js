@@ -1,12 +1,11 @@
+import { mol_tree2_json_from_string } from "#lib/$mol.js";
 import StorageManager from "#lib/modules/StorageManager.js";
-import mol_global from "mol_tree2";
 class StorageUtils {
   static async readLocales() {
-    const { $mol_tree2_from_string, $mol_tree2_to_json } = mol_global;
-    const tree =
-      (await StorageManager.read("i18n.tree")) ||
-      $mol_tree2_from_string(`*\n\tru *\n`);
-    const value = $mol_tree2_to_json.call(mol_global, tree.kids[0]);
+    const value = mol_tree2_json_from_string(
+      (await StorageManager.read("i18n.tree")) || `*\n\tru *\n`,
+    );
+
     return value;
   }
 }
