@@ -353,7 +353,7 @@ class Template {
           investigate: PERMISSIONS_MASK_ENUM.DEVELOPER,
         },
       },
-      ___: {
+      message_api: {
         getContent: (context, source) => {
           return {
             confirm: "Это тестовое поле и всё ещё может сильно изменится",
@@ -374,7 +374,15 @@ class Template {
             },
           };
         },
-        name: "___",
+        name: "message_api",
+        permissions: {
+          scope: PERMISSIONS_MASK_ENUM.USER,
+          investigate: PERMISSIONS_MASK_ENUM.USER,
+        },
+      },
+      ctx: {
+        getContent: (context) => context.toSafeValues?.(),
+        name: "ctx",
         permissions: {
           scope: PERMISSIONS_MASK_ENUM.USER,
           investigate: PERMISSIONS_MASK_ENUM.USER,

@@ -1,4 +1,3 @@
-import { toSafeValues } from "#lib/toSafeValues.js";
 import EventsEmitter from "events";
 
 export class BaseContext {
@@ -11,6 +10,6 @@ export class BaseContext {
   }
 
   toSafeValues() {
-    return toSafeValues(this);
+    throw new Error("toSafeValues is not implemented");
   }
 }
