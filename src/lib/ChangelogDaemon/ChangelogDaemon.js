@@ -18,16 +18,16 @@ const shortable_keys_table = {
 };
 
 export class ChangelogDaemon {
-  emitter = new EventEmitter();
   static Events = {
     beforePushHandler: "beforeCommitHandler",
     pushHandlerEnd: "commitHandlerEnd",
     changeParsed: "changeParsed",
   };
+  emitter = new EventEmitter();
   file = {
     path: `changelog.json`,
     load: async () => {
-      const path = this.file.path;
+      const { path } = this.file;
       const content = await StorageManager.read(path);
       const data =
         content && from_short(JSON.parse(content), shortable_keys_table);
@@ -35,7 +35,7 @@ export class ChangelogDaemon {
       this.data = data || this.file.defaultData;
     },
     write: async () => {
-      const path = this.file.path;
+      const { path } = this.file;
       const data = JSON.stringify(short(this.data, shortable_keys_table));
       await StorageManager.write(path, data);
     },
