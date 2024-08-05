@@ -1,4 +1,6 @@
+import client from "#bot/client.js";
 import { question } from "#bot/util.js";
+import { resolve_message_in_answer } from "#lib/Discord_utils.js";
 
 export default {
   emoji: "🖊️",
@@ -7,51 +9,41 @@ export default {
     "Единожды отправляет сообщение и после, ненавязчиво, изменяет его содержимое",
   key: "message_content",
   setup: async (context) => {
-    const { interaction, counter, typeBase } = context.interaction;
+    const { interaction, board, boardBase } = context;
     const { channel, user, guild } = interaction;
-    counter.type = typeBase.key;
-    counter.channelId = channel.id;
-    counter.guildId = guild.id;
-    counter.authorId = user.id;
+    board.key = boardBase.key;
+    board.cid = channel.id;
+    board.gid = guild.id;
+    board.uid = user.id;
 
-    question({
+    const { value } = await question({
       channel,
       user,
       message: {
         description:
-          "Привет! Это исключительное руководство по созданию счётчиков-сообщений. \nУкажите сообщение, отправленное Призраком. Сделать это можно ответив на него, отправив сообщение, содержащее ссылку на сообщение или идентификатор сообщения",
+          "Привет! Это исключительное руководство по созданию табла-сообщения. Принцип работы: содержимое табла будет генерироваться на основе кода внутри сообщения. бот имеет полномочие редактировать только свои сообщения. Чтобы не дублировать функционал команды !эмбед\nУкажите сообщение, отправленное Призраком. Сделать это можно ответив на него, отправив сообщение, содержащее ссылку на сообщение или идентификатор сообщения",
       },
     });
 
-    const questionNeedEmbed = async () => {
-      const message = await interaction.message.msg({
-        title: "Вашему сообщению нужен эмбед?",
-        description: "Вы сможете передать JSON-набор для эмбед сообщения",
-      });
-      const react = await message.awaitReact(
-        { user: interaction.user, removeType: "all" },
-        "685057435161198594",
-        "763807890573885456",
-      );
-      message.delete();
-      return react === "685057435161198594";
-    };
+    const id = resolve_message_in_answer(value);
+    channel.messages.fetch(id);
+    return board;
+  },
+  async render(board, templater) {
+    const options = board.message;
+    const { cid, mid } = board;
 
-    context.needEmbed = await questionNeedEmbed();
+    const channel = client.channels.cache.get(cid);
+    const message = await channel.messages.fetch(mid);
+    const { embed } = message;
+    embed.content = message.content;
+    const vm = templater.createVM();
 
-    if (context.needEmbed) {
+    for (const [key, value] of Object.entries(options)) {
+      embed[key] = await vm.run(value);
     }
 
-    return counter;
-  },
-  async render({ channel, counter }, templater) {
-    const options = counter.message;
-    options.title &&= await templater.replaceAll(options.title);
-    options.description &&= await templater.replaceAll(options.description);
-    options.content &&= await templater.replaceAll(options.content);
-
-    const message = await channel.messages.fetch(counter.messageId);
-    message.msg({ ...options, edit: true });
+    message.msg({ ...embed, edit: true });
     return message;
   },
 };

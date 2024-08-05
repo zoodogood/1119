@@ -10,14 +10,15 @@ export class Loop {
   async *queque() {
     let i = 0;
     const INTERVAL = 15 * MINUTE;
+    const { items } = this;
 
     while (true) {
-      const counter = this.data[i];
-      yield counter;
+      // board
+      yield items[i];
 
-      await sleep(INTERVAL / (this.data.length + 1));
+      await sleep(INTERVAL / (items.length + 1));
       i++;
-      i %= this.data.length;
+      i %= items.length;
     }
   }
 
