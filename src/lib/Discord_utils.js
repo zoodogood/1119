@@ -81,3 +81,9 @@ export function actionRowsToComponents(actionRows) {
     })),
   );
 }
+
+export function resolve_message_in_answer(answer) {
+  const id =
+    answer.content.match(/\d{17,21}/g).at(-1) ?? answer.reference.messageId;
+  return id;
+}
