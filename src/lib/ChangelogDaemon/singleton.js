@@ -17,7 +17,11 @@ EventsManager.emitter.once(AppEvents.BeforeLogin, async () => {
     change.uid = `${createdAt}_${Math.floor(Math.random() * createdAt)}`;
   }
 });
-EventsManager.emitter.on(AppEvents.RequestSave, () => singleton.file.write());
+EventsManager.emitter.on(AppEvents.RequestSave, async (event) => {
+  const { resolve } = event.addStopPromise();
+  await singleton.file.write();
+  resolve();
+});
 EventsManager.emitter.on(Events.Commit, (event) => singleton.onPush(event));
 
 // MARK: Write to channel
