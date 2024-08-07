@@ -64,7 +64,7 @@ export default {
     const value = await vm.run(content);
     await channel.setName(
       value,
-      `!commandInfo Counter, initialized by <@${board.uid}>`,
+      `!commandInfo board, initialized by <@${board.uid}>`,
     );
   },
 };

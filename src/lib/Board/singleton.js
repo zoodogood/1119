@@ -10,4 +10,8 @@ EventsManager.emitter.once(AppEvents.Ready, async () => {
   await singleton.file.load();
   singleton.loop.work();
 });
-EventsManager.emitter.on(AppEvents.RequestSave, () => singleton.file.write());
+EventsManager.emitter.on(AppEvents.RequestSave, async (event) => {
+  const { resolve } = event.addStopPromise();
+  await singleton.file.write();
+  resolve();
+});

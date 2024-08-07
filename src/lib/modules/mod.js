@@ -3,7 +3,6 @@ import ActionManager from "./ActionManager.js";
 import BossManager from "./BossManager.js";
 import CommandsManager from "./CommandsManager.js";
 import CooldownManager from "./CooldownManager.js";
-import CounterManager from "./CounterManager.js";
 import CurseManager from "./CurseManager.js";
 import DataManager from "./DataManager.js";
 import UserEffectManager from "./EffectsManager.js";
@@ -25,7 +24,6 @@ export {
   BossManager,
   CommandsManager,
   CooldownManager,
-  CounterManager,
   CurseManager,
   DataManager,
   ErrorsHandler,
@@ -42,4 +40,5 @@ export {
 };
 
 // style for modern modules
+export { singleton as board_singleton } from "#lib/Board/singleton.js";
 export { singleton as ChangelogDaemon } from "#lib/ChangelogDaemon/singleton.js";

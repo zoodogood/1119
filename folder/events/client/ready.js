@@ -3,11 +3,7 @@ import { client } from "#bot/client.js";
 import { Events } from "#constants/app/events.js";
 import childProcessUtils from "#lib/child-process-utils.js";
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
-import {
-  CounterManager,
-  DataManager,
-  TimeEventsManager,
-} from "#lib/modules/mod.js";
+import { DataManager, TimeEventsManager } from "#lib/modules/mod.js";
 import { ReadPackageJson, timestampDay } from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 
@@ -61,7 +57,6 @@ class Event extends BaseEvent {
     app.server = server;
 
     app.cli = this.parseCli();
-    CounterManager.handle();
     TimeEventsManager.handle();
 
     const needUpdate =

@@ -1,17 +1,17 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import CounterManager from "#lib/modules/CounterManager.js";
-import { ButtonStyle, ComponentType, escapeMarkdown } from "discord.js";
-import { CommandsManager } from "#lib/modules/mod.js";
 import { NULL_WIDTH_SPACE } from "#constants/globals/characters.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
+import { render_strategies } from "#lib/Board/render/strategies/mod.js";
+import { board_singleton, CommandsManager } from "#lib/modules/mod.js";
+import { ButtonStyle, ComponentType, escapeMarkdown } from "discord.js";
 
 class Command extends BaseCommand {
   options = {
-    name: "counter",
+    name: "board",
     id: 42,
     media: {
       description:
         "Отличный способ отображать статистику — с помощью шаблонов создайте динамический текст, который будет меняться каждые 15 минут. Счётчики могут менять как имя любого канала, так и содержание сообщения.",
-      example: `!counter #без аргументов`,
+      example: `!board #без аргументов`,
     },
     accessibility: {
       publicized_on_level: 15,
@@ -22,7 +22,7 @@ class Command extends BaseCommand {
     Permissions: 16n,
   };
 
-  async displayCreateOutput({ interaction, result, counter }) {
+  async displayCreateOutput({ interaction, result, board }) {
     const embed = {
       title: "Счётчик создан",
       description: `**Результат:** ${
@@ -37,7 +37,7 @@ class Command extends BaseCommand {
         },
         {
           type: ComponentType.Button,
-          customId: "delete-counter",
+          customId: "delete-board",
           label: "Удалить этот счётчик",
           style: ButtonStyle.Secondary,
         },
@@ -52,12 +52,12 @@ class Command extends BaseCommand {
       time: 100_000,
     });
 
-    const countersCommand = CommandsManager.callMap.get("counters");
+    const boardsCommand = CommandsManager.callMap.get("boards");
     collector.on("collect", async (interaction) => {
-      const customId = interaction.customId;
-      customId === "delete-counter" && CounterManager.delete(counter);
+      const { customId } = interaction;
+      customId === "delete-board" && CountersManager.delete(board);
       customId === "open-list" &&
-        countersCommand.onChatInput(interaction.message, interaction);
+        boardsCommand.onChatInput(interaction.message, interaction);
     });
     collector.on("end", () => message.msg({ edit: true, components: [] }));
 
@@ -66,8 +66,8 @@ class Command extends BaseCommand {
 
   async onChatInput(msg, interaction) {
     if (
-      CounterManager.data.filter(
-        (counter) => counter.guildId === interaction.guild.id,
+      board_singleton.loop.items.filter(
+        (board) => board.gid === interaction.guild.id,
       ).length >= 15
     ) {
       interaction.channel.msg({
@@ -81,33 +81,33 @@ class Command extends BaseCommand {
     const context = {
       interaction,
       questionMessage: null,
-      typeBase: null,
+      boardBase: null,
       template: null,
-      counter: {},
+      board: {},
     };
 
-    const counterTypes = [...CounterManager.countersTypes.values()];
+    const boardBases = [...render_strategies.values()];
 
     context.questionMessage = await msg.msg({
       title: "🪄 Выберите тип объекта для счётчика",
-      description: `Счётчики работают с каналами и сообщениями.\nВыберите основу для дальнельшей настройки.\n\n${counterTypes
+      description: `Счётчики работают с каналами и сообщениями.\nВыберите основу для дальнельшей настройки.\n\n${boardBases
         .map(
           ({ label, description }) =>
             `❯ ${label.toUpperCase()}\n> ${description}.\n> ${NULL_WIDTH_SPACE}`,
         )
         .join("\n")}`,
     });
-    const takeCounterType = async (context) => {
-      const reactions = counterTypes.map(({ emoji }) => emoji);
+    const boardBase = await (async (context) => {
+      const reactions = boardBases.map(({ emoji }) => emoji);
       const reaction = await context.questionMessage.awaitReact(
         { user: msg.author, removeType: "all" },
         ...reactions,
       );
-      return counterTypes.find(({ emoji }) => emoji === reaction);
-    };
-    context.typeBase = await takeCounterType(context);
+      return boardBases.find(({ emoji }) => emoji === reaction);
+    })(context);
+    context.boardBase = boardBase;
 
-    if (!context.typeBase) {
+    if (!context.boardBase) {
       context.questionMessage.delete();
       return;
     }
@@ -135,11 +135,11 @@ class Command extends BaseCommand {
       return;
     }
 
-    const counter = await context.typeBase.change(context);
-    if (!counter) {
+    const board = await boardBase.setup(context);
+    if (!board) {
       return;
     }
-    const { result } = await CounterManager.create(counter);
+    const { result } = await boardBase.render(board);
     await this.displayCreateOutput({ interaction, result });
   }
 }

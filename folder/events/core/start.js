@@ -6,7 +6,6 @@ import { client } from "#bot/client.js";
 import {
   BossManager,
   CommandsManager,
-  CounterManager,
   DataManager,
   ErrorsHandler,
   EventsManager,
@@ -95,8 +94,6 @@ class Event extends BaseEvent {
 
     await DataManager.file.load();
     await TimeEventsManager.file.load();
-    // await ReactionsManager.loadReactionsFromFile();
-    await CounterManager.file.load();
     await ErrorsHandler.importFileErrorsList();
 
     this.checkDataManagerFullset();

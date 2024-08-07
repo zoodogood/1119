@@ -23,8 +23,8 @@ export class Loop {
   }
 
   work() {
-    for (const counter of this.queque()) {
-      render(counter);
+    for (const board of this.queque()) {
+      render(board);
     }
   }
 }

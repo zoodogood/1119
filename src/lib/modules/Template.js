@@ -396,8 +396,8 @@ class Template {
     involuntarily: "involuntarily",
     /** user directly call */
     call: "call",
-    /** From counter */
-    counter: "counter",
+    /** From Board */
+    board_render: "board_render",
     /** From guild command */
     guildCommand: "guildCommand",
     /** From userEffect/evaluateTemplate */

@@ -1,16 +1,16 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
+import { board_singleton } from "#lib/modules/mod.js";
 import * as Util from "#lib/util.js";
 import Discord from "discord.js";
-import CounterManager from "#lib/modules/CounterManager.js";
 
 class Command extends BaseCommand {
   options = {
-    name: "counters",
+    name: "boards",
     id: 43,
     media: {
       description:
-        "Отображает список существующих счётчиков на сервере. См. команду `!counter`",
-      example: `!counters #без аргументов`,
+        "Отображает список существующих счётчиков на сервере. См. команду `!board`",
+      example: `!boards #без аргументов`,
     },
     accessibility: {
       publicized_on_level: 15,
@@ -21,28 +21,28 @@ class Command extends BaseCommand {
     type: "guild",
   };
 
-  createEmbed({ interaction, counters }) {
-    const toValue = (counter) =>
+  createEmbed({ interaction, boards }) {
+    const toValue = (board) =>
       ({
-        message: `🖊️ [Сообщение.](https://discord.com/channels/${counter.guildId}/${counter.channelId}/${counter.messageId})`,
+        message: `🖊️ [Сообщение.](https://discord.com/channels/${board.gid}/${board.cid}/${board.mid})`,
         channel: `🪧 \`#${
-          interaction.guild.channels.cache.get(counter.channelId).name
+          interaction.guild.channels.cache.get(board.channelId).name
         }\``,
-        poster: `🖌️ <#${counter.channelId}>`,
-      })[counter.type];
+        poster: `🖌️ <#${board.cid}>`,
+      })[board.key];
 
-    const toField = (counter, i) => ({
+    const toField = (board, i) => ({
       name: `**${i + 1}.**`,
-      value: toValue(counter),
+      value: toValue(board),
       inline: true,
     });
 
-    const fields = counters.map(toField);
+    const fields = boards.map(toField);
 
     !fields.length &&
       fields.push({
         name: "Но здесь пусто.",
-        value: "Чтобы добавить счётчики, используйте `!counter`",
+        value: "Чтобы добавить счётчики, используйте `!board`",
       });
 
     return {
@@ -51,23 +51,21 @@ class Command extends BaseCommand {
     };
   }
 
-  fetchCountersInGuild(guild) {
-    return CounterManager.data.filter(
-      (counter) => counter.guildId === guild.id,
-    );
+  fetchBoardsInGuild(guild) {
+    return board_singleton.loop.items.filter((board) => board.gid === guild.id);
   }
 
   async onChatInput(msg, interaction) {
-    const counters = this.fetchCountersInGuild(interaction.guild);
-    const embed = this.createEmbed({ interaction, counters });
+    const boards = this.fetchBoardsInGuild(interaction.guild);
+    const embed = this.createEmbed({ interaction, boards });
 
     const message = await msg.msg(embed);
 
     const reactions = () =>
-      counters.length && !interaction.user.wastedPermissions(16)[0]
+      boards.length && !interaction.user.wastedPermissions(16)[0]
         ? ["✏️", "🗑️"]
         : ["❌"];
-    let react, question, answer, counter;
+    let react, question, answer, board;
     while (true) {
       react = await message.awaitReact(
         { user: msg.author, removeType: "all" },
@@ -84,17 +82,17 @@ class Command extends BaseCommand {
             !answer ||
             !answer.content ||
             isNaN(answer.content) ||
-            answer.content > counters.length
+            answer.content > boards.length
           )
             break;
-          counter = counters.splice(answer.content - 1, 1)[0];
-          CounterManager.delete(counter._original);
-          counters.forEach((e, i) => (e.name = `**${i + 1}.**`));
+          board = boards.splice(answer.content - 1, 1)[0];
+          BoardManager.delete(board._original);
+          boards.forEach((e, i) => (e.name = `**${i + 1}.**`));
           message.msg({
             title: "Счётчики сервера",
             edit: true,
-            fields: counters[0]
-              ? counters
+            fields: boards[0]
+              ? boards
               : { name: "Тут пусто.", value: "Вы удалили последний счётчик" },
             description: `Счётчик #${answer.content} успешно удалён.`,
           });
@@ -109,7 +107,7 @@ class Command extends BaseCommand {
             !answer ||
             !answer.content ||
             isNaN(answer.content) ||
-            answer.content - 1 > counters.length
+            answer.content - 1 > boards.length
           ) {
             question.delete();
             msg.msg({
@@ -119,28 +117,23 @@ class Command extends BaseCommand {
             break;
           }
 
-          counter = counters[answer.content - 1];
+          board = boards[answer.content - 1];
           question.msg({
             title: "Введите новое содержание",
             edit: true,
             description: `**Старое:**\n\`\`\`${Discord.escapeCodeBlock(
-              counter._original.template,
+              board._original.template,
             )}\`\`\``,
           });
           answer = await msg.channel.awaitMessage(msg.author);
           question.delete();
-          counter._original.template = answer.content;
-          CounterManager.file.write();
-          CounterManager.up(counter._original);
+          board._original.template = answer.content;
+          BoardManager.up(board._original);
 
-          counter.value =
-            counter.type == "channel"
-              ? `🪧 \`#${msg.guild.channels.cache.get(e.channel).name}\``
-              : counter.value;
           message.msg({
             title: "Счётчики сервера",
             edit: true,
-            fields: counters,
+            fields: boards,
             description: `Сообщение счётчика успешно отредактированно!`,
           });
           break;
