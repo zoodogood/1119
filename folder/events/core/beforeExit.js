@@ -1,10 +1,11 @@
 import client from "#bot/client.js";
+import { Events } from "#constants/app/events.js";
+import { createStopPromise } from "#lib/createStopPromise.js";
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 import {
   DataManager,
-  TimeEventsManager,
   ErrorsHandler,
-  CounterManager,
+  TimeEventsManager,
 } from "#lib/modules/mod.js";
 import { ActivityType } from "discord.js";
 
@@ -26,9 +27,13 @@ class Event extends BaseEvent {
         url: "https://www.twitch.tv/monstercat",
       });
 
+      const saveEvent = {
+        ...createStopPromise(),
+      };
+      EventsManager.emitter.emit(Events.RequestSave, saveEvent);
+      await saveEvent.whenStopPromises();
       await DataManager.file.write();
       await TimeEventsManager.file.write();
-      await CounterManager.file.write();
       await ErrorsHandler.sessionWriteFile();
     } catch (error) {
       console.error(error);

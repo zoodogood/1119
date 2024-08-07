@@ -1,7 +1,7 @@
 import config from "#config";
 import { Events } from "#constants/app/events.js";
+import { createStopPromise } from "#lib/createStopPromise.js";
 import {
-  CounterManager,
   DataManager,
   EventsManager,
   TimeEventsManager,
@@ -14,15 +14,17 @@ class Event {
     name: "TimeEvent/autosave",
   };
 
-  run() {
+  async run() {
     if (config.development) {
       return;
     }
-
     DataManager.file.write();
     TimeEventsManager.file.write();
-    CounterManager.file.write();
-    EventsManager.emitter.emit(Events.RequestSave);
+    const saveEvent = {
+      ...createStopPromise(),
+    };
+    EventsManager.emitter.emit(Events.RequestSave, saveEvent);
+    await saveEvent.whenStopPromises();
     return TimeEventsManager.create("autosave", this.constructor.INTERVAL);
   }
 }
