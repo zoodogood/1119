@@ -280,7 +280,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 }
 class Command extends BaseCommand {
   componentsCallbacks = {
-    removeMessage(interaction) {
+    removeMessage({ interaction }) {
       interaction.message.delete();
 
       interaction.msg({
@@ -294,7 +294,7 @@ class Command extends BaseCommand {
       });
       return;
     },
-    async getMoreInfo(interaction) {
+    async getMoreInfo({ interaction }) {
       const parent = interaction.message;
       const embed = {
         components: [
@@ -333,7 +333,7 @@ class Command extends BaseCommand {
       parent.msg({ edit: true, components });
       return;
     },
-    getUptime(interaction) {
+    getUptime({ interaction }) {
       const ms = process.uptime() * 1_000;
       const formatted = dayjs
         .duration(ms)
@@ -342,11 +342,11 @@ class Command extends BaseCommand {
       const content = `Аптайм: [${formatted}], — бот запущен и работал без перезапусков именно столько.`;
       interaction.msg({ content, delete: 15_000 });
     },
-    commands(interaction) {
+    commands({ interaction }) {
       const content = CommandDefaultBehaviour.commandsUsedContent();
       interaction.msg({ ephemeral: true, content });
     },
-    postReview(interaction) {
+    postReview({ interaction }) {
       const components = [
         {
           type: ComponentType.TextInput,
@@ -366,7 +366,7 @@ class Command extends BaseCommand {
       interaction.showModal(modal);
       return;
     },
-    postReviewModal(interaction) {
+    postReviewModal({ interaction }) {
       const description = interaction.fields.getField("content").value;
       const { user } = interaction;
 
@@ -403,7 +403,8 @@ class Command extends BaseCommand {
         content: "Спасибо!",
       });
     },
-    answerForReview(interaction, id) {
+    answerForReview({ interaction, params }) {
+      const [id] = params;
       const user = client.users.cache.get(id);
       if (!user) {
         interaction.msg({
@@ -434,7 +435,8 @@ class Command extends BaseCommand {
       interaction.showModal(modal);
       return;
     },
-    async answerForReviewModal(interaction, id) {
+    async answerForReviewModal({ interaction, params }) {
+      const [id] = params;
       const description = interaction.fields.getField("content").value;
       const user = client.users.cache.get(id);
 
@@ -482,7 +484,7 @@ class Command extends BaseCommand {
         content: "Ваш ответ дошёл до пользователя!",
       });
     },
-    hideMessage(interaction) {
+    hideMessage({ interaction }) {
       interaction.message.delete();
       interaction.msg({
         ephemeral: true,

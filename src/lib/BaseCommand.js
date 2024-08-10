@@ -1,3 +1,6 @@
+import { BaseContext } from "#lib/BaseContext.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
+
 // @ts-check
 class BaseCommand {
   componentsCallbacks = {};
@@ -11,7 +14,16 @@ class BaseCommand {
 
   onComponent({ params: rawParams, interaction }) {
     const [target, ...params] = rawParams.split(":");
-    this.componentsCallbacks[target].call(this, interaction, ...params);
+    const context = new BaseContext(
+      `@oncomponent/${this.options.name}/${params}`,
+      {
+        interaction,
+        primary: interaction,
+        ...takeInteractionProperties(interaction),
+        params,
+      },
+    );
+    this.componentsCallbacks[target].call(this, context);
   }
 
   onSlash() {}

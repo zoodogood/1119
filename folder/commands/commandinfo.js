@@ -136,7 +136,6 @@ class CommandRunContext extends BaseCommandRunContext {
 }
 
 class TargetCommandMetadata {
-  aliases;
   static CategoriesEnum = {
     dev: "Команда в разработке или доступна только разработчику",
     delete: "Команда была удалена",
@@ -145,6 +144,7 @@ class TargetCommandMetadata {
     bot: "Бот",
     other: "Другое",
   };
+  aliases;
   category;
   commandNameId;
   githubURL;
@@ -152,13 +152,15 @@ class TargetCommandMetadata {
   media;
   options;
   usedCount;
+  static new(context) {
+    const meta = new this();
+    Object.assign(meta, meta.fetchCommandMetadata(context.targetCommand));
+    return meta;
+  }
+
   calculateCommandsUsedTotally() {
     const used = Object.values(DataManager.data.bot.commandsUsed);
     return used.reduce((acc, count) => acc + count, 0);
-  }
-
-  get commandUsedTotally() {
-    return this.calculateCommandsUsedTotally();
   }
 
   fetchCommandMetadata(command) {
@@ -184,12 +186,6 @@ class TargetCommandMetadata {
     };
   }
 
-  static new(context) {
-    const meta = new this();
-    Object.assign(meta, meta.fetchCommandMetadata(context.targetCommand));
-    return meta;
-  }
-
   permissionsToLocaledArray(permissions, locale) {
     const strings = permissionsBitsToI18nArray(permissions, locale);
     const formatted = strings.map((permission) => {
@@ -202,24 +198,30 @@ class TargetCommandMetadata {
   resolveGithubPathOf(commandNameId) {
     return Util.resolveGithubPath(`./folder/commands/${commandNameId}.js`);
   }
+
+  get commandUsedTotally() {
+    return this.calculateCommandsUsedTotally();
+  }
 }
 
 class Command extends BaseCommand {
+  static MESSAGE_THEME = {
+    poster:
+      "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg",
+  };
   componentsCallbacks = {
-    async display(interaction, commandName) {
+    async display({ interaction, params }) {
+      const [commandName] = params;
       interaction.params = commandName;
       const context = await CommandRunContext.new(interaction, this);
       await this.processDefaultBehaviour(context);
     },
-    async flags_of(interaction, commandName) {
+    async flags_of({ interaction, params }) {
+      const [commandName] = params;
       interaction.params = `${commandName} --flags`;
       const context = await CommandRunContext.new(interaction, this);
       await this.run(context);
     },
-  };
-  static MESSAGE_THEME = {
-    poster:
-      "https://media.discordapp.net/attachments/629546680840093696/963343808886607922/disboard.jpg",
   };
   options = {
     name: "commandinfo",

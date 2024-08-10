@@ -677,8 +677,13 @@ class CommandRunContext extends BaseCommandRunContext {
   }
 }
 class Command extends BaseCommand {
+  static MESSAGE_THEME = {
+    color: "#1f2022",
+    thumbnail:
+      "https://media.discordapp.net/attachments/629546680840093696/1174372547941384272/skull.png?ex=65e88daa&is=65d618aa&hm=c4c1b827a6db040cc9053682057f6c9ca6647012da687bd44fc90e4bf270eda5&=&format=webp&quality=lossless",
+  };
   componentsCallbacks = {
-    list_flag(interaction) {
+    list_flag({ interaction }) {
       List_FlagSubcommand.onCommandButton({ interaction });
 
       const current_components = actionRowsToComponents(
@@ -693,7 +698,7 @@ class Command extends BaseCommand {
         components: current_components,
       });
     },
-    bought_curse(interaction) {
+    bought_curse({ interaction }) {
       const cooldown = CooldownManager.api(
         interaction.user.data,
         "command.curses.bought_flag.bought_CD",
@@ -718,11 +723,6 @@ class Command extends BaseCommand {
       });
       bought.onBought();
     },
-  };
-  static MESSAGE_THEME = {
-    color: "#1f2022",
-    thumbnail:
-      "https://media.discordapp.net/attachments/629546680840093696/1174372547941384272/skull.png?ex=65e88daa&is=65d618aa&hm=c4c1b827a6db040cc9053682057f6c9ca6647012da687bd44fc90e4bf270eda5&=&format=webp&quality=lossless",
   };
 
   options = {
