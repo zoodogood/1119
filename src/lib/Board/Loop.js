@@ -22,9 +22,9 @@ export class Loop {
     }
   }
 
-  work() {
-    for (const board of this.queque()) {
-      render(board);
+  async work() {
+    for await (const board of this.queque()) {
+      board && render(board);
     }
   }
 }
