@@ -21,15 +21,15 @@ class BaseCommandRunContext extends BaseContext {
     interaction.extend && Object.assign(this.options, interaction.extend);
   }
 
+  static async new(interaction, command) {
+    return new this(interaction, command);
+  }
+
   end() {
     this.isEnded = true;
   }
-
   getCliParsed() {
     return this.cliParsed || [null, null];
-  }
-  static async new(interaction, command) {
-    return new this(interaction, command);
   }
 
   setCliParsed(parsed, values) {
@@ -45,7 +45,6 @@ class BaseCommandRunContext extends BaseContext {
     return {
       type: "commandContext",
       command: this.command.options.name,
-      comment: "experiment",
     };
   }
 }
