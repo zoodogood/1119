@@ -189,6 +189,15 @@ Array.prototype.empty = function () {
   this.length = 0;
 };
 
+Array.prototype.delete = function (element) {
+  const index = this.indexOf(element);
+  if (index === -1) {
+    return false;
+  }
+  this.splice(index, 1);
+  return true;
+};
+
 BigInt.prototype.toJSON = function () {
   return this.toString();
 };
