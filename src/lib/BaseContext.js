@@ -2,6 +2,7 @@ import EventsEmitter from "events";
 
 export class BaseContext {
   channel = null;
+  createdAt = Date.now();
   emitter = new EventsEmitter();
   guild = null;
   user = null;
@@ -9,7 +10,20 @@ export class BaseContext {
     Object.assign(this, values, { _source });
   }
 
+  toJSON() {
+    return this.toSafeValues();
+  }
+
+  // Expected a toSafeValues will be overridden by the situation
   toSafeValues() {
-    throw new Error("toSafeValues is not implemented");
+    return {
+      createdAt: this.createdAt,
+      source: this._source,
+      is: this.constructor.name,
+      events: Object.entries(this.emitter._events).map(([key, value]) => [
+        key,
+        value.length,
+      ]),
+    };
   }
 }

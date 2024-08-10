@@ -43,7 +43,7 @@ class BaseCommandRunContext extends BaseContext {
 
   toJSON() {
     return {
-      type: "commandContext",
+      ...super.toJSON(),
       command: this.command.options.name,
     };
   }
