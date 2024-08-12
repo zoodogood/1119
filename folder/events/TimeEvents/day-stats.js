@@ -83,19 +83,22 @@ class Event {
 
     guildData.day_msg = 0;
 
-    const messages_leader = (() => {
-      let current = { value: 0, userId: null };
+    const messages_leaders = (() => {
+      let current = { value: 0, id_list: [] };
       for (const [userId, memberData] of Object.entries(guildData.members)) {
         const value = memberData.messagesToday;
         delete memberData.messagesToday;
+        if (value === current.value) {
+          current.id_list.push(userId);
+        }
         if (value > current.value) {
-          current = { value, userId };
+          current = { value, id_list: [userId] };
         }
       }
       return current;
     })();
-    messages_leader.userId &&
-      (description += `\nНаибольшее число от <@${messages_leader.userId}>: ${ending(messages_leader.value, "сообщени", "й", "е", "я")}`);
+    messages_leaders.id_list.length &&
+      (description += `\nНаибольшее число от ${messages_leaders.id_list.map((userId) => `<@${userId}>`).join(", ")}: ${messages_leaders.id_list.length === 1 ? `${ending(messages_leaders.value, "сообщени", "й", "е", "я")}` : `по ${ending(messages_leaders.value, "сообщени", "й", "ю", "я")}`}`);
 
     if (!messagesOfDay) {
       return;
