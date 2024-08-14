@@ -3,16 +3,12 @@ import { question } from "#bot/util.js";
 
 export default {
   emoji: "🪧",
-  label: "🪧Имя канала",
-  description: "Изменяет имя указаного канала",
+  label: "Имя канала",
+  description: "Отображает информацию в имени канала",
   key: "channel_header",
   setup: async (context) => {
-    const { board, boardBase, interaction } = context.interaction;
+    const { board, interaction } = context.interaction;
     const { guild, channel, user } = interaction;
-
-    board.key = boardBase.key;
-    board.gid = guild.id;
-    board.uid = user.id;
 
     const target = await (async () => {
       const { content } = await question({

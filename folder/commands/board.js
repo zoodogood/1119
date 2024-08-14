@@ -1,7 +1,11 @@
 import { NULL_WIDTH_SPACE } from "#constants/globals/characters.js";
+import { MINUTE } from "#constants/globals/time.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import { BoardFactory } from "#lib/Board/Board.js";
 import { render_strategies } from "#lib/Board/render/strategies/mod.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import { capitalize } from "#lib/mini.js";
 import { board_singleton, CommandsManager } from "#lib/modules/mod.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { ButtonStyle, ComponentType, escapeMarkdown } from "discord.js";
@@ -9,6 +13,8 @@ import { ButtonStyle, ComponentType, escapeMarkdown } from "discord.js";
 class CommandRunContext extends BaseCommandRunContext {}
 
 class Create_FlagSubcommand extends BaseFlagSubcommand {
+  _interface = new MessageInterface();
+  board = {};
   constructor(context) {
     super(context);
     this.interaction = context.interaction;
@@ -56,65 +62,46 @@ class Create_FlagSubcommand extends BaseFlagSubcommand {
   }
 
   async onProcess() {
-    const { context } = this;
+    const { context, _interface } = this;
     const { interaction } = context;
+    const { channel, user } = interaction;
 
-    const x = {
-      interaction,
-      questionMessage: null,
-      boardBase: null,
-      template: null,
-      board: {},
-    };
+    _interface.setChannel(interaction);
 
     const boardBases = [...render_strategies.values()];
 
-    x.questionMessage = await msg.msg({
-      title: "🪄 Выберите тип объекта для счётчика",
-      description: `Счётчики работают с каналами и сообщениями.\nВыберите основу для дальнельшей настройки.\n\n${boardBases
+    _interface.setDefaultMessageState({
+      fetchReply: true,
+      title: "🪄 Выберите стратегию отображения",
+      description: `Табло работает с каналами и сообщениями.\nВыберите основу для дальнельшей настройки.\n\n${boardBases
         .map(
-          ({ label, description }) =>
-            `❯ ${label.toUpperCase()}\n> ${description}.\n> ${NULL_WIDTH_SPACE}`,
+          ({ label, description, emoji }) =>
+            `> ❯ ${emoji} ${capitalize(label)}\n> ${NULL_WIDTH_SPACE}\n> ${description}.\n> ${NULL_WIDTH_SPACE}`,
         )
-        .join("\n")}`,
+        .join("\n\n")}`,
     });
-    const boardBase = await (async (context) => {
-      const reactions = boardBases.map(({ emoji }) => emoji);
-      const reaction = await context.questionMessage.awaitReact(
-        { user: msg.author, removeType: "all" },
-        ...reactions,
+    _interface.setReactions(boardBases.map(({ emoji }) => emoji));
+    await _interface.updateMessage();
+    const boardBase = await (async () => {
+      const { promise, resolve, reject } = Promise.withResolvers();
+      const dispose = _interface.emitter.disposable(
+        MessageInterface.Events.allowed_collect,
+        async ({ interaction }) => {
+          dispose();
+          resolve(
+            boardBases.find(({ emoji }) => emoji === interaction.emoji.code),
+          );
+        },
       );
-      return boardBases.find(({ emoji }) => emoji === reaction);
-    })(x);
-    x.boardBase = boardBase;
+      setTimeout(() => {
+        reject(new Error("Timeout"));
+        dispose();
+      }, MINUTE * 3);
+      return promise;
+    })();
 
-    if (!x.boardBase) {
-      x.questionMessage.delete();
-      return;
-    }
-    x.questionMessage.msg({
-      title: "🪄 Отлично! Введите текст с использованием шаблонов",
-      description:
-        "Каждые пятнадцать минут табло будет изменять своё значение на основе результата выполнения сценария",
-      edit: true,
-    });
-    x.template = (
-      await interaction.channel.awaitMessage({ user: msg.author })
-    )?.content;
-
-    x.questionMessage.delete();
-    if (!x.template) {
-      return;
-    }
-
-    if (!x.template.match(/\{(?:.|\n)+?\}/)) {
-      interaction.message.msg({
-        title: "В сообщении отсуствует сценарий.",
-        color: "#ff0000",
-        delete: 5000,
-      });
-      return;
-    }
+    context.boardBase = boardBase;
+    context.board = BoardFactory.init(context);
 
     const board = await boardBase.setup(context);
     if (!board) {
@@ -162,9 +149,8 @@ class CommandDefaultBehavior extends BaseFlagSubcommand {
 
 class Command extends BaseCommand {
   componentsCallbacks = {
-    create: (context, params) => {
-      console.log(context, params);
-      context.interaction.msg({ content: "Alive!" });
+    create: (context) => {
+      new Create_FlagSubcommand(context).onProcess();
     },
   };
 

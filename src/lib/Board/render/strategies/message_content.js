@@ -4,17 +4,13 @@ import { resolve_message_in_answer } from "#lib/Discord_utils.js";
 
 export default {
   emoji: "🖊️",
-  label: "🖊️Сообщение",
+  label: "Сообщение",
   description:
-    "Единожды отправляет сообщение и после, ненавязчиво, изменяет его содержимое",
+    "Единожды получает сообщение и после, ненавязчиво, изменяет его содержимое",
   key: "message_content",
   setup: async (context) => {
-    const { interaction, board, boardBase } = context;
-    const { channel, user, guild } = interaction;
-    board.key = boardBase.key;
-    board.cid = channel.id;
-    board.gid = guild.id;
-    board.uid = user.id;
+    const { interaction, board } = context;
+    const { channel, user } = interaction;
 
     const { value } = await question({
       channel,

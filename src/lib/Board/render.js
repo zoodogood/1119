@@ -5,7 +5,7 @@ import Template from "#lib/modules/Template.js";
 
 function notify_exception(context, error) {
   const { user } = context.board;
-  user.msg({
+  user?.msg({
     title: `Оповещение о приостановке обновления табла`,
     description: `Это табло было создано вами. Что вы можете сделать:\n1. Табло отключено, потому что во время его отображения произошёл сбой;\nДля избежания подобных сбоев исправьте причину сбоя в коде табла;\n3. Включите табло. Сейчас оно выключено.\nОба действия можно выполнить в команде !табло. Информация о табле: . Сообщение при сбое:\n\`\`\`\n${error.message}\n\`\`\``,
   });
@@ -14,13 +14,13 @@ export class RenderContext extends BaseContext {
   constructor(board) {
     super("@template_render/context", {});
     this.board = board;
-    this.boardBase = render_strategies[board.key];
+    this.boardBase = render_strategies.get(board.key);
     const user = client.users.cache.get(board.uid);
     this.user = user;
   }
 
   exception(error) {
-    this.conteer.freezed = true;
+    this.board.freezed = true;
     notify_exception(this, error);
   }
 
