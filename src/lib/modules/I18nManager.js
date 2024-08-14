@@ -40,7 +40,7 @@ class I18nManager {
       this.getRaw(key, locale) || this.getRaw(key, I18nManager.DEFAULT_LOCALE);
 
     if (!string) {
-      throw new Error(`Cannot find ${key}`);
+      throw new Error(`I18n not found: cannot find "${key}"`);
     }
 
     return string;
