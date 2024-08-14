@@ -394,16 +394,6 @@ class BossEffects {
    */
   static effectBases;
 
-  static _removeEffect({ effect, user }) {
-    const index = UserEffectManager.indexOf({ effect, user });
-    if (index === -1) {
-      return null;
-    }
-
-    user.action(ActionsMap.bossEffectEnd, { effect, index });
-    UserEffectManager.removeEffect({ effect, user });
-  }
-
   static applyEffect({ effectId, guild = null, user, values = {} }) {
     const effectBase = this.effectBases.get(effectId);
 
@@ -465,6 +455,16 @@ class BossEffects {
         .filter((value) => value.id.startsWith("boss."))
         .entries(),
     );
+  }
+
+  static _removeEffect({ effect, user }) {
+    const index = UserEffectManager.indexOf({ effect, user });
+    if (index === -1) {
+      return null;
+    }
+
+    user.action(ActionsMap.bossEffectEnd, { effect, index });
+    UserEffectManager.removeEffect({ effect, user });
   }
 }
 
@@ -1254,8 +1254,7 @@ class BossManager {
         continue;
       }
       if (!base.repeats) {
-        const index = pull.indexOf(base);
-        ~index && pull.splice(index, 1);
+        pull.remove(base);
       }
       attack_event_callback(base, context);
       attackContext.listOfEvents.push(base);

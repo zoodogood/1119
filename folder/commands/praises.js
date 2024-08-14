@@ -192,11 +192,7 @@ class Command extends BaseCommand {
             .filter((data) => data !== null);
 
           willRemoved.forEach((data) => {
-            if (data) {
-              const index = data.praiseMe.indexOf(user.id);
-              if (~index) data.praiseMe.splice(index, 1);
-            }
-
+            data?.praiseMe.remove(user.id);
             user.praise.splice(answer - 1, 1);
           });
 
@@ -301,12 +297,7 @@ class Command extends BaseCommand {
       names.push(target.username);
 
       const targetPraisesList = target.data.praiseMe || [];
-      const index = targetPraisesList.indexOf(user.id);
-      if (index === -1) {
-        return;
-      }
-
-      targetPraisesList.splice(index, 1);
+      targetPraisesList.remove(user.id);
     });
 
     userData.praise = [];

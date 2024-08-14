@@ -316,10 +316,7 @@ class Command extends BaseCommand {
 
       for (const id of [...controllerList]) {
         const role = guild.roles.cache.get(id);
-        if (!role) {
-          const index = controllerList.indexOf(id);
-          ~index && controllerList.splice(index, 1);
-        }
+        !role && controllerList.remove(id);
 
         if (!controllerList.length) {
           delete tieRoles[controllerId];

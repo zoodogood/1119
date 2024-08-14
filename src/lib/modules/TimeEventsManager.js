@@ -1,11 +1,11 @@
-import FileSystem from "fs";
 import EventEmitter from "events";
+import FileSystem from "fs";
 
 import StorageManager from "#lib/modules/StorageManager.js";
 import {
-  timestampDay,
   omit,
   rangeToArray,
+  timestampDay,
   timestampToDate,
 } from "#lib/safe-utils.js";
 
@@ -43,14 +43,6 @@ export class TimeEventData {
     );
   }
 
-  get params() {
-    return this._params_as_json ? JSON.parse(this._params_as_json) : null;
-  }
-
-  set params(value) {
-    this.setParams(value);
-  }
-
   setCreatedAt(createdAt) {
     this.createdAt = createdAt;
     return this;
@@ -68,10 +60,16 @@ export class TimeEventData {
     this._params_as_json = JSON.stringify(params);
     return this;
   }
+
+  get params() {
+    return this._params_as_json ? JSON.parse(this._params_as_json) : null;
+  }
+
+  set params(value) {
+    this.setParams(value);
+  }
 }
 class TimeEventsManager {
-  static #lastSeenDay;
-
   static data = {};
 
   static emitter = new EventEmitter();
@@ -96,22 +94,7 @@ class TimeEventsManager {
     defaultData: {},
   };
 
-  static _createEvent(event) {
-    const day = timestampDay(event.timestamp);
-
-    this.data[day] ||= [];
-    this.data[day].push(event);
-    this.data[day].sortBy("timestamp");
-
-    const needUpdate = day <= this.#lastSeenDay || !this.#lastSeenDay;
-    if (needUpdate) {
-      day < this.#lastSeenDay && (this.#lastSeenDay = null);
-      this.handle();
-    }
-
-    console.info(`Ивент создан ${event.name}`);
-    return event;
-  }
+  static #lastSeenDay;
 
   static at(day) {
     return this.data[day];
@@ -292,6 +275,7 @@ class TimeEventsManager {
     this.handle();
     return true;
   }
+
   static update(target, data) {
     const endTimestampChanged = data.timestamp !== target.timestamp;
     if (endTimestampChanged) {
@@ -309,6 +293,22 @@ class TimeEventsManager {
       this._createEvent(target);
     }
     return target;
+  }
+  static _createEvent(event) {
+    const day = timestampDay(event.timestamp);
+
+    this.data[day] ||= [];
+    this.data[day].push(event);
+    this.data[day].sortBy("timestamp");
+
+    const needUpdate = day <= this.#lastSeenDay || !this.#lastSeenDay;
+    if (needUpdate) {
+      day < this.#lastSeenDay && (this.#lastSeenDay = null);
+      this.handle();
+    }
+
+    console.info(`Ивент создан ${event.name}`);
+    return event;
   }
 }
 

@@ -1,11 +1,11 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
-import { Actions } from "#lib/modules/ActionManager.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { SECOND } from "#constants/globals/time.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { Emoji } from "#constants/emojis.js";
+import { SECOND } from "#constants/globals/time.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import * as Util from "#lib/util.js";
 
 export const REASON_FOR_CHANGE_NICKNAME = "Special: in chilli game";
 const FOOTER_EMOJI =
@@ -222,11 +222,7 @@ class Command extends BaseCommand {
       this.removeChilliFromUsername(members.resolve(id));
     }
 
-    const index = channel.chilli.indexOf(chilli);
-    if (index === -1) {
-      return;
-    }
-    channel.chilli.splice(index, 1);
+    channel.chilli.remove(chilli);
     if (!channel.chilli.length) {
       delete channel.chilli;
     }
