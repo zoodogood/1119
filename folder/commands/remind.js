@@ -183,16 +183,16 @@ class RemindDataFormatter {
 
 // MARK: RemindData
 class RemindData {
-  _phrase;
-
-  _repeatsCount;
-  #channel;
-  channelId;
   static DEFAULT_VALUES = {
     phrase: "Ням",
     repeatsCount: AbstractRemindRepeats.DEFAULT_REPEAT_COUNT,
     timeTo: null,
   };
+
+  _phrase;
+  _repeatsCount;
+  #channel;
+  channelId;
   evaluateRemind;
   isDeleted;
 
@@ -214,35 +214,8 @@ class RemindData {
     this.isDeleted = isDeleted;
   }
 
-  get channel() {
-    if (!this.#channel) {
-      this.#channel = client.channels.cache.get(this.channelId);
-    }
-    return this.#channel;
-  }
-
-  set channel(channel) {
-    this.#channel = channel;
-    this.channelId = channel.id;
-  }
-
   delete() {
     this.isDeleted = true;
-  }
-
-  get phrase() {
-    return capitalize(this._phrase || RemindData.DEFAULT_VALUES.phrase);
-  }
-  set phrase(value) {
-    this._phrase = value;
-  }
-
-  get repeatsCount() {
-    return this._repeatsCount || RemindData.DEFAULT_VALUES.repeatsCount;
-  }
-
-  set repeatsCount(value) {
-    this._repeatsCount = value;
   }
 
   toJSON() {
@@ -254,6 +227,33 @@ class RemindData {
       timestamp: this.timestamp,
       isDeleted: this.isDeleted,
     };
+  }
+
+  get channel() {
+    if (!this.#channel) {
+      this.#channel = client.channels.cache.get(this.channelId);
+    }
+    return this.#channel;
+  }
+
+  set channel(channel) {
+    this.#channel = channel;
+    this.channelId = channel.id;
+  }
+  get phrase() {
+    return capitalize(this._phrase || RemindData.DEFAULT_VALUES.phrase);
+  }
+
+  set phrase(value) {
+    this._phrase = value;
+  }
+
+  get repeatsCount() {
+    return this._repeatsCount || RemindData.DEFAULT_VALUES.repeatsCount;
+  }
+
+  set repeatsCount(value) {
+    this._repeatsCount = value;
   }
 }
 
