@@ -12,6 +12,7 @@ import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import { ParserTime } from "#lib/parsers.js";
 import { capitalize, clone, ending, question } from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
+import dayjs from "dayjs";
 import { Message } from "discord.js";
 
 // MARK: Definitions
@@ -383,14 +384,16 @@ class ParamsProcessor {
 
     let match;
     while ((match = params.match(regex))) {
-      const { groups } = match;
+      const { groups, ["0"]: full } = match;
       const key = ParserTime._getActiveGroupName(groups);
       const item = { key, value: groups[key] };
       timeParser.pushItem(item);
-      params = params.replace(match[0], "").trim();
+      params = params.replace(full, "").trim();
     }
 
-    timeParser.date = dayjs_ensure_coming_year(timeParser.date);
+    timeParser.date = dayjs_ensure_coming_year(
+      dayjs(timeParser.summarizeItems() + Date.now()),
+    );
     this.setParamsCliParserParams(params);
     return params;
   }
