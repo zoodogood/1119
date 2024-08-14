@@ -493,12 +493,12 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
     }
 
     const timestamp = daemon.fetchTimeEvent()?.timestamp;
-    const indexOfQueque =
+    const indexOfQueue =
       daemon.pull.indexOf(this.context.guild.id) +
       daemon.pull.LIMIT -
       daemon.pull.length;
     this.context.interaction.msg({
-      description: `Гильдия уже заметна! Через некоторое время очередь продвинется или очистится.\n!partners --daemon, — чтобы увидеть в какой части очереди Вы находитесь или время авто-чистки\nСерверов в очереди перед вами: ${indexOfQueque}. Очистится через: <t:${Math.floor(timestamp / SECOND)}:R>`,
+      description: `Гильдия уже заметна! Через некоторое время очередь продвинется или очистится.\n!partners --daemon, — чтобы увидеть в какой части очереди Вы находитесь или время авто-чистки\nСерверов в очереди перед вами: ${indexOfQueue}. Очистится через: <t:${Math.floor(timestamp / SECOND)}:R>`,
       delete: 8 * SECOND,
     });
     return true;
