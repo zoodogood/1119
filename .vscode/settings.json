@@ -16,7 +16,7 @@
     "*.js.example": "JavaScript",
     "*.json.example": "json",
     "*.jsonc.example": "jsonc",
-    "*.backup": "jsonc"
+    "*.tree.backup": "tree"
   },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
