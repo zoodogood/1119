@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 
 export class ParserTime {
   /**@type {ReturnType<dayjs>} */
-  #date;
+  #dayjs;
 
   items = [];
   regex =
@@ -33,11 +33,10 @@ export class ParserTime {
 
   appendDate(date) {
     const [day, month, year] = date.split(".").map(Number);
-    const value = this.date.set("date", day).set("month", month - 1);
+    let value = this.date.set("date", day).set("month", month - 1);
 
-    if (year) {
-      value.set("year", year);
-    }
+    year && (value = value.set("year", year));
+
     this.date = value;
   }
 
@@ -51,11 +50,11 @@ export class ParserTime {
   }
 
   diffDateTime(compare) {
-    if (!this.#date) {
+    if (!this.date) {
       return 0;
     }
 
-    return this.#date.toDate().getTime() - compare;
+    return this.date.toDate().getTime() - compare;
   }
 
   processItem(item) {
@@ -98,11 +97,11 @@ export class ParserTime {
 
   /**@type {ReturnType<dayjs>} */
   get date() {
-    this.#date ||= dayjs();
-    return this.#date;
+    this.#dayjs ||= dayjs();
+    return this.#dayjs;
   }
 
   set date(value) {
-    this.#date = value;
+    this.#dayjs = value;
   }
 }
