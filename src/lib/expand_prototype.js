@@ -189,7 +189,7 @@ Array.prototype.empty = function () {
   this.length = 0;
 };
 
-Array.prototype.delete = function (element) {
+Array.prototype.remove = function (element) {
   const index = this.indexOf(element);
   if (index === -1) {
     return false;
