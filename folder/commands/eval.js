@@ -4,18 +4,19 @@ import { client } from "#bot/client.js";
 import config from "#config";
 import Template from "#lib/modules/Template.js";
 
+import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import { Pager } from "#lib/DiscordPager.js";
 import { escapeCodeBlock, escapeMarkdown, WebhookClient } from "discord.js";
-import mol_global from "mol_tree2";
 
 const DEFAULT_CODE_CONTENT = 'module("userData")';
 
 function format_object(object) {
-  const { $mol_tree2_from_json } = mol_global;
-
-  return `\`\`\`tree\n${escapeCodeBlock(
-    $mol_tree2_from_json(object).toString(),
-  )}\`\`\``;
+  typeof object === "object" &&
+    Object.defineProperty(object, "toString", {
+      enumerable: false,
+      value: Object.prototype.toString,
+    });
+  return `\`\`\`tree\n${escapeCodeBlock(mol_tree2_string_from_json(object))}\`\`\``;
 }
 function resolve_page(raw) {
   if (typeof raw === "string") {
