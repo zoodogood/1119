@@ -378,7 +378,7 @@ class CurseManager {
             curse.values.goal = user.data.exp + (user.data.bag.exp || 0);
             CurseManager.interface({ user, curse }).incrementProgress(sticks);
           },
-          beforeProfileDisplay: (user, curse) => {
+          curseBeforeProgressDisplay: (user, curse) => {
             curse.values.goal = user.data.exp;
             CurseManager.checkAvailable({ curse, user });
           },
@@ -395,7 +395,7 @@ class CurseManager {
         hard: 0,
         values: {
           goal: () => 1,
-          timer: () => 86_400_000,
+          timer: () => DAY,
         },
         callback: {
           curseTimeEnd: (user, curse, data) => {
@@ -781,7 +781,7 @@ class CurseManager {
             const { coins } = user.data;
             CurseManager.interface({ curse, user }).setProgress(coins);
           },
-          beforeProfileDisplay: (user, curse) => {
+          curseBeforeProgressDisplay: (user, curse) => {
             const { coins } = user.data;
             CurseManager.interface({ curse, user }).setProgress(coins);
           },
@@ -1362,7 +1362,7 @@ class CurseManager {
             const value = user.data.monster;
             CurseManager.interface({ user, curse }).setProgress(value);
           },
-          beforeProfileDisplay(user, curse) {
+          curseBeforeProgressDisplay(user, curse) {
             const value = user.data.monster ?? 0;
             CurseManager.interface({ user, curse }).setProgress(value);
           },
@@ -1391,7 +1391,7 @@ class CurseManager {
             const value = user.data.monster;
             CurseManager.interface({ user, curse }).setProgress(value);
           },
-          beforeProfileDisplay(user, curse) {
+          curseBeforeProgressDisplay(user, curse) {
             const value = user.data.monster ?? 0;
             CurseManager.interface({ user, curse }).setProgress(value);
           },
@@ -1711,6 +1711,67 @@ class CurseManager {
         reward: 5,
         filter: (user) => user.data.curses?.length,
       },
+      {
+        _weight: 1,
+        id: "noo",
+        GOAL: 2,
+        GOAL_LIMIT: 10,
+        description:
+          "Положите нестабильности в сумку, чтобы последняя их поглатила. Это проклятие не стоит игнорировать",
+        hard: 2,
+        values: {
+          goal() {
+            return this.GOAL;
+          },
+          timer: () => DAY * 20,
+        },
+        update_goal(curse) {
+          const { values, timestamp } = curse;
+          // formula: base + time_diff / addable_per_time
+          values.goal = Math.floor(
+            this.GOAL +
+              (Date.now() - timestamp) /
+                (values.timer / (this.GOAL_LIMIT - this.GOAL + 1)),
+          );
+        },
+        callback: {
+          curseBeforeProgressDisplay(user, curse) {
+            this.update_goal(curse);
+          },
+          bagInteracted(user, curse, context) {
+            const { item, count, isPutAction } = context;
+
+            if (!isPutAction) {
+              return;
+            }
+
+            if (item.key !== PropertiesEnum.void) {
+              return;
+            }
+
+            this.update_goal(curse);
+
+            const { values } = curse;
+            const expected = values.goal - (values.progress || 0);
+            const value = Math.min(expected, count);
+            user.data.bag.void ||= 0;
+            user.data.bag.void -= value;
+            CurseManager.interface({ user, curse }).incrementProgress(value);
+          },
+          curseTimeEnd(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+
+            user.data.void -= curse.values.goal;
+          },
+        },
+        reward: 15,
+        interactionIsShort: true,
+        filter(user) {
+          return user.data.void > this.GOAL;
+        },
+      },
       // MARK: End of curses list
       // {
       //   _weight: 5,
@@ -1729,11 +1790,6 @@ class CurseManager {
       // },
     ].map((curse) => [curse.id, curse]),
   );
-
-  static _curseEnd({ lost, user, curse }) {
-    user.action(ActionsMap.curseEnd, { isLost: lost, curse });
-    this.removeCurse({ user, curse });
-  }
 
   static checkAvailable({ curse, user }) {
     if (!curse) {
@@ -1766,10 +1822,10 @@ class CurseManager {
       }
     }
   }
+
   static checkAvailableAll(user) {
     user.data.curses?.forEach((curse) => this.checkAvailable({ curse, user }));
   }
-
   static curseEnd({ lost, user, curse }) {
     this._curseEnd({ lost, user, curse });
 
@@ -1899,6 +1955,7 @@ class CurseManager {
       return;
     }
   }
+
   static curseIndexOnUser({ curse, user }) {
     const index = user.data.curses.indexOf(curse);
     if (index === -1) {
@@ -1907,7 +1964,6 @@ class CurseManager {
 
     return index;
   }
-
   static generate({ hard = null, user, context }) {
     const MAXIMAL_HARD = 2;
     if (hard > MAXIMAL_HARD) {
@@ -1921,6 +1977,7 @@ class CurseManager {
     const curse = this.generateOfBase({ user, curseBase, context });
     return curse;
   }
+
   static generateOfBase({ curseBase, user, context }) {
     const curse = {
       id: curseBase.id,
@@ -1941,7 +1998,6 @@ class CurseManager {
         !curseBase.filter || curseBase.filter.call(curseBase, user, context),
     );
   }
-
   static init({ curse, user }) {
     if (!user.data.curses) {
       user.data.curses = [];
@@ -2041,6 +2097,11 @@ class CurseManager {
     Object.keys(callbackMap)
       .filter(keysToRemove)
       .forEach((key) => delete callbackMap[key]);
+  }
+
+  static _curseEnd({ lost, user, curse }) {
+    user.action(ActionsMap.curseEnd, { isLost: lost, curse });
+    this.removeCurse({ user, curse });
   }
 }
 
