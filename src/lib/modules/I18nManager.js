@@ -34,10 +34,14 @@ class I18nManager {
     return this.format(...params);
   }
 
-  format(key, { locale, values } = {}) {
+  format(key, locale, { values } = {}) {
     locale = I18nManager.resolveLocale(locale);
-    const string =
+    let string =
       this.getRaw(key, locale) || this.getRaw(key, I18nManager.DEFAULT_LOCALE);
+
+    for (const [replacer, value] of Object.entries(values)) {
+      string = string.replace(`$${replacer}`, value);
+    }
 
     if (!string) {
       throw new Error(`I18n not found: cannot find "${key}"`);
@@ -47,7 +51,7 @@ class I18nManager {
   }
 
   getRaw(key, locale) {
-    return this.data[locale]?.[key];
+    return this.data[key]?.[locale];
   }
   async load() {
     this.data = await StorageUtils.readLocales();

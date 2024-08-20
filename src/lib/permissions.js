@@ -14,5 +14,5 @@ export function permissionsBitsToI18nArray(permissionBits, locale) {
 export function permissionRawToI18n(permissionsString, locale) {
   const bits = PermissionFlagsBits[permissionsString];
   const string = PermissionFlags[bits];
-  return app.i18n.format(string, { locale });
+  return app.i18n.format(string, locale);
 }

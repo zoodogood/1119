@@ -1,49 +1,91 @@
 *
-	en *
-	ru *
-		PermissionFlagsBits.Speak \Говорить
-		PermissionFlagsBits.MuteMembers \Отключать участникам микрофон
-		PermissionFlagsBits.Connect \Подключаться
-		PermissionFlagsBits.DeafenMembers \Заглушать
-		PermissionFlagsBits.ViewChannel \Видеть каналы
-		PermissionFlagsBits.EmbedLinks \Встраивать ссылки
-		PermissionFlagsBits.AttachFiles \Встраивать файлы
-		PermissionFlagsBits.BanMembers \Банить участников
-		PermissionFlagsBits.ManageRoles \Управлять ролями
-		PermissionFlagsBits.KickMembers \Кик участников
-		PermissionFlagsBits.MentionEveryone \Упоминать всех
-		PermissionFlagsBits.ManageGuild \Управлять сервером
-		PermissionFlagsBits.AddReactions \Добавлять реакции
-		PermissionFlagsBits.UseVAD \Использовать режим рации
-		PermissionFlagsBits.MoveMembers \Перемещать участников
-		PermissionFlagsBits.SendMessages \Отправлять сообщения
-		PermissionFlagsBits.ManageChannels \Управлять каналами
-		PermissionFlagsBits.PrioritySpeaker \Быть приоритетным
-		PermissionFlagsBits.ManageWebhooks \Управлять вебхуками
-		PermissionFlagsBits.ChangeNickname \Изменять свой никнейм
-		PermissionFlagsBits.ManageNicknames \Управлять никнеймами
-		PermissionFlagsBits.ManageMessages \Управлять сообщениями
-		PermissionFlagsBits.Administrator \Администратор
-		PermissionFlagsBits.SendTTSMessages \Отправлять TTS сообщения
-		PermissionFlagsBits.ViewAuditLog \Просматривать журнал аудита
-		PermissionFlagsBits.CreateInstantInvite \Создавать приглашения
-		PermissionFlagsBits.ReadMessageHistory \Читать историю сообщений
-		PermissionFlagsBits.UseExternalEmojis \Использовать внешние эмодзи
-		PermissionFlagsBits.ViewGuildInsights \Просматривать аналитику сервера
-		PermissionFlagsBits.Stream \Выходить в эфир
-		PermissionFlagsBits.ManageGuildExpressions \Управлять эмодзи и стикерами
-		PermissionFlagsBits.UseApplicationCommands \Использовать команды
-		PermissionFlagsBits.RequestToSpeak \Просить выступить на трибуне
-		PermissionFlagsBits.ManageEvents \Управлять вкладкой события
-		PermissionFlagsBits.ManageThreads \Управлять ветками
-		PermissionFlagsBits.CreatePublicThreads \Создавать публичные ветки
-		PermissionFlagsBits.CreatePrivateThreads \Создавать приватные ветки
-		PermissionFlagsBits.UseExternalStickers \Использовать внешние стикеры
-		PermissionFlagsBits.SendMessagesInThreads \Отправлять сообщения внутри веток
-		PermissionFlagsBits.UseEmbeddedActivities \Вызывать встроенные активности
-		PermissionFlagsBits.ModerateMembers \Заглушать участников
-		PermissionFlagsBits.ViewCreatorMonetizationAnalytics \Смотреть аналитику монетизации сервера
-		PermissionFlagsBits.UseSoundboard \Использовать Звуковую доску
-		PermissionFlagsBits.UseExternalSounds \Использовать внение элементы Звуковой доски
-		PermissionFlagsBits.SendVoiceMessages \Отправлять голосовые сообщения
-	ua *
+	PermissionFlagsBits.Speak * 
+		ru \Говорить
+	PermissionFlagsBits.MuteMembers * 
+		ru \Отключать участникам микрофон
+	PermissionFlagsBits.Connect * 
+		ru \Подключаться
+	PermissionFlagsBits.DeafenMembers * 
+		ru \Заглушать
+	PermissionFlagsBits.ViewChannel * 
+		ru \Видеть каналы
+	PermissionFlagsBits.EmbedLinks * 
+		ru \Встраивать ссылки
+	PermissionFlagsBits.AttachFiles * 
+		ru \Встраивать файлы
+	PermissionFlagsBits.BanMembers * 
+		ru \Банить участников
+	PermissionFlagsBits.ManageRoles * 
+		ru \Управлять ролями
+	PermissionFlagsBits.KickMembers * 
+		ru \Кик участников
+	PermissionFlagsBits.MentionEveryone * 
+		ru \Упоминать всех
+	PermissionFlagsBits.ManageGuild * 
+		ru \Управлять сервером
+	PermissionFlagsBits.AddReactions * 
+		ru \Добавлять реакции
+	PermissionFlagsBits.UseVAD * 
+		ru \Использовать режим рации
+	PermissionFlagsBits.MoveMembers * 
+		ru \Перемещать участников
+	PermissionFlagsBits.SendMessages * 
+		ru \Отправлять сообщения
+	PermissionFlagsBits.ManageChannels * 
+		ru \Управлять каналами
+	PermissionFlagsBits.PrioritySpeaker * 
+		ru \Быть приоритетным
+	PermissionFlagsBits.ManageWebhooks * 
+		ru \Управлять вебхуками
+	PermissionFlagsBits.ChangeNickname * 
+		ru \Изменять свой никнейм
+	PermissionFlagsBits.ManageNicknames * 
+		ru \Управлять никнеймами
+	PermissionFlagsBits.ManageMessages * 
+		ru \Управлять сообщениями
+	PermissionFlagsBits.Administrator * 
+		ru \Администратор
+	PermissionFlagsBits.SendTTSMessages * 
+		ru \Отправлять TTS сообщения
+	PermissionFlagsBits.ViewAuditLog * 
+		ru \Просматривать журнал аудита
+	PermissionFlagsBits.CreateInstantInvite * 
+		ru \Создавать приглашения
+	PermissionFlagsBits.ReadMessageHistory * 
+		ru \Читать историю сообщений
+	PermissionFlagsBits.UseExternalEmojis * 
+		ru \Использовать внешние эмодзи
+	PermissionFlagsBits.ViewGuildInsights * 
+		ru \Просматривать аналитику сервера
+	PermissionFlagsBits.Stream * 
+		ru \Выходить в эфир
+	PermissionFlagsBits.ManageGuildExpressions * 
+		ru \Управлять эмодзи и стикерами
+	PermissionFlagsBits.UseApplicationCommands * 
+		ru \Использовать команды
+	PermissionFlagsBits.RequestToSpeak * 
+		ru \Просить выступить на трибуне
+	PermissionFlagsBits.ManageEvents * 
+		ru \Управлять вкладкой события
+	PermissionFlagsBits.ManageThreads * 
+		ru \Управлять ветками
+	PermissionFlagsBits.CreatePublicThreads * 
+		ru \Создавать публичные ветки
+	PermissionFlagsBits.CreatePrivateThreads * 
+		ru \Создавать приватные ветки
+	PermissionFlagsBits.UseExternalStickers * 
+		ru \Использовать внешние стикеры
+	PermissionFlagsBits.SendMessagesInThreads * 
+		ru \Отправлять сообщения внутри веток
+	PermissionFlagsBits.UseEmbeddedActivities * 
+		ru \Вызывать встроенные активности
+	PermissionFlagsBits.ModerateMembers * 
+		ru \Заглушать участников
+	PermissionFlagsBits.ViewCreatorMonetizationAnalytics * 
+		ru \Смотреть аналитику монетизации сервера
+	PermissionFlagsBits.UseSoundboard * 
+		ru \Использовать Звуковую доску
+	PermissionFlagsBits.UseExternalSounds * 
+		ru \Использовать внение элементы Звуковой доски
+	PermissionFlagsBits.SendVoiceMessages * 
+		ru \Отправлять голосовые сообщения
