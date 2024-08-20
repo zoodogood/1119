@@ -19,6 +19,7 @@ const ActionsMap = {
   userPraiseMe: "userPraiseMe",
   anonTaskResolve: "anonTaskResolve",
   beforeBagInteracted: "beforeBagInteracted",
+  bagInteracted: "bagInteracted",
   bagItemMove: "bagItemMove",
   thing: "thing",
   beforeBankInteracted: "beforeBankInteracted",
@@ -48,6 +49,7 @@ const ActionsMap = {
   curseEnd: "curseEnd",
   curseTimeEnd: "curseTimeEnd",
   curseBeforeSetProgress: "curseBeforeSetProgress",
+  curseBeforeProgressDisplay: "curseBeforeProgressDisplay",
   // TimeEventsManager
   timeEventCurseTimeoutEnd: "timeEventCurseTimeoutEnd",
   timeEventEffectTimeoutEnd: "timeEventEffectTimeoutEnd",
