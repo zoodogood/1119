@@ -1,12 +1,12 @@
-import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { Emoji } from "#constants/emojis.js";
 import { NEW_YEAR_DAY_DATE, SECOND } from "#constants/globals/time.js";
+import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum, PropertiesList } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { CliParser } from "@zoodogood/utils/primitives";
-import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 
 function getMoveTargetsOf({ user, isToBag }) {
   const userData = user.data;
@@ -159,7 +159,11 @@ function movePrepare(moveDetailes, context) {
   }
 }
 
+// MARK: Context
 class CommandRunContext extends BaseCommandRunContext {
+  // + isUseAction
+  // + isPutAction
+  // + isReceiveAction
   action;
   count;
   defaultPreventable = createDefaultPreventable();
@@ -348,25 +352,25 @@ class Mention_Subcommand extends BaseFlagSubcommand {
 }
 
 class Item {
-  display(...args) {
-    return this.ending(...args);
-  }
-
   static from(itemData) {
     const item = Object.assign(Object.create(this.prototype), itemData);
     this.normalize(item);
     return item;
   }
 
+  static normalize(item) {
+    item.names = [...item.names].map((alias) => alias.toLowerCase());
+  }
+
+  display(...args) {
+    return this.ending(...args);
+  }
   getLimit() {
     return this.limit || null;
   }
   // Default getter
   getter({ target }) {
     return target[this.key];
-  }
-  static normalize(item) {
-    item.names = [...item.names].map((alias) => alias.toLowerCase());
   }
 
   setter({ target, count }) {
@@ -883,6 +887,7 @@ class Command extends BaseCommand {
       });
       return;
     }
+    interaction.user.action(Actions.bagInteracted, context);
     if (await this.processPutAllFlag(context)) {
       return;
     }
