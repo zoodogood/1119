@@ -1,5 +1,6 @@
 import { chunkBySize, justSelectMenuComponent, question } from "#bot/util.js";
 import { Emoji } from "#constants/emojis.js";
+import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { HOUR, MINUTE } from "#constants/globals/time.js";
 import { resolve_description } from "#folder/entities/curses/curse.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
@@ -154,6 +155,10 @@ class Members_FlagSubcommand {
       })
       .filter(([_user, curses]) => curses?.length);
 
+    entries.forEach(([user]) => {
+      user.action(ActionsMap.curseBeforeProgressDisplay, {});
+    });
+
     return entries;
   }
 
@@ -171,16 +176,16 @@ class Members_FlagSubcommand {
     if (!hasJSONFlag) {
       return;
     }
-    const pull = this.getPull().map(([user, curses]) => [
-      user.username,
-      curses,
-    ]);
-    const description = `Перечень пользователей и проклятий (${pull.length}) .json`;
+    const pull = this.getPull();
+    const resolved = pull.map(([user, curses]) => [user.username, curses]);
+    const description = `Перечень пользователей и проклятий (${resolved.length}) .json`;
 
     context.channel.msg({
       description,
       color: Command.MESSAGE_THEME.color,
-      files: [jsonFile(Object.fromEntries(pull), "cursesManager_members.json")],
+      files: [
+        jsonFile(Object.fromEntries(resolved), "cursesManager_members.json"),
+      ],
       delete: MINUTE,
     });
     return true;
@@ -236,6 +241,7 @@ class Help_FlagSubcommand {
   }
   onProcess() {
     const { context } = this;
+    context.user.action(ActionsMap.curseBeforeProgressDisplay, {});
     if (this.processJSONFlag(context)) {
       return;
     }
@@ -383,6 +389,7 @@ class At_FlagSubcommand {
 
   async onProcess() {
     const { context } = this;
+    context.user.action(ActionsMap.curseBeforeProgressDisplay, {});
     if (this.processJSONFlag(context)) {
       return;
     }

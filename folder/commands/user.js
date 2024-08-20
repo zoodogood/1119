@@ -36,6 +36,7 @@ class Command extends BaseCommand {
       user = target.data,
       guild = msg.guild;
 
+    target.action(Actions.curseBeforeProgressDisplay, {});
     target.action(Actions.beforeProfileDisplay, interaction);
 
     Object.assign(interaction, {
