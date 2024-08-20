@@ -2,7 +2,7 @@ import EventsEmitter from "events";
 
 export class BaseContext {
   channel = null;
-  createdAt = Date.now();
+  contextedAt = Date.now();
   emitter = new EventsEmitter();
   guild = null;
   user = null;
