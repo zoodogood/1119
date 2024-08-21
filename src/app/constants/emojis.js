@@ -5,6 +5,18 @@ const Emoji = {
       return "📜";
     },
   },
+  blue_arrow_up: {
+    id: null,
+    toString() {
+      return "⬆️";
+    },
+  },
+  blue_arrow_down: {
+    id: null,
+    toString() {
+      return "⬇️";
+    },
+  },
   animation_tick_block: {
     id: "763371572073201714",
     toString() {
