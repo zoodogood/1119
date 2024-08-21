@@ -1723,7 +1723,8 @@ class CurseManager {
           goal() {
             return this.GOAL;
           },
-          timer: () => DAY * 20,
+          goal_time_threshold: () => DAY * 20,
+          timer: (user, curse) => curse.values.goal_time_threshold,
         },
         update_goal(curse) {
           const { values, timestamp } = curse;
@@ -1731,7 +1732,8 @@ class CurseManager {
           values.goal = Math.floor(
             this.GOAL +
               (Date.now() - timestamp) /
-                (values.timer / (this.GOAL_LIMIT - this.GOAL + 1)),
+                (values.goal_time_threshold /
+                  (this.GOAL_LIMIT - this.GOAL + 1)),
           );
         },
         callback: {
