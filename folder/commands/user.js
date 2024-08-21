@@ -342,6 +342,8 @@ class Command extends BaseCommand {
         { user: "any", removeType: "all", time: 20000 },
         ...controller.reactions,
       );
+      target.action(Actions.curseBeforeProgressDisplay, {});
+
       switch (react) {
         case "640449848050712587":
           interaction.currentCurseView =
