@@ -1,6 +1,7 @@
 import { Collection } from "@discordjs/collection";
 
 import app from "#app";
+import { Emoji } from "#constants/emojis.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
@@ -1773,6 +1774,96 @@ class CurseManager {
         filter(user) {
           return user.data.void > this.GOAL;
         },
+      },
+      {
+        _weight: 5,
+        id: "counter",
+        state_emoji: [Emoji.blue_arrow_up, Emoji.blue_arrow_down],
+        description(user, curse) {
+          const {
+            values: { inaccuracy, is_down },
+          } = curse;
+          return `Держите прогресс в границах нуля ± ${inaccuracy}, используя команды !up и !down\n${this.state_emoji[+is_down]}`;
+        },
+        hard: 0,
+        values: {
+          is_down: () => false,
+          per_minute: () => random(8, 16),
+          acceleration: () => 0.5,
+          inaccuracy: () => random(4, 7) * 5,
+          timer: () => MINUTE * random(7, 10),
+          progress: () => 0,
+          updated_at: () => null,
+        },
+        speed({ acceleration_time, acceleration, speed, is_down }) {
+          const by_acceleration = Math.floor(
+            (acceleration_time / MINUTE) * acceleration,
+          );
+          return by_acceleration + speed + is_down;
+        },
+        update(user, curse) {
+          const { values, timestamp } = curse;
+          const { per_minute, is_down, updated_at, acceleration } = values;
+          const now = Date.now();
+          const time_diff = now - updated_at;
+          const value_diff = Math.floor(per_minute * (time_diff / MINUTE));
+
+          CurseManager.interface({ user, curse }).incrementProgress(
+            value_diff * (-1) ** is_down,
+          );
+          const speed = this.speed({
+            acceleration_time: now - timestamp,
+            acceleration,
+            speed: per_minute,
+            is_down,
+          });
+
+          // increase by the amount of time used. the remainder of the rounding will remain
+          values.updated_at += Math.floor((value_diff / speed) * MINUTE);
+        },
+        callback: {
+          curseInit(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+            curse.values.updated_at = Date.now();
+          },
+
+          async inputCommandParsed(user, curse, context) {
+            const { commandBase } = context;
+            if (!["up", "down"].includes(commandBase)) {
+              return;
+            }
+
+            this.update(user, curse);
+            const { values, timestamp } = curse;
+            const is_down = commandBase === "down";
+            curse.values.is_down = is_down;
+            context.message.msg({
+              reference: context.message.id,
+              content: `Состояние: ${this.state_emoji[+is_down]}\nТекущая скорость: ${this.speed({ acceleration: values.acceleration, acceleration_time: Date.now() - timestamp, speed: values.per_minute, is_down })} условных единиц в минуту (v = u + a * t + is_down)`,
+            });
+          },
+          curseBeforeProgressDisplay(user, curse) {
+            this.update(user, curse);
+          },
+          curseTimeEnd(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+
+            this.update(user, curse);
+            const { values } = curse;
+            const { progress, inaccuracy } = values;
+
+            if (Math.abs(progress) > inaccuracy) {
+              return;
+            }
+            target.preventDefault();
+            CurseManager.interface({ user, curse }).success();
+          },
+        },
+        reward: 20,
       },
       // MARK: End of curses list
       // {
