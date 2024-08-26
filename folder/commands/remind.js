@@ -391,9 +391,14 @@ class ParamsProcessor {
       params = params.replace(full, "").trim();
     }
 
-    timeParser.date = dayjs_ensure_coming_year(
-      dayjs(timeParser.summarizeItems() + Date.now()),
-    );
+    if (!timeParser.items.length) {
+      this.setParamsCliParserParams(params);
+      return params;
+    }
+
+    const summarize = timeParser.summarizeItems();
+    timeParser.date = dayjs_ensure_coming_year(dayjs(summarize + Date.now()));
+
     this.setParamsCliParserParams(params);
     return params;
   }
@@ -412,7 +417,7 @@ class ParamsProcessor {
     const { captures } = cliParsed;
 
     const params = {
-      timeTo: timeParser.summarizeItems(),
+      timeTo: timeParser.diffDateTime(Date.now()),
       phrase: captures.get("phrase")?.toString(),
       // @ts-expect-error
       repeatsCount: captures.get("--repeat")?.valueOfFlag() - 1 || undefined,
