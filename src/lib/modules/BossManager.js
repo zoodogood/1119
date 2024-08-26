@@ -3,7 +3,7 @@
 import app from "#app";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { NOT_BREAKING_SPACE } from "#constants/globals/characters.js";
-import { DAY, HOUR, MINUTE, MONTH } from "#constants/globals/time.js";
+import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import { elementsEnum } from "#folder/commands/thing.js";
 import {
   core_make_attack,
@@ -901,15 +901,20 @@ class BossManager {
   }
 
   static async bossApparance(guild) {
-    if (guild.members.me.joinedTimestamp > Date.now() + MONTH * 2) {
-      return;
-    }
-
-    if (!guild.data.chatChannel || guild.data.disableBoss) {
-      return;
-    }
-
     const guildData = guild.data;
+
+    if (!guildData.chatChannel || guildData.disableBoss) {
+      return;
+    }
+
+    if (
+      guildData.boss &&
+      guildData.boss.endingAtDay <= DataManager.data.bot.currentDay
+    ) {
+      await BossManager.beforeEnd(guild);
+      delete guildData.boss;
+      return;
+    }
 
     if (
       !guildData.boss ||
@@ -917,12 +922,6 @@ class BossManager {
     ) {
       guildData.boss = {};
       guildData.boss.apparanceAtDay = this.comeUpApparanceDay();
-    }
-
-    if (guildData.boss.endingAtDay <= DataManager.data.bot.currentDay) {
-      await BossManager.beforeEnd(guild);
-      delete guildData.boss;
-      return;
     }
 
     if (guildData.boss.apparanceAtDay <= DataManager.data.bot.currentDay) {
