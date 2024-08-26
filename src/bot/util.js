@@ -7,6 +7,8 @@ import Discord from "discord.js";
 import { inspect as _inspect } from "util";
 
 import app from "#app";
+import { Events } from "#constants/app/events.js";
+import EventsManager from "#lib/modules/EventsManager.js";
 import { Collection } from "@discordjs/collection";
 import { ComponentType, Message } from "discord.js";
 
@@ -125,14 +127,22 @@ export async function question({
   };
 }
 
-export function whenClientIsReady() {
+export async function whenClientIsReady() {
+  // state 1: client not initialized
+  // state 2: client initialized
+  // state 3: client ready
+  if (!app.client) {
+    await new Promise((resolve) =>
+      EventsManager.emitter.once(Events.Ready, resolve),
+    );
+  }
   const { client } = app;
 
   if (client.readyAt) {
     return true;
   }
 
-  return new Promise((resolve) => client.once("ready", resolve));
+  return await new Promise((resolve) => client.once("ready", resolve));
 }
 
 export async function inspect(value) {
