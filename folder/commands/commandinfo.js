@@ -43,26 +43,29 @@ class FlagsCommandManager {
     this.context = context;
   }
 
-  async onProcess() {
+  async onProcess(channel) {
     const { context } = this;
-    await this.sendFlags(context.channel);
-  }
-
-  sendFlags(channel) {
     const {
       meta: { options },
     } = this.context;
+    channel ||= context.channel;
     const { name, cliParser } = options;
+    await this.sendFlags(channel, {
+      commandName: name,
+      flags: cliParser?.flags,
+    });
+  }
 
+  sendFlags(channel, { commandName, flags }) {
     const description =
-      cliParser?.flags
-        .map((flag) => {
+      flags
+        ?.map((flag) => {
           const title = CliFlagsField.prototype.flagToString(flag);
           const { description, example } = flag;
           return `- ${title}\n${example ? `✏️ ${example}\n` : ""}${description}`;
         })
         .join("\n") || "Здесь пусто..";
-    channel.msg({ title: `Флаги команды ${name}`, description });
+    channel.msg({ title: `Флаги команды ${commandName}`, description });
   }
 }
 
@@ -220,7 +223,7 @@ class Command extends BaseCommand {
       const [commandName] = params;
       interaction.params = `${commandName} --flags`;
       const context = await CommandRunContext.new(interaction, this);
-      await this.run(context);
+      await new FlagsCommandManager(context).onProcess(interaction);
     },
   };
   options = {
