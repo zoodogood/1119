@@ -7,7 +7,7 @@ export class ParserTime {
 
   items = [];
   regex =
-    /(?<time>\d\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
+    /(?<time>\d?\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
   time = 0;
 
   static toNumber(string = "") {
