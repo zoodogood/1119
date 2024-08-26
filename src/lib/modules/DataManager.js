@@ -1,4 +1,5 @@
 import app from "#app";
+import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import StorageManager from "#lib/modules/StorageManager.js";
 import { Guild, User } from "discord.js";
 import FileSystem from "fs";
@@ -22,6 +23,10 @@ class DataManager {
       const path = this.file.path;
       const data = JSON.stringify(this.data);
       await StorageManager.write("main.json", data);
+      await StorageManager.write(
+        "data_manager__data.tree",
+        mol_tree2_string_from_json(this.data),
+      );
       // to-do @deprecated. will be removed
       FileSystem.writeFileSync(path, data);
     },
