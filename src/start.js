@@ -67,12 +67,6 @@ client.on("ready", async () => {
       return;
     }
 
-    if (message.guild) {
-      const memberData = (message.guild.data.members[message.author.id] ||= {});
-      memberData.messagesToday ||= 0;
-      memberData.messagesToday++;
-    }
-
     message.author.action(Actions.messageCreate, message);
 
     eventHundler(message);
@@ -302,6 +296,12 @@ async function eventHundler(message) {
         user: userData,
         message: message,
       });
+    }
+
+    if (message.guild) {
+      const memberData = (message.guild.data.members[message.author.id] ||= {});
+      memberData.messagesToday ||= 0;
+      memberData.messagesToday++;
     }
 
     server.day_msg++;
