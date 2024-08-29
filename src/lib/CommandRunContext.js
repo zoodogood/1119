@@ -4,7 +4,9 @@ import { takeInteractionProperties } from "#lib/Discord_utils.js";
 
 class BaseCommandRunContext extends BaseContext {
   cliParsed = null;
+  /** @type {import("#lib/BaseCommand.js").BaseCommand} */
   command = null;
+  /** @type {import("#lib/modules/CommandsManager.js").CommandInteraction} */
   interaction = null;
   isEnded = false;
 

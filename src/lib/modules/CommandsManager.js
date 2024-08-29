@@ -29,21 +29,33 @@ export const Events = {
 
 export class CommandInteraction {
   constructor({ params, user, channel, guild, commandBase, message, client }) {
+    /** @type {string | string[]} */
     this.params = params;
+    /** @type {import("discord.js").User} */
     this.user = user;
+    /** @type {import("discord.js").Channel} */
     this.channel = channel;
+    /** @type {import("discord.js").Guild} */
     this.guild = guild;
+    /** @type {string} */
     this.commandBase = commandBase;
+    /** @type {import("discord.js").Message} */
     this.message = message;
+    /** @type {import("discord.js").Client} */
     this.client = client || app.client;
 
+    /** @type {import("#lib/BaseCommand.js").BaseCommand} */
     this.command = CommandsManager.callMap.get(commandBase);
+    /** @type {import("discord.js").GuildMember} */
     this.member = guild?.members.resolve(user) || null;
+    /** @type {import("#constants/Schema.js").users} */
     this.userData = user.data;
+    /** @type {import("discord.js").User} */
     this.mention = message.mentions?.users.first() ?? null;
   }
 
   msg(...params) {
+    // @ts-expect-error
     return this.channel.msg(...params);
   }
 }
