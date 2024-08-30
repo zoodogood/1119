@@ -4,9 +4,18 @@ import { client } from "#bot/client.js";
 import config from "#config";
 import Template from "#lib/modules/Template.js";
 
+import { whenClientIsReady } from "#bot/util.js";
+import { MINUTE } from "#constants/globals/time.js";
 import { mol_tree2_string_from_json } from "#lib/$mol.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { Pager } from "#lib/DiscordPager.js";
-import { escapeCodeBlock, escapeMarkdown, WebhookClient } from "discord.js";
+import CommandsManager from "#lib/modules/CommandsManager.js";
+import {
+  escapeCodeBlock,
+  escapeMarkdown,
+  Events,
+  WebhookClient,
+} from "discord.js";
 
 const DEFAULT_CODE_CONTENT = 'module("userData")';
 
@@ -23,9 +32,58 @@ function resolve_page(raw) {
     raw = { description: raw };
   }
   const DISCORD_MESSAGE_LIMIT = 4096;
-  raw.description = raw.description.slice(0, DISCORD_MESSAGE_LIMIT);
+  if (raw.description.length <= DISCORD_MESSAGE_LIMIT) {
+    return raw;
+  }
+  const CODE_BLOCK_PATTERN = "```";
+  const is_code_block = raw.description.startsWith(CODE_BLOCK_PATTERN);
+
+  const overlow_content = "\n...\n";
+  // summary: .slice(0, threshold)
+  raw.description = raw.description.slice(
+    0,
+    DISCORD_MESSAGE_LIMIT -
+      (is_code_block ? CODE_BLOCK_PATTERN.length + overlow_content.length : 0),
+  );
+
+  raw.description += overlow_content;
+
+  is_code_block && (raw.description += CODE_BLOCK_PATTERN);
   return raw;
 }
+class MessageUpdateHandler {
+  constructor(command) {
+    this.command = command;
+  }
+
+  async listen_edit_message() {
+    await whenClientIsReady();
+    client.on(Events.MessageUpdate, async (_, message) => {
+      if (!message.content.startsWith("!eval")) {
+        return;
+      }
+
+      await message.reactions.removeAll();
+      const commandContext =
+        CommandsManager.parseInputCommandFromMessage(message);
+
+      commandContext.extend = {
+        remove_view_on: MINUTE,
+        immediate_view: true,
+      };
+
+      const command = commandContext?.command;
+      if (
+        commandContext &&
+        CommandsManager.checkAvailable(command, commandContext)
+      ) {
+        CommandsManager.execute(command, commandContext);
+      }
+    });
+  }
+}
+
+class CommandRunContext extends BaseCommandRunContext {}
 class Command extends BaseCommand {
   options = {
     name: "eval",
@@ -42,6 +100,35 @@ class Command extends BaseCommand {
     allowDM: true,
     type: "other",
   };
+
+  constructor() {
+    super();
+    // optional
+    new MessageUpdateHandler(this).listen_edit_message();
+  }
+
+  display_output(context) {
+    const { interaction, options } = context;
+    const pager = new Pager(interaction.channel);
+    pager.setHideDisabledComponents(true);
+    pager.setDefaultMessageState({
+      title:
+        "([**{**  <:emoji_48:753916414036803605> <:emoji_50:753916145177722941> <:emoji_47:753916394135093289> <:emoji_46:753916360802959444> <:emoji_44:753916315755872266> <:emoji_44:753916339051036736>  **}**])",
+      author: { name: "Вывод консоли" },
+      color: "#1f2022",
+      footer: {
+        text: `Время выполнения кода: ${interaction.leadTime}мс`,
+      },
+    });
+    pager.addPages(...interaction.pages.map(resolve_page));
+    pager.updateMessage();
+
+    options.remove_view_on &&
+      setTimeout(() => {
+        pager.close();
+        pager.message.delete();
+      }, options.remove_view_on);
+  }
 
   async loggerProtocol({ interaction }) {
     if (!process.env.EVAL_WEBHOOK_ID_AND_TOKEN) {
@@ -66,11 +153,24 @@ class Command extends BaseCommand {
   }
 
   async onChatInput(msg, interaction) {
+    const context = new CommandRunContext(interaction, this);
+    context.setWhenRunExecuted(this.run(context));
+    return context;
+  }
+
+  /**
+   *
+   * @param {CommandRunContext} context
+   */
+  async run(context) {
+    const { channel, interaction } = context;
+    const { message, user } = interaction;
+
     const fetchReferense = async (reference) => {
       if (!reference) {
         return null;
       }
-      const message = await msg.channel.messages.fetch(reference.messageId);
+      const message = await channel.messages.fetch(reference.messageId);
 
       if (!message) {
         return null;
@@ -80,7 +180,7 @@ class Command extends BaseCommand {
     };
 
     const codeContent =
-      (await fetchReferense(msg.reference)) ||
+      (await fetchReferense(message.reference)) ||
       interaction.params ||
       DEFAULT_CODE_CONTENT;
 
@@ -147,27 +247,26 @@ class Command extends BaseCommand {
 
     this.loggerProtocol({ interaction });
 
-    const react = await msg.awaitReact(
-      { user: msg.author, removeType: "one", time: 20000 },
-      interaction.emojiByType,
-    );
-    if (!react) {
+    const need_display = await (async () => {
+      if (context.options.immediate_view) {
+        return true;
+      }
+      const react = await message.awaitReact(
+        { user, removeType: "one", time: MINUTE },
+        interaction.emojiByType,
+      );
+      if (react) {
+        return true;
+      }
+
+      return false;
+    })();
+
+    if (!need_display) {
       return;
     }
 
-    const pager = new Pager(interaction.channel);
-    pager.setHideDisabledComponents(true);
-    pager.setDefaultMessageState({
-      title:
-        "([**{**  <:emoji_48:753916414036803605> <:emoji_50:753916145177722941> <:emoji_47:753916394135093289> <:emoji_46:753916360802959444> <:emoji_44:753916315755872266> <:emoji_44:753916339051036736>  **}**])",
-      author: { name: "Вывод консоли" },
-      color: "#1f2022",
-      footer: {
-        text: `Время выполнения кода: ${interaction.leadTime}мс`,
-      },
-    });
-    pager.addPages(...interaction.pages.map(resolve_page));
-    pager.updateMessage();
+    this.display_output(context);
   }
 }
 
