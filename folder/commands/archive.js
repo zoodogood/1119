@@ -19,28 +19,28 @@ class Command extends BaseCommand {
   };
 
   async onChatInput(msg, interaction) {
-    let channel = msg.channel,
+    const channel = msg.channel,
       sum_messages = [],
       options = { limit: 100 },
-      time = 0,
-      date = new Date(),
-      last_id;
+      date = new Date();
+    let last_id,
+      time = 0;
 
     while (true) {
       if (last_id) options.before = last_id;
       const messages = await channel.messages.fetch(options, false);
       sum_messages.push(...messages.values());
       last_id = messages.last().id;
-      if (messages.size != 100) break;
-      if (++time == 20)
+      if (messages.size !== 100) break;
+      if (++time === 20)
         msg.msg({ title: "Нужно немного подождать", delete: 3000 });
-      if (++time == 50) msg.msg({ title: "Ждите", delete: 3000 });
+      if (++time === 50) msg.msg({ title: "Ждите", delete: 3000 });
     }
 
     let input = date + "\n\n",
       last;
     sum_messages.reverse().forEach((item) => {
-      if (!last || last.author.tag != item.author.tag) {
+      if (!last || last.author.tag !== item.author.tag) {
         const date = new Date(item.createdTimestamp);
         input +=
           "\n    ---" +

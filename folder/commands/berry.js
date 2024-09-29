@@ -1,9 +1,9 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
-import DataManager from "#lib/modules/DataManager.js";
-import { Actions } from "#lib/modules/ActionManager.js";
-import { addMultipleResources } from "#lib/util.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
+import { Actions } from "#lib/modules/ActionManager.js";
+import DataManager from "#lib/modules/DataManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { addMultipleResources } from "#lib/util.js";
 
 class Command extends BaseCommand {
   static BERRYS_LIMIT = 1_500;
@@ -21,6 +21,8 @@ class Command extends BaseCommand {
     return price;
   };
   static INFLATION = 0.2;
+
+  static TAX = 0.02;
 
   options = {
     name: "berry",
@@ -40,7 +42,16 @@ class Command extends BaseCommand {
     type: "user",
   };
 
-  static TAX = 0.02;
+  static getMaxCountForBuy(coins, price) {
+    const a = this.INFLATION / 2;
+    const b = price;
+    const c = -coins;
+
+    const discriminant = b ** 2 - 4 * a * c;
+    const x2 = (discriminant ** 0.5 - b) / (2 * a);
+
+    return x2;
+  }
 
   displayUserBerrys(context) {
     const { interaction, marketPrice } = context;
@@ -195,17 +206,6 @@ class Command extends BaseCommand {
     return context;
   }
 
-  static getMaxCountForBuy(coins, price) {
-    const a = this.INFLATION / 2;
-    const b = price;
-    const c = -coins;
-
-    const discriminant = b ** 2 - 4 * a * c;
-    const x2 = (discriminant ** 0.5 - b) / (2 * a);
-
-    return x2;
-  }
-
   handleParams(context) {
     const { interaction } = context;
     const parsed = interaction.params.split(" ").filter(Boolean);
@@ -229,7 +229,6 @@ class Command extends BaseCommand {
 
     interaction.params && this.handleParams(context);
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const message = await this.updateMessageInterface(context);
       const react = await message.awaitReact(
