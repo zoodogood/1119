@@ -394,6 +394,16 @@ class BossEffects {
    */
   static effectBases;
 
+  static _removeEffect({ effect, user }) {
+    const index = UserEffectManager.indexOf({ effect, user });
+    if (index === -1) {
+      return null;
+    }
+
+    user.action(ActionsMap.bossEffectEnd, { effect, index });
+    UserEffectManager.removeEffect({ effect, user });
+  }
+
   static applyEffect({ effectId, guild = null, user, values = {} }) {
     const effectBase = this.effectBases.get(effectId);
 
@@ -455,16 +465,6 @@ class BossEffects {
         .filter((value) => value.id.startsWith("boss."))
         .entries(),
     );
-  }
-
-  static _removeEffect({ effect, user }) {
-    const index = UserEffectManager.indexOf({ effect, user });
-    if (index === -1) {
-      return null;
-    }
-
-    user.action(ActionsMap.bossEffectEnd, { effect, index });
-    UserEffectManager.removeEffect({ effect, user });
   }
 }
 
@@ -968,10 +968,6 @@ class BossManager {
     return timestampDay(date.getTime());
   }
 
-  static get eventBases() {
-    return eventBases;
-  }
-
   static fatalDamage(context) {
     const calculatePossibleLevels = (boss) => {
       let currentLevel = boss.level - 1;
@@ -1064,6 +1060,7 @@ class BossManager {
   static isElite(boss) {
     return boss.level >= 10;
   }
+
   static kill(context) {
     const { boss, sourceUser, fromLevel, toLevel } = context;
     const { LevelKill, sendReward } = RewardSystem;
@@ -1119,7 +1116,6 @@ class BossManager {
       toLevel,
     });
   }
-
   static makeDamage(
     boss,
     damage,
@@ -1164,6 +1160,7 @@ class BossManager {
 
     return damage;
   }
+
   static onMessage(message) {
     const boss = message.guild.data.boss;
     const authorId = message.author.id;
@@ -1273,6 +1270,9 @@ class BossManager {
         "Вы сильные. Спасибо Вам за то, что вы рядом.\nБосс побеждён и прямые атаки по нему больше не проходят. Вы можете использовать реликвии и другие способы нанесения урона, чтобы продвинуться в топ'е",
     });
     boss.isDefeated = true;
+  }
+  static get eventBases() {
+    return eventBases;
   }
 }
 
