@@ -1,3 +1,4 @@
+import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import StorageManager from "#lib/modules/StorageManager.js";
 import { uid } from "#lib/safe-utils.js";
 import { from_short, short } from "#lib/serialize/optimize_keys.js";
@@ -38,6 +39,11 @@ export class ChangelogDaemon {
       const { path } = this.file;
       const data = JSON.stringify(short(this.data, shortable_keys_table));
       await StorageManager.write(path, data);
+
+      const data2 = mol_tree2_string_from_json(
+        short(this.data, shortable_keys_table),
+      );
+      await StorageManager.write("changelog.tree", data2);
     },
     defaultData: [],
   };
