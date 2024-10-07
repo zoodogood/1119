@@ -36,15 +36,10 @@ export class MessageInterface_Options {
   user = null;
 }
 export class MessageInterface {
-  _closed = false;
-  _collectors = [];
-  channel = null;
   static CollectType = {
     component: "component",
     reaction: "reaction",
   };
-  embed = {};
-  emitter = new EventsEmitter();
   static Events = {
     before_close: "before_close",
     before_collect: "before_collect",
@@ -53,6 +48,11 @@ export class MessageInterface {
     disallowed_collect: "disallowed_collect",
     before_update: "before_update",
   };
+  _closed = false;
+  _collectors = [];
+  channel = null;
+  embed = {};
+  emitter = new EventsEmitter();
 
   message = null;
 
