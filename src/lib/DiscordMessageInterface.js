@@ -55,7 +55,7 @@ export class MessageInterface {
   emitter = new EventsEmitter();
 
   message = null;
-
+  one_message_already_being_sending = false;
   options = new MessageInterface_Options();
 
   constructor(channel) {
@@ -257,7 +257,7 @@ export class MessageInterface {
   }
 
   async updateMessage(target = null) {
-    if (this.sent_queue) {
+    if (this.one_message_already_being_sending) {
       return await new Promise((resolve) => {
         setTimeout(
           () => resolve(this.updateMessage(target)),
@@ -265,18 +265,13 @@ export class MessageInterface {
         );
       });
     }
-    this.sent_queue = true;
+    this.one_message_already_being_sending = true;
     try {
       return await (this.message
         ? this._editMessage(target)
         : this._createMessage(target));
-    } catch (error) {
-      if (error.message.includes("Unknown Message")) {
-        return await this._recreateMessage(target);
-      }
-      throw error;
     } finally {
-      this.sent_queue = false;
+      this.one_message_already_being_sending = false;
     }
   }
 }
