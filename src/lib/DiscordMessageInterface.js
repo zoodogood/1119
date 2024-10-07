@@ -257,6 +257,15 @@ export class MessageInterface {
   }
 
   async updateMessage(target = null) {
+    if (this.sent_queue) {
+      return await new Promise((resolve) => {
+        setTimeout(
+          () => resolve(this.updateMessage(target)),
+          /* Preffered delay */ 100,
+        );
+      });
+    }
+    this.sent_queue = true;
     try {
       return await (this.message
         ? this._editMessage(target)
@@ -266,6 +275,8 @@ export class MessageInterface {
         return await this._recreateMessage(target);
       }
       throw error;
+    } finally {
+      this.sent_queue = false;
     }
   }
 }
