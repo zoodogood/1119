@@ -21,10 +21,12 @@ const DEFAULT_CODE_CONTENT = 'module("userData")';
 
 function format_object(object) {
   typeof object === "object" &&
+    object.toString !== Object.prototype.toString &&
     Object.defineProperty(object, "toString", {
       enumerable: false,
       value: Object.prototype.toString,
     });
+
   return `\`\`\`tree\n${escapeCodeBlock(mol_tree2_string_from_json(object))}\`\`\``;
 }
 function resolve_page(raw) {
