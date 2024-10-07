@@ -34,7 +34,7 @@ class I18nManager {
     return this.format(...params);
   }
 
-  format(key, locale, { values } = {}) {
+  format(key, locale, { values = {} } = {}) {
     locale = I18nManager.resolveLocale(locale);
     let string =
       this.getRaw(key, locale) || this.getRaw(key, I18nManager.DEFAULT_LOCALE);
