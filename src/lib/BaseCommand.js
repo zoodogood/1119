@@ -2,15 +2,34 @@ import { BaseContext } from "#lib/BaseContext.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 
 // @ts-check
+
 class BaseCommand {
   componentsCallbacks = {};
+
+  /**
+   *@type {{
+   *  name: string
+   *  media: {description: string, example?: string, poster?: string}
+   *  alias: string
+   *  allowDM?: boolean
+   *  cooldown?: number
+   *  cooldownTry?: number
+   *  cliParser: {flags: []}
+   *  accessibility?: {
+   *    publicized_on_level?: number
+   *  }
+   *  hidden?: boolean
+   *}}
+   */
+  options = {};
 
   /**
    *
    * @param {import("discord.js").Message} message
    * @param {ReturnType<import("#lib/modules/CommandsManager.js").parseInputCommandFromMessage>} interaction
+   * @abstract
    */
-  onChatInput(message, interaction) {}
+  onChatInput(_message, _interaction) {}
 
   onComponent({ params: rawParams, interaction }) {
     const [target, ...params] = rawParams.split(":");
@@ -26,6 +45,9 @@ class BaseCommand {
     this.componentsCallbacks[target].call(this, context);
   }
 
+  /**
+   * @abstract
+   */
   onSlash() {}
 }
 
