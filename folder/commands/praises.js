@@ -1,6 +1,6 @@
 import { client } from "#bot/client.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
-import DataManager from "#lib/modules/DataManager.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import Discord from "discord.js";
 
 class Command extends BaseCommand {

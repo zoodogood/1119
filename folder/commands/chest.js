@@ -3,10 +3,10 @@ import {
   KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
 } from "#constants/users/commands.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import CurseManager from "#lib/modules/CurseManager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
   NumberFormatLetterize,

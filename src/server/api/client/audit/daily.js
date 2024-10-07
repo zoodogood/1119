@@ -1,7 +1,7 @@
-import { BaseRoute } from "#server/router.js";
-import DataManager from "#lib/modules/DataManager.js";
-import { timestampDay } from "#lib/safe-utils.js";
 import { DailyAudit } from "#folder/events/TimeEvents/new-day.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
+import { timestampDay } from "#lib/safe-utils.js";
+import { BaseRoute } from "#server/router.js";
 
 const PREFIX = "/client/audit/daily";
 

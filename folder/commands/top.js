@@ -4,9 +4,9 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import { Emoji } from "#constants/emojis.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { Pager } from "#lib/DiscordPager.js";
 import BossManager from "#lib/modules/BossManager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
 import {
   DotNotatedInterface,

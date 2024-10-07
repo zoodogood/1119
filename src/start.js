@@ -7,11 +7,11 @@ import { ActivityType, AuditLogEvent } from "discord.js";
 
 import client from "#bot/client.js";
 import config from "#config";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import {
   ActionManager,
   BossManager,
   CommandsManager,
-  DataManager,
   EventsManager,
   TimeEventsManager,
 } from "#lib/modules/mod.js";

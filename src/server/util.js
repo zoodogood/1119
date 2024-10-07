@@ -1,7 +1,7 @@
-import net from "net";
-import { CustomCollector } from "@zoodogood/utils/objectives";
 import config from "#config";
-import DataManager from "#lib/modules/DataManager.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
+import { CustomCollector } from "@zoodogood/utils/objectives";
+import net from "net";
 
 function checkPort(port) {
   const server = net.createServer();
@@ -57,4 +57,5 @@ function incrementEnterAPIStatistic(request, response, next) {
   next();
 }
 
-export { incrementEnterAPIStatistic, checkPort, getAddress };
+export { checkPort, getAddress, incrementEnterAPIStatistic };
+

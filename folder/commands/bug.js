@@ -5,9 +5,9 @@ import { Bosses_Flagsubcommand } from "#folder/commands/boss.js";
 import { default as CommmandInfo } from "#folder/commands/commandinfo.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { Pager } from "#lib/DiscordPager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import {
   dayjs,

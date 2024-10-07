@@ -1,7 +1,7 @@
 import { HOUR } from "#constants/globals/time.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import DataManager from "#lib/modules/DataManager.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import QuestManager, { part_of_made } from "#lib/modules/QuestManager.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { FormattingPatterns } from "discord.js";

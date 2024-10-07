@@ -1,11 +1,8 @@
 import config from "#config";
 import { Events } from "#constants/app/events.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
-import {
-  DataManager,
-  EventsManager,
-  TimeEventsManager,
-} from "#lib/modules/mod.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
+import { EventsManager, TimeEventsManager } from "#lib/modules/mod.js";
 
 class Event {
   static INTERVAL = 60_000 * 5;

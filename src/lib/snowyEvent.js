@@ -1,8 +1,8 @@
 import { transformToCollectionUsingKey } from "#bot/util.js";
 import { Emoji } from "#constants/emojis.js";
 import { MINUTE } from "#constants/globals/time.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import CurseManager from "#lib/modules/CurseManager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
   dayjs,

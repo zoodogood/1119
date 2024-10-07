@@ -1,9 +1,9 @@
-import { DataManager } from "#lib/modules/mod.js";
-import { Collection } from "discord.js";
-import { Actions } from "#lib/modules/ActionManager.js";
-import { addResource } from "#lib/util.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
+import { Actions } from "#lib/modules/ActionManager.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import { addResource } from "#lib/util.js";
+import { Collection } from "discord.js";
 
 export function part_of_made(base) {
   return (

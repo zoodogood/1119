@@ -20,8 +20,9 @@ import {
 import { eventBases } from "#folder/entities/boss/events.js";
 import { RewardSystem } from "#folder/entities/boss/reward.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
-import { DataManager, Properties } from "#lib/modules/mod.js";
+import { Properties } from "#lib/modules/mod.js";
 import {
   NumberFormatLetterize,
   ending,

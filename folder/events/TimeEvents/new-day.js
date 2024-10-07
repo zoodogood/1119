@@ -1,16 +1,16 @@
 import { client } from "#bot/client.js";
-import * as Util from "#lib/util.js";
-import {
-  TimeEventsManager,
-  BossManager,
-  DataManager,
-  EventsManager,
-  ErrorsHandler,
-} from "#lib/modules/mod.js";
-import { dayjs } from "#lib/util.js";
-import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
 import config from "#config";
+import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
+import {
+  BossManager,
+  ErrorsHandler,
+  EventsManager,
+  TimeEventsManager,
+} from "#lib/modules/mod.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
+import * as Util from "#lib/util.js";
+import { dayjs } from "#lib/util.js";
 
 class Event {
   options = {

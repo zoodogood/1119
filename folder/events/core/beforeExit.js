@@ -1,12 +1,9 @@
 import client from "#bot/client.js";
 import { Events } from "#constants/app/events.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
-import {
-  DataManager,
-  ErrorsHandler,
-  TimeEventsManager,
-} from "#lib/modules/mod.js";
+import { ErrorsHandler, TimeEventsManager } from "#lib/modules/mod.js";
 import { ActivityType } from "discord.js";
 
 class Event extends BaseEvent {

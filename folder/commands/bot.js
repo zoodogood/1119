@@ -8,9 +8,9 @@ import {
 } from "#lib/ChangelogDaemon/api/display.js";
 import { metadata } from "#lib/ChangelogDaemon/api/metadata.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { Pager } from "#lib/DiscordPager.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
 import { ChangelogDaemon } from "#lib/modules/mod.js";
 import {

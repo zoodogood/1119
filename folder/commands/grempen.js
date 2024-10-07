@@ -3,10 +3,10 @@ import { DAY } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {

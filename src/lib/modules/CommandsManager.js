@@ -5,7 +5,7 @@ import {
   CommandInteraction as DiscordCommandInteraction,
 } from "discord.js";
 
-import DataManager from "#lib/modules/DataManager.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
 import Executor from "#lib/modules/Executor.js";
 import * as Util from "#lib/util.js";

@@ -2,8 +2,9 @@ import app from "#app";
 import { client } from "#bot/client.js";
 import { Events } from "#constants/app/events.js";
 import childProcessUtils from "#lib/child-process-utils.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
-import { DataManager, TimeEventsManager } from "#lib/modules/mod.js";
+import { TimeEventsManager } from "#lib/modules/mod.js";
 import { ReadPackageJson, timestampDay } from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 

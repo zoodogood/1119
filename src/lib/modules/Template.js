@@ -3,13 +3,13 @@ import { Collection } from "@discordjs/collection";
 import { PermissionsBitField } from "discord.js";
 import { VM } from "vm2";
 
+import { DataManager } from "#lib/DataManager/singletone.js";
 import {
   ActionManager,
   BossManager,
   ChangelogDaemon,
   CommandsManager,
   CurseManager,
-  DataManager,
   ErrorsHandler,
   EventsManager,
   GuildVariablesManager,

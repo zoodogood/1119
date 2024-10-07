@@ -1,7 +1,7 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import DataManager from "#lib/modules/DataManager.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { addResource } from "#lib/util.js";
 import { CliParser } from "@zoodogood/utils/primitives";
@@ -270,4 +270,5 @@ class Command extends BaseCommand {
 
 export default Command;
 
-export { Birthdays, BirthdayMember };
+export { BirthdayMember, Birthdays };
+

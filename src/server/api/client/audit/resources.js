@@ -1,5 +1,5 @@
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { BaseRoute } from "#server/router.js";
-import DataManager from "#lib/modules/DataManager.js";
 
 const PREFIX = "/client/audit/resources";
 

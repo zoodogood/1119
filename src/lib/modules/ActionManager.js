@@ -1,12 +1,8 @@
-import { User as DiscordUser } from "discord.js";
-import {
-  CurseManager,
-  QuestManager,
-  ErrorsHandler,
-  DataManager,
-} from "#lib/modules/mod.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
+import { CurseManager, ErrorsHandler, QuestManager } from "#lib/modules/mod.js";
+import { User as DiscordUser } from "discord.js";
 
 class ActionManager {
   static Actions = ActionsMap;

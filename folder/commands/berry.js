@@ -1,7 +1,7 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { addMultipleResources } from "#lib/util.js";
 

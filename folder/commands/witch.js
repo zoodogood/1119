@@ -3,8 +3,8 @@ import {
   KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
 } from "#constants/users/commands.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
+import { DataManager } from "#lib/DataManager/singletone.js";
 import { Actions } from "#lib/modules/ActionManager.js";
-import DataManager from "#lib/modules/DataManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 
