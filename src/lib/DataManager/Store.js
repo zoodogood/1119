@@ -1,4 +1,3 @@
-import EventEmitter from "node:events";
 // Очень примитивная универсальная реализация для управления состояниями из разных потоков,
 // изменения можно слушать через observable.subscribe
 
@@ -28,17 +27,23 @@ export class Store {
   }
 }
 
-class ObservableState extends EventEmitter {
+class ObservableState {
+  subscribers_list = [];
   constructor(item) {
-    super();
     this.value = item;
     this.cachedAt = Date.now();
   }
-  notify() {
-    this.emit("value");
+  publish() {
+    this.subscribers_list.forEach((callback) => callback());
   }
 
   subscribe(callback) {
-    return this.disposable("value", callback);
+    this.subscribers_list.push(callback);
+    return () => this.unsubscribe(callback);
+  }
+
+  unsubscribe(callback) {
+    const index = this.subscribers_list.indexOf(callback);
+    index !== -1 && this.subscribers_list.splice(index, 1);
   }
 }
