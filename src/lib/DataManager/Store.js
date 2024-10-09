@@ -10,7 +10,7 @@ export class Store {
    * @returns {ObservableState}
    */
 
-  setup(cell, property) {
+  hold_wire(cell, property) {
     const { id } = cell;
     const key = `${id}_${property}`;
     const { cache } = this;
