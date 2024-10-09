@@ -10,6 +10,15 @@ export class ParserTime {
     /(?<time>\d?\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
   time = 0;
 
+  static _getActiveGroupName(groups) {
+    for (const group in groups) {
+      if (groups[group]) {
+        return group;
+      }
+    }
+    return null;
+  }
+
   static toNumber(string = "") {
     const parser = new this();
     const multipleRegex = RegExp(parser.regex, "g");
@@ -20,15 +29,6 @@ export class ParserTime {
       parser.pushItem(item);
     }
     return parser.summarizeItems();
-  }
-
-  static _getActiveGroupName(groups) {
-    for (const group in groups) {
-      if (groups[group]) {
-        return group;
-      }
-    }
-    return null;
   }
 
   appendDate(date) {

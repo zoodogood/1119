@@ -1,12 +1,12 @@
-import { CustomCollector, question, ending } from "#lib/util.js";
 import { Emoji } from "#constants/emojis.js";
 import { MINUTE } from "#constants/globals/time.js";
-import { CreateModal, justButtonComponents } from "@zoodogood/utils/discordjs";
-import { TextInputStyle, ComponentType } from "discord.js";
 import {
   MessageInterface,
   MessageInterface_Options,
 } from "#lib/DiscordMessageInterface.js";
+import { CustomCollector, ending, question } from "#lib/util.js";
+import { CreateModal, justButtonComponents } from "@zoodogood/utils/discordjs";
+import { ComponentType, TextInputStyle } from "discord.js";
 
 class DefaultComponentsProcessor {
   callbaks;
@@ -126,6 +126,16 @@ class Pager_Options extends MessageInterface_Options {
 }
 
 export class Pager extends MessageInterface {
+  static DefaultComponents = {
+    Previous: { customId: "PAGER_PREVIOUS", emoji: Emoji.green_arrow_left.id },
+    Next: { customId: "PAGER_NEXT", emoji: Emoji.green_arrow_right.id },
+    Select: {
+      customId: "PAGER_SELECT",
+    },
+  };
+  static Events = {
+    ...super.Events,
+  };
   _callbacks = {
     [Pager.DefaultComponents.Previous.customId]: (interaction) => {
       this.currentPage--;
@@ -139,18 +149,8 @@ export class Pager extends MessageInterface {
       this.options.selectPageStrategy(this, interaction);
     },
   };
-  currentPage = 0;
-  static DefaultComponents = {
-    Previous: { customId: "PAGER_PREVIOUS", emoji: Emoji.green_arrow_left.id },
-    Next: { customId: "PAGER_NEXT", emoji: Emoji.green_arrow_right.id },
-    Select: {
-      customId: "PAGER_SELECT",
-    },
-  };
 
-  static Events = {
-    ...super.Events,
-  };
+  currentPage = 0;
 
   options = new Pager_Options();
 
