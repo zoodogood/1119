@@ -42,7 +42,11 @@ class BaseCommand {
         params,
       },
     );
-    this.componentsCallbacks[target].call(this, context);
+    const callback = this.componentsCallbacks[target];
+    if (!callback) {
+      throw new Error(`Unknown component: ${rawParams}`);
+    }
+    callback.call(this, context);
   }
 
   /**
