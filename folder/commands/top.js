@@ -20,9 +20,6 @@ import { CliParser } from "@zoodogood/utils/primitives";
 import { ComponentType, escapeMarkdown } from "discord.js";
 
 class Flag_open {
-  capture;
-
-  context;
   static FLAG_DATA = {
     name: "--open",
     capture: ["--open", "-o"],
@@ -30,6 +27,9 @@ class Flag_open {
     description:
       "Мгновенно открывает выбранную вкладку или показывает их перечень",
   };
+
+  capture;
+  context;
 
   constructor(context) {
     this.context = context;
@@ -136,6 +136,13 @@ class CommandRunContext extends BaseCommandRunContext {
   users;
   values = null;
 
+  static async new(interaction, command) {
+    const context = new this(interaction, command);
+    const { boss, showEvent } = interaction.guild.data;
+    Object.assign(context, { boss: boss || {}, showEvent: showEvent || {} });
+    return context;
+  }
+
   _createValues() {
     const pull = (this.sortedPull =
       this.sortedPull ?? RanksUtils.createPull(this.users));
@@ -166,13 +173,6 @@ class CommandRunContext extends BaseCommandRunContext {
       .filter(needDisplay);
 
     this.users = users;
-  }
-
-  static async new(interaction, command) {
-    const context = new this(interaction, command);
-    const { boss, showEvent } = interaction.guild.data;
-    Object.assign(context, { boss: boss || {}, showEvent: showEvent || {} });
-    return context;
   }
 
   parseCli(params) {
@@ -482,7 +482,7 @@ class RanksUtils {
 
   static sortMutableAndFilterPull(pull) {
     pull.sortBy("1", true);
-    // eslint-disable-next-line no-unused-vars
+
     return pull.filter(([_, value]) => value);
   }
 }
