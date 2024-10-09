@@ -191,7 +191,7 @@ class CommandRunContext extends BaseCommandRunContext {
       })
       .captureByMatch({
         name: "itemRaw",
-        regex: /[a-zа-яёъ]+/i,
+        regex: /[a-zа-яёї0-9_]+/i,
       });
 
     const parsed = parser.collect();

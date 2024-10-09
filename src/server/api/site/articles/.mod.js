@@ -44,7 +44,7 @@ class ArticlesCacheData {
 
     const wordsCount = content
       .split(" ")
-      .filter((word) => word.match(/[a-zа-я]/i)).length;
+      .filter((word) => word.match(/[a-zа-яёї0-9]/i)).length;
 
     return { author, timestamp, tags, wordsCount };
   }

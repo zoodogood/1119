@@ -96,7 +96,7 @@ class CommandRunContext extends BaseCommandRunContext {
       .captureResidueFlags()
       .captureByMatch({
         name: "commandRaw",
-        regex: /[a-zа-яёъ0-9]+/i,
+        regex: /[a-zа-яёї0-9]+/i,
         valueOf: (capture) => capture?.toString().toLowerCase(),
       })
       .collect();

@@ -393,7 +393,7 @@ async function fetchFromInnerApi(
 
 function ReplaceTemplate(string, values) {
   return string.replaceAll(
-    /(?<!\\)\$\{([a-zа-яъё_$\s]+)\}/gi,
+    /(?<!\\)\$\{([a-zа-яїё_$\s]+)\}/gi,
     (_full, match) => values[match.trim()],
   );
 }

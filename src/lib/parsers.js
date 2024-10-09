@@ -73,7 +73,7 @@ export class ParserTime {
   }
 
   stampToNumber(stamp) {
-    const [value, key] = stamp.match(/(\d+)\s?([a-zа-я])/)?.slice(1) ?? [];
+    const [value, key] = stamp.match(/(\d+)\s?([a-zа-яёї])/)?.slice(1) ?? [];
     const consts = {
       d: DAY,
       д: DAY,

@@ -1,6 +1,6 @@
+import { client } from "#bot/client.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
-import { client } from "#bot/client.js";
 
 class Command extends BaseCommand {
   options = {
@@ -27,7 +27,7 @@ class Command extends BaseCommand {
       msg.author;
 
     const { content } = interaction.message;
-    const commandName = content.match(/[a-zа-яїъё]+/i)?.[0] ?? "IQ";
+    const commandName = content.match(/[a-zа-яїё]+/i)?.[0] ?? "IQ";
 
     let first = true;
     if ("iq" in memb.data) {
