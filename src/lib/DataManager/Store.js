@@ -28,13 +28,21 @@ export class Store {
 }
 
 class ObservableState {
+  #throttle_timer = null;
+  request_throttle = 200;
   subscribers_list = [];
   constructor(item) {
     this.value = item;
     this.cachedAt = Date.now();
   }
   publish() {
-    this.subscribers_list.forEach((callback) => callback());
+    if (this.#throttle_timer) {
+      clearTimeout(this.#throttle_timer);
+    }
+    this.#throttle_timer = setTimeout(() => {
+      // main action
+      this.subscribers_list.forEach((callback) => callback());
+    }, this.request_throttle);
   }
 
   subscribe(callback) {
