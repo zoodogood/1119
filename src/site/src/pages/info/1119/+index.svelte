@@ -1,8 +1,11 @@
 <script>
   import Image from "#site-component/Image";
   import Layout from "#site-component/Layout";
-  import { AuditDaily, Statistic } from "#site-component/frames/statistic";
   import AuthorProjects from "#site/components/frames/external/author/Projects.svelte";
+  import {
+    AuditDaily,
+    Statistic,
+  } from "#site/components/frames/statistic/mod.js";
 
   import PagesRouter from "#site/lib/Router.js";
   import { onMount } from "svelte";
