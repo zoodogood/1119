@@ -399,7 +399,7 @@ class Template {
     /** From Board */
     board_render: "board_render",
     /** From guild command */
-    guildCommand: "guildCommand",
+    custom_command: "custom_command",
     /** From userEffect/evaluateTemplate */
     evaluateEffect: "evaluateEffect",
   };
