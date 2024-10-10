@@ -10,15 +10,23 @@ class BaseCommand {
    *@type {{
    *  name: string
    *  media: {description: string, example?: string, poster?: string}
+   *  type: string
    *  alias: string
    *  allowDM?: boolean
+   *  expectMention?: boolean
+   *  expectParams?: boolean
    *  cooldown?: number
    *  cooldownTry?: number
-   *  cliParser: {flags: []}
+   *  myChannelPermissions?: bigint
+   *  myPermissions?: bigint
+   *  userChannelPermissions?: bigint
+   *  userPermissions?: bigint
+   *  cliParser?: {flags: []}
    *  accessibility?: {
    *    publicized_on_level?: number
    *  }
    *  hidden?: boolean
+   *  removed?: boolean
    *}}
    */
   options = {};
