@@ -169,7 +169,7 @@ class Command extends BaseCommand {
       "табло счётчик счетчик board count counter рахівник счётчики счетчики рахівники counters",
     allowDM: false,
     type: "guild",
-    Permissions: 16n,
+    userPermissions: 16n,
   };
 
   async onChatInput(msg, interaction) {

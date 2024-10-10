@@ -47,14 +47,14 @@ class Achievement_FlagSubcommand extends BaseFlagSubcommand {
   }
 }
 class MembersFlag_Manager {
-  description =
-    "Список участников сервер, сгруппированных по их ежедневному квесту";
-
   static flag = {
     name: "--members",
     capture: ["--members", "-m"],
     description: "Показывает перечень сегодняшних ежедневных квестов сервера",
   };
+
+  description =
+    "Список участников сервер, сгруппированных по их ежедневному квесту";
 
   GROUP_SPECIAL = {
     Null: "null",
@@ -132,6 +132,12 @@ class CommandRunContext extends BaseCommandRunContext {
   memb;
   membData;
   membQuests;
+  static new(interaction, command) {
+    const context = new this(interaction, command);
+    context.parseParams(interaction.params);
+    return context;
+  }
+
   addMembData(memb) {
     const membData = memb.data;
 
@@ -146,12 +152,6 @@ class CommandRunContext extends BaseCommandRunContext {
 
     Object.assign(this, { membData, membQuests, dailyQuestBase, dailyQuest });
     return this;
-  }
-
-  static new(interaction, command) {
-    const context = new this(interaction, command);
-    context.parseParams(interaction.params);
-    return context;
   }
 
   parseParams(params) {

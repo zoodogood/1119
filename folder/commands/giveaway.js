@@ -1,13 +1,13 @@
 // @ts-check
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
-import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import { MessageInterface } from "#lib/DiscordMessageInterface.js";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { ParserTime } from "#lib/parsers.js";
-import { SECOND, YEAR } from "#constants/globals/time.js";
-import { FormattingPatterns } from "discord.js";
 import { Emoji } from "#constants/emojis.js";
+import { SECOND, YEAR } from "#constants/globals/time.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
+import { ParserTime } from "#lib/parsers.js";
+import * as Util from "#lib/util.js";
+import { FormattingPatterns } from "discord.js";
 
 class CommandRunContext extends BaseCommandRunContext {
   _interface = new MessageInterface();
@@ -23,6 +23,7 @@ class CommandRunContext extends BaseCommandRunContext {
   }
 
   interface_reactions() {
+    // @ts-expect-error
     return this.command.reactions
       .filter(({ filter }) => !filter || filter(this))
       .map(({ emoji }) => emoji);
@@ -40,9 +41,8 @@ class Command extends BaseCommand {
     alias: "раздача розыгрыш розіграш",
     allowDM: true,
     type: "guild",
-    Permissions: 32n,
+    userPermissions: 32n,
   };
-
   reactions = [
     {
       emoji: "🪧",

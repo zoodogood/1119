@@ -1,8 +1,8 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 //@ts-check
 
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
+import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
   options = {
@@ -21,7 +21,7 @@ class Command extends BaseCommand {
     cooldown: 30_000,
     type: "guild",
     myPermissions: 268435456n,
-    Permissions: 268435488n,
+    userPermissions: 268435488n,
   };
 
   async askChannel(interaction) {

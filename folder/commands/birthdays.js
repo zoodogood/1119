@@ -271,4 +271,3 @@ class Command extends BaseCommand {
 export default Command;
 
 export { BirthdayMember, Birthdays };
-

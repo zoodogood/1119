@@ -1,9 +1,9 @@
 //@ts-check
+import { MINUTE } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import * as Util from "#lib/util.js";
 import { FormattingPatterns } from "discord-api-types/v10";
-import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { MINUTE } from "#constants/globals/time.js";
 
 class CommandRunContext extends BaseCommandRunContext {
   addable = {
@@ -394,7 +394,7 @@ class Command extends BaseCommand {
     cooldown: 10_000,
     cooldownTry: 3,
     type: "guild",
-    ChannelPermissions: 16384n,
+    userChannelPermissions: 16384n,
   };
   WHEN_UNCOVERED_REACTIONS_POOL = [
     "640449848050712587",

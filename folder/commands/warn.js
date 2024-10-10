@@ -16,7 +16,7 @@ class Command extends BaseCommand {
     allowDM: true,
     cooldown: 120_000,
     type: "guild",
-    Permissions: 4194304n,
+    userPermissions: 4194304n,
   };
 
   async onChatInput(msg, interaction) {

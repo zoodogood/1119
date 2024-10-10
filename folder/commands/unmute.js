@@ -1,5 +1,5 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
 import { client } from "#bot/client.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { PermissionFlagsBits } from "discord.js";
 
 class Command extends BaseCommand {
@@ -19,7 +19,7 @@ class Command extends BaseCommand {
     allowDM: true,
     type: "guild",
     myPermissions: 268435456n,
-    Permissions: 4194304n,
+    userPermissions: 4194304n,
   };
 
   async onChatInput(msg, interaction) {

@@ -15,7 +15,7 @@ class Command extends BaseCommand {
     allowDM: true,
     cooldown: HOUR,
     type: "delete",
-    Permissions: 16n,
+    userPermissions: 16n,
   };
 
   async onChatInput(msg, interaction) {

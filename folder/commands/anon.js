@@ -720,7 +720,6 @@ class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const context = this.getContext(interaction);
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       if (context.isEnd) {
         return;

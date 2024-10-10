@@ -73,7 +73,7 @@ class Command extends BaseCommand {
     alias: "установитьчат встановитичат",
     allowDM: true,
     type: "guild",
-    Permissions: 32n,
+    userPermissions: 32n,
   };
 
   async onChatInput(msg, interaction) {

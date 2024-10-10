@@ -311,7 +311,8 @@ class Command extends BaseCommand {
         {
           name: "Необходимые права",
           value:
-            meta.permissionsToLocaledArray(meta.Permissions, locale) || "Нет",
+            meta.permissionsToLocaledArray(meta.userPermissions, locale) ||
+            "Нет",
         },
         {
           name: "Количество использований",

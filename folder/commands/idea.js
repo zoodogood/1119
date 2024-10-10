@@ -542,9 +542,6 @@ class Delete_Flagsubcommand {
 class CommandRunContext extends BaseCommandRunContext {
   _ideasChannel;
   _storeValue;
-  get ideasChannel() {
-    return getChannel();
-  }
   parseCli(input) {
     const parsed = new CliParser()
       .setText(input)
@@ -554,6 +551,9 @@ class CommandRunContext extends BaseCommandRunContext {
 
     const values = parsed.resolveValues((capture) => capture?.toString());
     this.setCliParsed(parsed, values);
+  }
+  get ideasChannel() {
+    return getChannel();
   }
   get storeValue() {
     return (this._storeValue ||= this.command.store.value());

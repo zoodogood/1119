@@ -1,5 +1,5 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
 import client from "#bot/client.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
@@ -14,7 +14,7 @@ class Command extends BaseCommand {
     alias: "установитьприветствие sethello приветствие привітання",
     allowDM: true,
     type: "guild",
-    Permissions: 32n,
+    userPermissions: 32n,
   };
 
   async onChatInput(msg, interaction) {

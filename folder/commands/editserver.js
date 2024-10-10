@@ -19,12 +19,12 @@ class CommandRunContext extends BaseCommandRunContext {
 
   parseCli() {}
 
-  get randomEmoji() {
-    return (this._randomEmoji ||= ["🔧", "🔨", "💣", "🛠️", "🔏"].random());
-  }
-
   setInterfaceMessage(message) {
     this.intefaceMessage = message;
+  }
+
+  get randomEmoji() {
+    return (this._randomEmoji ||= ["🔧", "🔨", "💣", "🛠️", "🔏"].random());
   }
 }
 class Command_GuildChannels_Manager {
@@ -367,7 +367,7 @@ class Command extends BaseCommand {
       "настроитьсервер серватиус servatius налагодитисервер серватіус настройки налаштування settings",
     allowDM: true,
     type: "guild",
-    Permissions: 32n,
+    userPermissions: 32n,
   };
 
   SETTING_FIELDS = [

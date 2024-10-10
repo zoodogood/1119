@@ -1,14 +1,13 @@
 // @ts-check
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
 import { DAY, SECOND } from "#constants/globals/time.js";
-import { fetchMessagesWhile } from "#lib/fetchMessagesWhile.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { FormattingPatterns } from "discord.js";
-import { CliParser } from "@zoodogood/utils/primitives";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
-import { PermissionFlagsBits } from "discord.js";
+import { fetchMessagesWhile } from "#lib/fetchMessagesWhile.js";
+import * as Util from "#lib/util.js";
+import { CliParser } from "@zoodogood/utils/primitives";
+import { FormattingPatterns, PermissionFlagsBits } from "discord.js";
 
 const RemoveStatus = {
   Idle: "Idle",
@@ -349,6 +348,13 @@ class CommandRunContext extends BaseCommandRunContext {
   messagesFetcher;
   referenceId;
 
+  static async new(interaction, command) {
+    const context = new this(interaction, command);
+    context.referenceId = context.fetchReferenseId();
+    context.channel_isDMBased = interaction.channel.isDMBased();
+    context.messagesFetcher = new Fetcher(context);
+    return context;
+  }
   calculateMessagesForClean_count() {
     const {
       DEFAULT_CLEAN_COUNT,
@@ -365,6 +371,7 @@ class CommandRunContext extends BaseCommandRunContext {
         : DEFAULT_CLEAN_COUNT);
     return Math.min(count, CLEAN_COUNT_LIMIT);
   }
+
   async fetchMessagesToClean() {
     const values = this.cliParsed.at(1);
     this.messagesFetcher.setOptions({
@@ -376,7 +383,6 @@ class CommandRunContext extends BaseCommandRunContext {
     });
     await this.messagesFetcher.fetch();
   }
-
   fetchReferenseId() {
     const { message } = this.interaction;
     const { reference } = message;
@@ -385,13 +391,6 @@ class CommandRunContext extends BaseCommandRunContext {
   hasSpecialTarget() {
     const values = this.cliParsed.at(1);
     return values.get("by_phrase").trim() || this.referenceId;
-  }
-  static async new(interaction, command) {
-    const context = new this(interaction, command);
-    context.referenceId = context.fetchReferenseId();
-    context.channel_isDMBased = interaction.channel.isDMBased();
-    context.messagesFetcher = new Fetcher(context);
-    return context;
   }
 
   parseCli(input) {
@@ -431,7 +430,7 @@ class Command extends BaseCommand {
     cooldown: 10_000,
     type: "guild",
     myChannelPermissions: 8192n,
-    ChannelPermissions: 8192n,
+    userChannelPermissions: 8192n,
   };
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);

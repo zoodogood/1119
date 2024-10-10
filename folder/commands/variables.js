@@ -1,6 +1,6 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import GuildVariablesManager from "#lib/modules/GuildVariablesManager.js";
+import * as Util from "#lib/util.js";
 import { escapeMarkdown } from "discord.js";
 
 class Command extends BaseCommand {
@@ -250,7 +250,7 @@ class Command extends BaseCommand {
     alias: "variable вар var переменная переменные змінні",
     allowDM: true,
     type: "guild",
-    Permissions: 256n,
+    userPermissions: 256n,
   };
 
   async createController({ interaction, manager }) {

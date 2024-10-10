@@ -190,9 +190,9 @@ class RemindData {
     timeTo: null,
   };
 
+  #channel;
   _phrase;
   _repeatsCount;
-  #channel;
   channelId;
   evaluateRemind;
   isDeleted;

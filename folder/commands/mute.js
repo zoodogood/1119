@@ -38,7 +38,7 @@ class Command extends BaseCommand {
     allowDM: true,
     type: "guild",
     myPermissions: 268435456n,
-    Permissions: 4194304n,
+    userPermissions: 4194304n,
   };
 
   async onChatInput(msg, interaction) {

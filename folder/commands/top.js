@@ -515,7 +515,7 @@ class Command extends BaseCommand {
     cooldown: 20_000,
     cooldownTry: 2,
     type: "user",
-    Permissions: 16384n,
+    userPermissions: 16384n,
   };
 
   createEmbed({ context }) {
