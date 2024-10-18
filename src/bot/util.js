@@ -2,15 +2,21 @@ import {
   MESSAGES_SPAM_FILTER_ALLOWED_IN_SUCCESSION,
   MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
 } from "#constants/users/events.js";
-import Discord from "discord.js";
 
 import { inspect as _inspect } from "util";
 
 import app from "#app";
 import { Events } from "#constants/app/events.js";
+import { MINUTE } from "#constants/globals/time.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { Collection } from "@discordjs/collection";
-import { ComponentType, Message } from "discord.js";
+import { justButtonComponents } from "@zoodogood/utils/discordjs";
+import {
+  ComponentType,
+  Message,
+  MessageComponentInteraction,
+  MessageReaction,
+} from "discord.js";
 
 export async function awaitUserAccept({ name, message, channel, userData }) {
   const prefix = "userAccept_";
@@ -39,42 +45,77 @@ export function chunkBySize(array, size) {
   );
 }
 
-export function awaitReactOrMessage({
+export function awaitInteractOrMessage({
   target,
   user,
   time,
+  filter = null,
   reactionOptions = {},
   messageOptions = {},
+  componentOptions = {},
 }) {
-  const MAX_TIMEOUT = time ?? 300_000;
+  const MAX_TIMEOUT = time ?? MINUTE * 5;
+  const user_checker = (candidate) =>
+    (!user && !candidate.bot) || candidate === user;
 
   const reactions = reactionOptions.reactions?.filter(Boolean);
   reactions?.forEach((reaction) => target.react(reaction));
 
-  const isUserMessage = (target) => target.id === user.id;
-  const isReactOfUser = (react, target) =>
-    target.id === user.id &&
+  const isUserMessage = (message) =>
+    message instanceof Message && user_checker(message.author);
+  const isReactOfUser = (react, user_was_reacted) =>
+    react instanceof MessageReaction &&
+    user_checker(user_was_reacted) &&
     (!reactions.length || reactions.includes(react.emoji.code));
-  const filter = (some, adding) =>
-    some instanceof Discord.Message
-      ? isUserMessage(some.author)
-      : isReactOfUser(some, adding);
-  const collectorOptions = { max: 1, time: MAX_TIMEOUT, filter };
+  const isComponentOfUser = (interaction) =>
+    interaction instanceof MessageComponentInteraction &&
+    (user_checker(interaction.user) ||
+      (() => {
+        interaction.msg({
+          ephemeral: true,
+          description: `Это взаимодействие доступно только ${user}`,
+          color: "#ff0000",
+        });
+      })());
+
+  const pass_interaction = (...params) =>
+    [isUserMessage, isReactOfUser, isComponentOfUser].some((callback) =>
+      callback(...params),
+    ) &&
+    (!filter || !filter(...params));
+
+  const collectorOptions = {
+    max: 1,
+    time: MAX_TIMEOUT,
+    filter: pass_interaction,
+  };
 
   return new Promise(async (resolve) => {
-    const collected = await Promise.race([
-      target.channel.awaitMessages({ ...collectorOptions, ...messageOptions }),
-      target.awaitReactions({ ...collectorOptions, ...reactionOptions }),
-    ]);
-
-    const some = collected.first();
-    if (some instanceof Discord.Message) {
-      !messageOptions.preventRemove && some.delete();
-    }
-    target.reactions.cache.each((reaction) =>
-      reaction.users.remove(target.client.user),
+    const collected = await Promise.race(
+      [
+        !messageOptions.disable &&
+          target.channel.awaitMessages({
+            ...collectorOptions,
+            ...messageOptions,
+          }),
+        reactionOptions.reactions &&
+          target.awaitReactions({ ...collectorOptions, ...reactionOptions }),
+        componentOptions.listen &&
+          target.awaitMessageComponent({
+            ...collectorOptions,
+            ...componentOptions,
+          }),
+      ].filter(Boolean),
     );
-    resolve(some);
+
+    const answer = collected.first?.() || collected;
+    if (answer instanceof Message) {
+      !messageOptions.preventRemove && answer.delete();
+    }
+    if (answer instanceof MessageReaction) {
+      !reactionOptions.preventRemove && answer.remove(user);
+    }
+    resolve(answer);
   });
 }
 
@@ -103,25 +144,72 @@ export async function question({
   message,
   time = null,
   reactions = [],
+  messageOptions = {},
+  listen_components = false,
+  validation = null,
+  validation_hint = null,
+  filter = null,
 }) {
-  const request = await channel.msg(message);
-  const response = await awaitReactOrMessage({
-    target: request,
-    user,
-    messageOptions: {
-      remove: true,
-    },
-    reactionOptions: {
-      reactions,
-    },
-    time,
-  });
-  request.delete();
-  const isMessage = response instanceof Message;
+  const response = await (async () => {
+    while (true) {
+      const request = await channel.msg(message);
+      const response = await awaitInteractOrMessage({
+        target: request,
+        user,
+        filter,
+        messageOptions: {
+          remove: true,
+          ...messageOptions,
+        },
+        reactionOptions: {
+          reactions,
+        },
+        componentOptions: {
+          listen: listen_components,
+        },
+        time,
+      });
+      request.delete();
+      if (!response) {
+        return response;
+      }
+
+      if (!validation || (await validation(response))) {
+        return response;
+      }
+      const { isComponent } = await question({
+        channel: request.channel,
+        message: {
+          title: "Прикажите повторить операцию или завершить?",
+          user,
+          description: `${response instanceof Message ? `Ваш ответ:\n>>> \`\`\`\n${response.content}\n\`\`\`\n` : ""}Подсказка взодных данных: ${validation_hint}\n\n-# JavaScript код проверки входных данных\n\`\`\`js\n${validation}\n\`\`\``,
+          footer: {
+            text: "Контекст автоматически сбросится через минуту",
+            iconURL: user?.avatarURL(),
+          },
+          components: justButtonComponents({
+            label: "Продолжить с этого места",
+          }),
+        },
+        messageOptions: {
+          disable: true,
+        },
+        listen_components: true,
+        time: MINUTE,
+      });
+
+      if (!isComponent) {
+        return null;
+      }
+    }
+  })();
+
   const emoji = response?.emoji;
+
   return {
     value: response,
-    isMessage,
+    isMessage: response instanceof Message,
+    isComponent: response instanceof MessageComponentInteraction,
     content: response?.content,
     emoji: emoji?.id || emoji?.identifier,
   };
