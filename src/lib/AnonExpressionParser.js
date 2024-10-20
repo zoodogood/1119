@@ -3,7 +3,7 @@ const TokenTypeEnum = {
   Operator: 2,
   OpenBracket: 4,
   CloseBracket: 8,
-  Bracket: 4 & 8,
+  Bracket: 4 | 8,
 };
 
 function generalOperatorValidation({ previousToken, nextToken }) {
