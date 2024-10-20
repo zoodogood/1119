@@ -5,20 +5,16 @@ import {
   CommandInteraction as DiscordCommandInteraction,
 } from "discord.js";
 
-import { DataManager } from "#lib/DataManager/singletone.js";
-import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
 import Executor from "#lib/modules/Executor.js";
 import * as Util from "#lib/util.js";
 import EventsEmitter from "events";
 
-import CooldownManager from "#lib/modules/CooldownManager.js";
-
 import { Actions } from "#lib/modules/ActionManager.js";
 
 import app from "#app";
+import { CustomCommand } from "#folder/commands/guildcommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { permissionRawToI18n } from "#lib/permissions.js";
-import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 import { ImportDirectory } from "@zoodogood/import-directory";
 
 const COMMANDS_PATH = "./folder/commands";
@@ -26,6 +22,19 @@ const COMMANDS_PATH = "./folder/commands";
 export const Events = {
   signal_command_flow_end: "signal_command_flow_end",
 };
+
+export function resolve_command(command_name, source_guild) {
+  return (
+    CommandsManager.callMap.get(command_name) ||
+    (() => {
+      const custom_command = source_guild?.data.custom_commands?.[command_name];
+      if (!custom_command) {
+        return false;
+      }
+      return new CustomCommand(custom_command, source_guild);
+    })()
+  );
+}
 
 export class CommandInteraction {
   constructor({ params, user, channel, guild, commandBase, message, client }) {
@@ -45,7 +54,8 @@ export class CommandInteraction {
     this.client = client || app.client;
 
     /** @type {import("#lib/BaseCommand.js").BaseCommand} */
-    this.command = CommandsManager.callMap.get(commandBase);
+    this.command = resolve_command(commandBase, guild);
+
     /** @type {import("discord.js").GuildMember} */
     this.member = guild?.members.resolve(user) || null;
     /** @type {import("#constants/Schema.js").users} */
@@ -134,43 +144,14 @@ class CommandsManager {
 
   static parseInputCommandFromMessage = parseInputCommandFromMessage;
 
-  static statistics = {
-    increase: ({ interaction: { guild }, command }) => {
-      const commandOptions = command.options;
-
-      const botData = DataManager.data.bot;
-      const guildData = guild?.data;
-
-      if (guildData) {
-        guildData.commandsUsed ||= {};
-        guildData.commandsUsed[commandOptions.id] ||= 0;
-        guildData.commandsUsed[commandOptions.id]++;
-      }
-
-      if (botData) {
-        botData.commandsUsed[commandOptions.id] ||= 0;
-        botData.commandsUsed[commandOptions.id]++;
-
-        botData.commandsUsedToday ||= 0;
-        botData.commandsUsedToday++;
-      }
-    },
-
-    getUsesCount: (id, guildData) => {
-      if (guildData) {
-        guildData.commandsUsed ||= {};
-        return guildData.commandsUsed[id] || 0;
-      }
-
-      const botData = DataManager.data.bot;
-      return botData.commandsUsed[id] || 0;
-    },
-  };
-
+  /**
+   *
+   * @param {import("#lib/BaseCommand").BaseCommand} command
+   * @param {CommandInteraction} interaction
+   */
   static checkAvailable(command, interaction) {
     const problems = [];
     const options = command.options;
-    const userData = interaction.user.data;
 
     if (options.removed && interaction.user.id !== "921403577539387454") {
       problems.push("Эта команда была удалена и не может быть использована");
@@ -231,9 +212,9 @@ class CommandsManager {
 
     const userWastedChannelPermissions =
       !interaction.channel.isDMBased() &&
-      options.ChannelPermissions &&
+      options.userChannelPermissions &&
       interaction.member.wastedPermissions(
-        options.ChannelPermissions,
+        options.userChannelPermissions,
         interaction.channel,
       );
     if (userWastedChannelPermissions) {
@@ -249,8 +230,8 @@ class CommandsManager {
 
     const userWastedGuildPermissions =
       !interaction.channel.isDMBased() &&
-      options.Permissions &&
-      interaction.member.wastedPermissions(options.Permissions);
+      options.userPermissions &&
+      interaction.member.wastedPermissions(options.userPermissions);
     if (userWastedGuildPermissions) {
       const { locale } = interaction.user.data;
       const permissions = userWastedGuildPermissions.map((string) =>
@@ -267,10 +248,7 @@ class CommandsManager {
         return;
       }
 
-      const cooldownApi = CooldownManager.api(userData, `CD_${options.id}`, {
-        heat: options.cooldownTry ?? 1,
-        perCall: options.cooldown,
-      });
+      const cooldownApi = command._cooldown_api({ interaction });
 
       const cooldownFullEndAt = cooldownApi.getCurrentCooldownEnd();
       if (!cooldownFullEndAt) {
@@ -363,6 +341,11 @@ class CommandsManager {
     return map;
   }
 
+  /**
+   *
+   * @param {import("#lib/BaseCommand").BaseCommand} command
+   * @param {CommandInteraction} interaction
+   */
   static async execute(command, interaction, { preventCooldown = false } = {}) {
     const context = this.getExecuteContext({
       command,
@@ -371,7 +354,7 @@ class CommandsManager {
     });
     const { options, typeBase } = context;
 
-    let _context;
+    let execution_context;
     try {
       interaction.user.action(Actions.callCommand, { command, interaction });
       const whenCommandEnd = typeBase.call(command, interaction);
@@ -380,35 +363,19 @@ class CommandsManager {
 
       options.cooldown &&
         !preventCooldown &&
-        CooldownManager.api(interaction.user.data, `CD_${options.id}`, {
-          heat: options.cooldownTry ?? 1,
-          perCall: options.cooldown,
-        }).call();
+        command._cooldown_api(context).call();
 
-      _context = await whenCommandEnd;
-      if (_context instanceof BaseCommandRunContext) {
-        await _context.whenRunExecuted;
-        _context.emitter.emit(Events.signal_command_flow_end);
+      execution_context = await whenCommandEnd;
+      if (execution_context instanceof BaseCommandRunContext) {
+        await execution_context.whenRunExecuted;
+        execution_context.emitter.emit(Events.signal_command_flow_end);
       }
 
-      this.statistics.increase(context);
+      command._statistic_increase(context);
     } catch (error) {
-      const primary = _context?.toJSON() || null;
-      ErrorsHandler.onErrorReceive(error, {
-        userId: interaction.user.id,
-        type: typeBase.type,
-        command: command.options.name,
-        source: "Command",
-        ...primary,
-      });
-      sendErrorInfo({
-        channel: interaction.channel,
-        error,
-        interaction,
-        primary,
-      });
+      await command._error_strategy(error, context, execution_context);
     }
-    return _context;
+    return execution_context;
   }
 
   static getExecuteContext(primary) {
@@ -426,6 +393,9 @@ class CommandsManager {
       ({ default: Command }) => new Command(),
     );
 
+    /**
+     * @type [string, import("#lib/BaseCommand.js").BaseCommand][]
+     */
     const entries = commands.map((command) => [command.options.name, command]);
 
     this.collection = new Collection(entries);
