@@ -1,4 +1,5 @@
 import client from "#bot/client.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 
@@ -14,7 +15,7 @@ class Command extends BaseCommand {
     alias: "установитьприветствие sethello приветствие привітання",
     allowDM: true,
     type: "guild",
-    userPermissions: 32n,
+    userPermissions: PermissionsBits.ManageGuild,
   };
 
   async onChatInput(msg, interaction) {
@@ -57,7 +58,7 @@ class Command extends BaseCommand {
       description: "Используйте реакцию ❌, чтобы пропустить этот пункт",
     });
 
-    answer = await Util.awaitReactOrMessage({
+    answer = await Util.awaitInteractOrMessage({
       target: whatColor,
       user: interaction.user,
       reactionOptions: { reactions: ["❌"] },
@@ -73,7 +74,7 @@ class Command extends BaseCommand {
       title: "Укажите ссылку на изображение",
       description: "Или пропустите этот пункт",
     });
-    answer = await Util.awaitReactOrMessage({
+    answer = await Util.awaitInteractOrMessage({
       target: whatImage,
       user: interaction.user,
       reactionOptions: { reactions: ["❌"] },
@@ -97,7 +98,7 @@ class Command extends BaseCommand {
         "Вы можете указать айди ролей через пробел, они будут выдаваться всем новым пользователям",
       description: "Этот пункт тоже можно пропустить",
     });
-    answer = await Util.awaitReactOrMessage({
+    answer = await Util.awaitInteractOrMessage({
       target: whatRoles,
       user: interaction.user,
       reactionOptions: { reactions: ["❌"] },
@@ -130,7 +131,7 @@ class Command extends BaseCommand {
           : ""
       }`,
     });
-    answer = await Util.awaitReactOrMessage({
+    answer = await Util.awaitInteractOrMessage({
       target: whatChannel,
       user: interaction.user,
       reactionOptions: {

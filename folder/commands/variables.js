@@ -1,3 +1,4 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import GuildVariablesManager from "#lib/modules/GuildVariablesManager.js";
 import * as Util from "#lib/util.js";
@@ -250,11 +251,15 @@ class Command extends BaseCommand {
     alias: "variable вар var переменная переменные змінні",
     allowDM: true,
     type: "guild",
-    userPermissions: 256n,
+    userPermissions: PermissionsBits.PrioritySpeaker,
   };
 
   async createController({ interaction, manager }) {
-    const isAdmin = !interaction.member?.wastedPermissions(32)[0];
+    const isAdmin =
+      Util.take_missing_permissions(
+        interaction.member,
+        PermissionsBits.ManageGuild,
+      ).length === 0;
 
     const data = manager.data;
 
@@ -335,7 +340,11 @@ class Command extends BaseCommand {
 
   async onChatInput(msg, interaction) {
     const manager = new GuildVariablesManager(msg.guild.data);
-    const isAdmin = !interaction.member?.wastedPermissions(32)[0];
+    const isAdmin =
+      Util.take_missing_permissions(
+        interaction.member,
+        PermissionsBits.ManageGuild,
+      ).length === 0;
 
     if (interaction.params) {
       const params = this.parseParams(interaction.params);

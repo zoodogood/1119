@@ -1,4 +1,5 @@
 //@ts-check
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
@@ -394,7 +395,7 @@ class Command extends BaseCommand {
     cooldown: 10_000,
     cooldownTry: 3,
     type: "guild",
-    userChannelPermissions: 16384n,
+    userChannelPermissions: PermissionsBits.EmbedLinks,
   };
   WHEN_UNCOVERED_REACTIONS_POOL = [
     "640449848050712587",
@@ -480,9 +481,12 @@ class EmbedSendProcessor {
     return hook;
   }
   static isUserCanSendEmbedToChannel(target, user) {
-    return !!target.guild.members
-      .resolve(user)
-      .wastedPermissions(18432n, target)[0];
+    return (
+      Util.take_missing_permissions(
+        target.guild.members.resolve(user),
+        PermissionsBits.SendMessages | PermissionsBits.EmbedLinks,
+      ).length === 0
+    );
   }
   static async process(context) {
     const { channel, user, embed, guild } = context;
@@ -519,7 +523,7 @@ class EmbedSendProcessor {
       return;
     }
 
-    if (this.isUserCanSendEmbedToChannel(target, user)) {
+    if (!this.isUserCanSendEmbedToChannel(target, user)) {
       target.msg({
         title: "В указанный канале у вас нет права отправлять эмбед-сообщения ",
         color: "#ff0000",

@@ -1,5 +1,6 @@
 // @ts-check
 import { Emoji } from "#constants/emojis.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { SECOND, YEAR } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
@@ -41,7 +42,7 @@ class Command extends BaseCommand {
     alias: "раздача розыгрыш розіграш",
     allowDM: true,
     type: "guild",
-    userPermissions: 32n,
+    userPermissions: PermissionsBits.ManageGuild,
   };
   reactions = [
     {

@@ -1,3 +1,4 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 
 class Command extends BaseCommand {
@@ -15,7 +16,7 @@ class Command extends BaseCommand {
     allowDM: true,
     expectParams: true,
     type: "other",
-    myChannelPermissions: 8192n,
+    myChannelPermissions: PermissionsBits.ManageMessages,
   };
 
   async onChatInput(msg, interaction) {

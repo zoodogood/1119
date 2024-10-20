@@ -1,5 +1,6 @@
 import client from "#bot/client.js";
-import { whenClientIsReady } from "#bot/util.js";
+import { take_missing_permissions, whenClientIsReady } from "#bot/util.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import {
   Remind_AbstractEvaluate,
   Remind_AbstractRepeats,
@@ -56,7 +57,8 @@ class Event {
     const member = channel.guild?.members.cache.get(user.id);
     const cannotSend =
       member &&
-      (member.wastedPermissions(2048n, channel) ||
+      (take_missing_permissions(member, PermissionsBits.SendMessages, channel)
+        .length > 0 ||
         member.isCommunicationDisabled());
 
     if (!member || cannotSend) {
@@ -83,7 +85,6 @@ class Event {
     };
   }
 
-  // eslint-disable-next-line no-unused-vars
   async run(eventData, _userId) {
     await whenClientIsReady();
     const context = this.resolveParams(eventData);

@@ -1,4 +1,6 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { NULL_WIDTH_SPACE } from "#constants/globals/characters.js";
+import { SECOND } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 class Command extends BaseCommand {
   options = {
@@ -14,9 +16,9 @@ class Command extends BaseCommand {
     alias: "пред варн попередити",
     expectMention: true,
     allowDM: true,
-    cooldown: 120_000,
+    cooldown: SECOND * 2,
     type: "guild",
-    userPermissions: 4194304n,
+    userPermissions: PermissionsBits.MuteMembers,
   };
 
   async onChatInput(msg, interaction) {

@@ -1,6 +1,7 @@
 // @ts-check
-import { BaseCommand } from "#lib/BaseCommand.js";
 import { client } from "#bot/client.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 
 class Command extends BaseCommand {
   options = {
@@ -17,7 +18,7 @@ class Command extends BaseCommand {
     alias: "ютуб ютубвместе youtubetogether ютьюб",
     allowDM: true,
     type: "other",
-    myPermissions: 1n,
+    myPermissions: PermissionsBits.CreateInstantInvite,
   };
 
   async onChatInput(msg, interaction) {

@@ -1,11 +1,12 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
 
-import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import { ChannelType, PresenceUpdateStatus } from "discord.js";
+import client from "#bot/client.js";
+import { HOUR } from "#constants/globals/time.js";
 import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
 import Template from "#lib/modules/Template.js";
-import { HOUR } from "#constants/globals/time.js";
+import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
+import { ChannelType, PresenceUpdateStatus } from "discord.js";
 
 class Command extends BaseCommand {
   options = {
@@ -64,7 +65,7 @@ class Command extends BaseCommand {
     }
     const resolveTemplate = () => {
       return new Template({
-        executor: field.authorId,
+        executor: client.users.resolve(field.authorId),
         type: Template.sourceTypes.involuntarily,
       })
         .createVM()

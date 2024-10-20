@@ -1,3 +1,4 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { HOUR } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import Discord from "discord.js";
@@ -15,7 +16,7 @@ class Command extends BaseCommand {
     allowDM: true,
     cooldown: HOUR,
     type: "delete",
-    userPermissions: 16n,
+    userPermissions: PermissionsBits.ManageChannels,
   };
 
   async onChatInput(msg, interaction) {

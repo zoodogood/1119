@@ -1,4 +1,5 @@
 import { client } from "#bot/client.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { PermissionFlagsBits } from "discord.js";
 
@@ -18,8 +19,8 @@ class Command extends BaseCommand {
     expectMention: true,
     allowDM: true,
     type: "guild",
-    myPermissions: 268435456n,
-    userPermissions: 4194304n,
+    myPermissions: PermissionsBits.ManageRoles,
+    userPermissions: PermissionsBits.MuteMembers,
   };
 
   async onChatInput(msg, interaction) {

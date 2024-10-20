@@ -1,5 +1,6 @@
 import { Emoji } from "#constants/emojis.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
@@ -10,7 +11,11 @@ import {
   ending,
   numberFormat,
 } from "#lib/safe-utils.js";
-import { addResource, awaitUserAccept } from "#lib/util.js";
+import {
+  addResource,
+  awaitUserAccept,
+  take_missing_permissions,
+} from "#lib/util.js";
 
 class ProfessionsUtils {
   static createReports({ guild, professions }) {
@@ -126,7 +131,11 @@ class Command extends BaseCommand {
 
   getContext(interaction) {
     const guildData = interaction.guild.data;
-    const isAdmin = !interaction.member.wastedPermissions(32n)[0];
+
+    const isAdmin = !take_missing_permissions(
+      interaction.member,
+      PermissionsBits.ManageGuild,
+    )[0];
 
     const context = {
       parsedParams: {

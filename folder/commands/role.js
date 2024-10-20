@@ -1,3 +1,4 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 //@ts-check
 import * as Util from "#lib/util.js";
@@ -141,7 +142,11 @@ class Command extends BaseCommand {
       page: 0,
       pagesCount: Object.keys(this.getTieRoles(interaction.guild)).length,
       interaction,
-      userIsAdmin: !interaction.member.wastedPermissions(8n)[0],
+      userIsAdmin:
+        Util.take_missing_permissions(
+          interaction.member,
+          PermissionsBits.AddReactions,
+        ).length === 0,
       edit: false,
       reactions: null,
       rolesCache: interaction.guild.roles.cache,

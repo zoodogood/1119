@@ -2,6 +2,8 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 //@ts-check
 
 import { client } from "#bot/client.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
+import { SECOND } from "#constants/globals/time.js";
 import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
@@ -18,10 +20,10 @@ class Command extends BaseCommand {
     },
     alias: "реактор",
     allowDM: true,
-    cooldown: 30_000,
+    cooldown: 5 * SECOND,
     type: "guild",
-    myPermissions: 268435456n,
-    userPermissions: 268435488n,
+    myPermissions: PermissionsBits.ManageRoles,
+    userPermissions: PermissionsBits.ManageRoles | PermissionsBits.ManageGuild,
   };
 
   async askChannel(interaction) {
@@ -42,7 +44,7 @@ class Command extends BaseCommand {
       title:
         "Укажите айди или упомяните канал в котором находится сообщение.\nЕсли оно находится в этом канале, нажмите реакцию ниже",
     });
-    answer = await Util.awaitReactOrMessage({
+    answer = await Util.awaitInteractOrMessage({
       target: interaction.questionMessage,
       user: interaction.user,
       reactionOptions: { reactions: ["640449832799961088"] },

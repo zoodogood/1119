@@ -28,6 +28,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import FileSystem from "fs";
 
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import "#lib/expand_prototype.js";
 
@@ -506,7 +507,11 @@ function filterChat(msg) {
   if (capsLenght > 4 && capsLenght / content.length > 0.5) {
     const isAdmin =
       msg.guild &&
-      !msg.guild.members.resolve(msg.author).wastedPermissions(8)[0];
+      Util.take_missing_permissions(
+        msg.guild.members.resolve(msg.author),
+        PermissionsBits.Administrator,
+      ).length === 0;
+
     if (isAdmin) {
       return false;
     }

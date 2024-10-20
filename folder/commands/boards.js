@@ -1,3 +1,4 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { board_singleton } from "#lib/modules/mod.js";
 import * as Util from "#lib/util.js";
@@ -62,7 +63,11 @@ class Command extends BaseCommand {
     const message = await msg.msg(embed);
 
     const reactions = () =>
-      boards.length && !interaction.user.wastedPermissions(16)[0]
+      boards.length &&
+      !Util.take_missing_permissions(
+        interaction.user,
+        PermissionsBits.ManageChannels,
+      )[0]
         ? ["✏️", "🗑️"]
         : ["❌"];
     let react, question, answer, board;
@@ -76,7 +81,11 @@ class Command extends BaseCommand {
           question = await msg.msg({
             title: "Введите номер счётчика, для его удаления",
           });
-          answer = await Util.awaitReactOrMessage(question, msg.author, "❌");
+          answer = await Util.awaitInteractOrMessage(
+            question,
+            msg.author,
+            "❌",
+          );
           question.delete();
           if (
             !answer ||
@@ -101,7 +110,11 @@ class Command extends BaseCommand {
           question = await msg.msg({
             title: "Введите номер счётчика, для его редактирования",
           });
-          answer = await Util.awaitReactOrMessage(question, msg.author, "❌");
+          answer = await Util.awaitInteractOrMessage(
+            question,
+            msg.author,
+            "❌",
+          );
 
           if (
             !answer ||

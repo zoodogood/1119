@@ -2,6 +2,8 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
 
 import { Emoji } from "#constants/emojis.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
+import { SECOND } from "#constants/globals/time.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { DataManager } from "#lib/DataManager/singletone.js";
@@ -512,10 +514,10 @@ class Command extends BaseCommand {
       publicized_on_level: 3,
     },
     allowDM: true,
-    cooldown: 20_000,
+    cooldown: SECOND * 15,
     cooldownTry: 2,
     type: "user",
-    userPermissions: 16384n,
+    userPermissions: PermissionsBits.EmbedLinks,
   };
 
   createEmbed({ context }) {

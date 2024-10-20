@@ -1,7 +1,8 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
+import { MINUTE } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
-import EventsManager from "#lib/modules/EventsManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
+import * as Util from "#lib/util.js";
 
 class Command extends BaseCommand {
   options = {
@@ -15,15 +16,15 @@ class Command extends BaseCommand {
     alias: "отложить отложи відкласти відклади",
     allowDM: true,
     expectParams: true,
-    cooldown: 1_800_000,
+    cooldown: MINUTE * 30,
     type: "delete",
-    myChannelPermissions: 536870912n,
+    myChannelPermissions: PermissionsBits.ManageWebhooks,
   };
 
   async onChatInput(msg, interaction) {
-    let splited = interaction.params.split(" "),
-      time = splited[0],
+    const splited = interaction.params.split(" "),
       text = splited.slice(1).join(" ");
+    let time = splited[0];
 
     if (!text)
       return msg.msg({

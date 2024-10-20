@@ -1,4 +1,5 @@
 // @ts-check
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { DAY } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
@@ -174,7 +175,8 @@ class Command extends BaseCommand {
     cooldown: 2_000,
     cooldownTry: 2,
     type: "other",
-    myChannelPermissions: 8256n,
+    myChannelPermissions:
+      PermissionsBits.ManageMessages | PermissionsBits.AddReactions,
   };
 
   async createInterface(context) {

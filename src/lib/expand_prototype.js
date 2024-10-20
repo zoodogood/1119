@@ -87,13 +87,6 @@ Discord.BaseChannel.prototype.awaitMessage = async function (options) {
   return input;
 };
 
-Discord.GuildMember.prototype.wastedPermissions = function (bit, channel) {
-  const permissions = channel
-    ? channel.permissionsFor(this).missing(bit)
-    : this.permissions.missing(bit);
-  return permissions.length ? permissions : false;
-};
-
 Discord.Guild.prototype.chatSend = async function (message) {
   const id = this.data.chatChannel;
   if (!id) {

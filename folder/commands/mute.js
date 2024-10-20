@@ -1,5 +1,6 @@
 import { client } from "#bot/client.js";
 import { question } from "#bot/util.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { SECOND, YEAR } from "#constants/globals/time.js";
 import { is_mute_role_by_name } from "#folder/events/users/muteStateUpdate.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
@@ -37,8 +38,8 @@ class Command extends BaseCommand {
     expectMention: true,
     allowDM: true,
     type: "guild",
-    myPermissions: 268435456n,
-    userPermissions: 4194304n,
+    myPermissions: PermissionsBits.ManageRoles,
+    userPermissions: PermissionsBits.MuteMembers,
   };
 
   async onChatInput(msg, interaction) {

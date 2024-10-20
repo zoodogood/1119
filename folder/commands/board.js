@@ -1,3 +1,4 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { NULL_WIDTH_SPACE } from "#constants/globals/characters.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
@@ -169,7 +170,7 @@ class Command extends BaseCommand {
       "табло счётчик счетчик board count counter рахівник счётчики счетчики рахівники counters",
     allowDM: false,
     type: "guild",
-    userPermissions: 16n,
+    userPermissions: PermissionsBits.ManageChannels,
   };
 
   async onChatInput(msg, interaction) {

@@ -1,5 +1,6 @@
 // @ts-check
 import { client } from "#bot/client.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { DAY, SECOND } from "#constants/globals/time.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
@@ -427,10 +428,10 @@ class Command extends BaseCommand {
     },
     alias: "очистить очисти очисть клир клиар клір очистити",
     allowDM: true,
-    cooldown: 10_000,
+    cooldown: SECOND * 10,
     type: "guild",
-    myChannelPermissions: 8192n,
-    userChannelPermissions: 8192n,
+    myChannelPermissions: PermissionsBits.ManageMessages,
+    userChannelPermissions: PermissionsBits.ManageMessages,
   };
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
