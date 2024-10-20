@@ -182,7 +182,7 @@ export async function question({
         message: {
           title: "Прикажите повторить операцию или завершить?",
           user,
-          description: `${response instanceof Message ? `Ваш ответ:\n>>> \`\`\`\n${response.content}\n\`\`\`\n` : ""}Подсказка взодных данных: ${validation_hint}\n\n-# JavaScript код проверки входных данных\n\`\`\`js\n${validation}\n\`\`\``,
+          description: `${response instanceof Message ? `-# Ваш ответ:\n\`\`\`\n${response.content}\n\`\`\`\n` : ""}Подсказка взодных данных: ${validation_hint}\n\n-# JavaScript код проверки входных данных\n\`\`\`js\n${validation}\n\`\`\``,
           footer: {
             text: "Контекст автоматически сбросится через минуту",
             iconURL: user?.avatarURL(),
