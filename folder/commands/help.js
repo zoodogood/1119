@@ -70,14 +70,17 @@ class Command extends BaseCommand {
       options.removed ||
       options.accessibility?.publicized_on_level > userLevel;
 
-    const pretty_format = (command) => `\`!${command.options.name}\``;
+    const name_of = (command) => command.options.name;
+    const pretty_format = (name) => `\`!${name}\``;
 
-    // to-do: developer crutch. Restore when interaction.guild?.data.commands analized and changed
-    if (false && interaction.guild?.data.commands) {
-      const list = interaction.guild.data.commands;
+    if (interaction.guild?.data.custom_commands) {
+      const { custom_commands } = interaction.guild.data;
+      const names = Object.values(custom_commands)
+        .filter(({ hidden }) => !hidden)
+        .map(({ name }) => name);
       guildCommands.push({
         name: "Кастомные команды <:cupS:806813704913682442>",
-        value: list.map(pretty_format).join(" "),
+        value: names.map(pretty_format).join(" "),
       });
     }
 
@@ -88,6 +91,7 @@ class Command extends BaseCommand {
           .filter(
             (command) => command.options.type === "guild" && !isHidden(command),
           )
+          .map(name_of)
           .map(pretty_format)
           .join(" "),
       },
@@ -97,6 +101,7 @@ class Command extends BaseCommand {
           .filter(
             (command) => command.options.type === "user" && !isHidden(command),
           )
+          .map(name_of)
           .map(pretty_format)
           .join(" "),
       },
@@ -106,6 +111,7 @@ class Command extends BaseCommand {
           .filter(
             (command) => command.options.type === "bot" && !isHidden(command),
           )
+          .map(name_of)
           .map(pretty_format)
           .join(" "),
       },
@@ -116,6 +122,7 @@ class Command extends BaseCommand {
           .filter(
             (command) => command.options.type === "other" && !isHidden(command),
           )
+          .map(name_of)
           .map(pretty_format)
           .join(" "),
       },
