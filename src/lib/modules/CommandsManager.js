@@ -6,12 +6,12 @@ import {
 } from "discord.js";
 
 import Executor from "#lib/modules/Executor.js";
-import * as Util from "#lib/util.js";
 import EventsEmitter from "events";
 
 import { Actions } from "#lib/modules/ActionManager.js";
 
 import app from "#app";
+import { take_missing_permissions } from "#bot/util.js";
 import { CustomCommand } from "#folder/commands/guildcommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { permissionRawToI18n } from "#lib/permissions.js";
@@ -67,6 +67,11 @@ export class CommandInteraction {
   msg(...params) {
     // @ts-expect-error
     return this.channel.msg(...params);
+  }
+
+  toSafeValues() {
+    // @ts-expect-error
+    return { user: this.user.toSafeValues() };
   }
 }
 /**
@@ -180,10 +185,12 @@ class CommandsManager {
     const clientWastedChannelPermissions =
       !interaction.channel.isDMBased() &&
       options.myChannelPermissions &&
-      interaction.guild.members.me.wastedPermissions(
+      take_missing_permissions(
+        interaction.guild.members.me,
         options.myChannelPermissions,
         interaction.channel,
-      );
+      ).length;
+
     if (clientWastedChannelPermissions) {
       const { locale } = interaction.user.data;
       const permissions = clientWastedChannelPermissions.map((string) =>
@@ -198,7 +205,10 @@ class CommandsManager {
     const clientWastedGuildPermissions =
       !interaction.channel.isDMBased() &&
       options.myPermissions &&
-      interaction.guild.members.me.wastedPermissions(options.myPermissions);
+      take_missing_permissions(
+        interaction.guild.members.me,
+        options.myPermissions,
+      ).length;
     if (clientWastedGuildPermissions) {
       const { locale } = interaction.user.data;
       const permissions = clientWastedGuildPermissions.map((string) =>
@@ -213,10 +223,11 @@ class CommandsManager {
     const userWastedChannelPermissions =
       !interaction.channel.isDMBased() &&
       options.userChannelPermissions &&
-      interaction.member.wastedPermissions(
+      take_missing_permissions(
+        interaction.member,
         options.userChannelPermissions,
         interaction.channel,
-      );
+      ).length;
     if (userWastedChannelPermissions) {
       const { locale } = interaction.user.data;
       const permissions = userWastedChannelPermissions.map((string) =>
@@ -231,7 +242,8 @@ class CommandsManager {
     const userWastedGuildPermissions =
       !interaction.channel.isDMBased() &&
       options.userPermissions &&
-      interaction.member.wastedPermissions(options.userPermissions);
+      take_missing_permissions(interaction.member, options.userPermissions)
+        .length;
     if (userWastedGuildPermissions) {
       const { locale } = interaction.user.data;
       const permissions = userWastedGuildPermissions.map((string) =>
