@@ -65,7 +65,7 @@
       Давайте посмотрим, что изменилось за {ending(
         dayjs
           .duration(Date.now() - _interface.first_change.createdAt)
-          .get("months"),
+          .get("months") + 1,
         "месяц",
         "ев",
         "",
