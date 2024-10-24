@@ -11,5 +11,5 @@ export function crop_string(text, max_length) {
   if (text.length <= max_length) {
     return text;
   }
-  return `${text.slice(0, max_length - 3)}...`;
+  return `${text.slice(0, max_length - 1)}…`;
 }
