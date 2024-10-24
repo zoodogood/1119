@@ -475,7 +475,7 @@ export function toFixedAfterZero(value, digits = 1) {
 
 export function season_of_month(month) {
   // month format is 1-12
-  return ~~((month + 2) / 4);
+  return ~~(((month + 1) % 12) / 3);
 }
 
 export function fnv_algorithm_hash(str) {
