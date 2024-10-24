@@ -2,14 +2,15 @@ import { DAY, HOUR, MINUTE, SECOND } from "#constants/globals/time.js";
 import dayjs from "dayjs";
 
 export class ParserTime {
+  static regex =
+    /(?<time>\d?\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
+
   /**@type {ReturnType<dayjs>} */
   #dayjs;
-
   items = [];
-  regex =
-    /(?<time>\d?\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
-  time = 0;
+  regex = ParserTime.regex;
 
+  time = 0;
   static _getActiveGroupName(groups) {
     for (const group in groups) {
       if (groups[group]) {
