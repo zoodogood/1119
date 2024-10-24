@@ -1,6 +1,8 @@
 import { PermissionFlagsBits } from "discord.js";
 
-const PermissionFlags = {
+const CustomPermissionBits = {};
+
+export const PermissionFlags = {
   [PermissionFlagsBits.Speak]: "PermissionFlagsBits.Speak",
   [PermissionFlagsBits.MuteMembers]: "PermissionFlagsBits.MuteMembers",
   [PermissionFlagsBits.Connect]: "PermissionFlagsBits.Connect",
@@ -62,4 +64,7 @@ const PermissionFlags = {
     "PermissionFlagsBits.SendVoiceMessages",
 };
 
-export { PermissionFlags };
+export const PermissionsBits = {
+  ...PermissionFlagsBits,
+  ...CustomPermissionBits,
+};
