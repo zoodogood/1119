@@ -379,9 +379,9 @@ class Template {
           investigate: PERMISSIONS_MASK_ENUM.USER,
         },
       },
-      ctx: {
+      safe_ctx: {
         getContent: (context) => context.toSafeValues?.(),
-        name: "ctx",
+        name: "safe_ctx",
         permissions: {
           scope: PERMISSIONS_MASK_ENUM.USER,
           investigate: PERMISSIONS_MASK_ENUM.USER,
