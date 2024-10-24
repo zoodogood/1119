@@ -448,12 +448,16 @@ export function clamp(min, value, max) {
 
 export class CircularProtocol {
   collection = new Map();
-  pass(element) {
+  pass(element, { attach = true } = {}) {
+    if (!element || typeof element !== "object") {
+      return true;
+    }
     if (this.collection.has(element)) {
       return false;
     }
 
-    this.collection.set(element, true);
+    this.collection.set(element, attach);
+    return true;
   }
 }
 
