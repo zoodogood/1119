@@ -31,6 +31,7 @@ import FileSystem from "fs";
 import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import "#lib/expand_prototype.js";
+import "#lib/expand_prototype__to_safe_values.js";
 
 // to-do: developer crutch will be remove
 EventsManager.emitter.once(Events.BeforeLogin, async () => {
