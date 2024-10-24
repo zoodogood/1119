@@ -3,19 +3,21 @@ import EventsEmitter from "events";
 // [Unsafe_primitives]: string[]
 export const Unsafe_primitives = Symbol("unsafe_primitives");
 
-function to_safe_values_default(values, transformer) {
+function to_safe_values_default(values) {
   const unsafe_primitives = values[Unsafe_primitives];
   const map = ([key, value]) => {
     const newValue =
       value && typeof value === "object"
-        ? value.toSafeValues(transformer)
-        : !unsafe_primitives || !unsafe_primitives.includes(key);
+        ? value.toSafeValues?.()
+        : unsafe_primitives?.includes(key)
+          ? undefined
+          : value;
     return [key, newValue];
   };
   return Object.fromEntries(
     Object.entries(values)
       .map(map)
-      .filter(([_key, value]) => value),
+      .filter(([_key, value]) => value !== undefined),
   );
 }
 
@@ -35,9 +37,10 @@ export class BaseContext {
 
   // Expected a toSafeValues will be overridden by the situation
   toSafeValues() {
+    console.log(this._source);
+
     const values = {
       contextedAt: this.contextedAt,
-      source: this._source,
       is: this.constructor.name,
       events: Object.entries(this.emitter._events).map(([key, value]) => [
         key,
