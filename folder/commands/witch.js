@@ -546,7 +546,7 @@ class Command extends BaseCommand {
   }
 
   calculateRitualPrice(userData, guildData) {
-    const treeLevelBonus = Math.floor((guildData.treeLevel ?? 0) / 10);
+    const treeLevelBonus = Math.floor((guildData.tree.level ?? 0) / 10);
 
     const basic = Math.min(2 + userData.voidRituals, 20) - treeLevelBonus;
     const multiplayer = 1 - 0.1 * (userData.voidPrice || 0);
