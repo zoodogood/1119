@@ -23,7 +23,6 @@ import mol_global from "mol_tree2";
 
 import * as PropertiesManager from "#lib/modules/Properties.js";
 
-import app from "#app";
 import { client } from "#bot/client.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { Constants } from "#constants/mod.js";
@@ -295,13 +294,13 @@ class Template {
         },
       },
       executeCommand: {
-        getContent(context, source) {
+        getContent(context) {
           return (commandBase, params = "") => {
             const { CommandInteraction: CommandContext } = CommandsManager;
             const ctx = new CommandContext({
               commandBase,
               params,
-              user: source.executor,
+              user: context.executor,
               channel: context.channel,
               message: context.message,
               guild: context.channel.guild,
@@ -322,7 +321,7 @@ class Template {
         },
       },
       addEvaluateTemplateEffect: {
-        getContent: (context, source) => {
+        getContent: (context) => {
           return ({ timer, template, hear } = {}) => {
             if (!hear) {
               throw new Error(
@@ -331,7 +330,7 @@ class Template {
             }
             timer ||= MINUTE * 3;
             timer = Math.min(timer, MINUTE * 3);
-            const executorId = source.executor.id;
+            const executorId = context.executor.id;
             return UserEffectManager.justEffect({
               user: context.user,
               effectId: "evaluateTemplate",
@@ -363,8 +362,8 @@ class Template {
               target.msg({
                 ...messagePayload,
                 footer: {
-                  iconURL: source.executor.avatarURL(),
-                  text: `Это сообщение сгенерировано от ${source.executor.id}`,
+                  iconURL: context.executor.avatarURL(),
+                  text: `Это сообщение сгенерировано уполномоченным ${source.empowered.id}`,
                 },
               });
             },
@@ -405,9 +404,6 @@ class Template {
   };
 
   constructor(source, context = {}) {
-    const client = context.client || app.client;
-    source.executor = client.users.resolve(source.executor);
-
     this.source = source;
     this.context = context;
   }
@@ -460,11 +456,11 @@ class Template {
     const context = this.context;
     const { DEVELOPER, GUILD_MANAGER, USER } = PERMISSIONS_MASK_ENUM;
 
-    const isUser = !!source.executor;
+    const isUser = !!source.empowered;
     const isGuildManager = context.guild?.members
-      .resolve(source.executor)
+      .resolve(source.empowered)
       .permissions.has(PermissionsBitField.Flags.ManageGuild);
-    const isDelevoper = config.developers.includes(source.executor.id);
+    const isDelevoper = config.developers.includes(source.empowered.id);
 
     const mask =
       (isDelevoper * DEVELOPER) |
@@ -645,8 +641,8 @@ class RegularProxy {
       return `module("${value}")`;
     },
     id: ({ primary }) => {
-      const { executor } = primary.source;
-      return executor.id;
+      const { empowered } = primary.source;
+      return empowered.id;
     },
     "3q": () => {
       return "```";
