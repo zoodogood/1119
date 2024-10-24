@@ -27,7 +27,10 @@ export class RenderContext extends BaseContext {
   take_templater(call_enviroment) {
     const { board } = this;
     const templater = new Template(
-      { executor: board.uid, type: Template.sourceTypes.board_render },
+      {
+        empowered: client.users.resolve(board.uid),
+        type: Template.sourceTypes.board_render,
+      },
       call_enviroment,
     );
     return templater;

@@ -1,5 +1,6 @@
 import { question } from "#bot/util.js";
 import { Emoji } from "#constants/emojis.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
@@ -176,7 +177,7 @@ class Command_GuildDescription_Manager {
 
     const resolveTemplate = (content) => {
       const templater = new Template({
-        executor: user,
+        empowered: user,
         type: Template.sourceTypes.involuntarily,
       });
       return templater.createVM().run(content);
@@ -367,7 +368,7 @@ class Command extends BaseCommand {
       "настроитьсервер серватиус servatius налагодитисервер серватіус настройки налаштування settings",
     allowDM: true,
     type: "guild",
-    userPermissions: 32n,
+    userPermissions: PermissionsBits.ManageGuild,
   };
 
   SETTING_FIELDS = [

@@ -7,6 +7,8 @@ import * as Util from "#lib/util.js";
 
 import { Emoji } from "#constants/emojis.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { BaseContext } from "#lib/BaseContext.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PresenceUpdateStatus } from "discord.js";
 
@@ -138,13 +140,17 @@ class Command extends BaseCommand {
 
       if (user.profile_description) {
         const source = {
-          executor: interaction.user,
+          empowered: interaction.user,
           type: Template.sourceTypes.involuntarily,
         };
-        const about = await new Template(source, interaction).replaceAll(
-          user.profile_description,
-          msg,
-        );
+        const about = await new Template(
+          source,
+          new BaseContext("command.user", {
+            executor: interaction.user,
+            ...takeInteractionProperties(interaction),
+            primary: interaction,
+          }),
+        ).replaceAll(user.profile_description, msg);
         embed.fields.push({ name: "О пользователе: ᠌", value: about });
       }
 

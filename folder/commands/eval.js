@@ -7,7 +7,9 @@ import Template from "#lib/modules/Template.js";
 import { whenClientIsReady } from "#bot/util.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { mol_tree2_string_from_json } from "#lib/$mol.js";
+import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { Pager } from "#lib/DiscordPager.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import {
@@ -199,10 +201,18 @@ class Command extends BaseCommand {
     const getOutput = async (interaction) => {
       try {
         const source = {
-          executor: interaction.user,
+          empowered: interaction.user,
           type: Template.sourceTypes.call,
         };
-        return await new Template(source, interaction)
+
+        return await new Template(
+          source,
+          new BaseContext("command.eval", {
+            ...takeInteractionProperties(interaction),
+            primary: interaction,
+            executor: interaction.user,
+          }),
+        )
           .createVM()
           .run(interaction.codeContent);
       } catch (error) {

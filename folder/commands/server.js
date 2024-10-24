@@ -65,7 +65,7 @@ class Command extends BaseCommand {
     }
     const resolveTemplate = () => {
       return new Template({
-        executor: client.users.resolve(field.authorId),
+        empowered: client.users.resolve(field.authorId),
         type: Template.sourceTypes.involuntarily,
       })
         .createVM()
