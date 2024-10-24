@@ -266,3 +266,9 @@ export function justSelectMenuComponent({ placeholder, labels, addable = {} }) {
     ...addable,
   };
 }
+
+export function take_missing_permissions(member, bits, channel = null) {
+  return channel
+    ? channel.permissionsFor(member).missing(bits)
+    : member.permissions.missing(bits);
+}
