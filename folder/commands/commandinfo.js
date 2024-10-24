@@ -2,8 +2,16 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 import { DataManager } from "#lib/DataManager/singletone.js";
 import * as Util from "#lib/util.js";
 
+import {
+  CustomCommand,
+  guild_custom_commands_uses_count as custom_commands_guild_uses_count,
+  uses_count_of,
+} from "#folder/commands/guildcommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import CommandsManager from "#lib/modules/CommandsManager.js";
+import { percent_string } from "#lib/formatters.js";
+import CommandsManager, {
+  resolve_command,
+} from "#lib/modules/CommandsManager.js";
 import { permissionsBitsToI18nArray } from "#lib/permissions.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
@@ -111,7 +119,7 @@ class CommandRunContext extends BaseCommandRunContext {
     if (!raw) {
       return null;
     }
-    this.setTargetCommand(CommandsManager.callMap.get(raw));
+    this.setTargetCommand(resolve_command(raw, this.interaction.guild));
 
     this.setCommandMeta(
       this.targetCommand ? TargetCommandMetadata.new(this) : null,
@@ -146,9 +154,11 @@ class TargetCommandMetadata {
     user: "Пользователи",
     bot: "Бот",
     other: "Другое",
+    custom: "Команда создана одним из пользователей сервера",
   };
   aliases;
   category;
+  command;
   commandNameId;
   githubURL;
   id;
@@ -157,7 +167,10 @@ class TargetCommandMetadata {
   usedCount;
   static new(context) {
     const meta = new this();
-    Object.assign(meta, meta.fetchCommandMetadata(context.targetCommand));
+    Object.assign(
+      meta,
+      meta.fetchCommandMetadata(context.targetCommand, context.guild),
+    );
     return meta;
   }
 
@@ -166,16 +179,18 @@ class TargetCommandMetadata {
     return used.reduce((acc, count) => acc + count, 0);
   }
 
-  fetchCommandMetadata(command) {
+  fetchCommandMetadata(command, guild) {
     const { options } = command;
     const { id } = options;
     const commandNameId = options.name;
     const category = options.type;
-    const aliases = options.alias.split(" ");
+    const aliases = options.alias?.split(" ");
     const githubURL = this.resolveGithubPathOf(commandNameId);
     const media = options.media;
     const usedCount =
-      DataManager.data.bot.commandsUsed[command.options.id] || 0;
+      command instanceof CustomCommand
+        ? uses_count_of(commandNameId, guild)
+        : DataManager.data.bot.commandsUsed[command.options.id] || 0;
 
     return {
       options,
@@ -186,6 +201,7 @@ class TargetCommandMetadata {
       media,
       usedCount,
       githubURL,
+      command,
     };
   }
 
@@ -274,6 +290,7 @@ class Command extends BaseCommand {
 
   async processDefaultBehaviour(context) {
     const { meta, user, interaction } = context;
+    const { guild } = interaction;
     const {
       aliases,
       commandNameId,
@@ -283,12 +300,10 @@ class Command extends BaseCommand {
       id,
       category,
       commandUsedTotally,
+      command,
     } = meta;
 
     const locale = user.data.locale;
-
-    const usedPercentage =
-      +((usedCount / commandUsedTotally) * 100).toFixed(1) + "%";
 
     const embed = {
       title: `— ${commandNameId.toUpperCase()}`,
@@ -299,14 +314,17 @@ class Command extends BaseCommand {
         {
           name: "Другие способы вызова:",
           value: Discord.escapeMarkdown(
-            aliases.map((name) => `!${name}`).join(" "),
+            aliases?.map((name) => `!${name}`).join(" ") || "Нет",
           ),
         },
         {
           name: "Категория:",
-          value: `${TargetCommandMetadata.CategoriesEnum[category]}${
-            githubURL ? `\n[Просмотреть в Github ~](${githubURL})` : ""
-          }`,
+          value: `${TargetCommandMetadata.CategoriesEnum[category]}${(() => {
+            if (context.targetCommand instanceof CustomCommand) {
+              return `\n-# !guildcommand --target ${commandNameId}`;
+            }
+            return githubURL ? `\n[Просмотреть в Github ~](${githubURL})` : "";
+          })()}`,
         },
         {
           name: "Необходимые права",
@@ -316,7 +334,15 @@ class Command extends BaseCommand {
         },
         {
           name: "Количество использований",
-          value: `${usedCount} (${usedPercentage})`,
+          value: `${usedCount} (${[
+            percent_string(usedCount / commandUsedTotally),
+            command instanceof CustomCommand &&
+              percent_string(
+                usedCount / custom_commands_guild_uses_count(guild),
+              ),
+          ]
+            .filter(Boolean)
+            .join("/")})`,
         },
         ...context.addableFields,
       ],
