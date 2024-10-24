@@ -1,5 +1,5 @@
 import { client } from "#bot/client.js";
-import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
+import { DAY, HOUR, MINUTE, SECOND } from "#constants/globals/time.js";
 import BerryCommand from "#folder/commands/berry.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
@@ -74,7 +74,7 @@ class Command extends BaseCommand {
         target: client,
         event: "message",
         filter,
-        time: 500_000,
+        time: MINUTE * 10,
       });
       collector.setCallback((message) => {
         collector.end();
@@ -101,8 +101,8 @@ class Command extends BaseCommand {
 
   calculateCooldown(context) {
     return Math.max(
-      (86_400_000 / this.getSpeedGrowth(context)) * (1 + context.level),
-      7_200_000,
+      (DAY / this.getSpeedGrowth(context)) * (1 + context.level),
+      HOUR * 2,
     );
   }
 
@@ -284,7 +284,7 @@ class Command extends BaseCommand {
       })} ${Util.ending(berrys, "попа", "дают", "ла", "ли", {
         unite: (_quantity, word) => word,
       })} в ваш карман <:berry:756114492055617558>`,
-      delete: 9000,
+      delete: SECOND * 9,
     });
     userData.CD_54 = Date.now() + this.calculateCooldown(context);
 
@@ -312,7 +312,7 @@ class Command extends BaseCommand {
           title: "Ещё больше?",
           description: `Не нужно, дерево уже максимального уровня!`,
           author: { name: user.username, iconURL: user.avatarURL() },
-          delete: 7000,
+          delete: SECOND * 9,
         });
         interfaceMessage.reactions.resolve("🌱").remove();
         return;
@@ -323,7 +323,7 @@ class Command extends BaseCommand {
           title: "У вас нет Семян",
           description: `Где их достать? Выполняйте ежедневные квесты, каждый 50-й выполненый квест будет вознаграждать вас двумя семечками.`,
           author: { name: user.username, iconURL: user.avatarURL() },
-          delete: 7000,
+          delete: SECOND * 9,
         });
         return;
       }
@@ -342,7 +342,7 @@ class Command extends BaseCommand {
           )}**`,
           footer: { text: "Перезарядка уменьшается по мере роста дерева" },
           author: { name: user.username, iconURL: user.avatarURL() },
-          delete: 7000,
+          delete: SECOND * 9,
           color: "#ff0000",
         });
         return;
@@ -354,7 +354,7 @@ class Command extends BaseCommand {
           description:
             "На дереве закончилась клубника. Возможно, кто-то успел забрать клубнику раньше вас.. Ждите, пока дозреет следущая, не упустите её!",
           author: { name: user.username, iconURL: user.avatarURL() },
-          delete: 7000,
+          delete: SECOND * 9,
           color: "#ff0000",
         });
         return;
@@ -436,7 +436,7 @@ class Command extends BaseCommand {
     channel.msg({
       title: `Спасибо за семечко, ${user.username}`,
       description: `🌱 `,
-      delete: 7_000,
+      delete: SECOND * 9,
     });
 
     if (treeField.seedEntry >= context.costsUp) {
@@ -480,7 +480,7 @@ class Command extends BaseCommand {
     const speedGrowth = this.getSpeedGrowth({ level });
     const limit = speedGrowth * 360;
 
-    const adding = (timePassed / 86_400_000) * speedGrowth;
+    const adding = (timePassed / DAY) * speedGrowth;
     const berrys = (treeField.berrys || 0) + adding;
     treeField.berrys = Math.min(berrys, limit);
 
