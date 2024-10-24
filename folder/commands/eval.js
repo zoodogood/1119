@@ -198,7 +198,7 @@ class Command extends BaseCommand {
         : codeContent,
     });
 
-    const getOutput = async (interaction) => {
+    const output = await (async (interaction) => {
       try {
         const source = {
           empowered: interaction.user,
@@ -219,8 +219,7 @@ class Command extends BaseCommand {
         config.development && console.error(error);
         return error;
       }
-    };
-    const output = await getOutput(interaction);
+    })(interaction);
     interaction.leadTime = Date.now() - interaction.launchTimestamp;
 
     switch (true) {
