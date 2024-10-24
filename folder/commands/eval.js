@@ -42,7 +42,7 @@ function resolve_page(raw) {
   const CODE_BLOCK_PATTERN = "```";
   const is_code_block = raw.description.startsWith(CODE_BLOCK_PATTERN);
 
-  const overlow_content = "\n...\n";
+  const overlow_content = "\n…\n";
   // summary: .slice(0, threshold)
   raw.description = raw.description.slice(
     0,
