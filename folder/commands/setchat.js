@@ -1,3 +1,4 @@
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { CliParser } from "@zoodogood/utils/CliParser";
@@ -73,7 +74,7 @@ class Command extends BaseCommand {
     alias: "установитьчат встановитичат",
     allowDM: true,
     type: "guild",
-    userPermissions: 32n,
+    userPermissions: PermissionsBits.ManageGuild,
   };
 
   async onChatInput(msg, interaction) {
