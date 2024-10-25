@@ -64,9 +64,9 @@ export class CommandInteraction {
     this.mention = message.mentions?.users.first() ?? null;
   }
 
-  msg(...params) {
+  msg(payload) {
     // @ts-expect-error
-    return this.channel.msg(...params);
+    return this.channel.msg(payload);
   }
 
   toSafeValues() {
