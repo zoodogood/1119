@@ -22,7 +22,8 @@ import {
 const DEFAULT_CODE_CONTENT = 'module("userData")';
 
 function format_object(object) {
-  typeof object === "object" &&
+  object &&
+    typeof object === "object" &&
     object.toString !== Object.prototype.toString &&
     Object.defineProperty(object, "toString", {
       enumerable: false,
