@@ -1,0 +1,5 @@
+export const PERMISSIONS_MASK_ENUM = {
+  USER: 1,
+  GUILD_MANAGER: 2,
+  DEVELOPER: 7,
+};
