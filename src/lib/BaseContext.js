@@ -37,8 +37,6 @@ export class BaseContext {
 
   // Expected a toSafeValues will be overridden by the situation
   toSafeValues() {
-    console.log(this._source);
-
     const values = {
       contextedAt: this.contextedAt,
       is: this.constructor.name,
