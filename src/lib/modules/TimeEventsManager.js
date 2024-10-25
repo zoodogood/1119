@@ -256,7 +256,7 @@ class TimeEventsManager {
       );
     }
 
-    this.timeout = setTimeout(this.onTimeout.bind(this), timeTo);
+    this.timeout = setTimeout(this.onTimeout.bind(this), Math.max(timeTo, 1));
     return;
   }
 
