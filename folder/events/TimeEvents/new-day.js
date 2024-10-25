@@ -18,7 +18,7 @@ class Event {
   };
 
   calculateTimeForNextCall() {
-    return dayjs().endOf("date").add(1, "second") - Date.now();
+    return dayjs().endOf("date").add(1, "second").diff();
   }
 
   createNextCall() {

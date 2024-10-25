@@ -1,6 +1,7 @@
 import EventEmitter from "events";
 import FileSystem from "fs";
 
+import { SECOND } from "#constants/globals/time.js";
 import StorageManager from "#lib/modules/StorageManager.js";
 import {
   omit,
@@ -70,6 +71,8 @@ export class TimeEventData {
   }
 }
 class TimeEventsManager {
+  static #lastSeenDay;
+
   static data = {};
 
   static emitter = new EventEmitter();
@@ -94,7 +97,22 @@ class TimeEventsManager {
     defaultData: {},
   };
 
-  static #lastSeenDay;
+  static _createEvent(event) {
+    const day = timestampDay(event.timestamp);
+
+    this.data[day] ||= [];
+    this.data[day].push(event);
+    this.data[day].sortBy("timestamp");
+
+    const needUpdate = day <= this.#lastSeenDay || !this.#lastSeenDay;
+    if (needUpdate) {
+      day < this.#lastSeenDay && (this.#lastSeenDay = null);
+      this.handle();
+    }
+
+    console.info(`Ивент создан ${event.name}`);
+    return event;
+  }
 
   static at(day) {
     return this.data[day];
@@ -108,7 +126,7 @@ class TimeEventsManager {
   static executeEvent(event) {
     this.remove(event);
 
-    event.setIsLost(Date.now() - event.timestamp < -10_000);
+    event.setIsLost(Date.now() - event.timestamp < -SECOND * 10);
     this.emitter.emit("event", event);
     console.info(`Ивент выполнен ${event.name}`);
     return;
@@ -223,7 +241,7 @@ class TimeEventsManager {
     }
 
     const timeTo = event.timestamp - Date.now();
-    if (timeTo > 10_000) {
+    if (timeTo > SECOND * 10) {
       const parse = new Intl.DateTimeFormat("ru-ru", {
         weekday: "short",
         hour: "2-digit",
@@ -275,7 +293,6 @@ class TimeEventsManager {
     this.handle();
     return true;
   }
-
   static update(target, data) {
     const endTimestampChanged = data.timestamp !== target.timestamp;
     if (endTimestampChanged) {
@@ -293,22 +310,6 @@ class TimeEventsManager {
       this._createEvent(target);
     }
     return target;
-  }
-  static _createEvent(event) {
-    const day = timestampDay(event.timestamp);
-
-    this.data[day] ||= [];
-    this.data[day].push(event);
-    this.data[day].sortBy("timestamp");
-
-    const needUpdate = day <= this.#lastSeenDay || !this.#lastSeenDay;
-    if (needUpdate) {
-      day < this.#lastSeenDay && (this.#lastSeenDay = null);
-      this.handle();
-    }
-
-    console.info(`Ивент создан ${event.name}`);
-    return event;
   }
 }
 

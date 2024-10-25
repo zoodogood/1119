@@ -3,7 +3,7 @@ import { BossManager, TimeEventsManager } from "#lib/modules/mod.js";
 
 import BankCommand from "#folder/commands/bank.js";
 import TreeCommand from "#folder/commands/seed.js";
-import { ending, NumberFormatLetterize } from "#src/lib/util.js";
+import { dayjs, ending, NumberFormatLetterize } from "#src/lib/util.js";
 
 class Event {
   options = {
@@ -11,8 +11,10 @@ class Event {
   };
 
   run(eventData) {
-    const next =
-      new Date(Date.now() + 14500000).setHours(20, 0, 0) - Date.now();
+    const next = dayjs()
+      .add(1, "day")
+      .set("hour", 20, "minute", 0, "second", 0)
+      .diff();
     if (eventData.isLost) {
       return TimeEventsManager.create("day-stats", next);
     }

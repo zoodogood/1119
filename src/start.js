@@ -32,6 +32,7 @@ import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import "#lib/expand_prototype.js";
 import "#lib/expand_prototype__to_safe_values.js";
+import dayjs from "dayjs";
 
 // to-do: developer crutch will be remove
 EventsManager.emitter.once(Events.BeforeLogin, async () => {
@@ -722,9 +723,11 @@ Have a nice day!
 
 console.info(
   Util.timestampToDate(
-    (new Date().getHours() < 20
-      ? new Date().setHours(20, 0, 0)
-      : new Date(Date.now() + 14500000).setHours(20, 0, 0)) - Date.now(),
+    (dayjs().hour() < 20 ? dayjs() : dayjs().add(1, "day"))
+      .set("hour", 20)
+      .set("minute", 0)
+      .set("second", 0)
+      .diff(),
   ),
 );
 
