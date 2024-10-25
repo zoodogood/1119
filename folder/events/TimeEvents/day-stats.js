@@ -26,7 +26,7 @@ class Event {
     };
 
     client.guilds.cache
-      .filter((guild) => guild.data.treeLevel)
+      .filter((guild) => guild.data.tree?.level)
       .each((guild) => context.treeCommand.onDayStats(guild, context));
 
     client.guilds.cache.forEach((guild) => {
