@@ -58,7 +58,7 @@ class BaseCommand {
    *  myPermissions?: bigint
    *  userChannelPermissions?: bigint
    *  userPermissions?: bigint
-   *  cliParser?: {flags: []}
+   *  cliParser?: {flags: (import("@zoodogood/utils/CliParser".IFlagCapture & {description: string})[]}
    *  accessibility?: {
    *    publicized_on_level?: number
    *  }
