@@ -1,7 +1,12 @@
 import client from "#bot/client.js";
-import { awaitUserAccept, question } from "#bot/util.js";
+import {
+  awaitUserAccept,
+  question,
+  take_missing_permissions,
+} from "#bot/util.js";
 import { code } from "#constants/app/codes.js";
 import { Emoji } from "#constants/emojis.js";
+import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { MINUTE, SECOND } from "#constants/globals/time.js";
 import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
@@ -13,6 +18,7 @@ import { crop_string } from "#lib/formatters.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import Template from "#lib/modules/Template.js";
 import { ParserTime } from "#lib/parsers.js";
+import { CliParser } from "@zoodogood/utils/CliParser";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { escapeCodeBlock, escapeMarkdown } from "discord.js";
 export function uses_count_of(custom_command_name, guild) {
@@ -110,11 +116,11 @@ export class CustomCommand extends BaseCommand {
 class FactoryView extends BaseFlagSubcommand {
   command_name = null;
   command_target = {};
-
   component_actions = {
     SwapBoolean() {},
     ApplyString() {},
   };
+
   pager = new Pager();
   pages_fields = [
     {
@@ -142,9 +148,9 @@ class FactoryView extends BaseFlagSubcommand {
           return code.PermissionDenide;
         }
         this.command_author_id = this.context.user.id;
-        this.command_target = this.wire.value[name] ||= {
+        this.command_target = this.command_resolve_or_init(name, {
           ...this.command_target,
-        };
+        });
         this.command_name = name;
       },
       default: () => this.command_name || null,
@@ -157,14 +163,6 @@ class FactoryView extends BaseFlagSubcommand {
         "Название, которое отражает суть, будет более понятным для пользователей",
       type: String,
       required: true,
-    },
-    {
-      label: "Вы можете добавить описание",
-      key: "description",
-      description:
-        "Пользователи смогут узнать как пользоваться вашей командой через !commandinfo",
-      default: () => "Для этой пользовательской команды не назначено описания",
-      type: String,
     },
     {
       label: "Вы можете добавить описание",
@@ -193,6 +191,7 @@ class FactoryView extends BaseFlagSubcommand {
         "По умолчанию все пользовательские команды можно посмотреть в !help",
       type: Boolean,
       default: () => false,
+      modify_button_emoji: "🔁",
     },
   ];
   pages_system = [
@@ -204,7 +203,7 @@ class FactoryView extends BaseFlagSubcommand {
         description: [...this.pages_system, ...this.pages_fields]
           .map(
             (page, i) =>
-              `- ${i + 1}. ${page.label}${page.key && this.command_target[page.key] ? `. ${Emoji.animation_tick_block} ${crop_string(String(this.command_target[page.key], 20))}` : ""}`,
+              `- ${i + 1}. ${page.label}${page.key && this.command_target[page.key] ? `. ${Emoji.animation_tick_block} \`${crop_string(String(this.command_target[page.key]), 20)}\`` : ""}`,
           )
           .join("\n"),
       }),
@@ -218,21 +217,17 @@ class FactoryView extends BaseFlagSubcommand {
   command_is_allow_rewrite(original, rewrite) {
     return original.command_author_id === rewrite.command_author_id;
   }
-  async getEmbed() {
-    const { pages_system } = this;
-    const { currentPage } = this.pager;
-    if (this.pages_current_page_is_system()) {
-      return pages_system[currentPage].callback.call(this);
-    }
-    const field_base = this.pages_resolve_field_page(currentPage);
-
-    return {
-      fetchReply: true,
-      description: `${Math.random()}\n### ${field_base.label}\n\n-# ${field_base.description}\n\nТекущее значение: ${this.command_get_field_value(field_base)}\n\n:wrench: — поменять значение`,
-      footer: {
-        text: `Параметр: ${field_base.key} | !${this.command_name || "<ред._команда>"}`,
-      },
-    };
+  command_resolve_or_init(name, source = {}) {
+    return (this.wire.value[name] ||= {
+      ...source,
+      name,
+    });
+  }
+  modify_button_emoji() {
+    return this.pages_current_page_is_system()
+      ? "🔒"
+      : this.pages_resolve_field_page(this.pager.currentPage)
+          ?.modify_button_emoji || "🔧";
   }
   modify_button_is_disabled() {
     return this.pages_current_page_is_system();
@@ -293,37 +288,39 @@ class FactoryView extends BaseFlagSubcommand {
     return await this.modify_button_process(interaction);
   }
   async onProcess() {
-    this.wire = CommandRunContext.prototype.wire.call(this.context);
-    this.setupPager();
+    this.wire_bind_from(this.context);
+    if (!this.view_permissions_process()) {
+      return;
+    }
+    this.pager_setup();
     this.pager.updateMessage();
   }
-  pages_current_page_is_system() {
-    const { currentPage } = this.pager;
-    return currentPage < this.pages_system.length;
-  }
-  pages_resolve_field_page(currentPage) {
-    const { pages_system } = this;
-    return this.pages_fields[currentPage - pages_system.length];
-  }
-  setupPager() {
+  pager_setup() {
     const { pager, context } = this;
-    pager.setPagesLength(this.pages_fields.length);
+    this.pager_setup_recalculate_pages();
     pager.setChannel(context.interaction);
     pager.setUser(context.user);
-    pager.setRender(() => this.getEmbed());
+    pager.setRender(() => this.render_get_embed());
     pager.spliceComponents(
       -1,
       0,
       (() => {
         const [component] = justButtonComponents({
-          emoji: "🔧",
           customId: "modify",
         });
-        Object.defineProperty(component, "disabled", {
-          get: () => {
-            return this.modify_button_is_disabled();
+        Object.defineProperties(component, {
+          disabled: {
+            get: () => {
+              return this.modify_button_is_disabled();
+            },
+            enumerable: true,
           },
-          enumerable: true,
+          emoji: {
+            get: () => {
+              return this.modify_button_emoji();
+            },
+            enumerable: true,
+          },
         });
 
         return [component];
@@ -334,6 +331,57 @@ class FactoryView extends BaseFlagSubcommand {
       const disposable = this.wire.subscribe(() => pager.updateMessage());
       pager.emitter.on(Pager.Events.before_close, () => disposable());
     }
+  }
+  pager_setup_recalculate_pages() {
+    return this.pager.setPagesLength(
+      this.pages_fields.length + this.pages_system.length,
+    );
+  }
+  pages_current_page_is_system() {
+    const { currentPage } = this.pager;
+    return currentPage < this.pages_system.length;
+  }
+  pages_resolve_field_page(currentPage) {
+    const { pages_system } = this;
+    return this.pages_fields[currentPage - pages_system.length];
+  }
+  async render_get_embed() {
+    const { pages_system } = this;
+    const { currentPage } = this.pager;
+    if (this.pages_current_page_is_system()) {
+      return pages_system[currentPage].callback.call(this);
+    }
+    const field_base = this.pages_resolve_field_page(currentPage);
+
+    return {
+      fetchReply: true,
+      description: `${Math.random()}\n### ${field_base.label}\n\n-# ${field_base.description}\n\nТекущее значение: ${this.command_get_field_value(field_base)}\n\n${this.modify_button_emoji()} — поменять значение`,
+      footer: {
+        text: `Параметр: ${field_base.key} | !${this.command_name || "<ред._команда>"}`,
+      },
+    };
+  }
+  view_permissions_process() {
+    const { context } = this;
+    const {
+      interaction: { user, guild },
+    } = context;
+    const member = guild.members.resolve(user);
+    const missing = take_missing_permissions(
+      member,
+      PermissionsBits.ManageGuild,
+    );
+    if (missing.length > 0) {
+      context.interaction.msg({
+        content: "Необходимо право: управление сервером",
+        reference: context.interaction.message?.id,
+      });
+      return false;
+    }
+    return true;
+  }
+  wire_bind_from(context) {
+    return (this.wire = CommandRunContext.prototype.wire.call(context));
   }
 }
 
@@ -407,6 +455,24 @@ class Command extends BaseCommand {
   componentsCallbacks = {
     create: (context) => {
       new FactoryView(context).onProcess();
+    },
+    edit: async (context) => {
+      const view = new FactoryView(context);
+      const wire = view.wire_bind_from(context);
+      await question({
+        channel: context.interaction,
+        message: {
+          description: "Укажите номер или название команды для редактирования",
+          fetchReply: true,
+        },
+        user: context.interaction.user,
+        validation: ({ content }) => {
+          return false;
+        },
+        validation_hint: `Команда не найдена, попробуйте указать число до ${
+          Object.keys(wire.value).length
+        }`,
+      });
     },
     /**
      *
@@ -485,7 +551,16 @@ class Command extends BaseCommand {
     },
     alias:
       "guildcommands createcommand командасерверу командасервера customcommand custom",
-    allowDM: true,
+    cliParser: {
+      flags: [
+        {
+          name: "--target",
+          capture: ["-t", "--target"],
+          description: "Начать редактирование команды по имени",
+          expectValue: true,
+        },
+      ],
+    },
     type: "guild",
   };
 
@@ -514,7 +589,36 @@ class Command extends BaseCommand {
     });
     if (!heAccpet) return;
 
+    const parsed_cli = new CliParser()
+      .setText(context.interaction.params)
+      .captureFlags(this.options.cliParser.flags)
+      .collect();
+
+    if (await this.target_flag_process(context, parsed_cli)) {
+      return;
+    }
+
     await new CommandDefaultBehaviour(context).onProcess();
+  }
+  async target_flag_process(context, parsed_cli) {
+    const command_name = parsed_cli.captures.get("--target")?.valueOfFlag();
+    if (!command_name) {
+      return false;
+    }
+    if (!command_name) {
+      context.channel.msg({
+        color: "#ff0000",
+        title: "Необходимо указать имя команды",
+        delete: 9 * SECOND,
+      });
+      return true;
+    }
+    const view = new FactoryView(context);
+    view.wire_bind_from(context);
+    view.command_target = view.command_resolve_or_init(command_name);
+    view.command_name = command_name;
+    await view.onProcess();
+    return true;
   }
 }
 
