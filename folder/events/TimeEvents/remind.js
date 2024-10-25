@@ -54,7 +54,7 @@ class Event {
     if (target.recipientId === user.id) {
       return;
     }
-    const member = channel.guild?.members.cache.get(user.id);
+    const member = channel?.guild?.members.cache.get(user.id);
     const cannotSend =
       member &&
       (take_missing_permissions(member, PermissionsBits.SendMessages, channel)
