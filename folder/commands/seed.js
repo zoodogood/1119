@@ -375,7 +375,7 @@ class Command extends BaseCommand {
   onDayStats(guild, eventContext) {
     const guildData = guild.data;
     const treeField = guildData.tree;
-    const { level } = treeField.level;
+    const { level } = treeField;
     const messagesNeed = this.calculateMessagesNeed({
       guild,
       guildData,
