@@ -334,19 +334,24 @@ class Command extends BaseCommand {
         },
         {
           name: "Количество использований",
-          value: `${usedCount} (${[
-            percent_string(usedCount / commandUsedTotally),
-            command instanceof CustomCommand &&
-              percent_string(
-                usedCount / custom_commands_guild_uses_count(guild),
-              ),
-          ]
-            .filter(Boolean)
-            .join("/")})`,
+          value: `${usedCount} (${
+            [
+              percent_string(usedCount / commandUsedTotally),
+              command instanceof CustomCommand &&
+                percent_string(
+                  usedCount / custom_commands_guild_uses_count(guild),
+                ),
+            ]
+              .filter(Boolean)
+              .join("/") ||
+            "Хотя бы одно использование, чтобы увидеть статистику"
+          })`,
         },
         ...context.addableFields,
       ],
-      footer: { text: `Уникальный идентификатор команды: ${id}` },
+      footer: {
+        text: `Уникальный идентификатор команды: ${id || "необычная"}`,
+      },
       components: justButtonComponents(
         ...[
           context.addableFields.length && {
