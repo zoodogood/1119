@@ -1,7 +1,9 @@
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL as EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { sleep } from "#lib/safe-utils.js";
+import { addResource } from "#lib/util.js";
 
 class Event extends BaseEvent {
   options = {
@@ -14,22 +16,43 @@ class Event extends BaseEvent {
   }
 
   async onLevelIncrease(user, message) {
-    const initialLevel = user.level;
+    const userData = user.data;
+    const initialLevel = userData.level;
 
-    while (user.exp >= user.level * EXPERIENCE_PER_LEVEL) {
-      const expSummary = user.level * EXPERIENCE_PER_LEVEL;
-      const coefficient = Math.max(0.97716 ** user.voidRituals, 0.625);
-      user.exp -= Math.ceil(expSummary * coefficient);
-      user.level++;
+    while (userData.exp >= userData.level * EXPERIENCE_PER_LEVEL) {
+      const expSummary = userData.level * EXPERIENCE_PER_LEVEL;
+      const coefficient = Math.max(0.97716 ** userData.voidRituals, 0.625);
+      const context = {
+        coefficient,
+        expSummary,
+        user,
+        message,
+      };
+      addResource({
+        value: -Math.ceil(expSummary * coefficient),
+        resource: PropertiesEnum.exp,
+        user,
+        context,
+        executor: null,
+        source: "events.users.levelIncrease",
+      });
+      addResource({
+        value: 1,
+        resource: PropertiesEnum.level,
+        user,
+        context,
+        executor: null,
+        source: "events.users.levelIncrease",
+      });
     }
 
     (async (originalMessage) => {
       const author = originalMessage.author;
 
       const textContent =
-        user.level - initialLevel > 2
-          ? `**${author.username} повышает уровень с ${initialLevel} до ${user.level}!**`
-          : `**${author.username} получает ${user.level} уровень!**`;
+        userData.level - initialLevel > 2
+          ? `**${author.username} повышает уровень с ${initialLevel} до ${userData.level}!**`
+          : `**${author.username} получает ${userData.level} уровень!**`;
 
       const message = await originalMessage.msg({ content: textContent });
 

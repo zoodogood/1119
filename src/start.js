@@ -296,7 +296,7 @@ async function eventHundler(message) {
     });
     if (userData.exp >= userData.level * LEVELINCREASE_EXPERIENCE_PER_LEVEL) {
       EventsManager.emitter.emit("users/levelIncrease", {
-        user: userData,
+        user,
         message: message,
       });
     }
