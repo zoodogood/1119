@@ -104,10 +104,10 @@ class Template {
     const { DEVELOPER, GUILD_MANAGER, USER } = PERMISSIONS_MASK_ENUM;
 
     const isUser = !!source.empowered;
-    const isGuildManager = context.guild?.members
+    const isGuildManager = !!context.guild?.members
       .resolve(source.empowered)
-      .permissions.has(PermissionsBitField.Flags.ManageGuild);
-    const isDelevoper = config.developers.includes(source.empowered.id);
+      ?.permissions.has(PermissionsBitField.Flags.ManageGuild);
+    const isDelevoper = config.developers.includes(source.empowered?.id);
 
     const mask =
       (isDelevoper * DEVELOPER) |
