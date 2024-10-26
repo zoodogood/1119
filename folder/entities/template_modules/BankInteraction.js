@@ -4,6 +4,7 @@ import { SECOND } from "#constants/globals/time.js";
 import { percent_string } from "#lib/formatters.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { addResource, ending } from "#lib/util.js";
+import assert from "node:assert";
 
 export class BankInteraction {
   constructor(context, source) {
@@ -21,6 +22,8 @@ export class BankInteraction {
       throw new Error("Not enough coins");
     }
     const { executor, guild, context } = this;
+    assert(executor);
+
     guild.data.coins -= value;
     context.channel.msg({
       author: {
@@ -38,6 +41,7 @@ export class BankInteraction {
       context,
       source: "BankInteraction.requestGetFromBank",
     });
+    return true;
   }
   async requestPayToBank(value, prompt) {
     const { channel, executor, guild, source, context } = this;
