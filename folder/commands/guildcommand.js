@@ -10,8 +10,10 @@ import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { MINUTE, SECOND } from "#constants/globals/time.js";
 import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { DataManager, store } from "#lib/DataManager/singletone.js";
+import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { Pager } from "#lib/DiscordPager.js";
 import { crop_string } from "#lib/formatters.js";
@@ -37,6 +39,7 @@ export function guild_custom_commands_uses_count(guild) {
 export class CustomCommand extends BaseCommand {
   constructor(custom_command, guild) {
     super();
+    this.empoweredId = custom_command.empoweredId;
     this.custom_command = custom_command;
     this.source_guild = guild;
     this.options = {
@@ -47,7 +50,6 @@ export class CustomCommand extends BaseCommand {
       },
     };
   }
-
   _cooldown_api(context) {
     const { interaction } = context;
     const { options } = this;
@@ -100,15 +102,25 @@ export class CustomCommand extends BaseCommand {
   async onChatInput(msg, interaction) {
     const { user } = interaction;
     const source = {
-      executor: user,
-      empowered: user,
+      empowered: this.empowered,
       type: Template.sourceTypes.custom_command,
     };
-    const output = await new Template(source, interaction)
+    const output = await new Template(
+      source,
+      new BaseContext("guildcommand.onChatInput", {
+        ...takeInteractionProperties(interaction),
+        primary: interaction,
+        executor: user,
+      }),
+    )
       .createVM()
-      .run(this.custom_command.template || `"Привет! Попробуй !eval"`);
+      .run(this.custom_command.template || `"Привет! Попробуй !eval m'help"`);
 
     interaction.msg({ content: this.format_object(output) });
+  }
+
+  get empowered() {
+    return client.users.resolve(this.empoweredId);
   }
 }
 
@@ -162,6 +174,9 @@ class FactoryView extends BaseFlagSubcommand {
       description:
         "Название, которое отражает суть, будет более понятным для пользователей",
       type: String,
+      callback: () => {
+        this.command_target.empoweredId = this.context.user.id;
+      },
       required: true,
     },
     {
