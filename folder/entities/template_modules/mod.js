@@ -364,7 +364,7 @@ export const template_modules_scope = transformToCollectionUsingKey([
         throw new Error("This module can be used only in guilds");
       }
 
-      new BankInteraction({ context, source });
+      return new BankInteraction(context, source);
     },
   },
 ]);
