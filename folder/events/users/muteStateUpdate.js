@@ -10,7 +10,7 @@ export function is_mute_role_by_name(role) {
     role.name.toLowerCase(),
   );
 }
-async function setMuteState(member, toDisable = false) {
+export async function setMuteState(member, toDisable = false) {
   const guild = member.guild;
 
   if (toDisable === true) {
@@ -54,6 +54,7 @@ class Event extends BaseEvent {
     const member = guild.members.resolve(user);
 
     setMuteState(member, isRemoved);
+    console.log(user, role, isRemoved);
 
     const { executor } =
       (await guild.Audit((audit) => audit.target.id === user.id, {

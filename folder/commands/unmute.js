@@ -1,5 +1,10 @@
 import { client } from "#bot/client.js";
 import { PermissionsBits } from "#constants/enums/discord/permissions.js";
+import { SECOND } from "#constants/globals/time.js";
+import {
+  is_mute_role_by_name,
+  setMuteState,
+} from "#folder/events/users/muteStateUpdate.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { PermissionFlagsBits } from "discord.js";
 
@@ -26,25 +31,27 @@ class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const guild = msg.guild;
     const guildMember = guild.members.resolve(interaction.mention);
-    let role;
 
     if (interaction.mention === msg.author)
       return msg.msg({
         title:
           "Если вы смогли отправить это сообщение, значит вы не в муте, верно?",
         author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
     if (interaction.mention === client.user)
-      return msg.msg({ title: "Благодарю, но я не в муте", delete: 12000 });
+      return msg.msg({
+        title: "Благодарю, но я не в муте",
+        delete: SECOND * 12,
+      });
 
     if (interaction.mention.bot)
       return msg.msg({
         title:
           "Существует легенда о.. А впрочем не важно. Невозможно размутить другого бота",
         description: "Но замутить его я все-равно не могу.",
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
     if (
@@ -54,7 +61,7 @@ class Command extends BaseCommand {
       return msg.msg({
         title: "Вы не можете размутить участника, роли которого выше ваших",
         author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
     if (guildMember.permissions.has(PermissionFlagsBits.Administrator))
@@ -62,17 +69,20 @@ class Command extends BaseCommand {
         title:
           "Вы не можете размутить Администратора, как бы это странно не звучало.",
         author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-        delete: 12000,
+        delete: SECOND * 12,
       });
 
     // find muted role
-    if (guild.data.mute_role)
-      role = guild.roles.cache.get(guild.data.mute_role);
+
+    const role =
+      guild.roles.cache.get(guild.data.mute_role) ||
+      guildMember.roles.cache.find((role) => is_mute_role_by_name(role));
 
     if (!guildMember.roles.cache.get(role?.id)) {
+      setMuteState(guildMember, true);
       msg.msg({
         title: "Участник не имеет роли мута",
-        description: `Если по какой-то причине вам нужно отозвать запрет на общение в каналах, замутьте пользователя на 1с или выдайте и заберите роль ${role}`,
+        description: `Если по какой-то причине вам нужно отозвать запрет на общение в каналах, замутьте пользователя на 1 с. или выдайте и заберите роль ${role}`,
         color: "#ff0000",
       });
       return;

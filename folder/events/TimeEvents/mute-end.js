@@ -1,4 +1,8 @@
 import { client } from "#bot/client.js";
+import {
+  is_mute_role_by_name,
+  setMuteState,
+} from "#folder/events/users/muteStateUpdate.js";
 
 class Event {
   options = {
@@ -8,9 +12,14 @@ class Event {
   run(eventData, guildId, memberId) {
     const guild = client.guilds.cache.get(guildId);
     const member = guild?.members.resolve(memberId);
-    const role = member.roles.cache.get(guild.data.mute_role);
-    if (!role) {
-      return;
+    const role =
+      member.roles.cache.get(guild.data.mute_role) ||
+      member.roles.cache.find((role) => is_mute_role_by_name(role));
+
+    if (role) {
+      member.roles.remove(role.id);
+    } else {
+      setMuteState(member, true);
     }
 
     guild.logSend({
@@ -21,7 +30,6 @@ class Event {
         iconURL: member.user.displayAvatarURL(),
       },
     });
-    member.roles.remove(role.id);
   }
 }
 
