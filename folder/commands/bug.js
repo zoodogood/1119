@@ -8,14 +8,7 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { DataManager } from "#lib/DataManager/singletone.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { Pager } from "#lib/DiscordPager.js";
-import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
-import {
-  dayjs,
-  ending,
-  question,
-  timestampDay,
-  timestampToDate,
-} from "#lib/util.js";
+import { ending, question, timestampToDate } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import {
@@ -793,54 +786,6 @@ class CommandRunContext extends BaseCommandRunContext {
   }
 }
 
-class PartnersDaemon {
-  EVENT_NAME = "partner-daemon";
-  pull = new DaemonPull();
-  _createTimeEvent() {
-    TimeEventsManager.create(this.EVENT_NAME, this.ms_to_timeEvent());
-  }
-  checkTimeEvent() {
-    const expected = this.fetchTimeEvent();
-
-    if (!expected) {
-      this._createTimeEvent();
-    }
-  }
-  fetchTimeEvent() {
-    const day = timestampDay(this.ms_to_timeEvent() + Date.now());
-    return TimeEventsManager.findEventInRange(
-      ({ name }) => name === this.EVENT_NAME,
-      [day, day],
-    );
-  }
-  ms_to_timeEvent() {
-    return dayjs().endOf("week").add(2, "day").set("hour", 20) - Date.now();
-  }
-  onPartnerBump(context) {
-    this.pull.push(context.guild.id);
-  }
-  onTimeEvent() {
-    this.pull.empty();
-    this._createTimeEvent();
-  }
-}
-
-class DaemonPull extends Array {
-  LIMIT = 20;
-  isPartnerInPull(guildId) {
-    return this.includes(guildId);
-  }
-  process_queue() {
-    while (this.length > this.LIMIT) {
-      this.shift();
-    }
-  }
-  push(...values) {
-    super.push(...values);
-    this.process_queue();
-  }
-}
-
 class Command extends BaseCommand {
   static ComponentsCallbacks = {
     show_help: "show_help",
@@ -900,10 +845,6 @@ class Command extends BaseCommand {
     },
     hidden: true,
   };
-  constructor() {
-    super();
-    this.usePartnersDaemon();
-  }
   async onChatInput(message, interaction) {
     const context = await CommandRunContext.new(interaction, this);
     context.setWhenRunExecuted(this.run(context));
@@ -1004,11 +945,6 @@ class Command extends BaseCommand {
     await this.processDefaultBehaviour(context);
     return;
   }
-  usePartnersDaemon() {
-    this.daemon = new PartnersDaemon(this);
-    this.daemon.checkTimeEvent();
-  }
 }
 
 export default Command;
-export { PartnersDaemon };
