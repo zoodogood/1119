@@ -874,28 +874,34 @@ class PartnersDaemon {
     const WEEK = 7;
     const launched_events = TimeEventsManager.filterEventsInRange(
       ({ name }) => name === this.EVENT_NAME,
-      [DataManager.data.bot.currentDay, DataManager.data.bot.currentDay + WEEK],
+      [
+        DataManager.data.bot.currentDay,
+        DataManager.data.bot.currentDay + WEEK + 1,
+      ],
     );
-    if (launched_events > 0) {
+
+    if (launched_events.length > 0) {
       launched_events
         .slice(1)
         .forEach(TimeEventsManager.remove.bind(TimeEventsManager));
       return;
     }
+
     TimeEventsManager.create(this.EVENT_NAME, this.ms_to_timeEvent());
   }
   checkTimeEvent() {
-    const expected = this.fetchTimeEvent();
+    const expected_exists = this.fetchTimeEvent();
 
-    if (!expected) {
+    if (!expected_exists) {
       this._createTimeEvent();
     }
   }
   fetchTimeEvent() {
-    const day = timestampDay(this.ms_to_timeEvent() + Date.now());
+    const WEEK = 7;
+    const day = timestampDay(Date.now());
     return TimeEventsManager.findEventInRange(
       ({ name }) => name === this.EVENT_NAME,
-      [day, day],
+      [day, day + WEEK + 1],
     );
   }
   ms_to_timeEvent() {

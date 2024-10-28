@@ -1,5 +1,9 @@
 import { client } from "#bot/client.js";
-import { BossManager, TimeEventsManager } from "#lib/modules/mod.js";
+import {
+  BossManager,
+  DataManager,
+  TimeEventsManager,
+} from "#lib/modules/mod.js";
 
 import BankCommand from "#folder/commands/bank.js";
 import TreeCommand from "#folder/commands/seed.js";
@@ -11,13 +15,8 @@ class Event {
   };
 
   run(eventData) {
-    const next = dayjs()
-      .add(1, "day")
-      .set("hour", 20, "minute", 0, "second", 0)
-      .diff();
-
     if (eventData.isLost) {
-      TimeEventsManager.create("day-stats", next);
+      this.time_events_recreate();
       return;
     }
 
@@ -35,7 +34,7 @@ class Event {
       BossManager.beforeApparance(guild);
     });
 
-    TimeEventsManager.create("day-stats", next);
+    this.time_events_recreate();
   }
 
   sendStats(guild, context) {
@@ -110,6 +109,22 @@ class Event {
       )} больше 💧`;
 
     guild.chatSend({ title: "Статистика сервера", description });
+  }
+
+  time_events_recreate() {
+    const launched_events = TimeEventsManager.filterEventsInRange(
+      ({ name }) => name === "day-stats",
+      [DataManager.data.bot.currentDay, DataManager.data.bot.currentDay + 1],
+    );
+
+    launched_events.length > 0 &&
+      launched_events.forEach(TimeEventsManager.remove.bind(TimeEventsManager));
+
+    const next = dayjs()
+      .add(1, "day")
+      .set("hour", 20, "minute", 0, "second", 0)
+      .diff();
+    TimeEventsManager.create("day-stats", next);
   }
 }
 

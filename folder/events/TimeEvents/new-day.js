@@ -152,13 +152,11 @@ class DailyEvents {
       ({ name }) => name === "day-stats",
       [botData.currentDay, botData.currentDay + 1],
     );
-    !launched_events.length &&
-      (await EventsManager.collection.get("TimeEvent/day-stats").run(true));
 
-    launched_events.length > 1 &&
-      launched_events
-        .slice(1)
-        .forEach(TimeEventsManager.remove.bind(TimeEventsManager));
+    launched_events.length > 0 &&
+      launched_events.forEach(TimeEventsManager.remove.bind(TimeEventsManager));
+
+    await EventsManager.collection.get("TimeEvent/day-stats").run(true);
   }
 
   static distributePresents(context) {
