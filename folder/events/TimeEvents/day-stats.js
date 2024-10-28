@@ -15,8 +15,10 @@ class Event {
       .add(1, "day")
       .set("hour", 20, "minute", 0, "second", 0)
       .diff();
+
     if (eventData.isLost) {
-      return TimeEventsManager.create("day-stats", next);
+      TimeEventsManager.create("day-stats", next);
+      return;
     }
 
     const context = {
@@ -25,23 +27,15 @@ class Event {
       guildsStatsContext: {},
     };
 
-    client.guilds.cache
-      .filter((guild) => guild.data.tree?.level)
-      .each((guild) => context.treeCommand.onDayStats(guild, context));
-
-    client.guilds.cache.forEach((guild) => {
+    client.guilds.cache.each(async (guild) => {
+      const { data } = guild;
+      data.tree?.level && context.treeCommand.onDayStats(guild, context);
+      data.professions && context.bankCommand.onDayStats(guild, context);
       this.sendStats(guild, context);
+      BossManager.beforeApparance(guild);
     });
 
-    client.guilds.cache
-      .filter((guild) => guild.data.professions)
-      .each((guild) => {
-        context.bankCommand.onDayStats(guild, context);
-      });
-
-    client.guilds.cache.each((guild) => BossManager.beforeApparance(guild));
-
-    return TimeEventsManager.create("day-stats", next);
+    TimeEventsManager.create("day-stats", next);
   }
 
   sendStats(guild, context) {
@@ -104,7 +98,6 @@ class Event {
 
     if (!messagesOfDay) {
       return;
-      // description = ["Сегодня не было отправленно ни одно сообщение", "Сегодня на сервере пусто", "За целый день ни один смертный не проявил активность", "Похоже, тишина — второе имя этого сервера"].random();
     }
 
     if (treeMessagesNeed)

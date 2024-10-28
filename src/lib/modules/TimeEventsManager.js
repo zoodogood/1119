@@ -37,9 +37,7 @@ export class TimeEventData {
     return this.from(
       eventData.name,
       eventData.timestamp,
-      eventData._params_as_json ||
-        (eventData instanceof TimeEventData === false &&
-          eventData.params) /* to-do developer-crunch */,
+      eventData._params_as_json,
       eventData.createdAt,
     );
   }
