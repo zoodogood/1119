@@ -148,13 +148,17 @@ class DailyEvents {
 
   static async checkDayStatsEvent() {
     const botData = DataManager.data.bot;
-    const dayStatsEventIsExists = TimeEventsManager.findEventInRange(
+    const launched_events = TimeEventsManager.filterEventsInRange(
       ({ name }) => name === "day-stats",
       [botData.currentDay, botData.currentDay + 1],
     );
-    if (!dayStatsEventIsExists) {
-      await EventsManager.collection.get("TimeEvent/day-stats").run(true);
-    }
+    !launched_events.length &&
+      (await EventsManager.collection.get("TimeEvent/day-stats").run(true));
+
+    launched_events.length > 1 &&
+      launched_events
+        .slice(1)
+        .forEach(TimeEventsManager.remove.bind(TimeEventsManager));
   }
 
   static distributePresents(context) {

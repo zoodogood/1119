@@ -871,6 +871,17 @@ class PartnersDaemon {
   EVENT_NAME = "partner-daemon";
   pull = new DaemonPull();
   _createTimeEvent() {
+    const WEEK = 7;
+    const launched_events = TimeEventsManager.filterEventsInRange(
+      ({ name }) => name === this.EVENT_NAME,
+      [DataManager.data.bot.currentDay, DataManager.data.bot.currentDay + WEEK],
+    );
+    if (launched_events > 0) {
+      launched_events
+        .slice(1)
+        .forEach(TimeEventsManager.remove.bind(TimeEventsManager));
+      return;
+    }
     TimeEventsManager.create(this.EVENT_NAME, this.ms_to_timeEvent());
   }
   checkTimeEvent() {
