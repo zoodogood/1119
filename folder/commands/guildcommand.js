@@ -25,7 +25,7 @@ import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { escapeCodeBlock, escapeMarkdown } from "discord.js";
 export function uses_count_of(custom_command_name, guild) {
   return Object.values(
-    guild.data.custom_commands[custom_command_name].members,
+    guild.data.custom_commands[custom_command_name].members || {},
   ).reduce((acc, [uses]) => acc + uses, 0);
 }
 
