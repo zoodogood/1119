@@ -3,6 +3,7 @@ import { BaseContext } from "#lib/BaseContext.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 
 class BaseCommandRunContext extends BaseContext {
+  /** @type {[import("@zoodogood/utils/CliParser").CliParserRunContext, Map<string, import("@zoodogood/utils/CliParser").CapturedContent>]} */
   cliParsed = null;
   /** @type {import("#lib/BaseCommand.js").BaseCommand} */
   command = null;
