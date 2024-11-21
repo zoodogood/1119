@@ -10,6 +10,11 @@ import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { MINUTE, SECOND } from "#constants/globals/time.js";
 import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
+import {
+  cli_parser_parse_flags,
+  flag,
+  process_flags,
+} from "#lib/BaseCommand/parse_flags.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { DataManager, store } from "#lib/DataManager/singletone.js";
@@ -460,6 +465,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 
 // MARK: Context
 class CommandRunContext extends BaseCommandRunContext {
+  startup_page = 0;
   wire() {
     this.guild.data.custom_commands ||= {};
     const wire = store.hold_wire(this.guild.data, "custom_commands");
@@ -568,12 +574,20 @@ class Command extends BaseCommand {
       "guildcommands createcommand командасерверу командасервера customcommand custom",
     cliParser: {
       flags: [
-        {
-          name: "--target",
-          capture: ["-t", "--target"],
-          description: "Начать редактирование команды по имени",
-          expectValue: true,
-        },
+        flag(
+          ["--target", "-t"],
+          "Начать редактирование команды по имени",
+          (context, capture) => {},
+          { expectValue: true },
+        ),
+        flag(
+          ["--page", "-p"],
+          "Начать с заданной страницы, если применимо",
+          (context, capture) => {
+            context.startup_page = Number(capture.valueOfFlag()) || 0;
+          },
+          { expectValue: true },
+        ),
       ],
     },
     type: "guild",
@@ -604,14 +618,17 @@ class Command extends BaseCommand {
     });
     if (!heAccpet) return;
 
+    const res = cli_parser_parse_flags(this, context);
+
     const parsed_cli = new CliParser()
       .setText(context.interaction.params)
       .captureFlags(this.options.cliParser.flags)
       .collect();
 
-    if (await this.target_flag_process(context, parsed_cli)) {
-      return;
-    }
+    if (await process_flags(context))
+      if (await this.target_flag_process(context, parsed_cli)) {
+        return;
+      }
 
     await new CommandDefaultBehaviour(context).onProcess();
   }
