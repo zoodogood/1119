@@ -1,0 +1,107 @@
+// eslint-disable-next-line no-unused-vars
+import { BaseCommand } from "#lib/BaseCommand.js";
+// eslint-disable-next-line no-unused-vars
+import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { CliParser } from "@zoodogood/utils/CliParser";
+
+/**
+ *
+ * @param {string[]} capture
+ * @param {string} description
+ * @param {{
+ *  expectValue: boolean,
+ *  effect: (
+ *    context: BaseCommandRunContext,
+ *    value: {flag: string, value: string, separator: string},
+ *    capture: import("@zoodogood/utils/CliParser").CapturedContentFlagMatchArray
+ *  ) => unknown,
+ *  finalize: () => boolean
+ * }} addable
+ * @returns
+ */
+export function flag(
+  capture,
+  description,
+  { expectValue, effect, finalize } = {},
+) {
+  return {
+    name: capture[0],
+    capture,
+    description,
+    effect,
+    finalize,
+    expectValue,
+  };
+}
+
+/**
+ *
+ * @param {{}[]} flags
+ * @param {BaseCommandRunContext} context
+ */
+export async function process_flags(context) {
+  const command_flags = context.command.options.cliParser.flags;
+  const [parsed, values] = context.cliParsed;
+  const flags = command_flags
+    .filter((flag) => {
+      const { name } = flag;
+      return parsed.captures.has(name);
+    })
+    .map((flag) => {
+      const { name } = flag;
+      return {
+        ...flag,
+        value: values.get(name),
+        capture: parsed.captures.get(name),
+      };
+    });
+
+  for (const flag of flags) {
+    const { value, capture } = flag;
+    flag.effect?.(context, value, capture);
+  }
+  for (const flag of flags) {
+    const { value, capture } = flag;
+
+    const is_exit_signal = flag.finalize?.(context, value, capture) === true;
+    if (is_exit_signal) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ *
+ * @param {BaseCommand} command
+ * @param {BaseCommandRunContext} context
+ */
+export function cli_parser_parse_flags(command, context) {
+  const flags = command.options.cliParser.flags;
+
+  const parser = new CliParser();
+  const parsed = parser
+    .setText(context.interaction.params)
+    .processBrackets()
+    .captureFlags(flags)
+    .captureResidueFlags()
+    .collect();
+
+  const values = parsed.resolveValues((capture) => {
+    if (!capture) {
+      return;
+    }
+
+    if (!capture.isFlagMatchArray()) {
+      return capture.toString();
+    }
+    const value = capture.valueOfFlag();
+    console.log({ value, c: capture.content });
+
+    const { flag, separator } = capture.content.groups;
+    return { flag, value, separator };
+  });
+
+  context.setCliParsed(parsed, values);
+  return context.cliParsed;
+}
