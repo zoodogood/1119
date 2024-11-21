@@ -58,7 +58,16 @@ class BaseCommand {
    *  myPermissions?: bigint
    *  userChannelPermissions?: bigint
    *  userPermissions?: bigint
-   *  cliParser?: {flags: (import("@zoodogood/utils/CliParser".IFlagCapture & {description: string})[]}
+   *  cliParser?: {
+   *    flags: (
+   *      import("@zoodogood/utils/CliParser".IFlagCapture
+   *      & {
+   *        description: string,
+   *        effect: (context: import("#lib/CommandRunContext").BaseCommandRunContext, value: {flag: string, value: string, separator: string}, capture: import("@zoodogood/utils/CliParser").CapturedContentFlagMatchArray) => boolean,
+   *        finalize: (context: import("#lib/CommandRunContext").BaseCommandRunContext, value: {flag: string, value: string, separator: string}, capture: import("@zoodogood/utils/CliParser").CapturedContentFlagMatchArray) => unknown
+   *        }
+   *    )[]
+   *  }
    *  accessibility?: {
    *    publicized_on_level?: number
    *  }
