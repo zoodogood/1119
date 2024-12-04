@@ -7,7 +7,16 @@ import {
 
 import BankCommand from "#folder/commands/bank.js";
 import TreeCommand from "#folder/commands/seed.js";
-import { dayjs, ending, NumberFormatLetterize } from "#src/lib/util.js";
+import { MonthStatisticForEveryDayAPI } from "#folder/entities/statistic/messages/MonthStatisticForEveryDayAPI.js";
+import {
+  average,
+  dayjs,
+  ending,
+  factorySummarize,
+  mediana_of_unsorted,
+  NumberFormatLetterize,
+  trim_line_space,
+} from "#src/lib/util.js";
 
 class Event {
   options = {
@@ -31,6 +40,9 @@ class Event {
       data.tree?.level && context.treeCommand.onDayStats(guild, context);
       data.professions && context.bankCommand.onDayStats(guild, context);
       this.sendStats(guild, context);
+      MonthStatisticForEveryDayAPI.ofGuild(guild).push({
+        messages: data.day_msg,
+      });
       BossManager.beforeApparance(guild);
     });
 
@@ -77,6 +89,9 @@ class Event {
     }
 
     guildData.day_msg = 0;
+    if (!messagesOfDay) {
+      return;
+    }
 
     const messages_leaders = (() => {
       let current = { value: 0, id_list: [] };
@@ -95,8 +110,17 @@ class Event {
     messages_leaders.id_list.length &&
       (description += `\nНаибольшее число от ${messages_leaders.id_list.map((userId) => `<@${userId}>`).join(", ")}: ${messages_leaders.id_list.length === 1 ? `${ending(messages_leaders.value, "сообщени", "й", "е", "я")}` : `по ${ending(messages_leaders.value, "сообщени", "й", "ю", "я")}`}`);
 
-    if (!messagesOfDay) {
-      return;
+    {
+      const month = MonthStatisticForEveryDayAPI.ofGuild(guild).field;
+      const sum = month.reduce(factorySummarize(), 0);
+      if (month.length > 3) {
+        description +=
+          trim_line_space(`\n\n**За ${ending(month.length, "д", "ней", "ень", "ня")}**
+            Всего: ${sum}
+            Среднее: ${average(sum, month.length)}
+            Медиана: ${mediana_of_unsorted(month)}
+        `);
+      }
     }
 
     if (treeMessagesNeed)
