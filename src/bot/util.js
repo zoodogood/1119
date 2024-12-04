@@ -281,3 +281,7 @@ export function mediana_of_unsorted(array) {
     .entry()
     .at(Math.round(array.length / 2))[0];
 }
+
+export function trim_line_space(string) {
+  return string.replaceAll(/^[ \t]*/gm, "");
+}
