@@ -5,7 +5,25 @@ import CooldownManager from "#lib/modules/CooldownManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 
+/** @import {BaseCommandRunContext} from '#lib/CommandRunContext.js' */
 // @ts-check
+/**
+ * @typedef {import("@zoodogood/utils/CliParser".IFlagCapture & {
+ *    description: string,
+ *    effect: (context: BaseCommandRunContext, value: {flag: string, value: string, separator: string}, flag: BaseFlag) => boolean,
+ *    finalize: (context: BaseCommandRunContext, value: {flag: string, value: string, separator: string}, flag: BaseFlag) => unknown
+ * }} BaseFlag
+ *
+ * @typedef {{
+ *    capture: import("@zoodogood/utils/CliParser").CapturedContentFlagMatchArray
+ *    value: {flag: string, value: string, separator: string}
+ *    description: string
+ *    expectValue: boolean
+ *    name: string
+ *    effect: BaseFlag['effect']
+ *    finalize: BaseFlag['finalize']
+ * }} BaseFlagCapture
+ */
 
 const statistics_api = {
   increase: ({ interaction: { guild }, command }) => {
@@ -59,14 +77,7 @@ class BaseCommand {
    *  userChannelPermissions?: bigint
    *  userPermissions?: bigint
    *  cliParser?: {
-   *    flags: (
-   *      import("@zoodogood/utils/CliParser".IFlagCapture
-   *      & {
-   *        description: string,
-   *        effect: (context: import("#lib/CommandRunContext").BaseCommandRunContext, value: {flag: string, value: string, separator: string}, capture: import("@zoodogood/utils/CliParser").CapturedContentFlagMatchArray) => boolean,
-   *        finalize: (context: import("#lib/CommandRunContext").BaseCommandRunContext, value: {flag: string, value: string, separator: string}, capture: import("@zoodogood/utils/CliParser").CapturedContentFlagMatchArray) => unknown
-   *        }
-   *    )[]
+   *    flags: BaseFlag[]
    *  }
    *  accessibility?: {
    *    publicized_on_level?: number
