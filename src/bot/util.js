@@ -11,6 +11,8 @@ import { MINUTE } from "#constants/globals/time.js";
 import EventsManager from "#lib/modules/EventsManager.js";
 import { Collection } from "@discordjs/collection";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
+import { LazySort } from "@zoodogood/utils/objectives";
+import assert from "assert";
 import {
   ComponentType,
   Message,
@@ -271,4 +273,11 @@ export function take_missing_permissions(member, bits, channel = null) {
   return channel
     ? channel.permissionsFor(member).missing(bits)
     : member.permissions.missing(bits);
+}
+
+export function mediana_of_unsorted(array) {
+  assert(array.length > 0);
+  return LazySort.ofNumbers(array)
+    .entry()
+    .at(Math.round(array.length / 2))[0];
 }
