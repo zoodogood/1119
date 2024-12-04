@@ -143,7 +143,7 @@ class BaseFlagSubcommand {
   /**
    *
    * @param {import("#lib/CommandRunContext").BaseCommandRunContext} context
-   * @param {import("@zoodogood/utils/CliParser").CapturedContent} value
+   * @param {import("@zoodogood/utils/CliParser").CapturedContent} [value]
    */
   constructor(context, value) {
     this.capture = value;
