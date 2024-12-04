@@ -34,3 +34,7 @@ export function sortByResolve(array, resolve, { reverse } = {}) {
 export function isObject(target) {
   return target && typeof target === "object";
 }
+
+export function average(sum, length) {
+  return Math.round(sum / length);
+}
