@@ -3,20 +3,13 @@ import { BaseCommand } from "#lib/BaseCommand.js";
 // eslint-disable-next-line no-unused-vars
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { CliParser } from "@zoodogood/utils/CliParser";
+/** @import {BaseFlag} from '#lib/BaseCommand'  */
 
 /**
  *
  * @param {string[]} capture
  * @param {string} description
- * @param {{
- *  expectValue: boolean,
- *  effect: (
- *    context: BaseCommandRunContext,
- *    value: {flag: string, value: string, separator: string},
- *    capture: import("@zoodogood/utils/CliParser").CapturedContentFlagMatchArray
- *  ) => unknown,
- *  finalize: () => boolean
- * }} addable
+ * @param {Pick<BaseFlag, 'effect' | 'finalize' | 'expectValue'>} addable
  * @returns
  */
 export function flag(
@@ -56,14 +49,14 @@ export async function process_flags(context) {
       };
     });
 
+  await Promise.all(
+    flags.map((flag) => flag.effect?.(context, flag.value, flag)),
+  );
   for (const flag of flags) {
-    const { value, capture } = flag;
-    flag.effect?.(context, value, capture);
-  }
-  for (const flag of flags) {
-    const { value, capture } = flag;
+    const { value } = flag;
 
-    const is_exit_signal = flag.finalize?.(context, value, capture) === true;
+    const is_exit_signal =
+      (await flag.finalize?.(context, value, flag)) === true;
     if (is_exit_signal) {
       return true;
     }
@@ -96,8 +89,6 @@ export function cli_parser_parse_flags(command, context) {
       return capture.toString();
     }
     const value = capture.valueOfFlag();
-    console.log({ value, c: capture.content });
-
     const { flag, separator } = capture.content.groups;
     return { flag, value, separator };
   });
