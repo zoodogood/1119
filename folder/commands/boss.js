@@ -2,19 +2,19 @@ import { client } from "#bot/client.js";
 import config from "#config";
 import { DAY, SECOND } from "#constants/globals/time.js";
 import {
-  core_make_attack_context,
-  make_attack_with_events,
+    core_make_attack_context,
+    make_attack_with_events,
 } from "#folder/entities/boss/attack.js";
 import { resolve_attack_events_pull } from "#folder/entities/boss/attack_events.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import CurseManager from "#lib/CurseManager/CurseManager.js";
 import { sortByResolve } from "#lib/mini.js";
 import { BossEffects, BossManager } from "#lib/modules/BossManager.js";
-import CurseManager from "#lib/modules/CurseManager.js";
 import {
-  toDayDate,
-  toFixedAfterZero,
-  toLocaleDeveloperString,
+    toDayDate,
+    toFixedAfterZero,
+    toLocaleDeveloperString,
 } from "#lib/safe-utils.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";

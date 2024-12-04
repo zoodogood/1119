@@ -5,38 +5,38 @@ import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { HOUR, MINUTE, SECOND } from "#constants/globals/time.js";
 import { Elements, elementsEnum } from "#folder/commands/thing.js";
 import {
-  core_make_attack,
-  core_make_attack_context,
-  display_attack,
-  update_attack_cooldown,
-  update_attack_damage_multiplayer,
+    core_make_attack,
+    core_make_attack_context,
+    display_attack,
+    update_attack_cooldown,
+    update_attack_damage_multiplayer,
 } from "#folder/entities/boss/attack.js";
 import {
-  attack_event_callback,
-  resolve_attack_events_pull,
+    attack_event_callback,
+    resolve_attack_events_pull,
 } from "#folder/entities/boss/attack_events.js";
 import { damageTypeLabel } from "#folder/entities/boss/formatters.js";
 import { current_health_thresholder } from "#folder/entities/boss/health.js";
+import CurseManager from "#lib/CurseManager/CurseManager.js";
 import BossManager, {
-  BossEffects,
-  BossRelics,
-  BossSpecial,
+    BossEffects,
+    BossRelics,
+    BossSpecial,
 } from "#lib/modules/BossManager.js";
 import CommandsManager, {
-  CommandInteraction,
+    CommandInteraction,
 } from "#lib/modules/CommandsManager.js";
-import CurseManager from "#lib/modules/CurseManager.js";
 import UserEffectManager, {
-  EffectInfluenceEnum,
+    EffectInfluenceEnum,
 } from "#lib/modules/EffectsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
-  NumberFormatLetterize,
-  ending,
-  getRandomElementFromArray,
-  random,
-  sleep,
-  timestampToDate,
+    NumberFormatLetterize,
+    ending,
+    getRandomElementFromArray,
+    random,
+    sleep,
+    timestampToDate,
 } from "#lib/safe-utils.js";
 import { addResource } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";

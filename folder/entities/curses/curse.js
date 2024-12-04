@@ -1,4 +1,4 @@
-import CurseManager from "#lib/modules/CurseManager.js";
+import CurseManager from "#lib/CurseManager/CurseManager.js";
 
 export function resolve_description({ curse, user, curseBase }) {
   curseBase ||= CurseManager.cursesBase.get(curse.id);

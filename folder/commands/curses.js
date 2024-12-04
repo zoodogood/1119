@@ -6,14 +6,14 @@ import { resolve_description } from "#folder/entities/curses/curse.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import CurseManager from "#lib/CurseManager/CurseManager.js";
 import { Pager } from "#lib/DiscordPager.js";
 import {
-  actionRowsToComponents,
-  jsonFile,
-  takeInteractionProperties,
+    actionRowsToComponents,
+    jsonFile,
+    takeInteractionProperties,
 } from "#lib/Discord_utils.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
-import CurseManager from "#lib/modules/CurseManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { ending, toLocaleDeveloperString } from "#lib/safe-utils.js";
@@ -21,10 +21,10 @@ import { addResource } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import {
-  ButtonStyle,
-  FormattingPatterns,
-  PresenceUpdateStatus,
-  escapeCodeBlock,
+    ButtonStyle,
+    FormattingPatterns,
+    PresenceUpdateStatus,
+    escapeCodeBlock,
 } from "discord.js";
 
 class Utils {

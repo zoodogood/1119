@@ -1,6 +1,6 @@
 import { client } from "#bot/client.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
-import CurseManager from "#lib/modules/CurseManager.js";
+import CurseManager from "#lib/CurseManager/CurseManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
 import Template from "#lib/modules/Template.js";
 import * as Util from "#lib/util.js";
