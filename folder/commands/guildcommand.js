@@ -25,7 +25,6 @@ import { crop_string } from "#lib/formatters.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import Template from "#lib/modules/Template.js";
 import { ParserTime } from "#lib/parsers.js";
-import { CliParser } from "@zoodogood/utils/CliParser";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { escapeCodeBlock, escapeMarkdown } from "discord.js";
 export function uses_count_of(custom_command_name, guild) {
@@ -319,6 +318,7 @@ class FactoryView extends BaseFlagSubcommand {
     const { pager, context } = this;
     this.pager_setup_recalculate_pages();
     pager.setChannel(context.interaction);
+    pager.currentPage = context.startup_page || 0;
     pager.setUser(context.user);
     pager.setRender(() => this.render_get_embed());
     pager.spliceComponents(
@@ -472,6 +472,7 @@ class CommandRunContext extends BaseCommandRunContext {
     return wire;
   }
 }
+// MARK: Command
 class Command extends BaseCommand {
   componentsCallbacks = {
     create: (context) => {
@@ -574,20 +575,35 @@ class Command extends BaseCommand {
       "guildcommands createcommand командасерверу командасервера customcommand custom",
     cliParser: {
       flags: [
-        flag(
-          ["--target", "-t"],
-          "Начать редактирование команды по имени",
-          (context, capture) => {},
-          { expectValue: true },
-        ),
-        flag(
-          ["--page", "-p"],
-          "Начать с заданной страницы, если применимо",
-          (context, capture) => {
-            context.startup_page = Number(capture.valueOfFlag()) || 0;
+        flag(["--target", "-t"], "Начать редактирование команды по имени", {
+          expectValue: true,
+          async finalize(context, { value: command_name }) {
+            console.log({ command_name });
+            if (!command_name) {
+              return false;
+            }
+            if (!command_name) {
+              context.channel.msg({
+                color: "#ff0000",
+                title: "Необходимо указать имя команды",
+                delete: 9 * SECOND,
+              });
+              return true;
+            }
+            const view = new FactoryView(context);
+            view.wire_bind_from(context);
+            view.command_target = view.command_resolve_or_init(command_name);
+            view.command_name = command_name;
+            await view.onProcess();
+            return true;
           },
-          { expectValue: true },
-        ),
+        }),
+        flag(["--page", "-p"], "Начать с заданной страницы, если применимо", {
+          expectValue: true,
+          effect(context, { value }) {
+            context.startup_page = Number(value) || 0;
+          },
+        }),
       ],
     },
     type: "guild",
@@ -596,7 +612,6 @@ class Command extends BaseCommand {
   async onChatInput(msg, interaction) {
     const context = await CommandRunContext.new(interaction, this);
     context.setWhenRunExecuted(this.run(context));
-
     return context;
   }
 
@@ -618,39 +633,13 @@ class Command extends BaseCommand {
     });
     if (!heAccpet) return;
 
-    const res = cli_parser_parse_flags(this, context);
+    cli_parser_parse_flags(this, context);
 
-    const parsed_cli = new CliParser()
-      .setText(context.interaction.params)
-      .captureFlags(this.options.cliParser.flags)
-      .collect();
-
-    if (await process_flags(context))
-      if (await this.target_flag_process(context, parsed_cli)) {
-        return;
-      }
+    if (await process_flags(context)) {
+      return;
+    }
 
     await new CommandDefaultBehaviour(context).onProcess();
-  }
-  async target_flag_process(context, parsed_cli) {
-    const command_name = parsed_cli.captures.get("--target")?.valueOfFlag();
-    if (!command_name) {
-      return false;
-    }
-    if (!command_name) {
-      context.channel.msg({
-        color: "#ff0000",
-        title: "Необходимо указать имя команды",
-        delete: 9 * SECOND,
-      });
-      return true;
-    }
-    const view = new FactoryView(context);
-    view.wire_bind_from(context);
-    view.command_target = view.command_resolve_or_init(command_name);
-    view.command_name = command_name;
-    await view.onProcess();
-    return true;
   }
 }
 
