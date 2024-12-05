@@ -27,6 +27,7 @@ import {
 import { addResource, overTheMessageSpamLimit } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { AttachmentBuilder, MessageMentions } from "discord.js";
+import EventEmitter from "events";
 import assert from "node:assert";
 
 class CurseManager {
@@ -1883,7 +1884,15 @@ class CurseManager {
     ].map((curse) => [curse.id, curse]),
   );
 
+  static emitter = new EventEmitter();
+  static Events = {
+    CurseEnd: "CurseEnd",
+  };
+
   static _curseEnd({ lost, user, curse }) {
+    this.emitter.emit(CurseManager.Events.CurseEnd, user, curse, {
+      isLost: lost,
+    });
     user.action(ActionsMap.curseEnd, { isLost: lost, curse });
     this.removeCurse({ user, curse });
   }
