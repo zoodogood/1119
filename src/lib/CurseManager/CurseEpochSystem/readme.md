@@ -5,6 +5,7 @@ stateDiagram-v2
 		[*] --> allCursesCollected?
 		[*] --> userIsFirstWhoSuccessed?
 		allCursesCollected? --> *clean_gone_state*: increment epoch
+		*clean_gone_state* --> epochIncrementInform
 		userIsFirstWhoSuccessed? --> sendCongregations
 	 }
     

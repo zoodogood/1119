@@ -4,6 +4,8 @@
 
 /** @import { DataManager } from "#lib/modules/mod.js"; */
 
+import client from "#bot/client.js";
+import config from "#config";
 import { SECOND } from "#constants/globals/time.js";
 
 /**
@@ -46,6 +48,18 @@ export class CurseEpochSystem {
     return this._checkList.length <= Object.keys(this.field.gone_state).length;
   }
 
+  epochIncrementInform() {
+    const channel = client.channels.cache.get(config.guild.chatChannel);
+    channel.msg({
+      title: `${this.field.epoch + 1}-я эпоха проклятий завершена`,
+      description: `По проклятиям за прошедший период такая статистика:\n${Object.entries(
+        this.field.gone_state,
+      )
+        .map(([id, [success, failed]]) => `\`- ${id}\` ${success} | ${failed}`)
+        .join("\n")}`,
+    });
+  }
+
   onUserCurseEnd(user, curse, { isLost }) {
     const { id } = curse;
     if (this._ignore.includes(id)) {
@@ -65,6 +79,7 @@ export class CurseEpochSystem {
       return;
     }
 
+    this.epochIncrementInform();
     this.updateEpoch();
   }
 
