@@ -84,7 +84,7 @@ export class CurseEpochSystem {
   }
 
   sendCongratulations(user, curse) {
-    const text = `Вы первый кто прошёл проклятие \`${curse.id}\` в ${this.field.epoch} эпохе\n\nСоответвующая информация доступна по команде !curses --epoch`;
+    const text = `Вы первый кто прошёл проклятие \`${curse.id}\` в ${this.field.epoch}-й эпохе\n\nСоответвующая информация доступна по команде !curses --epoch`;
     setTimeout(() => sendMessage(user, text), SECOND);
   }
 
