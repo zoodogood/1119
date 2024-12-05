@@ -3,6 +3,7 @@ import { Emoji } from "#constants/emojis.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { DAY, HOUR, MINUTE, SECOND } from "#constants/globals/time.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import * as BagAPI from "#folder/commands/bag.js";
 import { RanksUtils } from "#folder/commands/top.js";
 import { resolve_description } from "#folder/entities/curses/curse.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
@@ -17,6 +18,7 @@ import {
   clamp,
   DotNotatedInterface,
   ending,
+  getRandomElementFromArray,
   random,
   sleep,
   toLocaleDeveloperString,
@@ -1863,6 +1865,64 @@ class CurseManager {
           },
         },
         reward: 20,
+      },
+      {
+        _weight: 5,
+        id: "theBagIsSpitting",
+        description:
+          "При вводе команды случайный ресурс перемещается из сумки + другой ресурс в сумку. Проклятие будет засчитано по окончании таймера",
+        hard: 0,
+        values: {
+          timer: () => 2 * HOUR,
+        },
+        callback: {
+          callCommand(user, curse) {
+            const userData = user.data;
+            const bag = BagAPI.getBagTargetOf(user);
+            const toBag = getRandomElementFromArray(BagAPI.ITEMS, {
+              filter: (item) => userData[item.key] >= 1,
+            });
+
+            const fromBag = getRandomElementFromArray(BagAPI.ITEMS, {
+              filter: (item) => {
+                const exists = bag[item.key] >= 1;
+                const underTheLimit =
+                  !item.limit || userData[item.key] + 1 <= item.limit;
+                const isDifferent = item.key !== toBag.key;
+                return exists && underTheLimit && isDifferent;
+              },
+            });
+            const toBagDetails =
+              toBag &&
+              BagAPI.checkMoveDetailes({
+                user,
+                isToBag: true,
+                count: random(0, userData[toBag.key]),
+                key: toBag.key,
+              });
+            const fromBagDetails =
+              fromBag &&
+              BagAPI.checkMoveDetailes({
+                user,
+                isToBag: false,
+                count: random(0, bag[fromBag.key]),
+                key: fromBag.key,
+              });
+            toBag && BagAPI.movePrepare(toBagDetails, { user });
+            toBag && BagAPI.moveToBagBrute(toBagDetails);
+            fromBag && BagAPI.movePrepare(fromBagDetails, { user });
+            fromBag && BagAPI.moveToBagBrute(fromBagDetails);
+            CurseManager.interface({ user, curse }).incrementProgress(1);
+          },
+          curseTimeEnd(user, curse, target) {
+            if (curse !== target.curse) {
+              return;
+            }
+            target.preventDefault();
+            CurseManager.interface({ user, curse }).success();
+          },
+        },
+        reward: 15,
       },
       // MARK: End of curses list
       // {
