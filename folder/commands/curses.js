@@ -6,6 +6,7 @@ import { resolve_description } from "#folder/entities/curses/curse.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { curse_epoch_singletone } from "#lib/CurseManager/CurseEpochSystem/singletone.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
 import { Pager } from "#lib/DiscordPager.js";
 import {
@@ -16,7 +17,11 @@ import {
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import { ending, toLocaleDeveloperString } from "#lib/safe-utils.js";
+import {
+  ending,
+  timestampToDate,
+  toLocaleDeveloperString,
+} from "#lib/safe-utils.js";
 import { addResource } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
@@ -445,6 +450,34 @@ class At_FlagSubcommand {
   }
 }
 
+class Epoch_FlagSubcommand extends BaseFlagSubcommand {
+  static FLAG_DATA = {
+    name: "--epoch",
+    capture: ["--epoch"],
+  };
+  onProcess() {
+    const { channel, interaction } = this.context;
+    const { field } = curse_epoch_singletone;
+    channel.msg({
+      ...Command.MESSAGE_THEME,
+      description: `**Текущая эпоха проклятий: ${field.epoch + 1}**\n*Эпохи проклятий, как способ сбора статистики о проклятиях в более интутивных и интересных рамках. Эпоха возвышается когда собраны проклятия всех видов, хотя бы по одному. Сбором считается успешное выполнение или провал проклятия.*\n\nУспех | провалено:\n${
+        Object.entries(field.gone_state)
+          .map(
+            ([id, [success, failed]]) => `\`- ${id}\` ${success} | ${failed}`,
+          )
+          .join("\n") || "Тут пусто.."
+      }`,
+      footer: {
+        text: `Прошло времени от начала ${timestampToDate(
+          Date.now() - field.epochAt,
+          1,
+        )}`,
+      },
+      reference: interaction.message.id,
+    });
+  }
+}
+
 class Bought_FlagSubcommand extends BaseFlagSubcommand {
   static FLAG_DATA = {
     name: "--bought",
@@ -772,6 +805,7 @@ class Command extends BaseCommand {
           description: "Возвращает результат команды как *.json",
         },
         Bought_FlagSubcommand.FLAG_DATA,
+        Epoch_FlagSubcommand.FLAG_DATA,
       ],
     },
     accessibility: {
@@ -807,6 +841,15 @@ class Command extends BaseCommand {
 
   async processDefaultBehavior(context) {
     return await new Help_FlagSubcommand(context).onProcess();
+  }
+
+  async processEpochFlag(context) {
+    const values = context.cliParsed.at(1);
+    if (!values.get("--epoch")) {
+      return false;
+    }
+    await new Epoch_FlagSubcommand(context).onProcess();
+    return true;
   }
 
   async processHelpCommand(context) {
@@ -858,6 +901,10 @@ class Command extends BaseCommand {
     }
 
     if (await this.processBoughtFlag(context)) {
+      return;
+    }
+
+    if (await this.processEpochFlag(context)) {
       return;
     }
 
