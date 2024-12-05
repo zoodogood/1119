@@ -15,6 +15,11 @@ import { take_missing_permissions } from "#bot/util.js";
 import { CustomCommand } from "#folder/commands/guildcommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { permissionRawToI18n } from "#lib/permissions.js";
+import {
+  joinWithAndSeparator,
+  sleep,
+  timestampToDate,
+} from "#lib/safe-utils.js";
 import { ImportDirectory } from "@zoodogood/import-directory";
 
 const COMMANDS_PATH = "./folder/commands";
@@ -196,7 +201,7 @@ class CommandsManager {
       const permissions = clientWastedChannelPermissions.map((string) =>
         permissionRawToI18n(string, locale),
       );
-      const content = Util.joinWithAndSeparator(permissions);
+      const content = joinWithAndSeparator(permissions);
       problems.push(
         `Боту необходимы следующие права в этом канале: ${content}`,
       );
@@ -214,7 +219,7 @@ class CommandsManager {
       const permissions = clientWastedGuildPermissions.map((string) =>
         permissionRawToI18n(string, locale),
       );
-      const content = Util.joinWithAndSeparator(permissions);
+      const content = joinWithAndSeparator(permissions);
       problems.push(
         `Боту необходимы следующие права в этой гильдии: ${content} `,
       );
@@ -233,7 +238,7 @@ class CommandsManager {
       const permissions = userWastedChannelPermissions.map((string) =>
         permissionRawToI18n(string, locale),
       );
-      const content = Util.joinWithAndSeparator(permissions);
+      const content = joinWithAndSeparator(permissions);
       problems.push(
         `Вам необходимо обладать следующими правами внутри текущего канала: ${content} `,
       );
@@ -249,7 +254,7 @@ class CommandsManager {
       const permissions = userWastedGuildPermissions.map((string) =>
         permissionRawToI18n(string, locale),
       );
-      const content = Util.joinWithAndSeparator(permissions);
+      const content = joinWithAndSeparator(permissions);
       problems.push(
         `Вам необходимо обладать следующими правами внутри гильдии: ${content} `,
       );
@@ -271,7 +276,7 @@ class CommandsManager {
       }
 
       const difference = cooldownApi.diff() + 500;
-      problems.push(`Перезарядка: **${Util.timestampToDate(difference)}**`);
+      problems.push(`Перезарядка: **${timestampToDate(difference)}**`);
     })();
 
     if (problems.length === 0) {
@@ -326,7 +331,7 @@ class CommandsManager {
           ),
         );
       await helper.whenRunExecuted;
-      await Util.sleep(30_000);
+      await sleep(30_000);
       helper.targetMessage.delete();
     };
     helpMessage();
