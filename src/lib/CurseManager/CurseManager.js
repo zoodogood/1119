@@ -12,7 +12,6 @@ import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { DataManager } from "#lib/DataManager/singletone.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
-import Executor from "#lib/modules/Executor.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import QuestManager from "#lib/modules/QuestManager.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
@@ -2198,13 +2197,4 @@ class CurseManager {
   }
 }
 
-Executor.bind("curseManager", (target, { params, interaction }) => {
-  if (target === "events") {
-    const [event, ...parsed] = params.split(":");
-    const base = CurseManager.cursesBase.get(event);
-    base.onComponent.call(base, { interaction, params: parsed });
-
-    return;
-  }
-});
 export default CurseManager;
