@@ -1,6 +1,7 @@
 {
-	"recommendations": [
-		"formulahendry.code-runner",
-		"dbaeumer.vscode-eslint"
-	]
+  "recommendations": [
+    "formulahendry.code-runner",
+    "dbaeumer.vscode-eslint",
+    "bierner.markdown-mermaid"
+  ]
 }
