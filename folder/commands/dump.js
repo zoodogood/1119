@@ -1,5 +1,5 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 
 class Command extends BaseCommand {
   options = {

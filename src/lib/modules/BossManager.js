@@ -6,32 +6,32 @@ import { NOT_BREAKING_SPACE } from "#constants/globals/characters.js";
 import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
 import { elementsEnum } from "#folder/commands/thing.js";
 import {
-  core_make_attack,
-  core_make_attack_context,
-  display_attack,
-  process_before_attack,
-  update_attack_cooldown,
-  update_attack_damage_multiplayer,
+	core_make_attack,
+	core_make_attack_context,
+	display_attack,
+	process_before_attack,
+	update_attack_cooldown,
+	update_attack_damage_multiplayer,
 } from "#folder/entities/boss/attack.js";
 import {
-  attack_event_callback,
-  resolve_attack_events_pull,
+	attack_event_callback,
+	resolve_attack_events_pull,
 } from "#folder/entities/boss/attack_events.js";
 import { eventBases } from "#folder/entities/boss/events.js";
 import { RewardSystem } from "#folder/entities/boss/reward.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
 import { Properties } from "#lib/modules/mod.js";
 import {
-  NumberFormatLetterize,
-  ending,
-  numberFormat,
-  random,
-  sleep,
-  timestampDay,
-  timestampToDate,
-  toFixedAfterZero,
+	NumberFormatLetterize,
+	ending,
+	numberFormat,
+	random,
+	sleep,
+	timestampDay,
+	timestampToDate,
+	toFixedAfterZero,
 } from "#lib/util.js";
 import { update_health_thresholder } from "#root/folder/entities/boss/health.js";
 import { Collection } from "@discordjs/collection";
@@ -1278,11 +1278,11 @@ class BossManager {
 }
 
 export {
-  AttributesShop,
-  BossEffects,
-  BossEvents,
-  BossManager,
-  Relics as BossRelics,
-  Speacial as BossSpecial,
+	AttributesShop,
+	BossEffects,
+	BossEvents,
+	BossManager,
+	Relics as BossRelics,
+	Speacial as BossSpecial
 };
 export default BossManager;

@@ -1,10 +1,10 @@
 import { MINUTE } from "#constants/globals/time.js";
-import EventsEmitter from "events";
+import EventEmitter from "events";
 
 export class TimedCache {
   _timer_id;
   #cache;
-  emitter = new EventsEmitter();
+  emitter = new EventEmitter();
   static Events = {
     before_clean: "before_clean",
   };

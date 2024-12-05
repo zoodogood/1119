@@ -3,15 +3,15 @@ import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { HOUR } from "#constants/globals/time.js";
 import { resolve_description } from "#folder/entities/curses/curse.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import {
-    addResource,
-    ending,
-    random,
-    timestampDay,
-    transformToCollectionUsingKey,
+	addResource,
+	ending,
+	random,
+	timestampDay,
+	transformToCollectionUsingKey,
 } from "#lib/util.js";
 
 export const grempen_products = transformToCollectionUsingKey([

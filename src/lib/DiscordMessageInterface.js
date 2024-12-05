@@ -1,7 +1,7 @@
 import { MINUTE } from "#constants/globals/time.js";
 import { ReactionInteraction } from "#lib/Discord_utils.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
-import EventsEmitter from "events";
+import EventEmitter from "events";
 
 function processUserCanUseInteraction(interaction, messageInterface) {
   const { options } = messageInterface;
@@ -52,7 +52,7 @@ export class MessageInterface {
   _collectors = [];
   channel = null;
   embed = {};
-  emitter = new EventsEmitter();
+  emitter = new EventEmitter();
 
   message = null;
   one_message_already_being_sending = false;

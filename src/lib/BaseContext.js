@@ -1,4 +1,4 @@
-import EventsEmitter from "events";
+import EventEmitter from "events";
 
 // [Unsafe_primitives]: string[]
 export const Unsafe_primitives = Symbol("unsafe_primitives");
@@ -24,7 +24,7 @@ function to_safe_values_default(values) {
 export class BaseContext {
   channel = null;
   contextedAt = Date.now();
-  emitter = new EventsEmitter();
+  emitter = new EventEmitter();
   guild = null;
   user = null;
   constructor(_source, values) {

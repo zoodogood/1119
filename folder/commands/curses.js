@@ -6,7 +6,7 @@ import { resolve_description } from "#folder/entities/curses/curse.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { curse_epoch_singletone } from "#lib/CurseManager/CurseEpochSystem/singletone.js";
+import { curse_epoch_singleton } from "#lib/CurseManager/CurseEpochSystem/singleton.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
 import { Pager } from "#lib/DiscordPager.js";
 import {
@@ -457,7 +457,7 @@ class Epoch_FlagSubcommand extends BaseFlagSubcommand {
   };
   onProcess() {
     const { channel, interaction } = this.context;
-    const { field } = curse_epoch_singletone;
+    const { field } = curse_epoch_singleton;
     channel.msg({
       ...Command.MESSAGE_THEME,
       description: `**Текущая эпоха проклятий: ${field.epoch + 1}**\n*Эпохи проклятий, как способ сбора статистики о проклятиях в более интутивных и интересных рамках. Эпоха возвышается когда собраны проклятия всех видов, хотя бы по одному. Сбором считается успешное выполнение или провал проклятия.*\n\nУспех | провалено:\n${

@@ -1,4 +1,4 @@
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { parsePagesPath } from "#lib/safe-utils.js";
 import { BaseRoute } from "#server/router.js";
 import Path from "path";

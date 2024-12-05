@@ -1,7 +1,7 @@
 import client from "#bot/client.js";
 import { pushMessage } from "#lib/DiscordPushMessage.js";
 import Discord from "discord.js";
-import EventsEmitter from "events";
+import EventEmitter from "events";
 
 // MARK: Prototypes
 // =================================================
@@ -213,7 +213,7 @@ Object.defineProperty(Discord.User.prototype, "guilds", {
   enumerable: false,
 });
 
-EventsEmitter.prototype.disposable = function (eventName, listener) {
+EventEmitter.prototype.disposable = function (eventName, listener) {
   this.on(eventName, listener);
   return () => this.off(eventName, listener);
 };

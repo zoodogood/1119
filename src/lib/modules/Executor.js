@@ -1,9 +1,9 @@
-import EventsEmitter from "events";
+import EventEmitter from "events";
 
 class Executor {
   static #constructors = {};
 
-  static emitter = new EventsEmitter();
+  static emitter = new EventEmitter();
 
   static bind(key, callback) {
     this.#constructors[key] = callback;

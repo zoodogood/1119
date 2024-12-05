@@ -1,4 +1,4 @@
-import { curse_epoch_singletone } from "#lib/CurseManager/CurseEpochSystem/singletone.js";
+import { curse_epoch_singleton } from "#lib/CurseManager/CurseEpochSystem/singleton.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
 import Executor from "#lib/modules/Executor.js";
 
@@ -12,10 +12,10 @@ Executor.bind("curseManager", (target, { params, interaction }) => {
   }
 });
 
-curse_epoch_singletone.setCursesList([...CurseManager.cursesBase.values()]);
+curse_epoch_singleton.setCursesList([...CurseManager.cursesBase.values()]);
 
 CurseManager.emitter.on(CurseManager.Events.CurseEnd, (user, curse, context) =>
-  curse_epoch_singletone.onUserCurseEnd(user, curse, context),
+  curse_epoch_singleton.onUserCurseEnd(user, curse, context),
 );
 
 export { CurseManager };

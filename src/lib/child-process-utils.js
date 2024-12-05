@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import EventsEmitter from "events";
+import EventEmitter from "events";
 
 export default ({ root, logger = false }) => {
   // Solve problem: https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
@@ -72,7 +72,7 @@ export default ({ root, logger = false }) => {
     const promise = new Promise((resolve, reject) =>
       Object.assign(exit, { resolve, reject }),
     );
-    promise.emmiter = new EventsEmitter();
+    promise.emmiter = new EventEmitter();
     promise.outsring = "";
 
     const events = Object.fromEntries(

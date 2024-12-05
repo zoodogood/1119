@@ -1,7 +1,7 @@
 import config from "#config";
 import { Events } from "#constants/app/events.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { EventsManager, TimeEventsManager } from "#lib/modules/mod.js";
 
 class Event {

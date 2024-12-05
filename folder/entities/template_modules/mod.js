@@ -1,18 +1,18 @@
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 
 import {
-  ActionManager,
-  BossManager,
-  ChangelogDaemon,
-  CommandsManager,
-  CurseManager,
-  ErrorsHandler,
-  EventsManager,
-  GuildVariablesManager,
-  QuestManager,
-  StorageManager,
-  TimeEventsManager,
-  UserEffectManager,
+	ActionManager,
+	BossManager,
+	ChangelogDaemon,
+	CommandsManager,
+	CurseManager,
+	ErrorsHandler,
+	EventsManager,
+	GuildVariablesManager,
+	QuestManager,
+	StorageManager,
+	TimeEventsManager,
+	UserEffectManager,
 } from "#lib/modules/mod.js";
 import * as Util from "#lib/util.js";
 import mol_global from "mol_tree2";

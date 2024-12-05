@@ -1,12 +1,12 @@
 import { client } from "#bot/client.js";
 import config from "#config";
 import { NEW_YEAR_DAY_DATE } from "#constants/globals/time.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import {
-  BossManager,
-  ErrorsHandler,
-  EventsManager,
-  TimeEventsManager,
+	BossManager,
+	ErrorsHandler,
+	EventsManager,
+	TimeEventsManager,
 } from "#lib/modules/mod.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";

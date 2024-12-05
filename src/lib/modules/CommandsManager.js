@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 
 import Executor from "#lib/modules/Executor.js";
-import EventsEmitter from "events";
+import EventEmitter from "events";
 
 import { Actions } from "#lib/modules/ActionManager.js";
 
@@ -127,7 +127,7 @@ class CommandsManager {
   static collection = null;
 
   static CommandInteraction = CommandInteraction;
-  static emitter = new EventsEmitter();
+  static emitter = new EventEmitter();
 
   static EXECUTION_TYPES = {
     slash: {

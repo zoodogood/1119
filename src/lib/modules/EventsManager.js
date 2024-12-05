@@ -1,7 +1,7 @@
 import { Collection } from "@discordjs/collection";
 
 import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
-import EventsEmitter from "events";
+import EventEmitter from "events";
 
 import { ImportDirectory } from "@zoodogood/import-directory";
 
@@ -63,7 +63,7 @@ class BaseEvent {
 }
 
 class EventsManager {
-  static emitter = new EventsEmitter();
+  static emitter = new EventEmitter();
 
   static async importEvents() {
     const options = { subfolders: true };

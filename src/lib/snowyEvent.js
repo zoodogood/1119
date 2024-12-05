@@ -2,14 +2,14 @@ import { transformToCollectionUsingKey } from "#bot/util.js";
 import { Emoji } from "#constants/emojis.js";
 import { MINUTE } from "#constants/globals/time.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
-    dayjs,
-    ending,
-    getRandomElementFromArray,
-    random,
-    sleep,
+	dayjs,
+	ending,
+	getRandomElementFromArray,
+	random,
+	sleep,
 } from "#lib/safe-utils.js";
 import { addResource, factoryGetPropertyValue } from "#lib/util.js";
 

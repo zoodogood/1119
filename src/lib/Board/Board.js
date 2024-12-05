@@ -18,9 +18,9 @@ export class Board {
     return new BoardFetcher().fetch(id);
   }
 
-  static remove(singletone, id) {
+  static remove(singleton, id) {
     return;
-    return new BoardRemover().remove(singletone, id);
+    return new BoardRemover().remove(singleton, id);
   }
 }
 
@@ -60,8 +60,8 @@ export class BoardFetcher {
 }
 
 export class BoardRemover {
-  remove(singletone, id) {
-    singletone.loop.items.remove(id);
+  remove(singleton, id) {
+    singleton.loop.items.remove(id);
     const board = new BoardFetcher().fetch(id);
     const { channel } = board_parse_id(id);
     const { guild } = channel;

@@ -1,21 +1,21 @@
 import {
-    KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
-    KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
+	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
+	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
 } from "#constants/users/commands.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
-    NumberFormatLetterize,
-    addResource,
-    dayjs,
-    ending,
-    random,
-    sleep,
-    timestampToDate,
+	NumberFormatLetterize,
+	addResource,
+	dayjs,
+	ending,
+	random,
+	sleep,
+	timestampToDate,
 } from "#lib/util.js";
 
 function ending_with_normalize(

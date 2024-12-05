@@ -1,8 +1,8 @@
 import client from "#bot/client.js";
 import {
-  awaitUserAccept,
-  question,
-  take_missing_permissions,
+	awaitUserAccept,
+	question,
+	take_missing_permissions,
 } from "#bot/util.js";
 import { code } from "#constants/app/codes.js";
 import { Emoji } from "#constants/emojis.js";
@@ -11,13 +11,13 @@ import { MINUTE, SECOND } from "#constants/globals/time.js";
 import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import {
-  cli_parser_parse_flags,
-  flag,
-  process_flags,
+	cli_parser_parse_flags,
+	flag,
+	process_flags,
 } from "#lib/BaseCommand/parse_flags.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { DataManager, store } from "#lib/DataManager/singletone.js";
+import { DataManager, store } from "#lib/DataManager/singleton.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { Pager } from "#lib/DiscordPager.js";

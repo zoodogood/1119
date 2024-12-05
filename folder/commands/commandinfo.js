@@ -1,16 +1,16 @@
 import { BaseCommand } from "#lib/BaseCommand.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import * as Util from "#lib/util.js";
 
 import {
-  CustomCommand,
-  guild_custom_commands_uses_count as custom_commands_guild_uses_count,
-  uses_count_of,
+	CustomCommand,
+	guild_custom_commands_uses_count as custom_commands_guild_uses_count,
+	uses_count_of,
 } from "#folder/commands/guildcommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { percent_string } from "#lib/formatters.js";
 import CommandsManager, {
-  resolve_command,
+	resolve_command,
 } from "#lib/modules/CommandsManager.js";
 import { permissionsBitsToI18nArray } from "#lib/permissions.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";

@@ -2,7 +2,7 @@ import { DAY, MINUTE } from "#constants/globals/time.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";

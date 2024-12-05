@@ -7,22 +7,22 @@ import { ActivityType, AuditLogEvent } from "discord.js";
 
 import client from "#bot/client.js";
 import config from "#config";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import {
-  ActionManager,
-  BossManager,
-  CommandsManager,
-  EventsManager,
-  TimeEventsManager,
+	ActionManager,
+	BossManager,
+	CommandsManager,
+	EventsManager,
+	TimeEventsManager,
 } from "#lib/modules/mod.js";
 import * as Util from "#lib/util.js";
 
 import app from "#app";
 import { Events } from "#constants/app/events.js";
 import {
-  LEVELINCREASE_EXPERIENCE_PER_LEVEL,
-  MESSAGES_SPAM_FILTER_TARGET_ALWAYS,
-  MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
+	LEVELINCREASE_EXPERIENCE_PER_LEVEL,
+	MESSAGES_SPAM_FILTER_TARGET_ALWAYS,
+	MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
 } from "#constants/users/events.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";

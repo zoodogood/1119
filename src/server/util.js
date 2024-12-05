@@ -1,5 +1,5 @@
 import config from "#config";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { CustomCollector } from "@zoodogood/utils/objectives";
 import net from "net";
 
@@ -58,4 +58,3 @@ function incrementEnterAPIStatistic(request, response, next) {
 }
 
 export { checkPort, getAddress, incrementEnterAPIStatistic };
-

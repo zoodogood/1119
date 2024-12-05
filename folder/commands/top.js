@@ -6,16 +6,16 @@ import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { SECOND } from "#constants/globals/time.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { Pager } from "#lib/DiscordPager.js";
 import BossManager from "#lib/modules/BossManager.js";
 import QuestManager from "#lib/modules/QuestManager.js";
 import {
-  DotNotatedInterface,
-  NumberFormatLetterize,
-  ending,
-  joinWithAndSeparator,
-  random,
+	DotNotatedInterface,
+	NumberFormatLetterize,
+	ending,
+	joinWithAndSeparator,
+	random,
 } from "#lib/safe-utils.js";
 import { Collection } from "@discordjs/collection";
 import { CliParser } from "@zoodogood/utils/primitives";

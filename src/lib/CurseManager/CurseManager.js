@@ -10,7 +10,7 @@ import { resolve_description } from "#folder/entities/curses/curse.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { provideTunnel } from "#folder/userEffects/provideTunnel.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import QuestManager from "#lib/modules/QuestManager.js";

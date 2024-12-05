@@ -1,5 +1,5 @@
 import { BaseContext } from "#lib/BaseContext.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";

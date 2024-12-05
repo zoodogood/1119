@@ -38,5 +38,5 @@ export {
 // style for modern modules
 export { singleton as board_singleton } from "#lib/Board/singleton.js";
 export { singleton as ChangelogDaemon } from "#lib/ChangelogDaemon/singleton.js";
-export { CurseManager } from "#lib/CurseManager/singletone.js";
-export { DataManager } from "#lib/DataManager/singletone.js";
+export { CurseManager } from "#lib/CurseManager/singleton.js";
+export { DataManager } from "#lib/DataManager/singleton.js";

@@ -5,27 +5,27 @@ import { Bosses_Flagsubcommand } from "#folder/commands/boss.js";
 import { default as CommmandInfo } from "#folder/commands/commandinfo.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { Pager } from "#lib/DiscordPager.js";
 import { justModalQuestion } from "#lib/Discord_utils.js";
 import TimeEventsManager from "#lib/modules/TimeEventsManager.js";
 import {
-  dayjs,
-  ending,
-  question,
-  sleep,
-  timestampDay,
-  timestampToDate,
+	dayjs,
+	ending,
+	question,
+	sleep,
+	timestampDay,
+	timestampToDate,
 } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import {
-  BaseInteraction,
-  ButtonStyle,
-  CategoryChannel,
-  PermissionFlagsBits,
-  escapeMarkdown,
+	BaseInteraction,
+	ButtonStyle,
+	CategoryChannel,
+	PermissionFlagsBits,
+	escapeMarkdown,
 } from "discord.js";
 
 class Special {

@@ -3,7 +3,7 @@ import { omit } from "#src/lib/util.js";
 import { assert } from "console";
 
 import { client } from "#bot/client.js";
-import { DataManager } from "#lib/DataManager/singletone.js";
+import { DataManager } from "#lib/DataManager/singleton.js";
 import {
   BossManager,
   CommandsManager,
