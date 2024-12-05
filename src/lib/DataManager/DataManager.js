@@ -1,6 +1,7 @@
 import app from "#app";
 import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import StorageManager from "#lib/modules/StorageManager.js";
+import { EventEmitter } from "#lib/util.js";
 import { Guild, User } from "discord.js";
 import FileSystem from "fs";
 
@@ -10,6 +11,10 @@ class DataManager {
    */
   static data = {};
 
+  static emitter = new EventEmitter();
+  static Events = {
+    Load: "Load",
+  };
   static file = {
     path: `${process.cwd()}/folder/data/main.json`,
     load: async () => {
@@ -18,6 +23,7 @@ class DataManager {
       const content = FileSystem.readFileSync(path, "utf-8");
       const data = JSON.parse(content);
       this.data = data;
+      this.emitter.emit(DataManager.Events.Load);
     },
     write: async () => {
       const path = this.file.path;
@@ -103,6 +109,10 @@ class DataManager {
       commandsUsed: {},
       members: {},
     };
+  }
+
+  static require_load() {
+    return !!Object.keys(this.data).length || this.file.load();
   }
 
   static userToDefaultData(user, id) {
