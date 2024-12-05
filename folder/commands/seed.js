@@ -34,8 +34,8 @@ const COSTS_TABLE = [
 const GLOBAL_MESSAGES_NEED_MULTIPLAYER = 0.3;
 
 const GROWTH_SPEED_TABLE = [
-  0, 0.8, 1.2, 1.8, 2.5, 5, 7.5, 10, 12, 15.6, 21, 24, 42, 54, 66, 84, 108, 144,
-  252, 360, 450, 792,
+  0, 0.4, 0.6, 0.9, 1.25, 2.5, 3.75, 5, 6, 7.8, 10.5, 12, 21, 27, 33, 42, 54,
+  72, 126, 180, 225, 396,
 ];
 
 const MESSAGES_NEED_TABLE = [
@@ -43,7 +43,7 @@ const MESSAGES_NEED_TABLE = [
   3200, 3700, 4500, 5400, 7400, 12000,
 ];
 
-const TREE_ALIVE_WITHOUT_WATER_DAYS = 4;
+const TREE_ALIVE_WITHOUT_WATER_DAYS = 7;
 
 class Tree {
   constructor(guild) {
@@ -64,20 +64,15 @@ class Tree {
     this.field.entryTimestamp = Date.now();
   }
   get berry_growth_speed() {
-    return GROWTH_SPEED_TABLE[this.field.level];
+    const has_damage = !!this.field.damage;
+    return GROWTH_SPEED_TABLE[this.field.level] * 2 ** +!has_damage;
   }
   get end_of_day_messages_need() {
     const basic = MESSAGES_NEED_TABLE[this.field.level];
-    const byMembersCount = this.guild.memberCount * 3;
-    const byDayAverage = (this.guildData.day_average || 0) / 5;
 
-    const treeMistakesMultiplayer =
-      "damage" in this.field ? 1 - 0.1 * this.field.damage : 1;
+    const treeMistakesMultiplayer = 1 - 0.1 * (this.field.damage || 0);
     const globalMultiplayer = GLOBAL_MESSAGES_NEED_MULTIPLAYER;
-    const count =
-      (basic + byMembersCount + byDayAverage) *
-      globalMultiplayer *
-      treeMistakesMultiplayer;
+    const count = basic * globalMultiplayer * treeMistakesMultiplayer;
     return Math.floor(count);
   }
   get upgrade_cost() {
@@ -91,6 +86,10 @@ export function onDayStats(guild, eventContext) {
   const { end_of_day_messages_need } = tree;
 
   tree.field.damage ||= 0;
+
+  if (guildData.day_msg === 0) {
+    tree.field.damage += 1;
+  }
 
   if (guildData.day_msg < end_of_day_messages_need) {
     tree.field.damage +=
