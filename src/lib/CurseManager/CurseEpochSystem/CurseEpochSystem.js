@@ -25,6 +25,7 @@ const sendMessage = (user, text) => {
 export class CurseEpochSystem {
   static FIELD = "curseEpoch";
   _checkList = [];
+  _ignore = ["happyNewYear"];
 
   /** @type {CurseEpochField} */
   field;
@@ -47,6 +48,9 @@ export class CurseEpochSystem {
 
   onUserCurseEnd(user, curse, { isLost }) {
     const { id } = curse;
+    if (this._ignore.includes(id)) {
+      return;
+    }
     this.field[id] ||= [0, 0];
     this.field[id][+isLost]++;
 
@@ -70,8 +74,7 @@ export class CurseEpochSystem {
   }
 
   setCursesList(list) {
-    const _ignore = ["happyNewYear"];
-    this._checkList = list.filter((curse) => !_ignore.includes(curse.id));
+    this._checkList = list.filter((curse) => !this._ignore.includes(curse.id));
     return this;
   }
 
