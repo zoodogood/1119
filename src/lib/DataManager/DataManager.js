@@ -13,7 +13,7 @@ class DataManager {
 
   static emitter = new EventEmitter();
   static Events = {
-    Load: "Load",
+    Ready: "Ready",
   };
   static file = {
     path: `${process.cwd()}/folder/data/main.json`,
@@ -23,7 +23,7 @@ class DataManager {
       const content = FileSystem.readFileSync(path, "utf-8");
       const data = JSON.parse(content);
       this.data = data;
-      this.emitter.emit(DataManager.Events.Load);
+      this.emitter.emit(DataManager.Events.Ready);
     },
     write: async () => {
       const path = this.file.path;
