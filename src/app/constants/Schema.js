@@ -1,3 +1,5 @@
+/** @import { CurseEpochField } from "#lib/CurseManager/CurseEpochSystem/CurseEpochSystem.js"; */
+
 /**
  * @type {Schema}
  */
@@ -339,6 +341,7 @@ const Schema = {
  * @property {daily} daily
  * @property {resourcesChanges} resourcesChanges
  * @property {actions} actions
+ * @property {CurseEpochField} curseEpoch
  */
 
 /**
