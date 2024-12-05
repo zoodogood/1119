@@ -3,3 +3,4 @@ export * from "#lib/mini.js";
 export * from "#lib/safe-utils.js";
 export * from "#server/util.js";
 export * from "#src/app/utils.js";
+export { default as EventEmitter } from "node:events";
