@@ -1,4 +1,3 @@
-import CurseManager from "../CurseManager/CurseManager.js";
 import APIPointAuthorizationManager from "./APIPointAuthorization.js";
 import ActionManager from "./ActionManager.js";
 import BossManager from "./BossManager.js";
@@ -23,7 +22,6 @@ export {
   BossManager,
   CommandsManager,
   CooldownManager,
-  CurseManager,
   ErrorsHandler,
   EventsManager,
   Executor,
@@ -40,4 +38,5 @@ export {
 // style for modern modules
 export { singleton as board_singleton } from "#lib/Board/singleton.js";
 export { singleton as ChangelogDaemon } from "#lib/ChangelogDaemon/singleton.js";
+export { CurseManager } from "#lib/CurseManager/singletone.js";
 export { DataManager } from "#lib/DataManager/singletone.js";
