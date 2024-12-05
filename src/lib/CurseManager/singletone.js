@@ -18,5 +18,5 @@ const curseEpochSystem = new CurseEpochSystem(DataManager).setCursesList([
 ]);
 
 CurseManager.emitter.on(CurseManager.Events.CurseEnd, (user, curse, context) =>
-  curseEpochSystem.onCurseManagerCurseEnd(user, curse, context),
+  curseEpochSystem.onUserCurseEnd(user, curse, context),
 );
