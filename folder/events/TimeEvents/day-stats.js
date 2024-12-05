@@ -6,7 +6,7 @@ import {
 } from "#lib/modules/mod.js";
 
 import BankCommand from "#folder/commands/bank.js";
-import TreeCommand from "#folder/commands/seed.js";
+import { onDayStats as TreeOnDayStats } from "#folder/commands/seed.js";
 import { MonthStatisticForEveryDayAPI } from "#folder/entities/statistic/messages/MonthStatisticForEveryDayAPI.js";
 import {
   average,
@@ -30,14 +30,13 @@ class Event {
     }
 
     const context = {
-      treeCommand: new TreeCommand(),
       bankCommand: new BankCommand(),
       guildsStatsContext: {},
     };
 
     client.guilds.cache.each(async (guild) => {
       const { data } = guild;
-      data.tree?.level && context.treeCommand.onDayStats(guild, context);
+      data.tree?.level && TreeOnDayStats(guild, context);
       data.professions && context.bankCommand.onDayStats(guild, context);
       this.sendStats(guild, context);
       MonthStatisticForEveryDayAPI.ofGuild(guild).push({
