@@ -354,11 +354,11 @@ class Mention_Subcommand extends BaseFlagSubcommand {
 class Item {
   static from(itemData) {
     const item = Object.assign(Object.create(this.prototype), itemData);
-    this.normalize(item);
+    this.lower_case_aliases(item);
     return item;
   }
 
-  static normalize(item) {
+  static lower_case_aliases(item) {
     item.names = [...item.names].map((alias) => alias.toLowerCase());
   }
 

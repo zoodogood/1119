@@ -1,9 +1,7 @@
-import { Collection } from "@discordjs/collection";
-
 import app from "#app";
 import { Emoji } from "#constants/emojis.js";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
-import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
+import { DAY, HOUR, MINUTE, SECOND } from "#constants/globals/time.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
 import { RanksUtils } from "#folder/commands/top.js";
 import { resolve_description } from "#folder/entities/curses/curse.js";
@@ -25,6 +23,7 @@ import {
   yaml,
 } from "#lib/safe-utils.js";
 import { addResource, overTheMessageSpamLimit } from "#lib/util.js";
+import { Collection } from "@discordjs/collection";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { AttachmentBuilder, MessageMentions } from "discord.js";
 import EventEmitter from "events";
@@ -144,7 +143,7 @@ class CurseManager {
         hard: 0,
         values: {
           goal: () => 2,
-          timer: () => 86_400_000 * 2,
+          timer: () => DAY * 2,
         },
         callback: {
           chilliBooh: (user, curse, { boohIn, chilli }) =>
@@ -189,7 +188,7 @@ class CurseManager {
         hard: 1,
         values: {
           goal: () => 1,
-          timer: () => 86_400_000 * 10,
+          timer: () => DAY * 10,
         },
         callback: {
           openChest: (user, curse, { treasures }) =>
@@ -207,7 +206,7 @@ class CurseManager {
         hard: 1,
         values: {
           goal: () => 70,
-          timer: () => 3_600_000 * 2,
+          timer: () => HOUR * 2,
           messages: () => [],
         },
         callback: {
@@ -241,7 +240,7 @@ class CurseManager {
         hard: 0,
         values: {
           goal: () => 2,
-          timer: () => 86_400_000 / 2,
+          timer: () => DAY / 2,
           listOfUsers: (user) => [user.id],
         },
         callback: {
@@ -302,7 +301,7 @@ class CurseManager {
         hard: 0,
         values: {
           goal: (user) => 48 - (user.data.chectLevel ?? 0) * 16,
-          timer: () => 3_600_000 / 2,
+          timer: () => HOUR / 2,
         },
         callback: {
           messageCreate: (user, curse, message) => {
@@ -533,7 +532,7 @@ class CurseManager {
           return `${this.description}: <t:${stamp}:R>`;
         },
         values: {
-          timer: () => 3_600_000 * 24,
+          timer: () => HOUR * 24,
           goal: () => 1,
           audit: () => [],
           counter: () => 1,
@@ -624,7 +623,7 @@ class CurseManager {
           )}\nПолучено: ${progress}/${maximum}\nДо спокойного конца: ${endAtContent}`;
         },
         values: {
-          timer: () => 3_600_000 * 8,
+          timer: () => HOUR * 8,
           progress: () => 0,
           maximum: () => 7_000,
         },
@@ -982,7 +981,7 @@ class CurseManager {
           return `Поднимитесь в топе по богатству на "${name}" хотя бы на один ранг и дождитесь конца проклятия`;
         },
         values: {
-          timer: () => 86_400_000,
+          timer: () => DAY,
           goal: () => 1,
           guildId: (_user, _curse, data) => data.guild.id,
           previousRank: () => null,
@@ -1212,7 +1211,7 @@ class CurseManager {
         values: {
           timer(user) {
             const userData = user.data;
-            const defaults = 20 * 60_000;
+            const defaults = 20 * MINUTE;
             const candyData = userData[this.EFFECT_ID] || {};
             return defaults * (candyData.level || 1);
           },
@@ -1232,7 +1231,7 @@ class CurseManager {
           });
         },
         calculateCandiesPerRest({ timeDiff }) {
-          const secondsRemind = timeDiff / 1_000;
+          const secondsRemind = timeDiff / SECOND;
           return Math.floor(secondsRemind / 300);
         },
         callback: {
