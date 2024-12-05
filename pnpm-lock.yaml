@@ -15,8 +15,8 @@ importers:
         specifier: 1.5.1
         version: 1.5.1
       '@zoodogood/utils':
-        specifier: 4.0.0-change.2617
-        version: 4.0.0-change.2617(discord.js@14.16.3)
+        specifier: 4.2.1-change.3358
+        version: 4.2.1-change.3358(discord.js@14.16.3)
       body-parser:
         specifier: ^1.20.3
         version: 1.20.3
@@ -642,8 +642,8 @@ packages:
   '@zoodogood/import-directory@1.5.1':
     resolution: {integrity: sha512-pBuyt2mS0tsNt7aLJMEDSyl4+xP3dJ3677y+xOznHoOlkV8UECxb92G7Ol5lCxsk4sLnLEAwcjiUpx7WVQ6P1w==}
 
-  '@zoodogood/utils@4.0.0-change.2617':
-    resolution: {integrity: sha512-3oIksVISwsu9RVYNteZLPuSFjbDrm0jDSKVFL+96tZFyHGn6htpVbYaq5m91h3rAlzjW/Pg703uPKr4NrMy08w==}
+  '@zoodogood/utils@4.2.1-change.3358':
+    resolution: {integrity: sha512-wWQRhvk1qjpEOcFYiluW/rGiN+SfCXU653QMeRKV4F1lz8NoaYQT7r1r88P/1zXQs792Ol6ke1/kTzmUxoLnxQ==}
     peerDependencies:
       discord.js: '>=14.x.x'
 
@@ -2476,7 +2476,7 @@ snapshots:
 
   '@zoodogood/import-directory@1.5.1': {}
 
-  '@zoodogood/utils@4.0.0-change.2617(discord.js@14.16.3)':
+  '@zoodogood/utils@4.2.1-change.3358(discord.js@14.16.3)':
     dependencies:
       discord.js: 14.16.3
 

@@ -1,6 +1,6 @@
 {
   "name": "greenghost",
-  "version": "2.0.0-alpha.25330",
+  "version": "2.0.0-alpha.25468",
   "type": "module",
   "description": "",
   "main": "index.js",
@@ -35,7 +35,7 @@
   "dependencies": {
     "@discordjs/collection": "^2.1.1",
     "@zoodogood/import-directory": "1.5.1",
-    "@zoodogood/utils": "4.0.0-change.2617",
+    "@zoodogood/utils": "4.2.1-change.3358",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
