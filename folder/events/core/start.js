@@ -92,7 +92,7 @@ class Event extends BaseEvent {
 
     EventsManager.listenAll();
 
-    await DataManager.file.load();
+    await DataManager.require_load();
     await TimeEventsManager.file.load();
     await ErrorsHandler.importFileErrorsList();
 
