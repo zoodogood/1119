@@ -27,7 +27,7 @@ const sendMessage = (user, text) => {
 export class CurseEpochSystem {
   static FIELD = "curseEpoch";
   _checkList = [];
-  _ignore = ["happyNewYear"];
+  _ignore = ["happySnowy"];
 
   /** @type {CurseEpochField} */
   field;
