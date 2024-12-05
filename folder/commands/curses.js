@@ -9,9 +9,9 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
 import { Pager } from "#lib/DiscordPager.js";
 import {
-    actionRowsToComponents,
-    jsonFile,
-    takeInteractionProperties,
+  actionRowsToComponents,
+  jsonFile,
+  takeInteractionProperties,
 } from "#lib/Discord_utils.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
@@ -21,10 +21,10 @@ import { addResource } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import {
-    ButtonStyle,
-    FormattingPatterns,
-    PresenceUpdateStatus,
-    escapeCodeBlock,
+  ButtonStyle,
+  FormattingPatterns,
+  PresenceUpdateStatus,
+  escapeCodeBlock,
 } from "discord.js";
 
 class Utils {
