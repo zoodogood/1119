@@ -49,7 +49,9 @@ class Tree {
   constructor(guild) {
     this.guild = guild;
     this.guildData = guild.data;
-    this.field = this.guildData.treeField ||= {};
+    this.field = this.guildData.tree ||= {
+      level: 0,
+    };
   }
 
   berrys_actuallize() {
