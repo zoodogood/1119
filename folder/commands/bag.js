@@ -16,13 +16,13 @@ function getMoveTargetsOf({ user, isToBag }) {
   return { targetTo, targetFrom };
 }
 
-function getBagTargetOf(user) {
+export function getBagTargetOf(user) {
   const userData = user.data;
   userData.bag ||= {};
   return userData.bag;
 }
 
-function moveToBagBrute({ key, count, user }) {
+export function moveToBagBrute({ key, count, user }) {
   const bag = getBagTargetOf(user);
   user.data[key] -= count;
   bag[key] ||= 0;
@@ -49,7 +49,7 @@ export function addResourceAndMoveToBag({
   moveToBagBrute({ key: resource, count: value, user });
 }
 
-function checkMoveDetailes({ user, isToBag, count, key }) {
+export function checkMoveDetailes({ user, isToBag, count, key }) {
   const item = Command.items.find((item) => item.key === key);
   const { targetTo, targetFrom } = getMoveTargetsOf({ user, isToBag });
 
@@ -146,9 +146,8 @@ function _moveItem(moveDetails) {
   return moveDetails;
 }
 
-function movePrepare(moveDetailes, context) {
+export function movePrepare(moveDetailes, { user }) {
   const { key, item } = moveDetailes;
-  const { user } = context;
   const userData = user.data;
   if (userData[key] === undefined) {
     item.setter({ count: 0, target: userData });
@@ -378,7 +377,7 @@ class Item {
   }
 }
 
-const ITEMS = [
+export const ITEMS = [
   {
     key: "coins",
     names: PropertiesList.coins.alias.split(" "),
