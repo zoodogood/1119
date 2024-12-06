@@ -12,11 +12,11 @@ import { ending, question, timestampToDate } from "#lib/util.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import {
-	BaseInteraction,
-	ButtonStyle,
-	CategoryChannel,
-	escapeMarkdown,
-	PermissionFlagsBits,
+  BaseInteraction,
+  ButtonStyle,
+  CategoryChannel,
+  escapeMarkdown,
+  PermissionFlagsBits,
 } from "discord.js";
 
 class Special {
