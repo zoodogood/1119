@@ -63,14 +63,16 @@ class Event extends BaseEvent {
     const needUpdate =
       DataManager.data.bot.currentDay !== timestampDay(Date.now());
     if (needUpdate) {
-      await EventsManager.collection.get("TimeEvent/new-day").run(true);
+      await EventsManager.collection
+        .get("TimeEvent/new-day")
+        .run({ isLost: true });
     }
 
     TimeEventsManager.getEventsInRange([
       TimeEventsManager.getNearestDay(),
       TimeEventsManager.getNearestDay() + 1,
     ]).find((event) => event.name === "autosave") ||
-      (await EventsManager.collection.get("TimeEvent/autosave").run(true));
+      (await EventsManager.collection.get("TimeEvent/autosave").run({}));
   }
 
   async run() {

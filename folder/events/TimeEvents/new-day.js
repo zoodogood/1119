@@ -156,7 +156,9 @@ class DailyEvents {
     launched_events.length > 0 &&
       launched_events.forEach(TimeEventsManager.remove.bind(TimeEventsManager));
 
-    await EventsManager.collection.get("TimeEvent/day-stats").run(true);
+    await EventsManager.collection
+      .get("TimeEvent/day-stats")
+      .run({ isLost: true });
   }
 
   static distributePresents(context) {
