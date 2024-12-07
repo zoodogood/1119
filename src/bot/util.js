@@ -286,11 +286,12 @@ export function trim_line_space(string) {
   return string.replaceAll(/^[ \t]*/gm, "");
 }
 
-export function contents(contents) {
+export function multiline(contents) {
   return contents
     .filter(
       (content) =>
         content !== false && content !== null && content !== undefined,
     )
-    .map(String);
+    .map(String)
+    .join("");
 }
