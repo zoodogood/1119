@@ -23,7 +23,7 @@ class Event {
     name: "TimeEvent/day-stats",
   };
 
-  run(eventData) {
+  run(eventData = {}) {
     if (eventData.isLost) {
       this.time_events_recreate();
       return;
