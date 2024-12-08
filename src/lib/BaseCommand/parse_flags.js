@@ -13,18 +13,18 @@ import { CliParser } from "@zoodogood/utils/CliParser";
  * @returns
  */
 export function flag(
-  capture,
-  description,
-  { expectValue, effect, finalize } = {},
+	capture,
+	description,
+	{ expectValue, effect, finalize } = {},
 ) {
-  return {
-    name: capture[0],
-    capture,
-    description,
-    effect,
-    finalize,
-    expectValue,
-  };
+	return {
+		name: capture[0],
+		capture,
+		description,
+		effect,
+		finalize,
+		expectValue,
+	};
 }
 
 /**
@@ -33,35 +33,35 @@ export function flag(
  * @param {BaseCommandRunContext} context
  */
 export async function process_flags(context) {
-  const command_flags = context.command.options.cliParser.flags;
-  const [parsed, values] = context.cliParsed;
-  const flags = command_flags
-    .filter((flag) => {
-      const { name } = flag;
-      return parsed.captures.has(name);
-    })
-    .map((flag) => {
-      const { name } = flag;
-      return {
-        ...flag,
-        value: values.get(name),
-        capture: parsed.captures.get(name),
-      };
-    });
+	const command_flags = context.command.options.cliParser.flags;
+	const [parsed, values] = context.cliParsed;
+	const flags = command_flags
+		.filter((flag) => {
+			const { name } = flag;
+			return parsed.captures.has(name);
+		})
+		.map((flag) => {
+			const { name } = flag;
+			return {
+				...flag,
+				value: values.get(name),
+				capture: parsed.captures.get(name),
+			};
+		});
 
-  await Promise.all(
-    flags.map((flag) => flag.effect?.(context, flag.value, flag)),
-  );
-  for (const flag of flags) {
-    const { value } = flag;
+	await Promise.all(
+		flags.map((flag) => flag.effect?.(context, flag.value, flag)),
+	);
+	for (const flag of flags) {
+		const { value } = flag;
 
-    const is_exit_signal =
-      (await flag.finalize?.(context, value, flag)) === true;
-    if (is_exit_signal) {
-      return true;
-    }
-  }
-  return false;
+		const is_exit_signal =
+			(await flag.finalize?.(context, value, flag)) === true;
+		if (is_exit_signal) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /**
@@ -70,29 +70,29 @@ export async function process_flags(context) {
  * @param {BaseCommandRunContext} context
  */
 export function cli_parser_parse_flags(command, context) {
-  const flags = command.options.cliParser.flags;
+	const flags = command.options.cliParser.flags;
 
-  const parser = new CliParser();
-  const parsed = parser
-    .setText(context.interaction.params)
-    .processBrackets()
-    .captureFlags(flags)
-    .captureResidueFlags()
-    .collect();
+	const parser = new CliParser();
+	const parsed = parser
+		.setText(context.interaction.params)
+		.processBrackets()
+		.captureFlags(flags)
+		.captureResidueFlags()
+		.collect();
 
-  const values = parsed.resolveValues((capture) => {
-    if (!capture) {
-      return;
-    }
+	const values = parsed.resolveValues((capture) => {
+		if (!capture) {
+			return;
+		}
 
-    if (!capture.isFlagMatchArray()) {
-      return capture.toString();
-    }
-    const value = capture.valueOfFlag();
-    const { flag, separator } = capture.content.groups;
-    return { flag, value, separator };
-  });
+		if (!capture.isFlagMatchArray()) {
+			return capture.toString();
+		}
+		const value = capture.valueOfFlag();
+		const { flag, separator } = capture.content.groups;
+		return { flag, value, separator };
+	});
 
-  context.setCliParsed(parsed, values);
-  return context.cliParsed;
+	context.setCliParsed(parsed, values);
+	return context.cliParsed;
 }
