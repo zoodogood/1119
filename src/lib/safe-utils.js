@@ -530,18 +530,17 @@ export {
   timestampToDate,
   toDayDate,
   uid,
-  yaml,
+  yaml
 };
 
-export { relativeSiteRoot } from "#site/lib/util.js";
-export { MarkdownMetadata } from "./MarkdownMetadata.js";
-export {
-  ROMAN_NUMERALS_TABLE,
-  digitToRoman,
-  romanToDigit,
-} from "./romanNumerals.js";
+  export { relativeSiteRoot } from "#site/lib/util.js";
+  export { MarkdownMetadata } from "./MarkdownMetadata.js";
+  export {
+    ROMAN_NUMERALS_TABLE,
+    digitToRoman,
+    romanToDigit
+  } from "./romanNumerals.js";
 
 export function clone(object) {
-  const clone = Object.create(Object.getPrototypeOf(object));
-  return Object.assign(clone, object);
+  return Object.create(Object.getPrototypeOf(object), Object.getOwnPropertyDescriptors(object));
 }
