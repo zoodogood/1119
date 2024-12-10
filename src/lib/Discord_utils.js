@@ -59,18 +59,18 @@ export async function justModalQuestion({
   });
 
   await interaction.showModal(modal);
-  const result = await interaction.awaitModalSubmit({
+  const response = await interaction.awaitModalSubmit({
     filter: (interaction) => customId === interaction.customId,
     time: MINUTE * 5,
   });
 
   thanks &&
-    result?.msg({
-      content: "Спасибо!",
+    response?.msg({
+      content: thanks !== true ? thanks : "Спасибо!",
       ephemeral: true,
     });
 
-  return { result, fields: result?.fields.fields };
+  return { response, fields: response?.fields.fields };
 }
 
 export function actionRowsToComponents(actionRows) {
