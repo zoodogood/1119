@@ -580,7 +580,7 @@ class List_FlagSubcommand_Filter {
     {
       component: { label: "Имя сервера", customId: "name" },
       async handleInteraction(interaction, filter) {
-        const { result, fields } = await justModalQuestion({
+        const { response, fields } = await justModalQuestion({
           title: "Имя сервера",
           components: [
             { label: "Поиск", placeholder: 'Введите "-", чтобы отключить' },
@@ -588,7 +588,7 @@ class List_FlagSubcommand_Filter {
           interaction,
         });
 
-        if (!result) {
+        if (!response) {
           interaction.msg({
             content: "Не удалось получить имя сервера",
             ephemeral: true,
@@ -598,13 +598,13 @@ class List_FlagSubcommand_Filter {
         const { value } = [...fields.values()].at(0);
         if (value === "-") {
           filter.isEnable = false;
-          return { replitable: result };
+          return { replitable: response };
         }
 
         filter.value = value;
         filter.isEnable = true;
 
-        return { replitable: result };
+        return { replitable: response };
       },
       params: { value: null },
       check: (guildData, filter) =>
