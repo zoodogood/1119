@@ -1,20 +1,10 @@
-import client from "#bot/client.js";
-import config from "#config";
-import { ErrorData, ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
-import {
-	objectToLocaleDeveloperString,
-	resolveGithubPath,
-	uid,
-} from "#lib/util.js";
-import { CreateModal } from "@zoodogood/utils/discordjs";
-import {
-	ButtonStyle,
-	ComponentType,
-	TextInputStyle,
-} from "discord-api-types/v10";
+import { HOUR } from "#constants/globals/time.js";
+import { ErrorData } from "#lib/modules/ErrorsHandler.js";
+import { resolveGithubPath } from "#lib/util.js";
+import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import Path from "path";
 
-class UserInterfaceUtil {
+class ErrorMomentNotification {
 	static components = {
 		getErrorInfo({ interaction, context }) {
 			const { stack } = context;
@@ -23,124 +13,16 @@ class UserInterfaceUtil {
 				content: `\`\`\`js\n${stack}\`\`\``,
 			});
 		},
-		async setAddableInformationForError({ interaction, context }) {
-			const modalId = `review-${uid()}`;
-			const components = [
-				{
-					type: ComponentType.TextInput,
-					customId: `${modalId}-content`,
-					style: TextInputStyle.Paragraph,
-					label: "Предположительно",
-					required: true,
-					maxLength: 1_000,
-					value: "Это бета-функция и она может быть удалена в будущем",
-					placeholder: "Необязательно, отправляет сообщение разработчику",
-				},
-			];
-
-			const modal = CreateModal({
-				components,
-				customId: modalId,
-				title: "Отправить",
-			});
-
-			interaction.showModal(modal);
-
-			const response = await interaction
-				.awaitModalSubmit({
-					filter: (interaction) => interaction.customId === modalId,
-					time: 300_000,
-				})
-				.catch(() => {});
-
-			if (!response) {
-				return;
-			}
-
-			const responseText = response.fields.getField(`${modalId}-content`).value;
-
-			const StatusEnum = {
-				Dang: "dang",
-				Urge: "urge",
-				Desi: "desi",
-				Quie: "quie",
+		async callBugCommand({ interaction, context }) {
+			interaction.extend = {
+				error_moment_context: context,
 			};
 
-			const options = [
-				{
-					label: "Опасно",
-					value: StatusEnum.Dang,
-					description: "Имеет последствия",
-				},
-				{
-					label: "Необходимо",
-					value: StatusEnum.Urge,
-				},
-				{
-					label: "Мешает",
-					value: StatusEnum.Desi,
-					description: "Является преградой",
-				},
-				{
-					label: "Живёт себе спокойно",
-					value: StatusEnum.Quie,
-					description: "Эту ошибку можно обойти",
-				},
-			];
-			(async () => {
-				const message = await response.msg({
-					ephemeral: true,
-					content: `Текст будет прикреплён как публичный комментарий к ошибке, не сообщайте личную информацию, а также направлен разработчику.\nПодробности можно узнать на основном сервере <${config.guild.url}>\nВыберите важность ошибки из списка, чтобы начать отправку`,
-					fetchReply: true,
-					placeholder: "Необходимо",
-					components: [
-						{
-							type: ComponentType.StringSelect,
-							customId: `${modalId}-select`,
-							options,
-						},
-					],
-				});
+			const { default: CommandsManager } = await import(
+				"#lib/modules/CommandsManager.js"
+			);
 
-				const selectionInteract = await message
-					.awaitMessageComponent({ time: 120_000 })
-					.catch(() => {});
-
-				if (!selectionInteract) {
-					message.delete();
-					return;
-				}
-
-				const { error } = context;
-				const group = ErrorsHandler.getErrorsGroupBy(error.message);
-				group.addComment({ responseText, id: interaction.user.id });
-
-				selectionInteract.msg({
-					edit: true,
-					content: "Отправлено",
-					components: [],
-				});
-
-				client.channels.cache.get(config.guild.logChannelId).msg({
-					title: `Дан комментарий ошибки с срочностью ${
-						options.find(({ value }) => value === selectionInteract.values[0])
-							.label
-					}\n\`\`\`${error.message}\`\`\``,
-					description: responseText,
-					color: "#d8bb40",
-					footer: { text: interaction.user.id },
-				});
-			})();
-			return;
-		},
-
-		async readPrimaryContext({ interaction, context }) {
-			const DEEP = 1;
-			const description = objectToLocaleDeveloperString(context.primary, DEEP);
-			interaction.msg({
-				title: "Часть состояния программы:",
-				description,
-			});
+			CommandsManager.callMap.get("bug").onChatInput(null, interaction);
 		},
 	};
 
@@ -158,14 +40,17 @@ class UserInterfaceUtil {
 		primary = null,
 		description = "",
 	}) {
-		const { fileOfError, strokeOfError, stack } =
+		const parsedStack =
 			ErrorData.prototype.parseErrorStack.call(
 				{ error },
 				{ node_modules: false },
 			) ?? {};
 
+		const { fileOfError, strokeOfError } = parsedStack;
+		let { stack } = parsedStack;
+
 		if (stack?.length >= 1900) {
-			stack.length = 1900;
+			stack = stack.slice(0, 1900);
 		}
 
 		const components = [
@@ -189,15 +74,8 @@ class UserInterfaceUtil {
 			{
 				type: ComponentType.Button,
 				style: ButtonStyle.Success,
-				label: "Сообщение",
-				customId: "setAddableInformationForError",
-			},
-			{
-				type: ComponentType.Button,
-				style: ButtonStyle.Success,
-				label: "Контекст",
-				customId: "readPrimaryContext",
-				disabled: !primary,
+				label: "Описать случай",
+				customId: "callBugCommand",
 			},
 		];
 		const embed = {
@@ -207,6 +85,7 @@ class UserInterfaceUtil {
 			components,
 			reference: interaction.message?.id ?? null,
 		};
+
 		const message = await channel.msg(embed);
 
 		const context = {
@@ -219,7 +98,7 @@ class UserInterfaceUtil {
 		};
 
 		const collector = message.createMessageComponentCollector({
-			time: 3_600_000,
+			time: HOUR,
 		});
 		collector.on("collect", async (interaction) =>
 			this.onComponent({ interaction, context }),
@@ -230,7 +109,7 @@ class UserInterfaceUtil {
 }
 
 function sendErrorInfo(...params) {
-	return UserInterfaceUtil.sendErrorInfo(...params);
+	return ErrorMomentNotification.sendErrorInfo(...params);
 }
 
-export { UserInterfaceUtil as ErrorUserInterfaceUtil, sendErrorInfo };
+export { ErrorMomentNotification, sendErrorInfo };
