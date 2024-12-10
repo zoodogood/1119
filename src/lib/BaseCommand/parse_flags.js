@@ -34,7 +34,10 @@ export function flag(
  */
 export async function process_flags(context) {
 	const command_flags = context.command.options.cliParser.flags;
-	const [parsed, values] = context.cliParsed;
+	const [parsed, values] = context.cliParsed || [];
+	if (!parsed) {
+		return;
+	}
 	const flags = command_flags
 		.filter((flag) => {
 			const { name } = flag;
@@ -70,6 +73,9 @@ export async function process_flags(context) {
  * @param {BaseCommandRunContext} context
  */
 export function cli_parser_parse_flags(command, context) {
+	if (!context.interaction.params) {
+		return;
+	}
 	const flags = command.options.cliParser.flags;
 
 	const parser = new CliParser();
