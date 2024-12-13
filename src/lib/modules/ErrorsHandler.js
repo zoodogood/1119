@@ -341,7 +341,7 @@ class Manager {
 
 export function util_store_and_send_audit(context, error) {
 	const { channel, interaction } = context;
-	const primary = context.getSafeJSON?.() || null;
+	const primary = context.toSafeValues?.() || null;
 	Manager.onErrorReceive(error, primary);
 	sendErrorInfo({ channel, interaction, error, primary });
 }
