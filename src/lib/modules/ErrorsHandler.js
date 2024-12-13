@@ -1,6 +1,6 @@
 import StorageManager from "#lib/modules/StorageManager.js";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
-import { dayjs, mapGetOrInsert } from "#lib/util.js";
+import { dayjs, mapGetOrInsert, process_startedAt } from "#lib/util.js";
 
 const { stringify, parse } = JSON;
 
@@ -334,7 +334,7 @@ class Manager {
 	static async sessionWriteFile() {
 		Core.updateSessionMetadata();
 		const data = Core.toJSON();
-		const timestamp = Date.now();
+		const timestamp = process_startedAt();
 		return await FileUtils.write(timestamp, data);
 	}
 }
