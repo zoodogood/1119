@@ -68,3 +68,10 @@ export function addMultipleResources({
     });
   }
 }
+
+
+export function process_startedAt() {
+  const nanosec = process.hrtime.bigint();
+  const MILLISEC_NANOSEC_RATIO = 1e9;
+  return nanosec / MILLISEC_NANOSEC_RATIO;
+}
