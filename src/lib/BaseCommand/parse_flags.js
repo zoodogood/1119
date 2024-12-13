@@ -102,3 +102,7 @@ export function cli_parser_parse_flags(command, context) {
 	context.setCliParsed(parsed, values);
 	return context.cliParsed;
 }
+
+export function flag_value(context, flag) {
+	return context.cliParsed?.at(1).get(flag);
+}
