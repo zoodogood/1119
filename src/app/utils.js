@@ -1,4 +1,5 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
+import { SECOND } from "#constants/globals/time.js";
 import { OAuth2Scopes, PermissionFlagsBits } from "discord.js";
 import Path from "path";
 const root = process.cwd();
@@ -71,7 +72,6 @@ export function addMultipleResources({
 
 
 export function process_startedAt() {
-  const nanosec = process.hrtime.bigint();
-  const MILLISEC_NANOSEC_RATIO = 1e9;
-  return nanosec / MILLISEC_NANOSEC_RATIO;
+  return globalThis.__app__utils__process_startedAt__value ||=
+    Math.floor(Date.now() / SECOND - process.uptime());
 }
