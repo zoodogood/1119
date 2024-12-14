@@ -56,10 +56,8 @@ export async function process_flags(context) {
 		flags.map((flag) => flag.effect?.(context, flag.value, flag)),
 	);
 	for (const flag of flags) {
-		const { value } = flag;
-
 		const is_exit_signal =
-			(await flag.finalize?.(context, value, flag)) === true;
+			(await flag.finalize?.(context, flag.value, flag)) === true;
 		if (is_exit_signal) {
 			return true;
 		}
