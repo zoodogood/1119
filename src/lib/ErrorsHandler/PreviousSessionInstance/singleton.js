@@ -6,5 +6,5 @@ export const errors_handler_previous_session = new PreviousSession(
 );
 
 export function get_session() {
-	return errors_handler_previous_session.value();
+	return errors_handler_previous_session.value;
 }

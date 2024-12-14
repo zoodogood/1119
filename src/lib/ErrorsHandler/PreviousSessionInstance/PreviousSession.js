@@ -14,7 +14,7 @@ export class PreviousSession {
 	}
 
 	get value() {
-		return (this.value ||= new Promise(async (resolve) => {
+		return (this._value ||= new Promise(async (resolve) => {
 			const { File } = this.errorsHandler;
 			const newest = Math.max(
 				...(await File.keys())
