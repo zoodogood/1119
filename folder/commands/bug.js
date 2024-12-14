@@ -397,7 +397,7 @@ class Command extends BaseCommand {
 			description: "Структурируйте информацию об ошибках, отправляйте запросы",
 			example: `!bug например, команда эмбеды при использовании сразу говорит, что они не найдены, хотя в канале есть`,
 		},
-		alias: "баг",
+		alias: "баг bugs error errors ошибка ошибки",
 		allowDM: true,
 		cooldown: 10 * SECOND,
 		cooldownTry: 3,
