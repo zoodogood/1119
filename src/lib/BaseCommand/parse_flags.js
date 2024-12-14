@@ -41,7 +41,7 @@ export async function process_flags(context) {
 	const flags = command_flags
 		.filter((flag) => {
 			const { name } = flag;
-			return parsed.captures.has(name);
+			return !!parsed.captures.get(name);
 		})
 		.map((flag) => {
 			const { name } = flag;
