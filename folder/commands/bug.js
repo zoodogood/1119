@@ -362,7 +362,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			({ interaction }) => {
 				switch (interaction.customId) {
 					case "askReportText":
-						return this.askreportText(interaction);
+						return this.askReportText(interaction);
 					case "setImportance":
 						this.importanceStatus = Importances.at(+interaction.values[0]);
 						interaction.msg({
