@@ -17,12 +17,13 @@ import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { DataManager } from "#lib/DataManager/singleton.js";
 import { justModalQuestion, parse_embedInstance } from "#lib/Discord_utils.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
+import { Pager } from "#lib/DiscordPager.js";
 import { ErrorsHandler } from "#lib/modules/mod.js";
-import { uid } from "#lib/safe-utils.js";
+import { resolveGithubPath, uid } from "#lib/safe-utils.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
-import { ComponentType, escapeCodeBlock } from "discord.js";
+import { ComponentType, escapeCodeBlock, escapeMarkdown } from "discord.js";
 
-import { assert, process_startedAt } from "#lib/util.js";
+import { assert, path, process_startedAt } from "#lib/util.js";
 
 function insertBugInfo({
 	reportId,
@@ -206,6 +207,30 @@ class BugsField {
 	}
 }
 
+// MARK: Flags
+class Help_FlagSubcommand extends BaseFlagSubcommand {
+	static FLAG_DATA = {
+		name: "--help",
+		capture: ["-h", "--help"],
+		description: "Получить обзор команды",
+		finalize(context, { value }) {
+			new Help_FlagSubcommand(context, value).onProcess();
+			return true;
+		},
+	};
+	onProcess() {
+		this.context.channel.msg({
+			title: "Команда вызвана с параметром --help",
+			description: multiline([
+				"Позволяет создавать отчёты об нарушениях работы программы.",
+				" ",
+				"А также видеть созданные отчёты",
+			]),
+		});
+		return true;
+	}
+}
+
 const Importances = transformToCollectionUsingKey([
 	{
 		label: "Опасно",
@@ -378,6 +403,99 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 	}
 }
 
+class Errors_FlagSubcommand extends BaseFlagSubcommand {
+	static FLAG_DATA = {
+		name: "--errors",
+		capture: ["-l", "--list", "--errors", "--errors-list"],
+		description: "Отобразить состояние ошибок этой и предыдущей сессий",
+		finalize(context, { value }) {
+			new Errors_FlagSubcommand(context, value).onProcess();
+			return true;
+		},
+	};
+
+	pager = new Pager();
+
+	errors_session_to_pages_bulk({ meta, groups }, sessionLabel) {
+		const bugsChannelGuildId = client.channels.cache.get(
+			config.guild.bugsChannelId,
+		).guild.id;
+		return [
+			multiline([
+				`Карта ошибок **${sessionLabel}** сессии:`,
+				" ",
+				`следующие ${meta.errorsCount} страниц содержат по уникальной ошибке\n`,
+				"\n",
+				...groups.map(({ key }) => `- **${escapeMarkdown(key)}**`),
+			]),
+			...groups.map(({ key, meta, errors }) =>
+				multiline([
+					`Ошибка\n${key}\n`,
+					(meta.uniqueTags?.size || meta.uniqueTags?.length) &&
+						`Ярлыки: ${Array.from(meta.uniqueTags)
+							.map(($) => `\`${$}\``)
+							.join(", ")}\n`,
+					`Повторов: ${meta.errorsCount}\n`,
+					"```\nㅤ```\n",
+					meta.reports?.length &&
+						`Отчёт: https://discord.com/channels/${bugsChannelGuildId}/${config.guild.bugsChannelId}/${new BugsField().field[meta.reports[0]].informMessageId} (id: ${meta.reports[0]})\n`,
+					(() => {
+						const errors_locations = new Set(
+							errors
+								.filter(({ stackData }) => stackData.fileOfError)
+								.map(({ stackData: { fileOfError, lineOfCode } }) =>
+									resolveGithubPath(
+										path.relative(process.cwd(), fileOfError),
+										lineOfCode,
+									),
+								),
+						);
+						if (!errors_locations.size) {
+							return null;
+						}
+						const locations = [...errors_locations.values()]
+							.map((location) => `- 📂 ${location}`)
+							.join("\n");
+						return `Локации повторяющихся ошибок:\n${locations}`;
+					})(),
+				]),
+			),
+		].map((description) => ({ description }));
+	}
+	async fetch() {
+		const { get_session } = await import(
+			"#lib/ErrorsHandler/PreviousSessionInstance/singleton.js"
+		);
+
+		ErrorsHandler.Core.updateSessionMetadata();
+		return {
+			previous_session: await get_session(),
+			current_session: ErrorsHandler.Core.toJSON(),
+		};
+	}
+
+	async onProcess() {
+		const { previous_session, current_session } = await this.fetch();
+
+		this.pager.setChannel(this.context.channel);
+		current_session?.meta.errorsCount &&
+			this.pager.addPages(
+				...this.errors_session_to_pages_bulk(current_session, "текущей"),
+			);
+		previous_session?.meta.errorsCount &&
+			this.pager.addPages(
+				...this.errors_session_to_pages_bulk(previous_session, "предыдущей"),
+			);
+
+		this.pager.pages.length === 0 &&
+			this.pager.addPages({
+				description: "Нет ошибок за текущую и предыдущую сессии",
+			});
+
+		this.pager.updateMessage();
+	}
+}
+
 // MARK: RunContext
 class CommandRunContext extends BaseCommandRunContext {
 	static async new(...params) {
@@ -403,7 +521,7 @@ class Command extends BaseCommand {
 		cooldownTry: 3,
 		type: "dev",
 		cliParser: {
-			flags: [],
+			flags: [Help_FlagSubcommand.FLAG_DATA, Errors_FlagSubcommand.FLAG_DATA],
 		},
 		accessibility: {
 			publicized_on_level: 2,
