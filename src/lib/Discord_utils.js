@@ -87,3 +87,17 @@ export function resolve_message_in_answer(answer) {
     answer.content.match(/\d{17,21}/g).at(-1) ?? answer.reference.messageId;
   return id;
 }
+
+export function parse_embedInstance(embed) {
+  return {
+    title: embed.title,
+    thumbnail: embed.thumbnail?.url,
+    author: embed.author,
+    color: embed.hexColor,
+    description: embed.description,
+    fields: embed.fields,
+    image: embed.image?.url,
+    timestamp: embed.timestamp,
+    footer: embed.footer,
+   };
+}
