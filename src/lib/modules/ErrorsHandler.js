@@ -36,25 +36,25 @@ class Metadata {
 
 class SessionMetadata extends Metadata {
 	static defaults = {
-		commentsCount: null,
+		reportsCount: null,
 		uniqueTags: new Set(),
 		errorsCount: null,
 		uniqueErrors: new Set(),
 	};
 
-	appendCommentsCount(value) {
-		this.commentsCount = value;
-	}
-
 	appendErrorsCount(value) {
 		this.errorsCount = value;
 	}
 
-	appendMetadata({ commentsCount, uniqueTags, errorsCount, uniqueErrors }) {
-		commentsCount && this.appendCommentsCount(commentsCount);
+	appendMetadata({ reportsCount, uniqueTags, errorsCount, uniqueErrors }) {
+		reportsCount && this.appendReportsCount(reportsCount);
 		uniqueTags && this.appendTags(uniqueTags);
 		errorsCount && this.appendErrorsCount(errorsCount);
 		uniqueErrors && this.appendUniqueErrors(uniqueErrors);
+	}
+
+	appendReportsCount(value) {
+		this.reportsCount = value;
 	}
 
 	appendTags(uniqueTags) {
@@ -71,19 +71,19 @@ class SessionMetadata extends Metadata {
 }
 
 class GroupMetadata extends Metadata {
-	appendComment(data) {
-		this.comments ||= [];
-		this.comments.push(data);
-	}
-
 	appendErrorsCount(value) {
 		this.errorsCount = value;
 	}
 
-	appendMetadata({ comments, tags, errorsCount }) {
-		comments && this.appendComment(comments);
+	appendMetadata({ reports, tags, errorsCount }) {
+		reports && this.appendReport(reports);
 		tags && this.appendTags(tags);
 		errorsCount && this.appendErrorsCount(errorsCount);
+	}
+
+	appendReport(data) {
+		this.reports ||= [];
+		this.reports.push(data);
 	}
 
 	appendTags(tags) {
@@ -156,10 +156,9 @@ class Group {
 		this.key = key;
 	}
 
-	addComment({ responseText, id }) {
+	addReport(reportId) {
 		const meta = this.meta;
-		const comment = { responseText, id };
-		meta.appendComment(comment);
+		meta.appendReport(reportId);
 	}
 
 	onErrorReceive(errorData) {
@@ -256,8 +255,8 @@ class Core {
 				(acc, { meta }) => (acc.push(...meta.uniqueTags), acc),
 				[],
 			),
-			commentsCount: groups.reduce(
-				(acc, { meta }) => acc + (meta.comments?.length ?? 0),
+			reportsCount: groups.reduce(
+				(acc, { meta }) => acc + (meta.reports?.length ?? 0),
 				0,
 			),
 			errorsCount: groups.reduce((acc, { errors }) => acc + errors.length, 0),

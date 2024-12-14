@@ -152,7 +152,7 @@ pages:
     inRealTime: "У реальному часі."
     uniqueMessages: "Уникальных элементов:"
     tags: "Теги:"
-    comments: "Коментарі:"
+    reports: "Reports:"
     units: шт.
   errorsItem:
     label: "Коллекция ошибок из файла:"

@@ -61,9 +61,9 @@
                     {i18n.tags}
                     {errorFile.uniqueTags?.join(", ")}
                   </li>
-                  <li data-value={errorFile.commentsCount || null}>
-                    <Icon code="" />{i18n.comments}
-                    {errorFile.commentsCount}
+                  <li data-value={errorFile.reportsCount || null}>
+                    <Icon code="" />{i18n.reports}
+                    {errorFile.reportsCount}
                   </li>
                 </ul>
               </section>

@@ -28,7 +28,7 @@ function insertBugInfo({
 	reportId,
 	importanceStatusIndex,
 	error_message,
-	comment,
+	reportText,
 	reporterId,
 	session,
 	informMessageId,
@@ -36,7 +36,7 @@ function insertBugInfo({
 	new BugsField().field[reportId] = {
 		importanceStatusIndex,
 		error_message,
-		comment,
+		reportText,
 		reportId,
 		reporterId,
 		session,
@@ -46,7 +46,7 @@ function insertBugInfo({
 function informBugToBugChannel({
 	importanceStatus,
 	error_message,
-	comment,
+	reportText,
 	reportId,
 }) {
 	const target = client.channels.cache.get(config.guild.bugsChannelId);
@@ -57,7 +57,7 @@ function informBugToBugChannel({
 			importanceStatus?.label || "Не указан",
 			"\n",
 			"Текст отчёта:\n",
-			comment,
+			reportText,
 			"\n\n",
 			"Идентификатор ошибки:\n",
 			error_message,
@@ -248,7 +248,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 
 	importanceStatus = null;
 
-	async askComment(interaction) {
+	async askReportText(interaction) {
 		const components = [
 			{
 				label: "Вы открыли окно уведомления об ошибке",
@@ -268,14 +268,14 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 		if (!response) {
 			return;
 		}
-		const { value: comment } = [...fields.values()].at(0);
+		const { value: reportText } = [...fields.values()].at(0);
 		const bugInfo = {
-			comment,
 			importanceStatus: this.importanceStatus,
 			importanceStatusIndex: parseInt(this.importanceStatus?.value || "-1"),
 			importanceStatusLabel: this.importanceStatus?.label || "Не указан",
 			error_moment: this.error_moment,
 			error_message: this.error_moment.context?.error.message,
+			reportText,
 			reportId: uid(),
 			reporterId: interaction.user.id,
 			session: process_startedAt(),
@@ -290,7 +290,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 				}
 				const { error, primary } = error_context;
 				const group = ErrorsHandler.getErrorsGroupBy(error.message);
-				group.addComment({ comment, id: interaction.user.id });
+				group.addReport(bugInfo.reportId);
 				return multiline([
 					"\n",
 					"Момент ошибки:\n",
@@ -353,7 +353,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			],
 			justButtonComponents({
 				label: "Открыть модальное окно отправки",
-				customId: "askComment",
+				customId: "askReportText",
 			}),
 		]);
 		_interface.updateMessage();
@@ -361,8 +361,8 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			MessageInterface.Events.allowed_collect,
 			({ interaction }) => {
 				switch (interaction.customId) {
-					case "askComment":
-						return this.askComment(interaction);
+					case "askReportText":
+						return this.askreportText(interaction);
 					case "setImportance":
 						this.importanceStatus = Importances.at(+interaction.values[0]);
 						interaction.msg({
