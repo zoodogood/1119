@@ -192,7 +192,9 @@ export function getPresentsList() {
 				);
 
 				context.onComponent = async (interaction) => {
-					const { getNewYearQuote } = await import("#lib/getNewYearQuote.js");
+					const { getNewYearQuote } = await import(
+						"#folder/entities/snowyEvent/getNewYearQuote.js"
+					);
 					await sleep(1000);
 					interaction.msg({
 						description: getNewYearQuote(),
