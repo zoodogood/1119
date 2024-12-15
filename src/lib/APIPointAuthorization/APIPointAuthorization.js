@@ -118,6 +118,6 @@ client.once("ready", () => {
 export default APIPointAuthorizationManager;
 export {
 	APIPointAuthorizationManager,
-	TokensUsersExchanger,
 	authorizationProtocol,
+	TokensUsersExchanger,
 };
