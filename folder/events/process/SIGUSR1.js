@@ -1,18 +1,18 @@
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 
 class Event extends BaseEvent {
-  options = {
-    name: "process/SIGUSR1",
-  };
+	options = {
+		name: "process/SIGUSR1",
+	};
 
-  constructor() {
-    const EVENT = "SIGUSR1";
-    super(process, EVENT);
-  }
+	constructor() {
+		const EVENT = "SIGUSR1";
+		super(process, EVENT);
+	}
 
-  async run() {
-    EventsManager.emitter.emit("beforeExit");
-  }
+	async run() {
+		EventsManager.emitter.emit("beforeExit");
+	}
 }
 
 export default Event;

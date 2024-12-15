@@ -17,22 +17,22 @@ import TimeEventsManager from "./TimeEventsManager.js";
 
 // deprecated style
 export {
-  APIPointAuthorizationManager,
-  ActionManager,
-  BossManager,
-  CommandsManager,
-  CooldownManager,
-  ErrorsHandler,
-  EventsManager,
-  Executor,
-  GuildVariablesManager,
-  I18nManager,
-  Properties,
-  QuestManager,
-  StorageManager,
-  Template,
-  TimeEventsManager,
-  UserEffectManager,
+	APIPointAuthorizationManager,
+	ActionManager,
+	BossManager,
+	CommandsManager,
+	CooldownManager,
+	ErrorsHandler,
+	EventsManager,
+	Executor,
+	GuildVariablesManager,
+	I18nManager,
+	Properties,
+	QuestManager,
+	StorageManager,
+	Template,
+	TimeEventsManager,
+	UserEffectManager,
 };
 
 // style for modern modules

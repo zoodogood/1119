@@ -8,10 +8,11 @@ stateDiagram-v2
 		*clean_gone_state* --> epochIncrementInform
 		userIsFirstWhoSuccessed? --> sendCongregations
 	 }
-    
+
 ```
 
 ## Access
+
 ```mermaid
 flowchart TD
 	A@{ shape: lean-r, label: "!curses --epoch" } -->

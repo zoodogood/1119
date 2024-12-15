@@ -9,62 +9,62 @@ import { sleep } from "#lib/util.js";
 import { checkPort, getAddress } from "./util.js";
 
 const SSLSecret =
-  config.server.hasSSLCertificate &&
-  config.server.isAvailable &&
-  (
-    await Promise.all([
-      FileSystem.readFile("./folder/SSLSecret/privkey.pem"),
-      FileSystem.readFile("./folder/SSLSecret/cert.pem"),
-    ])
-  ).map(String);
+	config.server.hasSSLCertificate &&
+	config.server.isAvailable &&
+	(
+		await Promise.all([
+			FileSystem.readFile("./folder/SSLSecret/privkey.pem"),
+			FileSystem.readFile("./folder/SSLSecret/cert.pem"),
+		])
+	).map(String);
 
 async function raiseServer(port) {
-  while (true) {
-    const isOpen = await checkPort(port);
-    if (isOpen) {
-      break;
-    }
+	while (true) {
+		const isOpen = await checkPort(port);
+		if (isOpen) {
+			break;
+		}
 
-    port++;
-  }
+		port++;
+	}
 
-  return await new Promise(async (resolve, reject) => {
-    const HTTPBase = config.server.hasSSLCertificate
-      ? (await import("https")).default
-      : (await import("http")).default;
-    const options = {
-      port,
-      host: config.server.hostname,
+	return await new Promise(async (resolve, reject) => {
+		const HTTPBase = config.server.hasSSLCertificate
+			? (await import("https")).default
+			: (await import("http")).default;
+		const options = {
+			port,
+			host: config.server.hostname,
 
-      key: SSLSecret && SSLSecret.at(0),
-      cert: SSLSecret && SSLSecret.at(1),
-    };
+			key: SSLSecret && SSLSecret.at(0),
+			cert: SSLSecret && SSLSecret.at(1),
+		};
 
-    const server = HTTPBase.createServer(options, express);
-    server.listen(options, () => resolve(server));
+		const server = HTTPBase.createServer(options, express);
+		server.listen(options, () => resolve(server));
 
-    await sleep(3_000);
-    reject(new Error("TIMEOUT ERROR"));
-  });
+		await sleep(3_000);
+		reject(new Error("TIMEOUT ERROR"));
+	});
 }
 
 function logger(server) {
-  const address = getAddress(server);
-  console.info(`Listen on ${address}`);
+	const address = getAddress(server);
+	console.info(`Listen on ${address}`);
 }
 
 export default async () => {
-  if (!config.server.isAvailable) {
-    return null;
-  }
+	if (!config.server.isAvailable) {
+		return null;
+	}
 
-  const { router } = await setMiddleware(express);
+	const { router } = await setMiddleware(express);
 
-  const port = config.server.port ?? 8001;
-  const server = await raiseServer(port);
+	const port = config.server.port ?? 8001;
+	const server = await raiseServer(port);
 
-  server.router = router;
+	server.router = router;
 
-  logger(server);
-  return server;
+	logger(server);
+	return server;
 };

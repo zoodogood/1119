@@ -1,40 +1,40 @@
 export function factorySummarizeBy(property) {
-  return (acc, current) => acc + current[property] ?? 0;
+	return (acc, current) => acc + current[property] ?? 0;
 }
 
 export function factorySummarize() {
-  return (acc, current) => acc + current;
+	return (acc, current) => acc + current;
 }
 
 export function factoryGetPropertyValue(...targets) {
-  return (x) => {
-    let base = x;
-    for (const property of targets) {
-      base = base[property];
-    }
-    return base;
-  };
+	return (x) => {
+		let base = x;
+		for (const property of targets) {
+			base = base[property];
+		}
+		return base;
+	};
 }
 
 export function mapGetOrInsert(map, key, defaults) {
-  !map.has(key) && map.set(key, defaults);
-  return map.get(key);
+	!map.has(key) && map.set(key, defaults);
+	return map.get(key);
 }
 
 export function capitalize(string) {
-  return string.slice(0, 1).toUpperCase() + string.slice(1);
+	return string.slice(0, 1).toUpperCase() + string.slice(1);
 }
 
 export function sortByResolve(array, resolve, { reverse } = {}) {
-  return reverse
-    ? array.sort((a, b) => resolve(a) - resolve(b))
-    : array.sort((a, b) => resolve(b) - resolve(a));
+	return reverse
+		? array.sort((a, b) => resolve(a) - resolve(b))
+		: array.sort((a, b) => resolve(b) - resolve(a));
 }
 
 export function isObject(target) {
-  return target && typeof target === "object";
+	return target && typeof target === "object";
 }
 
 export function average(sum, length) {
-  return Math.round(sum / length);
+	return Math.round(sum / length);
 }

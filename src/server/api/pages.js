@@ -8,30 +8,30 @@ const root = Path.join(process.cwd(), ROOT);
 const target = "index.html";
 
 class Route extends BaseRoute {
-  prefix = /^\/(?:(?:ru|ua|en)\/)?pages/;
+	prefix = /^\/(?:(?:ru|ua|en)\/)?pages/;
 
-  statistic = {
-    increment(request) {
-      const subpath = parsePagesPath(request.path).subpath.join("/");
-      const siteData = DataManager.data.site;
+	statistic = {
+		increment(request) {
+			const subpath = parsePagesPath(request.path).subpath.join("/");
+			const siteData = DataManager.data.site;
 
-      siteData.enterToPages[subpath] ||= 0;
-      siteData.enterToPages[subpath]++;
-      siteData.entersToPages++;
-      siteData.entersToPagesToday++;
-    },
-  };
+			siteData.enterToPages[subpath] ||= 0;
+			siteData.enterToPages[subpath]++;
+			siteData.entersToPages++;
+			siteData.entersToPagesToday++;
+		},
+	};
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async get(request, response) {
-    const targetPath = Path.join(root, target);
-    response.sendFile(targetPath);
+	async get(request, response) {
+		const targetPath = Path.join(root, target);
+		response.sendFile(targetPath);
 
-    this.statistic.increment(request);
-  }
+		this.statistic.increment(request);
+	}
 }
 
 export default Route;

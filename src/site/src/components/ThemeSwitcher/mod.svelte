@@ -1,121 +1,121 @@
 <script context="module">
-  const DEFAULT_THEME = "darkGreen";
-  const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
-  import { get, writable } from "svelte/store";
+	const DEFAULT_THEME = "darkGreen";
+	const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
+	import { get, writable } from "svelte/store";
 
-  const Theme = {
-    current: writable(localStorage[STORAGE_KEY] ?? DEFAULT_THEME),
+	const Theme = {
+		current: writable(localStorage[STORAGE_KEY] ?? DEFAULT_THEME),
 
-    apply(themeName) {
-      const theme = Theme.collection.get(themeName);
-      const target = document.documentElement.style;
+		apply(themeName) {
+			const theme = Theme.collection.get(themeName);
+			const target = document.documentElement.style;
 
-      for (const style in theme) {
-        target.setProperty(style, theme[style]);
-      }
+			for (const style in theme) {
+				target.setProperty(style, theme[style]);
+			}
 
-      localStorage[STORAGE_KEY] = themeName;
-    },
+			localStorage[STORAGE_KEY] = themeName;
+		},
 
-    remove(themeName) {
-      const theme = Theme.collection.get(themeName);
-      const target = document.documentElement.style;
+		remove(themeName) {
+			const theme = Theme.collection.get(themeName);
+			const target = document.documentElement.style;
 
-      for (const style in theme) {
-        target.removeProperty(style);
-      }
-    },
+			for (const style in theme) {
+				target.removeProperty(style);
+			}
+		},
 
-    onClick(event) {
-      event.shiftKey ? this.switchToPrevious() : this.switchToNext();
-    },
+		onClick(event) {
+			event.shiftKey ? this.switchToPrevious() : this.switchToNext();
+		},
 
-    switchToNext() {
-      const themes = [...Theme.collection.keys()];
-      const index = themes.indexOf(get(Theme.current));
-      const themeName = themes.at((index + 1) % themes.length);
+		switchToNext() {
+			const themes = [...Theme.collection.keys()];
+			const index = themes.indexOf(get(Theme.current));
+			const themeName = themes.at((index + 1) % themes.length);
 
-      const previousName = themes.at(index);
-      Theme.remove(previousName);
+			const previousName = themes.at(index);
+			Theme.remove(previousName);
 
-      Theme.current.set(themeName);
-      Theme.apply(themeName);
-    },
+			Theme.current.set(themeName);
+			Theme.apply(themeName);
+		},
 
-    switchToPrevious() {
-      const themes = [...Theme.collection.keys()];
-      const index = themes.indexOf(get(Theme.current));
-      const themeName = themes.at(index - 1);
+		switchToPrevious() {
+			const themes = [...Theme.collection.keys()];
+			const index = themes.indexOf(get(Theme.current));
+			const themeName = themes.at(index - 1);
 
-      const previousName = themes.at(index);
-      Theme.remove(previousName);
+			const previousName = themes.at(index);
+			Theme.remove(previousName);
 
-      Theme.current.set(themeName);
-      Theme.apply(themeName);
-    },
+			Theme.current.set(themeName);
+			Theme.apply(themeName);
+		},
 
-    collection: themes,
+		collection: themes,
 
-    enum: Object.fromEntries([...themes.keys()].map((k) => [k, k])),
-  };
+		enum: Object.fromEntries([...themes.keys()].map((k) => [k, k])),
+	};
 
-  Theme.current.subscribe((themeName) => {
-    Theme.apply(themeName);
-  });
-  export { Theme };
+	Theme.current.subscribe((themeName) => {
+		Theme.apply(themeName);
+	});
+	export { Theme };
 </script>
 
 <script>
-  import Icon from "#site-component/iconic";
-  import BulbAnimation from "./BulbAnimation.svelte";
-  import themes from "./themes.js";
+	import Icon from "#site-component/iconic";
+	import BulbAnimation from "./BulbAnimation.svelte";
+	import themes from "./themes.js";
 
-  let node = null;
+	let node = null;
 
-  function CallBulbAnimation() {
-    new BulbAnimation({ target: document.body });
-  }
+	function CallBulbAnimation() {
+		new BulbAnimation({ target: document.body });
+	}
 </script>
 
 <button
-  class="switch-theme"
-  data-current={Theme.current}
-  on:click={(event) => Theme.onClick(event) & CallBulbAnimation(node)}
-  bind:this={node}
+	class="switch-theme"
+	data-current={Theme.current}
+	on:click={(event) => Theme.onClick(event) & CallBulbAnimation(node)}
+	bind:this={node}
 >
-  <Icon code="" />
+	<Icon code="" />
 </button>
 
 <style>
-  .switch-theme {
-    display: inline-block;
-    cursor: pointer;
-    opacity: 0.7;
-    font-size: 1em;
+	.switch-theme {
+		display: inline-block;
+		cursor: pointer;
+		opacity: 0.7;
+		font-size: 1em;
 
-    border-radius: 30px;
-    padding: 0;
-    width: fit-content;
-    min-width: 0;
+		border-radius: 30px;
+		padding: 0;
+		width: fit-content;
+		min-width: 0;
 
-    transition: all 500ms;
-  }
+		transition: all 500ms;
+	}
 
-  .switch-theme[data-current="dark"] {
-    color: var(--white);
-  }
+	.switch-theme[data-current="dark"] {
+		color: var(--white);
+	}
 
-  .switch-theme[data-current="light"] {
-    color: var(--dark);
-    background-color: #ffffff44;
-    opacity: 0.5;
-  }
+	.switch-theme[data-current="light"] {
+		color: var(--dark);
+		background-color: #ffffff44;
+		opacity: 0.5;
+	}
 
-  .switch-theme[data-current="rainbow"] {
-    transform: rotate(250deg);
-  }
+	.switch-theme[data-current="rainbow"] {
+		transform: rotate(250deg);
+	}
 
-  .switch-theme:hover {
-    opacity: 0.9;
-  }
+	.switch-theme:hover {
+		opacity: 0.9;
+	}
 </style>

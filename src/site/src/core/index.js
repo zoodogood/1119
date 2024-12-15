@@ -8,8 +8,8 @@ app.launch();
 
 const page = route(svelteApp);
 new PageWrapper({
-  target: svelteApp.document.body,
-  props: {
-    page,
-  },
+	target: svelteApp.document.body,
+	props: {
+		page,
+	},
 });

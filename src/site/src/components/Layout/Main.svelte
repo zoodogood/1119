@@ -1,10 +1,9 @@
 <main>
-	<slot/>
+	<slot />
 </main>
 
 <style>
-	main
-	{
+	main {
 		padding: calc(0.5em + 3vw);
 		display: flex;
 		flex-direction: column;
@@ -15,20 +14,17 @@
 
 		animation: apparance 1.5s;
 		position: relative;
-		
+
 		max-width: 100%;
 		overflow: auto;
 	}
 
-	@keyframes apparance 
-	{
-		0%
-		{
+	@keyframes apparance {
+		0% {
 			opacity: 0;
 		}
 
-		100%
-		{
+		100% {
 			opacity: 1;
 		}
 	}

@@ -1,3 +1,8 @@
+<script>
+	import svelteApp from "#site/core/svelte-app.js";
+	import { relativeSiteRoot } from "#lib/safe-utils.js";
+	const _url = relativeSiteRoot(svelteApp, "public");
+</script>
 
 <main>
 	<h1>Hello Bot!</h1>
@@ -12,22 +17,20 @@
 		margin: 0 auto;
 	}
 
-	p 
-	{
+	p {
 		font-size: 0.8em;
 	}
 
 	h1 {
-		color: var( --main-color );
+		color: var(--main-color);
 		text-transform: uppercase;
 		font-size: 3em;
 		font-weight: 100;
 		overflow-wrap: normal;
 	}
 
-	a 
-	{
-		color: var( --main-color );
+	a {
+		color: var(--main-color);
 	}
 
 	@media (min-width: 640px) {
@@ -36,10 +39,3 @@
 		}
 	}
 </style>
-
-
-<script>
-	import svelteApp from "#site/core/svelte-app.js";
-	import { relativeSiteRoot } from "#lib/safe-utils.js";
-	const _url = relativeSiteRoot(svelteApp, "public");
-</script>

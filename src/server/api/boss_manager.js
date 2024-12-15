@@ -3,15 +3,15 @@ import BossManager from "#lib/modules/BossManager.js";
 import { BaseRoute } from "#server/router.js";
 
 class Route extends BaseRoute {
-  prefix = PREFIX;
+	prefix = PREFIX;
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async get(request, response) {
-    response.send(String(BossManager));
-  }
+	async get(request, response) {
+		response.send(String(BossManager));
+	}
 }
 
 export default Route;

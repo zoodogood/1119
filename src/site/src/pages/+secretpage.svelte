@@ -1,48 +1,61 @@
+<script>
+	import ThemeSwitcher from "#site-component/ThemeSwitcher";
+	import Icon from "#site-component/iconic";
+	import PagesRouter from "#site/lib/Router.js";
+	import svelteApp from "#site/core/svelte-app.js";
+
+	import { Theme } from "#site-component/ThemeSwitcher";
+	const CurrentThemeStore = Theme.current;
+
+	const i18n = svelteApp.i18n.pages.secretpage;
+	console.info(`
+		Ты нашёл эту страницу
+		Ты нашёл её
+		Весь мир должен узнать, что ты нашёл её
+		Ведь это так
+		Каждый цвет имеет значение
+		Это не загадка и не предназначение
+	`);
+</script>
 
 {#if $CurrentThemeStore !== Theme.enum.darkBlue}
 	<style>
-		.canvas-snow
-		{
+		.canvas-snow {
 			filter: blur(20px);
-			
 		}
 	</style>
 {:else}
 	<style>
-		main
-		{
+		main {
 			opacity: 0.5;
 		}
 	</style>
 {/if}
 
-
 <main>
-	<p>{ i18n.label }</p>
-	<small>{ i18n.future }</small>
+	<p>{i18n.label}</p>
+	<small>{i18n.future}</small>
 </main>
 
-
-<nav class = "theme-switcher-container">
-	<a href = {PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key)}><Icon code = ""/></a>
-	<ThemeSwitcher/>
+<nav class="theme-switcher-container">
+	<a href={PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key)}
+		><Icon code="" /></a
+	>
+	<ThemeSwitcher />
 </nav>
-
 
 <!-- svelte-ignore missing-declaration -->
 <svelte:element
-	this = "script"
+	this="script"
 	async
-	src = "https://zoodogood.github.io/LetItSnow/LetItSnow.js"
-	on:load = { function(){ return new SnowBackground({particlesCount: 200}) } }
+	src="https://zoodogood.github.io/LetItSnow/LetItSnow.js"
+	on:load={function () {
+		return new SnowBackground({ particlesCount: 200 });
+	}}
 />
 
-
-
-
 <style>
-	main 
-	{
+	main {
 		--angle: 275deg;
 		--color: #ddffdd88;
 
@@ -59,16 +72,12 @@
 
 		text-align: center;
 
-		background-image: conic-gradient(
-			#00000000, 
-			var(--main-color) 360deg
-		);
+		background-image: conic-gradient(#00000000, var(--main-color) 360deg);
 
 		animation: pulse 30s infinite alternate;
 	}
 
-	@keyframes pulse 
-	{
+	@keyframes pulse {
 		0% {
 			filter: contrast(1);
 		}
@@ -78,46 +87,38 @@
 		}
 	}
 
-
-	main::after
-	{
-		content: '';
+	main::after {
+		content: "";
 		position: absolute;
 		width: 100%;
 		height: 100%;
 
 		background-image: conic-gradient(
-			#00000000 var( --angle ), 
-			color-mix(in srgb, var( --color ), var(--main-color)) 0
+			#00000000 var(--angle),
+			color-mix(in srgb, var(--color), var(--main-color)) 0
 		);
-		
 
-		
 		filter: blur(2px);
 		z-index: -1;
 	}
-	
 
-	p
-	{
-		text-stroke: 1px var( --white );
-		-webkit-text-stroke: 1px var( --white );
-		-moz-text-stroke: 1px var( --white );
+	p {
+		text-stroke: 1px var(--white);
+		-webkit-text-stroke: 1px var(--white);
+		-moz-text-stroke: 1px var(--white);
 		font-weight: 900;
 
 		max-width: 90vw;
 		line-height: 1.2;
 	}
-	small
-	{
+	small {
 		opacity: 0.3;
 		user-select: none;
-		font-size: 0.3em;	
+		font-size: 0.3em;
 		max-width: 90vw;
 	}
 
-	nav
-	{
+	nav {
 		position: fixed;
 		right: 1vw;
 		top: 1vw;
@@ -127,35 +128,12 @@
 		gap: 1vw;
 	}
 
-	nav a:hover
-	{
+	nav a:hover {
 		filter: brightness(1.2);
 	}
 
-	nav :global(.switch-theme)
-	{
+	nav :global(.switch-theme) {
 		background: none;
-		color: var( --main-color );
+		color: var(--main-color);
 	}
 </style>
-
-
-<script>
-	import ThemeSwitcher from '#site-component/ThemeSwitcher';
-	import Icon from '#site-component/iconic';
-	import PagesRouter from '#site/lib/Router.js';
-  	import svelteApp from '#site/core/svelte-app.js';
-
-	import { Theme } from '#site-component/ThemeSwitcher';
-	const CurrentThemeStore = Theme.current;
-
-	const i18n = svelteApp.i18n.pages.secretpage;
-	console.info(`
-		Ты нашёл эту страницу
-		Ты нашёл её
-		Весь мир должен узнать, что ты нашёл её
-		Ведь это так
-		Каждый цвет имеет значение
-		Это не загадка и не предназначение
-	`);
-</script>

@@ -1,9 +1,9 @@
 {
-  "semi": true,
-  "endOfLine": "lf",
-  "bracketSpacing": true,
-  "trailingComma": "all",
-  "plugins": ["prettier-plugin-svelte"],
-  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
-  "useTabs": true
+	"semi": true,
+	"endOfLine": "lf",
+	"bracketSpacing": true,
+	"trailingComma": "all",
+	"plugins": ["prettier-plugin-svelte"],
+	"overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
+	"useTabs": true
 }

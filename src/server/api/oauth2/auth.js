@@ -3,21 +3,21 @@ import { APIPointAuthorizationManager } from "#lib/modules/APIPointAuthorization
 import { BaseRoute } from "#server/router.js";
 
 class Route extends BaseRoute {
-  prefix = PREFIX;
+	prefix = PREFIX;
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async get(request, response) {
-    const siteRedirect = request.query.redirect;
-    const redirectUri = APIPointAuthorizationManager.oAuth.authorizationLink({
-      state: siteRedirect,
-    });
+	async get(request, response) {
+		const siteRedirect = request.query.redirect;
+		const redirectUri = APIPointAuthorizationManager.oAuth.authorizationLink({
+			state: siteRedirect,
+		});
 
-    response.redirect(redirectUri);
-    return;
-  }
+		response.redirect(redirectUri);
+		return;
+	}
 }
 
 export default Route;

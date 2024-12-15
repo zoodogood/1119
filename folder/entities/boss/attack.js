@@ -17,186 +17,186 @@ import { NumberFormatLetterize, random } from "#lib/safe-utils.js";
  * @returns {number}
  */
 export function update_attack_cooldown(
-  user,
-  boss,
-  source,
-  primary,
-  update_fixed,
-  update_current = null,
+	user,
+	boss,
+	source,
+	primary,
+	update_fixed,
+	update_current = null,
 ) {
-  const userStats = BossManager.getUserStats(boss, user.id);
-  const fixed_previous =
-    userStats.attackCooldown || BossManager.USER_DEFAULT_ATTACK_COOLDOWN;
+	const userStats = BossManager.getUserStats(boss, user.id);
+	const fixed_previous =
+		userStats.attackCooldown || BossManager.USER_DEFAULT_ATTACK_COOLDOWN;
 
-  const fixed =
-    typeof update_fixed === "number"
-      ? fixed_previous + update_fixed
-      : update_fixed(fixed_previous);
+	const fixed =
+		typeof update_fixed === "number"
+			? fixed_previous + update_fixed
+			: update_fixed(fixed_previous);
 
-  update_current === null &&
-    (update_current = (previous) => previous - (fixed_previous - fixed));
-  const current_previous = userStats.attack_CD || Date.now();
-  const current =
-    typeof update_current === "number"
-      ? current_previous + update_current
-      : update_current(current_previous);
+	update_current === null &&
+		(update_current = (previous) => previous - (fixed_previous - fixed));
+	const current_previous = userStats.attack_CD || Date.now();
+	const current =
+		typeof update_current === "number"
+			? current_previous + update_current
+			: update_current(current_previous);
 
-  if (isNaN(fixed) || isNaN(current)) {
-    throw new TypeError(
-      `Expected number, get: ${update_fixed}, ${update_current}`,
-    );
-  }
+	if (isNaN(fixed) || isNaN(current)) {
+		throw new TypeError(
+			`Expected number, get: ${update_fixed}, ${update_current}`,
+		);
+	}
 
-  const context = new BaseContext(source, {
-    current,
-    fixed,
-    primary,
-    ...takeInteractionProperties(primary),
-    source,
-    update_current,
-    update_fixed,
-    ...createDefaultPreventable(),
-  });
-  user.action(ActionsMap.bossBeforeAttackCooldownUpdated, context);
-  if (context.defaultPrevented()) {
-    return;
-  }
+	const context = new BaseContext(source, {
+		current,
+		fixed,
+		primary,
+		...takeInteractionProperties(primary),
+		source,
+		update_current,
+		update_fixed,
+		...createDefaultPreventable(),
+	});
+	user.action(ActionsMap.bossBeforeAttackCooldownUpdated, context);
+	if (context.defaultPrevented()) {
+		return;
+	}
 
-  userStats.attackCooldown = fixed;
-  userStats.attack_CD = current;
-  return fixed_previous - fixed;
+	userStats.attackCooldown = fixed;
+	userStats.attack_CD = current;
+	return fixed_previous - fixed;
 }
 
 export function update_attack_damage_multiplayer(
-  user,
-  boss,
-  source,
-  primary,
-  callback,
+	user,
+	boss,
+	source,
+	primary,
+	callback,
 ) {
-  const userStats = BossManager.getUserStats(boss, user.id);
-  const previous = userStats.attacksDamageMultiplayer ?? 1;
-  const value = +callback(previous).toFixed(3);
-  const context = new BaseContext(source, {
-    previous,
-    value,
-    primary,
-    ...takeInteractionProperties(primary),
-    source,
-    ...createDefaultPreventable(),
-  });
+	const userStats = BossManager.getUserStats(boss, user.id);
+	const previous = userStats.attacksDamageMultiplayer ?? 1;
+	const value = +callback(previous).toFixed(3);
+	const context = new BaseContext(source, {
+		previous,
+		value,
+		primary,
+		...takeInteractionProperties(primary),
+		source,
+		...createDefaultPreventable(),
+	});
 
-  user.action(ActionsMap.bossBeforeAttackDamageMultiplayerUpdated, context);
+	user.action(ActionsMap.bossBeforeAttackDamageMultiplayerUpdated, context);
 
-  if (context.defaultPrevented()) {
-    return;
-  }
+	if (context.defaultPrevented()) {
+		return;
+	}
 
-  userStats.attacksDamageMultiplayer = value;
+	userStats.attacksDamageMultiplayer = value;
 }
 
 export function core_make_attack_context(boss, user, channel, primary = {}) {
-  const userStats = BossManager.getUserStats(boss, user.id);
+	const userStats = BossManager.getUserStats(boss, user.id);
 
-  const attackContext = {
-    baseDamage: BossManager.USER_DEFAULT_ATTACK_DAMAGE,
-    damageMultiplayer: 1,
-    eventsCount: Math.floor(boss.level ** 0.5) + random(-1, 1),
-    listOfEvents: [],
-    message: null,
-    addableDamage: 0,
-  };
+	const attackContext = {
+		baseDamage: BossManager.USER_DEFAULT_ATTACK_DAMAGE,
+		damageMultiplayer: 1,
+		eventsCount: Math.floor(boss.level ** 0.5) + random(-1, 1),
+		listOfEvents: [],
+		message: null,
+		addableDamage: 0,
+	};
 
-  const context = new BaseContext("", {
-    primary,
-    attackContext,
-    boss,
-    channel,
-    fetchMessage() {
-      return this.message;
-    },
-    guild: channel.guild,
-    message: null,
-    user,
-    userStats,
-    afterAttack: {},
-    ...createDefaultPreventable(),
-  });
-  return context;
+	const context = new BaseContext("", {
+		primary,
+		attackContext,
+		boss,
+		channel,
+		fetchMessage() {
+			return this.message;
+		},
+		guild: channel.guild,
+		message: null,
+		user,
+		userStats,
+		afterAttack: {},
+		...createDefaultPreventable(),
+	});
+	return context;
 }
 
 export async function core_make_attack(context) {
-  const { user, boss } = context;
-  const { attackContext, userStats } = context;
-  const damage =
-    (userStats.attacksDamageMultiplayer ?? 1) *
-      attackContext.baseDamage *
-      attackContext.damageMultiplayer +
-    attackContext.addableDamage;
+	const { user, boss } = context;
+	const { attackContext, userStats } = context;
+	const damage =
+		(userStats.attacksDamageMultiplayer ?? 1) *
+			attackContext.baseDamage *
+			attackContext.damageMultiplayer +
+		attackContext.addableDamage;
 
-  attackContext.damageDealt = Math.ceil(damage);
+	attackContext.damageDealt = Math.ceil(damage);
 
-  const damageSourceType = BossManager.DAMAGE_SOURCES.attack;
-  context.afterAttack.dealt = BossManager.makeDamage(boss, damage, {
-    damageSourceType,
-    sourceUser: user,
-  });
+	const damageSourceType = BossManager.DAMAGE_SOURCES.attack;
+	context.afterAttack.dealt = BossManager.makeDamage(boss, damage, {
+		damageSourceType,
+		sourceUser: user,
+	});
 
-  user.action(ActionsMap.bossAfterAttack, context);
-  BossEvents.afterAttacked(boss, context);
+	user.action(ActionsMap.bossAfterAttack, context);
+	BossEvents.afterAttacked(boss, context);
 
-  boss.stats.userAttacksCount++;
-  userStats.attacksCount = (userStats.attacksCount || 0) + 1;
-  return context;
+	boss.stats.userAttacksCount++;
+	userStats.attacksCount = (userStats.attacksCount || 0) + 1;
+	return context;
 }
 
 export function display_attack(context) {
-  const { attackContext, afterAttack, channel, user } = context;
-  const { dealt } = afterAttack;
-  const eventsContent = attackContext.listOfEvents
-    .map((event) => `・ ${event.description}.`)
-    .join("\n");
+	const { attackContext, afterAttack, channel, user } = context;
+	const { dealt } = afterAttack;
+	const eventsContent = attackContext.listOfEvents
+		.map((event) => `・ ${event.description}.`)
+		.join("\n");
 
-  const description = `Нанесено урона с прямой атаки: ${NumberFormatLetterize(
-    dealt,
-  )} ед.\n\n${eventsContent}`;
+	const description = `Нанесено урона с прямой атаки: ${NumberFormatLetterize(
+		dealt,
+	)} ед.\n\n${eventsContent}`;
 
-  const emoji = "⚔️";
-  const embed = {
-    title: `${emoji} За сервер ${channel.guild.name}!`,
-    description,
-    footer: { iconURL: user.avatarURL(), text: user.tag },
-  };
-  return channel.msg(embed);
+	const emoji = "⚔️";
+	const embed = {
+		title: `${emoji} За сервер ${channel.guild.name}!`,
+		description,
+		footer: { iconURL: user.avatarURL(), text: user.tag },
+	};
+	return channel.msg(embed);
 }
 
 export function process_before_attack(context) {
-  const { user, boss } = context;
-  user.action(ActionsMap.bossBeforeAttack, context);
-  BossEvents.beforeAttacked(boss, context);
-  if (context.defaultPrevented()) {
-    return false;
-  }
-  return true;
+	const { user, boss } = context;
+	user.action(ActionsMap.bossBeforeAttack, context);
+	BossEvents.beforeAttacked(boss, context);
+	if (context.defaultPrevented()) {
+		return false;
+	}
+	return true;
 }
 
 // MARK: Optional
 export async function make_attack_with_events({
-  boss,
-  user,
-  channel,
-  event_ids,
-  primary = {},
+	boss,
+	user,
+	channel,
+	event_ids,
+	primary = {},
 }) {
-  const context = core_make_attack_context(boss, user, channel, primary);
-  if (!process_before_attack(context)) {
-    return;
-  }
-  for (const event_id of event_ids) {
-    const base = BossManager.eventBases.get(event_id);
-    attack_event_callback(base, context);
-    context.attackContext.listOfEvents.push(base);
-  }
-  core_make_attack(context);
-  context.message = display_attack(context);
+	const context = core_make_attack_context(boss, user, channel, primary);
+	if (!process_before_attack(context)) {
+		return;
+	}
+	for (const event_id of event_ids) {
+		const base = BossManager.eventBases.get(event_id);
+		attack_event_callback(base, context);
+		context.attackContext.listOfEvents.push(base);
+	}
+	core_make_attack(context);
+	context.message = display_attack(context);
 }

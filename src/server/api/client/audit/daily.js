@@ -6,22 +6,22 @@ import { BaseRoute } from "#server/router.js";
 const PREFIX = "/client/audit/daily";
 
 class Route extends BaseRoute {
-  prefix = PREFIX;
+	prefix = PREFIX;
 
-  constructor(express) {
-    super();
-  }
+	constructor(express) {
+		super();
+	}
 
-  async get(request, response) {
-    const currentDay = timestampDay(Date.now());
-    const currentData = DailyAudit.createData();
+	async get(request, response) {
+		const currentDay = timestampDay(Date.now());
+		const currentData = DailyAudit.createData();
 
-    response.json({
-      ...DataManager.data.audit.daily,
-      [currentDay]: currentData,
-    });
-    return;
-  }
+		response.json({
+			...DataManager.data.audit.daily,
+			[currentDay]: currentData,
+		});
+		return;
+	}
 }
 
 export default Route;

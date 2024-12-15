@@ -6,34 +6,34 @@ import { BaseRoute } from "#server/router.js";
 const PREFIX = "/modules/changelog_daemon/request_edit_change";
 
 class Route extends BaseRoute {
-  prefix = PREFIX;
+	prefix = PREFIX;
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async post(request, response) {
-    const { user } = await authorizationProtocol(request, response);
+	async post(request, response) {
+		const { user } = await authorizationProtocol(request, response);
 
-    if (!user) {
-      return;
-    }
+		if (!user) {
+			return;
+		}
 
-    const body = await parse_body(request);
-    const { target, value } = JSON.parse(body);
+		const body = await parse_body(request);
+		const { target, value } = JSON.parse(body);
 
-    const item = ChangelogDaemon.data.find(({ uid }) => uid === target);
+		const item = ChangelogDaemon.data.find(({ uid }) => uid === target);
 
-    if (!item) {
-      response
-        .status(404)
-        .send(`change not found to be edited uid = "${target}"`);
-      return;
-    }
+		if (!item) {
+			response
+				.status(404)
+				.send(`change not found to be edited uid = "${target}"`);
+			return;
+		}
 
-    item.change = value;
-    response.status(200).send("ok");
-  }
+		item.change = value;
+		response.status(200).send("ok");
+	}
 }
 
 export default Route;

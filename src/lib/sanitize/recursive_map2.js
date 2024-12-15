@@ -5,65 +5,65 @@ export const unsanitizible = Symbol("unsanitizible");
 
 // MARK: Contexted
 class TransformerContext {
-  childs = [];
-  path = [];
-  constructor(previous, key = null) {
-    // if key is not defined — is root object
-    this.path = key
-      ? [...(previous?.path || []), key]
-      : [...(previous?.path || [])];
+	childs = [];
+	path = [];
+	constructor(previous, key = null) {
+		// if key is not defined — is root object
+		this.path = key
+			? [...(previous?.path || []), key]
+			: [...(previous?.path || [])];
 
-    this.previous = previous;
-    if (previous) {
-      previous.append(this);
-    }
-  }
+		this.previous = previous;
+		if (previous) {
+			previous.append(this);
+		}
+	}
 
-  append(context) {
-    this.childs.push(context);
-  }
+	append(context) {
+		this.childs.push(context);
+	}
 }
 
 export function entries_recursive_map(
-  object,
-  fn,
-  context = new TransformerContext(),
+	object,
+	fn,
+	context = new TransformerContext(),
 ) {
-  if (object === null || typeof object !== "object") {
-    return object;
-  }
+	if (object === null || typeof object !== "object") {
+		return object;
+	}
 
-  if (unsanitizible in object) {
-    return object;
-  }
+	if (unsanitizible in object) {
+		return object;
+	}
 
-  if (Array.isArray(object)) {
-    return object.map((item, i) =>
-      entries_recursive_map(
-        // returns [key, value], get value
-        fn(i, item, context)[1],
-        fn,
-        new TransformerContext(context, i),
-      ),
-    );
-  }
+	if (Array.isArray(object)) {
+		return object.map((item, i) =>
+			entries_recursive_map(
+				// returns [key, value], get value
+				fn(i, item, context)[1],
+				fn,
+				new TransformerContext(context, i),
+			),
+		);
+	}
 
-  return Object.entries(object).reduce((acc, [key, value]) => {
-    const [newKey, newValue] = fn(key, value, context);
-    if (newKey === request_remove) {
-      return acc;
-    }
-    if (newKey === request_continue) {
-      acc[key] = value;
-      return acc;
-    }
+	return Object.entries(object).reduce((acc, [key, value]) => {
+		const [newKey, newValue] = fn(key, value, context);
+		if (newKey === request_remove) {
+			return acc;
+		}
+		if (newKey === request_continue) {
+			acc[key] = value;
+			return acc;
+		}
 
-    acc[newKey] = entries_recursive_map(
-      newValue,
-      fn,
-      new TransformerContext(context, newKey),
-    );
+		acc[newKey] = entries_recursive_map(
+			newValue,
+			fn,
+			new TransformerContext(context, newKey),
+		);
 
-    return acc;
-  }, {});
+		return acc;
+	}, {});
 }

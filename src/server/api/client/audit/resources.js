@@ -4,16 +4,16 @@ import { BaseRoute } from "#server/router.js";
 const PREFIX = "/client/audit/resources";
 
 class Route extends BaseRoute {
-  prefix = PREFIX;
+	prefix = PREFIX;
 
-  constructor(express) {
-    super();
-  }
+	constructor(express) {
+		super();
+	}
 
-  async get(request, response) {
-    response.json(DataManager.data.audit.resourcesChanges);
-    return;
-  }
+	async get(request, response) {
+		response.json(DataManager.data.audit.resourcesChanges);
+		return;
+	}
 }
 
 export default Route;

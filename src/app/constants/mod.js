@@ -4,11 +4,11 @@ import * as globals from "./globals/mod.js";
 import { Schema } from "./Schema.js";
 import { Emoji } from "./emojis.js";
 const Constants = {
-  users,
-  enums,
-  globals,
-  Schema,
-  Emoji,
+	users,
+	enums,
+	globals,
+	Schema,
+	Emoji,
 };
 
 export { Constants };

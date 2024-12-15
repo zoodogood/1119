@@ -4,31 +4,31 @@ import helmet from "helmet";
 import Router from "./router.js";
 
 async function setMiddleware(express) {
-  const router = await new Router().fetch();
-  express.use(cors({ origin: "*" }));
+	const router = await new Router().fetch();
+	express.use(cors({ origin: "*" }));
 
-  const HelmetOptions = [
-    "crossOriginOpenerPolicy",
-    "crossOriginResourcePolicy",
-    "dnsPrefetchControl",
-    "frameguard",
-    "hidePoweredBy",
-    "hsts",
-    "ieNoOpen",
-    "noSniff",
-    "originAgentCluster",
-    "permittedCrossDomainPolicies",
-    "referrerPolicy",
-    "xssFilter",
-  ];
+	const HelmetOptions = [
+		"crossOriginOpenerPolicy",
+		"crossOriginResourcePolicy",
+		"dnsPrefetchControl",
+		"frameguard",
+		"hidePoweredBy",
+		"hsts",
+		"ieNoOpen",
+		"noSniff",
+		"originAgentCluster",
+		"permittedCrossDomainPolicies",
+		"referrerPolicy",
+		"xssFilter",
+	];
 
-  express.use(incrementEnterAPIStatistic);
+	express.use(incrementEnterAPIStatistic);
 
-  for (const methodKey of HelmetOptions) {
-    express.use(helmet[methodKey]());
-  }
-  router.bindAll(express);
-  return { router };
+	for (const methodKey of HelmetOptions) {
+		express.use(helmet[methodKey]());
+	}
+	router.bindAll(express);
+	return { router };
 }
 
 export { setMiddleware };

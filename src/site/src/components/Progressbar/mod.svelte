@@ -1,32 +1,50 @@
-<span class = "component">
-	<p>
-		<small>{ NumberFormatLetterize($progress) }/{ NumberFormatLetterize(max) }</small>
-		<span>{ targetLabel }</span>
-	</p>
-	
+<script>
+	import { tweened } from "svelte/motion";
+	import { cubicOut } from "svelte/easing";
+	import { NumberFormatLetterize } from "#lib/safe-utils.js";
 
-	<span style:--value = { percent * 100 } class = "progressbar">
-		<element-layout/>
+	export let max = 100,
+		value = 70,
+		percent = value / max,
+		targetLabel = "";
+
+	value = percent * max;
+
+	const progress = tweened(0, {
+		duration: 3000,
+		easing: cubicOut,
+	});
+
+	$: progress.set(value);
+
+	$: percent = $progress / max;
+</script>
+
+<span class="component">
+	<p>
+		<small
+			>{NumberFormatLetterize($progress)}/{NumberFormatLetterize(max)}</small
+		>
+		<span>{targetLabel}</span>
+	</p>
+
+	<span style:--value={percent * 100} class="progressbar">
+		<element-layout />
 	</span>
 </span>
 
-
-
 <style>
-	.component
-	{
+	.component {
 		font-size: 0.8em;
 	}
 
-	p
-	{
+	p {
 		display: flex;
 		justify-content: space-between;
 		user-select: none;
 	}
 
-	.progressbar
-	{
+	.progressbar {
 		display: flex;
 		position: relative;
 		overflow: hidden;
@@ -40,36 +58,10 @@
 		background-color: #88888811;
 	}
 
-	element-layout
-	{
+	element-layout {
 		clip-path: polygon(0 0, 89% 0, 100% 100%, 0 98%);
-		background-color: var( --main-color );
-		width: calc(1% * var( --value ));
+		background-color: var(--main-color);
+		width: calc(1% * var(--value));
 		aspect-ratio: 5 / 1;
 	}
 </style>
-
-
-<script>
-	import { tweened } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
-	import { NumberFormatLetterize } from '#lib/safe-utils.js';
-
-	export let 
-		max = 100,
-		value = 70,
-		percent = value / max,
-
-		targetLabel = "";
-		
-	value = percent * max;
-
-	const progress = tweened(0, {
-		duration: 3000,
-		easing: cubicOut
-	});
-
-	$: progress.set(value);
-
-	$: percent = $progress / max;
-</script>

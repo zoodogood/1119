@@ -8,90 +8,90 @@ import { ImportDirectory } from "@zoodogood/import-directory";
 const PATH = "./folder/events";
 
 class BaseEvent {
-  options = {};
+	options = {};
 
-  constructor(target, eventName, options = {}) {
-    this.eventTarget = target;
-    this.eventName = eventName;
-    this.callback = this.#beforeRun.bind(this);
+	constructor(target, eventName, options = {}) {
+		this.eventTarget = target;
+		this.eventName = eventName;
+		this.callback = this.#beforeRun.bind(this);
 
-    this.isListeningNow = false;
-    this.options = options;
-  }
+		this.isListeningNow = false;
+		this.options = options;
+	}
 
-  async #beforeRun(...args) {
-    this.#logger({ event: this, args });
+	async #beforeRun(...args) {
+		this.#logger({ event: this, args });
 
-    if (this.checkCondition?.(...args) === false) return;
+		if (this.checkCondition?.(...args) === false) return;
 
-    this.options.once && this.freeze();
+		this.options.once && this.freeze();
 
-    try {
-      await this.run(...args);
-    } catch (error) {
-      ErrorsHandler.onErrorReceive(error, {
-        event: this.options.name,
-        source: "Event",
-      });
-    }
-  }
+		try {
+			await this.run(...args);
+		} catch (error) {
+			ErrorsHandler.onErrorReceive(error, {
+				event: this.options.name,
+				source: "Event",
+			});
+		}
+	}
 
-  #logger({ event, args }) {
-    console.info(`Event: ${this.eventName}`);
-  }
-  freeze() {
-    this.isListeningNow = false;
+	#logger({ event, args }) {
+		console.info(`Event: ${this.eventName}`);
+	}
+	freeze() {
+		this.isListeningNow = false;
 
-    const callback = this.callback;
-    const eventName = this.eventName;
-    const target = this.eventTarget;
-    target.removeListener(eventName, callback);
-  }
+		const callback = this.callback;
+		const eventName = this.eventName;
+		const target = this.eventTarget;
+		target.removeListener(eventName, callback);
+	}
 
-  handle() {
-    if (this.isListeningNow === true) {
-      throw new Error("Listening now");
-    }
+	handle() {
+		if (this.isListeningNow === true) {
+			throw new Error("Listening now");
+		}
 
-    const callback = this.callback;
-    const eventName = this.eventName;
-    const target = this.eventTarget;
+		const callback = this.callback;
+		const eventName = this.eventName;
+		const target = this.eventTarget;
 
-    target.on(eventName, callback);
-    this.isListeningNow = true;
-  }
+		target.on(eventName, callback);
+		this.isListeningNow = true;
+	}
 }
 
 class EventsManager {
-  static emitter = new EventEmitter();
+	static emitter = new EventEmitter();
 
-  static async importEvents() {
-    const options = { subfolders: true };
-    const events = (await new ImportDirectory(options).import(PATH)).map(
-      ({ default: Event }) => new Event(),
-    );
+	static async importEvents() {
+		const options = { subfolders: true };
+		const events = (await new ImportDirectory(options).import(PATH)).map(
+			({ default: Event }) => new Event(),
+		);
 
-    const entries = events.map((event) => [event.options.name, event]);
+		const entries = events.map((event) => [event.options.name, event]);
 
-    this.collection = new Collection(entries);
-    return this;
-  }
+		this.collection = new Collection(entries);
+		return this;
+	}
 
-  static listen(name) {
-    this.collection.get(name).handle();
-  }
+	static listen(name) {
+		this.collection.get(name).handle();
+	}
 
-  static listenAll() {
-    for (const [_name, event] of this.collection) {
-      try {
-        event.handle?.();
-      } catch (error) {
-        if (error.message !== "Listening now") {
-          throw error;
-        }
-      }
-    }
-  }
+	static listenAll() {
+		for (const [_name, event] of this.collection) {
+			try {
+				event.handle?.();
+			} catch (error) {
+				if (error.message !== "Listening now") {
+					throw error;
+				}
+			}
+		}
+	}
 }
 
 export { BaseEvent, EventsManager };

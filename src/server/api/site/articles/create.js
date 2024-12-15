@@ -7,40 +7,40 @@ import { ArticlesManager } from "./.mod.js";
 const PREFIX = "/site/articles/create";
 
 class Route extends BaseRoute {
-  prefix = PREFIX;
+	prefix = PREFIX;
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async post(request, response) {
-    const { user } = await authorizationProtocol(request, response);
-    if (!user) {
-      return;
-    }
+	async post(request, response) {
+		const { user } = await authorizationProtocol(request, response);
+		if (!user) {
+			return;
+		}
 
-    await parse_body(request, null, { method: "raw" });
+		await parse_body(request, null, { method: "raw" });
 
-    const author = omit(user, (key) =>
-      ["id", "username", "discriminator"].includes(key),
-    );
-    author.avatarURL = user.avatarURL();
+		const author = omit(user, (key) =>
+			["id", "username", "discriminator"].includes(key),
+		);
+		author.avatarURL = user.avatarURL();
 
-    const { filename } = request.headers;
+		const { filename } = request.headers;
 
-    if (filename.includes("..")) {
-      response.status(400).send();
-      return;
-    }
-    const content = String(request.body);
+		if (filename.includes("..")) {
+			response.status(400).send();
+			return;
+		}
+		const content = String(request.body);
 
-    const data = await ArticlesManager.createArticle({
-      content,
-      author,
-      id: `${user.id}/${filename}`,
-    });
-    response.json(data);
-  }
+		const data = await ArticlesManager.createArticle({
+			content,
+			author,
+			id: `${user.id}/${filename}`,
+		});
+		response.json(data);
+	}
 }
 
 export default Route;

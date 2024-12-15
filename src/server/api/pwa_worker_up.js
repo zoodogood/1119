@@ -9,16 +9,16 @@ const root = Path.join(process.cwd(), ROOT);
 const target = "pwa_service_worker.js";
 
 class Route extends BaseRoute {
-  prefix = PREFIX;
+	prefix = PREFIX;
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async get(request, response) {
-    const targetPath = Path.join(root, target);
-    response.sendFile(targetPath);
-  }
+	async get(request, response) {
+		const targetPath = Path.join(root, target);
+		response.sendFile(targetPath);
+	}
 }
 
 export default Route;

@@ -8,10 +8,10 @@ dayjs.extend(toObject);
  * @param {dayjs.Dayjs} date
  */
 export function dayjs_ensure_coming_year(date) {
-  if (date.isAfter()) {
-    return date;
-  }
-  return date.add(1, "year");
+	if (date.isAfter()) {
+		return date;
+	}
+	return date.add(1, "year");
 }
 
 export { dayjs };

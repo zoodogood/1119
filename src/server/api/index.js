@@ -3,15 +3,15 @@ import { BaseRoute } from "#server/router.js";
 const PREFIX = "/";
 
 class Route extends BaseRoute {
-  prefix = PREFIX;
+	prefix = PREFIX;
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async get(request, response) {
-    response.redirect("/pages/");
-  }
+	async get(request, response) {
+		response.redirect("/pages/");
+	}
 }
 
 export default Route;

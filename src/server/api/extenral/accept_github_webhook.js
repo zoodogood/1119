@@ -5,22 +5,22 @@ import { BaseRoute } from "#server/router.js";
 const PREFIX = "/accept_github_webhook";
 
 export const Events = {
-  Commit: "accept_github_webhook__Commit",
+	Commit: "accept_github_webhook__Commit",
 };
 class Route extends BaseRoute {
-  isHidden = true;
-  prefix = PREFIX;
+	isHidden = true;
+	prefix = PREFIX;
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  async post(request, response) {
-    await parse_body(request, response, { method: "json" });
-    response.sendStatus(202);
+	async post(request, response) {
+		await parse_body(request, response, { method: "json" });
+		response.sendStatus(202);
 
-    EventsManager.emitter.emit(Events.Commit, request.body);
-  }
+		EventsManager.emitter.emit(Events.Commit, request.body);
+	}
 }
 
 export default Route;
