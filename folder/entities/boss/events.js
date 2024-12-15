@@ -16,7 +16,10 @@ import {
 } from "#folder/entities/boss/attack_events.js";
 import { damageTypeLabel } from "#folder/entities/boss/formatters.js";
 import { current_health_thresholder } from "#folder/entities/boss/health.js";
-import { Elements, elementsEnum } from "#folder/entities/thing/command.thing.js";
+import {
+	Elements,
+	elementsEnum,
+} from "#folder/entities/thing/command.thing.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
 import BossManager, {
 	BossEffects,

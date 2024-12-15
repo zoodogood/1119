@@ -11,11 +11,11 @@ import { ErrorsHandler } from "#lib/ErrorsHandler/ErrorsHandler.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
-    addResource,
-    ending,
-    joinWithAndSeparator,
-    numberFormat,
-    sleep,
+	addResource,
+	ending,
+	joinWithAndSeparator,
+	numberFormat,
+	sleep,
 } from "#lib/util.js";
 
 async function get_products() {

@@ -1283,6 +1283,6 @@ export {
 	BossEvents,
 	BossManager,
 	Relics as BossRelics,
-	Speacial as BossSpecial
+	Speacial as BossSpecial,
 };
 export default BossManager;

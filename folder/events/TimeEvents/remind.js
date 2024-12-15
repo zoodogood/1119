@@ -2,9 +2,9 @@ import client from "#bot/client.js";
 import { take_missing_permissions, whenClientIsReady } from "#bot/util.js";
 import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import {
-    Remind_AbstractEvaluate,
-    Remind_AbstractRepeats,
-    Remind_MemberField,
+	Remind_AbstractEvaluate,
+	Remind_AbstractRepeats,
+	Remind_MemberField,
 } from "#folder/entities/remind/command.remind.js";
 
 class Event {

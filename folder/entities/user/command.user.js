@@ -183,7 +183,9 @@ class Command extends BaseCommand {
 			}
 
 			if (user.curses?.length) {
-				const { Utils } = await import("#folder/entities/curses/command.curses.js");
+				const { Utils } = await import(
+					"#folder/entities/curses/command.curses.js"
+				);
 				const content = Utils.getCursesProgressContent(user.curses);
 				embed.fields.push({
 					name: "᠌᠌",

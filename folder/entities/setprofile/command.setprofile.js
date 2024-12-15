@@ -1,7 +1,7 @@
 import { BirthdayMember } from "#folder/entities/birthdays/command.birthdays.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import CommandsManager, {
-    CommandInteraction,
+	CommandInteraction,
 } from "#lib/modules/CommandsManager.js";
 import * as Util from "#lib/util.js";
 

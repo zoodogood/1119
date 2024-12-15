@@ -3,8 +3,8 @@ import { client } from "#bot/client.js";
 import config from "#config";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import {
-    change_to_string,
-    group_changes_by_default,
+	change_to_string,
+	group_changes_by_default,
 } from "#lib/ChangelogDaemon/api/display.js";
 import { metadata } from "#lib/ChangelogDaemon/api/metadata.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
@@ -14,12 +14,12 @@ import ErrorsHandler from "#lib/ErrorsHandler/ErrorsHandler.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
 import { ChangelogDaemon } from "#lib/modules/mod.js";
 import {
-    dayjs,
-    ending,
-    fetchFromInnerApi,
-    getAddress,
-    season_of_month,
-    timestampToDate,
+	dayjs,
+	ending,
+	fetchFromInnerApi,
+	getAddress,
+	season_of_month,
+	timestampToDate,
 } from "#lib/util.js";
 
 import { generateInviteFor } from "#lib/util.js";
