@@ -34,5 +34,8 @@
 	"eslint.validate": ["svelte"],
 	"[svelte]": {
 		"editor.defaultFormatter": "svelte.svelte-vscode"
+	},
+	"[html]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	}
 }
