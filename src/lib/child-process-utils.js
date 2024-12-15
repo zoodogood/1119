@@ -1,5 +1,5 @@
-import { spawn } from "child_process";
-import EventEmitter from "events";
+import { spawn } from "node:child_process";
+import EventEmitter from "node:events";
 
 export default ({ root, logger = false }) => {
 	// Solve problem: https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent

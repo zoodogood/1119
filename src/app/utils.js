@@ -1,11 +1,11 @@
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { SECOND } from "#constants/globals/time.js";
 import { OAuth2Scopes, PermissionFlagsBits } from "discord.js";
-import Path from "path";
+import Path from "node:path";
 const root = process.cwd();
 
 export async function ReadPackageJson() {
-	const { default: FileSystem } = await import("fs/promises");
+	const { default: FileSystem } = await import("node:fs/promises");
 	const value = await FileSystem.readFile(`${process.cwd()}/package.json`);
 
 	return JSON.parse(value);

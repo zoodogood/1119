@@ -1,5 +1,5 @@
-import FileSystem from "fs/promises";
-import Path from "path";
+import FileSystem from "node:fs/promises";
+import Path from "node:path";
 
 class FileDBDriver {
 	static root = `${process.cwd()}/folder/!localStorage`;

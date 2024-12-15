@@ -2,7 +2,7 @@ import { BaseRoute } from "#server/router.js";
 
 const PREFIX = "/pwa_worker_up";
 
-import Path from "path";
+import Path from "node:path";
 
 const ROOT = "static";
 const root = Path.join(process.cwd(), ROOT);

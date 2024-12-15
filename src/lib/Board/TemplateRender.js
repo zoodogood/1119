@@ -4,7 +4,7 @@ import {
 } from "#lib/$mol.js";
 import { Loop } from "#lib/Board/Loop.js";
 import StorageManager from "#lib/modules/StorageManager.js";
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 
 export class TemplateRender {
 	emitter = new EventEmitter();

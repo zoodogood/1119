@@ -11,7 +11,7 @@ import {
 } from "@zoodogood/utils/objectives";
 import { ending } from "@zoodogood/utils/primitives";
 
-import Path from "path";
+import Path from "node:path";
 import yaml from "yaml";
 
 export function objectToLocaleDeveloperString(value, deep = 0) {

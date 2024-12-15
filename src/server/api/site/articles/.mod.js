@@ -1,8 +1,8 @@
 import StorageManager from "#lib/modules/StorageManager.js";
 import { MarkdownMetadata } from "#lib/util.js";
 import { ImportDirectory } from "@zoodogood/import-directory";
-import FileSystem from "fs/promises";
-import Path from "path";
+import FileSystem from "node:fs/promises";
+import Path from "node:path";
 
 const DIRECTORY = "static/articles";
 

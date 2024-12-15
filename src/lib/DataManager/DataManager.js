@@ -3,7 +3,7 @@ import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import StorageManager from "#lib/modules/StorageManager.js";
 import { EventEmitter } from "#lib/util.js";
 import { Guild, User } from "discord.js";
-import FileSystem from "fs";
+import FileSystem from "node:fs";
 
 class DataManager {
 	/**

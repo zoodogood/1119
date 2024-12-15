@@ -1,6 +1,6 @@
-import { execSync } from "child_process";
-import FileSystem from "fs/promises";
-import Path from "path";
+import { execSync } from "node:child_process";
+import FileSystem from "node:fs/promises";
+import Path from "node:path";
 
 const root = process.cwd();
 const resolve = (path) => Path.resolve(root, path);

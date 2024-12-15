@@ -2,7 +2,7 @@ import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import StorageManager from "#lib/modules/StorageManager.js";
 import { uid } from "#lib/safe-utils.js";
 import { from_short, short } from "#lib/sanitize/optimize_keys.js";
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 /**
 The change log is automatically stacked based on commits.
 The information of such a log should be relevant and understandable to users,

@@ -1,7 +1,7 @@
 import client from "#bot/client.js";
 import { pushMessage } from "#lib/DiscordPushMessage.js";
 import Discord from "discord.js";
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 
 // MARK: Prototypes
 // =================================================

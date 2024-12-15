@@ -1,7 +1,7 @@
-import path from "path";
-import FileSystem from "fs";
 import config from "#config";
 import { BaseRoute } from "#server/router.js";
+import FileSystem from "node:fs";
+import path from "node:path";
 
 const ROOT = config.server.paths.static;
 const root = path.join(process.cwd(), ROOT);

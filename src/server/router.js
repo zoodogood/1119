@@ -1,5 +1,5 @@
 import { ImportDirectory } from "@zoodogood/import-directory";
-import path from "path";
+import path from "node:path";
 
 const ROOT = "src/server/api";
 const directory = path.join(process.cwd(), ROOT);

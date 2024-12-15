@@ -1,6 +1,6 @@
 import { relativeSiteRoot } from "#lib/safe-utils.js";
 import { Collection } from "@discordjs/collection";
-import Path from "path";
+import Path from "node:path";
 
 class PagesRouter {
 	static PAGES_FOLDER_PATH = "./src/site/src/pages";

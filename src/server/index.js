@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 import config from "#config";
-import FileSystem from "fs/promises";
+import FileSystem from "node:fs/promises";
 import express from "./express.js";
 import { setMiddleware } from "./middleware.js";
 
@@ -30,8 +30,8 @@ async function raiseServer(port) {
 
 	return await new Promise(async (resolve, reject) => {
 		const HTTPBase = config.server.hasSSLCertificate
-			? (await import("https")).default
-			: (await import("http")).default;
+			? (await import("node:https")).default
+			: (await import("node:http")).default;
 		const options = {
 			port,
 			host: config.server.hostname,

@@ -1,4 +1,4 @@
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 
 // [Unsafe_primitives]: string[]
 export const Unsafe_primitives = Symbol("unsafe_primitives");

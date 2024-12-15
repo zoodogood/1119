@@ -1,7 +1,7 @@
 import config from "#config";
 import { DataManager } from "#lib/DataManager/singleton.js";
 import { CustomCollector } from "@zoodogood/utils/objectives";
-import net from "net";
+import net from "node:net";
 
 function checkPort(port) {
 	const server = net.createServer();

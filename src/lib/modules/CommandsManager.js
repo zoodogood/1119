@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 
 import Executor from "#lib/modules/Executor.js";
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 
 import { Actions } from "#lib/modules/ActionManager.js";
 

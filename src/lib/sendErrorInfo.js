@@ -2,7 +2,7 @@ import { HOUR } from "#constants/globals/time.js";
 import { ErrorData } from "#lib/modules/ErrorsHandler.js";
 import { resolveGithubPath } from "#lib/util.js";
 import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import Path from "path";
+import Path from "node:path";
 
 class ErrorMomentNotification {
 	static components = {

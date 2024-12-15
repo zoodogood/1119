@@ -8,7 +8,7 @@
 		timestampToDate,
 	} from "#lib/safe-utils.js";
 	import svelteApp from "#site/core/svelte-app.js";
-	import Path from "path";
+	import Path from "node:path";
 
 	const i18n = svelteApp.i18n.pages.articlesIndex;
 	const AVERAGE_PER_WORD = 60_000 / 200;

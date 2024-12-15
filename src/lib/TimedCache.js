@@ -1,5 +1,5 @@
 import { MINUTE } from "#constants/globals/time.js";
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 
 export class TimedCache {
 	_timer_id;

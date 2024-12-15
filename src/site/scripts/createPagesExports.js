@@ -10,7 +10,7 @@ const TARGET_PATH = "./static/build/svelte-pages/exports[builded].mjs"; // Svelt
 const ENUM_TARGET_PATH = "./static/build/svelte-pages/enum[builded].mjs"; // ESJS content
 
 /** Get's path */
-import Path from "path";
+import Path from "node:path";
 
 import { takePath } from "#src/app/utils.js";
 
@@ -38,8 +38,8 @@ const resolveModule = (filePath) => {
 const modules = filesPath.map(resolveModule);
 
 /** First file */
-import FileSystem from "fs/promises";
 import PagesRouter from "#site/lib/Router.js";
+import FileSystem from "node:fs/promises";
 (async () => {
 	/** Generate content */
 	const getStringByPattern = ({ source, name }) => {

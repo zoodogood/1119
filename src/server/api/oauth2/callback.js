@@ -4,7 +4,7 @@ import { APIPointAuthorizationManager } from "#lib/modules/APIPointAuthorization
 import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { BaseRoute } from "#server/router.js";
 import PagesRouter from "#site/lib/Router.js";
-import Path from "path";
+import Path from "node:path";
 
 class Route extends BaseRoute {
 	prefix = PREFIX;

@@ -2,8 +2,8 @@ import config from "#config";
 import { fetchFromInnerApi, yaml } from "#lib/safe-utils.js";
 import { ReadPackageJson } from "#lib/util.js";
 import { ImportDirectory } from "@zoodogood/import-directory";
-import FileSystem from "fs/promises";
-import Path from "path";
+import FileSystem from "node:fs/promises";
+import Path from "node:path";
 
 const packageJSON = await ReadPackageJson();
 const bot =

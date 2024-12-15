@@ -26,7 +26,7 @@ import {
 } from "#constants/users/events.js";
 import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
-import FileSystem from "fs";
+import FileSystem from "node:fs";
 
 import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";

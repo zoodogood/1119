@@ -12,7 +12,7 @@
 	} from "#lib/safe-utils.js";
 	import PagesRouter from "#site/lib/Router.js";
 
-	import Path from "path";
+	import Path from "node:path";
 
 	const i18n = svelteApp.i18n.pages.errorsItem;
 

@@ -3,7 +3,7 @@ import {
 	MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
 } from "#constants/users/events.js";
 
-import { inspect as _inspect } from "util";
+import { inspect as _inspect } from "node:util";
 
 import app from "#app";
 import { Events } from "#constants/app/events.js";
@@ -12,13 +12,13 @@ import EventsManager from "#lib/modules/EventsManager.js";
 import { Collection } from "@discordjs/collection";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { LazySort } from "@zoodogood/utils/objectives";
-import assert from "assert";
 import {
 	ComponentType,
 	Message,
 	MessageComponentInteraction,
 	MessageReaction,
 } from "discord.js";
+import assert from "node:assert";
 
 export async function awaitUserAccept({ name, message, channel, userData }) {
 	const prefix = "userAccept_";

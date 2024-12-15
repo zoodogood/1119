@@ -23,7 +23,7 @@ import { client } from "#bot/client.js";
 import { MINUTE } from "#constants/globals/time.js";
 import { Constants } from "#constants/mod.js";
 import Discord, { FormattingPatterns } from "discord.js";
-import FileSystem from "fs";
+import FileSystem from "node:fs";
 
 import { transformToCollectionUsingKey } from "#bot/util.js";
 import config from "#config";

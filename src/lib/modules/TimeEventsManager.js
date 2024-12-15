@@ -1,5 +1,5 @@
-import EventEmitter from "events";
-import FileSystem from "fs";
+import EventEmitter from "node:events";
+import FileSystem from "node:fs";
 
 import { SECOND } from "#constants/globals/time.js";
 import StorageManager from "#lib/modules/StorageManager.js";

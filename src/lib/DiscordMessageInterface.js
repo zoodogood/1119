@@ -1,7 +1,7 @@
 import { MINUTE } from "#constants/globals/time.js";
 import { ReactionInteraction } from "#lib/Discord_utils.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 
 function processUserCanUseInteraction(interaction, messageInterface) {
 	const { options } = messageInterface;

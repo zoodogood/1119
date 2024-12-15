@@ -28,8 +28,8 @@ import { addResource, overTheMessageSpamLimit } from "#lib/util.js";
 import { Collection } from "@discordjs/collection";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { AttachmentBuilder, MessageMentions } from "discord.js";
-import EventEmitter from "events";
 import assert from "node:assert";
+import EventEmitter from "node:events";
 
 class CurseManager {
 	static cursesBase = new Collection(

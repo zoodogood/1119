@@ -1,7 +1,7 @@
 import { DataManager } from "#lib/DataManager/singleton.js";
 import { parsePagesPath } from "#lib/safe-utils.js";
 import { BaseRoute } from "#server/router.js";
-import Path from "path";
+import Path from "node:path";
 
 const ROOT = "static";
 const root = Path.join(process.cwd(), ROOT);
