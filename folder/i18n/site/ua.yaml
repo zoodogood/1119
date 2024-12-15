@@ -77,7 +77,7 @@ pages:
 
       <code>~/src/server/api/user/open-chest.js</code>. Імпортує клас
       <code>ChestManager</code> із файлу, за шляхом
-      <code>~/folder/commands/chest.js</code>, застосовуючи його методи.
+      <code>~/folder/entities/chest/command.chest.js</code>, застосовуючи його методи.
     logInAgain: ~ Увійдіть у систему ще раз
     open: Відкрити скриню
     chestOnCooldown: АААА СКРИНЯ НА ПЕРЕЗАРЯДЦІ!

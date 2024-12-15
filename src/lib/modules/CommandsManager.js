@@ -12,7 +12,7 @@ import { Actions } from "#lib/modules/ActionManager.js";
 
 import app from "#app";
 import { take_missing_permissions } from "#bot/util.js";
-import { CustomCommand } from "#folder/commands/guildcommand.js";
+import { CustomCommand } from "#folder/entities/guildcommand/command.guildcommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { permissionRawToI18n } from "#lib/permissions.js";
 import {
@@ -22,7 +22,7 @@ import {
 } from "#lib/safe-utils.js";
 import { ImportDirectory } from "@zoodogood/import-directory";
 
-const COMMANDS_PATH = "./folder/commands";
+const COMMANDS_PATH = "./folder/entities";
 
 export const Events = {
 	signal_command_flow_end: "signal_command_flow_end",
@@ -406,9 +406,12 @@ class CommandsManager {
 	}
 
 	static async importCommands() {
-		const commands = (await new ImportDirectory().import(COMMANDS_PATH)).map(
-			({ default: Command }) => new Command(),
-		);
+		const commands = (
+			await new ImportDirectory({
+				regex: /command\.[a-z_$0-9їё]+\.js$/i,
+				subfolders: true,
+			}).import(COMMANDS_PATH)
+		).map(({ default: Command }) => new Command());
 
 		/**
 		 * @type [string, import("#lib/BaseCommand.js").BaseCommand][]

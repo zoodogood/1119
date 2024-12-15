@@ -1,21 +1,21 @@
 import { client } from "#bot/client.js";
 import {
-	BossManager,
-	DataManager,
-	TimeEventsManager,
+    BossManager,
+    DataManager,
+    TimeEventsManager,
 } from "#lib/modules/mod.js";
 
-import BankCommand from "#folder/commands/bank.js";
-import { onDayStats as TreeOnDayStats } from "#folder/commands/seed.js";
+import BankCommand from "#folder/entities/bank/command.bank.js";
+import { onDayStats as TreeOnDayStats } from "#folder/entities/seed/command.seed.js";
 import { MonthStatisticForEveryDayAPI } from "#folder/entities/statistic/messages/MonthStatisticForEveryDayAPI.js";
 import {
-	average,
-	dayjs,
-	ending,
-	factorySummarize,
-	mediana_of_unsorted,
-	NumberFormatLetterize,
-	trim_line_space,
+    average,
+    dayjs,
+    ending,
+    factorySummarize,
+    mediana_of_unsorted,
+    NumberFormatLetterize,
+    trim_line_space,
 } from "#src/lib/util.js";
 
 class Event {

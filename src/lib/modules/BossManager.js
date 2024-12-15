@@ -4,7 +4,6 @@ import app from "#app";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { NOT_BREAKING_SPACE } from "#constants/globals/characters.js";
 import { DAY, HOUR, MINUTE } from "#constants/globals/time.js";
-import { elementsEnum } from "#folder/commands/thing.js";
 import {
 	core_make_attack,
 	core_make_attack_context,
@@ -19,6 +18,7 @@ import {
 } from "#folder/entities/boss/attack_events.js";
 import { eventBases } from "#folder/entities/boss/events.js";
 import { RewardSystem } from "#folder/entities/boss/reward.js";
+import { elementsEnum } from "#folder/entities/thing/command.thing.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { DataManager } from "#lib/DataManager/singleton.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
@@ -1283,6 +1283,6 @@ export {
 	BossEvents,
 	BossManager,
 	Relics as BossRelics,
-	Speacial as BossSpecial,
+	Speacial as BossSpecial
 };
 export default BossManager;

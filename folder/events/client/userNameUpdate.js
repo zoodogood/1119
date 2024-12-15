@@ -1,4 +1,4 @@
-import { REASON_FOR_CHANGE_NICKNAME as CHILLI_REASON_FOR_CHANGE_NICKNAME } from "#folder/commands/chilli.js";
+import { REASON_FOR_CHANGE_NICKNAME as CHILLI_REASON_FOR_CHANGE_NICKNAME } from "#folder/entities/chilli/command.chilli.js";
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 import { AuditLogEvent } from "discord.js";
 

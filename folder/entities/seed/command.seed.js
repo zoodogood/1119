@@ -1,7 +1,7 @@
 // @ts-check
 import { client } from "#bot/client.js";
 import { DAY, HOUR, MINUTE, SECOND } from "#constants/globals/time.js";
-import BerryCommand from "#folder/commands/berry.js";
+import BerryCommand from "#folder/entities/berry/command.berry.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";

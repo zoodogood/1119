@@ -1,8 +1,8 @@
 import client from "#bot/client.js";
 import { Emoji } from "#constants/emojis.js";
 import { HOUR, SECOND } from "#constants/globals/time.js";
-import { Bosses_Flagsubcommand } from "#folder/commands/boss.js";
-import { default as CommmandInfo } from "#folder/commands/commandinfo.js";
+import { Bosses_Flagsubcommand } from "#folder/entities/boss/command.boss.js";
+import { default as CommmandInfo } from "#folder/entities/commandinfo/command.commandinfo.js";
 import { BaseCommand, BaseFlagSubcommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
 import { DataManager } from "#lib/DataManager/singleton.js";

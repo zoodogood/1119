@@ -6,11 +6,11 @@ import CurseManager from "#lib/CurseManager/CurseManager.js";
 import { DataManager } from "#lib/DataManager/singleton.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
-	dayjs,
-	ending,
-	getRandomElementFromArray,
-	random,
-	sleep,
+  dayjs,
+  ending,
+  getRandomElementFromArray,
+  random,
+  sleep,
 } from "#lib/safe-utils.js";
 import { addResource, factoryGetPropertyValue } from "#lib/util.js";
 
@@ -97,7 +97,7 @@ export function getPresentsList() {
 			async callback(context) {
 				const { user } = context;
 				const { addResourceAndMoveToBag } = await import(
-					"#folder/commands/bag.js"
+					"#folder/entities/bag/command.bag.js"
 				);
 				addResourceAndMoveToBag({
 					resource: PropertiesEnum.lollipops,

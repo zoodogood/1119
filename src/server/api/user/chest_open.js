@@ -1,4 +1,4 @@
-import { ChestManager } from "#folder/commands/chest.js";
+import { ChestManager } from "#folder/entities/chest/command.chest.js";
 import { authorizationProtocol } from "#lib/modules/APIPointAuthorization.js";
 import { BaseRoute } from "#server/router.js";
 const PREFIX = "/user/chest_open";

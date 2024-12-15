@@ -3,7 +3,6 @@ import { question, transformToCollectionUsingKey } from "#bot/util.js";
 import config from "#config";
 import { ActionsMap } from "#constants/enums/actionsMap.js";
 import { HOUR, MINUTE, SECOND } from "#constants/globals/time.js";
-import { Elements, elementsEnum } from "#folder/commands/thing.js";
 import {
 	core_make_attack,
 	core_make_attack_context,
@@ -17,6 +16,7 @@ import {
 } from "#folder/entities/boss/attack_events.js";
 import { damageTypeLabel } from "#folder/entities/boss/formatters.js";
 import { current_health_thresholder } from "#folder/entities/boss/health.js";
+import { Elements, elementsEnum } from "#folder/entities/thing/command.thing.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
 import BossManager, {
 	BossEffects,
