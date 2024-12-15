@@ -1,5 +1,5 @@
 const PREFIX = "/errors/files/:name";
-import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
+import ErrorsHandler from "#lib/ErrorsHandler/ErrorsHandler.js";
 import { BaseRoute } from "#server/router.js";
 
 class Route extends BaseRoute {

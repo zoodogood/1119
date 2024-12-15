@@ -1,6 +1,6 @@
 import app from "#app";
 import config from "#config";
-import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
+import ErrorsHandler from "#lib/ErrorsHandler/ErrorsHandler.js";
 import EventsManager, { BaseEvent } from "#lib/modules/EventsManager.js";
 
 class Event extends BaseEvent {

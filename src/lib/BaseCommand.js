@@ -1,8 +1,8 @@
 import { BaseContext } from "#lib/BaseContext.js";
 import { DataManager } from "#lib/DataManager/singleton.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
+import { ErrorsHandler } from "#lib/ErrorsHandler/ErrorsHandler.js";
 import CooldownManager from "#lib/modules/CooldownManager.js";
-import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { sendErrorInfo } from "#lib/sendErrorInfo.js";
 
 /** @import {BaseCommandRunContext} from '#lib/CommandRunContext.js' */

@@ -1,7 +1,7 @@
 const PREFIX = "/oauth2/callback";
 import config from "#config";
+import { ErrorsHandler } from "#lib/ErrorsHandler/ErrorsHandler.js";
 import { APIPointAuthorizationManager } from "#lib/modules/APIPointAuthorization.js";
-import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { BaseRoute } from "#server/router.js";
 import PagesRouter from "#site/lib/Router.js";
 import Path from "node:path";

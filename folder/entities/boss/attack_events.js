@@ -1,5 +1,5 @@
+import { ErrorsHandler } from "#lib/ErrorsHandler/ErrorsHandler.js";
 import BossManager from "#lib/modules/BossManager.js";
-import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 
 export function resolve_attack_events_pull(context) {
 	return [...BossManager.eventBases.values()]

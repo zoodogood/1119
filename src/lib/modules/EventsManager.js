@@ -1,6 +1,6 @@
 import { Collection } from "@discordjs/collection";
 
-import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
+import ErrorsHandler from "#lib/ErrorsHandler/ErrorsHandler.js";
 import EventEmitter from "node:events";
 
 import { ImportDirectory } from "@zoodogood/import-directory";

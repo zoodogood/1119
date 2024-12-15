@@ -1,10 +1,10 @@
+import ErrorsHandler from "../ErrorsHandler/ErrorsHandler.js";
 import APIPointAuthorizationManager from "./APIPointAuthorization.js";
 import ActionManager from "./ActionManager.js";
 import BossManager from "./BossManager.js";
 import CommandsManager from "./CommandsManager.js";
 import CooldownManager from "./CooldownManager.js";
 import UserEffectManager from "./EffectsManager.js";
-import ErrorsHandler from "./ErrorsHandler.js";
 import EventsManager from "./EventsManager.js";
 import Executor from "./Executor.js";
 import GuildVariablesManager from "./GuildVariablesManager.js";
@@ -17,8 +17,8 @@ import TimeEventsManager from "./TimeEventsManager.js";
 
 // deprecated style
 export {
-	APIPointAuthorizationManager,
 	ActionManager,
+	APIPointAuthorizationManager,
 	BossManager,
 	CommandsManager,
 	CooldownManager,

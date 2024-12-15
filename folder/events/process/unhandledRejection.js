@@ -1,4 +1,4 @@
-import ErrorsHandler from "#lib/modules/ErrorsHandler.js";
+import ErrorsHandler from "#lib/ErrorsHandler/ErrorsHandler.js";
 import { BaseEvent } from "#lib/modules/EventsManager.js";
 
 class Event extends BaseEvent {

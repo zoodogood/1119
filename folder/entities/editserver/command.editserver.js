@@ -3,8 +3,8 @@ import { Emoji } from "#constants/emojis.js";
 import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
+import { util_store_and_send_audit } from "#lib/ErrorsHandler/ErrorsHandler.js";
 import CommandsManager from "#lib/modules/CommandsManager.js";
-import { util_store_and_send_audit } from "#lib/modules/ErrorsHandler.js";
 import Template from "#lib/modules/Template.js";
 import { DotNotatedInterface } from "@zoodogood/utils/objectives";
 

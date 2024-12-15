@@ -1,4 +1,4 @@
-/** @import {ErrorsHandler} from '#lib/modules/ErrorsHandler.js' */
+/** @import {ErrorsHandler} from '#lib/ErrorsHandler/ErrorsHandler.js' */
 // declare state: file://./readme.md
 
 import { process_startedAt } from "#lib/util.js";

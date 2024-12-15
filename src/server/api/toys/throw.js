@@ -1,5 +1,5 @@
+import { ErrorsHandler } from "#lib/ErrorsHandler/ErrorsHandler.js";
 import { parse_body } from "#lib/express_utils.js";
-import { ErrorsHandler } from "#lib/modules/ErrorsHandler.js";
 import { BaseRoute } from "#server/router.js";
 
 const PREFIX = "/toys/throw";

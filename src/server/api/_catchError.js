@@ -1,4 +1,4 @@
-import ErrorsHandler from "#src/lib/modules/ErrorsHandler.js";
+import ErrorsHandler from "#lib/ErrorsHandler/ErrorsHandler.js";
 import { sleep } from "#lib/util.js";
 import { BaseRoute } from "#server/router.js";
 
