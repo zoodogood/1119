@@ -1,6 +1,7 @@
-import { transformToCollectionUsingKey } from "#bot/util.js";
+import { multiline, transformToCollectionUsingKey } from "#bot/util.js";
 import { Emoji } from "#constants/emojis.js";
 import { MINUTE } from "#constants/globals/time.js";
+import { BaseContext } from "#lib/BaseContext.js";
 import CurseManager from "#lib/CurseManager/CurseManager.js";
 import { DataManager } from "#lib/DataManager/singleton.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
@@ -95,9 +96,10 @@ export function getPresentsList() {
 			key: "lollipop",
 			async callback(context) {
 				const { user } = context;
-				const { CommandUtil } = (await import("#folder/commands/bag.js"))
-					.default;
-				CommandUtil.addResourceAndMoveToBag({
+				const { addResourceAndMoveToBag } = await import(
+					"#folder/commands/bag.js"
+				);
+				addResourceAndMoveToBag({
 					resource: PropertiesEnum.lollipops,
 					user,
 					context,
@@ -184,11 +186,9 @@ export function getPresentsList() {
 			key: "snowyQuote",
 			async callback(context) {
 				context.provideComponents(
-					justButtonComponents([
-						{
-							label: "Читать",
-						},
-					]),
+					justButtonComponents({
+						label: "Читать",
+					}),
 				);
 
 				context.onComponent = async (interaction) => {
@@ -280,7 +280,7 @@ export function onPresentsChatInputCommand(user, curse, context) {
 	const content = `${snoflakesContent}${presentsContent}`;
 
 	const presentEmbed = (() => {
-		const components = justButtonComponents([
+		const components = justButtonComponents(
 			{
 				label: "Открыть сейчас",
 				customId: `@curseManager/events/happySnowy:openNow:${user.id}`,
@@ -289,7 +289,7 @@ export function onPresentsChatInputCommand(user, curse, context) {
 				emoji: "👀",
 				customId: `@curseManager/events/happySnowy:info`,
 			},
-		]);
+		);
 
 		return {
 			image:
@@ -310,15 +310,16 @@ export const componentsActions = {
 			ephemeral: true,
 			image:
 				"https://cdn.discordapp.com/attachments/926144032785195059/1180876446672101446/4075c2de34d3e71e0967971d70805b0555ad82327810079.png?ex=657f03e4&is=656c8ee4&hm=7cab7a87e37056aa01819b79c61552630240ef877d52ab2f4e79e8dca4760db3&",
-			description: `Время собрать весь снег и передать его снеговику :snowman: 
-А после залезть: из коробки кричать "ура!" :star2:
-Вытряхнув всякую мелочь: сверкающие камни и сундуки;
-Обнаружьте два эксклюзивных предмета;
-И услышьте цитату из интернета,
-
-— откройте коробку сейчас или подарите другу!
-Пусть тоже залезет
-`,
+			description: multiline([
+				"Время собрать весь снег и передать его снеговику :snowman:\n",
+				`А после залезть: из коробки кричать "ура!" :star2:\n`,
+				`Вытряхнув всякую мелочь: сверкающие камни и сундуки;\n`,
+				`Обнаружьте два эксклюзивных предмета;\n`,
+				`И услышьте цитату из интернета,\n`,
+				"\n",
+				"— откройте коробку сейчас или подарите другу!\n",
+				"Пусть тоже залезет\n",
+			]),
 		});
 	},
 	async openNow({ params, interaction }) {
@@ -329,7 +330,7 @@ export const componentsActions = {
 			interaction.msg({
 				ephemeral: true,
 				content:
-					"Это взаимодействие доступно только владельцу подарка. Отправляйте сообщения, чтобы получать снежинки и используйте команду !подарок, чтобы вызвать это меню",
+					"Это взаимодействие доступно только владельцу подарка. Отправляйте сообщения, чтобы получать снежинки и используйте `!сумка использовать подарок`, чтобы вызвать это меню",
 			});
 			return;
 		}
@@ -345,7 +346,7 @@ export const componentsActions = {
 		}
 
 		const OPEN_TIME = MINUTE * 3;
-		const context = {
+		const context = new BaseContext("snowyEvent.componentActions.openNow", {
 			interaction,
 			user: interaction.user,
 			channel: interaction.channel,
@@ -358,10 +359,9 @@ export const componentsActions = {
 			openedMessage: null,
 			componentsCollector: null,
 			onComponent: null,
-		};
+		});
 
 		await new Promise(async (resolve) => {
-			const isMessage = (target) => target instanceof Message;
 			context.openProcessMessage ||= interaction;
 			const embedDefaults = {
 				color: "#40f7f5",
@@ -374,7 +374,7 @@ export const componentsActions = {
 				);
 				context.openProcessMessage = await context.openProcessMessage.msg({
 					...embedDefaults,
-					edit: isMessage(context.openProcessMessage),
+					edit: context.openProcessMessage instanceof Message,
 					description: `Распаковка подарка: ${dayjs
 						.duration(timediff)
 						.format("mm м : ss с")} ${
