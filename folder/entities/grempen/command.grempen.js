@@ -1,6 +1,7 @@
 // @ts-check
 import { PermissionsBits } from "#constants/enums/discord/permissions.js";
 import { DAY } from "#constants/globals/time.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
@@ -8,14 +9,13 @@ import { DataManager } from "#lib/DataManager/singleton.js";
 import { MessageInterface } from "#lib/DiscordMessageInterface.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
 import { ErrorsHandler } from "#lib/ErrorsHandler/ErrorsHandler.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
-	addResource,
-	ending,
-	joinWithAndSeparator,
-	numberFormat,
-	sleep,
+    addResource,
+    ending,
+    joinWithAndSeparator,
+    numberFormat,
+    sleep,
 } from "#lib/util.js";
 
 async function get_products() {

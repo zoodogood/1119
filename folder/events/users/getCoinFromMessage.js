@@ -1,5 +1,5 @@
 import { CALCULATE_CLOVER_MULTIPLAYER } from "#constants/users/commands.js";
-import { Actions } from "#lib/modules/ActionManager.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import { BaseEvent, EventsManager } from "#lib/modules/EventsManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as SnowyEvent from "#lib/snowyEvent.js";

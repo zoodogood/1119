@@ -1,6 +1,6 @@
 import { client } from "#bot/client.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 import { UserEffectManager } from "#lib/modules/EffectsManager.js";
 
 class Event {

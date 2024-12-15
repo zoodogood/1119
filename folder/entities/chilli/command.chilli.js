@@ -1,9 +1,9 @@
 import { client } from "#bot/client.js";
 import { Emoji } from "#constants/emojis.js";
 import { SECOND } from "#constants/globals/time.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { BaseCommandRunContext } from "#lib/CommandRunContext.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import * as Util from "#lib/util.js";
 

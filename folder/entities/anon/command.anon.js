@@ -1,12 +1,12 @@
 import { SECOND } from "#constants/globals/time.js";
 import { addCoinFromMessage } from "#folder/events/users/getCoinFromMessage.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import {
 	AnonExpressionParser,
 	TokenTypeEnum,
 } from "#lib/AnonExpressionParser.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import { Pager } from "#lib/DiscordPager.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import {
 	ROMAN_NUMERALS_TABLE,

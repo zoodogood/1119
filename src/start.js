@@ -24,7 +24,7 @@ import {
 	MESSAGES_SPAM_FILTER_TARGET_ALWAYS,
 	MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED,
 } from "#constants/users/events.js";
-import { Actions } from "#lib/modules/ActionManager.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import FileSystem from "node:fs";
 

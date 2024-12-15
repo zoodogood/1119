@@ -1,6 +1,6 @@
+import ActionManager from "../ActionsManager/ActionManager.js";
 import ErrorsHandler from "../ErrorsHandler/ErrorsHandler.js";
 import APIPointAuthorizationManager from "./APIPointAuthorization.js";
-import ActionManager from "./ActionManager.js";
 import BossManager from "./BossManager.js";
 import CommandsManager from "./CommandsManager.js";
 import CooldownManager from "./CooldownManager.js";

@@ -1,9 +1,9 @@
-import { BaseEvent } from "#lib/modules/EventsManager.js";
 import { client } from "#bot/client.js";
-import { AuditLogEvent, PermissionFlagsBits, UserFlags } from "discord.js";
 import { PermissionFlags } from "#constants/enums/discord/permissions.js";
-import { Actions } from "#lib/modules/ActionManager.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
+import { BaseEvent } from "#lib/modules/EventsManager.js";
 import * as Util from "#lib/util.js";
+import { AuditLogEvent, PermissionFlagsBits, UserFlags } from "discord.js";
 
 function getMemberData(member) {
 	const { guild } = member;

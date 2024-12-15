@@ -1,8 +1,8 @@
-import { BaseCommand } from "#lib/BaseCommand.js";
-import * as Util from "#lib/util.js";
 import { client } from "#bot/client.js";
-import { Actions } from "#lib/modules/ActionManager.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
+import { BaseCommand } from "#lib/BaseCommand.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
+import * as Util from "#lib/util.js";
 import { PresenceUpdateStatus } from "discord.js";
 
 class Command extends BaseCommand {

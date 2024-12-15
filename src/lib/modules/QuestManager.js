@@ -1,6 +1,6 @@
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import { createDefaultPreventable } from "#lib/createDefaultPreventable.js";
 import { DataManager } from "#lib/DataManager/singleton.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 import { PropertiesEnum } from "#lib/modules/Properties.js";
 import { addResource } from "#lib/util.js";
 import { Collection } from "discord.js";

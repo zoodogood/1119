@@ -7,9 +7,9 @@ import * as Util from "#lib/util.js";
 
 import { Emoji } from "#constants/emojis.js";
 import { LEVELINCREASE_EXPERIENCE_PER_LEVEL } from "#constants/users/events.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import { BaseContext } from "#lib/BaseContext.js";
 import { takeInteractionProperties } from "#lib/Discord_utils.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 import { PresenceUpdateStatus } from "discord.js";
 
 class Command extends BaseCommand {

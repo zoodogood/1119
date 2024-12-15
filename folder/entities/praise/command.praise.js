@@ -1,6 +1,6 @@
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 import { BaseCommand } from "#lib/BaseCommand.js";
 import * as Util from "#lib/util.js";
-import { Actions } from "#lib/modules/ActionManager.js";
 
 class Command extends BaseCommand {
 	options = {

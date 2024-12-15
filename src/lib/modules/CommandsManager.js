@@ -8,7 +8,7 @@ import {
 import Executor from "#lib/modules/Executor.js";
 import EventEmitter from "node:events";
 
-import { Actions } from "#lib/modules/ActionManager.js";
+import { Actions } from "#lib/ActionsManager/ActionManager.js";
 
 import app from "#app";
 import { take_missing_permissions } from "#bot/util.js";
