@@ -4,10 +4,7 @@ src/config.json.js
 node_modules/
 build/
 
-# deprecated
 static/articles/
-folder/data/
-folder/errors/*.json
 
 folder/!localStorage/
 

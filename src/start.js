@@ -620,8 +620,6 @@ class Command {
 }
 
 class ReactionsManager {
-	static path = "./data/reactions.json";
-
 	static reactData = [];
 
 	constructor(id, channel, guild, type, reactions) {

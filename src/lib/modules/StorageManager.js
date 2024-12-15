@@ -1,3 +1,5 @@
+import config from "#config";
+
 class StorageManager {
 	static async keys(path) {
 		return await this.driver.keys(path);
@@ -28,5 +30,7 @@ class StorageManager {
 		return await this.driver.writeFile(name, content);
 	}
 }
+
+await StorageManager.setDriver(config.database.driver);
 
 export default StorageManager;

@@ -9,13 +9,11 @@ import {
 	ErrorsHandler,
 	EventsManager,
 	I18nManager,
-	StorageManager,
 	TimeEventsManager,
 	UserEffectManager,
 } from "#lib/modules/mod.js";
 
 import app from "#app";
-import config from "#config";
 import { Events } from "#constants/app/events.js";
 import { createStopPromise } from "#lib/createStopPromise.js";
 
@@ -87,8 +85,6 @@ class Event extends BaseEvent {
 	}
 
 	async run() {
-		await StorageManager.setDriver(config.database.driver);
-
 		EventsManager.listenAll();
 
 		await DataManager.require_load();

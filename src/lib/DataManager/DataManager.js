@@ -3,7 +3,6 @@ import { mol_tree2_string_from_json } from "#lib/$mol.js";
 import StorageManager from "#lib/modules/StorageManager.js";
 import { EventEmitter } from "#lib/util.js";
 import { Guild, User } from "discord.js";
-import FileSystem from "node:fs";
 
 class DataManager {
 	/**
@@ -16,25 +15,19 @@ class DataManager {
 		Ready: "Ready",
 	};
 	static file = {
-		path: `${process.cwd()}/folder/data/main.json`,
 		load: async () => {
-			const path = this.file.path;
-			// to-do @deprecated. will be changed to StorageManager.read
-			const content = FileSystem.readFileSync(path, "utf-8");
+			const content = await StorageManager.read("main.json");
 			const data = JSON.parse(content);
 			this.data = data;
 			this.emitter.emit(DataManager.Events.Ready);
 		},
 		write: async () => {
-			const path = this.file.path;
 			const data = JSON.stringify(this.data);
 			await StorageManager.write("main.json", data);
 			await StorageManager.write(
 				"data_manager__data.tree",
 				mol_tree2_string_from_json(this.data),
 			);
-			// to-do @deprecated. will be removed
-			FileSystem.writeFileSync(path, data);
 		},
 		defaultData: {
 			bot: {

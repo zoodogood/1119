@@ -1,5 +1,4 @@
 import EventEmitter from "node:events";
-import FileSystem from "node:fs";
 
 import { SECOND } from "#constants/globals/time.js";
 import StorageManager from "#lib/modules/StorageManager.js";
@@ -76,21 +75,16 @@ class TimeEventsManager {
 	static emitter = new EventEmitter();
 
 	static file = {
-		path: `${process.cwd()}/folder/data/time.json`,
-		load: () => {
-			const path = this.file.path;
-			const content = FileSystem.readFileSync(path, "utf-8");
+		load: async () => {
+			const content = await StorageManager.read("timeEvents.json");
 			const events = JSON.parse(content, (key, value) =>
 				value.name ? TimeEventData.fromEventData(value) : value,
 			);
 			this.data = events;
 		},
 		write: async () => {
-			const path = this.file.path;
 			const data = JSON.stringify(this.data);
 			await StorageManager.write("timeEvents.json", data);
-			// to-do @deprecated. will be removed
-			FileSystem.writeFileSync(path, data);
 		},
 		defaultData: {},
 	};
