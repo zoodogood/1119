@@ -22,12 +22,12 @@
 	on:click={Interaction.onClick}
 	on:keydown={Interaction.onClick}
 >
-	<element-layer class="background" />
+	<element-layer class="background"></element-layer>
 	<element-layer class="foreground">
 		<element-container>
 			<element-group class="button">
-				<element-svg class="octagon" />
-				<element-svg class="triange" />
+				<element-svg class="octagon"></element-svg>
+				<element-svg class="triange"></element-svg>
 			</element-group>
 
 			<section class="content">

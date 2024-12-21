@@ -1,0 +1,1847 @@
+import { DAY, HOUR, MINUTE, SECOND } from "#constants/time.js";
+import { assert } from "#src/assert/export.js";
+import * as BagAPI from "#src/bag/command.bag.js";
+import client from "#src/bot/client/singleton.js";
+import { addCoinFromMessage } from "#src/coin_message/requestCoinFromMessage.js";
+import { CurseManager } from "#src/curses/CurseManager/singleton/index.js";
+import DataManager from "#src/data/DataManager.js";
+import { PropertiesEnum } from "#src/data/Properties.js";
+import { addResource } from "#src/data/public/addResource.js";
+import { Emoji } from "#src/emojis/emojis.js";
+import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
+import { sortByResolve as sortByResolveMut } from "#src/mini.js";
+import QuestManager from "#src/quests/QuestManager.js";
+import { clamp, random, sleep, yaml } from "#src/safe-utils.js";
+import { happySnowyCurse } from "#src/snowyEvent/happy_snowy_curse.js";
+import { RanksUtils } from "#src/top/command.top.js";
+
+import { ActionsMap } from "#src/user/actions/actionsMap.enum.js";
+import { provideTunnel } from "#src/user/actions/provideTunnel.effect.js";
+import { Collection } from "@discordjs/collection";
+import { justButtonComponents } from "@zoodogood/utils/discordjs";
+import {
+	DotNotatedInterface,
+	getRandomElementFromArray,
+} from "@zoodogood/utils/objectives";
+import { ending } from "@zoodogood/utils/primitives";
+import { AttachmentBuilder, MessageMentions } from "discord.js";
+
+export const cursesBase = new Collection(
+	[
+		{
+			_weight: 10,
+			id: "callUserCommand",
+			description: "Используйте команду !юзер <:piggeorg:758711403027759106>",
+			hard: 0,
+			values: {
+				goal: () => random(1, 5),
+				timer: () => random(1, 3) * DAY,
+			},
+			callback: {
+				callCommand: (user, curse, { command }) => {
+					const compare = command.options.name === "user";
+					compare &&
+						CurseManager.interface({ user, curse }).incrementProgress(1);
+
+					return;
+				},
+			},
+			interactionIsShort: true,
+			reward: 4,
+		},
+		{
+			_weight: 10,
+			id: "onlyBuyBerry",
+			description: "Купите клубнику, не продав ни одной",
+			hard: 0,
+			values: {
+				goal: () => random(5, 20),
+				timer: () => random(1, 2) * DAY,
+			},
+			callback: {
+				berryBarter: (user, curse, { quantity, isBuying }) => {
+					isBuying
+						? CurseManager.interface({ user, curse }).incrementProgress(
+								quantity,
+							)
+						: CurseManager.interface({ user, curse }).fail();
+				},
+			},
+			interactionIsShort: true,
+			reward: 12,
+		},
+		{
+			_weight: 2,
+			id: "weekdaysQuest",
+			description: "Не пропускайте выполнение ежедневного квеста",
+			hard: 2,
+			values: {
+				goal: () => random(3, 5),
+				timer: (user, curse) => {
+					const now = new Date();
+					const adding = curse.values.goal;
+					const timestamp = new Date(
+						now.getFullYear(),
+						now.getMonth(),
+						now.getDate() + adding,
+					).getTime();
+					return Math.floor(timestamp - now.getTime());
+				},
+			},
+			callback: {
+				curseInit: (user, curse, data) =>
+					data.curse === curse && user.data.quest.isCompleted
+						? CurseManager.interface({ user, curse }).incrementProgress(1)
+						: null,
+
+				dailyQuestComplete: (user, curse) =>
+					CurseManager.interface({ user, curse }).incrementProgress(1),
+				dailyQuestSkiped: (user, curse) =>
+					CurseManager.interface({ user, curse }).fail(),
+			},
+			interactionIsLong: true,
+			reward: 16,
+		},
+		{
+			_weight: 10,
+			id: "notStupid",
+			description: "Выполните ваш ежедневный квест, не называя бота глупым",
+			hard: 1,
+			values: {
+				goal: () => 1,
+				timer: () => {
+					const now = new Date();
+					const tomorrow = new Date(
+						now.getFullYear(),
+						now.getMonth(),
+						now.getDate() + 1,
+					).getTime();
+					return Math.floor(tomorrow - now.getTime());
+				},
+			},
+			callback: {
+				dailyQuestComplete: (user, curse) =>
+					CurseManager.interface({ user, curse }).incrementProgress(1),
+				callBot: (user, curse, { type }) =>
+					type === "stupid" && CurseManager.interface({ user, curse }).fail(),
+			},
+			filter: (user) =>
+				user.data.quest?.id === "namebot" && !user.data.quest.isCompleted,
+			interactionIsShort: true,
+			reward: 4,
+		},
+		{
+			_weight: 10,
+			id: "chilliChampion",
+			description: "Победите в мини-игре с перцем",
+			hard: 0,
+			values: {
+				goal: () => 2,
+				timer: () => DAY * 2,
+			},
+			callback: {
+				chilliBooh: (user, curse, { boohIn, chilli }) =>
+					boohIn !== user && chilli.rebounds > 0
+						? CurseManager.interface({ user, curse }).incrementProgress(1)
+						: null,
+			},
+			interactionIsShort: true,
+			reward: 4,
+		},
+		{
+			_weight: 10,
+			id: "chilliImperator",
+			description: "Победите в мини-игре с перцем. Нельзя проигрывать",
+			hard: 0,
+			values: {
+				goal: () => 1,
+				timer: () => {
+					const now = new Date();
+					const tomorrow = new Date(
+						now.getFullYear(),
+						now.getMonth(),
+						now.getDate() + 1,
+					).getTime();
+					return Math.floor(tomorrow - now.getTime());
+				},
+			},
+			callback: {
+				chilliBooh: (user, curse, { boohIn, chilli }) =>
+					boohIn !== user && chilli.rebounds > 0
+						? CurseManager.interface({ user, curse }).incrementProgress(1)
+						: CurseManager.interface({ user, curse }).fail(),
+			},
+			interactionIsShort: true,
+			reward: 7,
+		},
+		{
+			_weight: 3,
+			id: "usefulChest",
+			description:
+				"В сундуке, который Вы откроете должна оказаться нестабильность",
+			hard: 1,
+			values: {
+				goal: () => 1,
+				timer: () => DAY * 10,
+			},
+			callback: {
+				openChest: (user, curse, { treasures }) =>
+					"void" in treasures
+						? CurseManager.interface({ user, curse }).incrementProgress(1)
+						: null,
+			},
+			interactionIsLong: true,
+			reward: 12,
+		},
+		{
+			_weight: 10,
+			id: "sonic",
+			description: "Отправьте 70 сообщений за минуту",
+			hard: 1,
+			values: {
+				goal: () => 70,
+				timer: () => HOUR * 2,
+				messages: () => [],
+			},
+			callback: {
+				messageCreate: (user, curse) => {
+					const now = Date.now();
+					const messages = curse.values.messages;
+
+					messages.push(now);
+
+					const extraTimeForMobileUsers =
+						5_500 * ("mobile" in (user.presence?.clientStatus || {}));
+					const TIMEOUT = 90_000 + extraTimeForMobileUsers;
+
+					while (messages[0] + TIMEOUT < now) {
+						messages.shift();
+					}
+
+					CurseManager.interface({ user, curse }).setProgress(messages.length);
+				},
+			},
+			interactionIsShort: true,
+			reward: 5,
+		},
+		{
+			_weight: 1,
+			id: "mentionForDistribute",
+			description:
+				"Упомяните двух человек, у которых нет, и не было сего, проклятия. Проклятие распространяется на каждого, кого вы упомянули",
+			hard: 0,
+			values: {
+				goal: () => 2,
+				timer: () => DAY / 2,
+				listOfUsers: (user) => [user.id],
+			},
+			callback: {
+				messageCreate: (user, curse, message) => {
+					const content = message.content;
+					const mentionId = content.match(MessageMentions.UsersPattern)?.[1];
+
+					if (!mentionId) {
+						return;
+					}
+
+					const target = message.client.users.cache.get(mentionId);
+					if (target.id === user.id || target.bot) {
+						return;
+					}
+
+					if (!user.curses) {
+						user.curses = [];
+					}
+					const haveCurse = target.data.curses?.length;
+					if (haveCurse && !target.data.voidFreedomCurse) {
+						message.react("❌");
+						return;
+					}
+
+					const list = curse.values.listOfUsers || [];
+
+					if (list.includes(target.id)) {
+						message.react("❌");
+						return;
+					}
+
+					message.react("💀");
+
+					const curseBase = cursesBase.get(curse.id);
+					const createdCurse = CurseManager.generateOfBase({
+						curseBase,
+						user: target,
+					});
+
+					CurseManager.init({ curse: createdCurse, user: target });
+					list.push(target.id);
+					createdCurse.values.listOfUsers = list;
+
+					CurseManager.interface({ user, curse }).setProgress(list.length - 1);
+				},
+			},
+			interactionIsShort: true,
+			reward: 1,
+		},
+		{
+			_weight: 5,
+			id: "coinFever",
+			description:
+				"Отправьте коин-сообщения или дождитесь окончания. Даёт дополнительный шанс в 16% получить коин из сообщения. Однако количество денег будет уменьшаться",
+			hard: 0,
+			values: {
+				goal: (user) => 48 - (user.data.chectLevel ?? 0) * 16,
+				timer: () => HOUR / 2,
+			},
+			callback: {
+				messageCreate: (user, curse, message) => {
+					if (random(6)) {
+						return;
+					}
+
+					const data = user.data;
+					const previousCoins = data.coins;
+
+					addCoinFromMessage(message);
+					const difference = data.coins - previousCoins;
+
+					data.coins -= difference * 2;
+					CurseManager.interface({ user, curse }).incrementProgress(1);
+				},
+				curseTimeEnd: (user, curse, data) => {
+					if (data.curse !== curse) {
+						return;
+					}
+
+					data.preventDefault();
+					CurseManager.interface({ user, curse }).success();
+				},
+			},
+			reward: 1,
+		},
+		{
+			_weight: 5,
+			id: "bossWannaDamage",
+			description: "Нанесите боссу вот столько-вот урона",
+			hard: 2,
+			values: {
+				goal: () => 80_000,
+				timer: (user) => {
+					const guilds = user.guilds.filter(
+						(guild) => guild.data.boss?.isArrived,
+					);
+					assert(guilds.length);
+					const guild = guilds.reduce((maximalize, guild) =>
+						maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay
+							? guild
+							: maximalize,
+					);
+					const timestamp = guild.data.boss.endingAtDay * DAY;
+					const difference = timestamp - Date.now();
+					return Math.max(difference, HOUR);
+				},
+			},
+			callback: {
+				bossMakeDamage: (user, curse, { damage }) => {
+					CurseManager.interface({ user, curse }).incrementProgress(damage);
+				},
+			},
+			filter: (_user, { guild }) => guild && guild.data.boss?.isArrived,
+			interactionIsLong: true,
+			reward: 10,
+		},
+		{
+			_weight: 5,
+			id: "anonSticksByExperinence",
+			description:
+				"Соберите столько палочек в команде !анон, сколько у Вас сейчас опыта",
+			hard: 2,
+			values: {
+				goal: (user) => user.data.exp,
+				timer: () => HOUR * 24,
+			},
+			callback: {
+				anonTaskResolve: (user, curse, { task }) => {
+					const sticks = task.stickCount();
+					curse.values.goal = user.data.exp + (user.data.bag.exp || 0);
+					CurseManager.interface({ user, curse }).incrementProgress(sticks);
+				},
+				curseBeforeProgressDisplay: (user, curse) => {
+					curse.values.goal = user.data.exp;
+					CurseManager.checkAvailable({ curse, user });
+				},
+			},
+			interactionIsShort: true,
+			interactionIsLong: true,
+			reward: 15,
+		},
+		{
+			_weight: 5,
+			id: "noBagAvailable",
+			description:
+				"Вы не можете класть ресурсы в сумку, как и извлекать их из неё. Проклятие будет засчитано по окончании таймера",
+			hard: 0,
+			values: {
+				goal: () => 1,
+				timer: () => DAY,
+			},
+			callback: {
+				curseTimeEnd: (user, curse, data) => {
+					if (data.curse !== curse) {
+						return;
+					}
+
+					data.preventDefault();
+					CurseManager.interface({ user, curse }).success();
+				},
+				beforeBagInteracted: (user, curse, context) => {
+					context.preventDefault();
+				},
+			},
+			interactionIsLong: false,
+			reward: 3,
+		},
+		{
+			_weight: 5,
+			id: "anyAction",
+			description: "Сделайте что-нибудь",
+			hard: 0,
+			values: {
+				goal: () => 175 + random(5) * 5,
+				timer: () => MINUTE * 8,
+			},
+			callback: {
+				[ActionsMap.any]: (user, curse, { actionName, data }) => {
+					if (actionName === ActionsMap.curseEnd && curse === data.curse) {
+						return;
+					}
+
+					const { progress } = curse.values;
+					CurseManager.interface({ user, curse })._setProgress(
+						(progress || 0) + 1,
+					);
+				},
+				curseTimeEnd: (user, curse, data) => {
+					if (data.curse !== curse) {
+						return;
+					}
+
+					CurseManager.interface({ curse, user }).fail();
+				},
+			},
+			reward: 5,
+			interactionIsShort: true,
+		},
+		{
+			_weight: 2,
+			id: "spiritOfTheDailyQuest",
+			description: (user, { values }) =>
+				`Выполняйте сегодняшний квест до ${values.maximumProgress}-ти раз. Вы провалите проклятие, если не выполните хотя бы ${values.minimalProgress}-х`,
+			hard: 1,
+			values: {
+				goal: () => 0,
+				timer: () => {
+					const now = new Date();
+					const tomorrow = new Date(
+						now.getFullYear(),
+						now.getMonth(),
+						now.getDate() + 1,
+					).getTime();
+					return Math.floor(tomorrow - now.getTime());
+				},
+				minimalProgress: () => 3,
+				maximumProgress: () => 10,
+				goalAddingMultiplayerPerQuest: () => 0.3,
+			},
+			callback: {
+				curseTimeEnd: (user, curse, data) => {
+					if (data.curse !== curse) {
+						return;
+					}
+					if (curse.values.progress >= curse.values.minimalProgress) {
+						data.preventDefault();
+						CurseManager.interface({ user, curse }).success();
+					}
+				},
+				curseInit: (user, curse, data) => {
+					if (data.curse !== curse) {
+						return;
+					}
+
+					const { quest } = user.data;
+					if (quest.isCompleted) {
+						CurseManager.interface({ curse, user }).incrementProgress(1);
+						const base = QuestManager.questsBase.get(quest.id);
+						const context = {
+							goalMultiplayer: curse.values.hardMultiplayerPerQuest,
+						};
+						const newQuest = QuestManager.generateOfBase({
+							questBase: base,
+							user,
+							context,
+						});
+						QuestManager.init({ user, quest: newQuest });
+					}
+				},
+				dailyQuestComplete: (user, curse) => {
+					const { quest } = user.data;
+					CurseManager.interface({ curse, user }).incrementProgress(1);
+
+					if (curse.values.progress >= curse.values.maximumProgress) {
+						CurseManager.interface({ user, curse }).success();
+						return;
+					}
+
+					const base = QuestManager.questsBase.get(quest.id);
+					const context = {
+						goalMultiplayer:
+							curse.values.goalAddingMultiplayerPerQuest *
+							curse.values.progress,
+					};
+					const newQuest = QuestManager.generateOfBase({
+						questBase: base,
+						user,
+						context,
+					});
+					QuestManager.init({ user, quest: newQuest });
+				},
+			},
+			reward: 10,
+		},
+		{
+			_weight: 0.5,
+			id: "iDidntAgreeToIt",
+			hard: 0,
+			description:
+				"Мы собираем о вас данные и позднее отправим их вам. Проклятие будет выполнено автоматически",
+			toString(_user, curse) {
+				const endTimestamp = curse.timestamp + curse.values.timer;
+				const stamp = Math.floor(endTimestamp / 1000);
+				return `${this.description}: <t:${stamp}:R>`;
+			},
+			values: {
+				timer: () => HOUR * 24,
+				goal: () => 1,
+				audit: () => [],
+				counter: () => 1,
+			},
+			callback: {
+				curseTimeEnd: (user, curse, data) => {
+					if (data.curse !== curse) {
+						return;
+					}
+
+					data.preventDefault();
+
+					const audit = {};
+					const auditInterface = new DotNotatedInterface(audit);
+
+					auditInterface.setItem("actions", curse.values.counter);
+
+					for (const entry of curse.values.audit) {
+						const { value, source, executor, resource } = entry;
+						const box = auditInterface.setItem(
+							`resources.${source}`,
+							(prev) => prev || [],
+						);
+						const executorContent =
+							executor === user.id
+								? "You"
+								: executor === null
+									? "null"
+									: "NotYou";
+
+						const splited = box.find(
+							(splited) =>
+								splited.executorContent === executorContent &&
+								Math.sign(splited.value) === Math.sign(value) &&
+								splited.resource === resource,
+						);
+						if (splited) {
+							splited.value += value;
+						} else {
+							box.push({
+								resource,
+								executorContent,
+								value,
+							});
+						}
+						sortByResolveMut(box, ($) => $.resource);
+					}
+					const document = new yaml.Document(audit);
+
+					const buffer = Buffer.from(document.toString({ indent: 3 }));
+					user.msg({
+						files: [new AttachmentBuilder(buffer, { name: "audit.yaml" })],
+					});
+					CurseManager.interface({ user, curse }).success();
+				},
+				resourceChange: (_user, curse, data) => {
+					const { value, source, resource } = data;
+					const executor = data.executor?.id ?? null;
+
+					curse.values.audit.push({ value, source, executor, resource });
+				},
+				[ActionsMap.any]: (_user, curse) => {
+					curse.values.counter++;
+				},
+			},
+			reward: 10,
+			interactionIsLong: true,
+		},
+		{
+			_weight: 3,
+			id: "notKind",
+			hard: 1,
+			description: (user, curse) => {
+				const valueContent = new Intl.NumberFormat("ru-RU").format(
+					curse.values.maximum || 0,
+				);
+				return `Не получайте больше, чем ${valueContent} коинов, ни из какого источника`;
+			},
+			toString(user, curse) {
+				const { values, timestamp } = curse;
+				const { timer, progress, maximum } = values;
+				const endAtContent = `<t:${Math.floor((timestamp + timer) / 1_000)}:R>`;
+				return `${this.description(
+					user,
+					curse,
+				)}\nПолучено: ${progress}/${maximum}\nДо спокойного конца: ${endAtContent}`;
+			},
+			values: {
+				timer: () => HOUR * 8,
+				progress: () => 0,
+				maximum: () => 7_000,
+			},
+			callback: {
+				curseTimeEnd: (user, curse, data) => {
+					if (data.curse !== curse) {
+						return;
+					}
+
+					data.preventDefault();
+
+					CurseManager.interface({ user, curse }).success();
+				},
+				resourceChange: (user, curse, data) => {
+					if (data.resource !== PropertiesEnum.coins) {
+						return;
+					}
+
+					if (data.value <= 0) {
+						return;
+					}
+
+					const { values: curseValues } = curse;
+
+					curseValues.progress += data.value;
+					if (curseValues.progress >= curseValues.maximum) {
+						CurseManager.interface({ user, curse }).fail();
+					}
+				},
+			},
+			reward: 5,
+		},
+		{
+			_weight: 2,
+			id: "haveGoToCasino",
+			hard: 1,
+			description: (user, curse) => {
+				return `Поставьте >${curse.values.goal} ставкой в казино`;
+			},
+			values: {
+				timer: () => HOUR,
+				goal: (user) => {
+					const { coins, berrys } = user.data;
+					const { coinsInBag } = user.data.bag || {};
+					const value =
+						coins +
+						(coinsInBag || 0) / 2 +
+						(berrys * DataManager.data.bot.berrysPrice) / 2;
+
+					return Math.floor(value);
+				},
+			},
+			callback: {
+				casinoSession: (user, curse, { bet }) => {
+					CurseManager.interface({ user, curse }).setProgress(bet);
+				},
+			},
+			interactionIsShort: true,
+			reward: 5,
+		},
+		{
+			_weight: 1,
+			id: "greedyChest",
+			hard: 1,
+			description: "Вы теряете на 10% больше коинов, откройте 2 сундука",
+			values: {
+				timer: () => DAY * 3,
+				goal: () => 2,
+			},
+			callback: {
+				openChest: (user, curse) => {
+					CurseManager.interface({ user, curse }).incrementProgress(1);
+				},
+				resourceChange: (user, curse, data) => {
+					if (data.resource !== PropertiesEnum.coins) {
+						return;
+					}
+
+					if (data.value >= 0) {
+						return;
+					}
+
+					if (data.context.recursiveDangerous) {
+						return;
+					}
+
+					addResource({
+						user,
+						value: Math.floor(data.value * 0.1),
+						resource: PropertiesEnum.coins,
+						context: { curse, data, recursiveDangerous: true },
+						source: "curseManager.events.greedyChest",
+						executor: null,
+					});
+				},
+			},
+			reward: 5,
+			interactionIsLong: true,
+		},
+		{
+			_weight: 1,
+			id: "generousChest",
+			EFFECT_ID: "curseManager.events.generousChest",
+			hard: 1,
+			description:
+				"Вы теряете и получаете на 5% больше коинов, максимум 2_000, откройте сундук",
+			values: {
+				timer: () => DAY * 3,
+				goal: () => 1,
+			},
+			callback: {
+				openChest: (user, curse) => {
+					CurseManager.interface({ user, curse }).incrementProgress(1);
+				},
+				resourceChange(user, curse, data) {
+					if (data.resource !== PropertiesEnum.coins) {
+						return;
+					}
+
+					if (data.context.recursiveDangerous) {
+						return;
+					}
+
+					const LIMIT = 2_000;
+					const value = clamp(-LIMIT, Math.floor(data.value * 0.05), LIMIT);
+
+					addResource({
+						user,
+						value,
+						resource: PropertiesEnum.coins,
+						context: { curse, data, recursiveDangerous: true },
+						source: this.EFFECT_ID,
+						executor: null,
+					});
+				},
+			},
+			recursiveDangerous: true,
+			reward: 5,
+		},
+		{
+			_weight: 1,
+			id: "independent",
+			hard: 1,
+			description: "Накопите коины, передача ресурсов заблокирована",
+			values: {
+				timer: () => DAY,
+				progress: (user) => user.data.coins,
+				goal: (user) => user.data.coins + 2000,
+			},
+			callback: {
+				resourceChange: (user, curse, data) => {
+					if (data.resource !== PropertiesEnum.coins) {
+						return;
+					}
+					const { coins } = user.data;
+					CurseManager.interface({ curse, user }).setProgress(coins);
+				},
+				curseBeforeProgressDisplay: (user, curse) => {
+					const { coins } = user.data;
+					CurseManager.interface({ curse, user }).setProgress(coins);
+				},
+				beforeResourcePayed: (user, curse, context) => {
+					context.preventDefault();
+				},
+				beforeBerryBarter: (user, curse, context) => {
+					context.preventDefault();
+				},
+				beforeBankInteracted: (user, curse, context) => {
+					context.preventDefault();
+				},
+			},
+			reward: 5,
+			interactionIsShort: true,
+		},
+		{
+			_weight: 1,
+			id: "itAllBag",
+			hard: 1,
+			description:
+				"По завершении проклятия вы потеряете все свои коины, опыт, ключи",
+			values: {
+				timer: () => DAY,
+			},
+			callback: {
+				curseTimeEnd: (user, curse, target) => {
+					if (target.curse !== curse) {
+						return;
+					}
+					const userData = user.data;
+					for (const resource of [
+						PropertiesEnum.coins,
+						PropertiesEnum.keys,
+						PropertiesEnum.exp,
+					]) {
+						addResource({
+							user,
+							value: -userData[resource],
+							resource,
+							executor: null,
+							source: "curseManager.events.itAllBag",
+						});
+					}
+					target.preventDefault();
+					CurseManager.interface({ user, curse }).silentEnd();
+					CurseManager.removeCurse({ user, curse });
+				},
+			},
+			reward: 3,
+			interactionIsShort: true,
+		},
+		{
+			_weight: 1,
+			id: "pointOfNoReturn",
+			hard: 1,
+			description:
+				"Таймер трёх проклятий должен пройти. В случае провала, вы теряете все ресурсы",
+			values: {
+				timer: () => DAY * 90,
+				goal: () => 3,
+			},
+			callback: {
+				curseTimeEnd: (user, curse, target) => {
+					if (target.curse !== curse) {
+						CurseManager.interface({ curse, user }).incrementProgress(1);
+						return;
+					}
+
+					const userData = user.data;
+					for (const resource of [
+						PropertiesEnum.coins,
+						PropertiesEnum.keys,
+						PropertiesEnum.exp,
+						PropertiesEnum.level,
+						PropertiesEnum.berrys,
+						PropertiesEnum.void,
+						PropertiesEnum.chestBonus,
+						PropertiesEnum.thiefGloves,
+						PropertiesEnum.monster,
+						PropertiesEnum.lollipops,
+						PropertiesEnum.chilli,
+						PropertiesEnum.coinsPerMessage,
+					]) {
+						userData[resource] &&
+							addResource({
+								user,
+								value: -userData[resource],
+								resource,
+								executor: null,
+								source: "curseManager.events.pointOfNoReturn",
+							});
+					}
+				},
+			},
+			reward: 5,
+			filter: (user) => user.data.voidFreedomCurse,
+		},
+		{
+			_weight: 1,
+			id: "pacifier",
+			hard: 1,
+			EFFECT_ID: "curseManager.event.pacifier",
+			description: "На время заменяет ваш профиль пустышкой",
+			SYNCED_KEYS: ["reminds", "praises"],
+			values: {
+				timer: () => HOUR,
+			},
+			callback: {
+				curseTimeEnd(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+
+					const userData = user.data;
+					const puppet = userData[this.EFFECT_ID];
+					if (!puppet) {
+						throw new Error("Puppet not found");
+					}
+					for (const key of Object.keys(userData)) {
+						delete userData[key];
+					}
+
+					Object.assign(userData, puppet);
+
+					const main_curse = userData.curses.find(
+						(compare) =>
+							compare.timestamp === curse.timestamp &&
+							compare.id === "pacifier",
+					);
+					target.preventDefault();
+					CurseManager.interface({ user, curse: main_curse }).success();
+				},
+				curseInit(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+
+					const userData = user.data;
+					const puppet = { ...userData };
+					const defaults = DataManager.userToDefaultData(user, user.id);
+					for (const key of Object.keys(userData)) {
+						if (this.SYNCED_KEYS.includes(key)) {
+							continue;
+						}
+						delete userData[key];
+					}
+					Object.assign(userData, defaults);
+					userData.curses = [curse];
+					userData.cursesCallbackMap = { curseTimeEnd: true };
+					userData[this.EFFECT_ID] = puppet;
+				},
+				timeEventEffectTimeoutEnd(user, curse, data) {
+					const userData = user.data;
+					const puppet = userData[this.EFFECT_ID];
+
+					const effects = puppet.effects || [];
+					const compare = (effect) => effect.uid === data.uid;
+					const target = effects.findIndex(compare);
+					if (target === -1) {
+						return;
+					}
+
+					effects.splice(target, 1);
+					data.preventDefault();
+				},
+				timeEventCurseTimeoutEnd(user, curse, data) {
+					if (curse.timestamp === data.timestamp) {
+						return;
+					}
+					const userData = user.data;
+					const puppet = userData[this.EFFECT_ID];
+
+					const compare = (curse) => curse.timestamp === data.timestamp;
+					const curses = puppet.curses || [];
+					const target = curses.findIndex(compare);
+					if (target === -1) {
+						return;
+					}
+
+					curses.splice(target, 1);
+					data.preventDefault();
+				},
+			},
+			reward: 5,
+			filter(user) {
+				return user.data.level > 30 && !user.data[this.EFFECT_ID];
+			},
+		},
+		{
+			_weight: 5,
+			id: "toTheTop",
+			hard: 1,
+			description: (user, curse) => {
+				const { client } = user;
+				const { name } = client.guilds.cache.get(curse.values.guildId) || {};
+				return `Поднимитесь в топе по богатству на "${name}" хотя бы на один ранг и дождитесь конца проклятия`;
+			},
+			values: {
+				timer: () => DAY,
+				goal: () => 1,
+				guildId: (_user, _curse, data) => data.guild.id,
+				previousRank: () => null,
+			},
+			callback: {
+				curseTimeEnd(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+					target.preventDefault();
+
+					const { client } = user;
+					const guild = client.guilds.cache.get(curse.values.guildId);
+					const { value: resolver } = RanksUtils.leaderboardTypes.get("coins");
+
+					const pull = RanksUtils.createPullWithResolver(
+						[...guild.members.cache.values()].map((member) => member.user),
+						resolver,
+					);
+
+					const index = RanksUtils.sortMutableAndFilterPull(pull).findIndex(
+						([target]) => target.id === user.id,
+					);
+
+					if (index === 0) {
+						CurseManager.interface({ curse, user }).success();
+						return;
+					}
+
+					if (index === -1 || curse.values.previousRank <= index) {
+						CurseManager.interface({ curse, user }).fail();
+						return;
+					}
+					CurseManager.interface({ curse, user }).success();
+				},
+				curseInit(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+					const { client } = user;
+					const guild = client.guilds.cache.get(curse.values.guildId);
+					const { value: resolver } = RanksUtils.leaderboardTypes.get("coins");
+					const pull = RanksUtils.createPullWithResolver(
+						[...guild.members.cache.values()].map((member) => member.user),
+						resolver,
+					);
+					const index = RanksUtils.sortMutableAndFilterPull(pull).findIndex(
+						([target]) => target.id === user.id,
+					);
+					if (index === 0) {
+						CurseManager.interface({ curse, user }).success();
+						return;
+					}
+					curse.values.previousRank =
+						index === -1 ? Number.MAX_SAFE_INTEGER : index;
+				},
+			},
+			reward: 7,
+			interactionIsShort: true,
+			filter: (user, { guild }) => guild,
+		},
+		{
+			_weight: 0.25,
+			id: "buggyProggy",
+			hard: 0,
+			description: "Переживите багги",
+			values: {
+				timer: () => HOUR,
+				goal: () => 1,
+				addable: () => null,
+			},
+			callback: {
+				curseTimeEnd(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+					target.preventDefault();
+					CurseManager.interface({ curse, user }).success();
+				},
+				curseEnd(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+					addResource({
+						user,
+						value: -curse.values.addable,
+						source: "curseManager.events.buggyProggy",
+						executor: null,
+						context: { curse, target },
+						resource: PropertiesEnum.coins,
+					});
+				},
+				curseInit(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+
+					const TARGET_VALUE = 99_999;
+					const adding = TARGET_VALUE - user.data.coins;
+					curse.values.addable = adding;
+					addResource({
+						user,
+						value: adding,
+						source: "curseManager.events.buggyProggy",
+						executor: null,
+						context: { curse, target },
+						resource: PropertiesEnum.coins,
+					});
+				},
+				beforeResourcePayed(user, curse, context) {
+					const { interaction, resource } = context;
+					if (interaction.user !== user) {
+						return;
+					}
+
+					if (resource !== PropertiesEnum.coins) {
+						return;
+					}
+
+					const realCount = user.data.coins - curse.values.addable;
+					context.numeric = Math.min(realCount, context.numeric);
+
+					CurseManager.interface({ user, curse }).success();
+				},
+				resourceChange(user, curse, { executor, resource, value }) {
+					if (executor !== user) {
+						return;
+					}
+					if (resource !== PropertiesEnum.coins) {
+						return;
+					}
+					if (value > 0) {
+						return;
+					}
+
+					CurseManager.interface({ user, curse }).success();
+				},
+			},
+			reward: 3,
+			filter: (user) => user.data.coins < 50_000,
+		},
+		happySnowyCurse,
+		{
+			_weight: 1,
+			id: "candyFactory",
+			hard: 0,
+			EFFECT_ID: "curseManager.event.candyFactory",
+			description: "Вам становится доступна команда !клик, заработайте конфеты",
+			values: {
+				timer(user) {
+					const userData = user.data;
+					const defaults = 20 * MINUTE;
+					const candyData = userData[this.EFFECT_ID] || {};
+					return defaults * (candyData.level || 1);
+				},
+				goal(user) {
+					const userData = user.data;
+					const defaults = 7;
+					const candyData = userData[this.EFFECT_ID] || {};
+					return defaults * (candyData.level || 1) * userData.level;
+				},
+				progress: () => 0,
+			},
+			onComponent({ params, interaction }) {
+				const [userId] = params;
+				interaction.msg({
+					ephemeral: true,
+					content: `Привет, ${userId}`,
+				});
+			},
+			calculateCandiesPerRest({ timeDiff }) {
+				const secondsRemind = timeDiff / SECOND;
+				return Math.floor(secondsRemind / 300);
+			},
+			callback: {
+				async inputCommandParsed(user, curse, context) {
+					const { commandBase } = context;
+					const targetKeywords = new Map(
+						["click", "клик"].map((key) => [key, true]),
+					);
+
+					if (!targetKeywords.has(commandBase)) {
+						return;
+					}
+
+					const userData = user.data;
+					const candyData = (userData[this.EFFECT_ID] ||= {});
+					candyData.candies ||= 0;
+
+					const timeDiff = Date.now() - (candyData.receiveAt ?? Date.now());
+					const _context = {
+						user,
+						curse,
+						context,
+						candyData,
+						timeDiff,
+					};
+					const value =
+						random(1, userData.level) + this.calculateCandiesPerRest(_context);
+
+					candyData.candies += value;
+
+					candyData.receiveAt = Date.now();
+					const { channel } = context;
+					const message = await channel.msg({
+						color: "#65dbeb",
+						description: `+ ${value} :candy:`,
+						components: justButtonComponents({
+							emoji: "🍬",
+							customId: `@curseManager/events/candyFactory:${user.id}`,
+						}),
+					});
+
+					CurseManager.interface({ user, curse }).setProgress(
+						candyData.candies,
+					);
+
+					await sleep(7_000);
+					random(1) ? context.message.delete() : message.delete();
+				},
+			},
+			reward: 5,
+		},
+		{
+			_weight: 3,
+			id: "learnTogether",
+			description: "Упомяните до 5 участников, вместе вы должны получить опыта",
+			hard: 1,
+			values: {
+				goal: (user) => user.data.level * EXPERIENCE_PER_LEVEL,
+				timer: () => DAY,
+				listOfUsers: () => [],
+			},
+			callback: {
+				messageCreate(user, curse, message) {
+					const { content } = message;
+					const mentionId = content.match(MessageMentions.UsersPattern)?.[1];
+
+					if (!mentionId) {
+						return;
+					}
+
+					const target = message.client.users.cache.get(mentionId);
+					if (target.id === user.id || target.bot) {
+						return;
+					}
+
+					const list = curse.values.listOfUsers || [];
+
+					if (list.includes(target.id) || list.length >= 5) {
+						message.react("❌");
+						return;
+					}
+
+					message.react("💀");
+
+					list.push(target.id);
+					const effectsToHear = Object.fromEntries(
+						[ActionsMap.resourceChange].map((action) => [action, true]),
+					);
+					provideTunnel(target, user, effectsToHear, {
+						source: "curseManager.curse.learnTogether",
+					});
+				},
+				resourceChange(user, curse, context) {
+					const { value, resource } = context;
+					if (resource !== PropertiesEnum.exp) {
+						return;
+					}
+					CurseManager.interface({ user, curse }).incrementProgress(value);
+				},
+				tunnelMessageReceive(user, curse, context) {
+					const { data } = context;
+					context.resumeAlive();
+					this.callback.resourceChange.call(this, user, curse, data);
+				},
+			},
+			interactionIsLong: true,
+			reward: 12,
+		},
+		{
+			_weight: 2,
+			id: "collectDino",
+			description: "Соберите 20 монстров",
+			hard: 1,
+			values: {
+				goal: () => 20,
+				timer: () => DAY,
+				progress: (user) => user.data.monster,
+			},
+			callback: {
+				resourceChange(user, curse, context) {
+					const { resource } = context;
+					if (resource !== PropertiesEnum.monster) {
+						return;
+					}
+
+					const value = user.data.monster;
+					CurseManager.interface({ user, curse }).setProgress(value);
+				},
+				curseBeforeProgressDisplay(user, curse) {
+					const value = user.data.monster ?? 0;
+					CurseManager.interface({ user, curse }).setProgress(value);
+				},
+			},
+			interactionIsShort: true,
+			reward: 8,
+			filter: (user) => user.data.monster >= 3,
+		},
+		{
+			_weight: 2,
+			id: "collectDinoGrande",
+			description: "Соберите 80 монстров",
+			hard: 1,
+			values: {
+				goal: () => 80,
+				timer: () => DAY,
+				progress: (user) => user.data.monster,
+			},
+			callback: {
+				resourceChange(user, curse, context) {
+					const { resource } = context;
+					if (resource !== PropertiesEnum.monster) {
+						return;
+					}
+
+					const value = user.data.monster;
+					CurseManager.interface({ user, curse }).setProgress(value);
+				},
+				curseBeforeProgressDisplay(user, curse) {
+					const value = user.data.monster ?? 0;
+					CurseManager.interface({ user, curse }).setProgress(value);
+				},
+			},
+			interactionIsShort: true,
+			reward: 20,
+			filter: (user) => user.data.monster >= 30,
+		},
+		{
+			_weight: 2,
+			id: "transfiguro",
+			description:
+				"Вы поменяетесь коинами со следующим участником, которого упомянете",
+			hard: 0,
+			values: {
+				goal: () => 1,
+				timer: () => MINUTE * 15,
+			},
+			callback: {
+				messageCreate(user, curse, message) {
+					const { content } = message;
+					const mentionId = content.match(MessageMentions.UsersPattern)?.groups
+						.id;
+					if (!mentionId) {
+						return;
+					}
+
+					const { guild, channel } = message;
+					const target = guild.members.cache.get(mentionId)?.user;
+					if (!target || target.id === user.id || target.bot) {
+						return;
+					}
+					CurseManager.interface({ user, curse }).incrementProgress(1);
+
+					const value = user.data.coins - target.data.coins;
+					addResource({
+						user,
+						resource: PropertiesEnum.coins,
+						value: -value,
+						executor: user,
+						source: "curseManager.events.transfiguro",
+						context: { message, curse, user, target },
+					});
+					addResource({
+						user: target,
+						resource: PropertiesEnum.coins,
+						value,
+						executor: user,
+						source: "curseManager.events.transfiguro",
+						context: { message, curse, user, target },
+					});
+					message.react("💀");
+					channel.msg({
+						description: `${user.toString()} и ${target.toString()} поменялись коинами`,
+						color: "#6534bf",
+						reference: message.id,
+						footer: { text: "Трансфигурейшн произошло!" },
+					});
+				},
+			},
+			interactionIsShort: true,
+			reward: 5,
+		},
+		{
+			_weight: 2,
+			id: "cheeseHere",
+			EFFECT_ID: "curseManager.events.cheeseHere",
+			COINS_COUNT: 199,
+			description: "Сыр здесь. Заработаете 200 коинов",
+			hard: 0,
+			values: {
+				goal() {
+					return this.COINS_COUNT;
+				},
+				timer: () => MINUTE * 15,
+				upped: () => 0,
+				progress: () => 0,
+			},
+			processUpped(curse, value) {
+				if (value >= curse.values.goal === false) {
+					return;
+				}
+				curse.values.goal = value + this.COINS_COUNT;
+				curse.values.upped++;
+			},
+			processEnd(user, curse) {
+				const { upped } = curse.values;
+				const previous = (DataManager.data.bot[this.EFFECT_ID] ||= {
+					value: 0,
+					userId: null,
+				});
+				const isBigThan = upped > previous.value;
+				if (isBigThan) {
+					DataManager.data.bot[this.EFFECT_ID].value;
+				}
+				this.processUserDisplayUpped(user, {
+					curse,
+					previous,
+					isBigThan,
+				});
+				if (!isBigThan) {
+					return;
+				}
+				addResource({
+					user,
+					resource: PropertiesEnum.cheese,
+					value: 1,
+					executor: user,
+					source: "curseManager.events.cheeseHere",
+					context: { curse, previous, isBigThan },
+				});
+				DataManager.data.bot[this.EFFECT_ID] = {
+					value: upped,
+					userId: user.id,
+				};
+			},
+			processUserDisplayUpped(user, { curse, previous, isBigThan }) {
+				const { upped } = curse.values;
+				const previousUser = previous.userId
+					? client.users.cache.get(previous.userId)
+					: null;
+				const contents = {
+					title: "Рекорд сыра",
+					upped: `${user.toString()}, Вы подняли цену сыра ${ending(upped, "раз", "", "", "а", { unite: (quantity, word) => `**${quantity}** ${word}` })}`,
+					newRecord: isBigThan ? " — И установили рекорд." : "",
+					youCanMore: `Это немного конечно, но ладно.`,
+					previous: `Предыдущее достижение: ${ending(previous.value, "подняти", "й", "е", "я")}, пользователем ${previousUser?.displayName || "null :)"}`,
+				};
+				user.msg({
+					color: "#ffcc4d",
+					description: `:cheese: ${contents.title}. ${contents.upped}!${contents.newRecord} ${contents.youCanMore}\n\n${contents.previous}`,
+				});
+			},
+			callback: {
+				resourceChange(user, curse, context) {
+					const { resource, value } = context;
+					if (resource !== PropertiesEnum.coins) {
+						return;
+					}
+					const progress = Math.max(0, curse.values.progress + value);
+					this.processUpped(curse, progress);
+					CurseManager.interface({ user, curse }).setProgress(progress);
+				},
+				beforeProfileDisplay(user, curse) {
+					const progress = curse.values.progress;
+					this.processUpped(curse, progress);
+				},
+				curseTimeEnd(user, curse, data) {
+					if (curse !== data.curse) {
+						return;
+					}
+					if (curse.values.upped === 0) {
+						return;
+					}
+					data.preventDefault();
+					CurseManager.interface({ user, curse }).success();
+
+					const progress = curse.values.progress;
+					this.processUpped(curse, progress);
+					this.processEnd(user, curse);
+				},
+			},
+			interactionIsShort: true,
+			reward: 5,
+		},
+		{
+			_weight: 2,
+			id: "theChestIsFullOfCurses",
+			VOID_COUNT: 2,
+			CHEST_COUNT: 300,
+			description: (user, curse) => {
+				const { voidCount, chestCount } = curse.values;
+				return `Следующее открытые сундука даст вам ${ending(voidCount, "нестабильност", "ей", "ь", "и")}, но и отберёт ${ending(chestCount, "бонус", "ов", "", "а")} сундука`;
+			},
+			hard: 0,
+			values: {
+				goal: () => 1,
+				timer: () => DAY,
+				chestCount() {
+					return this.CHEST_COUNT;
+				},
+				voidCount() {
+					return this.VOID_COUNT;
+				},
+			},
+			callback: {
+				beforeOpenChest(user, curse, context) {
+					const {
+						values: { voidCount, chestCount },
+					} = curse;
+					const { treasures } = context;
+					treasures.void ||= 0;
+					treasures.void += voidCount;
+					addResource({
+						user,
+						value: -chestCount,
+						resource: PropertiesEnum.chestBonus,
+						executor: null,
+						source: "curseManager.events.theChestIsFullOfCurses",
+						context,
+					});
+
+					CurseManager.interface({ curse, user }).success();
+				},
+			},
+			reward: 5,
+		},
+		{
+			_weight: 5,
+			id: "anonToTheSpace",
+			description(user, curse) {
+				return `Доберитесь до ${curse.values.goal} локации в команде !анон`;
+			},
+			hard: 1,
+			values: {
+				goal: () => random(2, 7),
+				timer: () => DAY,
+			},
+			callback: {
+				anonTaskResolve(user, curse, context) {
+					const { primary } = context;
+					const location = primary.auditor.length;
+					CurseManager.interface({ user, curse }).setProgress(location);
+				},
+			},
+			reward: 20,
+		},
+		{
+			_weight: 2,
+			id: "rottingBag",
+			description: "Достаньте клубнику из сумки и продайте её",
+			hard: 0,
+			values: {
+				goal: (user) => Math.ceil(user.data.bag.berrys * 0.5),
+				timer: () => MINUTE * 30,
+				takedFromBag: () => 0,
+			},
+			callback: {
+				bagItemMove(user, curse, context) {
+					if (context.resource !== PropertiesEnum.berrys) {
+						return;
+					}
+					const { isToBag, count } = context;
+					curse.values.takedFromBag += isToBag ? -count : count;
+				},
+				berryBarter(user, curse, context) {
+					const { quantity, isBuying } = context;
+					if (isBuying) {
+						return;
+					}
+					const { takedFromBag } = curse.values;
+					const progress = curse.values.progress || 0;
+					const value = clamp(progress, quantity + progress, takedFromBag);
+					CurseManager.interface({ user, curse }).setProgress(value);
+				},
+			},
+			filter: (user) => user.data.bag?.berrys > 5,
+			reward: 15,
+			interactionIsShort: true,
+		},
+		{
+			_weight: 1,
+			id: "4elements_of_thing",
+			description(user, curse) {
+				return `Решите задачу: ${curse.values.generated?.map((i) => this.EMOJIS[i]).join("")}`;
+			},
+			EMOJIS: ["🍃", "☁️", "🔥", "👾"],
+			hard: 1,
+			values: {
+				goal: () => 4,
+				generated: () => [0, 1, 2, 3].toSorted(() => Math.random() - 0.5),
+				timer: () => DAY * 2,
+				progress: () => 0,
+			},
+			callback: {
+				thing(user, curse, context) {
+					const { generated, progress } = curse.values;
+					const { elementBase } = context;
+					if (generated[progress] !== elementBase.index) {
+						CurseManager.interface({ user, curse }).setProgress(
+							generated[0] === elementBase.index ? 1 : 0,
+						);
+						return;
+					}
+					CurseManager.interface({ user, curse }).incrementProgress(1);
+				},
+			},
+			reward: 20,
+		},
+		{
+			_weight: 5,
+			id: "mayWorstNeverHappedAgain",
+			description: "Следующее проклятие, которое вы выполните, повторится",
+			toString() {
+				return this.description;
+			},
+			hard: 0,
+			values: {},
+			callback: {
+				curseEnd(user, curse, context) {
+					const { curse: target } = context;
+					const { id } = target;
+					const base = cursesBase.get(id);
+					if (!base._weight || base.id === this.id) {
+						return;
+					}
+					const newCurse = CurseManager.generateOfBase({
+						curseBase: base,
+						user,
+						context,
+					});
+					newCurse.values.goal = target.values.goal;
+					CurseManager.init({ curse: newCurse, user });
+					CurseManager.interface({ user, curse }).success();
+				},
+			},
+			reward: 5,
+			filter: (user) => user.data.curses?.length,
+		},
+		{
+			_weight: 1,
+			id: "noo",
+			GOAL: 2,
+			GOAL_LIMIT: 10,
+			description:
+				"Положите нестабильности в сумку, чтобы последняя их поглатила. Это проклятие не стоит игнорировать",
+			hard: 2,
+			values: {
+				goal() {
+					return this.GOAL;
+				},
+				goal_time_threshold: () => DAY * 20,
+				timer: (user, curse) => curse.values.goal_time_threshold,
+			},
+			update_goal(curse) {
+				const { values, timestamp } = curse;
+				// formula: base + time_diff / addable_per_time
+				values.goal = Math.floor(
+					this.GOAL +
+						(Date.now() - timestamp) /
+							(values.goal_time_threshold / (this.GOAL_LIMIT - this.GOAL + 1)),
+				);
+			},
+			callback: {
+				curseBeforeProgressDisplay(user, curse) {
+					this.update_goal(curse);
+				},
+				bagInteracted(user, curse, context) {
+					const { item, count, isPutAction } = context;
+
+					if (!isPutAction) {
+						return;
+					}
+
+					if (item.key !== PropertiesEnum.void) {
+						return;
+					}
+
+					this.update_goal(curse);
+
+					const { values } = curse;
+					const expected = values.goal - (values.progress || 0);
+					const value = Math.min(expected, count);
+					user.data.bag.void ||= 0;
+					user.data.bag.void -= value;
+					CurseManager.interface({ user, curse }).incrementProgress(value);
+				},
+				curseTimeEnd(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+
+					user.data.void -= curse.values.goal;
+				},
+			},
+			reward: 15,
+			interactionIsShort: true,
+			filter(user) {
+				return user.data.void > this.GOAL;
+			},
+		},
+		{
+			_weight: 5,
+			id: "counter",
+			state_emoji: [Emoji.blue_arrow_up, Emoji.blue_arrow_down],
+			description(user, curse) {
+				const {
+					values: { inaccuracy, is_down },
+				} = curse;
+				return `Держите прогресс в границах нуля ± ${inaccuracy}, используя команды !up и !down\n${this.state_emoji[+is_down]}`;
+			},
+			hard: 0,
+			values: {
+				is_down: () => false,
+				per_minute: () => random(8, 16),
+				acceleration: () => 0.5,
+				inaccuracy: () => random(4, 7) * 5,
+				timer: () => MINUTE * random(7, 10),
+				progress: () => 0,
+				updated_at: () => null,
+			},
+			speed({ acceleration_time, acceleration, speed, is_down }) {
+				const by_acceleration = Math.floor(
+					(acceleration_time / MINUTE) * acceleration,
+				);
+				return by_acceleration + speed + is_down;
+			},
+			update(user, curse) {
+				const { values, timestamp } = curse;
+				const { per_minute, is_down, updated_at, acceleration } = values;
+				const now = Date.now();
+				const time_diff = now - updated_at;
+				const value_diff = Math.floor(per_minute * (time_diff / MINUTE));
+
+				CurseManager.interface({ user, curse }).incrementProgress(
+					value_diff * (-1) ** is_down,
+				);
+				const speed = this.speed({
+					acceleration_time: now - timestamp,
+					acceleration,
+					speed: per_minute,
+					is_down,
+				});
+
+				// increase by the amount of time used. the remainder of the rounding will remain
+				values.updated_at += Math.floor((value_diff / speed) * MINUTE);
+			},
+			callback: {
+				curseInit(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+					curse.values.updated_at = Date.now();
+				},
+
+				async inputCommandParsed(user, curse, context) {
+					const { commandBase } = context;
+					if (!["up", "down"].includes(commandBase)) {
+						return;
+					}
+
+					this.update(user, curse);
+					const { values, timestamp } = curse;
+					const is_down = commandBase === "down";
+					curse.values.is_down = is_down;
+					context.message.msg({
+						reference: context.message.id,
+						content: `Состояние: ${this.state_emoji[+is_down]}\nТекущая скорость: ${this.speed({ acceleration: values.acceleration, acceleration_time: Date.now() - timestamp, speed: values.per_minute, is_down })} условных единиц в минуту (v = u + a * t + is_down)`,
+					});
+				},
+				curseBeforeProgressDisplay(user, curse) {
+					this.update(user, curse);
+				},
+				curseTimeEnd(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+
+					this.update(user, curse);
+					const { values } = curse;
+					const { progress, inaccuracy } = values;
+
+					if (Math.abs(progress) > inaccuracy) {
+						return;
+					}
+					target.preventDefault();
+					CurseManager.interface({ user, curse }).success();
+				},
+			},
+			reward: 20,
+		},
+		{
+			_weight: 5,
+			id: "theBagIsSpitting",
+			description:
+				"При вводе команды случайный ресурс перемещается из сумки + другой ресурс в сумку. Проклятие будет засчитано по окончании таймера",
+			hard: 0,
+			values: {
+				timer: () => 2 * HOUR,
+			},
+			callback: {
+				callCommand(user, curse) {
+					const userData = user.data;
+					const bag = BagAPI.getBagTargetOf(user);
+					const toBag = getRandomElementFromArray(BagAPI.ITEMS, {
+						filter: (item) => userData[item.key] >= 1,
+					});
+
+					const fromBag = getRandomElementFromArray(BagAPI.ITEMS, {
+						filter: (item) => {
+							const exists = bag[item.key] >= 1;
+							const underTheLimit =
+								!item.limit || userData[item.key] + 1 <= item.limit;
+							const isDifferent = item.key !== toBag.key;
+							return exists && underTheLimit && isDifferent;
+						},
+					});
+					const toBagDetails =
+						toBag &&
+						BagAPI.checkMoveDetailes({
+							user,
+							isToBag: true,
+							count: random(0, userData[toBag.key]),
+							key: toBag.key,
+						});
+					const fromBagDetails =
+						fromBag &&
+						BagAPI.checkMoveDetailes({
+							user,
+							isToBag: false,
+							count: random(0, bag[fromBag.key]),
+							key: fromBag.key,
+						});
+					toBag && BagAPI.movePrepare(toBagDetails, { user });
+					toBag && BagAPI.moveToBagBrute(toBagDetails);
+					fromBag && BagAPI.movePrepare(fromBagDetails, { user });
+					fromBag && BagAPI.moveToBagBrute(fromBagDetails);
+					CurseManager.interface({ user, curse }).incrementProgress(1);
+				},
+				curseTimeEnd(user, curse, target) {
+					if (curse !== target.curse) {
+						return;
+					}
+					target.preventDefault();
+					CurseManager.interface({ user, curse }).success();
+				},
+			},
+			reward: 15,
+		},
+		// MARK: End of curses list
+		// {
+		//   _weight: 5,
+		//   id: "__example",
+		//   description:
+		//     "Вы не можете класть ресурсы в сумку, как и извлекать их из неё. Проклятие будет засчитано по окончании таймера",
+		//   hard: 0,
+		//   values: {
+		//     goal: (user) => 1,
+		//     timer: () => DAY,
+		//   },
+		//   callback: {
+		//
+		//   },
+		//   reward: 15,
+		// },
+	].map((curse) => [curse.id, curse]),
+);

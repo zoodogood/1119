@@ -1,5 +1,5 @@
 <script>
-	import { sleep } from "#lib/safe-utils.js";
+	import { sleep } from "#src/safe-utils.js";
 
 	let node = null;
 	(async () => {

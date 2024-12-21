@@ -4,7 +4,7 @@ src/config.json.js
 node_modules/
 build/
 
-static/articles/
+src/public/articles/
 
 folder/!localStorage/
 

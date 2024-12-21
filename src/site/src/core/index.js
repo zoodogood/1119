@@ -1,15 +1,10 @@
-import { route } from "#site/core/router.js";
-import svelteApp from "./svelte-app.js";
-import PageWrapper from "#site-component/PageWrapper";
 
-import app from "#app";
-app.svelte = svelteApp;
-app.launch();
+import PageWrapper from "#site/components/PageWrapper/mod.svelte";
+import svelteApp from "#site/core/svelte-app_singleton.js";
+import { current_page_by_route } from "#site/lib/page_router_singleton.js";
+import { mount } from "svelte";
 
-const page = route(svelteApp);
-new PageWrapper({
-	target: svelteApp.document.body,
-	props: {
-		page,
-	},
-});
+
+
+mount(PageWrapper, { target: svelteApp.document.body, props: {page: current_page_by_route()} });
+

@@ -1,4 +1,4 @@
-import { fetchFromInnerApi } from "#lib/safe-utils.js";
+import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
 
 export async function writeError(error) {
 	if (typeof error === "string") {

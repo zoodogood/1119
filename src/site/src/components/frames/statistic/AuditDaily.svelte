@@ -1,16 +1,14 @@
 <script>
 	import Icon from "#site-component/iconic";
-	import Heatmap from "svelte-heatmap";
 	import Loader from "#site-component/Loader";
+	import { NumberFormatLetterize, timestampDay } from "#src/safe-utils.js";
+	import Heatmap from "svelte-heatmap";
 
-	import {
-		dayjs,
-		fetchFromInnerApi,
-		timestampDay,
-		NumberFormatLetterize,
-	} from "#lib/safe-utils.js";
+	import { DAY } from "#constants/time.js";
 	import { Theme } from "#site/components/ThemeSwitcher/mod.svelte";
-	import svelteApp from "#site/core/svelte-app.js";
+	import svelteApp from "#site/core/svelte-app_singleton.js";
+	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
+	import dayjs from "dayjs";
 	import { writable } from "svelte/store";
 
 	const i18n = svelteApp.i18n.frames.AuditDaily;
@@ -29,7 +27,7 @@
 
 		setFocusedHeat(target) {
 			const date = new Date(target.getAttribute("data-date"));
-			const key = timestampDay(date.getTime()) * 86_400_000;
+			const key = timestampDay(date.getTime()) * DAY;
 
 			this.state.focusedHeat = {
 				target: target,
@@ -253,13 +251,13 @@
 	<nav>
 		<ul class="select-audit-list">
 			{#each [...Component.auditTypeEnum] as element, index}
-				{@const [key, { icon, label }] = element}
+				{@const { icon, label } = element[1]}
 				<li
 					class="select-audit-item"
 					class:active={State.selectedAuditTypeIndex === index}
 					title={label}
-					on:click={() => (State.selectedAuditTypeIndex = index)}
-					on:keydown={() => (State.selectedAuditTypeIndex = index)}
+					onclick={() => (State.selectedAuditTypeIndex = index)}
+					onkeydown={() => (State.selectedAuditTypeIndex = index)}
 				>
 					<button>
 						<Icon code={icon} />
@@ -277,8 +275,8 @@
 			<main class="heatmap">
 				<element-container
 					class="heatmap-inner-container"
-					on:click={Component.heatMapOnClick}
-					on:keydown={Component.heatMapOnClick}
+					onclick={Component.heatMapOnClick}
+					onkeydown={Component.heatMapOnClick}
 				>
 					<Heatmap {...HeatmapState} />
 				</element-container>
@@ -291,7 +289,7 @@
 						{[...Component.auditTypeEnum.values()].at(
 							State.selectedAuditTypeIndex,
 						).label}
-						<element-svg />
+						<element-svg></element-svg>
 					</p>
 				</element-group>
 

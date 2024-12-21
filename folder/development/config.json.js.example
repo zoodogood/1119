@@ -30,7 +30,7 @@ export default {
     port: 8119,
     hasSSLCertificate: null,
     paths: {
-      static: "./static",
+      public: "./public",
       site: "./pages",
     },
   },
@@ -39,7 +39,6 @@ export default {
     label: "Призрак",
   },
   i18n: {
-    path: "folder/i18n",
     availableLanguages: ["en", "ru", "ua"],
   },
   giscus: {

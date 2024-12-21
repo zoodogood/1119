@@ -1,7 +1,6 @@
 <script>
-	import { onDestroy, createEventDispatcher } from "svelte";
 	import Icon from "#site-component/iconic";
-	import { get_current_component as getCurrentComponent } from "svelte/internal";
+	import { createEventDispatcher, onDestroy } from "svelte";
 
 	export let useClassic;
 	export let title;
@@ -9,8 +8,6 @@
 	export let isHTMLAccepted;
 	export let preventDestroy = false;
 	export let hide = false;
-
-	const self = getCurrentComponent();
 
 	let ref;
 
@@ -33,7 +30,7 @@
 		globalThis.history.pushState({ isModal: true }, "Open modal");
 		addEventListener("popstate", close);
 	};
-	const destroy = () => !preventDestroy && self.$destroy();
+	const destroy = () => !preventDestroy;
 
 	$: if (ref && !hide) open();
 

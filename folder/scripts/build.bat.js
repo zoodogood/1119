@@ -18,7 +18,7 @@
 // echo "Success!"
 
 const root = process.cwd();
-import get from "#lib/child-process-utils.js";
+import get from "#src/nodejs/child-process-utils.js";
 const PRODUCTION = (await import("#config"))?.default.development === false;
 
 const { run, info } = get({ root, logger: true });

@@ -1,35 +1,36 @@
 <script>
-	import { tweened } from "svelte/motion";
+	import { NumberFormatLetterize } from "#src/safe-utils.js";
 	import { cubicOut } from "svelte/easing";
-	import { NumberFormatLetterize } from "#lib/safe-utils.js";
+	import { Tween } from "svelte/motion";
 
-	export let max = 100,
+	let {
+		max = 100,
 		value = 70,
 		percent = value / max,
-		targetLabel = "";
+		targetLabel = "",
+	} = $props();
 
 	value = percent * max;
 
-	const progress = tweened(0, {
+	const progress = new Tween(0, {
 		duration: 3000,
 		easing: cubicOut,
 	});
 
-	$: progress.set(value);
+	progress.set(value);
 
-	$: percent = $progress / max;
+	const percent_visual = $derived(progress.current / max);
 </script>
 
 <span class="component">
 	<p>
-		<small
-			>{NumberFormatLetterize($progress)}/{NumberFormatLetterize(max)}</small
+		<small>{NumberFormatLetterize(progress)}/{NumberFormatLetterize(max)}</small
 		>
 		<span>{targetLabel}</span>
 	</p>
 
-	<span style:--value={percent * 100} class="progressbar">
-		<element-layout />
+	<span style:--value={percent_visual * 100} class="progressbar">
+		<element-layout></element-layout>
 	</span>
 </span>
 

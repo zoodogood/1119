@@ -1,8 +1,10 @@
 <script>
-	import IntersectionObserver from "svelte-intersection-observer";
+	import svelteApp from "#site/core/svelte-app_singleton.js";
+	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
+	import { sleep } from "#src/safe-utils.js";
+
 	import { onMount } from "svelte";
-	import { fetchFromInnerApi, sleep } from "#lib/safe-utils.js";
-	import svelteApp from "#site/core/svelte-app.js";
+	import IntersectionObserver from "svelte-intersection-observer";
 
 	const i18n = svelteApp.i18n.frames.Statistic;
 

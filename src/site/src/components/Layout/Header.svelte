@@ -2,8 +2,10 @@
 	import config from "#config";
 	import Image from "#site-component/Image";
 	import ThemeSwitcher from "#site-component/ThemeSwitcher";
-	import svelteApp from "#site/core/svelte-app.js";
-	import PagesRouter from "#site/lib/Router.js";
+	import svelteApp from "#site/core/svelte-app_singleton.js";
+	import PagesRouter, {
+		page_location,
+	} from "#site/lib/page_router_singleton.js";
 	const i18n = svelteApp.i18n.components.Layout.Header;
 
 	const Header = {
@@ -30,10 +32,7 @@
 >
 	<main class="container">
 		<section class="label">
-			<a
-				href={PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key)}
-				class="link"
-			>
+			<a href={page_location("public")} class="link">
 				<b class="page_header-title-container-label"
 					>{i18n.ghost.toUpperCase()}</b
 				>
@@ -47,13 +46,11 @@
 
 			<nav>
 				<a
-					href={PagesRouter.relativeToPage(PagesRouter.getPageBy("public").key)}
+					href={page_location(svelteApp, "public")}
 					class="navigation-element link">{i18n.nav.home}</a
 				>
 				<a
-					href={PagesRouter.relativeToPage(
-						PagesRouter.getPageBy("navigation").key,
-					)}
+					href={page_location(svelteApp, "navigation")}
 					class="navigation-element link">{i18n.nav.navigation}</a
 				>
 				<a
@@ -71,7 +68,9 @@
 					class="oauth"
 					on:click={() =>
 						PagesRouter.redirectToAbsolute(
-							`/oauth2/auth?redirect=${svelteApp.url.subpath.join("/")}`,
+							page_location("oauth2_auth", {
+								queries: { redirect: svelteApp.url.subpath.join("/") },
+							}),
 						)}
 				>
 					{i18n.authorization}
@@ -81,8 +80,7 @@
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<section
 				class="user"
-				on:click={() =>
-					PagesRouter.redirect(PagesRouter.getPageBy("user/panel").key)}
+				on:click={() => PagesRouter.redirect(page_location("user_panel"))}
 				on:keydown={({ target }) => target.click()}
 			>
 				<span class="user-avatar-container">

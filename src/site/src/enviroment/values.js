@@ -1,19 +1,15 @@
-import config from "#config";
-import { fetchFromInnerApi, yaml } from "#lib/safe-utils.js";
-import { ReadPackageJson } from "#lib/util.js";
-import { ImportDirectory } from "@zoodogood/import-directory";
+import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
+import { readPackageJson } from "#src/nodejs/readPackageJson.js";
+import { yaml } from "#src/safe-utils.js";
+import { glob } from "glob";
 import FileSystem from "node:fs/promises";
 import Path from "node:path";
-
-const packageJSON = await ReadPackageJson();
+const packageJSON = await readPackageJson();
 const bot =
 	(await fetchFromInnerApi("./client/user").catch(() => null)) ?? null;
 
 const i18n = await new Promise(async (resolve) => {
-	const FOLDER = `${config.i18n.path}/site`;
-	const files = await new ImportDirectory({ regex: /\.yaml$/ }).takeFilesPath({
-		path: FOLDER,
-	});
+	const files = await glob("**/i18n/*.yaml", { absolute: true });
 
 	const locales = {};
 

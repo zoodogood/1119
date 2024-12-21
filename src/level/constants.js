@@ -1,0 +1,1 @@
+export const EXPERIENCE_PER_LEVEL = 45;

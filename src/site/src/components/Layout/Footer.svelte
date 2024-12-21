@@ -1,9 +1,9 @@
 <script>
 	import config from "#config";
-	import { dayjs } from "#lib/safe-utils.js";
 	import Image from "#site-component/Image";
-	import svelteApp from "#site/core/svelte-app.js";
-	import PagesRouter from "#site/lib/Router.js";
+	import svelteApp from "#site/core/svelte-app_singleton.js";
+	import PagesRouter from "#site/lib/page_router_singleton.js";
+	import dayjs from "dayjs";
 
 	const bot = svelteApp.getBot();
 	const i18n = svelteApp.i18n.components.Layout.Footer;

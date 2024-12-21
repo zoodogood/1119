@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
 	const DEFAULT_THEME = "darkGreen";
 	const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
 	import { get, writable } from "svelte/store";
@@ -67,20 +67,24 @@
 
 <script>
 	import Icon from "#site-component/iconic";
+	import { mount } from "svelte";
 	import BulbAnimation from "./BulbAnimation.svelte";
 	import themes from "./themes.js";
 
-	let node = null;
+	let node = $state(null);
 
 	function CallBulbAnimation() {
-		new BulbAnimation({ target: document.body });
+		mount(BulbAnimation, { target: document.body });
 	}
 </script>
 
 <button
 	class="switch-theme"
 	data-current={Theme.current}
-	on:click={(event) => Theme.onClick(event) & CallBulbAnimation(node)}
+	onclick={(event) => {
+		Theme.onClick(event);
+		CallBulbAnimation();
+	}}
 	bind:this={node}
 >
 	<Icon code="" />

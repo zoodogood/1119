@@ -5,13 +5,11 @@
 			"#config": ["./src/config.json.js"],
 			"#app": ["./src/app/app.js"],
 
-			"#server/*": ["./src/server/*"],
 			"#site/*": ["./src/site/src/*"],
-			"#bot/*": ["./src/bot/*"],
-			"#constants/*": ["./src/app/constants/*"],
-			"#lib/*": ["./src/lib/*"],
+			"#bot/*": ["src/client/*"],
+			"#constants/*": ["src/constants/*"],
 			"#folder/*": ["./folder/*"],
-			"#static/*": ["./static/*"],
+			"#lib/*": ["./src/lib/*"],
 
 			"#site-component-lib/*": ["./src/site/src/components/*"],
 			"#site-component/*": ["./src/site/src/components/*/mod.svelte"],
@@ -21,7 +19,10 @@
 		},
 		"target": "ESNext",
 		"moduleResolution": "node",
-		"module": "ESNext"
+		"module": "ESNext",
+		"importHelpers": true,
+		"checkJs": true
 	},
+	"extends": ["@tsconfig/svelte/tsconfig.json"],
 	"exclude": ["node_modules", "**/node_modules", "dist"]
 }

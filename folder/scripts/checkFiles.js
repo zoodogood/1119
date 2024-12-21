@@ -15,7 +15,7 @@ const Paths = {
 	config: "src/config.json.js",
 	configExample: "folder/development/config.json.js.example",
 
-	firstBuildDocs: "static/special/first-build.html",
+	firstBuildDocs: "src/public/special/first-build.html",
 };
 
 !(await FileExists(Paths.env)) &&

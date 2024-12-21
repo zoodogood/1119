@@ -8,14 +8,16 @@
 	@font-face {
 		font-family: "Icon";
 		src:
-			url("/static/resources/fonts/fontello/font/fontello.eot")
+			url("/src/public/resources/fonts/fontello/font/fontello.eot")
 				format("embedded-opentype"),
-			url("/static/resources/fonts/fontello/font/fontello.woff2")
+			url("/src/public/resources/fonts/fontello/font/fontello.woff2")
 				format("woff2"),
-			url("/static/resources/fonts/fontello/font/fontello.woff") format("woff"),
-			url("/static/resources/fonts/fontello/font/fontello.ttf")
+			url("/src/public/resources/fonts/fontello/font/fontello.woff")
+				format("woff"),
+			url("/src/public/resources/fonts/fontello/font/fontello.ttf")
 				format("truetype"),
-			url("/static/resources/fonts/fontello/font/fontello.svg") format("svg");
+			url("/src/public/resources/fonts/fontello/font/fontello.svg")
+				format("svg");
 
 		font-weight: normal;
 		font-style: normal;

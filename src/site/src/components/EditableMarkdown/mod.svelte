@@ -1,10 +1,10 @@
 <script>
 	export let source;
-	import SvelteMarkdown from "svelte-markdown";
+	import SvelteMarkdown from "svelte-exmarkdown";
 </script>
 
 <article class="editable-markdown-container">
-	<SvelteMarkdown {source} />
+	<SvelteMarkdown md={source} />
 </article>
 
 <style>

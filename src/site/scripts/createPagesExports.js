@@ -1,70 +1,66 @@
 /**
  * Input: none
- * Output behavior: build a working exports[builded].js file with list of commands
+ * Output behavior: build a working exports[builded].js file with list of pages
  */
 
-const FOLDER_NAME = "./src/site/src/pages"; // Folder with commands list relative process cwd()
-
-const TARGET_PATH = "./static/build/svelte-pages/exports[builded].mjs"; // Svelte exports content
-
-const ENUM_TARGET_PATH = "./static/build/svelte-pages/enum[builded].mjs"; // ESJS content
-
-/** Get's path */
-import Path from "node:path";
-
-import { takePath } from "#src/app/utils.js";
-
-/** Get's file names list */
-import { ImportDirectory } from "@zoodogood/import-directory";
-
-const importDirectory = new ImportDirectory({ regex: /^\+(?:.+?)\.svelte$/ });
-const filesPath = (
-	await importDirectory.takeFilesPath({
-		path: takePath(FOLDER_NAME),
-		subfolders: true,
-	})
-).filter((path) => importDirectory.regex.test(Path.basename(path)));
-
-console.info(`Count: ${filesPath.length} of files`);
-
-const resolveModule = (filePath) => {
-	const normalizePath = (path) =>
-		path.replaceAll(Path.win32.sep, Path.posix.sep);
-	const source = normalizePath(Path.relative(".", filePath));
-
-	const name = PagesRouter.resolvePageName(filePath).replaceAll("/", "_");
-	return { filePath, name, source };
-};
-const modules = filesPath.map(resolveModule);
-
-/** First file */
-import PagesRouter from "#site/lib/Router.js";
+import { cwd_path } from "#src/nodejs/path_relative_to_root.js";
+import { glob } from "glob";
 import FileSystem from "node:fs/promises";
-(async () => {
-	/** Generate content */
-	const getStringByPattern = ({ source, name }) => {
-		const path = `#${source}`;
-		return `export {default as ${name}} from '${path}';`;
-	};
+import { default as Path } from "node:path";
 
-	const content = modules.map(getStringByPattern).join("\n");
+export function pathToPageKey(path) {
+	path = path.replace(/\.page\.svelte$/, "")
+		.replaceAll(/[\/\\\.]/g, "_")
+		.toLowerCase()
+		.trim();
+	if (path.endsWith("_index")) {
+		path = path.slice(0, -6);
+	}
+	return path;
+}
 
-	/** Generate file */
-	const buffer = content;
-	await FileSystem.writeFile(takePath(".", TARGET_PATH), buffer);
-})();
+const targetFiles = (await glob("**/*.page.svelte", { absolute: true }))
+	.map((filePath) => {
+		const relative = Path.relative(`${process.cwd()}/src`, filePath);
+		return {
+			filePath,
+			name: pathToPageKey(relative),
+			source: relative.replaceAll(
+				Path.win32.sep,
+				Path.posix.sep,
+			),
+		};
+	}
+);
+console.info(`Cound of files: ${targetFiles.length}`);
+await FileSystem.mkdir("./src/public/build/svelte-pages", {
+	recursive: true,
+});
+// MARK: First file
+{
+	const TARGET_PATH = "./src/public/build/svelte-pages/exports[builded].mjs"; // Svelte exports content
+	await FileSystem.writeFile(
+		cwd_path(".", TARGET_PATH),
+		targetFiles
+			.map(({ source, name }) => {
+				const path = `#src/${source}`;
+				return `export {default as ${name}} from '${path}';`;
+			})
+			.join("\n"),
+	);
+	console.info(cwd_path(".", TARGET_PATH));
+}
 
-/** Second File */
-(async () => {
-	/** Generate content */
-
-	const array = modules.map(({ source }) => source);
-
-	const json = JSON.stringify(array, null, 2);
-
-	const content = `export default ${json}`;
-
-	/** Generate file */
-	const buffer = content;
-	await FileSystem.writeFile(takePath(".", ENUM_TARGET_PATH), buffer);
-})();
+// MARK: Second File
+{
+	const ENUM_TARGET_PATH = "./src/public/build/svelte-pages/enum[builded].mjs"; // ESJS content
+	await FileSystem.writeFile(
+		cwd_path(".", ENUM_TARGET_PATH),
+		`export default ${JSON.stringify(
+			targetFiles.map(({ name }) => name),
+			null,
+			2,
+		)}`,
+	);
+	console.info(cwd_path(".", ENUM_TARGET_PATH));
+}

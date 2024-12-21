@@ -1,10 +1,12 @@
 <script>
 	import config from "#config";
-	import { dayjs, fetchFromInnerApi } from "#lib/safe-utils.js";
 	import ContextMenu from "#site-component/ContextMenu";
 	import { createPopup } from "#site/components/Popups/handler.svelte";
-	import svelteApp from "#site/core/svelte-app.js";
+	import svelteApp from "#site/core/svelte-app_singleton.js";
 	import { isDeveloper } from "#site/lib/permissions.js";
+	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
+	import dayjs from "dayjs";
+
 	import { onMount } from "svelte";
 	import { getNotificationsContext } from "svelte-notifications";
 	const { addNotification } = getNotificationsContext();

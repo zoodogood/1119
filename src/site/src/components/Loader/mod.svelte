@@ -1,6 +1,6 @@
 <script>
+	import { sleep } from "#src/safe-utils.js";
 	import { onDestroy, onMount } from "svelte";
-	import { sleep } from "#lib/safe-utils.js";
 
 	export let count = 7,
 		waveDuration = 1000,

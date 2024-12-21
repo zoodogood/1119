@@ -1,18 +1,16 @@
 <script>
-	export let page;
-
 	import Notifications from "#site-component-lib/Notifications/wrap.svelte";
 	import { PopupsHandler } from "#site-component-lib/Popups/index.js";
 	import { MetaTags } from "svelte-meta-tags";
 
 	import config from "#config";
-	import { relativeSiteRoot } from "#lib/safe-utils.js";
 	import { Theme } from "#site-component/ThemeSwitcher";
-	import svelteApp from "#site/core/svelte-app.js";
+	import svelteApp from "#site/core/svelte-app_singleton.js";
+	import { relativeSiteRoot } from "#site/lib/util.js";
 	import { writeError } from "#site/lib/writeErrorToServer.js";
 	import { onMount } from "svelte";
 	import { get as getStoreValue } from "svelte/store";
-
+	let { page } = $props();
 	const _currentURLLang = svelteApp.url.base.lang;
 	const languageAlternates = config.i18n.availableLanguages.map((locale) => {
 		svelteApp.url.base.lang = locale;

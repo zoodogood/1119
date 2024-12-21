@@ -1,6 +1,6 @@
 <script>
 	import Image from "#site-component/Image";
-	import svelteApp from "#site/core/svelte-app.js";
+	import svelteApp from "#site/core/svelte-app_singleton.js";
 	import { getNotificationsContext } from "svelte-notifications";
 	const { addNotification } = getNotificationsContext();
 
