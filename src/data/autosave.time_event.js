@@ -24,7 +24,7 @@ class Event {
 		};
 		EventsManager.emitter.emit(Events.RequestSave, saveEvent);
 		await saveEvent.whenStopPromises();
-		return timeEvents_singleton.pushIntoQueue("autosave", Event.INTERVAL);
+		return timeEvents_singleton.pushIntoBuffer("autosave", Event.INTERVAL);
 	}
 }
 

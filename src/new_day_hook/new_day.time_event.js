@@ -1,8 +1,8 @@
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
 import {
-	is_already_executed,
-	once_per_day_task,
+    is_already_executed,
+    once_per_day_task,
 } from "#src/new_day_hook/once_per_day.js";
 import dayjs from "dayjs";
 
@@ -35,7 +35,7 @@ class Event {
 
 	scheduleNextCall() {
 		const delay = this.calculateDelayUntilNextDay();
-		timeEvents_singleton.pushIntoQueue("new-day", delay);
+		timeEvents_singleton.pushIntoBuffer("new-day", delay);
 	}
 }
 

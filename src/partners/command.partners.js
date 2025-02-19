@@ -3,8 +3,8 @@ import { HOUR, SECOND } from "#constants/time.js";
 import { Bosses_Flagsubcommand } from "#src/boss/command.boss.js";
 import client from "#src/bot/client/singleton.js";
 import {
-	BaseCommand,
-	BaseFlagSubcommand,
+    BaseCommand,
+    BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import { default as CommmandInfo } from "#src/commands/command.commandinfo.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
@@ -19,11 +19,11 @@ import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser, arrayEmpty, ending } from "@zoodogood/utils/primitives";
 import dayjs from "dayjs";
 import {
-	BaseInteraction,
-	ButtonStyle,
-	CategoryChannel,
-	PermissionFlagsBits,
-	escapeMarkdown,
+    BaseInteraction,
+    ButtonStyle,
+    CategoryChannel,
+    PermissionFlagsBits,
+    escapeMarkdown,
 } from "discord.js";
 
 class Special {
@@ -881,11 +881,11 @@ class PartnersDaemon {
 		if (launched_events.length > 0) {
 			launched_events
 				.slice(1)
-				.forEach(timeEvents_singleton.removeFromQueue.bind(timeEvents_singleton));
+				.forEach(timeEvents_singleton.removeFromBuffer.bind(timeEvents_singleton));
 			return;
 		}
 
-		timeEvents_singleton.pushIntoQueue(this.EVENT_NAME, this.ms_to_timeEvent());
+		timeEvents_singleton.pushIntoBuffer(this.EVENT_NAME, this.ms_to_timeEvent());
 	}
 	checkTimeEvent() {
 		const expected_exists = this.fetchTimeEvent();

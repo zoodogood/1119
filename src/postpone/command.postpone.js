@@ -55,7 +55,7 @@ class Command extends BaseCommand {
 				}:${date.getMinutes()}`,
 				delete: 5000,
 			});
-		timeEvents_singleton.pushIntoQueue("postpone", timeTo, [
+		timeEvents_singleton.pushIntoBuffer("postpone", timeTo, [
 			msg.author.id,
 			msg.channel.id,
 			text,

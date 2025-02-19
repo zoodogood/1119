@@ -6,8 +6,8 @@ import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";
 import { DataManager } from "#src/data/singleton.js";
 import {
-	mutate_time_event,
-	timeEvents_singleton,
+    mutate_time_event,
+    timeEvents_singleton,
 } from "#src/events/time/timeEvents_singleton.js";
 import { transformToCollectionUsingKey } from "#src/nodejs/Collection/transformToCollectionUsingKey.js";
 import { random, timestampDay } from "#src/safe-utils.js";
@@ -410,7 +410,7 @@ export const grempen_products = transformToCollectionUsingKey([
 		others: ["клевер", "счастливый", "счастливый клевер", "clover"],
 		createCloverTimeEvent(guildId, channelId) {
 			const endsIn = HOUR * 4;
-			return timeEvents_singleton.pushIntoQueue("clover-end", endsIn, [
+			return timeEvents_singleton.pushIntoBuffer("clover-end", endsIn, [
 				guildId,
 				channelId,
 			]);

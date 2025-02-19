@@ -18,7 +18,7 @@ class Event extends BaseEvent {
 	}
 
 	async postLoading() {
-		timeEvents_singleton.runTimeout();
+		timeEvents_singleton.onStartup();
 
 		const needUpdate =
 			DataManager.data.bot.currentDay !== timestampDay(Date.now());

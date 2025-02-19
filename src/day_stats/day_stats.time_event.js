@@ -139,13 +139,15 @@ class Event {
 		);
 
 		launched_events.length > 0 &&
-			launched_events.forEach(timeEvents_singleton.removeFromQueue.bind(timeEvents_singleton));
+			launched_events.forEach(
+				timeEvents_singleton.removeFromBuffer.bind(timeEvents_singleton),
+			);
 
 		let next = dayjs().set("hour", 20).startOf("hour").diff();
 		if (next < 0) {
 			next += DAY;
 		}
-		timeEvents_singleton.pushIntoQueue("day-stats", next);
+		timeEvents_singleton.pushIntoBuffer("day-stats", next);
 	}
 }
 

@@ -131,7 +131,7 @@ class Command extends BaseCommand {
 		}
 
 		if (timeToEnd) {
-			timeEvents_singleton.pushIntoQueue("mute-end", timeToEnd, [
+			timeEvents_singleton.pushIntoBuffer("mute-end", timeToEnd, [
 				msg.guild.id,
 				guildMember.id,
 			]);
