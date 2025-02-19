@@ -3,7 +3,10 @@ import config from "#config";
 import { SECOND, YEAR } from "#constants/time.js";
 
 import client from "#src/bot/client/singleton.js";
-import { BaseCommand, BaseFlagSubcommand } from "#src/commands/BaseCommand/BaseCommand.js";
+import {
+	BaseCommand,
+	BaseFlagSubcommand,
+} from "#src/commands/BaseCommand/BaseCommand.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import CommandsManager from "#src/commands/CommandsManager/singleton.js";
 import { dayjs_ensure_coming_year } from "#src/dayjs.js";
@@ -193,14 +196,41 @@ class RemindData {
 		timeTo: null,
 	};
 
-	#channel;
 	_phrase;
 	_repeatsCount;
 	channelId;
 	evaluateRemind;
 	isDeleted;
-
 	timestamp;
+
+	get channel() {
+		if (!this.#channel) {
+			this.#channel = client.channels.cache.get(this.channelId);
+		}
+		return this.#channel;
+	}
+
+	set channel(channel) {
+		this.#channel = channel;
+		this.channelId = channel.id;
+	}
+
+	get phrase() {
+		return capitalize(this._phrase || RemindData.DEFAULT_VALUES.phrase);
+	}
+
+	set phrase(value) {
+		this._phrase = value;
+	}
+
+	get repeatsCount() {
+		return this._repeatsCount || RemindData.DEFAULT_VALUES.repeatsCount;
+	}
+
+	set repeatsCount(value) {
+		this._repeatsCount = value;
+	}
+	#channel;
 
 	constructor({
 		channelId,
@@ -232,33 +262,6 @@ class RemindData {
 			isDeleted: this.isDeleted,
 		};
 	}
-
-	get channel() {
-		if (!this.#channel) {
-			this.#channel = client.channels.cache.get(this.channelId);
-		}
-		return this.#channel;
-	}
-
-	set channel(channel) {
-		this.#channel = channel;
-		this.channelId = channel.id;
-	}
-	get phrase() {
-		return capitalize(this._phrase || RemindData.DEFAULT_VALUES.phrase);
-	}
-
-	set phrase(value) {
-		this._phrase = value;
-	}
-
-	get repeatsCount() {
-		return this._repeatsCount || RemindData.DEFAULT_VALUES.repeatsCount;
-	}
-
-	set repeatsCount(value) {
-		this._repeatsCount = value;
-	}
 }
 
 // MARK: MemberRemindField
@@ -277,7 +280,11 @@ class MemberRemindField {
 	}
 
 	static create(user, { remindData, timeTo }) {
-		const event = timeEvents_singleton.pushIntoQueue(Command.EVENT_NAME, timeTo, user.id);
+		const event = timeEvents_singleton.pushIntoBuffer(
+			Command.EVENT_NAME,
+			timeTo,
+			user.id,
+		);
 		const userRemindsField = (user.data.reminds ||= []);
 		remindData.timestamp = event.timestamp;
 		userRemindsField.push(remindData.toJSON());
@@ -444,6 +451,10 @@ class CommandRunContext extends BaseCommandRunContext {
 	paramsProcessor;
 	userData;
 
+	get remindFields() {
+		return (this._remindFields ||= remindFields(this.user));
+	}
+
 	static async new(interaction, command) {
 		const context = new this(interaction, command);
 		const { userData } = interaction;
@@ -453,10 +464,6 @@ class CommandRunContext extends BaseCommandRunContext {
 			.setParamsCliParserParams(interaction.params)
 			.processParams();
 		return context;
-	}
-
-	get remindFields() {
-		return (this._remindFields ||= remindFields(this.user));
 	}
 }
 
