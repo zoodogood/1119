@@ -1,7 +1,7 @@
 // @ts-check
 const MONTH_DAYS = 31;
 export class MonthStatisticForEveryDayAPI {
-	static KEY = "month_statisic";
+	static KEY = "month_statistic";
 	constructor(guildData) {
 		/**
 		 * @type {Array<{ messages: number }>}
