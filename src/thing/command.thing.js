@@ -77,8 +77,10 @@ class Command extends BaseCommand {
 	static BASIC_COINS_COEFFICIENT = 20;
 
 	static boss = {
-		manager: import("#src/boss/BossManager.js").then(
-			(module) => (this.boss.manager = module.BossManager),
+		manager: sleep(0).then(() =>
+			import("#src/boss/BossManager.js").then(
+				(module) => (this.boss.manager = module.BossManager),
+			),
 		),
 
 		ELEMENT_DAMAGE_MULTIPLAYER: 2,
