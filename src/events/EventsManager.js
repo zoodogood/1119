@@ -56,8 +56,6 @@ class BaseEvent {
 		const callback = this.callback;
 		const eventName = this.eventName;
 		const target = this.eventTarget;
-
-		console.log(eventName, target);
 		
 		target.on(eventName, callback);
 		this.isListeningNow = true;
