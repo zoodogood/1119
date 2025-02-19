@@ -1,5 +1,13 @@
 {
-	"compilerOptions": {
+  "compilerOptions": {
+    "skipLibCheck": true,                              
+    "allowJs": true,
+    "module": "esnext",                                
+    "esModuleInterop": true,                           
+    "target": "esnext",                                
+    "forceConsistentCasingInFileNames": true,          
+    "strict": true,     
+    // JS
 		"baseUrl": ".",
 		"paths": {
 			"#config": ["./src/config.json.js"],
@@ -17,12 +25,14 @@
 			"#src/*": ["./src/*"],
 			"#root/*": ["./*"]
 		},
-		"target": "ESNext",
-		"moduleResolution": "node",
-		"module": "ESNext",
+		"moduleResolution": "nodenext",
 		"importHelpers": true,
-		"checkJs": true
+		"checkJs": true,
+		"resolveJsonModule": true,
+		"outDir": "tsdist",
+		"experimentalDecorators": true
 	},
+	"reflection": true,
 	"extends": ["@tsconfig/svelte/tsconfig.json"],
 	"exclude": ["node_modules", "**/node_modules", "dist"]
 }

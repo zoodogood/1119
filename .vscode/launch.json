@@ -4,12 +4,27 @@
 	// Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
 	"version": "0.2.0",
 	"configurations": [
+		// {
+		// 	"type": "node",
+		// 	"request": "launch",
+		// 	"name": "Запустить программу",
+		// 	"skipFiles": ["<node_internals>/**"],
+		// 	"program": "${workspaceFolder}/index.js"
+		// }
 		{
-			"type": "node",
+			"type": "bun",
 			"request": "launch",
-			"name": "Запустить программу",
-			"skipFiles": ["<node_internals>/**"],
-			"program": "${workspaceFolder}/index.js"
+			"name": "server: bun",
+			"program": "${workspaceFolder}/index.js",
+			"args": ["dev"],
+			"cwd": "${workspaceFolder}",
+			"env": {},
+			"strictEnv": false,
+			"watchMode": false,
+			"stopOnEntry": true,
+			"noDebug": false,
+			"runtime": "bun",
+			"runtimeArgs": [],	
 		}
 	]
 }
