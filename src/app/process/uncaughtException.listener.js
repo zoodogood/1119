@@ -1,4 +1,5 @@
 import config from "#config";
+import client from "#src/bot/client/singleton.js";
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import EventsManager, { BaseEvent } from "#src/events/EventsManager.js";
 
