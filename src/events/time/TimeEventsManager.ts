@@ -308,11 +308,17 @@ export class TimeEventsManager {
 
 	onActiveNearestEventCancelled() {
 		this._nearestEvent = this.nearestEvent();
+		if (!this._nearestEvent) {
+			return;
+		}
 		this._nearestEvent_schedulePerform();
 	}
 
 	onStartup() {
 		this._nearestEvent = this.nearestEvent();
+		if (!this._nearestEvent) {
+			return;
+		}
 		this._nearestEvent_schedulePerform();
 	}
 }
