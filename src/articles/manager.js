@@ -1,12 +1,11 @@
 import StorageManager from "#src/data/StorageManager/StorageManager.js";
 import { MarkdownMetadata } from "#src/MarkdownMetadata.js";
+import { path_alias } from "#src/url/path_alias.js";
 import { glob } from "glob";
 import FileSystem from "node:fs/promises";
 import Path from "node:path";
 
-const ArticlesFolder = Path.normalize(
-	import.meta.resolve("#src/public/articles"),
-);
+const ArticlesFolder = path_alias("#src/public/articles");
 
 class ArticlesCacheData {
 	#cache = new Map();
