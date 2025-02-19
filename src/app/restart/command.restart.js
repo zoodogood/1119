@@ -77,7 +77,7 @@ class Command extends BaseCommand {
 		},
 		{
 			run: config.pm2.id
-				? `pnpm run pm2-please-restart ${config.pm2.id}`
+				? `pnpm run pm2:please-restart ${config.pm2.id}`
 				: "echo pm2 not setted",
 			filter: () => true,
 		},
