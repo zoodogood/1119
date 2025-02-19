@@ -1,5 +1,6 @@
 import config from "#config";
 import client from "#src/bot/client/singleton.js";
+import { pushMessage } from "#src/discord/pushMessage.js";
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import EventsManager, { BaseEvent } from "#src/events/EventsManager.js";
 
@@ -20,10 +21,11 @@ class Event extends BaseEvent {
 		});
 		try {
 			const channel = client.channels.cache.get(config.guild.logChannelId);
-			await channel?.msg({
-				content: "Бот был перезапущен после необработанной ошибки",
-				description: `message: ${error.message}\n, ${Date.now()}`,
-			});
+			channel &&
+				pushMessage(channel, {
+					content: "Бот был перезапущен после необработанной ошибки",
+					description: `message: ${error.message}\n, ${Date.now()}`,
+				});
 		} catch (error) {
 			console.error(error);
 		}
