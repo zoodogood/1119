@@ -105,7 +105,9 @@ class Event {
 			(description += `\nНаибольшее число от ${messages_leaders.id_list.map((userId) => `<@${userId}>`).join(", ")}: ${messages_leaders.id_list.length === 1 ? `${ending(messages_leaders.value, "сообщени", "й", "е", "я")}` : `по ${ending(messages_leaders.value, "сообщени", "й", "ю", "я")}`}`);
 
 		{
-			const month = MonthStatisticForEveryDayAPI.ofGuild(guild).field;
+			const month = MonthStatisticForEveryDayAPI.ofGuild(guild).field.map(
+				(day) => day.messages,
+			);
 			const sum = month.reduce(factorySummarize(), 0);
 			if (month.length > 3) {
 				description += multiline([
