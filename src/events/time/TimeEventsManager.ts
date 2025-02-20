@@ -298,12 +298,20 @@ export class TimeEventsManager {
 	}
 
 	_nearestEvent_onPerformRequest() {
-		const event = this._nearestEvent;
-		assert(event);
-		assert(event.timestamp <= Date.now());
-		this._removeFromBuffer(event);
-		this._perform(event);
-		this._nearestEvent_schedulePerform();
+		{
+			const event = this._nearestEvent;
+			assert(event);
+			assert(event.timestamp <= Date.now());
+			this._removeFromBuffer(event);
+			this._perform(event);
+		}
+		{
+			this._nearestEvent = this.nearestEvent();
+			if (!this._nearestEvent) {
+				return;
+			}
+			this._nearestEvent_schedulePerform();
+		}
 	}
 
 	onActiveNearestEventCancelled() {
