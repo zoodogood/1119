@@ -20,6 +20,7 @@ class Event extends BaseEvent {
 	}
 
 	async run() {
+		console.info("Before Exit: start");
 		try {
 			client.user?.setActivity("Перезапускаюсь", {
 				type: ActivityType.Streaming,
@@ -34,6 +35,7 @@ class Event extends BaseEvent {
 			await DataManager.file.write();
 			await timeEvents_singleton.file.write();
 			await ErrorsHandler.sessionWriteFile();
+			console.info("Before exit: success");
 		} catch (error) {
 			console.error(error);
 		}

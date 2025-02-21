@@ -301,7 +301,10 @@ export class TimeEventsManager {
 		{
 			const event = this._nearestEvent;
 			assert(event);
-			assert(event.timestamp <= Date.now());
+			assert(
+				event.timestamp + SECOND <= Date.now(),
+				`The ${event.name} was executed prematurely; timediff: ${Date.now() - event.timestamp}`,
+			);
 			this._removeFromBuffer(event);
 			this._perform(event);
 		}

@@ -9,6 +9,14 @@ const { stringify, parse } = JSON;
 class Metadata {
 	static defaults = {};
 
+	get updateRequested() {
+		return this.#updateRequested;
+	}
+
+	set updateRequested(value) {
+		this.#updateRequested = value;
+	}
+
 	#updateRequested = false;
 
 	constructor() {
@@ -19,20 +27,12 @@ class Metadata {
 	static from(props) {
 		return Object.assign(Object.create(this.prototype), props);
 	}
-
 	appendMetadata() {
 		throw new Error("Must be implemented");
 	}
 
 	requestUpdate() {
 		this.#updateRequested = true;
-	}
-	get updateRequested() {
-		return this.#updateRequested;
-	}
-
-	set updateRequested(value) {
-		this.#updateRequested = value;
 	}
 }
 
@@ -97,6 +97,14 @@ class GroupMetadata extends Metadata {
 }
 
 class ErrorData {
+	get message() {
+		return this.error.message;
+	}
+
+	get stack() {
+		return this.error.stack;
+	}
+
 	constructor(error, context) {
 		this.tags = Object.keys(context ?? {});
 		context &&= stringify(context);
@@ -144,14 +152,6 @@ class ErrorData {
 			.replaceAll("file://", "")
 			.replaceAll("node_modules", "nm^");
 		return { ...groups, stack };
-	}
-
-	get message() {
-		return this.error.message;
-	}
-
-	get stack() {
-		return this.error.stack;
 	}
 }
 
@@ -322,6 +322,8 @@ class Manager {
 			meta.requestUpdate();
 		} catch (error) {
 			console.error(error);
+			console.error("FUNDAMENTAL ERROR");
+			console.trace();
 			process.exit();
 		}
 	}
