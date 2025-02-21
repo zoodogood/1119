@@ -24,7 +24,7 @@ class Event extends BaseEvent {
 			channel &&
 				pushMessage(channel, {
 					content: "Бот был перезапущен после необработанной ошибки",
-					description: `message: ${error.message},\n${Date.now()}`,
+					description: `message: ${error.message},\nkey: \`${Date.now()}\``,
 				});
 		} catch (error) {
 			console.error(error);
