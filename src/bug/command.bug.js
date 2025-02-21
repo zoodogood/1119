@@ -421,18 +421,30 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 	/**
 	 *
 	 * @param {{groups: import("#src/ErrorsHandler/ErrorsHandler.js").Group[]}} param0
-	 * @param {string} sessionLabel
+	 * @param {{ session_label: string, session_timestamp?: number }} param1
 	 * @returns
 	 */
-	errors_session_to_pages_bulk({ groups }, sessionLabel) {
+	errors_session_to_pages_bulk(
+		{ groups },
+		{ session_label, session_timestamp },
+	) {
 		const bugsChannelGuildId =
 			client.channels.cache.get(config.guild.bugsChannelId)?.guild.id || null;
 
 		return [
 			multiline([
-				`Карта ошибок **${sessionLabel}** сессии:`,
-				" ",
-				`следующие ${groups.length} страниц содержат по уникальной ошибке\n`,
+				`Карта ошибок **${session_label}** сессии`,
+				session_timestamp &&
+					` (${dayjs(session_timestamp).format("DD.MM HH:mm")})`,
+				": ",
+				`${ending(
+					groups.length,
+					"",
+					"следующие {} страниц",
+					"следующая страница",
+					"следующие {} страницы",
+					{ unite: (quantity, base) => base.replace("{}", String(quantity)) },
+				)} содержат по уникальной ошибке\n`,
 				"\n",
 				...groups.map(
 					({ key }) =>
@@ -494,14 +506,17 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 		this.pager.setChannel(this.context.channel);
 		current_session?.meta.errorsCount &&
 			this.pager.addPages(
-				...this.errors_session_to_pages_bulk(current_session, "текущей"),
+				...this.errors_session_to_pages_bulk(current_session, {
+					session_label: "текущей",
+				}),
 			);
 		previous_session?.meta.errorsCount &&
 			this.pager.addPages(
-				...this.errors_session_to_pages_bulk(
-					previous_session,
-					`предыдущей (${dayjs(+((await errors_handler_previous_session.fileId) * SECOND)).format("DD.MM HH:mm")})`,
-				),
+				...this.errors_session_to_pages_bulk(previous_session, {
+					session_label: "предыдущей",
+					session_timestamp:
+						+(await errors_handler_previous_session.fileId()) * SECOND,
+				}),
 			);
 
 		this.pager.pages.length === 0 &&

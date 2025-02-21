@@ -10,23 +10,23 @@ export class PreviousSession {
 	 */
 	errorsHandler;
 
-	get fileId() {
+	get value() {
+		return (this._value ||= new Promise(async (resolve) => {
+			const { File } = this.errorsHandler;
+			const newest = await this.fileId();
+			resolve(await File.readFile(String(newest)));
+		}));
+	}
+	constructor(errorsHandler) {
+		this.errorsHandler = errorsHandler;
+	}
+
+	fileId() {
 		const { File } = this.errorsHandler;
 		return File.keys().then(($) =>
 			Math.max(
 				...$.map(Number).filter((session) => session !== process_startedAt()),
 			),
 		);
-	}
-	get value() {
-		return (this._value ||= new Promise(async (resolve) => {
-			const { File } = this.errorsHandler;
-			const { fileId: newest } = this;
-			resolve(await File.readFile(String(await newest)));
-		}));
-	}
-
-	constructor(errorsHandler) {
-		this.errorsHandler = errorsHandler;
 	}
 }
