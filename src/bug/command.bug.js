@@ -30,6 +30,7 @@ import { multiline, uid, weekHour } from "#src/safe-utils.js";
 import { path } from "#src/url/export.js";
 
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
+import { ending } from "@zoodogood/utils/primitives";
 import { ComponentType, escapeCodeBlock, escapeMarkdown } from "discord.js";
 
 function insertBugInfo({
@@ -459,7 +460,7 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 						const locations = [...errors_locations.values()]
 							.map((location) => `- 📂 ${location}`)
 							.join("\n");
-						return `Локации повторяющихся ошибок:\n${locations}`;
+						return `${ending(locations.length, "Локаци", "и", "я", "и")} происхождения:\n${locations}`;
 					})(),
 					"\n",
 					"```\nㅤ```\n",
