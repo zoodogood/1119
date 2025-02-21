@@ -267,28 +267,30 @@ export class TimeEventsManager {
 		}
 		clearTimeout(this.timeoutId);
 		const timeTo = event.timestamp - Date.now();
-		if (timeTo > SECOND * 10) {
-			const parse = new Intl.DateTimeFormat("ru-ru", {
-				weekday: "short",
-				hour: "2-digit",
-				minute: "2-digit",
-			}).format();
-			console.info(
-				multiline([
-					"{\n\n",
-					`  Имя события: ${event.name},\n`,
-					`  Текущее время: ${parse},\n`,
-					`  Времени до начала: ${timestampToDate(timeTo)}`,
-					`\n\n}`,
-				]),
+		{
+			if (timeTo > SECOND * 10) {
+				const parse = new Intl.DateTimeFormat("ru-ru", {
+					weekday: "short",
+					hour: "2-digit",
+					minute: "2-digit",
+				}).format();
+				console.info(
+					multiline([
+						"{\n\n",
+						`  Имя события: ${event.name},\n`,
+						`  Текущее время: ${parse},\n`,
+						`  Времени до начала: ${timestampToDate(timeTo)}`,
+						`\n\n}`,
+					]),
+				);
+			}
+		}
+		{
+			this.timeoutId = setTimeout(
+				this._nearestEvent_onPerformRequest.bind(this),
+				Math.max(timeTo, 1),
 			);
 		}
-
-		this.timeoutId = setTimeout(
-			this._nearestEvent_onPerformRequest.bind(this),
-			Math.max(timeTo, 1),
-		);
-		return;
 	}
 
 	nearestEvent() {
@@ -301,6 +303,8 @@ export class TimeEventsManager {
 		{
 			const event = this._nearestEvent;
 			assert(event);
+			// На данный момент некоторые события выполняются на ~22 мс раньше собственной временной метки
+			// Это не является критическим, но нужно учитывать. Причина неизвестна
 			assert(
 				event.timestamp - SECOND <= Date.now(),
 				`The ${event.name} was executed prematurely; timediff: ${Date.now() - event.timestamp} ms`,
