@@ -41,7 +41,7 @@ function insertBugInfo({
 	session,
 	informMessageId,
 }) {
-	return new BugsField().field[reportId] = {
+	return (new BugsField().field[reportId] = {
 		importanceStatusIndex,
 		error_message,
 		reportText,
@@ -49,7 +49,7 @@ function insertBugInfo({
 		reporterId,
 		session,
 		informMessageId,
-	};
+	});
 }
 function informBugToBugChannel({
 	importanceStatus,
@@ -470,7 +470,7 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 						200,
 					),
 					"\n",
-					crop_string(errors[0].stackData.stack, 1000),
+					errors[0]?.stackData && crop_string(errors[0].stackData.stack, 1000),
 				]),
 			),
 		].map((description) => ({ description }));
