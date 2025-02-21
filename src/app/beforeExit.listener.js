@@ -34,7 +34,9 @@ class Event extends BaseEvent {
 			await saveEvent.whenStopPromises();
 			await DataManager.file.write();
 			await timeEvents_singleton.file.write();
-			await ErrorsHandler.sessionWriteFile();
+			if (ErrorsHandler.session().errorGroups.size > 0) {
+				await ErrorsHandler.sessionWriteFile();
+			}
 			console.info("Before exit: success");
 		} catch (error) {
 			console.error(error);
