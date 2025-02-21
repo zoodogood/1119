@@ -8,44 +8,38 @@ import { glob } from "glob";
 import FileSystem from "node:fs/promises";
 import { default as Path } from "node:path";
 
-export function pathToPageKey(path) {
-	path = path.replace(/\.page\.svelte$/, "")
-		.replaceAll(/[\/\\\.]/g, "_")
-		.toLowerCase()
-		.trim();
-	if (path.endsWith("_index")) {
-		path = path.slice(0, -6);
-	}
-	return path;
+const targetFiles = await Promise.all(
+	(await glob("**/*.page/index.svelte", { absolute: true })).map(
+		async (filePath) => ({
+			filePath,
+			page_key: JSON.parse(
+				String(
+					await FileSystem.readFile(
+						Path.resolve(Path.dirname(filePath), "metadata.json"),
+					),
+				),
+			).page_key,
+			relative: Path.relative(`${process.cwd()}`, filePath),
+		}),
+	),
+);
+{
+	console.info(`Cound of files: ${targetFiles.length}`);
+	await FileSystem.mkdir("./src/public/build/svelte-pages", {
+		recursive: true,
+	});
 }
 
-const targetFiles = (await glob("**/*.page.svelte", { absolute: true }))
-	.map((filePath) => {
-		const relative = Path.relative(`${process.cwd()}/src`, filePath);
-		return {
-			filePath,
-			name: pathToPageKey(relative),
-			source: relative.replaceAll(
-				Path.win32.sep,
-				Path.posix.sep,
-			),
-		};
-	}
-);
-console.info(`Cound of files: ${targetFiles.length}`);
-await FileSystem.mkdir("./src/public/build/svelte-pages", {
-	recursive: true,
-});
 // MARK: First file
 {
 	const TARGET_PATH = "./src/public/build/svelte-pages/exports[builded].mjs"; // Svelte exports content
 	await FileSystem.writeFile(
 		cwd_path(".", TARGET_PATH),
 		targetFiles
-			.map(({ source, name }) => {
-				const path = `#src/${source}`;
-				return `export {default as ${name}} from '${path}';`;
-			})
+			.map(
+				({ relative, page_key }) =>
+					`export {default as ${page_key}} from '${`#${relative}`}';`,
+			)
 			.join("\n"),
 	);
 	console.info(cwd_path(".", TARGET_PATH));
@@ -57,9 +51,9 @@ await FileSystem.mkdir("./src/public/build/svelte-pages", {
 	await FileSystem.writeFile(
 		cwd_path(".", ENUM_TARGET_PATH),
 		`export default ${JSON.stringify(
-			targetFiles.map(({ name }) => name),
+			targetFiles.map(({ page_key }) => page_key),
 			null,
-			2,
+			"\t",
 		)}`,
 	);
 	console.info(cwd_path(".", ENUM_TARGET_PATH));
