@@ -73,6 +73,10 @@ class SessionMetadata extends Metadata {
 }
 
 class GroupMetadata extends Metadata {
+	/**@type {string[] | undefined} */
+	reports;
+	/** @type {Set<string> | undefined} */
+	uniqueTags;
 	appendErrorsCount(value) {
 		this.errorsCount = value;
 	}
@@ -156,6 +160,10 @@ class ErrorData {
 }
 
 class Group {
+	/**
+	 * @type {ErrorData[]}
+	 */
+	errors;
 	constructor(key) {
 		this.meta = new GroupMetadata();
 		this.errors = [];

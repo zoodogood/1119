@@ -9,19 +9,24 @@ export class PreviousSession {
 	 * @type {ErrorsHandler}
 	 */
 	errorsHandler;
-	constructor(errorsHandler) {
-		this.errorsHandler = errorsHandler;
-	}
 
+	get fileId() {
+		const { File } = this.errorsHandler;
+		return File.keys().then(($) =>
+			Math.max(
+				...$.map(Number).filter((session) => session !== process_startedAt()),
+			),
+		);
+	}
 	get value() {
 		return (this._value ||= new Promise(async (resolve) => {
 			const { File } = this.errorsHandler;
-			const newest = Math.max(
-				...(await File.keys())
-					.map(Number)
-					.filter((session) => session !== process_startedAt()),
-			);
-			resolve(await File.readFile(String(newest)));
+			const { fileId: newest } = this;
+			resolve(await File.readFile(String(await newest)));
 		}));
+	}
+
+	constructor(errorsHandler) {
+		this.errorsHandler = errorsHandler;
 	}
 }

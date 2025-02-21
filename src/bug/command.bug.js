@@ -23,15 +23,16 @@ import {
 } from "#src/discord/utils.js";
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import { crop_string } from "#src/formatters/formatters.js";
-import { resolveGithubPath } from "#src/github/resolveGithubPath.js";
 import { transformToCollectionUsingKey } from "#src/nodejs/Collection/transformToCollectionUsingKey.js";
 import { process_startedAt } from "#src/nodejs/process_startedAt.js";
 import { multiline, uid, weekHour } from "#src/safe-utils.js";
-import { path } from "#src/url/export.js";
 
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { ending } from "@zoodogood/utils/primitives";
+import dayjs from "dayjs";
 import { ComponentType, escapeCodeBlock, escapeMarkdown } from "discord.js";
+import { resolveGithubPath } from "../github/resolveGithubPath.js";
+import { path } from "../url/export.js";
 
 function insertBugInfo({
 	reportId,
@@ -417,10 +418,15 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 
 	pager = new Pager();
 
+	/**
+	 *
+	 * @param {{groups: import("#src/ErrorsHandler/ErrorsHandler.js").Group[]}} param0
+	 * @param {string} sessionLabel
+	 * @returns
+	 */
 	errors_session_to_pages_bulk({ groups }, sessionLabel) {
-		const bugsChannelGuildId = client.channels.cache.get(
-			config.guild.bugsChannelId,
-		).guild.id;
+		const bugsChannelGuildId =
+			client.channels.cache.get(config.guild.bugsChannelId)?.guild.id || null;
 
 		return [
 			multiline([
@@ -445,22 +451,21 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 						`Отчёт: https://discord.com/channels/${bugsChannelGuildId}/${config.guild.bugsChannelId}/${new BugsField().field[meta.reports[0]].informMessageId} (id: ${meta.reports[0]})\n`,
 					(() => {
 						const errors_locations = new Set(
-							errors
-								.filter(({ stackData }) => stackData?.fileOfError)
-								.map(({ stackData: { fileOfError, lineOfCode } }) =>
-									resolveGithubPath(
-										path.relative(process.cwd(), fileOfError),
-										lineOfCode,
-									),
-								),
+							errors.filter(({ stackData }) => stackData?.fileOfError),
 						);
 						if (!errors_locations.size) {
 							return null;
 						}
 						const locations = [...errors_locations.values()]
-							.map((location) => `- 📂 ${location}`)
+							.map(({ stackData: { fileOfError, lineOfCode } }) => {
+								const relative = path.relative(process.cwd(), fileOfError);
+								return multiline([
+									`- 📂 [${path.relative(path.resolve(relative, "../.."), relative)}]`,
+									`(${resolveGithubPath(relative, lineOfCode)})`,
+								]);
+							})
 							.join("\n");
-						return `${ending(locations.length, "Локаци", "и", "я", "и")} происхождения:\n${locations}`;
+						return `${ending(errors_locations.size, "Локаци", "и", "я", "и", { unite: (_, word) => word })} происхождения:\n${locations}`;
 					})(),
 					"\n",
 					"```\nㅤ```\n",
@@ -476,20 +481,15 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 			),
 		].map((description) => ({ description }));
 	}
-	async fetch() {
-		const { get_session } = await import(
+
+	async onProcess() {
+		const { get_session, errors_handler_previous_session } = await import(
 			"#src/ErrorsHandler/PreviousSessionInstance/singleton.js"
 		);
 
+		const previous_session = await get_session();
 		ErrorsHandler.Core.updateSessionMetadata();
-		return {
-			previous_session: await get_session(),
-			current_session: ErrorsHandler.Core.toJSON(),
-		};
-	}
-
-	async onProcess() {
-		const { previous_session, current_session } = await this.fetch();
+		const current_session = ErrorsHandler.Core.toJSON();
 
 		this.pager.setChannel(this.context.channel);
 		current_session?.meta.errorsCount &&
@@ -498,7 +498,10 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 			);
 		previous_session?.meta.errorsCount &&
 			this.pager.addPages(
-				...this.errors_session_to_pages_bulk(previous_session, "предыдущей"),
+				...this.errors_session_to_pages_bulk(
+					previous_session,
+					`предыдущей (${dayjs(+((await errors_handler_previous_session.fileId) * SECOND)).format("DD.MM HH:mm")})`,
+				),
 			);
 
 		this.pager.pages.length === 0 &&
