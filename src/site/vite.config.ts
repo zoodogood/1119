@@ -1,5 +1,5 @@
-import { readPackageJson } from "#src/nodejs/readPackageJson";
-import { path } from "#src/url/export";
+import { readPackageJson } from "#src/nodejs/readPackageJson.js";
+import { path } from "#src/url/export.js";
 import { svelte, vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import { execSync } from "node:child_process";
 import { defineConfig } from "vite";
