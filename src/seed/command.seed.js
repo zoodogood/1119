@@ -8,7 +8,7 @@ import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";
 import { DataManager } from "#src/data/singleton.js";
-import { random, timestampToDate } from "#src/safe-utils.js";
+import { multiline, random, timestampToDate } from "#src/safe-utils.js";
 import { codeOfEmoji } from "@zoodogood/utils/discordjs";
 import { CustomCollector } from "@zoodogood/utils/objectives";
 import { ending } from "@zoodogood/utils/primitives";
@@ -50,29 +50,11 @@ const MESSAGES_NEED_TABLE = [
 const TREE_ALIVE_WITHOUT_WATER_DAYS = 7;
 
 class Tree {
-	constructor(guild) {
-		this.guild = guild;
-		this.guildData = guild.data;
-		this.field = this.guildData.tree ||= {
-			level: 0,
-		};
-	}
-
-	berrys_actuallize() {
-		const timePassed = Date.now() - this.field.entryTimestamp || 0;
-		const { berry_growth_speed } = this;
-		const limit = berry_growth_speed * 360;
-
-		const adding = (timePassed / DAY) * berry_growth_speed;
-		const berrys = (this.field.berrys || 0) + adding;
-		this.field.berrys = Math.min(berrys, limit);
-
-		this.field.entryTimestamp = Date.now();
-	}
 	get berry_growth_speed() {
 		const has_damage = !!this.field.damage;
 		return GROWTH_SPEED_TABLE[this.field.level] * 2 ** +!has_damage;
 	}
+
 	get end_of_day_messages_need() {
 		const basic = MESSAGES_NEED_TABLE[this.field.level];
 
@@ -83,6 +65,24 @@ class Tree {
 	}
 	get upgrade_cost() {
 		return COSTS_TABLE[this.field.level];
+	}
+	constructor(guild) {
+		this.guild = guild;
+		this.guildData = guild.data;
+		this.field = this.guildData.tree ||= {
+			level: 0,
+		};
+	}
+	berrys_actuallize() {
+		const timePassed = Date.now() - this.field.entryTimestamp || 0;
+		const { berry_growth_speed } = this;
+		const limit = berry_growth_speed * 360;
+
+		const adding = (timePassed / DAY) * berry_growth_speed;
+		const berrys = (this.field.berrys || 0) + adding;
+		this.field.berrys = Math.min(berrys, limit);
+
+		this.field.entryTimestamp = Date.now();
 	}
 }
 
@@ -200,68 +200,67 @@ class Command extends BaseCommand {
 			const FIELDS = [
 				{
 					label: "Не посажено",
-					callback: () => {
-						const value =
-							"Ему ещё предстоит вырасти, будучи семечком дерево не может давать плоды.\nОбязательно посадите семя, если оно у вас есть.\n\n❓ Выполняя каждый 50-й квест вы получаете по две штуки";
-						return { name: "Рост", value };
-					},
+					callback: () => ({
+						name: "Рост",
+						value:
+							"Ему ещё предстоит вырасти, будучи семечком дерево не может давать плоды.\nОбязательно посадите семя, если оно у вас есть.\n\n❓ Выполняя каждый 50-й квест вы получаете по две штуки",
+					}),
 					filter: () => level === 0,
 				},
 				{
 					callback: () => {
-						const { metric, count } =
-							berry_growth_speed > 100
-								? {
+						const { metric, count } = (() => {
+							switch (true) {
+								case berry_growth_speed > 100:
+									return {
 										metric: "минуту",
 										count: berry_growth_speed / (DAY / MINUTE),
-									}
-								: berry_growth_speed > 10
-									? { metric: "час", count: berry_growth_speed / (DAY / HOUR) }
-									: { metric: "день", count: berry_growth_speed };
-						const contents = {
-							speed: `Клубники выростает ${count} <:berry:756114492055617558> в ${metric}`,
-							ready: `Готово для сбора: ${Math.floor(tree.field.berrys)}`,
-							nextIn: `Следущая дозреет через: ${timestampToDate(
-								((1 - (tree.field.berrys % 1)) * DAY) / berry_growth_speed,
-								2,
-							)}`,
-						};
-						const name = "Плоды";
-						const value = `${contents.speed}\n${contents.ready}\n${contents.nextIn}`;
+									};
 
-						return { name, value };
+								case berry_growth_speed > 10:
+									return {
+										metric: "час",
+										count: berry_growth_speed / (DAY / HOUR),
+									};
+								default:
+									return { metric: "день", count: berry_growth_speed };
+							}
+						})();
+
+						return {
+							name: "Плоды",
+							value: multiline([
+								`Клубники выростает ${count} <:berry:756114492055617558> в ${metric}`,
+								`Готово для сбора: ${Math.floor(tree.field.berrys)}`,
+								`Следущая дозреет через: ${timestampToDate(
+									((1 - (tree.field.berrys % 1)) * DAY) / berry_growth_speed,
+									2,
+								)}`,
+							]),
+						};
 					},
 					filter: () => level !== 0,
 				},
 				{
 					callback: () => {
 						const entrySeeds = tree.field.seedEntry || 0;
-						const contents = {
-							forIncreaseNeed: `${
-								upgrade_cost - entrySeeds > 5
-									? upgrade_cost - entrySeeds
-									: ["ноль", "одно", "два", "три", "четыре", "пять"][
-											upgrade_cost - entrySeeds
-										]
-							} ${ending(
-								upgrade_cost - entrySeeds,
-								"сем",
-								"ян",
-								"ечко",
-								"ечка",
-								{
-									unite: (_quantity, word) => word,
-								},
-							)}`,
-							level: `Уровень деревца ${level}`,
+						const forIncreaseNeed = `${
+							upgrade_cost - entrySeeds > 5
+								? upgrade_cost - entrySeeds
+								: ["ноль", "одно", "два", "три", "четыре", "пять"][
+										upgrade_cost - entrySeeds
+									]
+						} ${ending(upgrade_cost - entrySeeds, "сем", "ян", "ечко", "ечка", {
+							unite: (_quantity, word) => word,
+						})}`;
+						return {
+							name: "Дерево",
+							value: `Уровень деревца ${level} ${
+								level === 20
+									? "(Максимальный)"
+									: `\nДо повышения нужно ${forIncreaseNeed}`
+							}`,
 						};
-						const name = "Дерево";
-						const value = `${contents.level} ${
-							level === 20
-								? "(Максимальный)"
-								: `\nДо повышения нужно ${contents.forIncreaseNeed}`
-						}`;
-						return { name, value };
 					},
 					filter: () => level !== 0,
 				},
@@ -293,12 +292,10 @@ class Command extends BaseCommand {
 					filter: () => level !== 0,
 				},
 				{
-					callback: () => {
-						const count = context.berrysCollected;
-						const name = "Клубники собрали участники";
-						const value = `${ending(count, "штук", "", "а", "и")};`;
-						return { name, value };
-					},
+					callback: () => ({
+						name: "Клубники собрали участники",
+						value: `${ending(context.berrysCollected, "штук", "", "а", "и")};`,
+					}),
 					filter: () => context.berrysCollected,
 				},
 			];
@@ -308,7 +305,7 @@ class Command extends BaseCommand {
 			);
 		};
 
-		const embed = {
+		return {
 			title: "Живое, клубничное дерево",
 			thumbnail: this.THUMBNAIL_IMAGES_TABLE[Math.ceil(level / 4)],
 			description: `Это растение способно принести океан клубники за короткий срок. Для этого заботьтесь о нём: общайтесь на сервере, поддерживайте теплую атмосферу, проводите время весело. Оно может может засохнуть!`,
@@ -319,8 +316,6 @@ class Command extends BaseCommand {
 					"https://media.discordapp.net/attachments/629546680840093696/1065874615055958056/water.png",
 			},
 		};
-
-		return embed;
 	}
 
 	async onBerryCollect(berrys, user, context) {
