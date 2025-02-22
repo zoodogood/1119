@@ -3,31 +3,34 @@ import { relativeSiteRoot } from "#site/lib/util.js";
 import PagesKeyEnum from "#src/public/build/svelte-pages/enum[builded].mjs";
 import * as Pages from "#src/public/build/svelte-pages/exports[builded].mjs";
 
-
 export function current_page_by_route() {
-	return Pages[
+	return (
+		Pages[
 			svelteApp.url.subpath
 				.filter((subpath) => !subpath.startsWith(":"))
 				.join("_")
 				.toLowerCase()
-		] ?? Pages.site_src_pages
+		] ?? Pages.pages
+	);
 }
 
 export function page_location(page_key, options = {}) {
-	PagesKeyEnum.includes(page_key);
+	if (!PagesKeyEnum.includes(page_key)) {
+		throw new Error(`Invalid page key ${page_key}`);
+	}
+
+	return relativeSiteRoot(svelteApp, page_key, options.removeQueries);
 }
 
-class PagesRouter {
-
+export class PagesRouter {
 	static getPageBy(alias) {
-		return alias
+		return alias;
 	}
 
 	static relativeToPage(key) {
-		const url = relativeSiteRoot(svelteApp, key);
-		return url;
+		return relativeSiteRoot(svelteApp, key);
 	}
 }
 
+export { Pages, PagesKeyEnum };
 export default PagesRouter;
-export { PagesRouter };
