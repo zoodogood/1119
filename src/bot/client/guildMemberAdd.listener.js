@@ -12,15 +12,14 @@ function getMemberData(member) {
 	return (membersData[member.id] ||= {});
 }
 
-export class LeaveRolesUtil {
-	static getLeaveRoles(member) {
-		const memberData = getMemberData(member);
-		return memberData.leave_roles ?? null;
-	}
+export const LeaveRoles = {
+	getOf(member) {
+		return getMemberData(member).leave_roles ?? null;
+	},
 
-	static installLeaveRoles(member) {
+	installPastRolesFor(member) {
 		const memberData = getMemberData(member);
-		const roles = this.getLeaveRoles(member);
+		const roles = this.getOf(member);
 		if (!roles) {
 			return null;
 		}
@@ -31,11 +30,11 @@ export class LeaveRolesUtil {
 			role && member.roles.add(role).catch(() => {});
 		}
 		delete memberData.leave_roles;
-	}
-}
+	},
+};
 
-export class WelcomerUtil {
-	static installWelcomeRoles(member) {
+export const Welcomer = {
+	installRolesFor(member) {
 		const { guild } = member;
 		const rolesId = guild.data.hi?.rolesId;
 		if (!rolesId) {
@@ -46,14 +45,14 @@ export class WelcomerUtil {
 			const role = guild.roles.cache.get(roleId);
 			role && member.roles.add(role);
 		}
-	}
+	},
 
-	static async processWelcomer(member) {
-		this.installWelcomeRoles(member);
-		this.sendWelcomeMessage(member);
-	}
+	async onMember(member) {
+		this.installRolesFor(member);
+		this.sendGreetingFor(member);
+	},
 
-	static async sendWelcomeMessage(member) {
+	async sendGreetingFor(member) {
 		const { guild } = member;
 		if (!guild.data.hiChannel) {
 			return;
@@ -81,31 +80,28 @@ export class WelcomerUtil {
 			scope: { tag: member.user.toString(), name: member.user.username },
 		});
 		channel.msg({ content: "👋", delete: 180_000 });
-	}
-}
+	},
+};
 
-class BotLoggerUtil {
-	static async getInformation(member) {
-		const { guild } = member;
-		const whoAdded = await guild.Audit(
-			(audit) => audit.target.id === member.id,
-			{
-				type: AuditLogEvent.BotAdd,
-			},
-		);
-
-		const permissions =
+const BotLogger = {
+	stringifyPermissionsOf(member) {
+		return (
 			member.permissions
 				.toArray()
 				.map((permission) => PermissionFlags[PermissionFlagsBits[permission]])
-				.join(", ") || "Отсуствуют";
+				.join(", ") || "Отсуствуют"
+		);
+	},
+	async userWhoAddded(botMember) {
+		const { guild } = botMember;
+		return await guild.Audit((audit) => audit.target.id === botMember.id, {
+			type: AuditLogEvent.BotAdd,
+		});
+	},
 
-		return { permissions, whoAdded };
-	}
-
-	static async prepareAndWriteLog(member) {
+	async onEntry(member) {
 		const { guild } = member;
-		const { permissions, whoAdded } = this.getInformation(member);
+		const whoAdded = await this.userWhoAddded(member);
 
 		guild.logSend({
 			title: "Добавлен бот",
@@ -119,66 +115,48 @@ class BotLoggerUtil {
 			}`,
 			footer: {
 				text: `Предоставленные права: ${capitalize(
-					permissions ?? "Отсутсвуют",
+					this.stringifyPermissionsOf(member) ?? "Отсутсвуют",
 				)}`,
 			},
 		});
-		return;
-	}
+	},
+};
 
-	static processNewMember(member) {
-		if (!member.user.bot) {
-			return;
-		}
-
-		this.prepareAndWriteLog(member);
-	}
-}
-
-class EnterLoggerUtil {
-	static async fetchInviter(member) {
+const EnterLogger = {
+	async fetchInviteOf(member) {
 		const { guild } = member;
 		const guildInvites = await guild.invites.fetch().catch(() => {});
-
 		if (!guildInvites) {
 			return null;
 		}
-
-		const cached = guild.invitesUsesCache;
-		const invite = guildInvites.find(
-			(invite) => cached.get(invite.code) < invite.uses,
+		return guildInvites.find(
+			(invite) => guild.invitesUsesCache.get(invite.code) < invite.uses,
 		);
+	},
 
-		if (!invite) {
-			return null;
-		}
-
-		const { inviter } = invite;
-
-		return { invite, inviter };
-	}
-
-	static async processInviter({ invite, inviter, member }) {
-		const { guild } = member;
-		const previous = guild.invitesUsesCache.get(invite.code);
-		guild.invitesUsesCache.set(invite.code, (previous || 0) + 1);
-
-		if (member.id !== inviter.id) {
+	async processInviter(inviter, invite, entryMember) {
+		const {
+			guild: { invitesUsesCache },
+		} = invite;
+		invitesUsesCache.set(
+			invite.code,
+			(invitesUsesCache.get(invite.code) || 0) + 1,
+		);
+		if (entryMember.id !== inviter.id) {
 			inviter.action(Actions.globalQuest, { name: "inviteFriend" });
 		}
-
 		inviter.data.invites = (inviter.data.invites ?? 0) + 1;
-	}
+	},
 
-	static async processNewMember(member) {
-		const { invite, inviter } = (await this.fetchInviter(member)) ?? {};
-		this.writeLog({ invite, inviter, member });
-		invite && this.processInviter({ invite, inviter, member });
-	}
+	async onMember(entryMember) {
+		const invite = await this.fetchInviteOf(entryMember);
+		this.writeGuildLog(entryMember, invite);
+		invite && this.processInviter(invite.inviter, invite, entryMember);
+	},
 
-	static writeLog({ inviter, member, invite }) {
-		const { guild } = member;
-		const description = `Имя: ${member.user.tag}\nПригласивший: ${inviter?.tag}\nПриглашение использовано: ${invite?.uses}`;
+	writeGuildLog(entryMember, invite) {
+		const { guild } = invite;
+		const description = `Имя: ${entryMember.user.tag}\nПригласивший: ${invite?.inviter?.tag}\nПриглашение использовано: ${invite?.uses}`;
 
 		guild.logSend({
 			title: "Новый участник!",
@@ -186,8 +164,8 @@ class EnterLoggerUtil {
 			footer: { text: "Приглашение создано: " },
 			timestamp: invite?.createdTimestamp,
 		});
-	}
-}
+	},
+};
 
 class Event extends BaseEvent {
 	options = {
@@ -200,10 +178,12 @@ class Event extends BaseEvent {
 	}
 
 	async run(member) {
-		WelcomerprocessWelcomer(member);
-		LeaveRolesinstallLeaveRoles(member);
-		BotLoggerprocessNewMember(member);
-		EnterLoggerprocessNewMember(member);
+		Welcomer.onMember(member);
+		LeaveRoles.installPastRolesFor(member);
+		if (member.user.bot) {
+			BotLogger.onEntry(member);
+		}
+		EnterLogger.onMember(member);
 	}
 }
 
