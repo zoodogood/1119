@@ -1,6 +1,8 @@
 <script>
 	import svelteApp from "#site/core/svelte-app_singleton.js";
-	import PagesRouter from "#site/lib/page_router_singleton.js";
+	import PagesRouter, {
+		PagesKeyEnum,
+	} from "#site/lib/page_router_singleton.js";
 
 	import config from "#config";
 	import Layout from "#site-component/Layout";
@@ -10,9 +12,7 @@
 
 	const CurrentThemeStore = Theme.current;
 
-	const whenApiListIsReceived = (async () => {
-		return fetchFromInnerApi("./utils/api_list");
-	})();
+	const whenApiListIsReceived = fetchFromInnerApi("./utils/api_list");
 
 	let node;
 	const i18n = svelteApp.i18n.pages.navigation;
@@ -66,7 +66,7 @@
 		<details open class="table pages">
 			<summary>{i18n.pages.label} <Icon code="" /></summary>
 			<ul>
-				{#each Array.from(PagesRouter.pages_collection.keys()) as pageKey}
+				{#each PagesKeyEnum as pageKey}
 					{@const url = PagesRouter.relativeToPage(pageKey)}
 					<li>
 						<a href={url}>{url.replace(config.server.origin, "")}</a>
