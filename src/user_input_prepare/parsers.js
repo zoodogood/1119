@@ -1,5 +1,5 @@
 import { DAY, HOUR, MINUTE, SECOND } from "#constants/time.js";
-import dayjs from "dayjs";
+import dayjs from "#src/dayjs.js";
 
 export class ParserTime {
 	static regex =

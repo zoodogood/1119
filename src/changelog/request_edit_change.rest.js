@@ -1,10 +1,10 @@
 import { authorizationProtocol } from "#src/auth/APIPointAuthorization/APIPointAuthorization.js";
-import { ChangelogDaemon } from "#src/bot/ChangelogDaemon/ChangelogDaemon.js";
 import { parse_body } from "#src/http_requests/express_utils.js";
 
 import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import { singleton } from "./ChangelogDaemon/singleton.js";
 
-const PREFIX = "/modules/changelog_daemon/request_edit_change";
+const PREFIX = "/changelog/request_edit_change";
 
 class Route extends BaseRoute {
 	prefix = PREFIX;
@@ -23,7 +23,7 @@ class Route extends BaseRoute {
 		const body = await parse_body(request);
 		const { target, value } = JSON.parse(body);
 
-		const item = ChangelogDaemon.data.find(({ uid }) => uid === target);
+		const item = singleton.data.find(({ uid }) => uid === target);
 
 		if (!item) {
 			response

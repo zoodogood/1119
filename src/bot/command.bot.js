@@ -9,9 +9,8 @@ import { DAY } from "#constants/time.js";
 import {
 	change_to_string,
 	group_changes_by_default,
-} from "#src/bot/ChangelogDaemon/api/display.js";
-import { metadata } from "#src/bot/ChangelogDaemon/api/metadata.js";
-import { ChangelogDaemon } from "#src/bot/ChangelogDaemon/ChangelogDaemon.js";
+} from "#src/changelog/ChangelogDaemon/display.js";
+import { metadata } from "#src/changelog/ChangelogDaemon/metadata.js";
 import {
 	BaseCommand,
 	BaseFlagSubcommand,
@@ -19,6 +18,7 @@ import {
 import { flag } from "#src/commands/BaseCommand/parse_flags.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import CommandsManager from "#src/commands/CommandsManager/singleton.js";
+import dayjs from "#src/dayjs.js";
 import { pushMessage } from "#src/discord/pushMessage.js";
 import {
 	disable_caller_component,
@@ -38,8 +38,8 @@ import {
 import { CliParser } from "@zoodogood/utils/CliParser";
 import { createModal } from "@zoodogood/utils/discordjs";
 import { ending } from "@zoodogood/utils/primitives";
-import dayjs from "dayjs";
 import { ButtonStyle, ComponentType, TextInputStyle } from "discord.js";
+import { singleton } from "../changelog/ChangelogDaemon/singleton.js";
 
 function website_get_useful_links() {
 	const { origin } = config.server;
@@ -200,7 +200,7 @@ class Changelog_FlagSubcommand extends BaseFlagSubcommand {
 	async onProcess() {
 		const { context } = this;
 
-		const groups = group_changes_by_default(ChangelogDaemon.data.map(metadata));
+		const groups = group_changes_by_default(singleton.data.map(metadata));
 		const pager = new Pager();
 		pager.setPagesLength(groups.length);
 		pager.setChannel(context.interaction.channel);

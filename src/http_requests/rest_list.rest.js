@@ -1,4 +1,5 @@
 import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import { api_router } from "./api_router/singleton.js";
 
 const PREFIX = "/utils/api_list";
 
@@ -10,12 +11,7 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, response) {
-		const { server_singleton } = await import(
-			"#src/http_requests/server_singleton.js"
-		);
-		const router = server_singleton.router;
-		const data = router.getParsedRoutesList();
-		response.json(data);
+		response.json(api_router.getParsedRoutesList());
 	}
 }
 

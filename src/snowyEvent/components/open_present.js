@@ -2,11 +2,11 @@ import { MINUTE, SECOND } from "#constants/time.js";
 import { BaseContext } from "#src/app/BaseContext/BaseContext.js";
 import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";
+import dayjs from "#src/dayjs.js";
 import { factoryGetPropertyValue } from "#src/mini.js";
 import { random, sleep } from "#src/safe-utils.js";
 import { getPresentsList } from "#src/snowyEvent/presents_list.js";
 import { getRandomElementFromArray } from "@zoodogood/utils/objectives";
-import dayjs from "dayjs";
 import { Message } from "discord.js";
 
 export default async function open_present({ params, interaction }) {

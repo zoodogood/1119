@@ -1,13 +1,13 @@
 <script>
-	import { group_changes_by_default } from "#root/src/changelog/ChangelogDaemon/display.js";
-	import { metadata } from "#root/src/changelog/ChangelogDaemon/metadata.js";
 	import Layout from "#site-component/Layout";
+	import { group_changes_by_default } from "#src/changelog/ChangelogDaemon/display.js";
+	import { metadata } from "#src/changelog/ChangelogDaemon/metadata.js";
 
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
 	import { season_of_month } from "#src/safe-utils.js";
 	import { ending } from "@zoodogood/utils/primitives";
 
-	import { dayjs } from "#root/src/dayjs.js";
+	import { dayjs } from "#src/dayjs.js";
 	import ChangeItem from "./change_item.svelte";
 
 	const SeasonEmoji = ["⛄", "🌸", "☀️", "🍁"];

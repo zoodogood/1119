@@ -2,12 +2,12 @@ import config from "#config";
 
 import client from "#src/bot/client/singleton.js";
 import { version } from "#src/enviroment.js";
+import { ChangelogDaemon } from "./ChangelogDaemon/ChangelogDaemon.js";
 import {
 	change_to_string,
 	group_changes_by_group_symbol,
-} from "./api/display.js";
-import { metadata } from "./api/metadata.js";
-import { ChangelogDaemon } from "./ChangelogDaemon.js";
+} from "./ChangelogDaemon/display.js";
+import { metadata } from "./ChangelogDaemon/metadata.js";
 
 export class ChannelPatchLogWriter {
 	/**

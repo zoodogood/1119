@@ -45,13 +45,11 @@
 			</span>
 
 			<nav>
-				<a
-					href={page_location(svelteApp, "public")}
-					class="navigation-element link">{i18n.nav.home}</a
+				<a href={page_location("public")} class="navigation-element link"
+					>{i18n.nav.home}</a
 				>
-				<a
-					href={page_location(svelteApp, "navigation")}
-					class="navigation-element link">{i18n.nav.navigation}</a
+				<a href={page_location("navigation")} class="navigation-element link"
+					>{i18n.nav.navigation}</a
 				>
 				<a
 					href={config.guild.url}
@@ -80,7 +78,7 @@
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<section
 				class="user"
-				on:click={() => PagesRouter.redirect(page_location("user_panel"))}
+				on:click={() => (document.location.href = page_location("user_panel"))}
 				on:keydown={({ target }) => target.click()}
 			>
 				<span class="user-avatar-container">

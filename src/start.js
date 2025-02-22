@@ -11,10 +11,10 @@ import { DataManager } from "#src/data/singleton.js";
 
 import "#src/_expand_prototype.js";
 import "#src/app/BaseContext/toSafeValues/_expand_prototype.js";
+import { dayjs } from "#src/dayjs.js";
 import EventsManager from "#src/events/EventsManager.js";
 import { timestampToDate } from "#src/safe-utils.js";
 import ActionManager, { Actions } from "#src/user/actions/ActionManager.js";
-import dayjs from "dayjs";
 
 client.on("ready", async () => {
 	for (const guild of client.guilds.cache.values()) {

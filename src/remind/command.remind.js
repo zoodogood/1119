@@ -4,12 +4,12 @@ import { SECOND, YEAR } from "#constants/time.js";
 
 import client from "#src/bot/client/singleton.js";
 import {
-	BaseCommand,
-	BaseFlagSubcommand,
+    BaseCommand,
+    BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import CommandsManager from "#src/commands/CommandsManager/singleton.js";
-import { dayjs_ensure_coming_year } from "#src/dayjs.js";
+import dayjs, { dayjs_ensure_coming_year } from "#src/dayjs.js";
 import { Pager } from "#src/discord/Pager.js";
 import { question } from "#src/discord/utils.js";
 import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
@@ -18,7 +18,6 @@ import { clone } from "#src/safe-utils.js";
 import { ParserTime } from "#src/user_input_prepare/parsers.js";
 import { getValuesByIndexes } from "#src/user_input_prepare/pickItemsInArray.js";
 import { CliParser, ending } from "@zoodogood/utils/primitives";
-import dayjs from "dayjs";
 import { Message } from "discord.js";
 
 // MARK: Definitions
@@ -699,10 +698,10 @@ class Command extends BaseCommand {
 }
 
 export {
-	AbstractRemindEvaluate as Remind_AbstractEvaluate,
-	AbstractRemindRepeats as Remind_AbstractRepeats,
-	MemberRemindField as Remind_MemberField,
-	RemindData
+    AbstractRemindEvaluate as Remind_AbstractEvaluate,
+    AbstractRemindRepeats as Remind_AbstractRepeats,
+    MemberRemindField as Remind_MemberField,
+    RemindData
 };
 
 export default Command;

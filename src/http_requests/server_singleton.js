@@ -4,6 +4,7 @@ import cors from "cors";
 import "dotenv/config";
 import helmet from "helmet";
 import FileSystem from "node:fs/promises";
+import { ErrorsHandler } from "../ErrorsHandler/ErrorsHandler.js";
 import { onRequest } from "./api_router/onRequest.js";
 import { api_router } from "./api_router/singleton.js";
 import { express } from "./express_singleton.js";
@@ -65,9 +66,15 @@ export const server_singleton = await (async () => {
 	].forEach((key) => express.use(helmet[key]()));
 	api_router.register(express);
 
-	const server = await http_server(config.server.port ?? 8001);
-
-	// success ↴
-	console.info(`Listen on ${getAddress(server)}`);
-	return server;
+	try {
+		const server = await http_server(config.server.port ?? 8001);
+		// success ↴
+		console.info(`Listen on ${getAddress(server)}`);
+		return server;
+	} catch (error) {
+		console.error(error);
+		console.info("Failed to start server");
+		ErrorsHandler.onErrorReceive(error);
+		return null;
+	}
 })();

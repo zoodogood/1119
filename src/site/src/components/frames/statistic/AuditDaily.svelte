@@ -7,8 +7,8 @@
 	import { DAY } from "#constants/time.js";
 	import { Theme } from "#site/components/ThemeSwitcher/mod.svelte";
 	import svelteApp from "#site/core/svelte-app_singleton.js";
+	import dayjs from "#src/dayjs.js";
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
-	import dayjs from "dayjs";
 	import { writable } from "svelte/store";
 
 	const i18n = svelteApp.i18n.frames.AuditDaily;

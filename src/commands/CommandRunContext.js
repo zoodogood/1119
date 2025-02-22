@@ -1,5 +1,5 @@
 // @ts-check
-import { BaseContext } from "#root/src/app/BaseContext/BaseContext.js";
+import { BaseContext } from "#src/app/BaseContext/BaseContext.js";
 import { takeInteractionProperties } from "#src/discord/utils.js";
 
 class BaseCommandRunContext extends BaseContext {

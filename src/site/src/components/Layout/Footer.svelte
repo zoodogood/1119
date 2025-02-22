@@ -3,7 +3,7 @@
 	import Image from "#site-component/Image";
 	import svelteApp from "#site/core/svelte-app_singleton.js";
 	import PagesRouter from "#site/lib/page_router_singleton.js";
-	import dayjs from "dayjs";
+	import dayjs from "#src/dayjs.js";
 
 	const bot = svelteApp.getBot();
 	const i18n = svelteApp.i18n.components.Layout.Footer;

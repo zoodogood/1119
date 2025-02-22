@@ -1,9 +1,9 @@
 import { Collection } from "@discordjs/collection";
 
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
-import EventEmitter from "node:events";
 
 import { glob } from "glob";
+import { EventEmitter } from "../EventEmitter/export.js";
 
 const PATH = "./folder/events";
 
@@ -19,6 +19,27 @@ class BaseEvent {
 		this.options = options;
 	}
 
+	freeze() {
+		this.isListeningNow = false;
+
+		const callback = this.callback;
+		const eventName = this.eventName;
+		const target = this.eventTarget;
+		target.removeListener(eventName, callback);
+	}
+
+	handle() {
+		if (this.isListeningNow === true) {
+			throw new Error("Listening now");
+		}
+
+		const callback = this.callback;
+		const eventName = this.eventName;
+		const target = this.eventTarget;
+
+		target.on(eventName, callback);
+		this.isListeningNow = true;
+	}
 	async #beforeRun(...args) {
 		this.#logger({ event: this, args });
 
@@ -38,27 +59,6 @@ class BaseEvent {
 
 	#logger({ event, args }) {
 		console.info(`Event: ${this.eventName}`);
-	}
-	freeze() {
-		this.isListeningNow = false;
-
-		const callback = this.callback;
-		const eventName = this.eventName;
-		const target = this.eventTarget;
-		target.removeListener(eventName, callback);
-	}
-
-	handle() {
-		if (this.isListeningNow === true) {
-			throw new Error("Listening now");
-		}
-
-		const callback = this.callback;
-		const eventName = this.eventName;
-		const target = this.eventTarget;
-		
-		target.on(eventName, callback);
-		this.isListeningNow = true;
 	}
 }
 

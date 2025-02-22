@@ -4,8 +4,8 @@ import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import { PERMISSIONS_MASK_ENUM } from "#src/VirtualMachine/empowered_permissions.js";
 import { BankInteraction } from "#src/VirtualMachine/template_modules/BankInteraction.js";
 import BossManager from "#src/boss/BossManager.js";
-import { ChangelogDaemon } from "#src/bot/ChangelogDaemon/ChangelogDaemon.js";
 import client from "#src/bot/client/singleton.js";
+import { singleton } from "#src/changelog/ChangelogDaemon/singleton.js";
 import { requestCoinFromNextMessage } from "#src/coin_message/requestCoinFromMessage.js";
 import CommandsManager from "#src/commands/CommandsManager/singleton.js";
 import { CurseManager } from "#src/curses/CurseManager/singleton/index.js";
@@ -17,6 +17,7 @@ import EventsManager from "#src/events/EventsManager.js";
 import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
 import { transformToCollectionUsingKey } from "#src/nodejs/Collection/transformToCollectionUsingKey.js";
 import QuestManager from "#src/quests/QuestManager.js";
+import { use_memo } from "#src/safe-utils.js";
 import ActionManager from "#src/user/actions/ActionManager.js";
 import UserEffectManager from "#src/user/actions/EffectsManager.js";
 import GuildVariablesManager from "#src/variables/GuildVariablesManager.js";
@@ -247,7 +248,7 @@ export const template_modules_scope = transformToCollectionUsingKey([
 		},
 	},
 	{
-		getContent: () => ChangelogDaemon,
+		getContent: use_memo(() => JSON.parse(JSON.stringify(singleton))),
 		key: "ChangelogDaemon",
 		permissions: {
 			scope: PERMISSIONS_MASK_ENUM.USER,

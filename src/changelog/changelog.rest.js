@@ -1,6 +1,7 @@
 import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import { singleton } from "./ChangelogDaemon/singleton.js";
 
-const PREFIX = "/modules/changelog_daemon/changelog";
+const PREFIX = "/changelog";
 
 class Route extends BaseRoute {
 	prefix = PREFIX;
@@ -10,7 +11,9 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, response) {
-		response.json(ChangelogDaemon.data);
+		console.log(singleton);
+		debugger;
+		response.json(singleton.data);
 	}
 }
 

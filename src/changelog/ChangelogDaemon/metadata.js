@@ -1,5 +1,5 @@
-import { GroupSymbols } from "#src/bot/ChangelogDaemon/api/display.js";
-import dayjs from "dayjs";
+import { GroupSymbols } from "#src/changelog/ChangelogDaemon/display.js";
+import dayjs from "#src/dayjs.js";
 
 export function metadata(item) {
 	const { createdAt, change } = item;
