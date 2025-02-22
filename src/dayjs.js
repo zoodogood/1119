@@ -14,4 +14,5 @@ export function dayjs_ensure_coming_year(date) {
 	return date.add(1, "year");
 }
 
+export default dayjs;
 export { dayjs };
