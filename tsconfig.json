@@ -1,13 +1,13 @@
 {
-  "compilerOptions": {
-    "skipLibCheck": true,                              
-    "allowJs": true,
-    "module": "esnext",                                
-    "esModuleInterop": true,                           
-    "target": "esnext",                                
-    "forceConsistentCasingInFileNames": true,          
-    "strict": true,     
-    // JS
+	"compilerOptions": {
+		"skipLibCheck": true,
+		"allowJs": true,
+		"module": "nodenext",
+		"esModuleInterop": true,
+		"target": "esnext",
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		// JS
 		"baseUrl": ".",
 		"paths": {
 			"#config": ["./src/config.json.js"],
