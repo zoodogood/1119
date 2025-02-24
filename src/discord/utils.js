@@ -62,16 +62,17 @@ export async function justModalQuestion({
 		style: addable.style || TextInputStyle.Paragraph,
 		placeholder: addable.placeholder,
 		maxLength: addable.maxLength,
-	});
-	components = components.map(toComponentData);
-
-	const modal = createModal({
-		components,
-		customId,
-		title,
+		minLength: addable.minLength,
+		value: addable.value,
 	});
 
-	await interaction.showModal(modal);
+	await interaction.showModal(
+		createModal({
+			components: components.map(toComponentData),
+			customId,
+			title,
+		}),
+	);
 	const response = await interaction.awaitModalSubmit({
 		filter: (interaction) => customId === interaction.customId,
 		time: MINUTE * 5,
