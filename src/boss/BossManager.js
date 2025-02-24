@@ -726,37 +726,8 @@ class BossManager {
 
 	static USER_DEFAULT_ATTACK_DAMAGE = 10;
 
-	static async notifyAboutBossAtNextDay(guild) {
-		const data = guild.data;
-
-		if (!data.boss) {
-			return;
-		}
-
-		if (data.boss.is_quiet_boss) {
-			return;
-		}
-
-		const isApparanceAtNextDay = () => {
-			return data.boss.apparanceAtDay === DataManager.data.bot.currentDay + 1;
-		};
-
-		if (!isApparanceAtNextDay()) {
-			return;
-		}
-
-		await sleep(3000);
-
-		const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
-		const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по завершении участники получат небольшую награду`;
-		const description = `${descriptionImage}\n\n${descriptionFacts}`;
-
-		const embed = {
-			color: "#210052",
-			description,
-		};
-
-		await guild.chatSend(embed);
+	static get eventBases() {
+		return eventBases;
 	}
 
 	static async beforeEnd(guild) {
@@ -907,20 +878,6 @@ class BossManager {
 		guild.chatSend(embed);
 	}
 
-	static cleanBossData(guild) {
-		const guildData = guild.data;
-		const { boss } = guildData;
-		delete boss.previous_boss;
-		const previous_boss = { ...boss };
-		for (const key in boss) {
-			delete boss[key];
-		}
-		boss.previous_boss = previous_boss;
-		if (previous_boss.level <= 1) {
-			boss.is_quiet_boss = true;
-		}
-	}
-
 	static async bossApparance(guild) {
 		const guildData = guild.data;
 
@@ -975,6 +932,20 @@ class BossManager {
 			.reduce((acc, points) => acc + points, 0);
 
 		return BossManager.calculateHealthPoint(level) + totalOfPrevious;
+	}
+
+	static cleanBossData(guild) {
+		const guildData = guild.data;
+		const { boss } = guildData;
+		delete boss.previous_boss;
+		const previous_boss = { ...boss };
+		for (const key in boss) {
+			delete boss[key];
+		}
+		boss.previous_boss = previous_boss;
+		if (previous_boss.level <= 1) {
+			boss.is_quiet_boss = true;
+		}
 	}
 
 	static comeUpApparanceDay() {
@@ -1182,6 +1153,38 @@ class BossManager {
 		return damage;
 	}
 
+	static async notifyAboutBossAtNextDay(guild) {
+		const data = guild.data;
+
+		if (!data.boss) {
+			return;
+		}
+
+		if (data.boss.is_quiet_boss) {
+			return;
+		}
+
+		const isApparanceAtNextDay = () => {
+			return data.boss.apparanceAtDay === DataManager.data.bot.currentDay + 1;
+		};
+
+		if (!isApparanceAtNextDay()) {
+			return;
+		}
+
+		await sleep(3000);
+
+		const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`;
+		const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по завершении участники получат небольшую награду`;
+		const description = `${descriptionImage}\n\n${descriptionFacts}`;
+
+		const embed = {
+			color: "#210052",
+			description,
+		};
+
+		await guild.chatSend(embed);
+	}
 	static onMessage(message) {
 		const boss = message.guild.data.boss;
 		const authorId = message.author.id;
@@ -1292,9 +1295,6 @@ class BossManager {
 		});
 		boss.isDefeated = true;
 	}
-	static get eventBases() {
-		return eventBases;
-	}
 }
 
 export {
@@ -1303,6 +1303,6 @@ export {
 	BossEvents,
 	BossManager,
 	Relics as BossRelics,
-	Speacial as BossSpecial
+	Speacial as BossSpecial,
 };
 export default BossManager;
