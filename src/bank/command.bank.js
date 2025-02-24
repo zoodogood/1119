@@ -14,6 +14,7 @@ import { Emoji } from "#src/emojis/emojis.js";
 import { numberFormat, NumberFormatLetterize } from "#src/safe-utils.js";
 import { ActionsMap } from "#src/user/actions/actionsMap.enum.js";
 import { ending } from "@zoodogood/utils/primitives";
+import { DAILY_REVENUE_PER_MEMBER } from "./contants.js";
 
 class ProfessionsUtils {
 	static createReports({ guild, professions }) {
@@ -550,7 +551,7 @@ class Command extends BaseCommand {
 					description: `**Созданные профессии ${
 						Object.keys(data.professions).length
 					}/20**\n${data.workersContent}\n\n\`\`\`Доходы: ${
-						guild.memberCount * 2
+						guild.memberCount * DAILY_REVENUE_PER_MEMBER
 					}\nРасходы: ${data.report.expenditure}\n${ending(
 						Object.keys(data.report.salaryTable).length,
 						"пользовател",

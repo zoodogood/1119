@@ -1,0 +1,1 @@
+export const DAILY_REVENUE_PER_MEMBER = 2;
