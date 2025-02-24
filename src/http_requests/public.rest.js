@@ -1,14 +1,11 @@
-import config from "#config";
 import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
-import FileSystem from "node:fs";
+import FileSystem from "node:fs/promises";
 import path from "node:path";
 
-const ROOT = config.server.paths.static;
-const root = path.join(process.cwd(), ROOT);
-
 const PREFIX = /\/public+?/;
+const public_dir = path.resolve(process.cwd(), "src/public");
 
-class Route extends BaseRoute {
+export default class Route extends BaseRoute {
 	prefix = PREFIX;
 
 	constructor() {
@@ -16,146 +13,54 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, response) {
-		const controller = new PathControll();
-		const data = controller.suggest(request.url);
+		try {
+			let current_path = request.path.replace(/^\/public\//, "./");
+			const like_html = `${current_path}.html`;
+			if (await fileExists(path.resolve(public_dir, like_html))) {
+				current_path = like_html;
+			}
 
-		const byBoolean = {
-			NOT_FOUND: data === null,
-			ERROR: data instanceof Error,
-			FILES_LIST: data instanceof Array,
-			SEND_FILE: typeof data === "string",
-			DEFAULT: true,
-		};
-		const code = Object.entries(byBoolean)
-			.find(([_, value]) => value)
-			.at(0);
+			const has_index_html = `${current_path}/index.html`;
+			if (await fileExists(path.resolve(public_dir, has_index_html))) {
+				current_path = has_index_html;
+			}
+			const stat = await FileSystem.stat(
+				path.resolve(public_dir, current_path),
+			).catch(() => null);
 
-		this.responseByCode(code, { data, response, request });
-	}
-
-	responseByCode(code, { data, response, request }) {
-		switch (code) {
-			case "NOT_FOUND":
-				response.redirect(
-					`/public/special/i-love-404?from=${encodeURIComponent(request.path)}`,
-				);
-				break;
-
-			case "ERROR":
-				(() => {
-					const queries = {
-						from: request.url,
-						error: data.message,
-					};
-
-					const queriesContent = Object.entries(queries)
-						.map(([k, v]) => `${k}=${v}`)
-						.join("&");
-
-					response.redirect(`/public/special/display-error?${queriesContent}`);
-				})();
-				break;
-
-			case "FILES_LIST":
-				(() => {
-					const queries = {
-						from: request.url,
-					};
-
-					const queriesContent = Object.entries(queries)
-						.map(([k, v]) => `${k}=${v}`)
-						.join("&");
-
-					response.redirect(
-						`/public/special/you-go-to-folder?${queriesContent}`,
+			if (!stat) {
+				return response
+					.status(404)
+					.redirect(
+						`/public/special/i-love-404?from=${encodeURIComponent(request.path)}`,
 					);
-				})();
-				break;
+			}
 
-			case "SEND_FILE":
-				response.sendFile(data);
-				break;
+			if (stat.isDirectory()) {
+				return response.redirect(
+					`/public/special/you-go-to-folder?from=${encodeURIComponent(request.url)}`,
+				);
+			}
 
-			case "DEFAULT":
-				throw new Error("Unknown response");
+			return response.sendFile(path.resolve(public_dir, current_path));
+		} catch (error) {
+			const queries = new URLSearchParams({
+				from: request.url,
+				error: error.message,
+			}).toString();
+			response.redirect(`/pages/display-error?${queries}`);
+		}
+
+		async function fileExists(filePath) {
+			try {
+				await FileSystem.access(filePath, FileSystem.constants.F_OK);
+				return true;
+			} catch (error) {
+				if (!["ENOENT", "ENOTDIR"].includes(error.code)) {
+					throw error;
+				}
+				return false;
+			}
 		}
 	}
 }
-
-class PathControll {
-	createResponse({ folderChunk, target }) {
-		const pathToFile = path.join(root, folderChunk.join("/"), target);
-
-		let stats;
-		try {
-			stats = FileSystem.lstatSync(pathToFile);
-		} catch (err) {
-			return err;
-		}
-
-		if (stats.isFile()) {
-			return pathToFile;
-		}
-
-		if (stats.isDirectory()) {
-			const files = this.getFiles(pathToFile);
-			const target = this.getTarget({ files, targetChunk: "index.html" });
-			return target ? path.join(pathToFile, target) : files;
-		}
-	}
-
-	getFiles(folderPath) {
-		const pathToDirectory = path.join(root, folderPath.join("/"));
-
-		try {
-			return FileSystem.readdirSync(pathToDirectory);
-		} catch {
-			return null;
-		}
-	}
-
-	getTarget({ files, targetChunk }) {
-		targetChunk = this.processQuerySymbol(targetChunk);
-
-		const exact = (name) => name === targetChunk;
-		const include = (name) => name.includes(targetChunk);
-		const isIndex = (name) => name === "index.html";
-
-		if (!targetChunk) {
-			return files.find(isIndex) ?? null;
-		}
-
-		return files.find(exact) ?? files.find(include) ?? null;
-	}
-
-	parseURL(url) {
-		const way = url.split("/").filter(Boolean).slice(1);
-
-		const folderChunk = way.slice(0, -1);
-		const target = way.at(-1);
-
-		return [folderChunk, target];
-	}
-
-	processQuerySymbol(target) {
-		return target.replace(/\?.*$/, "");
-	}
-
-	suggest(url) {
-		const [folderChunk, targetChunk] = this.parseURL(url);
-
-		const files = this.getFiles(folderChunk);
-		if (files === null) {
-			return null;
-		}
-
-		const target = this.getTarget({ files, targetChunk });
-		if (target === null) {
-			return files;
-		}
-
-		return this.createResponse({ folderChunk, target });
-	}
-}
-
-export default Route;
