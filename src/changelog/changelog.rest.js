@@ -11,8 +11,6 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, response) {
-		console.log(singleton);
-		debugger;
 		response.json(singleton.data);
 	}
 }
