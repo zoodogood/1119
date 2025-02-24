@@ -12,8 +12,9 @@ import { average, factorySummarize } from "#src/mini.js";
 import { NumberFormatLetterize, multiline } from "#src/safe-utils.js";
 import { onDayStats as TreeOnDayStats } from "#src/seed/command.seed.js";
 import { ending } from "@zoodogood/utils/primitives";
+import { DAILY_REVENUE_PER_MEMBER } from "../bank/contants.js";
 
-class Event {
+export default class Event {
 	options = {
 		name: "timeEvent/day-stats",
 	};
@@ -31,29 +32,52 @@ class Event {
 
 		client.guilds.cache.each(async (guild) => {
 			const { data } = guild;
-			data.tree?.level && TreeOnDayStats(guild, context);
-			data.professions && context.bankCommand.onDayStats(guild, context);
-			this.sendStats(guild, context);
 			MonthStatisticForEveryDayAPI.ofGuild(guild).push({
 				messages: data.day_msg,
 			});
+			data.tree?.level && TreeOnDayStats(guild, context);
+			data.professions && context.bankCommand.onDayStats(guild, context);
+			this.updateStateAndSendStats(guild, context);
 			BossManager.notifyAboutBossAtNextDay(guild);
 		});
 
 		this.time_event_recreate();
 	}
 
-	sendStats(guild, context) {
+	time_event_recreate() {
+		const launched_events = timeEvents_singleton.filterEventsInRange(
+			({ name }) => name === "day-stats",
+			[DataManager.data.bot.currentDay, DataManager.data.bot.currentDay + 1],
+		);
+
+		launched_events.length > 0 &&
+			launched_events.forEach(
+				timeEvents_singleton.removeFromBuffer.bind(timeEvents_singleton),
+			);
+
+		let next = dayjs().set("hour", 20).startOf("hour").diff();
+		if (next < 0) {
+			next += DAY;
+		}
+		timeEvents_singleton.pushIntoBuffer("day-stats", next);
+	}
+
+	updateStateAndSendStats(guild, context) {
 		const guildData = guild.data;
 		const messagesOfDay = guildData.day_msg || 0;
 		const { guildsStatsContext } = context;
-
 		const { treeMessagesNeed } = guildsStatsContext[guild.id] || {};
 
-		guild.data.coins += 2 * guild.memberCount;
-
-		guildData.days = guildData.days + 1 || 1;
-		guildData.msg_total = guildData.msg_total + messagesOfDay || messagesOfDay;
+		{
+			// From src/bank
+			guild.data.coins += DAILY_REVENUE_PER_MEMBER * guild.memberCount;
+		}
+		{
+			guildData.days = guildData.days + 1 || 1;
+			guildData.msg_total =
+				guildData.msg_total + messagesOfDay || messagesOfDay;
+			guildData.day_msg = 0;
+		}
 
 		let description = `За этот день было отправлено ${ending(
 			messagesOfDay,
@@ -69,8 +93,15 @@ class Event {
 			)}\nВ среднем за день: ${Math.round(guildData.msg_total / guildData.days)}`;
 		}
 
+		if (messagesOfDay === 0) {
+			return;
+		}
+
 		if (guildData.day_max < messagesOfDay) {
-			guildData.day_max = messagesOfDay;
+			{
+				// update record
+				guildData.day_max = messagesOfDay;
+			}
 			description += `\nГильдия ${[
 				"<a:jeqery:768047102503944202>",
 				"<a:jeqeryBlue:806176327223738409>",
@@ -80,11 +111,6 @@ class Event {
 				"<a:blockPink:794615199361400874>",
 				"<a:blockAqua:794166748085223475>",
 			].random()} установила свой рекорд по сообщениям!`;
-		}
-
-		guildData.day_msg = 0;
-		if (!messagesOfDay) {
-			return;
 		}
 
 		const messages_leaders = (() => {
@@ -131,24 +157,4 @@ class Event {
 
 		guild.chatSend({ title: "Статистика сервера", description });
 	}
-
-	time_event_recreate() {
-		const launched_events = timeEvents_singleton.filterEventsInRange(
-			({ name }) => name === "day-stats",
-			[DataManager.data.bot.currentDay, DataManager.data.bot.currentDay + 1],
-		);
-
-		launched_events.length > 0 &&
-			launched_events.forEach(
-				timeEvents_singleton.removeFromBuffer.bind(timeEvents_singleton),
-			);
-
-		let next = dayjs().set("hour", 20).startOf("hour").diff();
-		if (next < 0) {
-			next += DAY;
-		}
-		timeEvents_singleton.pushIntoBuffer("day-stats", next);
-	}
 }
-
-export default Event;
