@@ -19,6 +19,9 @@ export default class Route extends BaseRoute {
 					response.sendStatus(404);
 					return;
 				}
+				if (error.code === "EISDIR") {
+					return response.sendStatus(404);
+				}
 				throw error;
 			},
 		);
