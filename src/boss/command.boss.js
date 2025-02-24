@@ -14,8 +14,10 @@ import {
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { CurseManager } from "#src/curses/CurseManager/singleton/index.js";
+import dayjs from "#src/dayjs.js";
 import { sortByResolve } from "#src/mini.js";
 import {
+	multiline,
 	toDayDate,
 	toFixedAfterZero,
 	toLocaleDeveloperString,
@@ -23,6 +25,7 @@ import {
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { ButtonStyle, ComponentType } from "discord.js";
+import DataManager from "../data/DataManager.js";
 
 function attackBoss(boss, user, channel) {
 	return BossManager.userAttack({ boss, user, channel });
@@ -524,7 +527,13 @@ class Command extends BaseCommand {
 
 		if (!boss.isArrived) {
 			const description = boss.apparanceAtDay
-				? `Прибудет лишь ${toDayDate((boss.apparanceAtDay + 1) * DAY)}`
+				? multiline([
+						`Прибудет лишь ${toDayDate((boss.apparanceAtDay + 1) * DAY)}`,
+						boss.apparanceAtDay - 1 < DataManager.data.bot.currentDay &&
+							`: до появления ${dayjs
+								.duration(dayjs().endOf("D").diff(dayjs()))
+								.format("HH:mm:ss")} с.`,
+					])
 				: "Момент появления босса пока неизвестен";
 
 			channel.msg({ description, color: "#000000" });
