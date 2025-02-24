@@ -15,6 +15,9 @@ export default class Route extends BaseRoute {
 		response.sendFile(
 			path.resolve(public_dir, request.path.replace(/^\/public\//, "./")),
 			(error) => {
+				if (error instanceof Error === false) {
+					return;
+				}
 				if (error.code === "ENOENT") {
 					response.sendStatus(404);
 					return;
