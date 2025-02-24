@@ -529,7 +529,7 @@ class Command extends BaseCommand {
 			const description = boss.apparanceAtDay
 				? multiline([
 						`Прибудет лишь ${toDayDate((boss.apparanceAtDay + 1) * DAY)}`,
-						boss.apparanceAtDay - 1 < DataManager.data.bot.currentDay &&
+						boss.apparanceAtDay - 1 <= DataManager.data.bot.currentDay &&
 							`: до появления ${dayjs
 								.duration(dayjs().endOf("D").diff(dayjs()))
 								.format("HH:mm:ss")} с.`,
