@@ -48,6 +48,11 @@ export const server_singleton = await (async () => {
 	}
 
 	// middleware ↴
+	express.use((req, res, next) => {
+		// to-do: remove developer crutch
+		console.info(req.url);
+		next();
+	});
 	express.use(cors({ origin: "*" }));
 	express.use(onRequest);
 	[
