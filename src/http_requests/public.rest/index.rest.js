@@ -1,3 +1,6 @@
+// Model file://./readme.md
+// ========================
+
 import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
 import FileSystem from "node:fs/promises";
 import path from "node:path";
@@ -14,15 +17,14 @@ export default class Route extends BaseRoute {
 
 	async get(request, response) {
 		try {
+			// request.path is like /public/special/about
 			let current_path = request.path.replace(/^\/public\//, "./");
-			const like_html = `${current_path}.html`;
-			if (await fileExists(path.resolve(public_dir, like_html))) {
-				current_path = like_html;
-			}
-
-			const has_index_html = `${current_path}/index.html`;
-			if (await fileExists(path.resolve(public_dir, has_index_html))) {
-				current_path = has_index_html;
+			const _like_html = `${current_path}.html`;
+			const _has_index_html = `${current_path}/index.html`;
+			if (await fileExists(path.resolve(public_dir, _like_html))) {
+				current_path = _like_html;
+			} else if (await fileExists(path.resolve(public_dir, _has_index_html))) {
+				current_path = _has_index_html;
 			}
 			const stat = await FileSystem.stat(
 				path.resolve(public_dir, current_path),
