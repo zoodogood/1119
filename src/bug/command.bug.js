@@ -4,22 +4,21 @@ import { mol_tree2_string_from_json } from "#src/$mol.js";
 import { assert } from "#src/assert/export.js";
 import client from "#src/bot/client/singleton.js";
 import {
-    BaseCommand,
-    BaseFlagSubcommand,
+	BaseCommand,
+	BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import {
-    cli_parser_parse_flags,
-    flag_value,
-    process_flags,
+	cli_parser_parse_flags,
+	process_flags,
 } from "#src/commands/BaseCommand/parse_flags.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { DataManager } from "#src/data/singleton.js";
 import { MessageInterface } from "#src/discord/MessageInterface.js";
 import { Pager } from "#src/discord/Pager.js";
 import {
-    justModalQuestion,
-    parse_embedInstance,
-    question,
+	justModalQuestion,
+	parse_embedInstance,
+	question,
 } from "#src/discord/utils.js";
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import { crop_string } from "#src/formatters/formatters.js";
@@ -282,13 +281,19 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 
 	importanceStatus = null;
 
-	async askReportText(interaction) {
+	async askReportTextAndConfirm(interaction) {
 		const components = [
 			{
 				label: "Вы открыли окно уведомления об ошибке",
 				required: true,
 				maxLength: 1_000,
-				value: flag_value(this.context, "--text") || undefined,
+				value:
+					this.context.cliParsed
+						.at(0)
+						.parser.captureResidue({ name: "residue" })
+						.collect()
+						.captures.get("residue")
+						?.toString() || undefined,
 				placeholder: "Опишите причинно-следственную связь",
 			},
 		];
@@ -380,7 +385,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			],
 			justButtonComponents({
 				label: "Открыть модальное окно отправки",
-				customId: "askReportText",
+				customId: "askReportTextAndConfirm",
 			}),
 		]);
 		_interface.updateMessage();
@@ -388,8 +393,8 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			MessageInterface.Events.allowed_collect,
 			({ interaction }) => {
 				switch (interaction.customId) {
-					case "askReportText":
-						return this.askReportText(interaction);
+					case "askReportTextAndConfirm":
+						return this.askReportTextAndConfirm(interaction);
 					case "setImportance":
 						this.importanceStatus = Importances.at(+interaction.values[0]);
 						interaction.msg({
