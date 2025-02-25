@@ -35,7 +35,7 @@ import {
 import { elementsEnum } from "#src/thing/command.thing.js";
 import UserEffectManager from "#src/user/actions/EffectsManager.js";
 import { Collection } from "@discordjs/collection";
-import { ending } from "@zoodogood/utils/primitives";
+import { arraySpliceItem, ending } from "@zoodogood/utils/primitives";
 import { ButtonStyle, ComponentType } from "discord.js";
 
 class Speacial {
@@ -1274,7 +1274,7 @@ class BossManager {
 				continue;
 			}
 			if (!base.repeats) {
-				pull.remove(base);
+				arraySpliceItem(pull, base);
 			}
 			attack_event_callback(base, context);
 			attackContext.listOfEvents.push(base);
