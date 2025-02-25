@@ -17,6 +17,7 @@ import EventsManager from "#src/events/EventsManager.js";
 import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
 import { transformToCollectionUsingKey } from "#src/nodejs/Collection/transformToCollectionUsingKey.js";
 import QuestManager from "#src/quests/QuestManager.js";
+import * as Util from "#src/safe-utils.js";
 import { use_memo } from "#src/safe-utils.js";
 import ActionManager from "#src/user/actions/ActionManager.js";
 import UserEffectManager from "#src/user/actions/EffectsManager.js";
