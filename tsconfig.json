@@ -33,6 +33,5 @@
 		"experimentalDecorators": true
 	},
 	"reflection": true,
-	"extends": ["@tsconfig/svelte/tsconfig.json"],
 	"exclude": ["node_modules", "**/node_modules", "dist"]
 }
