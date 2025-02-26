@@ -111,7 +111,14 @@ class ErrorData {
 
 	constructor(error, context) {
 		this.tags = Object.keys(context ?? {});
-		context &&= stringify(context);
+		try {
+			context &&= stringify(context);
+		} catch (error) {
+			Manager.onErrorReceive(error, {
+				in_errors_handler_module: true,
+			});
+			context = { _broked: true };
+		}
 		this.error = error;
 		try {
 			this.stackData = this.parseErrorStack();
