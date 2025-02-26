@@ -102,7 +102,9 @@ export class TimeEventsManager {
 		const day = timestampDay(event.timestamp);
 		this.data[day] ||= [];
 		this.data[day].push(event);
-		sortByResolve(this.data[day], ($: { timestamp: any }) => $.timestamp);
+		sortByResolve(this.data[day], ($: { timestamp: any }) => $.timestamp, {
+			reverse: true,
+		});
 		this._prioritizeByLogic(event);
 		console.info(`Ивент создан ${event.name}`);
 		return event;
