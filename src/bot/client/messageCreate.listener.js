@@ -46,7 +46,7 @@ class Event extends BaseEvent {
 
 		userData.last_online = Date.now();
 
-		if (guildData.boss && guildData.boss.isArrived) {
+		if (guildData?.boss && guildData.boss.isArrived) {
 			BossManager.onMessage.call(BossManager, message);
 		}
 
