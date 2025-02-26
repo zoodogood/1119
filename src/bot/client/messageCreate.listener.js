@@ -96,9 +96,8 @@ class Event extends BaseEvent {
 			const memberData = (message.guild.data.members[message.author.id] ||= {});
 			memberData.messagesToday ||= 0;
 			memberData.messagesToday++;
+			guildData.day_msg++;
 		}
-
-		guildData.day_msg++;
 	}
 }
 
