@@ -38,3 +38,10 @@ export function isObject(target) {
 export function average(sum, length) {
 	return Math.round(sum / length);
 }
+
+export function tap(fn) {
+	return (...args) => {
+		fn(...args);
+		return args[0];
+	};
+}
