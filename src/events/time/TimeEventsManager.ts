@@ -77,10 +77,11 @@ export class TimeEventItem<T> {
 		return this;
 	}
 }
-
 export class TimeEventsManager {
 	data = {} as Record<number, TimeEventItem<unknown>[]>;
-	emitter = new EventEmitter();
+	emitter = new EventEmitter<
+		Record<"timeEventPerform", [TimeEventItem<unknown>]>
+	>();
 	timeoutId?: NodeJS.Timer;
 	file = {
 		load: async () => {
@@ -119,7 +120,6 @@ export class TimeEventsManager {
 		if (this.data[day!].length === 0) {
 			delete this.data[day!];
 		}
-		event === this._nearestEvent && this.onActiveNearestEventCancelled();
 		return true;
 	}
 
@@ -135,6 +135,7 @@ export class TimeEventsManager {
 	}
 
 	at(day: number) {
+		assert(!isNaN(day));
 		return this.data[day];
 	}
 
@@ -226,14 +227,7 @@ export class TimeEventsManager {
 		return (
 			// see proof in the file://./readme.md
 			(this._nearestEvent && timestampDay(this._nearestEvent.timestamp)) ||
-			(() => {
-				const days = this.getExistsDaysList();
-				if (!days) {
-					return null;
-				}
-				const day = days.reduce((min, day) => Math.min(+min, +day), Infinity);
-				return +day;
-			})()
+			this._getNearestDay()
 		);
 	}
 
@@ -262,6 +256,7 @@ export class TimeEventsManager {
 
 	removeFromBuffer(event: TimeEventItem<unknown>) {
 		this._removeFromBuffer(event);
+		event === this._nearestEvent && this.onActiveNearestEventCancelled();
 	}
 
 	_prioritizeByLogic(event: TimeEventItem<unknown>) {
@@ -306,25 +301,42 @@ export class TimeEventsManager {
 		}
 	}
 
+	_getNearestDay() {
+		const days = this.getExistsDaysList();
+		if (!days) {
+			return null;
+		}
+		const day = days.reduce((min, day) => Math.min(+min, +day), Infinity);
+		return +day;
+	}
+
 	nearestEvent() {
-		const day = this.getNearestDay();
-		const dayEvents = day ? this.at(day)! : null;
-		return dayEvents?.at(0) ?? null;
+		if (this._nearestEvent) {
+			const dayEvents = this.at(timestampDay(this._nearestEvent.timestamp));
+			if (dayEvents) {
+				return dayEvents.at(0);
+			}
+		}
+		const day = this._getNearestDay();
+		if (!day) {
+			return null;
+		}
+		const dayEvents = this.at(day)!;
+		assert(dayEvents.length);
+		return dayEvents.at(0)!;
 	}
 
 	_nearestEvent_onPerformRequest() {
-		{
-			const event = this._nearestEvent;
-			assert(event);
-			// На данный момент некоторые события выполняются на ~22 мс раньше собственной временной метки
-			// Это не является критическим, но нужно учитывать. Причина неизвестна
-			assert(
-				event.timestamp - SECOND <= Date.now(),
-				`The ${event.name} was executed prematurely; timediff: ${Date.now() - event.timestamp} ms`,
-			);
-			this._removeFromBuffer(event);
-			this._perform(event);
-		}
+		const event = this._nearestEvent;
+		assert(event);
+		// На данный момент некоторые события выполняются на ~22 мс раньше собственной временной метки
+		// Это не является критическим, но нужно учитывать. Причина неизвестна
+		assert(
+			event.timestamp - SECOND <= Date.now(),
+			`The ${event.name} was executed prematurely; timediff: ${Date.now() - event.timestamp} ms`,
+		);
+		this._removeFromBuffer(event);
+		this._perform(event);
 		{
 			this._nearestEvent = this.nearestEvent();
 			if (!this._nearestEvent) {
