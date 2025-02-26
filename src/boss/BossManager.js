@@ -945,6 +945,8 @@ class BossManager {
 		boss.previous_boss = previous_boss;
 		if (previous_boss.level <= 1) {
 			boss.is_quiet_boss = true;
+		} else {
+			boss.is_quiet_boss = undefined;
 		}
 	}
 
