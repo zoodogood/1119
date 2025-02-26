@@ -247,6 +247,17 @@ export class TimeEventsManager {
 		return [day, index];
 	}
 
+	flat() {
+		const flat = Object.values(this.data).flat();
+
+		assert(is_sorted(flat.map(($) => $.timestamp)));
+		function is_sorted(array) {
+			let prev = array[0];
+			return array.slice(1).every((current) => current >= prev);
+		}
+		return flat;
+	}
+
 	removeFromBuffer(event: TimeEventItem<unknown>) {
 		this._removeFromBuffer(event);
 	}
