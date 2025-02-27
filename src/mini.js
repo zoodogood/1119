@@ -45,3 +45,7 @@ export function tap(fn) {
 		return args[0];
 	};
 }
+
+export function update(atom, fn, { defaultValue } = {}) {
+	return fn(atom ?? defaultValue);
+}
