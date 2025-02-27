@@ -114,10 +114,10 @@ class ErrorData {
 		try {
 			context &&= stringify(context);
 		} catch (error) {
-			// Manager.onErrorReceive(error, {
-			// 	in_errors_handler_module: true,
-			// });
-			context = undefined;
+			Manager.onErrorReceive(error, {
+				in_errors_handler_module: true,
+			});
+			context = stringify({ _broked: true, keys: Object.keys(context) });
 		}
 		this.error = error;
 		try {
@@ -328,8 +328,6 @@ class Manager {
 	}
 
 	static onErrorReceive(error, context) {
-		console.log({ message: error.message });
-
 		try {
 			const errorData = new ErrorData(error, context);
 			this.pushToSessionErrors(errorData, context);
