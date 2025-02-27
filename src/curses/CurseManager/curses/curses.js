@@ -9,7 +9,7 @@ import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";
 import { Emoji } from "#src/emojis/emojis.js";
 import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
-import { sortByResolve as sortByResolveMut } from "#src/mini.js";
+import { sortByResolveMut, update } from "#src/mini.js";
 import QuestManager from "#src/quests/QuestManager.js";
 import { clamp, random, sleep, yaml } from "#src/safe-utils.js";
 import { happySnowyCurse } from "#src/snowyEvent/happy_snowy_curse.js";
@@ -1700,23 +1700,28 @@ export const cursesBase = new Collection(
 				progress: () => 0,
 				updated_at: () => null,
 			},
-			speed({ acceleration_time, acceleration, speed, is_down }) {
+			current_speed({ acceleration_time, acceleration, speed, is_down }) {
 				const by_acceleration = Math.floor(
 					(acceleration_time / MINUTE) * acceleration,
 				);
 				return by_acceleration + speed + is_down;
 			},
-			update(user, curse) {
+			update_progress(user, curse) {
 				const { values, timestamp } = curse;
 				const { per_minute, is_down, updated_at, acceleration } = values;
 				const now = Date.now();
 				const time_diff = now - updated_at;
 				const value_diff = Math.floor(per_minute * (time_diff / MINUTE));
 
-				CurseManager.interface({ user, curse }).incrementProgress(
-					value_diff * (-1) ** is_down,
+				update(
+					values.progress,
+					($) =>
+						CurseManager.interface({ user, curse })._setProgress(
+							$ + value_diff * (-1) ** is_down,
+						),
+					{ defaultValue: 0 },
 				);
-				const speed = this.speed({
+				const speed = this.current_speed({
 					acceleration_time: now - timestamp,
 					acceleration,
 					speed: per_minute,
@@ -1740,24 +1745,24 @@ export const cursesBase = new Collection(
 						return;
 					}
 
-					this.update(user, curse);
+					this.update_progress(user, curse);
 					const { values, timestamp } = curse;
 					const is_down = commandBase === "down";
 					curse.values.is_down = is_down;
 					context.message.msg({
 						reference: context.message.id,
-						content: `Состояние: ${this.state_emoji[+is_down]}\nТекущая скорость: ${this.speed({ acceleration: values.acceleration, acceleration_time: Date.now() - timestamp, speed: values.per_minute, is_down })} условных единиц в минуту (v = u + a * t + is_down)`,
+						content: `Состояние: ${this.state_emoji[+is_down]}\nТекущая скорость: ${this.current_speed({ acceleration: values.acceleration, acceleration_time: Date.now() - timestamp, speed: values.per_minute, is_down })} условных единиц в минуту (v = u + a * t)`,
 					});
 				},
 				curseBeforeProgressDisplay(user, curse) {
-					this.update(user, curse);
+					this.update_progress(user, curse);
 				},
 				curseTimeEnd(user, curse, target) {
 					if (curse !== target.curse) {
 						return;
 					}
 
-					this.update(user, curse);
+					this.update_progress(user, curse);
 					const { values } = curse;
 					const { progress, inaccuracy } = values;
 
