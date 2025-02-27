@@ -3,7 +3,7 @@ import EventEmitter from "node:events";
 import { SECOND } from "#constants/time.js";
 import { assert } from "#src/assert/export.js";
 import StorageManager from "#src/data/StorageManager/StorageManager.js";
-import { sortByResolve } from "#src/mini.js";
+import { sortByResolveMut } from "#src/mini.js";
 import { multiline, timestampDay, timestampToDate } from "#src/safe-utils.js";
 import { rangeToArray } from "@zoodogood/utils/objectives";
 
@@ -103,7 +103,7 @@ export class TimeEventsManager {
 		const day = timestampDay(event.timestamp);
 		this.data[day] ||= [];
 		this.data[day].push(event);
-		sortByResolve(this.data[day], ($: { timestamp: any }) => $.timestamp, {
+		sortByResolveMut(this.data[day], ($: { timestamp: any }) => $.timestamp, {
 			reverse: true,
 		});
 		this._prioritizeByLogic(event);

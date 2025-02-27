@@ -1,7 +1,7 @@
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import { PermissionsBits } from "#src/discord/permissions.js";
 import { take_missing_permissions } from "#src/discord/utils.js";
-import { sortByResolve } from "#src/mini.js";
+import { sortByResolveMut } from "#src/mini.js";
 import GuildVariablesManager from "#src/variables/GuildVariablesManager.js";
 import { ending } from "@zoodogood/utils/primitives";
 import { escapeMarkdown } from "discord.js";
@@ -139,7 +139,7 @@ class Command extends BaseCommand {
 				}
 
 				const param = answer.split(" ").at(0);
-				const description = sortByResolve(
+				const description = sortByResolveMut(
 					Object.entries(manager.data)
 						.filter(([_id, targetData]) => param in targetData)
 						.map(([id, targetData]) => [id, targetData[param]]),

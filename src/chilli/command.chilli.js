@@ -5,7 +5,7 @@ import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";
 import { Emoji } from "#src/emojis/emojis.js";
-import { sortByResolve } from "#src/mini.js";
+import { sortByResolveMut } from "#src/mini.js";
 import { sleep } from "#src/safe-utils.js";
 import { Actions } from "#src/user/actions/ActionManager.js";
 
@@ -158,7 +158,7 @@ class Command extends BaseCommand {
 		channel.msg({
 			title: "Бах! Перчик взорвался!",
 			description: `Перец бахнул прямо у ${boohIn.toString()}\nИгра окончена.\nБыло совершено отскоков: ${chilli.rebounds}\nЧтобы победить, должен быть хотя бы один отскок. Тогда все игроки получат по ${reward} ${Emoji.coins.toString()}`,
-			fields: sortByResolve(Object.entries(chilli.players), ($) => $[1], {
+			fields: sortByResolveMut(Object.entries(chilli.players), ($) => $[1], {
 				recursive: true,
 			})
 				.map(([id, score]) => ({

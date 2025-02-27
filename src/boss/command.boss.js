@@ -2,25 +2,25 @@ import config from "#config";
 import { DAY, SECOND } from "#constants/time.js";
 
 import {
-	core_make_attack_context,
-	make_attack_with_events,
+    core_make_attack_context,
+    make_attack_with_events,
 } from "#src/boss/attack.js";
 import { resolve_attack_events_pull } from "#src/boss/attack_events.js";
 import { BossEffects, BossManager } from "#src/boss/BossManager.js";
 import client from "#src/bot/client/singleton.js";
 import {
-	BaseCommand,
-	BaseFlagSubcommand,
+    BaseCommand,
+    BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { CurseManager } from "#src/curses/CurseManager/singleton/index.js";
 import dayjs from "#src/dayjs.js";
-import { sortByResolve } from "#src/mini.js";
+import { sortByResolveMut } from "#src/mini.js";
 import {
-	multiline,
-	toDayDate,
-	toFixedAfterZero,
-	toLocaleDeveloperString,
+    multiline,
+    toDayDate,
+    toFixedAfterZero,
+    toLocaleDeveloperString,
 } from "#src/safe-utils.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
@@ -61,7 +61,7 @@ export class Bosses_Flagsubcommand {
 		const { interaction } = this.context;
 		const memb = interaction.mention || interaction.user;
 		const { guilds } = memb;
-		const fields = sortByResolve(
+		const fields = sortByResolveMut(
 			guilds.filter((guild) => guild.data.boss),
 			({ data: { boss } }) =>
 				boss.isArrived ? Number.MIN_SAFE_INTEGER : +boss.apparanceAtDay || 0,
@@ -128,7 +128,7 @@ class Events_Flagsubcommand extends BaseFlagSubcommand {
 			(acc, value) => acc + (value._weight || 0),
 			0,
 		);
-		const content = sortByResolve(pull, ({ _weight }) => _weight)
+		const content = sortByResolveMut(pull, ({ _weight }) => _weight)
 			.map(
 				({ _weight, id }) =>
 					`- ${id} — ${toFixedAfterZero((_weight / weightSum) * 100, 1)}%`,

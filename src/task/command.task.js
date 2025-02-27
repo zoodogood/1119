@@ -1,6 +1,6 @@
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
-import { sortByResolve } from "#src/mini.js";
+import { sortByResolveMut } from "#src/mini.js";
 import { CliParser } from "@zoodogood/utils/primitives";
 
 class TaskData {
@@ -97,7 +97,7 @@ class Display_CommandManager {
 			(acc, current) => Math.max(acc, String(current.id).length),
 			0,
 		);
-		return sortByResolve(todos, ({ isDone }) => !isDone)
+		return sortByResolveMut(todos, ({ isDone }) => !isDone)
 			.map((todo) =>
 				this.todoToString(todo, {
 					idFieldLength: includeId ? idLength : null,

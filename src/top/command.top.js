@@ -8,12 +8,12 @@ import { Pager } from "#src/discord/Pager.js";
 import { PermissionsBits } from "#src/discord/permissions.js";
 import { Emoji } from "#src/emojis/emojis.js";
 import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
-import { sortByResolve } from "#src/mini.js";
+import { sortByResolveMut } from "#src/mini.js";
 import QuestManager from "#src/quests/QuestManager.js";
 import {
-	joinWithAndSeparator,
-	NumberFormatLetterize,
-	random,
+    joinWithAndSeparator,
+    NumberFormatLetterize,
+    random,
 } from "#src/safe-utils.js";
 import { Collection } from "@discordjs/collection";
 import { DotNotatedInterface } from "@zoodogood/utils/objectives";
@@ -482,7 +482,7 @@ class RanksUtils {
 	}
 
 	static sortMutableAndFilterPull(pull) {
-		sortByResolve(pull, ($) => $[1], { reverse: true });
+		sortByResolveMut(pull, ($) => $[1], { reverse: true });
 
 		return pull.filter(([_, value]) => value);
 	}
