@@ -25,7 +25,7 @@ export function capitalize(string) {
 	return string.slice(0, 1).toUpperCase() + string.slice(1);
 }
 
-export function sortByResolve(array, resolve, { reverse } = {}) {
+export function sortByResolveMut(array, resolve, { reverse } = {}) {
 	return reverse
 		? array.sort((a, b) => resolve(a) - resolve(b))
 		: array.sort((a, b) => resolve(b) - resolve(a));
