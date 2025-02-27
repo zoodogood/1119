@@ -420,6 +420,7 @@ export const cursesBase = new Collection(
 					CurseManager.interface({ user, curse })._setProgress(
 						(progress || 0) + 1,
 					);
+					CurseManager.checkAvailable({ curse, user });
 				},
 				curseTimeEnd: (user, curse, data) => {
 					if (data.curse !== curse) {
