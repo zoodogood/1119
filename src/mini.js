@@ -46,6 +46,6 @@ export function tap(fn) {
 	};
 }
 
-export function update(atom, fn, { defaultValue } = {}) {
-	return fn(atom ?? defaultValue);
+export function adjust(maybePrimitive, adjustFn, { defaultValue } = {}) {
+	return adjustFn(maybePrimitive ?? defaultValue);
 }

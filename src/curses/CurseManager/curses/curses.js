@@ -9,7 +9,7 @@ import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";
 import { Emoji } from "#src/emojis/emojis.js";
 import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
-import { sortByResolveMut, update } from "#src/mini.js";
+import { adjust, sortByResolveMut } from "#src/mini.js";
 import QuestManager from "#src/quests/QuestManager.js";
 import { clamp, random, sleep, yaml } from "#src/safe-utils.js";
 import { happySnowyCurse } from "#src/snowyEvent/happy_snowy_curse.js";
@@ -1713,7 +1713,7 @@ export const cursesBase = new Collection(
 				const time_diff = now - updated_at;
 				const value_diff = Math.floor(per_minute * (time_diff / MINUTE));
 
-				update(
+				adjust(
 					values.progress,
 					($) =>
 						CurseManager.interface({ user, curse })._setProgress(
