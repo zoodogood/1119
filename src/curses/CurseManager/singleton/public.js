@@ -17,9 +17,8 @@ export class _interface {
 	}
 
 	_setProgress(value) {
-		const { curse, user } = this;
+		const { curse } = this;
 		curse.values.progress = value;
-		CurseManager.checkAvailable({ curse, user });
 		return curse.values.progress;
 	}
 
@@ -36,9 +35,11 @@ export class _interface {
 	}
 
 	setProgress(value) {
-		const { user } = this;
+		const { user, curse } = this;
 		user.action(ActionsMap.curseBeforeSetProgress);
 		this._setProgress(value);
+		CurseManager.checkAvailable({ curse, user });
+		return curse.values.progress;
 	}
 
 	silentEnd() {
