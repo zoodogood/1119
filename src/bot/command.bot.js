@@ -31,7 +31,7 @@ import { sortByResolveMut } from "#src/mini.js";
 import {
     chunkBySize,
     clone,
-    multiline,
+    maybe_multiline,
     season_of_month,
     timestampToDate,
 } from "#src/safe-utils.js";
@@ -94,13 +94,13 @@ class TimeEvents_FlagSubcommand extends BaseFlagSubcommand {
 		pager.setChannel(context.interaction.channel);
 		pager.addPages(
 			{
-				description: multiline([
+				description: maybe_multiline([
 					`Карта событий с ${dayjs(+days[0] * DAY).format("DD.MM.YYYY")} по ${dayjs(+days[days.length - 1] * DAY).format("DD.MM.YYYY")}\n\n`,
 					...events.map(({ name }, i) => `${i + 1}. ${name}\n`),
 				]),
 			},
 			...events.map((info) => ({
-				description: multiline([
+				description: maybe_multiline([
 					"{\n\n",
 					`ㅤИмя события: ${info.name}\n`,
 					`ㅤКоличество: ${info.count}\n`,
@@ -245,7 +245,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 				`${stroke} ${" ".repeat(greatest_cell_size + 7 - stroke.length)}`,
 		);
 
-		return multiline([
+		return maybe_multiline([
 			"```js\n",
 			"Тут такое было.. ого-го\n",
 			"ᅠ\n",

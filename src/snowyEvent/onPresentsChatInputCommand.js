@@ -1,6 +1,6 @@
 import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";
-import { multiline } from "#src/safe-utils.js";
+import { maybe_multiline } from "#src/safe-utils.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { ending } from "@zoodogood/utils/primitives";
 
@@ -37,7 +37,7 @@ export function onPresentsChatInputCommand(user, curse, context) {
 	};
 
 	context.message.channel.msg({
-		content: multiline([
+		content: maybe_multiline([
 			// snowflakes
 			`У вас снежинок: \`\${ curse.values.progress % SNOWFLAKES_TO_PRESENT }\` (${
 				snowflakes % SNOWFLAKES_TO_PRESENT

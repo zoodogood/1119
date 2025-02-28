@@ -9,7 +9,7 @@ import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
 import { mediana_of_unsorted } from "#src/mediana_of_unsorted.js";
 import { MonthStatisticForEveryDayAPI } from "#src/messages/MonthStatisticForEveryDayAPI.js";
 import { average, factorySummarize } from "#src/mini.js";
-import { NumberFormatLetterize, multiline } from "#src/safe-utils.js";
+import { NumberFormatLetterize, maybe_multiline } from "#src/safe-utils.js";
 import { onDayStats as TreeOnDayStats } from "#src/seed/command.seed.js";
 import { ending } from "@zoodogood/utils/primitives";
 import { DAILY_REVENUE_PER_MEMBER } from "../bank/contants.js";
@@ -136,7 +136,7 @@ export default class Event {
 			);
 			const sum = month.reduce(factorySummarize(), 0);
 			if (month.length > 3) {
-				description += multiline([
+				description += maybe_multiline([
 					`\n\n**За ${ending(month.length, "д", "ней", "ень", "ня")}**\n`,
 
 					`Всего: ${sum}\n`,

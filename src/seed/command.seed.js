@@ -8,7 +8,7 @@ import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";
 import { DataManager } from "#src/data/singleton.js";
-import { multiline, random, timestampToDate } from "#src/safe-utils.js";
+import { maybe_multiline, random, timestampToDate } from "#src/safe-utils.js";
 import { codeOfEmoji } from "@zoodogood/utils/discordjs";
 import { CustomCollector } from "@zoodogood/utils/objectives";
 import { ending } from "@zoodogood/utils/primitives";
@@ -229,7 +229,7 @@ class Command extends BaseCommand {
 
 						return {
 							name: "Плоды",
-							value: multiline([
+							value: maybe_multiline([
 								`Клубники выростает ${count} <:berry:756114492055617558> в ${metric}`,
 								`Готово для сбора: ${Math.floor(tree.field.berrys)}`,
 								`Следущая дозреет через: ${timestampToDate(

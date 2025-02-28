@@ -17,7 +17,7 @@ import { CurseManager } from "#src/curses/CurseManager/singleton/index.js";
 import dayjs from "#src/dayjs.js";
 import { sortByResolveMut } from "#src/mini.js";
 import {
-    multiline,
+    maybe_multiline,
     toDayDate,
     toFixedAfterZero,
     toLocaleDeveloperString,
@@ -527,7 +527,7 @@ class Command extends BaseCommand {
 
 		if (!boss.isArrived) {
 			const description = boss.apparanceAtDay
-				? multiline([
+				? maybe_multiline([
 						`Прибудет лишь ${toDayDate((boss.apparanceAtDay + 1) * DAY)}`,
 						boss.apparanceAtDay - 1 <= DataManager.data.bot.currentDay &&
 							`: до появления ${dayjs

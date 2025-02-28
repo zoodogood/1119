@@ -495,7 +495,7 @@ export function clone(object) {
 	);
 }
 
-export function multiline(contents) {
+export function maybe_multiline(contents) {
 	return contents
 		.filter(
 			(content) =>

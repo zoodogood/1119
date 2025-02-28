@@ -4,7 +4,11 @@ import { SECOND } from "#constants/time.js";
 import { assert } from "#src/assert/export.js";
 import StorageManager from "#src/data/StorageManager/StorageManager.js";
 import { sortByResolveMut } from "#src/mini.js";
-import { multiline, timestampDay, timestampToDate } from "#src/safe-utils.js";
+import {
+	maybe_multiline,
+	timestampDay,
+	timestampToDate,
+} from "#src/safe-utils.js";
 import { rangeToArray } from "@zoodogood/utils/objectives";
 
 export class TimeEventItem<T> {
@@ -283,7 +287,7 @@ export class TimeEventsManager {
 					minute: "2-digit",
 				}).format();
 				console.info(
-					multiline([
+					maybe_multiline([
 						"{\n\n",
 						`  Имя события: ${event.name},\n`,
 						`  Текущее время: ${parse},\n`,

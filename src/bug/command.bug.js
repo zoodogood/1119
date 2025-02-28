@@ -4,27 +4,27 @@ import { mol_tree2_string_from_json } from "#src/$mol.js";
 import { assert } from "#src/assert/export.js";
 import client from "#src/bot/client/singleton.js";
 import {
-	BaseCommand,
-	BaseFlagSubcommand,
+    BaseCommand,
+    BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import {
-	cli_parser_parse_flags,
-	process_flags,
+    cli_parser_parse_flags,
+    process_flags,
 } from "#src/commands/BaseCommand/parse_flags.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { DataManager } from "#src/data/singleton.js";
 import { MessageInterface } from "#src/discord/MessageInterface.js";
 import { Pager } from "#src/discord/Pager.js";
 import {
-	justModalQuestion,
-	parse_embedInstance,
-	question,
+    justModalQuestion,
+    parse_embedInstance,
+    question,
 } from "#src/discord/utils.js";
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import { crop_string } from "#src/formatters/formatters.js";
 import { transformToCollectionUsingKey } from "#src/nodejs/Collection/transformToCollectionUsingKey.js";
 import { process_startedAt } from "#src/nodejs/process_startedAt.js";
-import { multiline, uid, weekHour } from "#src/safe-utils.js";
+import { maybe_multiline, uid, weekHour } from "#src/safe-utils.js";
 
 import dayjs from "#src/dayjs.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
@@ -61,7 +61,7 @@ function informBugToBugChannel({
 	const target = client.channels.cache.get(config.guild.bugsChannelId);
 	return target.msg({
 		title: "Отчёт о неисправности",
-		description: multiline([
+		description: maybe_multiline([
 			"Статус важности ошибки:\n",
 			importanceStatus?.label || "Не указан",
 			"\n",
@@ -119,7 +119,7 @@ function update_error_message_status(context) {
 
 				const user = client.users.cache.get(bug.reporterId);
 				user.msg({
-					content: multiline([
+					content: maybe_multiline([
 						"Отчёт о неисправности принят со статусом уникальной ошибки\n",
 						"Пожалуйста, примите вознаграждение в размере 2 000 коинов",
 					]),
@@ -229,7 +229,7 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
 	onProcess() {
 		this.context.channel.msg({
 			title: "Команда вызвана с параметром --help",
-			description: multiline([
+			description: maybe_multiline([
 				"Позволяет создавать отчёты о нарушениях работы программы.",
 				" ",
 				"А также видеть созданные отчёты",
@@ -320,7 +320,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			session: process_startedAt(),
 			informMessageId: null,
 		};
-		const content = multiline([
+		const content = maybe_multiline([
 			"Спасибо за содействие в решении, вероятной, проблемы!\n",
 			(() => {
 				const { context: error_context } = this.error_moment;
@@ -330,12 +330,12 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 				const { error, primary } = error_context;
 				const group = ErrorsHandler.getErrorsGroupBy(error.message);
 				group.addReport(bugInfo.reportId);
-				return multiline([
+				return maybe_multiline([
 					"\n",
 					"Момент ошибки:\n",
 					`Идентификатор ошибки:\n${error.message}\n`,
 					primary &&
-						multiline([
+						maybe_multiline([
 							"\n",
 							"Дополнильные данные:\n",
 							"```tree\n",
@@ -364,7 +364,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 		_interface.setUser(interaction.user);
 		_interface.setRender(() => {
 			return {
-				description: multiline([
+				description: maybe_multiline([
 					"Для достижения ясности указывайте «Ожидаемое поведение и текущее поведение программы»",
 				]),
 				fetchReply: true,
@@ -437,7 +437,7 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 			client.channels.cache.get(config.guild.bugsChannelId)?.guild.id || null;
 
 		return [
-			multiline([
+			maybe_multiline([
 				`Карта ошибок **${session_label}** сессии`,
 				session_timestamp &&
 					` (${dayjs(session_timestamp).format("DD.MM HH:mm")})`,
@@ -457,7 +457,7 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 				),
 			]).slice(0, 2000),
 			...groups.map(({ key, meta, errors }) =>
-				multiline([
+				maybe_multiline([
 					`${crop_string(key.replaceAll("\n", " "), 100)}\n`,
 					(meta.uniqueTags?.size || meta.uniqueTags?.length) &&
 						`Ярлыки: ${Array.from(meta.uniqueTags)
@@ -476,7 +476,7 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 						const locations = [...errors_locations.values()]
 							.map(({ stackData: { fileOfError, lineOfCode } }) => {
 								const relative = path.relative(process.cwd(), fileOfError);
-								return multiline([
+								return maybe_multiline([
 									`- 📂 [${path.relative(path.resolve(relative, "../.."), relative)}]`,
 									`(${resolveGithubPath(relative, lineOfCode)})`,
 								]);
