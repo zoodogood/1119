@@ -12,6 +12,10 @@ class CommandRunContext extends BaseCommandRunContext {
 	guildData;
 	intefaceMessage;
 
+	get randomEmoji() {
+		return (this._randomEmoji ||= ["🔧", "🔨", "💣", "🛠️", "🔏"].random());
+	}
+
 	static new(interaction, command) {
 		const context = new this(interaction, command);
 		context.guildData = interaction.guild.data;
@@ -22,10 +26,6 @@ class CommandRunContext extends BaseCommandRunContext {
 
 	setInterfaceMessage(message) {
 		this.intefaceMessage = message;
-	}
-
-	get randomEmoji() {
-		return (this._randomEmoji ||= ["🔧", "🔨", "💣", "🛠️", "🔏"].random());
 	}
 }
 class Command_GuildChannels_Manager {

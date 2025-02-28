@@ -1,4 +1,3 @@
-
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import CooldownManager from "#src/CooldownManager.js";
 import { PropertiesEnum } from "#src/data/Properties.js";

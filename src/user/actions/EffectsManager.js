@@ -47,7 +47,11 @@ class Core {
 
 		if (effect.values.timer) {
 			const params = [user.id, effect.uid];
-			timeEvents_singleton.pushIntoBuffer("effect-end", effect.values.timer, params);
+			timeEvents_singleton.pushIntoBuffer(
+				"effect-end",
+				effect.values.timer,
+				params,
+			);
 		}
 
 		effects.push(effect);

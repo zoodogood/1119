@@ -28,9 +28,9 @@ export class Store {
 }
 
 class ObservableState {
-	#throttle_timer = null;
 	request_throttle = 200;
 	subscribers_list = [];
+	#throttle_timer = null;
 	constructor(initial) {
 		this.value = initial;
 		this.cachedAt = Date.now();

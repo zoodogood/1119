@@ -246,7 +246,11 @@ class CurseManager {
 
 		if (curse.values.timer) {
 			const args = [user.id, curse.timestamp];
-			timeEvents_singleton.pushIntoBuffer("curse-timeout-end", curse.values.timer, args);
+			timeEvents_singleton.pushIntoBuffer(
+				"curse-timeout-end",
+				curse.values.timer,
+				args,
+			);
 		}
 
 		user.action(ActionsMap.curseInit, { curse });

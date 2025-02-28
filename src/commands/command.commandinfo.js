@@ -166,6 +166,10 @@ class TargetCommandMetadata {
 	media;
 	options;
 	usedCount;
+	get commandUsedTotally() {
+		return this.calculateCommandsUsedTotally();
+	}
+
 	static new(context) {
 		const meta = new this();
 		Object.assign(
@@ -219,10 +223,6 @@ class TargetCommandMetadata {
 		return resolveGithubPath(
 			`./folder/entities/${commandNameId}/command.${commandNameId}.js`,
 		);
-	}
-
-	get commandUsedTotally() {
-		return this.calculateCommandsUsedTotally();
 	}
 }
 

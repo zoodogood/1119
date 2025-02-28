@@ -1,3 +1,4 @@
+import { ModesEnum } from "#root/src/anon/anon.js";
 import { ROMAN_NUMERALS_TABLE, romanToDigit } from "#src/romanNumerals.js";
 import { escapeRegexp } from "#src/safe-utils.js";
 
@@ -19,7 +20,6 @@ function digitOrCorrectBracket({ previousToken, nextToken }) {
 }
 
 class AnonExpressionLexer {
-	static #memory = {};
 	static Tokens = {
 		Digit: {
 			key: "Digit",
@@ -374,6 +374,7 @@ class AnonExpressionLexer {
 			regexp: "\\)",
 		},
 	};
+	static #memory = {};
 
 	static createToken(raw, key) {
 		const base = this.Tokens[key];

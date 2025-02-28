@@ -25,6 +25,16 @@
 			this.store = writable(this.state);
 		}
 
+		removeFocusedHeat() {
+			delete this.state.focusedHeat;
+			this.update();
+		}
+
+		setData(data) {
+			this.state.data = data;
+			this.update();
+		}
+
 		setFocusedHeat(target) {
 			const date = new Date(target.getAttribute("data-date"));
 			const key = timestampDay(date.getTime()) * DAY;
@@ -35,16 +45,6 @@
 				date,
 			};
 
-			this.update();
-		}
-
-		removeFocusedHeat() {
-			delete this.state.focusedHeat;
-			this.update();
-		}
-
-		setData(data) {
-			this.state.data = data;
 			this.update();
 		}
 

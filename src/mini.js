@@ -1,5 +1,5 @@
 export function factorySummarizeBy(property) {
-	return (acc, current) => acc + current[property] ?? 0;
+	return (acc, current) => acc + current[property];
 }
 
 export function factorySummarize() {

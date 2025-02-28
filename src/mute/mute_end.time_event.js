@@ -1,7 +1,7 @@
 import { client } from "#src/bot/client/singleton.js";
 import {
-    is_mute_role_by_name,
-    setMuteState,
+	is_mute_role_by_name,
+	setMuteState,
 } from "#src/mute/muteStateUpdate.listener.js";
 
 class Event {

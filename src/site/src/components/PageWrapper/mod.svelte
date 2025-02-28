@@ -10,7 +10,7 @@
 	import { writeError } from "#site/lib/writeErrorToServer.js";
 	import { onMount } from "svelte";
 	import { get as getStoreValue } from "svelte/store";
-	let { page } = $props();
+	const { page } = $props();
 	const _currentURLLang = svelteApp.url.base.lang;
 	const languageAlternates = config.i18n.availableLanguages.map((locale) => {
 		svelteApp.url.base.lang = locale;

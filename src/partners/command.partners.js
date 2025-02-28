@@ -3,8 +3,8 @@ import { HOUR, SECOND } from "#constants/time.js";
 import { Bosses_Flagsubcommand } from "#src/boss/command.boss.js";
 import client from "#src/bot/client/singleton.js";
 import {
-    BaseCommand,
-    BaseFlagSubcommand,
+	BaseCommand,
+	BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import { default as CommmandInfo } from "#src/commands/command.commandinfo.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
@@ -19,11 +19,11 @@ import { sleep, timestampDay, timestampToDate } from "#src/safe-utils.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser, arrayEmpty, ending } from "@zoodogood/utils/primitives";
 import {
-    BaseInteraction,
-    ButtonStyle,
-    CategoryChannel,
-    PermissionFlagsBits,
-    escapeMarkdown,
+	BaseInteraction,
+	ButtonStyle,
+	CategoryChannel,
+	PermissionFlagsBits,
+	escapeMarkdown,
 } from "discord.js";
 
 class Special {
@@ -66,38 +66,6 @@ class PartnerField {
 	static KEY = "partners";
 	field;
 	guild;
-	deactive() {
-		return (this.assert_field.isEnable = false);
-	}
-	enable() {
-		return (this.assert_field.isEnable = true);
-	}
-	setChannel(channel) {
-		this.assert_field.channelId = channel.id;
-	}
-	setGuild(guild) {
-		this.guild = guild;
-		this.field = guild.data[PartnerField.KEY] ||= {};
-		return this;
-	}
-	async toMessageOptions() {
-		return {
-			title: `${escapeMarkdown(this.guild.name)}`,
-			description: this.description,
-			color: this.color,
-			thumbnail: this.guild.iconURL(),
-			fetchReply: true,
-			fields: [
-				{
-					name: "**🔗 Ссылка на сервер**",
-					value: this.isEnable
-						? `➡️ **[Вступить](${await this.endlessLink})**`
-						: `~ Приглашение будет создано автоматически при настройке`,
-				},
-			],
-			footer: { text: ":palm_up_hand: " },
-		};
-	}
 	get assert_field() {
 		return (this.field ||= {});
 	}
@@ -116,16 +84,13 @@ class PartnerField {
 	set color(value) {
 		this.assert_field.color = value;
 	}
-
 	get description() {
 		return this.field?.description;
 	}
-
 	set description(value) {
 		this.assert_field.description = value;
 		this.enable();
 	}
-
 	get endlessLink() {
 		return new Promise(async (resolve) => {
 			if (!this.isEnable) {
@@ -147,9 +112,44 @@ class PartnerField {
 			resolve(this.assert_field.endlessLink);
 		});
 	}
-
 	get isEnable() {
 		return !!this.field?.isEnable;
+	}
+	deactive() {
+		return (this.assert_field.isEnable = false);
+	}
+
+	enable() {
+		return (this.assert_field.isEnable = true);
+	}
+
+	setChannel(channel) {
+		this.assert_field.channelId = channel.id;
+	}
+
+	setGuild(guild) {
+		this.guild = guild;
+		this.field = guild.data[PartnerField.KEY] ||= {};
+		return this;
+	}
+
+	async toMessageOptions() {
+		return {
+			title: `${escapeMarkdown(this.guild.name)}`,
+			description: this.description,
+			color: this.color,
+			thumbnail: this.guild.iconURL(),
+			fetchReply: true,
+			fields: [
+				{
+					name: "**🔗 Ссылка на сервер**",
+					value: this.isEnable
+						? `➡️ **[Вступить](${await this.endlessLink})**`
+						: `~ Приглашение будет создано автоматически при настройке`,
+				},
+			],
+			footer: { text: ":palm_up_hand: " },
+		};
 	}
 }
 
@@ -509,24 +509,6 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
 		capture: ["-h", "--help"],
 		description: "Получить обзор команды",
 	};
-	onProcess() {
-		this.sendHelp(this.context.interaction);
-	}
-	sendHelp(channel) {
-		return channel.msg({
-			title: "Команда вызвана с параметром --help",
-			description: `${this.context.command.options.media.description}.\n\nНастройте сообщение для вовлечения, а после используйте \`--bump\`, чтобы поделится сервером с теми, кто настроил партнёрство`,
-			fields: [
-				{
-					name: "Кнопки",
-					value: `❔ — Вызвать !commandinfo ${this.context.command.options.name}\n⬆️ — Вызвать !partners --bump`,
-				},
-			],
-			image: CommmandInfo.MESSAGE_THEME.poster,
-			components: justButtonComponents(...this.components),
-		});
-	}
-
 	get components() {
 		const context = this.context;
 		return [
@@ -557,6 +539,24 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
 				customId: `@command/commandinfo/display:${context.command.options.name}`,
 			},
 		];
+	}
+	onProcess() {
+		this.sendHelp(this.context.interaction);
+	}
+
+	sendHelp(channel) {
+		return channel.msg({
+			title: "Команда вызвана с параметром --help",
+			description: `${this.context.command.options.media.description}.\n\nНастройте сообщение для вовлечения, а после используйте \`--bump\`, чтобы поделится сервером с теми, кто настроил партнёрство`,
+			fields: [
+				{
+					name: "Кнопки",
+					value: `❔ — Вызвать !commandinfo ${this.context.command.options.name}\n⬆️ — Вызвать !partners --bump`,
+				},
+			],
+			image: CommmandInfo.MESSAGE_THEME.poster,
+			components: justButtonComponents(...this.components),
+		});
 	}
 }
 
@@ -881,11 +881,16 @@ class PartnersDaemon {
 		if (launched_events.length > 0) {
 			launched_events
 				.slice(1)
-				.forEach(timeEvents_singleton.removeFromBuffer.bind(timeEvents_singleton));
+				.forEach(
+					timeEvents_singleton.removeFromBuffer.bind(timeEvents_singleton),
+				);
 			return;
 		}
 
-		timeEvents_singleton.pushIntoBuffer(this.EVENT_NAME, this.ms_to_timeEvent());
+		timeEvents_singleton.pushIntoBuffer(
+			this.EVENT_NAME,
+			this.ms_to_timeEvent(),
+		);
 	}
 	checkTimeEvent() {
 		const expected_exists = this.fetchTimeEvent();

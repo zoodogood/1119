@@ -4,24 +4,32 @@ import { writable } from "svelte/store";
 class HashController {
 	static reactiveURL = reactiveURL;
 
+	store = null;
+
+	#subscribed = false;
+
+	#unsubscribe = null;
+
 	constructor() {
 		this.hash = this.constructor.reactiveURL.get().hash;
 	}
 
-	parse(hash) {
-		return hash
-			.slice(1)
-			.split("&")
-			.map((string) => string.split("="));
+	apply() {
+		document.location.hash = this.hash;
+		return this;
 	}
 
-	join(entries) {
-		const string = entries
-			.filter(([key]) => !!key)
-			.map(([key, value]) => (value ? [key, value].join("=") : key))
-			.join("&");
+	assign(content) {
+		const entries = this.parse(this.hash);
+		const value = Object.assign(Object.fromEntries(entries), content);
 
-		return `#${string}`;
+		this.hash = this.join(Object.entries(value));
+		return this;
+	}
+
+	get(key) {
+		const entries = this.parse(this.hash);
+		return entries.find((entrie) => entrie.at(0) === key)?.at(1) ?? null;
 	}
 
 	include({ key, value }) {
@@ -39,12 +47,20 @@ class HashController {
 		return this;
 	}
 
-	assign(content) {
-		const entries = this.parse(this.hash);
-		const value = Object.assign(Object.fromEntries(entries), content);
+	join(entries) {
+		const string = entries
+			.filter(([key]) => !!key)
+			.map(([key, value]) => (value ? [key, value].join("=") : key))
+			.join("&");
 
-		this.hash = this.join(Object.entries(value));
-		return this;
+		return `#${string}`;
+	}
+
+	parse(hash) {
+		return hash
+			.slice(1)
+			.split("&")
+			.map((string) => string.split("="));
 	}
 
 	remove(key) {
@@ -57,21 +73,6 @@ class HashController {
 		entries.splice(index, 1);
 
 		this.hash = this.join(entries);
-		return this;
-	}
-
-	get(key) {
-		const entries = this.parse(this.hash);
-		return entries.find((entrie) => entrie.at(0) === key)?.at(1) ?? null;
-	}
-
-	sync() {
-		this.hash = document.location.hash;
-		return this;
-	}
-
-	apply() {
-		document.location.hash = this.hash;
 		return this;
 	}
 
@@ -88,15 +89,14 @@ class HashController {
 		});
 		return this;
 	}
-
+	sync() {
+		this.hash = document.location.hash;
+		return this;
+	}
 	unsubscribe() {
 		this.#unsubscribe();
 		return this;
 	}
-
-	store = null;
-	#subscribed = false;
-	#unsubscribe = null;
 }
 
 export { HashController };

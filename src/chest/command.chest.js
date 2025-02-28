@@ -1,6 +1,6 @@
 import {
-    KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
-    KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
+	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
+	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
 } from "#src/chest/constants.js";
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import CooldownManager from "#src/CooldownManager.js";
@@ -10,10 +10,10 @@ import { addResource } from "#src/data/public/addResource.js";
 import { DataManager } from "#src/data/singleton.js";
 import dayjs from "#src/dayjs.js";
 import {
-    NumberFormatLetterize,
-    random,
-    sleep,
-    timestampToDate,
+	NumberFormatLetterize,
+	random,
+	sleep,
+	timestampToDate,
 } from "#src/safe-utils.js";
 import { Actions } from "#src/user/actions/ActionManager.js";
 import { ending } from "@zoodogood/utils/primitives";

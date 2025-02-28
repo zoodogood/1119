@@ -1,4 +1,3 @@
-
 import { BirthdayMember } from "#src/birthdays/command.birthdays.js";
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import CommandsManager from "#src/commands/CommandsManager/singleton.js";

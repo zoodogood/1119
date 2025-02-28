@@ -46,6 +46,9 @@ export function guild_custom_commands_uses_count(guild) {
 }
 // MARK: CmdInstance
 export class CustomCommand extends BaseCommand {
+	get empowered() {
+		return client.users.resolve(this.empoweredId);
+	}
 	constructor(custom_command, guild) {
 		super();
 		this.empoweredId = custom_command.empoweredId;
@@ -59,6 +62,7 @@ export class CustomCommand extends BaseCommand {
 			},
 		};
 	}
+
 	_cooldown_api(context) {
 		const { interaction } = context;
 		const { options } = this;
@@ -126,10 +130,6 @@ export class CustomCommand extends BaseCommand {
 			.run(this.custom_command.template || `"Привет! Попробуй !eval m'help"`);
 
 		interaction.msg({ content: this.format_object(output) });
-	}
-
-	get empowered() {
-		return client.users.resolve(this.empoweredId);
 	}
 }
 

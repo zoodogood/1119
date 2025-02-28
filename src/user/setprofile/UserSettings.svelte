@@ -1,5 +1,5 @@
 <script>
-	let { svelteApp = null, target = {} } = $props();
+	const { svelteApp = null, target = {} } = $props();
 </script>
 
 <aside>

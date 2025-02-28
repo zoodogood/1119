@@ -4,8 +4,8 @@ import { SECOND, YEAR } from "#constants/time.js";
 
 import client from "#src/bot/client/singleton.js";
 import {
-    BaseCommand,
-    BaseFlagSubcommand,
+	BaseCommand,
+	BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import CommandsManager from "#src/commands/CommandsManager/singleton.js";
@@ -698,10 +698,10 @@ class Command extends BaseCommand {
 }
 
 export {
-    AbstractRemindEvaluate as Remind_AbstractEvaluate,
-    AbstractRemindRepeats as Remind_AbstractRepeats,
-    MemberRemindField as Remind_MemberField,
-    RemindData
+	AbstractRemindEvaluate as Remind_AbstractEvaluate,
+	AbstractRemindRepeats as Remind_AbstractRepeats,
+	MemberRemindField as Remind_MemberField,
+	RemindData,
 };
 
 export default Command;

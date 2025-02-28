@@ -14,12 +14,6 @@ class ArticlesCacheData {
 		this.update();
 	}
 
-	async #addToCache(id) {
-		const data = await this.manager.getArticleContent(id);
-		const metadata = this.parseMetadata(data);
-		this.#cache.set(id, metadata);
-	}
-
 	async get(id) {
 		const cache = this.#cache;
 		!cache.has(id) && (await this.#addToCache(id));
@@ -55,6 +49,12 @@ class ArticlesCacheData {
 		for (const id of files) {
 			this.#addToCache(id);
 		}
+	}
+
+	async #addToCache(id) {
+		const data = await this.manager.getArticleContent(id);
+		const metadata = this.parseMetadata(data);
+		this.#cache.set(id, metadata);
 	}
 }
 

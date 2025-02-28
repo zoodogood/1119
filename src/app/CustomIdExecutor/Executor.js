@@ -1,9 +1,9 @@
 import EventEmitter from "node:events";
 
 class CustomIdExecutor {
-	static #constructors = {};
-
 	static emitter = new EventEmitter();
+
+	static #constructors = {};
 
 	static bind(key, callback) {
 		this.#constructors[key] = callback;

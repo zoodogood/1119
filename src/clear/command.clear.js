@@ -350,6 +350,9 @@ class CommandRunContext extends BaseCommandRunContext {
 	messagesFetcher;
 	referenceId;
 
+	get twoWeekAgo_stamp() {
+		return Date.now() - DAY * 14;
+	}
 	static async new(interaction, command) {
 		const context = new this(interaction, command);
 		context.referenceId = context.fetchReferenseId();
@@ -357,6 +360,7 @@ class CommandRunContext extends BaseCommandRunContext {
 		context.messagesFetcher = new Fetcher(context);
 		return context;
 	}
+
 	calculateMessagesForClean_count() {
 		const {
 			DEFAULT_CLEAN_COUNT,
@@ -373,7 +377,6 @@ class CommandRunContext extends BaseCommandRunContext {
 				: DEFAULT_CLEAN_COUNT);
 		return Math.min(count, CLEAN_COUNT_LIMIT);
 	}
-
 	async fetchMessagesToClean() {
 		const values = this.cliParsed.at(1);
 		this.messagesFetcher.setOptions({
@@ -390,6 +393,7 @@ class CommandRunContext extends BaseCommandRunContext {
 		const { reference } = message;
 		return reference?.messageId;
 	}
+
 	hasSpecialTarget() {
 		const values = this.cliParsed.at(1);
 		return values.get("by_phrase").trim() || this.referenceId;
@@ -407,10 +411,6 @@ class CommandRunContext extends BaseCommandRunContext {
 			.collect();
 		const values = parsed.resolveValues((capture) => capture?.content);
 		this.setCliParsed(parsed, values);
-	}
-
-	get twoWeekAgo_stamp() {
-		return Date.now() - DAY * 14;
 	}
 }
 

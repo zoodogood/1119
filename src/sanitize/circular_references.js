@@ -18,6 +18,9 @@ export function sanitize_prevent_circular(object) {
 }
 
 class CircularReference {
+	get [unsanitizible]() {
+		return true;
+	}
 	constructor(path) {
 		this.path = path;
 	}
@@ -33,9 +36,6 @@ class CircularReference {
 	}
 	toString() {
 		return this[Symbol.toPrimitive]();
-	}
-	get [unsanitizible]() {
-		return true;
 	}
 }
 

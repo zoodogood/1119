@@ -11,9 +11,9 @@ import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
 import { sortByResolveMut } from "#src/mini.js";
 import QuestManager from "#src/quests/QuestManager.js";
 import {
-    joinWithAndSeparator,
-    NumberFormatLetterize,
-    random,
+	joinWithAndSeparator,
+	NumberFormatLetterize,
+	random,
 } from "#src/safe-utils.js";
 import { Collection } from "@discordjs/collection";
 import { DotNotatedInterface } from "@zoodogood/utils/objectives";

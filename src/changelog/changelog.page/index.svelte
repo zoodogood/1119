@@ -26,7 +26,7 @@
 	let filter_by_source_raw = "";
 	let filter_queries = [];
 	let filtered_flat = [];
-	// eslint-disable-next-line prefer-const
+
 	let flat = [];
 
 	_interface_promise.then(({ flat: value }) => (flat = value));

@@ -1,5 +1,5 @@
 import { SECOND } from "#constants/time.js";
-import { AnonGame } from "#src/anon/anon.js";
+import { AnonGame, ModesEnum } from "#src/anon/anon.js";
 import { AnonExpressionLexer, TokenTypeEnum } from "#src/anon/expression.js";
 
 import { addCoinFromMessage } from "#src/coin_message/requestCoinFromMessage.js";

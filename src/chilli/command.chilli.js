@@ -53,8 +53,6 @@ class RewardSystem {
 }
 
 class Chilli {
-	#boohCallback;
-	#timeout;
 	boohAt;
 	boohIn;
 	createdAt;
@@ -62,8 +60,10 @@ class Chilli {
 	ended = false;
 	players = {};
 	rebounds = 0;
-
 	startedBy;
+	#boohCallback;
+
+	#timeout;
 	constructor(context) {
 		const { user } = context;
 		this.createdAt = Date.now();

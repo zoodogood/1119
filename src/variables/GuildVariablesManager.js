@@ -1,5 +1,9 @@
 class GuildVariablesManager {
+	static LENGTH_LIMIT = 1024;
+	static LIMIT = 120;
+
 	#data;
+
 	interface = {
 		keys: () => {
 			return Object.keys(this.#data);
@@ -49,7 +53,7 @@ class GuildVariablesManager {
 			return target[name];
 		},
 		increase: (targetId, name, value) => {
-			const current = +this.interface.get(targetId, name) ?? 0;
+			const current = +this.interface.get(targetId, name) || 0;
 			return this.interface.set(targetId, name, current + Number(value));
 		},
 		remove: (targetId, name) => {
@@ -60,17 +64,13 @@ class GuildVariablesManager {
 			return delete target[name];
 		},
 	};
+	get data() {
+		return this.#data;
+	}
 
-	static LENGTH_LIMIT = 1024;
-
-	static LIMIT = 120;
 	constructor(guildData) {
 		guildData.variablesList ||= {};
 		this.#data = guildData.variablesList;
-	}
-
-	get data() {
-		return this.#data;
 	}
 }
 

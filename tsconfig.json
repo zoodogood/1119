@@ -30,7 +30,8 @@
 		"checkJs": true,
 		"resolveJsonModule": true,
 		"outDir": "tsdist",
-		"experimentalDecorators": true
+		"experimentalDecorators": true,
+		"rootDir": "."
 	},
 	"reflection": true,
 	"exclude": ["node_modules", "**/node_modules", "dist"]

@@ -461,8 +461,7 @@ class CommandsManager {
 	static async importFolderCommands() {
 		const commands = await Promise.all(
 			(await glob("**/command.*.js", { absolute: true })).map((path) =>
-				import(path)
-					.then((module) => new module.default())
+				import(path).then((module) => new module.default()),
 			),
 		);
 
@@ -482,14 +481,14 @@ CustomIdExecutor.bind("command", async (target, data) => {
 	try {
 		await CommandsManager.callMap.get(target).onComponent(data);
 	} catch (error) {
-		const {interaction } = data
+		const { interaction } = data;
 		ErrorMomentNotification.sendErrorInfo({
 			channel: interaction.channel,
 			error,
 			interaction,
 			primary: data,
-			description: `Сбой при выполнении команды \`${target}\``
-		})
+			description: `Сбой при выполнении команды \`${target}\``,
+		});
 		ErrorsHandler.onErrorReceive(error, data);
 	}
 });

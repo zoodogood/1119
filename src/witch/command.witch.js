@@ -1,5 +1,7 @@
-
-import { KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2, KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 } from "#src/chest/constants.js";
+import {
+	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2,
+	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3,
+} from "#src/chest/constants.js";
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import { PropertiesEnum } from "#src/data/Properties.js";
 import { addResource } from "#src/data/public/addResource.js";

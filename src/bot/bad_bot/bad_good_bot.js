@@ -15,7 +15,9 @@ export async function stupid_bot(user, msg) {
 
 	if (!msg.guild.data.stupid_evil) {
 		msg.guild.data.stupid_evil = 1;
-		timeEvents_singleton.pushIntoBuffer("cooled-bot", HOUR * 15, [msg.guild.id]);
+		timeEvents_singleton.pushIntoBuffer("cooled-bot", HOUR * 15, [
+			msg.guild.id,
+		]);
 	}
 	if (msg.guild.data.stupid_evil > 37) {
 		return;

@@ -4,21 +4,21 @@ import { mol_tree2_string_from_json } from "#src/$mol.js";
 import { assert } from "#src/assert/export.js";
 import client from "#src/bot/client/singleton.js";
 import {
-    BaseCommand,
-    BaseFlagSubcommand,
+	BaseCommand,
+	BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import {
-    cli_parser_parse_flags,
-    process_flags,
+	cli_parser_parse_flags,
+	process_flags,
 } from "#src/commands/BaseCommand/parse_flags.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { DataManager } from "#src/data/singleton.js";
 import { MessageInterface } from "#src/discord/MessageInterface.js";
 import { Pager } from "#src/discord/Pager.js";
 import {
-    justModalQuestion,
-    parse_embedInstance,
-    question,
+	justModalQuestion,
+	parse_embedInstance,
+	question,
 } from "#src/discord/utils.js";
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import { crop_string } from "#src/formatters/formatters.js";

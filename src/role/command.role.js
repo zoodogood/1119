@@ -70,6 +70,7 @@ class Command extends BaseCommand {
 					remove: true,
 				})
 			)?.content;
+			_questionMessage.delete();
 			if (!rolesIds) {
 				return;
 			}
@@ -377,7 +378,7 @@ class Command extends BaseCommand {
 
 	rolesListCreateReactions({ page, userIsAdmin, pagesCount }) {
 		const reactionsBases = [
-			{ emoji: "640449848050712587", filter: () => page != 0 },
+			{ emoji: "640449848050712587", filter: () => page !== 0 },
 			{
 				emoji: "640449832799961088",
 				filter: () => pagesCount > 1 && page !== pagesCount - 1,

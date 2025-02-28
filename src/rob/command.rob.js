@@ -1,4 +1,3 @@
-
 import { client } from "#src/bot/client/singleton.js";
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import { PropertiesEnum } from "#src/data/Properties.js";
@@ -56,8 +55,7 @@ class Command extends BaseCommand {
 		}
 
 		return (
-			Math.floor(random(21, 49) * (combo / 10 + 1) * k) +
-			memb.data.level * 3
+			Math.floor(random(21, 49) * (combo / 10 + 1) * k) + memb.data.level * 3
 		);
 	}
 
@@ -518,9 +516,7 @@ class Command extends BaseCommand {
 		if (isHurtedForgave) {
 			user.msg({
 				title: `Вы были пойманы`,
-				description: `${
-					memb.username
-				} уверен, что это вы его ограбили ${ending(
+				description: `${memb.username} уверен, что это вы его ограбили ${ending(
 					-memb.data.thiefWins,
 					"раз",
 					"",

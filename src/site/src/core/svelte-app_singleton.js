@@ -77,6 +77,10 @@ class SvelteApp {
 	url = parseDocumentLocate(this.document.location);
 	user = this.storage.getUserData();
 
+	get href() {
+		return this.document.location.href;
+	}
+
 	constructor() {
 		this.lang = this.url.base.lang ?? this.storage.getSelectedLocale() ?? "ru";
 		this.i18n = this.enviroment.i18n?.[this.lang];
@@ -85,6 +89,18 @@ class SvelteApp {
 		this.#checkExternalUserDataByToken();
 		this.#checkURLLocaleProtocol();
 		console.info(this);
+	}
+
+	getBot() {
+		const bot = this.enviroment.bot ?? {
+			id: null,
+			username: "Призрак",
+			discriminator: "1119",
+			displayAvatarURL: `${config.server.origin}/public/favicon.ico`,
+			invite: null,
+		};
+
+		return bot;
 	}
 
 	async #checkExternalUserDataByToken() {
@@ -149,22 +165,6 @@ class SvelteApp {
 		const data = (this.HashData ||= { hash: {} });
 		data.currentHash = hash;
 		Object.assign(data.hash, hash);
-	}
-
-	getBot() {
-		const bot = this.enviroment.bot ?? {
-			id: null,
-			username: "Призрак",
-			discriminator: "1119",
-			displayAvatarURL: `${config.server.origin}/public/favicon.ico`,
-			invite: null,
-		};
-
-		return bot;
-	}
-
-	get href() {
-		return this.document.location.href;
 	}
 }
 

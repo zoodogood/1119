@@ -2,25 +2,25 @@ import config from "#config";
 import { DAY, SECOND } from "#constants/time.js";
 
 import {
-    core_make_attack_context,
-    make_attack_with_events,
+	core_make_attack_context,
+	make_attack_with_events,
 } from "#src/boss/attack.js";
 import { resolve_attack_events_pull } from "#src/boss/attack_events.js";
 import { BossEffects, BossManager } from "#src/boss/BossManager.js";
 import client from "#src/bot/client/singleton.js";
 import {
-    BaseCommand,
-    BaseFlagSubcommand,
+	BaseCommand,
+	BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import { CurseManager } from "#src/curses/CurseManager/singleton/index.js";
 import dayjs from "#src/dayjs.js";
 import { sortByResolveMut } from "#src/mini.js";
 import {
-    maybe_multiline,
-    toDayDate,
-    toFixedAfterZero,
-    toLocaleDeveloperString,
+	maybe_multiline,
+	toDayDate,
+	toFixedAfterZero,
+	toLocaleDeveloperString,
 } from "#src/safe-utils.js";
 import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";

@@ -8,6 +8,7 @@ import EventEmitter from "node:events";
 
 export class TemplateRender {
 	emitter = new EventEmitter();
+	loop = new Loop({ items: [] });
 	file = {
 		path: `template_render_cron.tree`,
 		load: async () => {
@@ -23,7 +24,6 @@ export class TemplateRender {
 		},
 		defaultData: [],
 	};
-	loop = new Loop({ items: [] });
 	constructor({ interval }) {
 		this.loop.interval = interval;
 	}

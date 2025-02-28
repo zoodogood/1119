@@ -14,7 +14,6 @@
 			sources.push(source);
 
 			for (const [resource, variants] of Object.entries(changes)) {
-				// eslint-disable-next-line no-unused-vars
 				Object.entries(variants).forEach(([_key, value]) =>
 					flat_list.push({ resource, value, source }),
 				);

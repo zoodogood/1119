@@ -7,21 +7,7 @@ import { Actions } from "#src/user/actions/ActionManager.js";
 
 class Command extends BaseCommand {
 	static BERRYS_LIMIT = 1_500;
-	static calculatePrice = (quantity, marketPrice, isBuying = false) => {
-		quantity = isBuying
-			? quantity
-			: Math.min(marketPrice / this.INFLATION, quantity);
-
-		// Налог
-		const tax = isBuying ? 1 : 1 - this.TAX;
-		// Инфляция
-		const inflation = ((quantity * this.INFLATION) / 2) * (-1) ** !isBuying;
-
-		const price = Math.round((marketPrice + inflation) * quantity * tax);
-		return price;
-	};
 	static INFLATION = 0.2;
-
 	static TAX = 0.02;
 
 	options = {
@@ -40,6 +26,20 @@ class Command extends BaseCommand {
 		cooldown: 15_000,
 		cooldownTry: 3,
 		type: "user",
+	};
+
+	static calculatePrice = (quantity, marketPrice, isBuying = false) => {
+		quantity = isBuying
+			? quantity
+			: Math.min(marketPrice / this.INFLATION, quantity);
+
+		// Налог
+		const tax = isBuying ? 1 : 1 - this.TAX;
+		// Инфляция
+		const inflation = ((quantity * this.INFLATION) / 2) * (-1) ** !isBuying;
+
+		const price = Math.round((marketPrice + inflation) * quantity * tax);
+		return price;
 	};
 
 	static getMaxCountForBuy(coins, price) {

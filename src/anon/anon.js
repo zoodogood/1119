@@ -5,7 +5,7 @@ import { escapeRegexp, match, random, TimeAuditor } from "#src/safe-utils.js";
 import { Actions } from "#src/user/actions/ActionManager.js";
 import { getRandomElementFromArray } from "@zoodogood/utils/objectives";
 
-const ModesEnum = {
+export const ModesEnum = {
 	Default: 0,
 	BitsOperations: 1,
 	RomanNumerals: 2,
@@ -148,11 +148,21 @@ class TaskGenerator {
 	}
 }
 class Task {
-	#calculated_result = null;
 	data = null;
 	isResolved = false;
 	mode;
 	userInput = null;
+	get result() {
+		return (this.#calculated_result ||= (() => {
+			switch (this.mode) {
+				case ModesEnum.ExpressionsInstead:
+					return true;
+				default:
+					return calculateResult(task.data.expression, context);
+			}
+		})());
+	}
+	#calculated_result = null;
 	request_recalculate() {
 		this.#calculated_result = null;
 	}
@@ -177,16 +187,6 @@ class Task {
 	}
 	stickSymbol() {
 		return this.mode === ModesEnum.BitsOperations ? "\\" : "|";
-	}
-	get result() {
-		return (this.#calculated_result ||= (() => {
-			switch (this.mode) {
-				case ModesEnum.ExpressionsInstead:
-					return true;
-				default:
-					return calculateResult(task.data.expression, context);
-			}
-		})());
 	}
 }
 

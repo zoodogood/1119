@@ -201,12 +201,16 @@ class Command extends BaseCommand {
 					color: "#4a7e31",
 					footer: { text: "Окончание раздачи: " },
 				});
-				timeEvents_singleton.pushIntoBuffer("giveaway", context.timestamp - Date.now(), [
-					interaction.channel.id,
-					giveaway.id,
-					context.winners,
-					context.winnerRoleId,
-				]);
+				timeEvents_singleton.pushIntoBuffer(
+					"giveaway",
+					context.timestamp - Date.now(),
+					[
+						interaction.channel.id,
+						giveaway.id,
+						context.winners,
+						context.winnerRoleId,
+					],
+				);
 
 				context.end();
 			},

@@ -5,12 +5,22 @@ export class ParserTime {
 	static regex =
 		/(?<time>\d?\d:\d\d)|(?<date>\d\d\.\d\d(?:\.\d\d\d\d)?)|(?<stamp>\d+\s?(д|d|ч|h|м|m|с|s)\.?\S*)/i;
 
-	/**@type {ReturnType<dayjs>} */
-	#dayjs;
 	items = [];
 	regex = ParserTime.regex;
-
 	time = 0;
+
+	/**@type {ReturnType<dayjs>} */
+	get date() {
+		this.#dayjs ||= dayjs();
+		return this.#dayjs;
+	}
+	set date(value) {
+		this.#dayjs = value;
+	}
+
+	/**@type {ReturnType<dayjs>} */
+	#dayjs;
+
 	static _getActiveGroupName(groups) {
 		for (const group in groups) {
 			if (groups[group]) {
@@ -94,15 +104,5 @@ export class ParserTime {
 		}
 
 		return this.diffDateTime(Date.now()) + this.time;
-	}
-
-	/**@type {ReturnType<dayjs>} */
-	get date() {
-		this.#dayjs ||= dayjs();
-		return this.#dayjs;
-	}
-
-	set date(value) {
-		this.#dayjs = value;
 	}
 }

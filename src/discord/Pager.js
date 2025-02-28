@@ -138,6 +138,10 @@ export class Pager extends MessageInterface {
 	static Events = {
 		...super.Events,
 	};
+	currentPage = 0;
+
+	options = new Pager_Options();
+
 	_callbacks = {
 		[Pager.DefaultComponents.Previous.customId]: (interaction) => {
 			this.currentPage--;
@@ -151,10 +155,6 @@ export class Pager extends MessageInterface {
 			this.options.selectPageStrategy(this, interaction);
 		},
 	};
-
-	currentPage = 0;
-
-	options = new Pager_Options();
 
 	pages = [];
 

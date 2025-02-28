@@ -12,13 +12,9 @@ class StorageManager {
 		const module = await (() => {
 			switch (driverId) {
 				case "localdb":
-					return import(
-						"#src/data/StorageManager/drivers/FileDBDriver.js"
-					);
+					return import("#src/data/StorageManager/drivers/FileDBDriver.js");
 				case "mongodb":
-					return import(
-						"#src/data/StorageManager/drivers/MongoDBDriver.js"
-					);
+					return import("#src/data/StorageManager/drivers/MongoDBDriver.js");
 				default:
 					throw new Error(
 						"Maybe. Storage manager driver not selected in config file at database.driver; Incorrect driverId",

@@ -1,4 +1,3 @@
-
 import { client } from "#src/bot/client/singleton.js";
 import { createDefaultPreventable } from "#src/createDefaultPreventable.js";
 import { Actions } from "#src/user/actions/ActionManager.js";

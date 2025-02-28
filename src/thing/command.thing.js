@@ -1454,7 +1454,7 @@ class Command extends BaseCommand {
 		{
 			id: "thingNotFound",
 			_weight: ({ userData }) =>
-				5 + (Math.sqrt(userData.voidRituals / 2) * 5 ?? 0),
+				5 + (Math.sqrt(userData.voidRituals / 2) * 5 || 0),
 			description: "Штука Вам больше не отвечает.",
 			variability: [
 				[

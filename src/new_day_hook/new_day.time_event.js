@@ -2,8 +2,8 @@ import dayjs from "#src/dayjs.js";
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
 import {
-    is_already_executed,
-    once_per_day_task,
+	is_already_executed,
+	once_per_day_task,
 } from "#src/new_day_hook/once_per_day.js";
 
 class Event {

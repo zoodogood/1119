@@ -41,9 +41,7 @@ class Route extends BaseRoute {
 		const {
 			server: { origin, paths },
 		} = config;
-		const base = origin.concat(
-			`/${Path.normalize(`${paths.site}/oauth`)}`,
-		);
+		const base = origin.concat(`/${Path.normalize(`${paths.site}/oauth`)}`);
 
 		const queries = new URLSearchParams({
 			code: exchangeResponse.access_token,

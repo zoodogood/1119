@@ -4,7 +4,6 @@ import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
 import { AttachmentBuilder } from "discord.js";
 
 class Command extends BaseCommand {
-	#FONT_FAMILY = "VAG World";
 	isInited = false;
 	options = {
 		name: "level",
@@ -21,28 +20,11 @@ class Command extends BaseCommand {
 		allowDM: true,
 		type: "dev",
 	};
+	#FONT_FAMILY = "VAG World";
 	constructor() {
 		super();
 	}
 
-	async #init() {
-		if (this.isInited) {
-			return;
-		}
-		this.isInited = true;
-		this.canvasModule = await import("canvas").catch();
-		if (!this.canvasModule) {
-			return;
-		}
-
-		const FONT_FAMILY = this.#FONT_FAMILY;
-		await this.canvasModule.registerFont(
-			"./public/resources/fonts/VAG_World.ttf",
-			{
-				family: FONT_FAMILY,
-			},
-		);
-	}
 	addBackground(context) {
 		const { ctx } = context;
 		const gradient = ctx.createLinearGradient(0, 225, 900, 0);
@@ -67,7 +49,6 @@ class Command extends BaseCommand {
 			member,
 		};
 	}
-
 	getUserPreferColor(member) {
 		const value =
 			member.data.profile_color ??
@@ -221,6 +202,25 @@ class Command extends BaseCommand {
 				"Модуль холста был отключен. Команды на его основе недоступны",
 		});
 		return false;
+	}
+
+	async #init() {
+		if (this.isInited) {
+			return;
+		}
+		this.isInited = true;
+		this.canvasModule = await import("canvas").catch();
+		if (!this.canvasModule) {
+			return;
+		}
+
+		const FONT_FAMILY = this.#FONT_FAMILY;
+		await this.canvasModule.registerFont(
+			"./public/resources/fonts/VAG_World.ttf",
+			{
+				family: FONT_FAMILY,
+			},
+		);
 	}
 }
 

@@ -1,6 +1,7 @@
 //@ts-check
 
 import { SECOND } from "#constants/time.js";
+import { ReactionsManager } from "#root/src/reactor/ReactionsManager/manager.js";
 import { client } from "#src/bot/client/singleton.js";
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import { PermissionsBits } from "#src/discord/permissions.js";
@@ -193,7 +194,7 @@ class Command extends BaseCommand {
 				"❌",
 			);
 
-			if (react != "685057435161198594") {
+			if (react !== "685057435161198594") {
 				msg.msg({ title: "Действие отменено ❌", delete: 4500 });
 				return;
 			}
