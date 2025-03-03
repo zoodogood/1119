@@ -151,10 +151,11 @@ class FactoryView extends BaseFlagSubcommand {
 				"Название, которое отражает суть, будет более понятным для пользователей",
 			type: String,
 			type_hint: "^[a-zа-яёї0-9_]+$",
-			validation: (value) => value.content.match(/^[a-zа-яёї0-9_]+$/),
-			validation_error:
-				"Название команды не удовлетворяет паттерну — дословно последовательности символов допускающей символы от «a» до «z» ∪ «а-я» (плюс ёъ) ∪ 0-9 ∪ «_», где «^» и «$» — обозначают начало и конец строки",
+			validation: (value) => /^!?[a-zа-яёї0-9_]+$/.test(value.content),
+			validation_hint_on_fail:
+				"Название команды не удовлетворяет паттерну — дословно последовательности символов допускающей символы от «a» до «z» ∪ «а–я» (плюс ёъ) ∪ 0–9 ∪ «\\_», где «^» и «$» — обозначают начало и конец строки",
 			callback: (name) => {
+				name.startsWith("!") && (name = name.slice(1));
 				const previous = this.wire.value[name];
 				if (
 					previous &&
@@ -265,7 +266,7 @@ class FactoryView extends BaseFlagSubcommand {
 		const description_base = () =>
 			`Ожидается новое значение типа ${field_base.type.name}${field_base.type_hint ? ` \`(${field_base.type_hint})\`` : ""}`;
 		const base_question = {
-			validation_hint: field_base.validation_error,
+			validation_hint_on_fail: field_base.validation_hint_on_fail,
 			validation: field_base.validation,
 			channel: interaction,
 			listen_components: true,
@@ -496,7 +497,7 @@ class Command extends BaseCommand {
 				validation: ({ content }) => {
 					return false;
 				},
-				validation_hint: `Команда не найдена, попробуйте указать число до ${
+				validation_hint_on_fail: `Команда не найдена, попробуйте указать число до ${
 					Object.keys(wire.value).length
 				}`,
 			});
