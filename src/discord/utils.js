@@ -220,7 +220,7 @@ export async function question({
 	messageOptions = {},
 	listen_components = false,
 	validation = null,
-	validation_hint = null,
+	validation_hint_on_fail = null,
 	filter = null,
 }) {
 	const response = await (async () => {
@@ -253,15 +253,15 @@ export async function question({
 			const { isComponent } = await question({
 				channel: request.channel,
 				message: {
-					title: "Прикажите повторить операцию или завершить?",
+					title: "Попробуйте ещё раз",
 					user,
-					description: `${response instanceof Message ? `-# Ваш ответ:\n\`\`\`\n${response.content}\n\`\`\`\n` : ""}Подсказка взодных данных: ${validation_hint}\n\n-# JavaScript код проверки входных данных\n\`\`\`js\n${validation}\n\`\`\``,
+					description: `${response instanceof Message ? `-# Ваш ответ:\n\`\`\`\n${response.content}\n\`\`\`\n` : ""}Ожидаемое значение: ${validation_hint_on_fail}\n\n-# JavaScript код проверки входных данных\n\`\`\`js\n${validation}\n\`\`\``,
 					footer: {
-						text: "Контекст автоматически сбросится через минуту",
+						text: "Сообщение автоматически удалится через минуту",
 						iconURL: user?.avatarURL(),
 					},
 					components: justButtonComponents({
-						label: "Продолжить с этого места",
+						label: "Ввести значение ещё раз",
 					}),
 				},
 				messageOptions: {
