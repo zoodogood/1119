@@ -240,7 +240,7 @@ class CommandsManager {
 				interaction.channel,
 			);
 
-		if (clientWastedChannelPermissions.length) {
+		if (clientWastedChannelPermissions?.length) {
 			const { locale } = interaction.user.data;
 			const permissions = clientWastedChannelPermissions.map((string) =>
 				permissionRawToI18n(string, locale),
@@ -259,7 +259,7 @@ class CommandsManager {
 				interaction.guild.members.me,
 				options.myPermissions,
 			);
-		if (clientWastedGuildPermissions.length) {
+		if (clientWastedGuildPermissions?.length) {
 			const { locale } = interaction.user.data;
 			const permissions = clientWastedGuildPermissions.map((string) =>
 				permissionRawToI18n(string, locale),
@@ -279,7 +279,7 @@ class CommandsManager {
 				options.userChannelPermissions,
 				interaction.channel,
 			);
-		if (userWastedChannelPermissions.length) {
+		if (userWastedChannelPermissions?.length) {
 			const { locale } = interaction.user.data;
 			const permissions = userWastedChannelPermissions.map((string) =>
 				permissionRawToI18n(string, locale),
@@ -295,7 +295,7 @@ class CommandsManager {
 			!interaction.channel.isDMBased() &&
 			options.userPermissions &&
 			take_missing_permissions(interaction.member, options.userPermissions);
-		if (userWastedGuildPermissions.length) {
+		if (userWastedGuildPermissions?.length) {
 			const { locale } = interaction.user.data;
 			const permissions = userWastedGuildPermissions.map((string) =>
 				permissionRawToI18n(string, locale),
