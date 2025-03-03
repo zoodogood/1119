@@ -139,7 +139,7 @@ export default class Event {
 				description += maybe_multiline([
 					`\n\n**За ${ending(month.length, "д", "ней", "ень", "ня")}**\n`,
 
-					`Всего: ${sum}\n`,
+					`Всего: ${NumberFormatLetterize(sum)}\n`,
 					`Среднее: ${average(sum, month.length)}\n`,
 					`Медиана: ${mediana_of_unsorted(month)}\n`,
 				]);
