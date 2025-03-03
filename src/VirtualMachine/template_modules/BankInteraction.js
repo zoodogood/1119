@@ -8,21 +8,28 @@ import { percent_string } from "#src/formatters/formatters.js";
 import { ending } from "@zoodogood/utils/primitives";
 
 export class BankInteraction {
+	#channel;
+	#context;
+	#executor;
+	#guild;
+	#source;
 	constructor(context, source) {
-		this.context = context;
-		this.source = source;
-		this.guild = context.guild;
-		this.executor = context.executor;
-		this.channel = context.channel;
+		this.#context = context;
+		this.#source = source;
+		this.#guild = context.guild;
+		this.#executor = context.executor;
+		this.#channel = context.channel;
 	}
 	bankCoins() {
-		return this.guild.data.coins;
+		return this.#guild.data.coins;
 	}
 	requestGetFromBank(value, message) {
 		if (this.bankCoins() < value) {
 			throw new Error("Not enough coins");
 		}
-		const { executor, guild, context } = this;
+		const executor = this.#executor;
+		const guild = this.#guild;
+		const context = this.#context;
 		assert(executor);
 
 		guild.data.coins -= value;
@@ -36,7 +43,7 @@ export class BankInteraction {
 
 		addResource({
 			resource: PropertiesEnum.coins,
-			user: this.executor,
+			user: this.#executor,
 			value,
 			executor,
 			context,
@@ -45,7 +52,11 @@ export class BankInteraction {
 		return true;
 	}
 	async requestPayToBank(value, prompt) {
-		const { channel, executor, guild, source, context } = this;
+		const executor = this.#executor;
+		const guild = this.#guild;
+		const context = this.#context;
+		const channel = this.#channel;
+		const source = this.#source;
 		const { emoji } = await question({
 			channel,
 			user: executor,
