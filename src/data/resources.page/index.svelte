@@ -1,7 +1,7 @@
 <script>
 	import Layout from "#site-component/Layout";
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
-	import { sortByResolve } from "#src/mini.js";
+	import { sortByResolveMut } from "#src/mini.js";
 	import { NumberFormatLetterize } from "#src/safe-utils.js";
 
 	const _interface_promise = (async () => {
@@ -65,7 +65,7 @@
 					>
 				</p>
 				<ul>
-					{#each sortByResolve(groupValue, ({ value }) => value).filter(resource_group_filter) as { value, source }}
+					{#each sortByResolveMut(groupValue, ({ value }) => value).filter(resource_group_filter) as { value, source }}
 						<li resource_group_element>
 							<span resource_group_element_key>{source}:</span>
 							<span resource_group_element_value>
