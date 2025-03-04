@@ -38,6 +38,9 @@ export class ChannelPatchLogWriter {
 		const channel = client.channels.cache.get(config.guild.patchlogChannelId);
 
 		const groups = group_changes_by_group_symbol(changes.map(metadata));
+		if (!groups.length) {
+			return;
+		}
 		const description = groups
 			.map(
 				([{ label }, changes]) =>
