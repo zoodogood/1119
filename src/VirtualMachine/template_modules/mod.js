@@ -2,7 +2,6 @@ import config from "#config";
 import { MINUTE } from "#constants/time.js";
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 import { PERMISSIONS_MASK_ENUM } from "#src/VirtualMachine/empowered_permissions.js";
-import { BankInteraction } from "#src/VirtualMachine/template_modules/BankInteraction.js";
 import BossManager from "#src/boss/BossManager.js";
 import client from "#src/bot/client/singleton.js";
 import { singleton } from "#src/changelog/ChangelogDaemon/singleton.js";
@@ -356,11 +355,12 @@ export const template_modules_scope = transformToCollectionUsingKey([
 			scope: PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
 			investigate: PERMISSIONS_MASK_ENUM.GUILD_MANAGER,
 		},
-		getContent: (context, source) => {
+		getContent: async (context, source) => {
 			if (!context.guild) {
 				throw new Error("This module can be used only in guilds");
 			}
 
+			const { BankInteraction } = await import("./BankInteraction.js");
 			return new BankInteraction(context, source);
 		},
 	},
