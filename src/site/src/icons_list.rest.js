@@ -10,7 +10,7 @@ class Route extends BaseRoute {
 	}
 
 	async get(request, response) {
-		response.redirect("/src/public/resources/fonts/fontello/demo");
+		response.redirect("/public/resources/fonts/fontello/demo.html");
 	}
 }
 
