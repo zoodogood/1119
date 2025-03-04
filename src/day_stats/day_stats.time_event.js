@@ -130,7 +130,7 @@ export default class Event {
 		messages_leaders.id_list.length &&
 			(description += `\nНаибольшее число от ${messages_leaders.id_list.map((userId) => `<@${userId}>`).join(", ")}: ${messages_leaders.id_list.length === 1 ? `${ending(messages_leaders.value, "сообщени", "й", "е", "я")}` : `по ${ending(messages_leaders.value, "сообщени", "й", "ю", "я")}`}`);
 
-		{
+		if (guildData.days > 30) {
 			const month = MonthStatisticForEveryDayAPI.ofGuild(guild).field.map(
 				(day) => day.messages,
 			);
