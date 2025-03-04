@@ -459,7 +459,7 @@ export const ITEMS = [
 		key: "thiefGloves",
 		names: PropertiesList.thiefGloves.alias.split(" "),
 		ending: (count) => `🧤 ${ending(count, "Перчат", "ки", "у", "ки")}`,
-		display: (count) => `🧤 Перчатки ${count}шт.`,
+		display: (count) => `🧤 Перчатки ${count} шт.`,
 	},
 	{
 		key: "keys",
