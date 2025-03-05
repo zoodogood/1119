@@ -886,16 +886,16 @@ class BossManager {
 	static async bossApparance(guild) {
 		const guildData = guild.data;
 
-		if (!isChatChannelExists(guild)) {
-			return;
-		}
-
 		if (
 			guildData.boss &&
 			guildData.boss.endingAtDay <= DataManager.data.bot.currentDay
 		) {
 			await BossManager.beforeEnd(guild);
 			this.cleanBossData(guild);
+			return;
+		}
+
+		if (!isChatChannelExists(guild)) {
 			return;
 		}
 
