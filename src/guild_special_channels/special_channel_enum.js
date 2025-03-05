@@ -4,16 +4,19 @@ export const SpecialChannel = transformToCollectionUsingKey([
 	{
 		key: "chatChannel",
 		label: "Чат",
+		description: "Для сообщений о событиях",
 		emoji: "🔥",
 	},
 	{
 		key: "logChannel",
 		label: "Для логов",
+		description: "Как журнал о взаимодействиях с ботом",
 		emoji: "📒",
 	},
 	{
-		key: "hiChannel",
+		key: "hi.channel",
 		label: "Для приветствий",
+		description: "Для приветствий",
 		emoji: "👌",
 	},
 ]);

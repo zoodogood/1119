@@ -3,16 +3,22 @@ import {
 	BaseFlagSubcommand,
 } from "#src/commands/BaseCommand/BaseCommand.js";
 import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
-import { SECOND } from "#src/constants/time.js";
 import { PermissionsBits } from "#src/discord/permissions.js";
+import { question } from "#src/discord/utils.js";
+import { Emoji } from "#src/emojis/emojis.js";
 import { transformToCollectionUsingKey } from "#src/nodejs/Collection/transformToCollectionUsingKey.js";
 import { CliParser } from "@zoodogood/utils/CliParser";
+import {
+	justButtonComponents,
+	justSelectMenuComponent,
+} from "@zoodogood/utils/discordjs";
+import { DotNotatedInterface } from "@zoodogood/utils/objectives";
 import { sendToLogsChannel, SpecialChannel } from "./special_channel_enum.js";
 
 const SpecialChannelExtend = transformToCollectionUsingKey([
 	{
 		key: "chatChannel",
-		congratulations: (channel) => `#${channel.name} канал стал чатом!`,
+		congratulations: (channel) => `#${channel.name} стал чатом!`,
 		onDisableMessage: () => "Отправляемые в чат уведомления откючены",
 	},
 	{
@@ -22,7 +28,10 @@ const SpecialChannelExtend = transformToCollectionUsingKey([
 		onDisableMessage: () => "Логи отключены",
 	},
 	{
-		key: "hiChannel",
+		key: "hi.channel",
+		congratulations: (channel) =>
+			`#${channel.name} установлен как целевой канал функционала !welcomer`,
+		onDisableMessage: () => "Функция приветствия новых участников отлючена",
 	},
 ]);
 
@@ -39,7 +48,48 @@ class CommandRunContext extends BaseCommandRunContext {
 		return parsed;
 	}
 	async specialChannelType() {
-		return this._specialChannelType;
+		return (this._specialChannelType ||= await (async () => {
+			const { commandBase } = this.interaction;
+			switch (true) {
+				case ["чат", "chat"].some((pattern) => commandBase.includes(pattern)):
+					return "chatChannel";
+
+				case ["log", "лог"].some((pattern) => commandBase.includes(pattern)):
+					return "logChannel";
+
+				case ["hi", "welcome", "приветствие", "привітання"].some((pattern) =>
+					commandBase.includes(pattern),
+				):
+					return "hi.channel";
+
+				default: {
+					const { channel, user } = this.interaction;
+					const { value: component_interaction } = await question({
+						channel,
+						user,
+						messageOptions: {
+							disable: true,
+						},
+						message: {
+							components: justButtonComponents(
+								justSelectMenuComponent({
+									labels: Array.from(
+										SpecialChannel.values(),
+										({ label }) => label,
+									),
+								}),
+							),
+						},
+						listen_components: true,
+					});
+					if (!component_interaction) {
+						return null;
+					}
+					const [index] = component_interaction.values;
+					return SpecialChannel.keyAt(index);
+				}
+			}
+		})());
 	}
 }
 
@@ -47,16 +97,18 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 	async onProcess() {
 		const { interaction, user, guild } = this.context;
 		const { mentions } = interaction.message;
-		const type = await this.context.specialChannelType();
+		const key = await this.context.specialChannelType();
+		if (!key) {
+			return;
+		}
 		const channel = mentions.channels.first() ?? interaction.channel;
 
-		guild.data[type] = channel.id;
+		new DotNotatedInterface(guild.data).setItem(key, channel.id);
 		interaction.msg({
-			title: SpecialChannelExtend.get(type).congratulations(channel),
-			delete: 9 * SECOND,
+			title: SpecialChannelExtend.get(key).congratulations(channel),
 		});
 		sendToLogsChannel(guild, {
-			description: `Каналу #${channel.name} установили метку «${SpecialChannel.get(type).label}»`,
+			description: `Каналу #${channel.name} установили метку «${SpecialChannel.get(key).label}»`,
 			author: { name: user.username, avatarURL: user.avatarURL() },
 		});
 	}
@@ -69,18 +121,21 @@ class Remove_FlagSubcommand extends BaseFlagSubcommand {
 	};
 	async onProcess() {
 		const { guild, interaction } = this.context;
-		const type = await this.context.specialChannelType();
+		const key = await this.context.specialChannelType();
+		if (!key) {
+			return;
+		}
 		await sendToLogsChannel(guild, {
-			description: SpecialChannelExtend.get(type).onDisableMessage(),
+			description: SpecialChannelExtend.get(key).onDisableMessage(),
 			author: {
 				name: interaction.user.username,
 				avatarURL: interaction.user.avatarURL(),
 			},
 		});
-		delete guild.data[type];
+		interaction.message.react(Emoji.animation_tick_block);
+		new DotNotatedInterface(guild.data).setItem(key, undefined);
 		interaction.msg({
-			title: `«${SpecialChannel.get(type).label}» канал отключен!`,
-			delete: 9 * SECOND,
+			title: `«${SpecialChannel.get(key).label}» канал отключен!`,
 		});
 	}
 }
@@ -97,7 +152,7 @@ class Command extends BaseCommand {
 			flags: [Remove_FlagSubcommand.FLAG_DATA],
 		},
 		alias:
-			"setchan setchat установитьчат встановитичат setlogs установитьлоги встановитилоги",
+			"setchan setchat установитьчат встановитичат setlogs установитьлоги встановитилоги встановитипривітання установитьприветствие",
 		allowDM: true,
 		type: "guild",
 		userPermissions: PermissionsBits.ManageGuild,
