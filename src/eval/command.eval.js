@@ -9,6 +9,8 @@ import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
 import CommandsManager from "#src/commands/CommandsManager/singleton.js";
 import { Pager } from "#src/discord/Pager.js";
 import { takeInteractionProperties } from "#src/discord/utils.js";
+import { maybe_multiline } from "#src/safe-utils.js";
+import { ending } from "@zoodogood/utils/primitives";
 import {
 	escapeCodeBlock,
 	escapeMarkdown,
@@ -27,24 +29,27 @@ function format_object(object) {
 			value: Object.prototype.toString,
 		});
 
-	return `\`\`\`tree\n${escapeCodeBlock(mol_tree2_string_from_json(object))}\`\`\``;
+	return maybe_multiline([
+		object?.constructor?.name && `\`\`\`js\n${object.constructor.name}\n\`\`\``,
+		`\`\`\`tree\n${escapeCodeBlock(mol_tree2_string_from_json(object))}\`\`\``,
+	]);
 }
 function resolve_page(raw) {
 	if (typeof raw === "string") {
 		raw = { description: raw };
 	}
-	const DISCORD_MESSAGE_LIMIT = 4096;
-	if (raw.description.length <= DISCORD_MESSAGE_LIMIT) {
+	const CUSTOM_MESSAGE_LIMIT = 3900;
+	if (raw.description.length <= CUSTOM_MESSAGE_LIMIT) {
 		return raw;
 	}
 	const CODE_BLOCK_PATTERN = "```";
 	const is_code_block = raw.description.startsWith(CODE_BLOCK_PATTERN);
 
-	const overlow_content = "\n…\n";
+	const overlow_content = `\n\n… (${ending(raw.description.length - CUSTOM_MESSAGE_LIMIT, "символ", "ов", "", "а")}…)\n`;
 	// summary: .slice(0, threshold)
 	raw.description = raw.description.slice(
 		0,
-		DISCORD_MESSAGE_LIMIT -
+		CUSTOM_MESSAGE_LIMIT -
 			(is_code_block ? CODE_BLOCK_PATTERN.length + overlow_content.length : 0),
 	);
 
@@ -91,8 +96,7 @@ class Command extends BaseCommand {
 		name: "eval",
 		id: 51,
 		media: {
-			description:
-				"Хотя это и команда разработчика, вы можете просмотреть ваши данные из базы данных в JSON формате, для этого просто не вводите никаких аргументов. Список доступных модулей: !eval availableList",
+			description: `Хотя это и команда разработчика, вы можете просмотреть ваши данные из базы данных в JSON формате, для этого просто не вводите никаких аргументов. Список доступных модулей: !eval availableList\n${config.enviroment.github}/blob/${config.enviroment.branch}/src/VirtualMachine/template_modules/mod.js`,
 			example: `!eval #без аргументов`,
 		},
 		accessibility: {
