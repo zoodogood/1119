@@ -2,8 +2,8 @@ import { Collection } from "@discordjs/collection";
 
 import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
 
+import { EventEmitter } from "#src/EventEmitter/export.js";
 import { glob } from "glob";
-import { EventEmitter } from "../EventEmitter/export.js";
 
 const PATH = "./folder/events";
 

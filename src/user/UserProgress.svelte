@@ -7,8 +7,8 @@
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
 	import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
 	import { NumberFormatLetterize } from "#src/safe-utils.js";
+	import Wrapper from "#src/site/src/components/frames/entityData/wrapper.svelte";
 	import { onMount } from "svelte";
-	import Wrapper from "../site/src/components/frames/entityData/wrapper.svelte";
 
 	const Component = {
 		async getData() {

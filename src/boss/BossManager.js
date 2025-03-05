@@ -24,6 +24,10 @@ import { update_health_thresholder } from "#src/boss/health.js";
 import client from "#src/bot/client/singleton.js";
 import Properties from "#src/data/Properties.js";
 import {
+	isChatChannelExists,
+	sendToChatChannel,
+} from "#src/guild_special_channels/special_channel_enum.js";
+import {
 	NumberFormatLetterize,
 	numberFormat,
 	random,
@@ -37,10 +41,6 @@ import UserEffectManager from "#src/user/actions/EffectsManager.js";
 import { Collection } from "@discordjs/collection";
 import { arraySpliceItem, ending } from "@zoodogood/utils/primitives";
 import { ButtonStyle, ComponentType } from "discord.js";
-import {
-	isChatChannelExists,
-	sendToChatChannel,
-} from "../guild_special_channels/special_channel_enum.js";
 
 class Speacial {
 	static AVATAR_OF_SNOW_QUEEN =

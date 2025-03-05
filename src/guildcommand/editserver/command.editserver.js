@@ -5,9 +5,9 @@ import { PermissionsBits } from "#src/discord/permissions.js";
 import { question } from "#src/discord/utils.js";
 import { Emoji } from "#src/emojis/emojis.js";
 import { util_store_and_send_audit } from "#src/ErrorsHandler/ErrorsHandler.js";
+import { SpecialChannel } from "#src/guild_special_channels/special_channel_enum.js";
 import Template from "#src/VirtualMachine/Template.js";
 import { DotNotatedInterface } from "@zoodogood/utils/objectives";
-import { SpecialChannel } from "../../guild_special_channels/special_channel_enum.js";
 
 class CommandRunContext extends BaseCommandRunContext {
 	guildData;

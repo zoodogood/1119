@@ -1,10 +1,10 @@
-import { PropertiesEnum } from "#src/data/Properties.js";
-import { addResource } from "#src/data/public/addResource.js";
-import { BaseEvent, EventsManager } from "#src/events/EventsManager.js";
+import { PropertiesEnum } from "#src/data/Properties.js"
+import { addResource } from "#src/data/public/addResource.js"
+import { BaseEvent, EventsManager } from "#src/events/EventsManager.js"
 
-import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
-import { sleep } from "#src/safe-utils.js";
-import { SECOND } from "../constants/time.js";
+import { SECOND } from "#src/constants/time.js"
+import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js"
+import { sleep } from "#src/safe-utils.js"
 
 class Event extends BaseEvent {
 	options = {

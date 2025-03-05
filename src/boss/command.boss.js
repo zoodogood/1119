@@ -1,32 +1,32 @@
-import config from "#config";
-import { DAY, SECOND } from "#constants/time.js";
+import config from "#config"
+import { DAY, SECOND } from "#constants/time.js"
 
 import {
 	core_make_attack_context,
 	make_attack_with_events,
-} from "#src/boss/attack.js";
-import { resolve_attack_events_pull } from "#src/boss/attack_events.js";
-import { BossEffects, BossManager } from "#src/boss/BossManager.js";
-import client from "#src/bot/client/singleton.js";
+} from "#src/boss/attack.js"
+import { resolve_attack_events_pull } from "#src/boss/attack_events.js"
+import { BossEffects, BossManager } from "#src/boss/BossManager.js"
+import client from "#src/bot/client/singleton.js"
 import {
 	BaseCommand,
 	BaseFlagSubcommand,
-} from "#src/commands/BaseCommand/BaseCommand.js";
-import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
-import { CurseManager } from "#src/curses/CurseManager/singleton/index.js";
-import dayjs from "#src/dayjs.js";
-import { sortByResolveMut } from "#src/mini.js";
+} from "#src/commands/BaseCommand/BaseCommand.js"
+import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js"
+import { CurseManager } from "#src/curses/CurseManager/singleton/index.js"
+import DataManager from "#src/data/DataManager.js"
+import dayjs from "#src/dayjs.js"
+import { isChatChannelExists } from "#src/guild_special_channels/special_channel_enum.js"
+import { sortByResolveMut } from "#src/mini.js"
 import {
 	maybe_multiline,
 	toDayDate,
 	toFixedAfterZero,
 	toLocaleDeveloperString,
-} from "#src/safe-utils.js";
-import { justButtonComponents } from "@zoodogood/utils/discordjs";
-import { CliParser } from "@zoodogood/utils/primitives";
-import { ButtonStyle, ComponentType } from "discord.js";
-import DataManager from "../data/DataManager.js";
-import { isChatChannelExists } from "../guild_special_channels/special_channel_enum.js";
+} from "#src/safe-utils.js"
+import { justButtonComponents } from "@zoodogood/utils/discordjs"
+import { CliParser } from "@zoodogood/utils/primitives"
+import { ButtonStyle, ComponentType } from "discord.js"
 
 function attackBoss(boss, user, channel) {
 	return BossManager.userAttack({ boss, user, channel });

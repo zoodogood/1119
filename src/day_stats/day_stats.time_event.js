@@ -2,17 +2,18 @@ import { client } from "#src/bot/client/singleton.js";
 
 import { DAY } from "#constants/time.js";
 import BankCommand from "#src/bank/command.bank.js";
+import { DAILY_REVENUE_PER_MEMBER } from "#src/bank/contants.js";
 import BossManager from "#src/boss/BossManager.js";
 import { DataManager } from "#src/data/singleton.js";
 import dayjs from "#src/dayjs.js";
 import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
+import { sendToChatChannel } from "#src/guild_special_channels/special_channel_enum.js";
 import { mediana_of_unsorted } from "#src/mediana_of_unsorted.js";
 import { MonthStatisticForEveryDayAPI } from "#src/messages/MonthStatisticForEveryDayAPI.js";
 import { average, factorySummarize } from "#src/mini.js";
 import { NumberFormatLetterize, maybe_multiline } from "#src/safe-utils.js";
 import { onDayStats as TreeOnDayStats } from "#src/seed/command.seed.js";
 import { ending } from "@zoodogood/utils/primitives";
-import { DAILY_REVENUE_PER_MEMBER } from "../bank/contants.js";
 
 export default class Event {
 	options = {

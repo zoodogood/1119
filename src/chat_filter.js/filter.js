@@ -1,6 +1,6 @@
-import { PermissionsBits } from "#src/discord/permissions.js";
-import { take_missing_permissions } from "#src/discord/utils.js";
-import { sendToLogsChannel } from "../guild_special_channels/special_channel_enum.js";
+import { PermissionsBits } from "#src/discord/permissions.js"
+import { take_missing_permissions } from "#src/discord/utils.js"
+import { sendToLogsChannel } from "#src/guild_special_channels/special_channel_enum.js"
 
 export function filterChat(msg) {
 	let content = msg.content;

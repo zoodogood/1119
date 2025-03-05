@@ -1,10 +1,10 @@
 import config from "#config";
+import { ErrorsHandler } from "#src/ErrorsHandler/ErrorsHandler.js";
 import { sleep } from "#src/safe-utils.js";
 import cors from "cors";
 import "dotenv/config";
 import helmet from "helmet";
 import FileSystem from "node:fs/promises";
-import { ErrorsHandler } from "../ErrorsHandler/ErrorsHandler.js";
 import { onRequest } from "./api_router/onRequest.js";
 import { api_router } from "./api_router/singleton.js";
 import { express } from "./express_singleton.js";
