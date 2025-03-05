@@ -89,36 +89,6 @@ Discord.BaseChannel.prototype.awaitMessage = async function (options) {
 	return input;
 };
 
-Discord.Guild.prototype.chatSend = async function (message) {
-	const id = this.data.chatChannel;
-	if (!id) {
-		return false;
-	}
-
-	const channel = this.channels.cache.get(id);
-	if (!channel) {
-		delete this.data.chatChannel;
-		return;
-	}
-
-	return await channel.msg(message);
-};
-
-Discord.Guild.prototype.logSend = async function (message) {
-	const id = this.data.logChannel;
-	if (!id) {
-		return false;
-	}
-
-	const channel = this.channels.cache.get(id);
-	if (!channel) {
-		delete this.data.logChannel;
-		return;
-	}
-
-	return await channel.msg(message);
-};
-
 Discord.Guild.prototype.Audit = async function (
 	find = false,
 	{ limit = 3, before = null, user = null, type = null },
