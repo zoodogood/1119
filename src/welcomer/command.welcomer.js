@@ -42,8 +42,7 @@ class Command extends BaseCommand {
 		const whatMessage = await msg.msg({
 			title:
 				"Введите сообщение с которым бот будет встречать новых пользователей!",
-			description:
-				'Используйте шаблонные строки {module("context").name}, они знатно вам помогут!',
+			description: `Используйте шаблонные строки m'context.name, они знатно вам помогут!`,
 		});
 		answer = await msg.channel.awaitMessage({ user: msg.author });
 		if (!answer) {
@@ -124,9 +123,9 @@ class Command extends BaseCommand {
 			title: "Упомяните канал для отправки приветсвий или...",
 			color: "#ffff00",
 			description: `📥 - Установить в этом канале ${
-				guild.channels.cache.get(guild.data.hiChannel)
+				guild.channels.cache.get(guild.data.hi.channel)
 					? "\nСейчас установлен:\n" +
-						guild.channels.cache.get(guild.data.hiChannel).toString() +
+						guild.channels.cache.get(guild.data.hi.channel).toString() +
 						" - Оставить как есть 🔰"
 					: ""
 			}`,
@@ -135,7 +134,7 @@ class Command extends BaseCommand {
 			target: whatChannel,
 			user: interaction.user,
 			reactionOptions: {
-				reactions: ["📥", guild.data.hiChannel ? "🔰" : null],
+				reactions: ["📥", guild.data.hi.channel ? "🔰" : null],
 			},
 		});
 		whatChannel.delete();
@@ -145,7 +144,7 @@ class Command extends BaseCommand {
 
 		const channelId =
 			answer.emoji?.toString() === "🔰"
-				? guild.data.hiChannel
+				? guild.data.hi.channel
 				: answer.emoji?.toString() === "📥"
 					? interaction.channel.id
 					: answer.content?.match(/\d{16,21}/)?.[0];
@@ -158,16 +157,13 @@ class Command extends BaseCommand {
 			return;
 		}
 
-		guild.data.hiChannel = channelId;
-
-		guild.data.hi = { message, color, image, rolesId };
+		guild.data.hi = { message, color, image, rolesId, channel: channelId };
 		msg.msg({
 			title: "Готово! Предпросмотр: На сервере новый участник",
 			color: color,
 			image: image,
 			description: message,
 			scope: { tag: msg.author.toString(), name: msg.author.username },
-			delete: 15000,
 		});
 	}
 }

@@ -47,7 +47,10 @@ class Command_GuildChannels_Manager {
 	}
 
 	getChannelOfChannelBase(guild, channelBase) {
-		return guild.channels.cache.get(guild.data[channelBase.key]);
+		const channelId = new DotNotatedInterface(guild.data).getItem(
+			channelBase.key,
+		);
+		return guild.channels.cache.get(channelId);
 	}
 
 	isChannelInstalled(guild, channelBase) {
@@ -77,7 +80,7 @@ class Command_GuildChannels_Manager {
 			return true;
 		}
 		const { guild } = this.context;
-		delete guild.data[channelBase.key];
+		new DotNotatedInterface(guild.data).setItem(channelBase.key, undefined);
 	}
 }
 

@@ -1,3 +1,5 @@
+import { MINUTE } from "#root/src/constants/time.js";
+import { sendToLogsChannel } from "#root/src/guild_special_channels/special_channel_enum.js";
 import { client } from "#src/bot/client/singleton.js";
 import { PermissionFlags } from "#src/discord/permissions.js";
 import { BaseEvent } from "#src/events/EventsManager.js";
@@ -54,11 +56,12 @@ export const Welcomer = {
 
 	async sendGreetingFor(member) {
 		const { guild } = member;
-		if (!guild.data.hiChannel) {
+		const { hi } = guild.data;
+		if (!hi?.channel) {
 			return;
 		}
 
-		const channelId = guild.data.hiChannel;
+		const { channel: channelId } = hi;
 
 		const channel = guild.channels.cache.get(channelId);
 		if (!channel) {
@@ -66,7 +69,7 @@ export const Welcomer = {
 			owner.msg({
 				content: `На сервере ${guild.name} настроен канал для приветствий, однако канала с id ${channelId} — не существует`,
 			});
-			delete guild.data.hiChannel;
+			delete hi.channel;
 			return;
 		}
 
@@ -79,7 +82,7 @@ export const Welcomer = {
 			description: guild.data.hi.message,
 			scope: { tag: member.user.toString(), name: member.user.username },
 		});
-		channel.msg({ content: "👋", delete: 180_000 });
+		channel.msg({ content: "👋", delete: MINUTE * 3 });
 	},
 };
 
