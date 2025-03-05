@@ -37,5 +37,6 @@
 	},
 	"[html]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	}
+	},
+	"prettier.semi": true
 }
