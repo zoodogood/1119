@@ -13,6 +13,7 @@ import "#src/_expand_prototype.js";
 import "#src/app/BaseContext/toSafeValues/_expand_prototype.js";
 import { dayjs } from "#src/dayjs.js";
 import EventsManager from "#src/events/EventsManager.js";
+import { sendToLogsChannel } from "#src/guild_special_channels/special_channel_enum.js";
 import { timestampToDate } from "#src/safe-utils.js";
 import ActionManager, { Actions } from "#src/user/actions/ActionManager.js";
 
@@ -128,7 +129,7 @@ client.on("ready", async () => {
 					description: `${name}\nНадеемся, он скоро вернётся`,
 				};
 
-		member.guild.logSend({
+		sendToLogsChannel(guild, {
 			title: message.content,
 			description: message.description,
 			color: banInfo ? "#ff0000" : "#00ff00",
@@ -140,7 +141,7 @@ client.on("ready", async () => {
 			return;
 		}
 		user.guilds.forEach((guild) =>
-			guild.logSend({
+			sendToLogsChannel(guild, {
 				title: `${guild.members.resolve(user).displayName} изменил свой аватар`,
 				author: {
 					name: user.username,

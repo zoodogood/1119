@@ -7,6 +7,7 @@ import {
 	setMuteState,
 } from "#src/mute/muteStateUpdate.listener.js";
 import { PermissionFlagsBits } from "discord.js";
+import { sendToLogsChannel } from "../guild_special_channels/special_channel_enum.js";
 
 class Command extends BaseCommand {
 	options = {
@@ -103,7 +104,10 @@ class Command extends BaseCommand {
 			},
 		};
 
-		msg.guild.logSend({ title: "С участника снят мут", ...embed });
+		sendToLogsChannel(interaction.guild, {
+			title: "С участника снят мут",
+			...embed,
+		});
 		msg.msg({ title: "С участника сняли мут", ...embed });
 	}
 }

@@ -1,6 +1,7 @@
 import client from "#src/bot/client/singleton.js";
 import { BaseEvent, EventsManager } from "#src/events/EventsManager.js";
 import { AuditLogEvent, PermissionFlagsBits } from "discord.js";
+import { sendToLogsChannel } from "../guild_special_channels/special_channel_enum.js";
 
 export function is_mute_role(role) {
 	return role.id === role.guild.data.mute_role || is_mute_role_by_name(role);
@@ -68,7 +69,7 @@ class Event extends BaseEvent {
 			return;
 		}
 
-		const embed = {
+		sendToLogsChannel(guild, {
 			title: isRemoved ? "Мут снят" : "Участнику выдан мут",
 			description: isRemoved
 				? "С участника снята роль мута ограничивающая общение в чатах."
@@ -81,9 +82,7 @@ class Event extends BaseEvent {
 				text: `Мут ${isRemoved ? "снял" : "выдал"} ${executor.username}`,
 				iconURL: executor.avatarURL(),
 			},
-		};
-
-		guild.logSend(embed);
+		});
 	}
 }
 

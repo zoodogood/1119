@@ -1,5 +1,6 @@
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import { PermissionsBits } from "#src/discord/permissions.js";
+import { sendToLogsChannel } from "../guild_special_channels/special_channel_enum.js";
 
 class Command extends BaseCommand {
 	options = {
@@ -20,12 +21,14 @@ class Command extends BaseCommand {
 	};
 
 	async onChatInput(msg, interaction) {
+		const { guild } = interaction;
 		await msg.msg({ content: `**${interaction.params}**` });
 
-		msg.guild?.logSend({
-			title: `${msg.author.username}:`,
-			description: `\n!c ${interaction.params}`,
-		});
+		guild &&
+			sendToLogsChannel(guild, {
+				title: `${msg.author.username}:`,
+				description: `\n!c ${interaction.params}`,
+			});
 	}
 }
 

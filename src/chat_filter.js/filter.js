@@ -1,5 +1,6 @@
 import { PermissionsBits } from "#src/discord/permissions.js";
 import { take_missing_permissions } from "#src/discord/utils.js";
+import { sendToLogsChannel } from "../guild_special_channels/special_channel_enum.js";
 
 export function filterChat(msg) {
 	let content = msg.content;
@@ -82,7 +83,7 @@ export function filterChat(msg) {
 			title: "Ваше сообщение содержит нецензурную лексику!",
 			description: `Текст сообщения: ${msg.content}`,
 		});
-		msg.guild.logSend({
+		sendToLogsChannel(msg.guild, {
 			title: "Удалено сообщение с ненормативным содержанием",
 			description: `Текст: ${msg.content}`,
 			author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
@@ -110,7 +111,7 @@ export function filterChat(msg) {
 			title: "Ваше сообщение содержит CAPS-LOCK!",
 			description: `Текст сообщения: ${msg.content}`,
 		});
-		msg.guild.logSend({
+		sendToLogsChannel(msg.guild, {
 			title: "Удалено сообщение с большим содержанием КАПСА",
 			description: `Текст: ${msg.content}`,
 			author: { name: msg.author.username, iconURL: msg.author.avatarURL() },

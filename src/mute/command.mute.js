@@ -10,6 +10,7 @@ import { sleep } from "#src/safe-utils.js";
 import { ParserTime } from "#src/user_input_prepare/parsers.js";
 import { CliParser } from "@zoodogood/utils/CliParser";
 import { FormattingPatterns, PermissionFlagsBits } from "discord.js";
+import { sendToLogsChannel } from "../guild_special_channels/special_channel_enum.js";
 
 async function setup_mute_role(guild) {
 	const role = await guild.roles.create({
@@ -159,7 +160,10 @@ class Command extends BaseCommand {
 				iconURL: msg.author.avatarURL(),
 			},
 		};
-		msg.guild.logSend({ ...embed, title: "Участнику выдан мут" });
+		sendToLogsChannel(interaction.guild, {
+			...embed,
+			title: "Участнику выдан мут",
+		});
 		msg.msg({ ...embed, title: "Участник был замучен" });
 	}
 }

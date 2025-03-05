@@ -553,7 +553,7 @@ class EmbedSendProcessor {
 		const title = "Пользователь отправил эмбед";
 		const description = sended.url;
 		const { guild, user } = context;
-		guild.logSend({
+		sendToLogsChannel(guild, {
 			title,
 			description,
 			footer: { iconURL: user.avatarURL(), text: user.username },

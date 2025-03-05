@@ -37,6 +37,10 @@ import UserEffectManager from "#src/user/actions/EffectsManager.js";
 import { Collection } from "@discordjs/collection";
 import { arraySpliceItem, ending } from "@zoodogood/utils/primitives";
 import { ButtonStyle, ComponentType } from "discord.js";
+import {
+	isChatChannelExists,
+	sendToChatChannel,
+} from "../guild_special_channels/special_channel_enum.js";
 
 class Speacial {
 	static AVATAR_OF_SNOW_QUEEN =
@@ -313,7 +317,7 @@ class BossEvents {
 					const description = `**10-й уровень за ${contents.time}**\n\nС момента достижения этого уровня босс станет сложнее, а игроки имеют шанс получить осколки реликвий. Соберите 5 штук, чтобы получить случайную из реликвий`;
 					const guild = client.guilds.cache.get(boss.guildId);
 
-					guild.chatSend({
+					sendToChatChannel(guild, {
 						description,
 						color: BossManager.MAIN_COLOR,
 					});
@@ -576,7 +580,6 @@ class BossManager {
 		createCollector: async ({ guild, toLevel, fromLevel }) => {
 			const BossChest = BossManager.BonusesChest;
 
-			const embed = BossChest.createEmbed({ toLevel, fromLevel, taking: 0 });
 			const context = {
 				taking: 0,
 				toLevel,
@@ -585,7 +588,10 @@ class BossManager {
 				guild,
 			};
 
-			context.message = await guild.chatSend(embed);
+			context.message = await sendToChatChannel(
+				guild,
+				BossChest.createEmbed({ toLevel, fromLevel, taking: 0 }),
+			);
 			if (!context.message) {
 				return;
 			}
@@ -736,7 +742,7 @@ class BossManager {
 
 		if (boss.level > 1 === false) {
 			if (boss.is_quiet_boss) return;
-			guild.chatSend({ content: "Босс покинул сервер в страхе..." });
+			sendToChatChannel(guild, { content: "Босс покинул сервер в страхе..." });
 			return;
 		}
 
@@ -869,19 +875,18 @@ class BossManager {
 		};
 
 		const description = `🧩 ${contents.dice}\n${contents.bossLevel}\n\n${contents.damageDealt}.\n${contents.mainDamageType}\n${contents.weakestDamageType}\n${contents.attacksCount}\n\n🩸 ${contents.usersCount}. ${contents.parting}\n${contents.mostStrongUser}.\n${contents.rewards}.\n\n${contents.invisibleSpace}`;
-		const embed = {
+		sendToChatChannel(guild, {
 			title: "Среди ночи он покинул сервер",
 			description,
 			footer,
 			components,
-		};
-		guild.chatSend(embed);
+		});
 	}
 
 	static async bossApparance(guild) {
 		const guildData = guild.data;
 
-		if (!guildData.chatChannel || guildData.disableBoss) {
+		if (!isChatChannelExists(guild)) {
 			return;
 		}
 
@@ -1095,7 +1100,7 @@ class BossManager {
 			text: contents.footerText,
 			iconURL: sourceUser ? sourceUser.avatarURL() : guild.iconURL(),
 		};
-		guild.chatSend({
+		sendToChatChannel(guild, {
 			description: `${contents.title} (${contents.levels})\n${contents.main}\n${contents.isImagine}`,
 			footer,
 		});
@@ -1176,12 +1181,10 @@ class BossManager {
 		const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по завершении участники получат небольшую награду`;
 		const description = `${descriptionImage}\n\n${descriptionFacts}`;
 
-		const embed = {
+		await sendToChatChannel(guild, {
 			color: "#210052",
 			description,
-		};
-
-		await guild.chatSend(embed);
+		});
 	}
 	static onMessage(message) {
 		const boss = message.guild.data.boss;
@@ -1287,7 +1290,7 @@ class BossManager {
 			return;
 		}
 
-		guild.chatSend({
+		sendToChatChannel(guild, {
 			description:
 				"Вы сильные. Спасибо Вам за то, что вы рядом.\nБосс побеждён и прямые атаки по нему больше не проходят. Вы можете использовать реликвии и другие способы нанесения урона, чтобы продвинуться в топ'е",
 		});

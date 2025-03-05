@@ -80,7 +80,7 @@ class Event extends BaseEvent {
 		} = context;
 		const title = `Новое имя: ${newValue}`;
 
-		guild.logSend({
+		sendToLogsChannel(guild, {
 			title,
 			description: reason ? `Указанная причина: ${reason}` : null,
 			author: {

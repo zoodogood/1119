@@ -155,6 +155,6 @@ export default class Event {
 				"я",
 			)} больше 💧${messagesOfDay === 0 ? ".  Дерево приносит больше клубники, когда стабильно есть сообщения. Если сообщений нет — оно засыхает в два раза быстрее" : ""}`;
 
-		guild.chatSend({ title: "Статистика сервера", description });
+		sendToChatChannel(guild, { title: "Статистика сервера", description });
 	}
 }

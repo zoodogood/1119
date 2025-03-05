@@ -255,7 +255,7 @@ class Logger {
 	sendLog() {
 		const { guild } = this.context;
 
-		guild.logSend({
+		sendToLogsChannel(guild, {
 			title: this.getEmbedTitle(),
 			description: this.getEmbedDescription(),
 		});

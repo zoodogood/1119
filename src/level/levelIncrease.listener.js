@@ -4,6 +4,7 @@ import { BaseEvent, EventsManager } from "#src/events/EventsManager.js";
 
 import { EXPERIENCE_PER_LEVEL } from "#src/level/constants.js";
 import { sleep } from "#src/safe-utils.js";
+import { SECOND } from "../constants/time.js";
 
 class Event extends BaseEvent {
 	options = {
@@ -60,7 +61,7 @@ class Event extends BaseEvent {
 				!message.guild ||
 				message.channel.id !== message.guild.data.chatChannel
 			) {
-				await sleep(5000);
+				await sleep(SECOND * 5);
 				message.delete();
 			}
 		})(message);

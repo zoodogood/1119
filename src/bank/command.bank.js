@@ -232,7 +232,7 @@ class Command extends BaseCommand {
 			});
 			guildData.coins += value;
 
-			guild.logSend({
+			sendToLogsChannel(guild, {
 				title: "Содержимое банка изменено:",
 				description: `${interaction.member.displayName} отнёс в казну ${ending(
 					value,
@@ -326,7 +326,7 @@ class Command extends BaseCommand {
 			});
 			guildData.coins -= value;
 
-			guild.logSend({
+			sendToLogsChannel(guild, {
 				title: "Содержимое банка изменено:",
 				description: `${
 					interaction.member.displayName
@@ -397,7 +397,7 @@ class Command extends BaseCommand {
 		});
 
 		if (guild.data.coins < expenditure) {
-			guild.logSend({
+			sendToLogsChannel(guild, {
 				title: `Сегодня не были выданы зарплаты`,
 				description: `В казне сервера слишком мало коинов, лишь ${guild.data.coins}, в то время как на выплаты требуется ${expenditure} <:coin:637533074879414272>`,
 				color: "#ffff00",
@@ -424,7 +424,7 @@ class Command extends BaseCommand {
 		}
 
 		guild.data.coins -= expenditure;
-		guild.logSend({
+		sendToLogsChannel(guild, {
 			title: `Были выданы зарплаты`,
 			description: `С казны было автоматически списано ${ending(
 				expenditure,
@@ -619,7 +619,7 @@ class Command extends BaseCommand {
 							1,
 						);
 						data.embed.description = `<a:message:794632668137652225> Вы успешно создали новую профессию!\n(${role} ${data.answer[1]} <:coin:637533074879414272>)`;
-						guild.logSend({
+						sendToLogsChannel(guild, {
 							title: "Назначено создать профессию",
 							description: `${user.toString()}, профессия ${role.toString()} (${salary} ${Emoji.coins.toString()}) была создана`,
 						});
@@ -645,7 +645,7 @@ class Command extends BaseCommand {
 								delete data.professions[id];
 								const role = guild.roles.cache.get(id);
 								data.embed.description = `<a:message:794632668137652225> Вы успешно удалили профессию! ${role.toString()}`;
-								guild.logSend({
+								sendToLogsChannel(guild, {
 									title: "Назначено удалить профессию",
 									description: `${user.toString()}, профессия ${role.toString()} (${salary} ${Emoji.coins.toString()}) была удалена`,
 								});

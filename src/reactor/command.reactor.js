@@ -6,6 +6,7 @@ import { client } from "#src/bot/client/singleton.js";
 import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
 import { PermissionsBits } from "#src/discord/permissions.js";
 import { awaitInteractOrMessage, awaitUserAccept } from "#src/discord/utils.js";
+import { sendToLogsChannel } from "../guild_special_channels/special_channel_enum.js";
 
 class Command extends BaseCommand {
 	options = {
@@ -223,7 +224,7 @@ class Command extends BaseCommand {
 				.join("\n")}`,
 			delete: 9000,
 		});
-		msg.guild.logSend({
+		sendToLogsChannel(msg.guild, {
 			title: "Установлен реактор сообщения",
 			description: `Сообщению с ID ${
 				message.id

@@ -26,6 +26,7 @@ import { justButtonComponents } from "@zoodogood/utils/discordjs";
 import { CliParser } from "@zoodogood/utils/primitives";
 import { ButtonStyle, ComponentType } from "discord.js";
 import DataManager from "../data/DataManager.js";
+import { isChatChannelExists } from "../guild_special_channels/special_channel_enum.js";
 
 function attackBoss(boss, user, channel) {
 	return BossManager.userAttack({ boss, user, channel });
@@ -147,7 +148,7 @@ class Events_Flagsubcommand extends BaseFlagSubcommand {
 			return true;
 		}
 
-		if (!guild.data.chatChannel) {
+		if (!isChatChannelExists()) {
 			channel.msg({
 				description: "Босс не может появится на сервере, где не установлен чат",
 				delete: 12 * SECOND,
@@ -155,18 +156,6 @@ class Events_Flagsubcommand extends BaseFlagSubcommand {
 					label: "Открыть команду",
 					customId: "@command/editserver/open",
 				}),
-			});
-			return false;
-		}
-
-		if (guild.data.disabledBoss) {
-			channel.msg({
-				description: "Босс был вручную отключен на этом сервере",
-				components: justButtonComponents({
-					label: "Открыть команду",
-					customId: "@command/editserver/open",
-				}),
-				delete: 12 * SECOND,
 			});
 			return false;
 		}
@@ -501,7 +490,7 @@ class Command extends BaseCommand {
 
 	processBossIsExists(context) {
 		const { guild, boss, channel } = context;
-		if (!guild.data.chatChannel) {
+		if (!isChatChannelExists(guild)) {
 			channel.msg({
 				description: "Босс не может появится на сервере, где не установлен чат",
 				delete: 12 * SECOND,
@@ -509,18 +498,6 @@ class Command extends BaseCommand {
 					label: "Открыть команду",
 					customId: "@command/editserver/open",
 				}),
-			});
-			return false;
-		}
-
-		if (guild.data.disabledBoss) {
-			channel.msg({
-				description: "Босс был вручную отключен на этом сервере",
-				components: justButtonComponents({
-					label: "Открыть команду",
-					customId: "@command/editserver/open",
-				}),
-				delete: 12 * SECOND,
 			});
 			return false;
 		}

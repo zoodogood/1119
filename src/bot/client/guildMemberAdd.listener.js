@@ -103,7 +103,7 @@ const BotLogger = {
 		const { guild } = member;
 		const whoAdded = await this.userWhoAddded(member);
 
-		guild.logSend({
+		sendToLogsChannel(guild, {
 			title: "Добавлен бот",
 			author: { iconURL: member.user.avatarURL(), name: member.user.tag },
 			description: `Название: ${member.user.username}\n${
@@ -158,7 +158,7 @@ const EnterLogger = {
 		const { guild } = invite;
 		const description = `Имя: ${entryMember.user.tag}\nПригласивший: ${invite?.inviter?.tag}\nПриглашение использовано: ${invite?.uses}`;
 
-		guild.logSend({
+		sendToLogsChannel(guild, {
 			title: "Новый участник!",
 			description,
 			footer: { text: "Приглашение создано: " },
