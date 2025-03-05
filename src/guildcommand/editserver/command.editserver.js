@@ -7,6 +7,7 @@ import { Emoji } from "#src/emojis/emojis.js";
 import { util_store_and_send_audit } from "#src/ErrorsHandler/ErrorsHandler.js";
 import Template from "#src/VirtualMachine/Template.js";
 import { DotNotatedInterface } from "@zoodogood/utils/objectives";
+import { SpecialChannel } from "../../guild_special_channels/special_channel_enum.js";
 
 class CommandRunContext extends BaseCommandRunContext {
 	guildData;
@@ -29,24 +30,6 @@ class CommandRunContext extends BaseCommandRunContext {
 	}
 }
 class Command_GuildChannels_Manager {
-	CHANNELS = [
-		{
-			key: "chatChannel",
-			label: "Чат",
-			emoji: "🔥",
-		},
-		{
-			key: "logChannel",
-			label: "Для логов",
-			emoji: "📒",
-		},
-		{
-			key: "hiChannel",
-			label: "Для приветствий",
-			emoji: "👌",
-		},
-	];
-
 	constructor(context) {
 		this.context = context;
 	}
@@ -73,14 +56,14 @@ class Command_GuildChannels_Manager {
 	async onProcess() {
 		const { user, channel } = this.context;
 		await question({
-			reactions: this.CHANNELS.map(({ emoji }) => emoji),
+			reactions: SpecialChannel.map(({ emoji }) => emoji),
 			channel,
 			user,
 			message: {
 				fields: [
 					{
 						name: "Каналы",
-						value: this.CHANNELS.map((channelBase) =>
+						value: SpecialChannel.map((channelBase) =>
 							this.channelBaseToString(channelBase),
 						).join("\n"),
 					},
@@ -282,7 +265,7 @@ class CommandDefaultBehavior {
 		const guildData = guild.data;
 		const channels = new Command_GuildChannels_Manager(context);
 
-		const channelContent = channels.CHANNELS.map((channelBase) =>
+		const channelContent = SpecialChannel.map((channelBase) =>
 			channels.channelBaseToString(channelBase),
 		).join("\n");
 
