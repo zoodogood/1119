@@ -4,9 +4,6 @@ import { _pushMessage } from "#src/discord/pushMessage.js";
 import { onMessageDelete as ChainLifeCycleOnMessageDelete } from "@zoodogood/utils/discordjs";
 import Discord from "discord.js";
 
-// MARK: Prototypes
-// =================================================
-
 // MARK: Discord
 Discord.User.prototype.msg = _pushMessage;
 Discord.Message.prototype.msg = _pushMessage;
