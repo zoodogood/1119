@@ -1,40 +1,40 @@
-import { authorizationProtocol } from "#src/auth/APIPointAuthorization/APIPointAuthorization.js";
-import { parse_body } from "#src/http_requests/express_utils.js";
+import { authorizationProtocol } from '#src/auth/APIPointAuthorization/APIPointAuthorization.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
 
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
-import { singleton } from "./ChangelogDaemon/singleton.js";
+import { parse_body } from '#src/http_requests/express_utils.js'
+import { singleton } from './ChangelogDaemon/singleton.js'
 
-const PREFIX = "/changelog/request_edit_change";
+const PREFIX = '/changelog/request_edit_change'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
 	constructor() {
-		super();
+		super()
 	}
 
-	async post(request, response) {
-		const { user } = await authorizationProtocol(request, response);
+	async post( request , response ) {
+		const { user } = await authorizationProtocol( request , response )
 
-		if (!user) {
-			return;
+		if ( !user ) {
+			return
 		}
 
-		const body = await parse_body(request);
-		const { target, value } = JSON.parse(body);
+		const body = await parse_body( request )
+		const { target , value } = JSON.parse( body )
 
-		const item = singleton.data.find(({ uid }) => uid === target);
+		const item = singleton.data.find( ( { uid } ) => uid === target )
 
-		if (!item) {
+		if ( !item ) {
 			response
-				.status(404)
-				.send(`change not found to be edited uid = "${target}"`);
-			return;
+				.status( 404 )
+				.send( `change not found to be edited uid = "${ target }"` )
+			return
 		}
 
-		item.change = value;
-		response.status(200).send("ok");
+		item.change = value
+		response.status( 200 ).send( 'ok' )
 	}
 }
 
-export default Route;
+export default Route

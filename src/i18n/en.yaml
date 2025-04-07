@@ -8,7 +8,6 @@ general:
         Чтобы его обновить авторизуйтесь повторно; Если это сообщение возникает
         чаще указаного срока, сообщите о проблеме для её решения.
 
-
         <a href = ${ link }>${ _key }</a>
 frames:
   AuditDaily:
@@ -27,13 +26,13 @@ frames:
         label: По боссу
     SectionManager:
       footerLabels:
-        general: "Общие"
-        for$day: "За"
-      emptyContent: "( Пусто )"
+        general: Общие
+        for$day: За
+      emptyContent: ( Пусто )
     section:
       selectionGroup:
-        label: "Выбранный график:"
-    serverIsNotAvailable: "Сервер недоступен"
+        label: 'Выбранный график:'
+    serverIsNotAvailable: Сервер недоступен
 
   Statistic:
     statsEnum:
@@ -45,31 +44,31 @@ frames:
         label: Команд
   externalAuthorProjects:
     aside:
-      stars: "Звёзд:"
+      stars: 'Звёзд:'
     projectesEnum:
       piramide:
         label: Пирамидка
-        description: "Пользователю предстоит написать алгоритм для решения детской задачи — построить пирамидку, которая с высотой постепенно уменьшается в диаметре."
+        description: 'Пользователю предстоит написать алгоритм для решения детской задачи — построить пирамидку, которая с высотой постепенно уменьшается в диаметре.'
       letsbet:
         label: let-s-bet
-        description: "Бинарный поиск очень эффективен"
+        description: Бинарный поиск очень эффективен
       glitchBall:
         label: GlitchBall
-        description: "Если вы заполнили область за пределами этого круга — проиграли."
+        description: Если вы заполнили область за пределами этого круга — проиграли.
 pages:
   public:
     hi: Hello!
     cool: Cat Chest is cool
   publicExperiments:
-    thisPageNotingTranslate: "Эта страница не будет переведена"
+    thisPageNotingTranslate: Эта страница не будет переведена
   commandsIndex:
     category:
-      dev: "Available only for developers"
-      delete: "Removed"
-      user: "User"
-      guild: "Guilds"
-      bot: "Bot"
-      other: "Something"
+      dev: Available only for developers
+      delete: Removed
+      user: User
+      guild: Guilds
+      bot: Bot
+      other: Something
   openChest:
     label: Сундук
     mainInfo: >-
@@ -93,11 +92,11 @@ pages:
       editable: Вы сможете внести изменения в любой момент времени.
       author: Ваши никнейм и аватар будут видны другим.
       noWarnings: Других предупреждений нет.
-    serverResponse: "Ответ сервера:"
+    serverResponse: 'Ответ сервера:'
     externalEditorSection:
-      label: "External editor:"
+      label: 'External editor:'
       description: >-
-        It is only a preview editor (its features are quite different from the classic Markdown syntax). 
+        It is only a preview editor (its features are quite different from the classic Markdown syntax).
         Save the content to a file with the .md extension and upload via the button above.
   articlesIndex:
     label: Статьи
@@ -109,28 +108,28 @@ pages:
     createInfo:
       label: Создать
       content: >-
-        Чтобы написать статью авторизуйтесь и воспользуйтесь 
+        Чтобы написать статью авторизуйтесь и воспользуйтесь
         <a href = ${ href }>этой ссылкой</a>.
     articlesList:
-      label: "Написание статьи:"
-      filesCount: "Количество файлов:"
+      label: 'Написание статьи:'
+      filesCount: 'Количество файлов:'
       loading: Загрузка...
       hereEmpty: Здесь пусто..
       loadingFailed: Загрузка неудалась
     articleMetadata:
-      author: "Автор:"
-      readTime: "Время чтения:"
-      lastEdited: "Послед. изменение:"
-      tags: "Теги:"
+      author: 'Автор:'
+      readTime: 'Время чтения:'
+      lastEdited: 'Послед. изменение:'
+      tags: 'Теги:'
   articlesItem:
     contentLoading: Загрузка основного контента
     article:
-      author: "Автор:"
-      lastEdited: "Последнее редактирование:"
-      readTime: "Время чтения:"
-      tags: "Включённые теги:"
+      author: 'Автор:'
+      lastEdited: 'Последнее редактирование:'
+      readTime: 'Время чтения:'
+      tags: 'Включённые теги:'
       defaultTag: Статья участника
-      words: "Слов"
+      words: Слов
     downloadMarkdown: Скачать .md файл
     noResults:
       label: Нет результатов
@@ -147,31 +146,31 @@ pages:
     login: Войти
     nowYouCanLeave: Теперь вы можете покинуть эту страницу
   errorsIndex:
-    label: "Комплекты ошибок:"
-    created: "Created at:"
-    inRealTime: "In real time."
-    uniqueMessages: "Уникальных элементов:"
-    tags: "Теги:"
-    reports: "Reports:"
+    label: 'Комплекты ошибок:'
+    created: 'Created at:'
+    inRealTime: In real time.
+    uniqueMessages: 'Уникальных элементов:'
+    tags: 'Теги:'
+    reports: 'Reports:'
     units: шт.
   errorsItem:
-    label: "Коллекция ошибок из файла:"
+    label: 'Коллекция ошибок из файла:'
     backToCollections: Вернуться к списку коллекций.
     filter: Фильтровать
     filterTip: >-
       Используйте символ перед словом "!", чтобы исключить варианты содержащие
       это слово
-    uniqueCount: "Уникальных элементов:"
-    tags: "Теги:"
-    called: "Вызвано:"
+    uniqueCount: 'Уникальных элементов:'
+    tags: 'Теги:'
+    called: 'Вызвано:'
     details: Сведения
     element: Элемент
-    context: "Контекст:"
-    stack: "Стек:"
+    context: 'Контекст:'
+    stack: 'Стек:'
     times__ending:
       - раз
-      - ""
-      - ""
+      - ''
+      - ''
       - а
   secretpage:
     label: Вы оказались на первой секретной странице
@@ -184,11 +183,11 @@ pages:
       label: API'шечки
       loading: Загрузка...
       serverNotAvailable: Сервер недоступен
-      simple: "Простые пути:"
+      simple: 'Простые пути:'
       simpleDescription: Данные из точки зачастую можно получить напрямую.
-      special: "Особые пути:"
+      special: 'Особые пути:'
       specialDescription: Опциональны, иногда, требуется аунтефикация или присутсвуют условности.
-      regexp: "Регулярные выражения:"
+      regexp: 'Регулярные выражения:'
       regexpDescription: Не имеют чёткого адреса.
     other:
       label: Другое
@@ -201,7 +200,7 @@ pages:
 components:
   Giscus:
     comments: Комментарии
-    identify: "Идентификатор:"
+    identify: 'Идентификатор:'
     notSupported: Giscus не поддерживается
   Layout:
     Header:

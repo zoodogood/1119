@@ -1,30 +1,30 @@
-import { EffectInfluenceEnum } from "#src/user/actions/EffectsManager.js";
+import { EffectInfluenceEnum } from '#src/user/actions/EffectsManager.js'
 
 export default {
-	id: "boss.increaseDamageByAfkTime",
+	id: 'boss.increaseDamageByAfkTime' ,
 	callback: {
-		bossBeforeAttack: (user, effect, data) => {
+		bossBeforeAttack: ( user , effect , data ) => {
 			const {
-				values: { guildId },
-			} = effect;
+				values: { guildId } ,
+			} = effect
 
-			const { guild } = data;
-			if (guild.id !== guildId) {
-				return;
+			const { guild } = data
+			if ( guild.id !== guildId ) {
+				return
 			}
-			const { attackContext } = data;
-			const { power, lastAttackTimestamp, multiplayer } = effect.values;
-			attackContext.damageMultiplayer +=
-				(Date.now() - lastAttackTimestamp) * power * multiplayer;
+			const { attackContext } = data
+			const { power , lastAttackTimestamp , multiplayer } = effect.values
+			attackContext.damageMultiplayer
+				+= ( Date.now() - lastAttackTimestamp ) * power * multiplayer
 
-			effect.values.lastAttackTimestamp = Date.now();
-		},
-	},
+			effect.values.lastAttackTimestamp = Date.now()
+		} ,
+	} ,
 	values: {
-		multiplayer: () => 1,
-		power: () => 1 / 100_000,
-		lastAttackTimestamp: () => Date.now(),
-		guildId: (user, effect, { guild }) => guild?.id,
-	},
-	influence: EffectInfluenceEnum.Positive,
-};
+		multiplayer: () => 1 ,
+		power: () => 1 / 100_000 ,
+		lastAttackTimestamp: () => Date.now() ,
+		guildId: ( user , effect , { guild } ) => guild?.id ,
+	} ,
+	influence: EffectInfluenceEnum.Positive ,
+}

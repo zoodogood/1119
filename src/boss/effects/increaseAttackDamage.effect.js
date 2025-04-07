@@ -1,32 +1,32 @@
-import { BossEffects } from "#src/boss/BossManager.js";
-import { EffectInfluenceEnum } from "#src/user/actions/EffectsManager.js";
+import { BossEffects } from '#src/boss/BossManager.js'
+import { EffectInfluenceEnum } from '#src/user/actions/EffectsManager.js'
 
 export default {
-	id: "boss.increaseAttackDamage",
+	id: 'boss.increaseAttackDamage' ,
 	callback: {
-		bossBeforeAttack: (user, effect, data) => {
-			const { guild, attackContext } = data;
+		bossBeforeAttack: ( user , effect , data ) => {
+			const { guild , attackContext } = data
 			const {
-				values: { guildId },
-			} = effect;
+				values: { guildId } ,
+			} = effect
 
-			if (guild.id !== guildId) {
-				return;
+			if ( guild.id !== guildId ) {
+				return
 			}
-			const { power, multiplayer } = effect.values;
-			attackContext.damageMultiplayer *= power * multiplayer;
+			const { power , multiplayer } = effect.values
+			attackContext.damageMultiplayer *= power * multiplayer
 
-			effect.values.repeats--;
-			if (!effect.values.repeats) {
-				BossEffects.removeEffect({ user, effect });
+			effect.values.repeats--
+			if ( !effect.values.repeats ) {
+				BossEffects.removeEffect( { user , effect } )
 			}
-		},
-	},
+		} ,
+	} ,
 	values: {
-		power: () => 2,
-		repeats: () => 1,
-		multiplayer: () => 1,
-		guildId: (user, effect, { guild }) => guild?.id,
-	},
-	influence: EffectInfluenceEnum.Positive,
-};
+		power: () => 2 ,
+		repeats: () => 1 ,
+		multiplayer: () => 1 ,
+		guildId: ( user , effect , { guild } ) => guild?.id ,
+	} ,
+	influence: EffectInfluenceEnum.Positive ,
+}

@@ -1,1 +1,1 @@
-export { default as FileSystem } from "node:fs/promises";
+export { default as FileSystem } from 'node:fs/promises'

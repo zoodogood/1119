@@ -1,428 +1,430 @@
-import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
-import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
-import CommandsManager from "#src/commands/CommandsManager/singleton.js";
-import { PermissionsBits } from "#src/discord/permissions.js";
-import { question } from "#src/discord/utils.js";
-import { Emoji } from "#src/emojis/emojis.js";
-import { util_store_and_send_audit } from "#src/ErrorsHandler/ErrorsHandler.js";
-import { SpecialChannel } from "#src/guild_special_channels/special_channel_enum.js";
-import Template from "#src/VirtualMachine/Template.js";
-import { DotNotatedInterface } from "@zoodogood/utils/objectives";
+import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
+import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+import { PermissionsBits } from '#src/discord/permissions.js'
+import { question } from '#src/discord/utils.js'
+import { Emoji } from '#src/emojis/emojis.js'
+import { util_store_and_send_audit } from '#src/ErrorsHandler/ErrorsHandler.js'
+import { SpecialChannel } from '#src/guild_special_channels/special_channel_enum.js'
+import Template from '#src/VirtualMachine/Template.js'
+import { DotNotatedInterface , randomElementFromArray } from '@zoodogood/utils/objectives'
 
 class CommandRunContext extends BaseCommandRunContext {
-	guildData;
-	intefaceMessage;
-
+	_randomEmoji
+	guildData
+	intefaceMessage
 	get randomEmoji() {
-		return (this._randomEmoji ||= ["🔧", "🔨", "💣", "🛠️", "🔏"].random());
+		return ( this._randomEmoji ||= randomElementFromArray( [ '🔧' , '🔨' , '💣' , '🛠️' , '🔏' ] ) )
 	}
 
-	static new(interaction, command) {
-		const context = new this(interaction, command);
-		context.guildData = interaction.guild.data;
-		return context;
+	static new( interaction , command ) {
+		const context = new this( interaction , command )
+		context.guildData = interaction.guild.data
+		return context
 	}
 
 	parseCli() {}
 
-	setInterfaceMessage(message) {
-		this.intefaceMessage = message;
+	setInterfaceMessage( message ) {
+		this.intefaceMessage = message
 	}
 }
 class Command_GuildChannels_Manager {
-	constructor(context) {
-		this.context = context;
+	constructor( context ) {
+		this.context = context
 	}
 
-	channelBaseToString(channelBase) {
-		const { guildData, guild } = this.context;
+	channelBaseToString( channelBase ) {
+		const { guildData , guild } = this.context
 
-		const value = this.isChannelInstalled(guild, channelBase)
-			? this.getChannelOfChannelBase(guild, channelBase).toString()
+		const value = this.isChannelInstalled( guild , channelBase )
+			? this.getChannelOfChannelBase( guild , channelBase ).toString()
 			: channelBase.key in guildData
-				? "не найден"
-				: "не установлен";
+				? 'не найден'
+				: 'не установлен'
 
-		return `${channelBase.emoji} ${channelBase.label}: ${value}`;
+		return `${ channelBase.emoji } ${ channelBase.label }: ${ value }`
 	}
 
-	getChannelOfChannelBase(guild, channelBase) {
-		const channelId = new DotNotatedInterface(guild.data).getItem(
-			channelBase.key,
-		);
-		return guild.channels.cache.get(channelId);
+	getChannelOfChannelBase( guild , channelBase ) {
+		const channelId = new DotNotatedInterface( guild.data ).getItem(
+			channelBase.key ,
+		)
+		return guild.channels.cache.get( channelId )
 	}
 
-	isChannelInstalled(guild, channelBase) {
-		return !!this.getChannelOfChannelBase(guild, channelBase);
+	isChannelInstalled( guild , channelBase ) {
+		return !!this.getChannelOfChannelBase( guild , channelBase )
 	}
+
 	async onProcess() {
-		const { user, channel } = this.context;
-		await question({
-			reactions: SpecialChannel.map(({ emoji }) => emoji),
-			channel,
-			user,
+		const { user , channel } = this.context
+		await question( {
+			reactions: SpecialChannel.map( ( { emoji } ) => emoji ) ,
+			channel ,
+			user ,
 			message: {
 				fields: [
 					{
-						name: "Каналы",
-						value: SpecialChannel.map((channelBase) =>
-							this.channelBaseToString(channelBase),
-						).join("\n"),
-					},
-				],
-			},
-		});
+						name: 'Каналы' ,
+						value: SpecialChannel.map( channelBase =>
+							this.channelBaseToString( channelBase ) ,
+						).join( '\n' ) ,
+					} ,
+				] ,
+			} ,
+		} )
 	}
 
-	processChannelIsExists(channel, channelBase) {
-		if (channel) {
-			return true;
+	processChannelIsExists( channel , channelBase ) {
+		if ( channel ) {
+			return true
 		}
-		const { guild } = this.context;
-		new DotNotatedInterface(guild.data).setItem(channelBase.key, undefined);
+		const { guild } = this.context
+		new DotNotatedInterface( guild.data ).setItem( channelBase.key , undefined )
 	}
 }
 
 class Command_GuildBanner_Manager {
-	constructor(context) {
-		this.context = context;
+	constructor( context ) {
+		this.context = context
 	}
 
 	async onProcess() {
-		const { context } = this;
-		const { user, channel, guild } = context;
-		const { content } = await question({
-			user,
-			channel,
-			message: { title: "Укажите ссылку на изображение", description: "Апчхи" },
-		});
+		const { context } = this
+		const { user , channel , guild } = context
+		const { content } = await question( {
+			user ,
+			channel ,
+			message: { title: 'Укажите ссылку на изображение' , description: 'Апчхи' } ,
+		} )
 
-		if (!content) {
-			return;
+		if ( !content ) {
+			return
 		}
 
-		if (!this.processContentIsLink(content, context)) {
-			return;
+		if ( !this.processContentIsLink( content , context ) ) {
+			return
 		}
 
-		guild.data.banner = content;
-		channel.msg({
-			title: "Баннер установлен!",
-			delete: 7_000,
-			image: guild.data.banner,
-		});
+		guild.data.banner = content
+		channel.msg( {
+			title: 'Баннер установлен!' ,
+			delete: 7_000 ,
+			image: guild.data.banner ,
+		} )
 	}
-	processContentIsLink(content, context) {
-		if (content.startsWith("http")) {
-			return true;
+
+	processContentIsLink( content , context ) {
+		if ( content.startsWith( 'http' ) ) {
+			return true
 		}
 
-		const { channel } = context;
-		channel.msg({
-			title: "Вы должны были указать ссылку на изображение",
-			color: "#ff0000",
-			delete: 3000,
-		});
+		const { channel } = context
+		channel.msg( {
+			title: 'Вы должны были указать ссылку на изображение' ,
+			color: '#ff0000' ,
+			delete: 3000 ,
+		} )
 	}
 }
 
 class Command_GuildDescription_Manager {
-	TEMPLATE_KEY_PREFIX = "_i_know_how_work_with_eval";
-	constructor(context) {
-		this.context = context;
+	TEMPLATE_KEY_PREFIX = '_i_know_how_work_with_eval'
+	constructor( context ) {
+		this.context = context
 	}
 
 	async onProcess() {
-		const { context } = this;
-		const { user, channel, guild } = context;
-		let { content } = await question({
-			user,
-			channel,
+		const { context } = this
+		const { user , channel , guild } = context
+		let { content } = await question( {
+			user ,
+			channel ,
 			message: {
-				title: "Введите описание вашего чудесного сервера",
-				description: `Если вы готовы использовать JavaScript код, начните описание с ключевого префикса: ${this.TEMPLATE_KEY_PREFIX} :green_heart:`,
-			},
-		});
+				title: 'Введите описание вашего чудесного сервера' ,
+				description: `Если вы готовы использовать JavaScript код, начните описание с ключевого префикса: ${ this.TEMPLATE_KEY_PREFIX } :green_heart:` ,
+			} ,
+		} )
 
-		if (this.processTimeEnd(content, context)) {
-			return;
+		if ( this.processTimeEnd( content , context ) ) {
+			return
 		}
 
-		const isTemplate =
-			content.startsWith(this.TEMPLATE_KEY_PREFIX) &&
-			!!(content = content.replace(this.TEMPLATE_KEY_PREFIX, "").trim());
+		const isTemplate
+			= content.startsWith( this.TEMPLATE_KEY_PREFIX )
+				&& !!( content = content.replace( this.TEMPLATE_KEY_PREFIX , '' ).trim() )
 
-		const guildData = guild.data;
-		guildData.description ||= {};
-		Object.assign(guildData.description, {
-			isTemplate,
-			authorId: user.id,
-			content,
-		});
+		const guildData = guild.data
+		guildData.description ||= {}
+		Object.assign( guildData.description , {
+			isTemplate ,
+			authorId: user.id ,
+			content ,
+		} )
 
-		const resolveTemplate = (content) => {
-			const templater = new Template({
-				empowered: user,
-				type: Template.sourceTypes.involuntarily,
-			});
-			return templater.createVM().run(content);
-		};
+		const resolveTemplate = ( content ) => {
+			const templater = new Template( {
+				empowered: user ,
+				type: Template.sourceTypes.involuntarily ,
+			} )
+			return templater.createVM().run( content )
+		}
 
-		const description = isTemplate ? await resolveTemplate(content) : content;
-		channel.msg({
-			title: "Описание установлено! Юху!",
-			delete: 7_000,
-			description,
-		});
+		const description = isTemplate ? await resolveTemplate( content ) : content
+		channel.msg( {
+			title: 'Описание установлено! Юху!' ,
+			delete: 7_000 ,
+			description ,
+		} )
 	}
 
-	processTimeEnd(answer, context) {
-		if (answer) {
-			return false;
+	processTimeEnd( answer , context ) {
+		if ( answer ) {
+			return false
 		}
 
-		const { channel } = context;
-		channel.msg({
-			title: "Время вышло ⏰",
-			color: "#ff0000",
-			delete: 7_000,
-		});
-		return true;
+		const { channel } = context
+		channel.msg( {
+			title: 'Время вышло ⏰' ,
+			color: '#ff0000' ,
+			delete: 7_000 ,
+		} )
+		return true
 	}
 }
 
 class Command_GuildSetHello_Manager {
-	constructor(context) {
-		this.context = context;
+	constructor( context ) {
+		this.context = context
 	}
 
 	async onProcess() {
-		const { interaction } = this.context;
-		const { message } = interaction;
+		const { interaction } = this.context
+		const { message } = interaction
 		await CommandsManager.callMap
-			.get("sethello")
-			.onChatInput(message, interaction);
+			.get( 'sethello' )
+			.onChatInput( message , interaction )
 	}
 }
 
 class Command_GuildPartners_Manager {
-	constructor(context) {
-		this.context = context;
+	constructor( context ) {
+		this.context = context
 	}
 
 	async onProcess() {
-		const { interaction } = this.context;
-		const { message } = interaction;
+		const { interaction } = this.context
+		const { message } = interaction
 		await CommandsManager.callMap
-			.get("partners")
-			.onChatInput(message, interaction);
+			.get( 'partners' )
+			.onChatInput( message , interaction )
 	}
 }
 
 class Command_GuildChatFilter_Manager {
 	emojiEnum = {
-		enable: "685057435161198594",
-		disable: "763804850508136478",
-	};
+		enable: '685057435161198594' ,
+		disable: '763804850508136478' ,
+	}
 
-	constructor(context) {
-		this.context = context;
+	constructor( context ) {
+		this.context = context
 	}
 
 	async onProcess() {
-		const { user, channel, guild } = this.context;
-		const { emoji } = await question({
-			user,
-			channel,
+		const { user , channel , guild } = this.context
+		const { emoji } = await question( {
+			user ,
+			channel ,
 			message: {
-				title: "Включить фильтр чата?",
+				title: 'Включить фильтр чата?' ,
 				description:
-					'Подразумивается удаление сообщений которые содержат: рекламу, нецензурную лексику, капс и т.д.\nСейчас эта функция является "сырой" и будет продолжать развиваться со временем',
-			},
-			reactions: [this.emojiEnum.enable, this.emojiEnum.disable],
-		});
+					'Подразумивается удаление сообщений которые содержат: рекламу, нецензурную лексику, капс и т.д.\nСейчас эта функция является "сырой" и будет продолжать развиваться со временем' ,
+			} ,
+			reactions: [ this.emojiEnum.enable , this.emojiEnum.disable ] ,
+		} )
 
-		const guildData = guild.data;
-		if (emoji === this.emojiEnum.enable) {
-			guildData.chatFilter = 1;
-			channel.msg({ title: "Фильтр включён", delete: 7_000 });
-			return;
+		const guildData = guild.data
+		if ( emoji === this.emojiEnum.enable ) {
+			guildData.chatFilter = 1
+			channel.msg( { title: 'Фильтр включён' , delete: 7_000 } )
+			return
 		}
 
-		if (emoji === this.emojiEnum.disable) {
-			guildData.chatFilter = 0;
-			channel.msg({ title: "Фильтр выключен", delete: 3000 });
-			return;
+		if ( emoji === this.emojiEnum.disable ) {
+			guildData.chatFilter = 0
+			channel.msg( { title: 'Фильтр выключен' , delete: 3000 } )
 		}
 	}
 }
 
 class CommandDefaultBehavior {
-	constructor(context) {
-		this.context = context;
-		this.command = this.context.command;
+	constructor( context ) {
+		this.context = context
+		this.command = this.context.command
 	}
-	createDescription(context) {
-		const { guild, command } = context;
-		const guildData = guild.data;
-		const channels = new Command_GuildChannels_Manager(context);
 
-		const channelContent = SpecialChannel.map((channelBase) =>
-			channels.channelBaseToString(channelBase),
-		).join("\n");
+	createDescription( context ) {
+		const { guild , command } = context
+		const guildData = guild.data
+		const channels = new Command_GuildChannels_Manager( context )
 
-		const on_emoji = Emoji.animation_tick_block.toString();
-		const target = new DotNotatedInterface(guildData);
+		const channelContent = SpecialChannel.map( channelBase =>
+			channels.channelBaseToString( channelBase ) ,
+		).join( '\n' )
+
+		const on_emoji = Emoji.animation_tick_block.toString()
+		const target = new DotNotatedInterface( guildData )
 
 		const instrumentsContent = command.SETTING_FIELDS.map(
-			({ key, label_on, label_off, emoji }) =>
-				target.hasItem(key)
-					? `${on_emoji} ${label_on}`
-					: `${emoji} ${label_off}`,
-		).join("\n");
+			( { key , label_on , label_off , emoji } ) =>
+				target.hasItem( key )
+					? `${ on_emoji } ${ label_on }`
+					: `${ emoji } ${ label_off }` ,
+		).join( '\n' )
 
-		return `Каналы:\n${channelContent}\nИнструменты:\n${instrumentsContent}`;
+		return `Каналы:\n${ channelContent }\nИнструменты:\n${ instrumentsContent }`
 	}
 
-	createEmbed(context) {
-		const emoji = context.randomEmoji;
+	createEmbed( context ) {
+		const emoji = context.randomEmoji
 		return {
-			title: `Настроим сервер?... ${emoji}`,
-			description: this.createDescription(context),
-			reactions: this.command.SETTING_FIELDS.map((field) => field.emoji),
-		};
+			title: `Настроим сервер?... ${ emoji }` ,
+			description: this.createDescription( context ) ,
+			reactions: this.command.SETTING_FIELDS.map( field => field.emoji ) ,
+		}
 	}
 
 	async onProcess() {
-		const { context } = this;
-		const { interaction } = context;
-		/**@type {import("discord.js").Message} */
-		const message = await interaction.msg(this.createEmbed(context));
+		const { context } = this
+		const { interaction } = context
+		/** @type {import("discord.js").Message} */
+		const message = await interaction.msg( this.createEmbed( context ) )
 
-		const collector = message.createReactionCollector();
-		collector.on("collect", (reaction, user) => {
-			this.onReaction(reaction, user, context).catch(
-				util_store_and_send_audit.bind(null, context),
-			);
-		});
-		collector.on("end", () => {
-			message.reactions.removeAll();
-		});
-		context.setInterfaceMessage(message);
+		const collector = message.createReactionCollector()
+		collector.on( 'collect' , ( reaction , user ) => {
+			this.onReaction( reaction , user , context ).catch(
+				util_store_and_send_audit.bind( null , context ) ,
+			)
+		} )
+		collector.on( 'end' , () => {
+			message.reactions.removeAll()
+		} )
+		context.setInterfaceMessage( message )
 	}
 
-	async onReaction(reaction, user, context) {
-		const { emoji } = reaction;
-		if (!this.processUserCanUseReaction(user, context)) {
-			return;
+	async onReaction( reaction , user , context ) {
+		const { emoji } = reaction
+		if ( !this.processUserCanUseReaction( user , context ) ) {
+			return
 		}
 
-		await context.channel.msg({ content: String(emoji), delete: 5_000 });
+		await context.channel.msg( { content: String( emoji ) , delete: 5_000 } )
 		this.command.SETTING_FIELDS.find(
-			(field) => field.emoji === emoji.name,
-		)?.onReaction(reaction, user, context);
+			field => field.emoji === emoji.name ,
+		)?.onReaction( reaction , user , context )
 	}
 
-	processUserCanUseReaction(user, context) {
-		if (user === context.user) {
-			return true;
+	processUserCanUseReaction( user , context ) {
+		if ( user === context.user ) {
+			return true
 		}
 
-		return false;
+		return false
 	}
 }
 
 class Command extends BaseCommand {
 	componentsCallbacks = {
-		open(interaction) {
-			const context = CommandRunContext.new(interaction, this);
-			context.setWhenRunExecuted(this.run(context));
-			return context;
-		},
-	};
+		open( interaction ) {
+			const context = CommandRunContext.new( interaction , this )
+			context.setWhenRunExecuted( this.run( context ) )
+			return context
+		} ,
+	}
 
 	options = {
-		name: "editserver",
-		id: 29,
+		name: 'editserver' ,
+		id: 29 ,
 		media: {
 			description:
-				"Настройки сервера (бот) — Фильтр чата, канал логов, основной чат, описание и баннер для команды `!сервер` — способы управления сервером.",
-			example: `!editserver #без аргументов`,
-		},
+				'Настройки сервера (бот) — Фильтр чата, канал логов, основной чат, описание и баннер для команды `!сервер` — способы управления сервером.' ,
+			example: `!editserver #без аргументов` ,
+		} ,
 		alias:
-			"настроитьсервер серватиус servatius налагодитисервер серватіус настройки налаштування settings",
-		allowDM: true,
-		type: "guild",
-		userPermissions: PermissionsBits.ManageGuild,
-	};
+			'настроитьсервер серватиус servatius налагодитисервер серватіус настройки налаштування settings' ,
+		allowDM: true ,
+		type: 'guild' ,
+		userPermissions: PermissionsBits.ManageGuild ,
+	}
 
 	SETTING_FIELDS = [
 		{
-			key: "description",
-			emoji: "🪧",
-			label_off: "Настроить описание сервера",
-			label_on: "Описание сервера удачно настроено",
-			onReaction(reaction, user, context) {
-				new Command_GuildDescription_Manager(context).onProcess();
-			},
-		},
+			key: 'description' ,
+			emoji: '🪧' ,
+			label_off: 'Настроить описание сервера' ,
+			label_on: 'Описание сервера удачно настроено' ,
+			onReaction( reaction , user , context ) {
+				new Command_GuildDescription_Manager( context ).onProcess()
+			} ,
+		} ,
 		{
-			key: "banner",
-			emoji: "🌌",
-			label_off: "Установите баннер",
-			label_on: "На сервере есть свой баннер!",
-			onReaction(reaction, user, context) {
-				new Command_GuildBanner_Manager(context).onProcess();
-			},
-		},
+			key: 'banner' ,
+			emoji: '🌌' ,
+			label_off: 'Установите баннер' ,
+			label_on: 'На сервере есть свой баннер!' ,
+			onReaction( reaction , user , context ) {
+				new Command_GuildBanner_Manager( context ).onProcess()
+			} ,
+		} ,
 		{
-			key: "chatFilter",
-			emoji: "🚸",
-			label_off: "Фильтр чата выключен",
-			label_on: "Фильтр чата включён :)",
-			onReaction(reaction, user, context) {
-				new Command_GuildChatFilter_Manager(context).onProcess();
-			},
-		},
+			key: 'chatFilter' ,
+			emoji: '🚸' ,
+			label_off: 'Фильтр чата выключен' ,
+			label_on: 'Фильтр чата включён :)' ,
+			onReaction( reaction , user , context ) {
+				new Command_GuildChatFilter_Manager( context ).onProcess()
+			} ,
+		} ,
 		{
-			key: "partners.isEnable",
-			emoji: "🪂",
-			label_off: "Можно запустить партнёрства",
-			label_on: "Партнёрства включены",
-			onReaction(reaction, user, context) {
-				new Command_GuildPartners_Manager(context).onProcess();
-			},
-		},
+			key: 'partners.isEnable' ,
+			emoji: '🪂' ,
+			label_off: 'Можно запустить партнёрства' ,
+			label_on: 'Партнёрства включены' ,
+			onReaction( reaction , user , context ) {
+				new Command_GuildPartners_Manager( context ).onProcess()
+			} ,
+		} ,
 		{
-			key: "hi",
-			emoji: "👋",
-			label_off: "Не настроено приветсвие новых участников",
-			label_on: "«Привет тебе, новый участник»",
-			onReaction(reaction, user, context) {
-				new Command_GuildSetHello_Manager(context).onProcess();
-			},
-		},
-	];
+			key: 'hi' ,
+			emoji: '👋' ,
+			label_off: 'Не настроено приветсвие новых участников' ,
+			label_on: '«Привет тебе, новый участник»' ,
+			onReaction( reaction , user , context ) {
+				new Command_GuildSetHello_Manager( context ).onProcess()
+			} ,
+		} ,
+	]
 
-	async onChatInput(msg, interaction) {
-		const context = await CommandRunContext.new(interaction, this);
-		context.setWhenRunExecuted(this.run(context));
-		return context;
+	async onChatInput( msg , interaction ) {
+		const context = await CommandRunContext.new( interaction , this )
+		context.setWhenRunExecuted( this.run( context ) )
+		return context
 	}
 
 	/**
 	 * Process the default behavior using the provided context.
 	 * @param {CommandRunContext} context - the context object containing channel information
 	 */
-	async processDefaultBehavior(context) {
-		await new CommandDefaultBehavior(context).onProcess();
+	async processDefaultBehavior( context ) {
+		await new CommandDefaultBehavior( context ).onProcess()
 	}
 
-	async run(context) {
-		context.parseCli();
-		await this.processDefaultBehavior(context);
+	async run( context ) {
+		context.parseCli()
+		await this.processDefaultBehavior( context )
 	}
 }
 
-export default Command;
+export default Command

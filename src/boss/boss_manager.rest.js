@@ -1,17 +1,18 @@
-const PREFIX = "/boss-manager";
-import BossManager from "#src/boss/BossManager.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import BossManager from '#src/boss/BossManager.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+
+const PREFIX = '/boss-manager'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
 	constructor() {
-		super();
+		super()
 	}
 
-	async get(request, response) {
-		response.send(String(BossManager));
+	async get( request , response ) {
+		response.send( String( BossManager ) )
 	}
 }
 
-export default Route;
+export default Route

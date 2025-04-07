@@ -1,97 +1,97 @@
-import { REASON_FOR_CHANGE_NICKNAME as CHILLI_REASON_FOR_CHANGE_NICKNAME } from "#src/chilli/command.chilli.js";
-import EventsManager, { BaseEvent } from "#src/events/EventsManager.js";
-import { AuditLogEvent } from "discord.js";
+import { REASON_FOR_CHANGE_NICKNAME as CHILLI_REASON_FOR_CHANGE_NICKNAME } from '#src/chilli/command.chilli.js'
+import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
+import { AuditLogEvent } from 'discord.js'
 
 class Event extends BaseEvent {
 	options = {
-		name: "client/userNameUpdate",
-	};
+		name: 'client/userNameUpdate' ,
+	}
 
 	constructor() {
-		const EVENT = "client/userNameUpdate";
-		super(EventsManager.emitter, EVENT);
+		const EVENT = 'client/userNameUpdate'
+		super( EventsManager.emitter , EVENT )
 	}
 
-	async checkAudit(newState) {
-		const { guild, user } = newState;
+	async checkAudit( newState ) {
+		const { guild , user } = newState
 
-		if (!guild) {
-			return;
+		if ( !guild ) {
+			return
 		}
 
-		const entry = await guild.Audit((entry) => entry.target.id === user.id, {
-			type: AuditLogEvent.MemberUpdate,
-		});
+		const entry = await guild.Audit( entry => entry.target.id === user.id , {
+			type: AuditLogEvent.MemberUpdate ,
+		} )
 
-		if (!entry) {
-			return null;
+		if ( !entry ) {
+			return null
 		}
 
-		return entry;
+		return entry
 	}
 
-	async getContext(previousState, newState) {
-		const guild = newState.guild;
+	async getContext( previousState , newState ) {
+		const guild = newState.guild
 
-		const { reason } = (await this.checkAudit(newState)) ?? {};
+		const { reason } = ( await this.checkAudit( newState ) ) ?? {}
 
-		const isChangedOnlyDisplayName =
-			previousState.displayName !== newState.displayName;
+		const isChangedOnlyDisplayName
+			= previousState.displayName !== newState.displayName
 
-		const [previousValue, newValue] = isChangedOnlyDisplayName
-			? [previousState.displayName, newState.displayName]
-			: [previousState.user.username, newState.user.username];
+		const [ previousValue , newValue ] = isChangedOnlyDisplayName
+			? [ previousState.displayName , newState.displayName ]
+			: [ previousState.user.username , newState.user.username ]
 
 		return {
-			guild,
-			reason,
-			previousState,
-			newState,
-			isChangedOnlyDisplayName,
-			previousValue,
-			newValue,
-		};
-	}
-
-	async run(previousState, newState) {
-		const context = await this.getContext(previousState, newState);
-
-		const { isChangedOnlyDisplayName, guild, reason } = context;
-
-		if (!isChangedOnlyDisplayName) {
-			newState.user.data.name = newState.user.username;
-		}
-
-		const isLogNeed = reason !== CHILLI_REASON_FOR_CHANGE_NICKNAME && guild;
-
-		if (isLogNeed) {
-			this.sendAuditLog(context);
+			guild ,
+			reason ,
+			previousState ,
+			newState ,
+			isChangedOnlyDisplayName ,
+			previousValue ,
+			newValue ,
 		}
 	}
 
-	sendAuditLog(context) {
+	async run( previousState , newState ) {
+		const context = await this.getContext( previousState , newState )
+
+		const { isChangedOnlyDisplayName , guild , reason } = context
+
+		if ( !isChangedOnlyDisplayName ) {
+			newState.user.data.name = newState.user.username
+		}
+
+		const isLogNeed = reason !== CHILLI_REASON_FOR_CHANGE_NICKNAME && guild
+
+		if ( isLogNeed ) {
+			this.sendAuditLog( context )
+		}
+	}
+
+	sendAuditLog( context ) {
 		const {
-			guild,
-			isChangedOnlyDisplayName,
-			newState,
-			previousValue,
-			newValue,
-			reason,
-		} = context;
-		const title = `Новое имя: ${newValue}`;
+			guild ,
+			isChangedOnlyDisplayName ,
+			newState ,
+			previousValue ,
+			newValue ,
+			reason ,
+		} = context
+		const title = `Новое имя: ${ newValue }`
 
-		sendToLogsChannel(guild, {
-			title,
-			description: reason ? `Указанная причина: ${reason}` : null,
+		sendToLogsChannel( guild , {
+			title ,
+			description: reason ? `Указанная причина: ${ reason }` : null ,
 			author: {
 				name: isChangedOnlyDisplayName
-					? "На сервере изменился\nник пользователя"
-					: "Участник изменил свой никнейм",
-				iconURL: newState.user.avatarURL(),
-			},
-			footer: { text: `Старый никнейм: ${previousValue}` },
-		});
+					? 'На сервере изменился\nник пользователя'
+					: 'Участник изменил свой никнейм' ,
+				iconURL: newState.user.avatarURL() ,
+			} ,
+			footer: { text: `Старый никнейм: ${ previousValue }` } ,
+		} )
 	}
 }
 
-export default Event;
+export default Event

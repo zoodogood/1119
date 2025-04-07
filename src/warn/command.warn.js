@@ -1,73 +1,74 @@
-import { NULL_WIDTH_SPACE } from "#constants/characters.js"
-import { SECOND } from "#constants/time.js"
-import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js"
-import { PermissionsBits } from "#src/discord/permissions.js"
-import { sendToLogsChannel } from "#src/guild_special_channels/special_channel_enum.js"
+import { NULL_WIDTH_SPACE } from '#constants/characters.js'
+import { SECOND } from '#constants/time.js'
+import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { PermissionsBits } from '#src/discord/permissions.js'
+import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_enum.js'
+
 class Command extends BaseCommand {
 	options = {
-		name: "warn",
-		id: 7,
+		name: 'warn' ,
+		id: 7 ,
 		media: {
-			description: "Выдаёт формальное предупреждение пользователю — —",
-			example: `!warn {memb}`,
-		},
+			description: 'Выдаёт формальное предупреждение пользователю — —' ,
+			example: `!warn {memb}` ,
+		} ,
 		accessibility: {
-			publicized_on_level: 5,
-		},
-		alias: "пред варн попередити",
-		expectMention: true,
-		allowDM: true,
-		cooldown: SECOND * 2,
-		type: "guild",
-		userPermissions: PermissionsBits.MuteMembers,
-	};
+			publicized_on_level: 5 ,
+		} ,
+		alias: 'пред варн попередити' ,
+		expectMention: true ,
+		allowDM: true ,
+		cooldown: SECOND * 2 ,
+		type: 'guild' ,
+		userPermissions: PermissionsBits.MuteMembers ,
+	}
 
-	async onChatInput(msg, interaction) {
-		const memb = interaction.mention;
+	async onChatInput( msg , interaction ) {
+		const memb = interaction.mention
 
-		interaction.params = interaction.params.split(" ").slice(1).join(" ");
+		interaction.params = interaction.params.split( ' ' ).slice( 1 ).join( ' ' )
 
-		if (memb === msg.author) {
-			msg.msg({
-				title: `${msg.author.username} выдал себе предупреждение за то, что ${
-					interaction.params.trim() || "смешной такой"
-				}`,
-				color: "#ff0000",
-			});
-			return;
+		if ( memb === msg.author ) {
+			msg.msg( {
+				title: `${ msg.author.username } выдал себе предупреждение за то, что ${
+					interaction.params.trim() || 'смешной такой'
+				}` ,
+				color: '#ff0000' ,
+			} )
+			return
 		}
 
 		const message = interaction.params
-			? `Участник ${msg.author.username} выдал предупреждение ${memb.username}\n**Причина:** ${interaction.params}`
-			: `${msg.author.username} выдал предупреждение ${memb.username} без объяснения причин.`;
+			? `Участник ${ msg.author.username } выдал предупреждение ${ memb.username }\n**Причина:** ${ interaction.params }`
+			: `${ msg.author.username } выдал предупреждение ${ memb.username } без объяснения причин.`
 
-		msg.msg({
-			title: "Выдан пред",
-			description: `${message}`,
-			color: "#ff0000",
+		msg.msg( {
+			title: 'Выдан пред' ,
+			description: `${ message }` ,
+			color: '#ff0000' ,
 			author: {
-				name: `Выдал: ${msg.author.username}`,
-				iconURL: msg.author.avatarURL(),
-			},
+				name: `Выдал: ${ msg.author.username }` ,
+				iconURL: msg.author.avatarURL() ,
+			} ,
 			footer: {
-				text: NULL_WIDTH_SPACE,
-				iconURL: memb.avatarURL(),
-			},
-		});
+				text: NULL_WIDTH_SPACE ,
+				iconURL: memb.avatarURL() ,
+			} ,
+		} )
 
-		memb.msg({
+		memb.msg( {
 			title: `Вам выдано предупреждение \nПричина: ${
-				interaction.params || "не указана"
-			}`,
-			color: "#ff0000",
-			footer: { text: "Выдал: " + msg.author.tag },
-		});
-		sendToLogsChannel(msg.guild, {
-			title: `Одному из участников выдано предупреждение`,
-			description: message,
-			color: "#ff0000",
-		});
+				interaction.params || 'не указана'
+			}` ,
+			color: '#ff0000' ,
+			footer: { text: `Выдал: ${ msg.author.tag }` } ,
+		} )
+		sendToLogsChannel( msg.guild , {
+			title: `Одному из участников выдано предупреждение` ,
+			description: message ,
+			color: '#ff0000' ,
+		} )
 	}
 }
 
-export default Command;
+export default Command

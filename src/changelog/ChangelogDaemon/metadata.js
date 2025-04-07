@@ -1,21 +1,21 @@
-import { GroupSymbols } from "#src/changelog/ChangelogDaemon/display.js";
-import dayjs from "#src/dayjs.js";
+import { GroupSymbols } from '#src/changelog/ChangelogDaemon/display.js'
+import dayjs from '#src/dayjs.js'
 
-export function metadata(item) {
-	const { createdAt, change } = item;
-	const period = dayjs(+createdAt).format("MM.YYYY");
-	const lowed_change = change.toLowerCase();
-	const group_base = GroupSymbols.find(({ alias }) =>
-		alias.some((alias) => lowed_change.startsWith(alias)),
-	);
-	const group_symbol = group_base?.symbol || "/";
-	const short_change = group_base ? change.replace(/^.+?:\s*/, "") : change;
+export function metadata( item ) {
+	const { createdAt , change } = item
+	const period = dayjs( +createdAt ).format( 'MM.YYYY' )
+	const lowed_change = change.toLowerCase()
+	const group_base = GroupSymbols.find( ( { alias } ) =>
+		alias.some( alias => lowed_change.startsWith( alias ) ) ,
+	)
+	const group_symbol = group_base?.symbol || '/'
+	const short_change = group_base ? change.replace( /^.+?:\s*/ , '' ) : change
 	return {
-		...item,
-		period,
-		group_symbol,
-		lowed_change,
-		group_base,
-		short_change,
-	};
+		... item ,
+		period ,
+		group_symbol ,
+		lowed_change ,
+		group_base ,
+		short_change ,
+	}
 }

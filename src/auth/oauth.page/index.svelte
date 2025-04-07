@@ -1,6 +1,6 @@
 <script>
-	import svelteApp from "#site/core/svelte-app_singleton.js";
-	import PagesRouter from "#site/lib/page_router_singleton.js";
+	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
+	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
 	import { sleep } from "#src/safe-utils.js";
 	import { GlitchText } from "@zoodogood/utils/objectives";

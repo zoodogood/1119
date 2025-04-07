@@ -2,9 +2,10 @@
 src/config.json.js
 
 node_modules/
-build/
+buildout/
 
 src/public/articles/
+src/articles/_items
 
 folder/!localStorage/
 

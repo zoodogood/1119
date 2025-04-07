@@ -1,19 +1,18 @@
-import { DataManager } from "#src/data/singleton.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import { DataManager } from '#src/data/singleton.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
 
-const PREFIX = "/client/audit/resources";
+const PREFIX = '/client/audit/resources'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
-	constructor(express) {
-		super();
+	constructor( express ) {
+		super()
 	}
 
-	async get(request, response) {
-		response.json(DataManager.data.audit.resourcesChanges);
-		return;
+	async get( request , response ) {
+		response.json( DataManager.data.audit.resourcesChanges )
 	}
 }
 
-export default Route;
+export default Route

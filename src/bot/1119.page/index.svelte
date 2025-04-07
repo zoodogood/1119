@@ -1,55 +1,55 @@
 <script>
-	import Image from "#site-component/Image";
-	import Layout from "#site-component/Layout";
-	import AuthorProjects from "#site/components/frames/external/author/Projects.svelte";
 	import {
-		AuditDaily,
-		Statistic,
-	} from "#site/components/frames/statistic/mod.js";
+		AuditDaily ,
+		Statistic ,
+	} from '#root/src/site/_build/src/svelte_component/frames/statistic/mod.js'
+	import Image from '#site-component/Image'
+	import Layout from '#site-component/Layout'
+	import AuthorProjects from '#site/components/frames/external/author/Projects.svelte'
 
-	import PagesRouter from "#site/lib/page_router_singleton.js";
-	import { onMount } from "svelte";
+	import PagesRouter from '#root/src/site/_build/src/lib/page_router_singleton.js'
+	import { onMount } from 'svelte'
 
 	const Component = {
-		mainNode: null,
-	};
+		mainNode: null ,
+	}
 	const Interaction = {
-		onIntersection(node, entries) {
-			node.classList.add("visible");
-		},
-	};
-	onMount(() => {
+		onIntersection( node , entries ) {
+			node.classList.add( 'visible' )
+		} ,
+	}
+	onMount( () => {
 		const sections = [
-			...Component.mainNode.querySelectorAll(".page-main > section"),
-		];
-		for (const sectionNode of sections) {
-			const observer = new IntersectionObserver(([entry]) => {
-				if (entry.isIntersecting === false) {
-					return;
+			... Component.mainNode.querySelectorAll( '.page-main > section' ) ,
+		]
+		for ( const sectionNode of sections ) {
+			const observer = new IntersectionObserver( ( [ entry ] ) => {
+				if ( entry.isIntersecting === false ) {
+					return
 				}
 
-				Interaction.onIntersection(sectionNode, entry);
-				observer.unobserve(sectionNode);
-			});
+				Interaction.onIntersection( sectionNode , entry )
+				observer.unobserve( sectionNode )
+			} )
 
-			observer.observe(sectionNode);
-			continue;
+			observer.observe( sectionNode )
+			continue
 		}
-	});
+	} )
 </script>
 
 <Layout>
 	<header>
 		<element-wrapper>
 			<Image
-				src="https://i.ibb.co/JrhvjFB/mute-command-gif.gif"
-				alt="muteCommand"
-				className="image_muteCommand"
+				src='https://i.ibb.co/JrhvjFB/mute-command-gif.gif'
+				alt='muteCommand'
+				className='image_muteCommand'
 			/>
 		</element-wrapper>
 	</header>
 
-	<main bind:this={Component.mainNode} class="page-main">
+	<main bind:this={Component.mainNode} class='page-main'>
 		<h1>Бот без явного функционала</h1>
 		<p>
 			Я действительно не могу описать его возможностей, ведь нет определённой
@@ -62,14 +62,14 @@
 		</p>
 		<p>
 			<a
-				href={PagesRouter.relativeToPage(PagesRouter.getPageBy("commands").key)}
-				>Список команд.</a
+				href={PagesRouter.relativeToPage( PagesRouter.getPageBy( 'commands' ).key )}
+			>Список команд.</a
 			>
 		</p>
 
-		<hr style:margin-block="10vh" />
+		<hr style:margin-block='10vh' />
 
-		<section style:padding-top="20vh">
+		<section style:padding-top='20vh'>
 			<Statistic />
 		</section>
 
@@ -79,7 +79,7 @@
 			<hr />
 			<hr />
 			<AuditDaily />
-			<p style="font-size: 0.8em; opacity: 0.8; margin-top: 15vh;">
+			<p style='font-size: 0.8em; opacity: 0.8; margin-top: 15vh;'>
 				Нажмите на квадрат, чтобы увидеть подробную активность пользователей за
 				конкретный день.
 			</p>
@@ -87,7 +87,7 @@
 		</section>
 
 		<h2>Другие проекты</h2>
-		<section style:container="none">
+		<section style:container='none'>
 			<hr />
 			<hr />
 			<hr />

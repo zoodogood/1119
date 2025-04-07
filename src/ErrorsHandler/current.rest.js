@@ -1,18 +1,19 @@
-const PREFIX = "/errors/current";
-import ErrorsHandler from "#src/ErrorsHandler/ErrorsHandler.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import ErrorsHandler from '#src/ErrorsHandler/ErrorsHandler.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+
+const PREFIX = '/errors/current'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
-	constructor(express) {
-		super();
+	constructor( express ) {
+		super()
 	}
 
-	async get(request, response) {
-		const json = ErrorsHandler.Core.toJSON();
-		response.json(json);
+	async get( request , response ) {
+		const json = ErrorsHandler.Core.toJSON()
+		response.json( json )
 	}
 }
 
-export default Route;
+export default Route

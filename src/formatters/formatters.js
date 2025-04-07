@@ -1,15 +1,15 @@
-import { toFixedAfterZero } from "#src/safe-utils.js";
+import { toFixedAfterZero } from '#src/safe-utils.js'
 
-export function percent_string(normalized) {
-	if (!normalized) {
-		return NaN;
+export function percent_string( normalized ) {
+	if ( !normalized ) {
+		return Number.NaN
 	}
-	return `${toFixedAfterZero(normalized * 100, 1)}%`;
+	return `${ toFixedAfterZero( normalized * 100 , 1 ) }%`
 }
 
-export function crop_string(text, max_length) {
-	if (text.length <= max_length) {
-		return text;
+export function crop_string( text , max_length ) {
+	if ( text.length <= max_length ) {
+		return text
 	}
-	return `${text.slice(0, max_length - 1)}…`;
+	return `${ text.slice( 0 , max_length - 1 ) }…`
 }

@@ -1,26 +1,26 @@
-import EventsManager from "#src/events/EventsManager.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
-import { parse_body } from "#src/http_requests/express_utils.js";
+import EventsManager from '#src/events/EventsManager.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+import { parse_body } from '#src/http_requests/express_utils.js'
 
-const PREFIX = "/accept_github_webhook";
+const PREFIX = '/accept_github_webhook'
 
 export const Events = {
-	Commit: "accept_github_webhook__Commit",
-};
+	Commit: 'accept_github_webhook__Commit' ,
+}
 class Route extends BaseRoute {
-	isHidden = true;
-	prefix = PREFIX;
+	isHidden = true
+	prefix = PREFIX
 
 	constructor() {
-		super();
+		super()
 	}
 
-	async post(request, response) {
-		await parse_body(request, response, { method: "json" });
-		response.sendStatus(202);
+	async post( request , response ) {
+		await parse_body( request , response , { method: 'json' } )
+		response.sendStatus( 202 )
 
-		EventsManager.emitter.emit(Events.Commit, request.body);
+		EventsManager.emitter.emit( Events.Commit , request.body )
 	}
 }
 
-export default Route;
+export default Route

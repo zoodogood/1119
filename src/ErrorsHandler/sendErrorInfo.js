@@ -1,115 +1,114 @@
-import { HOUR } from "#constants/time.js";
-import { ErrorData } from "#src/ErrorsHandler/ErrorsHandler.js";
-import { resolveGithubPath } from "#src/github/resolveGithubPath.js";
-import { ButtonStyle, ComponentType } from "discord-api-types/v10";
-import Path from "node:path";
+import Path from 'node:path'
+import { HOUR } from '#constants/time.js'
+import { ErrorData } from '#src/ErrorsHandler/ErrorsHandler.js'
+import { resolveGithubPath } from '#src/github/resolveGithubPath.js'
+import { ButtonStyle , ComponentType } from 'discord-api-types/v10'
 
 class ErrorMomentNotification {
 	static components = {
-		getErrorInfo({ interaction, context }) {
-			const { stack } = context;
-			interaction.msg({
-				ephemeral: true,
-				content: `\`\`\`js\n${stack}\`\`\``,
-			});
-		},
-		async callBugCommand({ interaction, context }) {
+		getErrorInfo( { interaction , context } ) {
+			const { stack } = context
+			interaction.msg( {
+				ephemeral: true ,
+				content: `\`\`\`js\n${ stack }\`\`\`` ,
+			} )
+		} ,
+		async callBugCommand( { interaction , context } ) {
 			interaction.extend = {
-				error_moment_context: context,
-			};
+				error_moment_context: context ,
+			}
 
 			const { default: CommandsManager } = await import(
-				"#src/commands/CommandsManager/singleton.js"
-			);
+				'#src/commands/CommandsManager/singleton.js'
+			)
 
-			CommandsManager.callMap.get("bug").onChatInput(null, interaction);
-		},
-	};
-
-	static onComponent({ interaction, context }) {
-		this.components[interaction.customId].call(this, {
-			interaction,
-			context,
-		});
+			CommandsManager.callMap.get( 'bug' ).onChatInput( null , interaction )
+		} ,
 	}
 
-	static async sendErrorInfo({
-		channel,
-		error,
-		interaction = {},
-		primary = null,
-		description = "",
-	}) {
-		const parsedStack =
-			ErrorData.prototype.parseErrorStack.call(
-				{ error },
-				{ node_modules: false },
-			) ?? {};
+	static onComponent( { interaction , context } ) {
+		this.components[ interaction.customId ].call( this , {
+			interaction ,
+			context ,
+		} )
+	}
 
-		const { fileOfError, strokeOfError } = parsedStack;
-		let { stack } = parsedStack;
+	static async sendErrorInfo( {
+		channel ,
+		error ,
+		interaction = {} ,
+		primary = null ,
+		description = '' ,
+	} ) {
+		const parsedStack
+			= ErrorData.prototype.parseErrorStack.call(
+				{ error } ,
+				{ node_modules: false } ,
+			) ?? {}
 
-		if (stack?.length >= 1900) {
-			stack = stack.slice(0, 1900);
+		const { fileOfError , strokeOfError } = parsedStack
+		let { stack } = parsedStack
+
+		if ( stack?.length >= 1900 ) {
+			stack = stack.slice( 0 , 1900 )
 		}
 
 		const components = [
 			{
-				type: ComponentType.Button,
-				style: ButtonStyle.Secondary,
-				label: "Получить отчёт",
-				customId: "getErrorInfo",
-				emoji: "〽️",
-			},
+				type: ComponentType.Button ,
+				style: ButtonStyle.Secondary ,
+				label: 'Получить отчёт' ,
+				customId: 'getErrorInfo' ,
+				emoji: '〽️' ,
+			} ,
 			{
-				type: ComponentType.Button,
-				style: ButtonStyle.Link,
-				label: "В Github",
+				type: ComponentType.Button ,
+				style: ButtonStyle.Link ,
+				label: 'В Github' ,
 				url: resolveGithubPath(
-					Path.relative(process.cwd(), fileOfError ?? "."),
-					strokeOfError,
-				),
-				disabled: !fileOfError,
-			},
+					Path.relative( process.cwd() , fileOfError ?? '.' ) ,
+					strokeOfError ,
+				) ,
+				disabled: !fileOfError ,
+			} ,
 			{
-				type: ComponentType.Button,
-				style: ButtonStyle.Success,
-				label: "Описать случай",
-				customId: "callBugCommand",
-			},
-		];
+				type: ComponentType.Button ,
+				style: ButtonStyle.Success ,
+				label: 'Описать случай' ,
+				customId: 'callBugCommand' ,
+			} ,
+		]
 		const embed = {
-			title: "— Фактически произошёл сбой в работе функции 🖖",
-			description: `> ${error.message}\n\n${description}`,
-			color: "#d8bb40",
-			components,
-			reference: interaction.message?.id ?? null,
-		};
+			title: '— Фактически произошёл сбой в работе функции 🖖' ,
+			description: `> ${ error.message }\n\n${ description }` ,
+			color: '#d8bb40' ,
+			components ,
+			reference: interaction.message?.id ?? null ,
+		}
 
-		const message = await channel.msg(embed);
+		const message = await channel.msg( embed )
 
 		const context = {
-			error,
-			stack,
-			interaction,
-			channel,
-			description,
-			primary,
-		};
+			error ,
+			stack ,
+			interaction ,
+			channel ,
+			description ,
+			primary ,
+		}
 
-		const collector = message.createMessageComponentCollector({
-			time: HOUR,
-		});
-		collector.on("collect", async (interaction) =>
-			this.onComponent({ interaction, context }),
-		);
-		collector.on("end", () => message.edit({ components: [] }));
-		return { context, message };
+		const collector = message.createMessageComponentCollector( {
+			time: HOUR ,
+		} )
+		collector.on( 'collect' , async interaction =>
+			this.onComponent( { interaction , context } ) )
+		collector.on( 'end' , () => message.edit( { components: [] } ) )
+		return { context , message }
 	}
 }
 
-function sendErrorInfo(...params) {
-	return ErrorMomentNotification.sendErrorInfo(...params);
+function sendErrorInfo( ... params ) {
+	return ErrorMomentNotification.sendErrorInfo( ... params )
 }
 
-export { ErrorMomentNotification, sendErrorInfo };
+export { ErrorMomentNotification , sendErrorInfo }

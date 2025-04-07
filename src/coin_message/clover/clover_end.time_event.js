@@ -1,34 +1,34 @@
-import { HOUR } from "#constants/time.js";
-import { client } from "#src/bot/client/singleton.js";
-import { CALCULATE_CLOVER_MULTIPLAYER } from "#src/coin_message/clover/contstants.js";
+import { HOUR } from '#constants/time.js'
+import { client } from '#src/bot/client/singleton.js'
+import { CALCULATE_CLOVER_MULTIPLAYER } from '#src/coin_message/clover/contstants.js'
 
 class Event {
 	options = {
-		name: "timeEvent/clover-end",
-	};
+		name: 'timeEvent/clover-end' ,
+	}
 
 	/**
 	 * @param {unknown} eventData
 	 * @param {string} guildId
 	 * @param {string} channelId
 	 */
-	async run(eventData, guildId, channelId) {
-		const guild = client.guilds.cache.get(guildId);
-		if (!guild) {
-			return;
+	async run( eventData , guildId , channelId ) {
+		const guild = client.guilds.cache.get( guildId )
+		if ( !guild ) {
+			return
 		}
-		const channel = guild.channels.cache.get(channelId);
-		const { cloverEffect } = guild.data;
-		delete guild.data.cloverEffect;
+		const channel = guild.channels.cache.get( channelId )
+		const { cloverEffect } = guild.data
+		delete guild.data.cloverEffect
 
-		const multiplayer = CALCULATE_CLOVER_MULTIPLAYER(cloverEffect?.uses) + 1;
+		const multiplayer = CALCULATE_CLOVER_MULTIPLAYER( cloverEffect?.uses ) + 1
 
-		channel?.msg({
-			title: "☘️ Ивент Клевера завершился",
-			color: "#21c96c",
-			description: `Получено наград во время действия эффекта: ${cloverEffect?.coins}\nМаксимальный множитель: X${multiplayer.toFixed(2)}\nКуплено клеверов: ${cloverEffect?.uses}\nКлевер длился ${((Date.now() - cloverEffect?.createdAt) / HOUR).toFixed(1)}ч.`,
-		});
+		channel?.msg( {
+			title: '☘️ Ивент Клевера завершился' ,
+			color: '#21c96c' ,
+			description: `Получено наград во время действия эффекта: ${ cloverEffect?.coins }\nМаксимальный множитель: X${ multiplayer.toFixed( 2 ) }\nКуплено клеверов: ${ cloverEffect?.uses }\nКлевер длился ${ ( ( Date.now() - cloverEffect?.createdAt ) / HOUR ).toFixed( 1 ) }ч.` ,
+		} )
 	}
 }
 
-export default Event;
+export default Event

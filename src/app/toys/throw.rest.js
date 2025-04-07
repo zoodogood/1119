@@ -1,32 +1,32 @@
-import { ErrorsHandler } from "#src/ErrorsHandler/ErrorsHandler.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
-import { parse_body } from "#src/http_requests/express_utils.js";
+import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+import { parse_body } from '#src/http_requests/express_utils.js'
 
-const PREFIX = "/toys/throw";
+const PREFIX = '/toys/throw'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
-	constructor(express) {
-		super();
+	constructor( express ) {
+		super()
 	}
 
-	async get(request, response, next) {
+	async get( request , response , next ) {
 		throw new Error(
-			"Error caused automatically from toy api point: Need more coffe",
-		);
+			'Error caused automatically from toy api point: Need more coffe' ,
+		)
 	}
 
-	async post(request, response, next) {
-		const data = JSON.parse(await parse_body(request));
-		const { message, stack } = data;
-		const error = new Error(message);
-		error.stack = stack;
-		ErrorsHandler.onErrorReceive(error, {
-			from_site: true,
-			cause: { stack, message },
-		});
+	async post( request , response , next ) {
+		const data = JSON.parse( await parse_body( request ) )
+		const { message , stack } = data
+		const error = new Error( message )
+		error.stack = stack
+		ErrorsHandler.onErrorReceive( error , {
+			from_site: true ,
+			cause: { stack , message } ,
+		} )
 	}
 }
 
-export default Route;
+export default Route

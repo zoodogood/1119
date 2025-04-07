@@ -1,4 +1,4 @@
-[ErrorsHandler](../readme.md)/  
+[ErrorsHandler](../readme.md)/
 { PreviousSessionInstance
 
 ### PreviousSession

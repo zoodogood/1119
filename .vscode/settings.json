@@ -1,42 +1,107 @@
 {
-	"editor.defaultFormatter": "dbaeumer.vscode-eslint",
-	"javascript.preferences.importModuleSpecifierEnding": "js",
-	"[javascript]": {
+	"[typescript]": {
 		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
-	},
+	} ,
+	// Auto fix
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit" ,
+		"source.organizeImports": "never"
+	} ,
+	"editor.formatOnSave": false ,
+	// Silent the stylistic rules in you IDE, but still auto fix them
+	"eslint.rules.customizations": [
+		{
+			"fixable": true ,
+			"rule": "style/*" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "format/*" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "*-indent" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "*-spacing" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "*-spaces" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "*-order" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "*-dangle" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "*-newline" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "*quotes" ,
+			"severity": "off"
+		} ,
+		{
+			"fixable": true ,
+			"rule": "*semi" ,
+			"severity": "off"
+		}
+	] ,
+	// Enable eslint for all supported languages
+	"eslint.validate": [
+		"javascript" ,
+		"javascriptreact" ,
+		"typescript" ,
+		"typescriptreact" ,
+		"vue" ,
+		"html" ,
+		"markdown" ,
+		"json" ,
+		"json5" ,
+		"jsonc" ,
+		"yaml" ,
+		"toml" ,
+		"xml" ,
+		"gql" ,
+		"graphql" ,
+		"astro" ,
+		"svelte" ,
+		"css" ,
+		"less" ,
+		"scss" ,
+		"pcss" ,
+		"postcss"
+	] ,
+	"files.associations": {
+		"*.js.example": "JavaScript" ,
+		"*.json.example": "json" ,
+		"*.jsonc.example": "jsonc" ,
+		"*.tree.backup": "tree"
+	} ,
+	"javascript.preferences.importModuleSpecifierEnding": "js" ,
+	// Disable the default formatter, use eslint instead
+	"prettier.enable": false ,
+	"prettier.semi": false ,
 	"runOnSave.commands": [
 		{
-			"runIn": "backend",
-			"match": "git",
-			"finishStatusMessage": "Ok ${cwd}",
-			"command": "npm version --force --no-git-tag-version prerelease"
+			"command": "npm version --force --no-git-tag-version prerelease" ,
+			"finishStatusMessage": "Ok ${cwd}" ,
+			"match": "git" ,
+			"runIn": "backend"
 		}
-	],
-	"files.associations": {
-		"*.js.example": "JavaScript",
-		"*.json.example": "json",
-		"*.jsonc.example": "jsonc",
-		"*.tree.backup": "tree"
-	},
-	"[yaml]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"eslint.probe": [
-		"javascript",
-		"javascriptreact",
-		"typescript",
-		"typescriptreact",
-		"html",
-		"vue",
-		"markdown",
-		"svelte"
-	],
-	"eslint.validate": ["svelte"],
-	"[svelte]": {
-		"editor.defaultFormatter": "svelte.svelte-vscode"
-	},
-	"[html]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"prettier.semi": true
+	]
 }

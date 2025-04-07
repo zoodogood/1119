@@ -1,1 +1,1 @@
-export { TemplateRender } from "./TemplateRender.js";
+export { TemplateRender } from './TemplateRender.js'

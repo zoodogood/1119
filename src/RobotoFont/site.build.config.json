@@ -1,0 +1,17 @@
+{
+	"bundle": {
+		"./LICENSE.txt": "RobotoFont/LICENSE.txt" ,
+		"./Roboto-Black.ttf": "RobotoFont/Roboto-Black.ttf" ,
+		"./Roboto-BlackItalic.ttf": "RobotoFont/Roboto-BlackItalic.ttf" ,
+		"./Roboto-Bold.ttf": "RobotoFont/Roboto-Bold.ttf" ,
+		"./Roboto-BoldItalic.ttf": "RobotoFont/Roboto-BoldItalic.ttf" ,
+		"./Roboto-Italic.ttf": "RobotoFont/Roboto-Italic.ttf" ,
+		"./Roboto-Light.ttf": "RobotoFont/Roboto-Light.ttf" ,
+		"./Roboto-LightItalic.ttf": "RobotoFont/Roboto-LightItalic.ttf" ,
+		"./Roboto-Medium.ttf": "RobotoFont/Roboto-Medium.ttf" ,
+		"./Roboto-MediumItalic.ttf": "RobotoFont/Roboto-MediumItalic.ttf" ,
+		"./Roboto-Regular.ttf": "RobotoFont/Roboto-Regular.ttf" ,
+		"./Roboto-Thin.ttf": "RobotoFont/Roboto-Thin.ttf" ,
+		"./Roboto-ThinItalic.ttf": "RobotoFont/Roboto-ThinItalic.ttf"
+	}
+}

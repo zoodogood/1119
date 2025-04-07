@@ -1,7 +1,7 @@
 <script>
 	import EditableMarkdown from "#site-component/EditableMarkdown";
 	import Layout from "#site-component/Layout";
-	import svelteApp from "#site/core/svelte-app_singleton.js";
+	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
 
 	import Image from "#site-component/Image";
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";

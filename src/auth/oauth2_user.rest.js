@@ -1,35 +1,36 @@
-const PREFIX = "/oauth2/user";
-import { TokensUsersExchanger } from "#src/auth/APIPointAuthorization/APIPointAuthorization.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import { TokensUsersExchanger } from '#src/auth/APIPointAuthorization/APIPointAuthorization.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+
+const PREFIX = '/oauth2/user'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
-	constructor(express) {
-		super();
+	constructor( express ) {
+		super()
 	}
 
-	async get(request, response) {
-		const token = request.headers.authorization;
-		if (!token) {
-			response.status(401).send(`"Not authorized"`);
-			return;
+	async get( request , response ) {
+		const token = request.headers.authorization
+		if ( !token ) {
+			response.status( 401 ).send( `"Not authorized"` )
+			return
 		}
 
-		const prepareGuilds = !!request.headers.guilds;
+		const prepareGuilds = !!request.headers.guilds
 
-		const user = await TokensUsersExchanger.getUserRaw(token, {
-			requireOAuth: true,
-			prepareGuilds,
-		});
-		if (user === null) {
-			response.status(401).send(`"Authorization failed"`);
-			return;
+		const user = await TokensUsersExchanger.getUserRaw( token , {
+			requireOAuth: true ,
+			prepareGuilds ,
+		} )
+		if ( user === null ) {
+			response.status( 401 ).send( `"Authorization failed"` )
+			return
 		}
 
-		response.json(user);
+		response.json( user )
 	}
 }
 
-export default Route;
-export { TokensUsersExchanger };
+export default Route
+export { TokensUsersExchanger }

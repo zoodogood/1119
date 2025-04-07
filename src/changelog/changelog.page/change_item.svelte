@@ -2,8 +2,8 @@
 	import config from "#config";
 	import ContextMenu from "#site-component/ContextMenu";
 	import { createPopup } from "#site/components/Popups/handler.svelte";
-	import svelteApp from "#site/core/svelte-app_singleton.js";
-	import { isDeveloper } from "#site/lib/permissions.js";
+	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
+	import { isDeveloper } from "#root/src/site/_build/src/lib/permissions.js";
 	import dayjs from "#src/dayjs.js";
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
 

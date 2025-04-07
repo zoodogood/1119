@@ -1,38 +1,38 @@
 {
 	"compilerOptions": {
-		"skipLibCheck": true,
-		"allowJs": true,
-		"module": "nodenext",
-		"esModuleInterop": true,
-		"target": "esnext",
-		"forceConsistentCasingInFileNames": true,
-		"strict": true,
-		// JS
-		"baseUrl": ".",
+		"target": "esnext" ,
+		"experimentalDecorators": true ,
+
+		"baseUrl": "." ,
+		"rootDir": "." ,
+		"module": "nodenext" ,
+		"moduleResolution": "nodenext" ,
 		"paths": {
-			"#config": ["./src/config.json.js"],
-			"#app": ["./src/app/app.js"],
+			"#config": ["./src/config.json.js"] ,
+			"#app": ["./src/app/app.js"] ,
 
-			"#site/*": ["./src/site/src/*"],
-			"#bot/*": ["src/client/*"],
-			"#constants/*": ["src/constants/*"],
-			"#folder/*": ["./folder/*"],
-			"#lib/*": ["./src/lib/*"],
+			"#site/*": ["src/site/_build/src/*"] ,
+			"#bot/*": ["src/client/*"] ,
+			"#constants/*": ["src/constants/*"] ,
+			"#folder/*": ["./folder/*"] ,
+			"#lib/*": ["./src/lib/*"] ,
 
-			"#site-component-lib/*": ["./src/site/src/components/*"],
-			"#site-component/*": ["./src/site/src/components/*/mod.svelte"],
+			"#site-component-lib/*": ["src/site/_build/src/svelte_component/*"] ,
+			"#site-component/*": ["src/site/_build/src/svelte_component/*/mod.svelte"] ,
 
-			"#src/*": ["./src/*"],
+			"#src/*": ["./src/*"] ,
 			"#root/*": ["./*"]
-		},
-		"moduleResolution": "nodenext",
-		"importHelpers": true,
-		"checkJs": true,
-		"resolveJsonModule": true,
-		"outDir": "tsdist",
-		"experimentalDecorators": true,
-		"rootDir": "."
-	},
-	"reflection": true,
-	"exclude": ["node_modules", "**/node_modules", "dist"]
+		} ,
+		"resolveJsonModule": true ,
+		"allowJs": true ,
+		"checkJs": true ,
+		"strict": true ,
+		"importHelpers": true ,
+		"outDir": "tsdist" ,
+		"esModuleInterop": true ,
+		"forceConsistentCasingInFileNames": true ,
+		"skipLibCheck": true
+	} ,
+	"reflection": true ,
+	"exclude": ["node_modules" , "**/node_modules" , "dist"]
 }

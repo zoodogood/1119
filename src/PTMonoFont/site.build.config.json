@@ -1,0 +1,6 @@
+{
+	"bundle": {
+		"./PTMono-Regular.ttf": "PTMonoFont/PTMono-Regular.ttf" ,
+		"./OFL.txt": "PTMonoFont/LICENSE.txt"
+	}
+}

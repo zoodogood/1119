@@ -1,7 +1,7 @@
-import BossManager from "#src/boss/BossManager.js";
+import BossManager from '#src/boss/BossManager.js'
 
-export function damageTypeLabel(value) {
-	const numeric =
-		typeof value === "string" ? BossManager.DAMAGE_SOURCES[value] : value;
-	return BossManager.DAMAGE_SOURCES[numeric].label;
+export function damageTypeLabel( value ) {
+	const numeric
+		= typeof value === 'string' ? BossManager.DAMAGE_SOURCES[ value ] : value
+	return BossManager.DAMAGE_SOURCES[ numeric ].label
 }

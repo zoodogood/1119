@@ -1,273 +1,275 @@
-import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
-import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
-import { PropertiesEnum } from "#src/data/Properties.js";
-import { addResource } from "#src/data/public/addResource.js";
-import { DataManager } from "#src/data/singleton.js";
-import { ActionsMap } from "#src/user/actions/actionsMap.enum.js";
-import { CliParser } from "@zoodogood/utils/primitives";
+import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
+import { PropertiesEnum } from '#src/data/Properties.js'
+import { addResource } from '#src/data/public/addResource.js'
+import { DataManager } from '#src/data/singleton.js'
+import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import { CliParser } from '@zoodogood/utils/primitives'
 
 class Birthdays {}
 
 class BirthdayMember {
-	PRICES_FOR_UPDATE_BIRTHDAY = [1200, 3000, 12000];
-	constructor(user) {
-		this.user = user;
-		this.userData = user.data;
+	PRICES_FOR_UPDATE_BIRTHDAY = [ 1200 , 3000 , 12000 ]
+	constructor( user ) {
+		this.user = user
+		this.userData = user.data
 	}
+
 	calculateUpdatePrice() {
-		return this.PRICES_FOR_UPDATE_BIRTHDAY[this.userData.chestLevel];
+		return this.PRICES_FOR_UPDATE_BIRTHDAY[ this.userData.chestLevel ]
 	}
 
-	isValidDate(day, month) {
-		return day && month && day <= 31 && day >= 1 && month >= 1 && month <= 12;
+	isValidDate( day , month ) {
+		return day && month && day <= 31 && day >= 1 && month >= 1 && month <= 12
 	}
 
-	async processExistsBeforeUpdate(channel) {
-		const { userData, user } = this;
-		if (!userData.BDay) {
-			return true;
+	async processExistsBeforeUpdate( channel ) {
+		const { userData , user } = this
+		if ( !userData.BDay ) {
+			return true
 		}
 
-		const price = this.calculateUpdatePrice();
+		const price = this.calculateUpdatePrice()
 
-		const message = await channel.msg({
-			title: `Вы уже устанавливали дату своего дня рождения, повторная смена будет стоить вам ${price} коинов\nПродолжить?`,
-		});
+		const message = await channel.msg( {
+			title: `Вы уже устанавливали дату своего дня рождения, повторная смена будет стоить вам ${ price } коинов\nПродолжить?` ,
+		} )
 		const react = await message.awaitReact(
-			{ user, removeType: "all" },
-			"685057435161198594",
-			"763807890573885456",
-		);
+			{ user , removeType: 'all' } ,
+			'685057435161198594' ,
+			'763807890573885456' ,
+		)
 
-		if (react !== "685057435161198594") {
-			channel.msg({
-				title: "Действие отменено",
-				color: "#ff0000",
-				delete: 4000,
-			});
-			return false;
+		if ( react !== '685057435161198594' ) {
+			channel.msg( {
+				title: 'Действие отменено' ,
+				color: '#ff0000' ,
+				delete: 4000 ,
+			} )
+			return false
 		}
-		if (userData.coins < price) {
-			channel.msg({
-				title: "Недостаточно коинов",
-				color: "#ff0000",
-				delete: 4000,
-			});
-			return false;
+		if ( userData.coins < price ) {
+			channel.msg( {
+				title: 'Недостаточно коинов' ,
+				color: '#ff0000' ,
+				delete: 4000 ,
+			} )
+			return false
 		}
 
-		addResource({
-			user: user,
-			value: -price,
-			executor: user,
-			source: "command.birthdays.member.update",
-			resource: PropertiesEnum.coins,
-			context: this,
-		});
+		addResource( {
+			user ,
+			value: -price ,
+			executor: user ,
+			source: 'command.birthdays.member.update' ,
+			resource: PropertiesEnum.coins ,
+			context: this ,
+		} )
 
-		return true;
+		return true
 	}
 
-	async processUpdate(channel, value) {
-		const { user } = this;
-		const parsed = value.match(/\d\d\.\d\d/)?.[0];
+	async processUpdate( channel , value ) {
+		const { user } = this
+		const parsed = value.match( /\d\d\.\d\d/ )?.[ 0 ]
 
-		const [day, month] = parsed?.split(".").map(Number) || [];
+		const [ day , month ] = parsed?.split( '.' ).map( Number ) || []
 
-		if (!this.isValidDate(day, month)) {
-			channel.msg({
-				title: 'Ожидалось значение в формате "19.11", — день, месяц',
-				color: "#ff0000",
-				delete: 5000,
-			});
-			return;
+		if ( !this.isValidDate( day , month ) ) {
+			channel.msg( {
+				title: 'Ожидалось значение в формате "19.11", — день, месяц' ,
+				color: '#ff0000' ,
+				delete: 5000 ,
+			} )
+			return
 		}
 
-		if (!(await this.processExistsBeforeUpdate(channel))) {
-			return;
+		if ( !( await this.processExistsBeforeUpdate( channel ) ) ) {
+			return
 		}
 
-		this.setBirhday(user, parsed);
-		channel.msg({ title: "Установлено! 🎉", delete: 5_000 });
-		return true;
+		this.setBirhday( user , parsed )
+		channel.msg( { title: 'Установлено! 🎉' , delete: 5_000 } )
+		return true
 	}
 
-	setBirhday(user, value) {
-		user.data.BDay = value;
-		user.action(ActionsMap.globalQuest, { name: "setBirthday" });
+	setBirhday( user , value ) {
+		user.data.BDay = value
+		user.action( ActionsMap.globalQuest , { name: 'setBirthday' } )
 	}
 }
 
 class MembersCommandManager {
-	constructor(context) {
-		this.context = context;
+	constructor( context ) {
+		this.context = context
 	}
-	onProcess() {
-		const { channel, guild } = this.context;
-		const splitDate = (date) => date.split(".").map(Number);
 
-		const [currentDay, currentMonth] = splitDate(DataManager.data.bot.dayDate);
+	onProcess() {
+		const { channel , guild } = this.context
+		const splitDate = date => date.split( '.' ).map( Number )
+
+		const [ currentDay , currentMonth ] = splitDate( DataManager.data.bot.dayDate )
 
 		const users = guild.members.cache
-			.map((member) => member.user)
-			.filter((user) => user.data.BDay && !user.data.profile_confidentiality);
+			.map( member => member.user )
+			.filter( user => user.data.BDay && !user.data.profile_confidentiality )
 
-		const sortByDate = (userA, userB) => {
-			const [aDay, aMonth] = splitDate(userA.data.BDay);
-			const [bDay, bMonth] = splitDate(userB.data.BDay);
+		const sortByDate = ( userA , userB ) => {
+			const [ aDay , aMonth ] = splitDate( userA.data.BDay )
+			const [ bDay , bMonth ] = splitDate( userB.data.BDay )
 
-			if (aMonth !== bMonth) {
-				return (-1) ** (aMonth < bMonth);
+			if ( aMonth !== bMonth ) {
+				return ( -1 ) ** ( aMonth < bMonth )
 			}
 
-			if (aDay !== bDay) {
-				return (-1) ** (aDay < bDay);
+			if ( aDay !== bDay ) {
+				return ( -1 ) ** ( aDay < bDay )
 			}
 
-			return 0;
-		};
+			return 0
+		}
 
 		const usersByBirthdays = {
-			inThisYear: [],
-			inNextYear: [],
-		};
+			inThisYear: [] ,
+			inNextYear: [] ,
+		}
 
-		const checkInThisYear = (day, month) =>
-			month > currentMonth || (month === currentMonth && day >= currentDay);
+		const checkInThisYear = ( day , month ) =>
+			month > currentMonth || ( month === currentMonth && day >= currentDay )
 
-		users.forEach((user) => {
-			const [day, month] = splitDate(user.data.BDay);
+		users.forEach( ( user ) => {
+			const [ day , month ] = splitDate( user.data.BDay )
 
-			const inThisYear = checkInThisYear(day, month);
+			const inThisYear = checkInThisYear( day , month )
 
 			inThisYear
-				? usersByBirthdays.inThisYear.push(user)
-				: usersByBirthdays.inNextYear.push(user);
-		});
+				? usersByBirthdays.inThisYear.push( user )
+				: usersByBirthdays.inNextYear.push( user )
+		} )
 
-		const sortedUsers =
-			usersByBirthdays.inThisYear.length >= 20
-				? usersByBirthdays.inThisYear.sort(sortByDate)
+		const sortedUsers
+			= usersByBirthdays.inThisYear.length >= 20
+				? usersByBirthdays.inThisYear.sort( sortByDate )
 				: [
-						...usersByBirthdays.inThisYear.sort(sortByDate),
-						...usersByBirthdays.inNextYear.sort(sortByDate),
-					];
+					... usersByBirthdays.inThisYear.sort( sortByDate ) ,
+					... usersByBirthdays.inNextYear.sort( sortByDate ) ,
+				]
 
-		const daysTo = ({ date: [day, month], current }) => {
-			const year = new Date().getFullYear() + +!current;
-			const compare = new Date(`${year}.${month}.${day}`);
+		const daysTo = ( { date: [ day , month ] , current } ) => {
+			const year = ( new Date ).getFullYear() + +!current
+			const compare = new Date( `${ year }.${ month }.${ day }` )
 
-			const diff = compare.getTime() - Date.now();
-			return Math.ceil(diff / 86_400_000);
-		};
+			const diff = compare.getTime() - Date.now()
+			return Math.ceil( diff / 86_400_000 )
+		}
 
-		const toField = (user) => {
-			const isToday = user.data.BDay === DataManager.data.bot.dayDate;
-			const inThisYear = checkInThisYear(...splitDate(user.data.BDay));
+		const toField = ( user ) => {
+			const isToday = user.data.BDay === DataManager.data.bot.dayDate
+			const inThisYear = checkInThisYear( ... splitDate( user.data.BDay ) )
 
-			const dateContent = isToday ? "сегодня! 🎁" : user.data.BDay;
-			const inDaysContent = ` (через ${daysTo({
-				current: inThisYear,
-				date: splitDate(user.data.BDay),
-			})}д.)`;
-			const name = `${dateContent}${inDaysContent}`;
-			const value = user.tag;
-			return { name, value, inline: true };
-		};
+			const dateContent = isToday ? 'сегодня! 🎁' : user.data.BDay
+			const inDaysContent = ` (через ${ daysTo( {
+				current: inThisYear ,
+				date: splitDate( user.data.BDay ) ,
+			} ) }д.)`
+			const name = `${ dateContent }${ inDaysContent }`
+			const value = user.tag
+			return { name , value , inline: true }
+		}
 
 		const fields = sortedUsers.length
-			? sortedUsers.slice(0, 20).map(toField)
+			? sortedUsers.slice( 0 , 20 ).map( toField )
 			: [
-					{
-						name: "Никто не установил дату своего дня рождения",
-						value: "Сделать это можно — `!нп др <date>`",
-					},
-				];
+				{
+					name: 'Никто не установил дату своего дня рождения' ,
+					value: 'Сделать это можно — `!нп др <date>`' ,
+				} ,
+			]
 
-		const birthdaysToday = DataManager.data.bot.clearParty || 0;
+		const birthdaysToday = DataManager.data.bot.clearParty || 0
 
-		const title = "🎉 Дни рождения!";
-		const description = `Здесь отображаются даты дней рождения пользователей, которые указали эту информацию`;
+		const title = '🎉 Дни рождения!'
+		const description = `Здесь отображаются даты дней рождения пользователей, которые указали эту информацию`
 		const footer = {
-			text: birthdaysToday ? `Празднующих сегодня: ${birthdaysToday}` : "glhf",
-		};
+			text: birthdaysToday ? `Празднующих сегодня: ${ birthdaysToday }` : 'glhf' ,
+		}
 
-		channel.msg({ title: title, description, fields, footer });
+		channel.msg( { title , description , fields , footer } )
 	}
 }
 
 class CommandRunContext extends BaseCommandRunContext {
 	parseCli() {
-		const parser = new CliParser().setText(this.interaction.params);
+		const parser = ( new CliParser ).setText( this.interaction.params )
 
 		const parsed = parser
 			.processBrackets()
-			.captureFlags(this.command.options.cliParser.flags)
-			.captureResidue({ name: "rest" })
-			.collect();
+			.captureFlags( this.command.options.cliParser.flags )
+			.captureResidue( { name: 'rest' } )
+			.collect()
 
-		const values = parsed.resolveValues((capture) => capture?.toString());
-		this.setCliParsed(parsed, values);
+		const values = parsed.resolveValues( capture => capture?.toString() )
+		this.setCliParsed( parsed , values )
 	}
 }
 class Command extends BaseCommand {
 	options = {
-		name: "birthdays",
-		id: 22,
+		name: 'birthdays' ,
+		id: 22 ,
 		media: {
 			description:
-				"Отображает список ближайших именинников! :tada:\nНе забудьте поздравить их с праздником.",
-			example: `!birthdays #без аргументов`,
-		},
+				'Отображает список ближайших именинников! :tada:\nНе забудьте поздравить их с праздником.' ,
+			example: `!birthdays #без аргументов` ,
+		} ,
 		cliParser: {
 			flags: [
 				{
-					name: "--set-birthday",
-					capture: ["--set-birthday", "-sb"],
-					description: "Установите дату своего дня рождения",
-					expectValue: true,
-				},
-			],
-		},
+					name: '--set-birthday' ,
+					capture: [ '--set-birthday' , '-sb' ] ,
+					description: 'Установите дату своего дня рождения' ,
+					expectValue: true ,
+				} ,
+			] ,
+		} ,
 		accessibility: {
-			publicized_on_level: 5,
-		},
-		alias: "parties праздники вечеринки днирождения др днінарождення",
-		allowDM: true,
-		cooldown: 15_000,
-		type: "user",
-	};
-
-	async onChatInput(msg, interaction) {
-		const context = await CommandRunContext.new(interaction, this);
-		context.setWhenRunExecuted(this.run(context));
-		return context;
+			publicized_on_level: 5 ,
+		} ,
+		alias: 'parties праздники вечеринки днирождения др днінарождення' ,
+		allowDM: true ,
+		cooldown: 15_000 ,
+		type: 'user' ,
 	}
 
-	processDefaultBehavior(context) {
-		new MembersCommandManager(context).onProcess();
+	async onChatInput( msg , interaction ) {
+		const context = await CommandRunContext.new( interaction , this )
+		context.setWhenRunExecuted( this.run( context ) )
+		return context
 	}
 
-	processUpdateCommand(context) {
-		const { captures } = context.cliParsed.at(0);
-		const value = captures.get("--set-birthday")?.valueOfFlag();
-		if (!value) {
-			return;
+	processDefaultBehavior( context ) {
+		new MembersCommandManager( context ).onProcess()
+	}
+
+	processUpdateCommand( context ) {
+		const { captures } = context.cliParsed.at( 0 )
+		const value = captures.get( '--set-birthday' )?.valueOfFlag()
+		if ( !value ) {
+			return
 		}
-		const { channel } = context;
-		new BirthdayMember(context.user).processUpdate(channel, value);
-		return true;
+		const { channel } = context
+		new BirthdayMember( context.user ).processUpdate( channel , value )
+		return true
 	}
 
-	async run(context) {
-		context.parseCli();
-		if (this.processUpdateCommand(context)) {
-			return;
+	async run( context ) {
+		context.parseCli()
+		if ( this.processUpdateCommand( context ) ) {
+			return
 		}
-		this.processDefaultBehavior(context);
+		this.processDefaultBehavior( context )
 	}
 }
 
-export default Command;
+export default Command
 
-export { BirthdayMember, Birthdays };
+export { BirthdayMember , Birthdays }

@@ -1,281 +1,282 @@
-import { MINUTE } from "#constants/time.js";
-import { createStopPromise } from "#src/createStopPromise.js";
-import { ReactionInteraction } from "#src/discord/utils.js";
-import { codeOfEmoji } from "@zoodogood/utils/discordjs";
-import { arrayEmpty } from "@zoodogood/utils/primitives";
-import EventEmitter from "node:events";
+import EventEmitter from 'node:events'
+import { MINUTE } from '#constants/time.js'
+import { createStopPromise } from '#src/createStopPromise.js'
+import { ReactionInteraction } from '#src/discord/utils.js'
+import { codeOfEmoji } from '@zoodogood/utils/discordjs'
+import { arrayEmpty } from '@zoodogood/utils/primitives'
 
-function processUserCanUseInteraction(interaction, messageInterface) {
-	const { options } = messageInterface;
-	if (!options.user) {
-		return true;
+function processUserCanUseInteraction( interaction , messageInterface ) {
+	const { options } = messageInterface
+	if ( !options.user ) {
+		return true
 	}
-	if (interaction.user.id === options.user.id) {
-		return true;
+	if ( interaction.user.id === options.user.id ) {
+		return true
 	}
-	interaction.msg({
-		ephemeral: true,
-		description: `Это взаимодействие доступно только ${options.user.username}`,
-		delete: 7_000,
-	});
-	return false;
+	interaction.msg( {
+		ephemeral: true ,
+		description: `Это взаимодействие доступно только ${ options.user.username }` ,
+		delete: 7_000 ,
+	} )
+	return false
 }
 
 class AbstractHideDisabledComponents {
-	static needHide(messageInterface, component) {
+	static needHide( messageInterface , component ) {
 		return messageInterface.options.hideDisabledComponents
 			? !component.disabled
-			: true;
+			: true
 	}
 }
 
 export class MessageInterface_Options {
-	components = [];
-	hideDisabledComponents = null;
-	reactions = [];
-	render = null;
-	time = MINUTE * 5;
-	user = null;
+	components = []
+	hideDisabledComponents = null
+	reactions = []
+	render = null
+	time = MINUTE * 5
+	user = null
 }
 export class MessageInterface {
 	static CollectType = {
-		component: "component",
-		reaction: "reaction",
-	};
+		component: 'component' ,
+		reaction: 'reaction' ,
+	}
+
 	static Events = {
-		before_close: "before_close",
-		before_collect: "before_collect",
-		collect: "collect",
-		allowed_collect: "allowed_collect",
-		disallowed_collect: "disallowed_collect",
-		before_update: "before_update",
-	};
-	_closed = false;
-	_collectors = [];
-	channel = null;
-	embed = {};
-	emitter = new EventEmitter();
-
-	message = null;
-	one_message_already_being_sending = false;
-	options = new MessageInterface_Options();
-
-	constructor(channel) {
-		this.setChannel(channel);
+		before_close: 'before_close' ,
+		before_collect: 'before_collect' ,
+		collect: 'collect' ,
+		allowed_collect: 'allowed_collect' ,
+		disallowed_collect: 'disallowed_collect' ,
+		before_update: 'before_update' ,
 	}
 
-	async _beforeCollect(type, interaction) {
+	_closed = false
+	_collectors = []
+	channel = null
+	embed = {}
+	emitter = ( new EventEmitter )
+
+	message = null
+	one_message_already_being_sending = false
+	options = ( new MessageInterface_Options )
+
+	constructor( channel ) {
+		this.setChannel( channel )
+	}
+
+	async _beforeCollect( type , interaction ) {
 		const event = {
-			type,
-			interaction,
+			type ,
+			interaction ,
 			force_allow() {
-				this.allowed_force = true;
-			},
-			...createStopPromise(),
-		};
-		this.emitter.emit(MessageInterface.Events.before_collect, event);
-		await event.whenStopPromises();
-
-		this._onCollect(type, interaction, { force_allow: event.allowed_force });
-	}
-
-	_clean(target = null) {
-		arrayEmpty(this.options.components);
-		arrayEmpty(this.options.reactions);
-		this.updateMessage(target);
-	}
-
-	_clean_missing_reactions(target) {
-		if ("reactions" in target === false) {
-			return;
+				this.allowed_force = true
+			} ,
+			... createStopPromise() ,
 		}
-		const { options } = this;
+		this.emitter.emit( MessageInterface.Events.before_collect , event )
+		await event.whenStopPromises()
+
+		this._onCollect( type , interaction , { force_allow: event.allowed_force } )
+	}
+
+	_clean( target = null ) {
+		arrayEmpty( this.options.components )
+		arrayEmpty( this.options.reactions )
+		this.updateMessage( target )
+	}
+
+	_clean_missing_reactions( target ) {
+		if ( 'reactions' in target === false ) {
+			return
+		}
+		const { options } = this
 		target.reactions.cache
 			.filter(
-				(reaction) => !options.reactions.includes(codeOfEmoji(reaction.emoji)),
+				reaction => !options.reactions.includes( codeOfEmoji( reaction.emoji ) ) ,
 			)
-			.every((reaction) => reaction.remove());
+			.every( reaction => reaction.remove() )
 	}
 
 	_createCollectors() {
-		this._collectors.push(this._createComponentCollector());
-		this._collectors.push(this._createReactionCollector());
+		this._collectors.push( this._createComponentCollector() )
+		this._collectors.push( this._createReactionCollector() )
 	}
 
 	_createComponentCollector() {
-		const collector = this.message.createMessageComponentCollector({
-			time: this.options.time,
-		});
-		collector.on("collect", (interaction) =>
+		const collector = this.message.createMessageComponentCollector( {
+			time: this.options.time ,
+		} )
+		collector.on( 'collect' , interaction =>
 			this._onCollect.call(
-				this,
-				MessageInterface.CollectType.component,
-				interaction,
-			),
-		);
-		collector.once("end", () => this.close());
-		return collector;
+				this ,
+				MessageInterface.CollectType.component ,
+				interaction ,
+			) )
+		collector.once( 'end' , () => this.close() )
+		return collector
 	}
 
-	async _createMessage(target) {
-		target ||= this.channel;
-		this.message = await this._renderPage(target, {
-			...(await this._getMessageOptions()),
-		});
-		this._createCollectors();
-		return this.message;
+	async _createMessage( target ) {
+		target ||= this.channel
+		this.message = await this._renderPage( target , {
+			... ( await this._getMessageOptions() ) ,
+		} )
+		this._createCollectors()
+		return this.message
 	}
 
 	_createReactionCollector() {
-		const collector = this.message.createReactionCollector({
-			time: this.options.time,
-		});
-		const { client } = this.message;
+		const collector = this.message.createReactionCollector( {
+			time: this.options.time ,
+		} )
+		const { client } = this.message
 		collector.on(
-			"collect",
-			(reaction, user) =>
-				user !== client.user &&
-				this._onCollect.call(
-					this,
-					MessageInterface.CollectType.reaction,
-					new ReactionInteraction(reaction, user),
-				),
-		);
-		collector.once("end", () => this.close());
-		return collector;
+			'collect' ,
+			( reaction , user ) =>
+				user !== client.user
+				&& this._onCollect.call(
+					this ,
+					MessageInterface.CollectType.reaction ,
+					new ReactionInteraction( reaction , user ) ,
+				) ,
+		)
+		collector.once( 'end' , () => this.close() )
+		return collector
 	}
 
-	async _editMessage(target) {
-		target ||= this.message;
-		this._clean_missing_reactions(target);
-		return await this._renderPage(target, {
-			...(await this._getMessageOptions()),
-			edit: true,
-		});
+	async _editMessage( target ) {
+		target ||= this.message
+		this._clean_missing_reactions( target )
+		return await this._renderPage( target , {
+			... ( await this._getMessageOptions() ) ,
+			edit: true ,
+		} )
 	}
 
 	async _getMessageOptions() {
-		const { options } = this;
+		const { options } = this
 		return {
 			components: options.components.filter(
-				AbstractHideDisabledComponents.needHide.bind(null, this),
-			),
-			reactions: this.options.reactions,
-			...this.embed,
-			...((await this.options.render?.()) || {}),
-		};
+				AbstractHideDisabledComponents.needHide.bind( null , this ) ,
+			) ,
+			reactions: this.options.reactions ,
+			... this.embed ,
+			... ( ( await this.options.render?.() ) || {} ) ,
+		}
 	}
 
-	_onCollect(type, interaction, { force_allow = false } = {}) {
-		const data = this._onCollect_processData(type, interaction, {
-			force_allow,
-		});
-		this._onCollect_emit(data);
+	_onCollect( type , interaction , { force_allow = false } = {} ) {
+		const data = this._onCollect_processData( type , interaction , {
+			force_allow ,
+		} )
+		this._onCollect_emit( data )
 	}
 
-	_onCollect_emit(data) {
-		this.emitter.emit(MessageInterface.Events.collect, data);
+	_onCollect_emit( data ) {
+		this.emitter.emit( MessageInterface.Events.collect , data )
 		const _targetEvent = data.isAllowed
-			? "allowed_collect"
-			: "disallowed_collect";
+			? 'allowed_collect'
+			: 'disallowed_collect'
 
-		this.emitter.emit(MessageInterface.Events[_targetEvent], data);
+		this.emitter.emit( MessageInterface.Events[ _targetEvent ] , data )
 	}
 
-	_onCollect_processData(type, interaction, { force_allow = false } = {}) {
+	_onCollect_processData( type , interaction , { force_allow = false } = {} ) {
 		const data = {
-			type,
-			interaction,
-			isAllowed: force_allow || processUserCanUseInteraction(interaction, this),
-		};
-		return data;
+			type ,
+			interaction ,
+			isAllowed: force_allow || processUserCanUseInteraction( interaction , this ) ,
+		}
+		return data
 	}
 
-	_recreateMessage(target, force = false) {
-		if (this._closed && !force) {
-			throw new Error("MessageInterface is closed");
+	_recreateMessage( target , force = false ) {
+		if ( this._closed && !force ) {
+			throw new Error( 'MessageInterface is closed' )
 		}
-		this._closed = false;
-		for (const collector of this._collectors) {
-			collector.ended = true;
+		this._closed = false
+		for ( const collector of this._collectors ) {
+			collector.ended = true
 		}
-		arrayEmpty(this._collectors);
-		this._createMessage(target);
+		arrayEmpty( this._collectors )
+		this._createMessage( target )
 	}
 
-	async _renderPage(target, value) {
+	async _renderPage( target , value ) {
 		const event = {
-			target,
-			me: this,
-			...createStopPromise(),
-			value,
-		};
-		this.emitter.emit(MessageInterface.Events.before_update, event);
-		await event.whenStopPromises();
-		return target.msg(value);
+			target ,
+			me: this ,
+			... createStopPromise() ,
+			value ,
+		}
+		this.emitter.emit( MessageInterface.Events.before_update , event )
+		await event.whenStopPromises()
+		return target.msg( value )
 	}
 
-	_setOptions(data) {
-		Object.assign(this.options, data);
+	_setOptions( data ) {
+		Object.assign( this.options , data )
 	}
 
 	close() {
-		if (this._closed) {
-			return;
+		if ( this._closed ) {
+			return
 		}
-		this.emitter.emit(MessageInterface.Events.before_close);
-		this.emitter.removeAllListeners();
-		for (const collector of this._collectors) {
-			collector.stop();
+		this.emitter.emit( MessageInterface.Events.before_close )
+		this.emitter.removeAllListeners()
+		for ( const collector of this._collectors ) {
+			collector.stop()
 		}
-		this._closed = true;
-		this._clean();
+		this._closed = true
+		this._clean()
 	}
 
-	setChannel(channel) {
-		this.channel = channel;
+	setChannel( channel ) {
+		this.channel = channel
 	}
 
-	setComponents(components) {
-		this._setOptions({ components });
+	setComponents( components ) {
+		this._setOptions( { components } )
 	}
 
-	setDefaultMessageState(addable) {
-		Object.assign(this.embed, addable);
+	setDefaultMessageState( addable ) {
+		Object.assign( this.embed , addable )
 	}
 
-	setHideDisabledComponents(value) {
-		this._setOptions({ hideDisabledComponents: value });
+	setHideDisabledComponents( value ) {
+		this._setOptions( { hideDisabledComponents: value } )
 	}
 
-	setReactions(reactions) {
-		this._setOptions({ reactions });
+	setReactions( reactions ) {
+		this._setOptions( { reactions } )
 	}
 
-	setRender(callback) {
-		this._setOptions({ render: callback });
+	setRender( callback ) {
+		this._setOptions( { render: callback } )
 	}
 
-	setUser(user) {
-		this._setOptions({ user });
+	setUser( user ) {
+		this._setOptions( { user } )
 	}
 
-	async updateMessage(target = null) {
-		if (this.one_message_already_being_sending) {
-			return await new Promise((resolve) => {
+	async updateMessage( target = null ) {
+		if ( this.one_message_already_being_sending ) {
+			return await new Promise( ( resolve ) => {
 				setTimeout(
-					() => resolve(this.updateMessage(target)),
-					/* Preffered delay */ 100,
-				);
-			});
+					() => resolve( this.updateMessage( target ) ) ,
+					/* Preffered delay */ 100 ,
+				)
+			} )
 		}
-		this.one_message_already_being_sending = true;
+		this.one_message_already_being_sending = true
 		try {
-			return await (this.message
-				? this._editMessage(target)
-				: this._createMessage(target));
+			return await ( this.message
+				? this._editMessage( target )
+				: this._createMessage( target ) )
 		} finally {
-			this.one_message_already_being_sending = false;
+			this.one_message_already_being_sending = false
 		}
 	}
 }

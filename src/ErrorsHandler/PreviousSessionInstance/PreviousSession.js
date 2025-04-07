@@ -1,32 +1,33 @@
 /** @import {ErrorsHandler} from '#src/ErrorsHandler/ErrorsHandler.js' */
 // declare state: file://./readme.md
 
-import { process_startedAt } from "#src/nodejs/process_startedAt.js";
+import { process_startedAt } from '#src/nodejs/process_startedAt.js'
 
 export class PreviousSession {
-	_value = null;
+	_value = null
 	/**
 	 * @type {ErrorsHandler}
 	 */
-	errorsHandler;
+	errorsHandler
 
 	get value() {
-		return (this._value ||= new Promise(async (resolve) => {
-			const { File } = this.errorsHandler;
-			const newest = await this.fileId();
-			resolve(await File.readFile(String(newest)));
-		}));
+		return ( this._value ||= new Promise( async ( resolve ) => {
+			const { File } = this.errorsHandler
+			const newest = await this.fileId()
+			resolve( await File.readFile( String( newest ) ) )
+		} ) )
 	}
-	constructor(errorsHandler) {
-		this.errorsHandler = errorsHandler;
+
+	constructor( errorsHandler ) {
+		this.errorsHandler = errorsHandler
 	}
 
 	fileId() {
-		const { File } = this.errorsHandler;
-		return File.keys().then(($) =>
+		const { File } = this.errorsHandler
+		return File.keys().then( $ =>
 			Math.max(
-				...$.map(Number).filter((session) => session !== process_startedAt()),
-			),
-		);
+				... $.map( Number ).filter( session => session !== process_startedAt() ) ,
+			) ,
+		)
 	}
 }

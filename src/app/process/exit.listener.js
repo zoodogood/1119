@@ -1,19 +1,19 @@
-import { BaseEvent } from "#src/events/EventsManager.js";
+import { BaseEvent } from '#src/events/EventsManager.js'
 
 class Event extends BaseEvent {
 	options = {
-		name: "process/exit",
-		once: true,
-	};
+		name: 'process/exit' ,
+		once: true ,
+	}
 
 	constructor() {
-		const EVENT = "exit";
-		super(process, EVENT);
+		const EVENT = 'exit'
+		super( process , EVENT )
 	}
 
 	async run() {
-		console.info("\n   ЗАВЕРШЕНИЕ...\n");
+		console.info( '\n   ЗАВЕРШЕНИЕ...\n' )
 	}
 }
 
-export default Event;
+export default Event

@@ -1,21 +1,21 @@
-import CommandsManager from "#src/commands/CommandsManager/singleton.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
 
-const PREFIX = "/client/commands/list";
+const PREFIX = '/client/commands/list'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
-	constructor(express) {
-		super();
+	constructor( express ) {
+		super()
 	}
 
-	async get(request, response) {
+	async get( request , response ) {
 		const commands = CommandsManager.collection.map(
-			(command) => command.options,
-		);
-		response.json(commands);
+			command => command.options ,
+		)
+		response.json( commands )
 	}
 }
 
-export default Route;
+export default Route

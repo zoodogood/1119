@@ -1,0 +1,137 @@
+<script>
+	import ThemeSwitcher from "#site-component/ThemeSwitcher";
+	import Icon from "#site-component/iconic";
+	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
+	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
+
+	import { Theme } from "#site-component/ThemeSwitcher";
+	const CurrentThemeStore = Theme.current;
+
+	const i18n = svelteApp.i18n.pages.secretpage;
+	console.info(`
+		Ты нашёл эту страницу
+		Ты нашёл её
+		Весь мир должен узнать, что ты нашёл её
+		Ведь это так
+		Каждый цвет имеет значение
+		Это не загадка и не предназначение
+	`);
+</script>
+
+{#if $CurrentThemeStore !== Theme.enum.darkBlue}
+	<style>
+		.canvas-snow {
+			filter: blur(20px);
+		}
+	</style>
+{:else}
+	<style>
+		main {
+			opacity: 0.5;
+		}
+	</style>
+{/if}
+
+<main>
+	<p>{i18n.label}</p>
+	<small>{i18n.future}</small>
+</main>
+
+<nav class="theme-switcher-container">
+	<a href={PagesRouter.relativeToPage("public")}><Icon code="" /></a>
+	<ThemeSwitcher />
+</nav>
+
+<!-- svelte-ignore missing-declaration -->
+<svelte:element
+	this="script"
+	async
+	src="https://zoodogood.github.io/LetItSnow/LetItSnow.js"
+	on:load={function () {
+		return new SnowBackground({ particlesCount: 200 });
+	}}
+/>
+
+<style>
+	main {
+		--angle: 275deg;
+		--color: #ddffdd88;
+
+		text-transform: uppercase;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: 100vh;
+		min-height: 100svh;
+		padding-bottom: 20vh;
+		gap: 0.2em;
+
+		text-align: center;
+
+		background-image: conic-gradient(#00000000, var(--main-color) 360deg);
+
+		animation: pulse 30s infinite alternate;
+	}
+
+	@keyframes pulse {
+		0% {
+			filter: contrast(1);
+		}
+
+		100% {
+			filter: contrast(0.5);
+		}
+	}
+
+	main::after {
+		content: "";
+		position: absolute;
+		width: 100%;
+		height: 100%;
+
+		background-image: conic-gradient(
+			#00000000 var(--angle),
+			color-mix(in srgb, var(--color), var(--main-color)) 0
+		);
+
+		filter: blur(2px);
+		z-index: -1;
+	}
+
+	p {
+		text-stroke: 1px var(--white);
+		-webkit-text-stroke: 1px var(--white);
+		-moz-text-stroke: 1px var(--white);
+		font-weight: 900;
+
+		max-width: 90vw;
+		line-height: 1.2;
+	}
+	small {
+		opacity: 0.3;
+		user-select: none;
+		font-size: 0.3em;
+		max-width: 90vw;
+	}
+
+	nav {
+		position: fixed;
+		right: 1vw;
+		top: 1vw;
+		opacity: 0.5;
+
+		display: flex;
+		gap: 1vw;
+	}
+
+	nav a:hover {
+		filter: brightness(1.2);
+	}
+
+	nav :global(.switch-theme) {
+		background: none;
+		color: var(--main-color);
+	}
+</style>

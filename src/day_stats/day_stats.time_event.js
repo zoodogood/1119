@@ -1,161 +1,167 @@
-import { client } from "#src/bot/client/singleton.js";
+import { DAY } from '#constants/time.js'
 
-import { DAY } from "#constants/time.js";
-import BankCommand from "#src/bank/command.bank.js";
-import { DAILY_REVENUE_PER_MEMBER } from "#src/bank/contants.js";
-import BossManager from "#src/boss/BossManager.js";
-import { DataManager } from "#src/data/singleton.js";
-import dayjs from "#src/dayjs.js";
-import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
-import { sendToChatChannel } from "#src/guild_special_channels/special_channel_enum.js";
-import { mediana_of_unsorted } from "#src/mediana_of_unsorted.js";
-import { MonthStatisticForEveryDayAPI } from "#src/messages/MonthStatisticForEveryDayAPI.js";
-import { average, factorySummarize } from "#src/mini.js";
-import { NumberFormatLetterize, maybe_multiline } from "#src/safe-utils.js";
-import { onDayStats as TreeOnDayStats } from "#src/seed/command.seed.js";
-import { ending } from "@zoodogood/utils/primitives";
+import BankCommand from '#src/bank/command.bank.js'
+import { DAILY_REVENUE_PER_MEMBER } from '#src/bank/contants.js'
+import BossManager from '#src/boss/BossManager.js'
+import { client } from '#src/bot/client/singleton.js'
+import { DataManager } from '#src/data/singleton.js'
+import dayjs from '#src/dayjs.js'
+import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
+import { sendToChatChannel } from '#src/guild_special_channels/special_channel_enum.js'
+import { mediana_of_unsorted } from '#src/mediana_of_unsorted.js'
+import { MonthStatisticForEveryDayAPI } from '#src/messages/MonthStatisticForEveryDayAPI.js'
+import { average , factorySummarize } from '#src/mini.js'
+import { maybe_multiline , NumberFormatLetterize } from '#src/safe-utils.js'
+import { onDayStats as TreeOnDayStats } from '#src/seed/command.seed.js'
+import { randomElementFromArray } from '@zoodogood/utils/objectives'
+import { ending , GrammaticGender , pluralization_of_numeric } from '@zoodogood/utils/primitives'
 
 export default class Event {
 	options = {
-		name: "timeEvent/day-stats",
-	};
+		name: 'timeEvent/day-stats' ,
+	}
 
-	run(eventData = {}) {
-		if (eventData.isLost) {
-			this.time_event_recreate();
-			return;
+	run( eventData = {} ) {
+		if ( eventData.isLost ) {
+			this.time_event_recreate()
+			return
 		}
 
 		const context = {
-			bankCommand: new BankCommand(),
-			guildsStatsContext: {},
-		};
+			bankCommand: ( new BankCommand ) ,
+			guildsStatsContext: {} ,
+		}
 
-		client.guilds.cache.each(async (guild) => {
-			const { data } = guild;
-			MonthStatisticForEveryDayAPI.ofGuild(guild).push({
-				messages: data.day_msg,
-			});
-			data.tree?.level && TreeOnDayStats(guild, context);
-			data.professions && context.bankCommand.onDayStats(guild, context);
-			this.updateStateAndSendStats(guild, context);
-			BossManager.notifyAboutBossAtNextDay(guild);
-		});
+		client.guilds.cache.each( async ( guild ) => {
+			const { data } = guild
+			MonthStatisticForEveryDayAPI.ofGuild( guild ).push( {
+				messages: data.day_msg ,
+			} )
+			data.tree?.level && TreeOnDayStats( guild , context )
+			data.professions && context.bankCommand.onDayStats( guild , context )
+			this.updateStateAndSendStats( guild , context )
+			BossManager.notifyAboutBossAtNextDay( guild )
+		} )
 
-		this.time_event_recreate();
+		this.time_event_recreate()
 	}
 
 	time_event_recreate() {
 		const launched_events = timeEvents_singleton.filterEventsInRange(
-			({ name }) => name === "day-stats",
-			[DataManager.data.bot.currentDay, DataManager.data.bot.currentDay + 1],
-		);
+			( { name } ) => name === 'day-stats' ,
+			[ DataManager.data.bot.currentDay , DataManager.data.bot.currentDay + 1 ] ,
+		)
 
-		launched_events.length > 0 &&
-			launched_events.forEach(
-				timeEvents_singleton.removeFromBuffer.bind(timeEvents_singleton),
-			);
+		launched_events.length > 0
+		&& launched_events.forEach(
+			timeEvents_singleton.removeFromBuffer.bind( timeEvents_singleton ) ,
+		)
 
-		let next = dayjs().set("hour", 20).startOf("hour").diff();
-		if (next < 0) {
-			next += DAY;
+		let next = dayjs().set( 'hour' , 20 ).startOf( 'hour' ).diff()
+		if ( next < 0 ) {
+			next += DAY
 		}
-		timeEvents_singleton.pushIntoBuffer("day-stats", next);
+		timeEvents_singleton.pushIntoBuffer( 'day-stats' , next )
 	}
 
-	updateStateAndSendStats(guild, context) {
-		const guildData = guild.data;
-		const messagesOfDay = guildData.day_msg || 0;
-		const { guildsStatsContext } = context;
-		const { treeMessagesNeed } = guildsStatsContext[guild.id] || {};
+	updateStateAndSendStats( guild , context ) {
+		const guildData = guild.data
+		const messagesOfDay = guildData.day_msg || 0
+		const { guildsStatsContext } = context
+		const { treeMessagesNeed } = guildsStatsContext[ guild.id ] || {}
 
 		{
 			// From src/bank
-			guild.data.coins += DAILY_REVENUE_PER_MEMBER * guild.memberCount;
+			guild.data.coins += DAILY_REVENUE_PER_MEMBER * guild.memberCount
 		}
 		{
-			guildData.days = guildData.days + 1 || 1;
-			guildData.msg_total =
-				guildData.msg_total + messagesOfDay || messagesOfDay;
-			guildData.day_msg = 0;
+			guildData.days = guildData.days + 1 || 1
+			guildData.msg_total
+				= guildData.msg_total + messagesOfDay || messagesOfDay
+			guildData.day_msg = 0
 		}
 
-		let description = `За этот день было отправлено ${ending(
-			messagesOfDay,
-			"сообщени",
-			"й",
-			"е",
-			"я",
-		)}\nРекордное количество: ${guildData.day_max || (guildData.day_max = 0)}`;
+		let description = `За этот день было отправлено ${ ending(
+			messagesOfDay ,
+			'сообщени' ,
+			'й' ,
+			'е' ,
+			'я' ,
+		) }\nРекордное количество: ${ guildData.day_max || ( guildData.day_max = 0 ) }`
 
-		if (guildData.days > 3) {
-			description += `\nВсего сообщений: ${NumberFormatLetterize(
-				guildData.msg_total,
-			)}\nВ среднем за день: ${Math.round(guildData.msg_total / guildData.days)}`;
+		if ( guildData.days > 3 ) {
+			description += `\nВсего сообщений: ${ NumberFormatLetterize(
+				guildData.msg_total ,
+			) }\nВ среднем за день: ${ Math.round( guildData.msg_total / guildData.days ) }`
 		}
 
-		if (messagesOfDay === 0) {
-			return;
+		if ( messagesOfDay === 0 ) {
+			return
 		}
 
-		if (guildData.day_max < messagesOfDay) {
+		if ( guildData.day_max < messagesOfDay ) {
 			{
 				// update record
-				guildData.day_max = messagesOfDay;
+				guildData.day_max = messagesOfDay
 			}
-			description += `\nГильдия ${[
-				"<a:jeqery:768047102503944202>",
-				"<a:jeqeryBlue:806176327223738409>",
-				"<a:jeqeryPurple:806176181140848660>",
-				"<a:jeqeryGreen:806176083757105162>",
-				"<a:jeqeryRed:806175947447205958>",
-				"<a:blockPink:794615199361400874>",
-				"<a:blockAqua:794166748085223475>",
-			].random()} установила свой рекорд по сообщениям!`;
+			description += `\nГильдия ${ randomElementFromArray( [
+				'<a:jeqery:768047102503944202>' ,
+				'<a:jeqeryBlue:806176327223738409>' ,
+				'<a:jeqeryPurple:806176181140848660>' ,
+				'<a:jeqeryGreen:806176083757105162>' ,
+				'<a:jeqeryRed:806175947447205958>' ,
+				'<a:blockPink:794615199361400874>' ,
+				'<a:blockAqua:794166748085223475>' ,
+			] ) } установила свой рекорд по сообщениям!`
 		}
 
-		const messages_leaders = (() => {
-			let current = { value: 0, id_list: [] };
-			for (const [userId, memberData] of Object.entries(guildData.members)) {
-				const value = memberData.messagesToday;
-				delete memberData.messagesToday;
-				if (value === current.value) {
-					current.id_list.push(userId);
+		const messages_leaders = ( () => {
+			let current = { value: 0 , id_list: [] }
+			for ( const [ userId , memberData ] of Object.entries( guildData.members ) ) {
+				const value = memberData.messagesToday
+				delete memberData.messagesToday
+				if ( value === current.value ) {
+					current.id_list.push( userId )
 				}
-				if (value > current.value) {
-					current = { value, id_list: [userId] };
+				if ( value > current.value ) {
+					current = { value , id_list: [ userId ] }
 				}
 			}
-			return current;
-		})();
-		messages_leaders.id_list.length &&
-			(description += `\nНаибольшее число от ${messages_leaders.id_list.map((userId) => `<@${userId}>`).join(", ")}: ${messages_leaders.id_list.length === 1 ? `${ending(messages_leaders.value, "сообщени", "й", "е", "я")}` : `по ${ending(messages_leaders.value, "сообщени", "й", "ю", "я")}`}`);
+			return current
+		} )()
+		messages_leaders.id_list.length
+		&& ( description += `\nНаибольшее число от ${ messages_leaders.id_list.map( userId => `<@${ userId }>` ).join( ', ' ) }: ${ messages_leaders.id_list.length === 1 ? `${ ending( messages_leaders.value , 'сообщени' , 'й' , 'е' , 'я' ) }` : `по ${ ending( messages_leaders.value , 'сообщени' , 'й' , 'ю' , 'я' ) }` }` )
 
-		if (guildData.days > 30) {
-			const month = MonthStatisticForEveryDayAPI.ofGuild(guild).field.map(
-				(day) => day.messages,
-			);
-			const sum = month.reduce(factorySummarize(), 0);
-			if (month.length > 3) {
-				description += maybe_multiline([
-					`\n\n**За ${ending(month.length, "д", "ней", "ень", "ня")}**\n`,
+		if ( guildData.days > 31 ) {
+			const month = MonthStatisticForEveryDayAPI.ofGuild( guild ).field.map(
+				day => day.messages ,
+			)
+			const sum = month.reduce( factorySummarize() , 0 )
+			if ( month.length > 3 ) {
+				description += maybe_multiline( [
+					`\n\n**За ${ pluralization_of_numeric( month.length , GrammaticGender.He , [
+						'{} дней' ,
+						'{} день' ,
+						'{} дня' ,
+					] ) }**\n` ,
 
-					`Всего: ${NumberFormatLetterize(sum)}\n`,
-					`Среднее: ${average(sum, month.length)}\n`,
-					`Медиана: ${mediana_of_unsorted(month)}\n`,
-				]);
+					`Всего: ${ NumberFormatLetterize( sum ) }\n` ,
+					`Среднее: ${ average( sum , month.length ) }\n` ,
+					`Медиана: ${ mediana_of_unsorted( month ) }\n` ,
+				] )
 			}
 		}
 
-		if (treeMessagesNeed)
-			description += `\n\nДерево засыхает! Ему необходимо на ${ending(
-				treeMessagesNeed - messagesOfDay,
-				"сообщени",
-				"й",
-				"е",
-				"я",
-			)} больше 💧${messagesOfDay === 0 ? ".  Дерево приносит больше клубники, когда стабильно есть сообщения. Если сообщений нет — оно засыхает в два раза быстрее" : ""}`;
+		if ( treeMessagesNeed ) {
+			description += `\n\nДерево засыхает! Ему необходимо на ${ ending(
+				treeMessagesNeed - messagesOfDay ,
+				'сообщени' ,
+				'й' ,
+				'е' ,
+				'я' ,
+			) } больше 💧${ messagesOfDay === 0 ? '.  Дерево приносит больше клубники, когда стабильно есть сообщения. Если сообщений нет — оно засыхает в два раза быстрее' : '' }`
+		}
 
-		sendToChatChannel(guild, { title: "Статистика сервера", description });
+		sendToChatChannel( guild , { title: 'Статистика сервера' , description } )
 	}
 }

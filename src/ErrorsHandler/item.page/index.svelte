@@ -1,9 +1,9 @@
 <script>
 	import Layout from "#site-component/Layout";
 	import Icon from "#site-component/iconic";
-	import svelteApp from "#site/core/svelte-app_singleton.js";
+	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
 
-	import PagesRouter from "#site/lib/page_router_singleton.js";
+	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
 	import dayjs from "#src/dayjs.js";
 	import { resolveGithubPath } from "#src/github/resolveGithubPath.js";
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";

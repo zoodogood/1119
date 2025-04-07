@@ -1,61 +1,62 @@
-import FileSystem from "node:fs/promises";
-import Path from "node:path";
+import FileSystem from 'node:fs/promises'
+import Path from 'node:path'
 
 class FileDBDriver {
-	static root = `${process.cwd()}/folder/!localStorage`;
-	async _createDeepFolder(path) {
-		return FileSystem.mkdir(path, { recursive: true });
+	static root = `${ process.cwd() }/folder/!localStorage`
+	async _createDeepFolder( path ) {
+		return FileSystem.mkdir( path , { recursive: true } )
 	}
 
 	async init() {
-		return this;
+		return this
 	}
 
-	async keys(path = "") {
-		const { root } = this.constructor;
-		const fullpath = `${root}/${path}`;
+	async keys( path = '' ) {
+		const { root } = this.constructor
+		const fullpath = `${ root }/${ path }`
 		try {
-			const result = await FileSystem.readdir(fullpath);
-			return result;
-		} catch (error) {
-			if (error.code === "ENOENT") {
-				await this._createDeepFolder(Path.resolve(fullpath, "."));
-				const result = await this.keys(path);
-				return result;
+			const result = await FileSystem.readdir( fullpath )
+			return result
+		} catch ( error ) {
+			if ( error.code === 'ENOENT' ) {
+				await this._createDeepFolder( Path.resolve( fullpath , '.' ) )
+				const result = await this.keys( path )
+				return result
 			}
-			throw error;
-		}
-	}
-	async readFile(name) {
-		const { root } = this.constructor;
-		const path = `${root}/${name}`;
-		try {
-			const result = await FileSystem.readFile(path);
-			return result;
-		} catch (error) {
-			if (error.code === "ENOENT") {
-				return null;
-			}
-			throw error;
+			throw error
 		}
 	}
 
-	async writeFile(name, content) {
-		const { root } = this.constructor;
-		const path = `${root}/${name}`;
+	async readFile( name ) {
+		const { root } = this.constructor
+		const path = `${ root }/${ name }`
 		try {
-			const result = await FileSystem.writeFile(path, content);
-			return result;
-		} catch (error) {
-			if (error.code === "ENOENT") {
-				this._createDeepFolder(Path.resolve(path, ".."));
-				const result = await this.writeFile(name, content);
-				return result;
+			const result = await FileSystem.readFile( path )
+			return result
+		} catch ( error ) {
+			if ( error.code === 'ENOENT' ) {
+				return null
 			}
-			throw error;
+			throw error
+		}
+	}
+
+	async writeFile( name , content ) {
+		const { root } = this.constructor
+		const path = `${ root }/${ name }`
+		try {
+			const result = await FileSystem.writeFile( path , content )
+			return result
+		} catch ( error ) {
+			if ( error.code === 'ENOENT' ) {
+				this._createDeepFolder( Path.resolve( path , '..' ) )
+				const result = await this.writeFile( name , content )
+				return result
+			}
+			throw error
 		}
 	}
 }
 
-export { FileDBDriver };
-export default FileDBDriver;
+export { FileDBDriver }
+export default FileDBDriver

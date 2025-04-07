@@ -1,203 +1,203 @@
-//@ts-check
+// @ts-check
 
-import { SECOND } from "#constants/time.js"
-import { ReactionsManager } from "#root/src/reactor/ReactionsManager/manager.js"
-import { client } from "#src/bot/client/singleton.js"
-import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js"
-import { PermissionsBits } from "#src/discord/permissions.js"
-import { awaitInteractOrMessage, awaitUserAccept } from "#src/discord/utils.js"
-import { sendToLogsChannel } from "#src/guild_special_channels/special_channel_enum.js"
+import { SECOND } from '#constants/time.js'
+import { ReactionsManager } from '#root/src/reactor/ReactionsManager/manager.js'
+import { client } from '#src/bot/client/singleton.js'
+import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { PermissionsBits } from '#src/discord/permissions.js'
+import { awaitInteractOrMessage , awaitUserAccept } from '#src/discord/utils.js'
+import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_enum.js'
 
 class Command extends BaseCommand {
 	options = {
-		name: "reactor",
-		id: 19,
+		name: 'reactor' ,
+		id: 19 ,
 		media: {
 			description:
-				'Реактор — команда позволяющая создавать "роли за реакции" — возможность пользователям выбирать себе роли нажимая реакции под сообщением.',
-			example: `!reactor #без аргументов`,
-		},
+				'Реактор — команда позволяющая создавать "роли за реакции" — возможность пользователям выбирать себе роли нажимая реакции под сообщением.' ,
+			example: `!reactor #без аргументов` ,
+		} ,
 		accessibility: {
-			publicized_on_level: 9,
-		},
-		alias: "реактор",
-		allowDM: true,
-		cooldown: 5 * SECOND,
-		type: "guild",
-		myPermissions: PermissionsBits.ManageRoles,
-		userPermissions: PermissionsBits.ManageRoles | PermissionsBits.ManageGuild,
-	};
+			publicized_on_level: 9 ,
+		} ,
+		alias: 'реактор' ,
+		allowDM: true ,
+		cooldown: 5 * SECOND ,
+		type: 'guild' ,
+		myPermissions: PermissionsBits.ManageRoles ,
+		userPermissions: PermissionsBits.ManageRoles | PermissionsBits.ManageGuild ,
+	}
 
-	async askChannel(interaction) {
-		let answer = await awaitUserAccept({
-			name: "reactor",
+	async askChannel( interaction ) {
+		let answer = await awaitUserAccept( {
+			name: 'reactor' ,
 			message: {
 				title:
-					"С помощью этой команды вы можете создавать реакции выдающее роли. \nРеакции должны быть установлены заранее\nВы уже установили реакциии?)",
-			},
-			channel: interaction.channel,
-			userData: interaction.userData,
-		});
-		if (!answer) {
-			return;
+					'С помощью этой команды вы можете создавать реакции выдающее роли. \nРеакции должны быть установлены заранее\nВы уже установили реакциии?)' ,
+			} ,
+			channel: interaction.channel ,
+			userData: interaction.userData ,
+		} )
+		if ( !answer ) {
+			return
 		}
 
-		interaction.questionMessage = await interaction.channel.msg({
+		interaction.questionMessage = await interaction.channel.msg( {
 			title:
-				"Укажите айди или упомяните канал в котором находится сообщение.\nЕсли оно находится в этом канале, нажмите реакцию ниже",
-		});
-		answer = await awaitInteractOrMessage({
-			target: interaction.questionMessage,
-			user: interaction.user,
-			reactionOptions: { reactions: ["640449832799961088"] },
-		});
-		interaction.questionMessage.delete();
+				'Укажите айди или упомяните канал в котором находится сообщение.\nЕсли оно находится в этом канале, нажмите реакцию ниже' ,
+		} )
+		answer = await awaitInteractOrMessage( {
+			target: interaction.questionMessage ,
+			user: interaction.user ,
+			reactionOptions: { reactions: [ '640449832799961088' ] } ,
+		} )
+		interaction.questionMessage.delete()
 
 		const channel = interaction.guild.channels.cache.get(
-			answer === "640449832799961088"
+			answer === '640449832799961088'
 				? interaction.channel.id
-				: answer.content.match(/\d{17,19}/)?.[1],
-		);
+				: answer.content.match( /\d{17,19}/ )?.[ 1 ] ,
+		)
 
-		if (!channel) {
-			interaction.channel.msg({
-				title: "Канал не найден",
-				delete: 3000,
-				color: "#ff0000",
-			});
-			return null;
+		if ( !channel ) {
+			interaction.channel.msg( {
+				title: 'Канал не найден' ,
+				delete: 3000 ,
+				color: '#ff0000' ,
+			} )
+			return null
 		}
 
-		return channel;
+		return channel
 	}
 
-	async askMessage(interaction) {
-		const channel = interaction.channel;
-		const questionMessage = await channel.msg({
-			title: "Укажите айди сообщения или ответьте на него",
-		});
-		const answer = await channel.awaitMessage({ user: interaction.user });
-		questionMessage.delete();
+	async askMessage( interaction ) {
+		const channel = interaction.channel
+		const questionMessage = await channel.msg( {
+			title: 'Укажите айди сообщения или ответьте на него' ,
+		} )
+		const answer = await channel.awaitMessage( { user: interaction.user } )
+		questionMessage.delete()
 
-		const id =
-			answer.content.match(/\d{17,20}/)?.[1] ?? answer.reference.messageId;
+		const id
+			= answer.content.match( /\d{17,20}/ )?.[ 1 ] ?? answer.reference.messageId
 
-		const message = await channel.messages.fetch({ message: id });
-		if (!message) {
-			channel.msg({
-				title: "Не удалось найти сообщение",
-				delete: 3000,
-				color: "#ff0000",
-			});
-			return null;
+		const message = await channel.messages.fetch( { message: id } )
+		if ( !message ) {
+			channel.msg( {
+				title: 'Не удалось найти сообщение' ,
+				delete: 3000 ,
+				color: '#ff0000' ,
+			} )
+			return null
 		}
 
-		return message;
+		return message
 	}
 
-	async askType(interaction) {}
+	async askType( interaction ) {}
 
-	async onChatInput(msg, interaction) {
+	async onChatInput( msg , interaction ) {
 		const reactor = {
-			channel: null,
-			message: null,
-		};
-		interaction.reactor = reactor;
+			channel: null ,
+			message: null ,
+		}
+		interaction.reactor = reactor
 
-		const channel = await this.askChannel(interaction);
-		reactor.channel = channel;
+		const channel = await this.askChannel( interaction )
+		reactor.channel = channel
 
-		const message = await this.askMessage(interaction);
-		reactor.message = message;
+		const message = await this.askMessage( interaction )
+		reactor.message = message
 
-		const type = await this.askType(interaction);
-		reactor.type = type;
+		const type = await this.askType( interaction )
+		reactor.type = type
 
-		let reactions = [...message.reactions.cache.keys()];
-		if (!reactions.length) {
-			const whatReactions = await msg.msg({
+		let reactions = [ ... message.reactions.cache.keys() ]
+		if ( !reactions.length ) {
+			const whatReactions = await msg.msg( {
 				title:
-					"Вы не установили ни одной реакции под сообщением, сделайте это сейчас.\nКогда будете готовы, нажмите галочку ниже.",
-			});
-			while (true) {
+					'Вы не установили ни одной реакции под сообщением, сделайте это сейчас.\nКогда будете готовы, нажмите галочку ниже.' ,
+			} )
+			while ( true ) {
 				const react = await whatReactions.awaitReact(
-					{ user: msg.author, removeType: "all" },
-					"685057435161198594",
-				);
-				if (!react) {
-					return;
+					{ user: msg.author , removeType: 'all' } ,
+					'685057435161198594' ,
+				)
+				if ( !react ) {
+					return
 				}
 
-				reactions = [...message.reactions.cache.keys()];
-				if (!reactions.length)
-					client.api.channels(msg.channel.id).messages.post({
+				reactions = [ ... message.reactions.cache.keys() ]
+				if ( !reactions.length ) {
+					client.api.channels( msg.channel.id ).messages.post( {
 						data: {
 							content:
-								"Сначала установите реакции под приклеплённым сообщением",
-							message_reference: { message_id: channel.id },
-						},
-					});
-				else {
-					break;
+								'Сначала установите реакции под приклеплённым сообщением' ,
+							message_reference: { message_id: channel.id } ,
+						} ,
+					} )
+				} else {
+					break
 				}
 			}
-			whatReactions.delete();
+			whatReactions.delete()
 		}
 
-		const whatRoles = await msg.msg({
+		const whatRoles = await msg.msg( {
 			title:
-				"Укажите роли через пробел\nВо избежание лишних упоминаний, только по айди",
-		});
-		answer = await msg.channel.awaitMessage({ user: msg.author, time: 300000 });
-		whatRoles.delete();
+				'Укажите роли через пробел\nВо избежание лишних упоминаний, только по айди' ,
+		} )
+		answer = await msg.channel.awaitMessage( { user: msg.author , time: 300000 } )
+		whatRoles.delete()
 
-		const rolesId = answer.content.match(/\d{17,20}/g);
-		if (!rolesId) {
-			msg.msg({
-				title: `Не удалось найти иденфикаторы ролей`,
-				delete: 5000,
-				color: "#ff0000",
-			});
-			return;
+		const rolesId = answer.content.match( /\d{17,20}/g )
+		if ( !rolesId ) {
+			msg.msg( {
+				title: `Не удалось найти иденфикаторы ролей` ,
+				delete: 5000 ,
+				color: '#ff0000' ,
+			} )
+			return
 		}
 
 		const roles = rolesId
-			.map((el) => channel.guild.roles.cache.get(el))
-			.filter((el) => el);
-		if (rolesId.length !== roles.length) {
-			msg.msg({
-				title: `Не удалось найти роли по следующим иденфикаторам: ${rolesId
-					.filter((el) => !roles.map((el) => el.id).includes(el))
-					.join(" ")}`,
-				delete: 5000,
-				color: "#ff0000",
-			});
-			return;
+			.map( el => channel.guild.roles.cache.get( el ) )
+			.filter( el => el )
+		if ( rolesId.length !== roles.length ) {
+			msg.msg( {
+				title: `Не удалось найти роли по следующим иденфикаторам: ${ rolesId
+					.filter( el => !roles.map( el => el.id ).includes( el ) )
+					.join( ' ' ) }` ,
+				delete: 5000 ,
+				color: '#ff0000' ,
+			} )
+			return
 		}
 
-		if (roles.length > reactions.length) {
-			msg.msg({
-				title: "Ролей указано больше, чем стоит реакций под сообщением.",
-				delete: 5000,
-				color: "#ff0000",
-			});
-			return;
+		if ( roles.length > reactions.length ) {
+			msg.msg( {
+				title: 'Ролей указано больше, чем стоит реакций под сообщением.' ,
+				delete: 5000 ,
+				color: '#ff0000' ,
+			} )
+			return
 		}
 
-		if (roles.length < reactions) {
-			answer = await msg.msg({
+		if ( roles.length < reactions ) {
+			answer = await msg.msg( {
 				title:
-					"Ролей указано меньше, чем стоит реакций под сообщением, вы хотите продолжить?",
-			});
+					'Ролей указано меньше, чем стоит реакций под сообщением, вы хотите продолжить?' ,
+			} )
 			const react = await answer.awaitReact(
-				{ user: msg.author, removeType: "all" },
-				"685057435161198594",
-				"❌",
-			);
+				{ user: msg.author , removeType: 'all' } ,
+				'685057435161198594' ,
+				'❌' ,
+			)
 
-			if (react !== "685057435161198594") {
-				msg.msg({ title: "Действие отменено ❌", delete: 4500 });
-				return;
+			if ( react !== '685057435161198594' ) {
+				msg.msg( { title: 'Действие отменено ❌' , delete: 4500 } )
+				return
 			}
 		}
 
@@ -205,34 +205,34 @@ class Command extends BaseCommand {
 		//
 		// }
 
-		const obj = {};
-		roles.forEach((e, i) => (obj[reactions[i]] = e.id));
+		const obj = {}
+		roles.forEach( ( e , i ) => ( obj[ reactions[ i ] ] = e.id ) )
 		new ReactionsManager(
-			message.id,
-			channel.id,
-			channel.guild.id,
-			"reactor",
-			obj,
-		);
+			message.id ,
+			channel.id ,
+			channel.guild.id ,
+			'reactor' ,
+			obj ,
+		)
 
-		msg.msg({
-			title: "Установлен реактор сообщения",
+		msg.msg( {
+			title: 'Установлен реактор сообщения' ,
 			description: `Сообщению с ID ${
 				message.id
-			} были присвоены реакции выдающие следущие роли:\n${roles
-				.map((e) => " • " + e.name)
-				.join("\n")}`,
-			delete: 9000,
-		});
-		sendToLogsChannel(msg.guild, {
-			title: "Установлен реактор сообщения",
+			} были присвоены реакции выдающие следущие роли:\n${ roles
+				.map( e => ` • ${ e.name }` )
+				.join( '\n' ) }` ,
+			delete: 9000 ,
+		} )
+		sendToLogsChannel( msg.guild , {
+			title: 'Установлен реактор сообщения' ,
 			description: `Сообщению с ID ${
 				message.id
-			} были присвоены реакции выдающие следущие роли:\n${roles
-				.map((e) => " • " + e.name)
-				.join("\n")}`,
-		});
+			} были присвоены реакции выдающие следущие роли:\n${ roles
+				.map( e => ` • ${ e.name }` )
+				.join( '\n' ) }` ,
+		} )
 	}
 }
 
-export default Command;
+export default Command

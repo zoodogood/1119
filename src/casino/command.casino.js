@@ -1,112 +1,113 @@
-import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
-import CooldownManager from "#src/CooldownManager.js";
-import { PropertiesEnum } from "#src/data/Properties.js";
-import { addResource } from "#src/data/public/addResource.js";
-import { random } from "#src/safe-utils.js";
-import { Actions } from "#src/user/actions/ActionManager.js";
-import { ending } from "@zoodogood/utils/primitives";
+import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import CooldownManager from '#src/CooldownManager.js'
+import { PropertiesEnum } from '#src/data/Properties.js'
+import { addResource } from '#src/data/public/addResource.js'
+import { randomWith } from '#src/safe-utils.js'
+import { Actions } from '#src/user/actions/ActionManager.js'
+import { ending } from '@zoodogood/utils/primitives'
 
 class Command extends BaseCommand {
 	options = {
-		name: "casino",
-		id: 57,
+		name: 'casino' ,
+		id: 57 ,
 		media: {
 			description:
-				"Меня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки",
-			example: `!casino {coinsBet | "+"}`,
-		},
+				'Меня долго просили сделать Казино. И вот оно здесь!\nТакое же пустое как и ваши кошельки' ,
+			example: `!casino {coinsBet | "+"}` ,
+		} ,
 		accessibility: {
-			publicized_on_level: 9,
-		},
-		alias: "казино bet ставка",
-		expectParams: true,
-		allowDM: true,
-		cooldown: true,
-		type: "other",
-	};
-	async onChatInput(msg, interaction) {
-		const { bet } = this.parseParams(interaction) ?? {};
-		if (!bet) {
-			return;
+			publicized_on_level: 9 ,
+		} ,
+		alias: 'казино bet ставка' ,
+		expectParams: true ,
+		allowDM: true ,
+		cooldown: true ,
+		type: 'other' ,
+	}
+
+	async onChatInput( msg , interaction ) {
+		const { bet } = this.parseParams( interaction ) ?? {}
+		if ( !bet ) {
+			return
 		}
 
-		const { userData, user } = interaction;
-		if (userData.coins < bet) {
-			msg.msg({ title: "Недостаточно коинов", color: "#ff0000", delete: 3000 });
-			return;
+		const { userData , user } = interaction
+		if ( userData.coins < bet ) {
+			msg.msg( { title: 'Недостаточно коинов' , color: '#ff0000' , delete: 3000 } )
+			return
 		}
 
-		const diceRoll = random(8);
+		const diceRoll = randomWith( 8 )
 		const embed = {
-			title: "Лесовитое казино",
-			author: { name: msg.author.username, iconURL: msg.author.avatarURL() },
-			delete: 20_000,
-			footer: { text: `Ставка: ${bet}` },
-		};
-		const isWon = diceRoll % 2;
+			title: 'Лесовитое казино' ,
+			author: { name: msg.author.username , iconURL: msg.author.avatarURL() } ,
+			delete: 20_000 ,
+			footer: { text: `Ставка: ${ bet }` } ,
+		}
+		const isWon = diceRoll % 2
 
-		user.action(Actions.casinoSession, {
-			isWon,
-			bet,
-		});
+		user.action( Actions.casinoSession , {
+			isWon ,
+			bet ,
+		} )
 
 		embed.description = `
-**${isWon ? "Вы выиграли." : "Проиграли"}**
-**Кидаем кубик.. выпадает:** \`${diceRoll}\`; ${isWon ? "🦝" : "❌"}
+**${ isWon ? 'Вы выиграли.' : 'Проиграли' }**
+**Кидаем кубик.. выпадает:** \`${ diceRoll }\`; ${ isWon ? '🦝' : '❌' }
 
 ${
 	isWon
-		? `\\*Вам достается куш — ${ending(
-				bet * 2,
-				"коин",
-				"ов",
-				"",
-				"а",
-			)} <:coin:637533074879414272>\\*`
-		: "Чтобы выиграть, должно выпасть число, которое не делится на 2"
+		? `\\*Вам достается куш — ${ ending(
+			bet * 2 ,
+			'коин' ,
+			'ов' ,
+			'' ,
+			'а' ,
+		) } <:coin:637533074879414272>\\*`
+		: 'Чтобы выиграть, должно выпасть число, которое не делится на 2'
 }
-`;
+`
 
-		addResource({
-			user,
-			value: (-1) ** !isWon * bet,
-			executor: user,
-			source: "command.casino",
-			resource: PropertiesEnum.coins,
-			context: { interaction, isWon },
-		});
-		this.setCooldown(user);
-		msg.msg(embed);
+		addResource( {
+			user ,
+			value: ( -1 ) ** !isWon * bet ,
+			executor: user ,
+			source: 'command.casino' ,
+			resource: PropertiesEnum.coins ,
+			context: { interaction , isWon } ,
+		} )
+		this.setCooldown( user )
+		msg.msg( embed )
 	}
 
-	parseParams(interaction) {
-		let bet = interaction.params.match(/\d+|\+/);
+	parseParams( interaction ) {
+		let bet = interaction.params.match( /\d+|\+/ )
 
-		if (bet === null) {
-			interaction.channel.msg({
-				title: "Укажите Ставку в числовом виде!",
-				color: "#ff0000",
-				delete: 3000,
-			});
-			return null;
+		if ( bet === null ) {
+			interaction.channel.msg( {
+				title: 'Укажите Ставку в числовом виде!' ,
+				color: '#ff0000' ,
+				delete: 3000 ,
+			} )
+			return null
 		}
-		bet = bet[0];
+		bet = bet[ 0 ]
 
-		if (bet === "+") {
-			bet = interaction.userData.coins;
+		if ( bet === '+' ) {
+			bet = interaction.userData.coins
 		}
 
-		bet = Math.max(0, Math.floor(bet));
+		bet = Math.max( 0 , Math.floor( bet ) )
 
-		return { bet };
+		return { bet }
 	}
 
-	setCooldown(user) {
-		const COOLDOWN = 300_000;
-		const { id } = this.options;
-		const key = `CD_${id}`;
-		CooldownManager.api(user.data, key, { perCall: COOLDOWN }).call();
+	setCooldown( user ) {
+		const COOLDOWN = 300_000
+		const { id } = this.options
+		const key = `CD_${ id }`
+		CooldownManager.api( user.data , key , { perCall: COOLDOWN } ).call()
 	}
 }
 
-export default Command;
+export default Command

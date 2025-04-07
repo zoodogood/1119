@@ -1,17 +1,17 @@
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
 
-const PREFIX = "/toys/ping";
+const PREFIX = '/toys/ping'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
-	constructor(express) {
-		super();
+	constructor( express ) {
+		super()
 	}
 
-	async get(request, response, next) {
-		response.send("Alive!");
+	async get( request , response , next ) {
+		response.send( 'Alive!' )
 	}
 }
 
-export default Route;
+export default Route

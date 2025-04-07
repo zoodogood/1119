@@ -1,30 +1,30 @@
-import EventEmitter from "node:events";
+import EventEmitter from 'node:events'
 
 class CustomIdExecutor {
-	static emitter = new EventEmitter();
+	static emitter = ( new EventEmitter )
 
-	static #constructors = {};
+	static #constructors = {}
 
-	static bind(key, callback) {
-		this.#constructors[key] = callback;
+	static bind( key , callback ) {
+		this.#constructors[ key ] = callback
 	}
 
-	static emit(key, target, parameters) {
-		const callback = this.#constructors[key];
-		return callback.call(null, target, parameters);
+	static emit( key , target , parameters ) {
+		const callback = this.#constructors[ key ]
+		return callback.call( null , target , parameters )
 	}
 
-	static parseCustomId(customId) {
+	static parseCustomId( customId ) {
 		// input example: @command/snippet/example:1:2
-		const [_full, key, target, parameters] =
-			customId.match(/^@(.+?)\/(.+?)\/(.+?)$/) ?? [];
-		if (!key) {
-			return null;
+		const [ _full , key , target , parameters ]
+			= customId.match( /^@(.+?)\/(.+?)\/(.+)$/ ) ?? []
+		if ( !key ) {
+			return null
 		}
 
-		return [key, target, parameters];
+		return [ key , target , parameters ]
 	}
 }
 
-export { CustomIdExecutor };
-export default CustomIdExecutor;
+export { CustomIdExecutor }
+export default CustomIdExecutor

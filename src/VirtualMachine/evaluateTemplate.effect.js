@@ -1,38 +1,38 @@
-import Template from "#src/VirtualMachine/Template.js";
-import client from "#src/bot/client/singleton.js";
-import { ActionsMap } from "#src/user/actions/actionsMap.enum.js";
+import client from '#src/bot/client/singleton.js'
+import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import Template from '#src/VirtualMachine/Template.js'
 
 export default {
-	id: "evaluateTemplate",
+	id: 'evaluateTemplate' ,
 	callback: {
-		async [ActionsMap.any](user, effect, { actionName, data }) {
-			const { hear, executorId, template } = effect.values;
-			if (actionName in hear === false) {
-				return;
+		async [ ActionsMap.any ]( user , effect , { actionName , data } ) {
+			const { hear , executorId , template } = effect.values
+			if ( actionName in hear === false ) {
+				return
 			}
 
-			const executor = client.users.cache.get(executorId);
+			const executor = client.users.cache.get( executorId )
 
 			const source = {
-				type: Template.sourceTypes.evaluateEffect,
-				executor,
-			};
+				type: Template.sourceTypes.evaluateEffect ,
+				executor ,
+			}
 
 			const context = {
-				client,
-				effect,
-				actionName,
-				data,
-				user,
-			};
+				client ,
+				effect ,
+				actionName ,
+				data ,
+				user ,
+			}
 
 			try {
-				await new Template(source, context).createVM().run(template);
-			} catch (error) {
-				executor.msg({
-					content: `Ваши данные указаны в эффекте, как ответсвенного. Сообщаем, что шаблон внутри эффекта: Effect<${effect.uid}> (первая часть указывает на временную метку инициализации), — был выполнен с ошибкой\nПользователь: ${user} (${user.id})\nТекст шаблона:\n\`\`\`${template}\`\`\`\n\nТекст ошибки: \`\`\`${error.message}\`\`\``,
-				});
+				await new Template( source , context ).createVM().run( template )
+			} catch ( error ) {
+				executor.msg( {
+					content: `Ваши данные указаны в эффекте, как ответсвенного. Сообщаем, что шаблон внутри эффекта: Effect<${ effect.uid }> (первая часть указывает на временную метку инициализации), — был выполнен с ошибкой\nПользователь: ${ user } (${ user.id })\nТекст шаблона:\n\`\`\`${ template }\`\`\`\n\nТекст ошибки: \`\`\`${ error.message }\`\`\`` ,
+				} )
 			}
-		},
-	},
-};
+		} ,
+	} ,
+}

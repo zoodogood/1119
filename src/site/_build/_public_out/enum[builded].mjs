@@ -1,0 +1,21 @@
+export default [
+	"public",
+	"info_audit_resources",
+	"commands",
+	"user_open_chest",
+	"changelog",
+	"info_1119",
+	"oauth",
+	"articles_item",
+	"articles",
+	"articles_create",
+	"errors_list_item",
+	"errors_list",
+	"secretpage",
+	"pages",
+	"info_policy",
+	"navigation",
+	"info_friendship",
+	"user_panel",
+	"public_experiments"
+]

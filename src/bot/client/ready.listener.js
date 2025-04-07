@@ -1,54 +1,54 @@
-import { DataManager } from "#src/data/singleton.js";
-import EventsManager, { BaseEvent } from "#src/events/EventsManager.js";
-import { timeEvents_singleton } from "#src/events/time/timeEvents_singleton.js";
-import { timestampDay } from "#src/safe-utils.js";
+import config from '#config'
+import { Events } from '#src/app/events.enum.js'
+import { client } from '#src/bot/client/singleton.js'
+import { DataManager } from '#src/data/singleton.js'
 
-import config from "#config";
-import { Events } from "#src/app/events.enum.js";
-import { client } from "#src/bot/client/singleton.js";
+import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
+import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
+import { timestampDay } from '#src/safe-utils.js'
 
 class Event extends BaseEvent {
 	options = {
-		name: "client/ready",
-	};
+		name: 'client/ready' ,
+	}
 
 	constructor() {
-		const EVENT = Events.Ready;
-		super(client, EVENT);
+		const EVENT = Events.Ready
+		super( client , EVENT )
 	}
 
 	async postLoading() {
-		timeEvents_singleton.onStartup();
+		timeEvents_singleton.onStartup()
 
-		const needUpdate =
-			DataManager.data.bot.currentDay !== timestampDay(Date.now());
+		const needUpdate
+			= DataManager.data.bot.currentDay !== timestampDay( Date.now() )
 
-		if (needUpdate) {
+		if ( needUpdate ) {
 			await EventsManager.collection
-				.get("timeEvent/new-day")
-				.run({ isLost: true });
+				.get( 'timeEvent/new-day' )
+				.run( { isLost: true } )
 		}
 
 		timeEvents_singleton
-			.getEventsInRange([
-				timeEvents_singleton.getNearestDay(),
-				timeEvents_singleton.getNearestDay() + 1,
-			])
-			.find((event) => event.name === "autosave") ||
-			(await EventsManager.collection.get("timeEvent/autosave").run());
+			.getEventsInRange( [
+				timeEvents_singleton.getNearestDay() ,
+				timeEvents_singleton.getNearestDay() + 1 ,
+			] )
+			.find( event => event.name === 'autosave' )
+			|| ( await EventsManager.collection.get( 'timeEvent/autosave' ).run() )
 	}
 
 	async run() {
-		await this.postLoading();
-		console.info("\n\n\n     Ready...\n\n");
-		config.enviroment.playground &&
-			console.info(`Playground: ${config.enviroment.playground}\n\n`);
+		await this.postLoading()
+		console.info( '\n\n\n     Ready...\n\n' )
+		config.enviroment.playground
+		&& console.info( `Playground: ${ config.enviroment.playground }\n\n` )
 
-		if (process.env.IN_CONTAINER) {
-			console.info(`PROCESS_ID: ${process.pid}`);
+		if ( process.env.IN_CONTAINER ) {
+			console.info( `PROCESS_ID: ${ process.pid }` )
 		}
-		EventsManager.emitter.emit(Events.Ready);
+		EventsManager.emitter.emit( Events.Ready )
 	}
 }
 
-export default Event;
+export default Event

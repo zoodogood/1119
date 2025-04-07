@@ -1,52 +1,52 @@
-import { BossEffects } from "#src/boss/BossManager.js";
-import UserEffectManager, {
-	EffectInfluenceEnum,
-} from "#src/user/actions/EffectsManager.js";
+import { BossEffects } from '#src/boss/BossManager.js'
+import UserEffectManager , {
+	EffectInfluenceEnum ,
+} from '#src/user/actions/EffectsManager.js'
 
-function isBossEffect(effect) {
-	return effect.id.startsWith("boss.");
+function isBossEffect( effect ) {
+	return effect.id.startsWith( 'boss.' )
 }
 
 export default {
-	id: "boss.preventEffects",
+	id: 'boss.preventEffects' ,
 	callback: {
-		bossBeforeEffectInit: (user, preventer, context) => {
+		bossBeforeEffectInit: ( user , preventer , context ) => {
 			const {
-				values: { guildId },
-			} = preventer;
+				values: { guildId } ,
+			} = preventer
 
-			const { guild } = context;
-			if (guild.id !== guildId) {
-				return;
+			const { guild } = context
+			if ( guild.id !== guildId ) {
+				return
 			}
-			const { effect: target } = context;
-			const { values } = target;
-			const effectBase = UserEffectManager.store.get(target.id);
+			const { effect: target } = context
+			const { values } = target
+			const effectBase = UserEffectManager.store.get( target.id )
 			if (
-				values.influence &&
-				!values.influence.includes(effectBase.influence)
+				values.influence
+				&& !values.influence.includes( effectBase.influence )
 			) {
-				return;
+				return
 			}
 
-			if (!isBossEffect(preventer)) {
-				return;
+			if ( !isBossEffect( preventer ) ) {
+				return
 			}
 
-			if (effectBase.canPrevented === false || values.canPrevented === false) {
-				return;
+			if ( effectBase.canPrevented === false || values.canPrevented === false ) {
+				return
 			}
 
-			preventer.values.count--;
-			context.preventDefault();
-			if (!preventer.values.count) {
-				BossEffects.removeEffect({ user, effect: preventer });
+			preventer.values.count--
+			context.preventDefault()
+			if ( !preventer.values.count ) {
+				BossEffects.removeEffect( { user , effect: preventer } )
 			}
-		},
-	},
+		} ,
+	} ,
 	values: {
-		count: () => 1,
-		guildId: (user, effect, { guild }) => guild?.id,
-	},
-	influence: EffectInfluenceEnum.Neutral,
-};
+		count: () => 1 ,
+		guildId: ( user , effect , { guild } ) => guild?.id ,
+	} ,
+	influence: EffectInfluenceEnum.Neutral ,
+}

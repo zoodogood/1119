@@ -1,47 +1,48 @@
-import { ActionsMap } from "#src/user/actions/actionsMap.enum.js";
+import { assert } from '#root/src/assert/export.js'
+import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 
-export function addResource({
-	resource,
-	user,
-	value,
-	source,
-	context,
-	executor,
-}) {
-	if (Number.isNaN(value)) {
-		throw new Error(`Add NaN resource count`, {
-			details: { source, resource },
-		});
+export function addResource( {
+	resource ,
+	user ,
+	value ,
+	source ,
+	context ,
+	executor ,
+} ) {
+	if ( Number.isNaN( value ) ) {
+		throw new TypeError( `Add NaN resource count` , {
+			details: { source , resource } ,
+		} )
 	}
 
-	if (!source) {
-		throw new Error();
-	}
+	assert( source )
 
-	user.action(ActionsMap.resourceChange, {
-		value,
-		executor,
-		source,
-		resource,
-		context,
-	});
-	user.data[resource] ||= 0;
-	user.data[resource] += value;
+	user.action( ActionsMap.resourceChange , {
+		value ,
+		executor ,
+		source ,
+		resource ,
+		context ,
+	} )
+	user.data[ resource ] ||= 0
+	user.data[ resource ] += value
 }
 
-export function addMultipleResources({
-	resources,
-	user,
-	source,
-	context,
-	executor,
-}) {
-	const addResourceOptions = { user, source, context, executor };
-	for (const [resource, value] of Object.entries(resources)) {
-		addResource({
-			...addResourceOptions,
-			resource,
-			value,
-		});
+export function addMultipleResources( {
+	resources ,
+	user ,
+	source ,
+	context ,
+	executor ,
+} ) {
+	for ( const [ resource , value ] of Object.entries( resources ) ) {
+		addResource( {
+			user ,
+			source ,
+			context ,
+			executor ,
+			resource ,
+			value ,
+		} )
 	}
 }

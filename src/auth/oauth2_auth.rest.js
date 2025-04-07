@@ -1,23 +1,23 @@
-const PREFIX = "/oauth2/auth";
-import { APIPointAuthorizationManager } from "#src/auth/APIPointAuthorization/APIPointAuthorization.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
+import { APIPointAuthorizationManager } from '#src/auth/APIPointAuthorization/APIPointAuthorization.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+
+const PREFIX = '/oauth2/auth'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
 	constructor() {
-		super();
+		super()
 	}
 
-	async get(request, response) {
-		const siteRedirect = request.query.redirect;
-		const redirectUri = APIPointAuthorizationManager.oAuth.authorizationLink({
-			state: siteRedirect,
-		});
+	async get( request , response ) {
+		const siteRedirect = request.query.redirect
+		const redirectUri = APIPointAuthorizationManager.oAuth.authorizationLink( {
+			state: siteRedirect ,
+		} )
 
-		response.redirect(redirectUri);
-		return;
+		response.redirect( redirectUri )
 	}
 }
 
-export default Route;
+export default Route

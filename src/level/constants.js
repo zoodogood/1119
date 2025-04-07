@@ -1,1 +1,1 @@
-export const EXPERIENCE_PER_LEVEL = 45;
+export const EXPERIENCE_PER_LEVEL = 45

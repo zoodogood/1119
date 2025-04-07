@@ -1,8 +1,8 @@
 <script>
 	import Image from "#site-component/Image";
 	import Layout from "#site-component/Layout";
-	import svelteApp from "#site/core/svelte-app_singleton.js";
-	import { ButtonResponse } from "#site/lib/ButtonResponse.js";
+	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
+	import { ButtonResponse } from "#root/src/site/_build/src/lib/ButtonResponse.js";
 	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
 	import { isObject } from "#src/mini.js";
 	import { timestampToDate } from "#src/safe-utils.js";

@@ -1,38 +1,38 @@
-import { BaseCommand } from "#src/commands/BaseCommand/BaseCommand.js";
-import { DataManager } from "#src/data/singleton.js";
+import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { DataManager } from '#src/data/singleton.js'
 
 class Command extends BaseCommand {
 	options = {
-		name: "dump",
-		id: 60,
+		name: 'dump' ,
+		id: 60 ,
 		media: {
-			description: "",
-		},
-		alias: "дамп",
-		allowDM: true,
-		cooldown: 100_000,
-		type: "dev",
-	};
+			description: '' ,
+		} ,
+		alias: 'дамп' ,
+		allowDM: true ,
+		cooldown: 100_000 ,
+		type: 'dev' ,
+	}
 
-	async onChatInput(msg, interaction) {
-		DataManager.file.write();
-		const message = await msg.channel.send({
+	async onChatInput( msg , interaction ) {
+		DataManager.file.write()
+		const message = await msg.channel.send( {
 			files: [
 				{
-					attachment: "data/main.json",
-					name: new Intl.DateTimeFormat("ru-ru", {
-						year: "numeric",
-						month: "numeric",
-						day: "numeric",
-						hour: "numeric",
-						minute: "numeric",
-					}).format(),
-				},
-			],
-		});
+					attachment: 'data/main.json' ,
+					name: new Intl.DateTimeFormat( 'ru-ru' , {
+						year: 'numeric' ,
+						month: 'numeric' ,
+						day: 'numeric' ,
+						hour: 'numeric' ,
+						minute: 'numeric' ,
+					} ).format() ,
+				} ,
+			] ,
+		} )
 
-		setTimeout(() => message.delete(), 1_000_000);
+		setTimeout( () => message.delete() , 1_000_000 )
 	}
 }
 
-export default Command;
+export default Command

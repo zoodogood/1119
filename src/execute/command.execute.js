@@ -1,109 +1,111 @@
-import client from "#src/bot/client/singleton.js";
+import client from '#src/bot/client/singleton.js'
 import {
-	BaseCommand,
-	BaseFlagSubcommand,
-} from "#src/commands/BaseCommand/BaseCommand.js";
-import { BaseCommandRunContext } from "#src/commands/CommandRunContext.js";
-import CommandsManager, {
-	parseInputCommandFromMessage,
-} from "#src/commands/CommandsManager/singleton.js";
-import { sleep } from "#src/safe-utils.js";
-import { CliParser } from "@zoodogood/utils/CliParser";
-import { Message } from "discord.js";
+	BaseCommand ,
+	BaseFlagSubcommand ,
+} from '#src/commands/BaseCommand/BaseCommand.js'
+import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
+import CommandsManager , {
+	parseInputCommandFromMessage ,
+} from '#src/commands/CommandsManager/singleton.js'
+import { sleep } from '#src/safe-utils.js'
+import { CliParser } from '@zoodogood/utils/CliParser'
+import { Message } from 'discord.js'
 
 class CommandRunContext extends BaseCommandRunContext {
-	gap_delay = 0;
-	separator = ";";
-	parseCli(input) {
-		const parsed = new CliParser()
-			.setText(input)
+	gap_delay = 0
+	separator = ';'
+	parseCli( input ) {
+		const parsed = ( new CliParser )
+			.setText( input )
 			.processBrackets()
-			.captureFlags(this.command.options.cliParser.flags)
-			.captureResidue({ name: "residue" })
-			.collect();
-		this.captures = parsed.captures;
+			.captureFlags( this.command.options.cliParser.flags )
+			.captureResidue( { name: 'residue' } )
+			.collect()
+		this.captures = parsed.captures
 
-		this.separator =
-			this.captures.get("--separator")?.valueOfFlag() || this.separator;
+		this.separator
+			= this.captures.get( '--separator' )?.valueOfFlag() || this.separator
 
-		this.gap = this.captures.get("--gap")?.valueOfFlag() || this.gap;
-		return parsed;
+		this.gap = this.captures.get( '--gap' )?.valueOfFlag() || this.gap
+		return parsed
 	}
 }
 
 class CommandDefaultBehaviour extends BaseFlagSubcommand {
 	async onProcess() {
-		const { captures, separator, gap } = this.context;
-		const residue = captures.get("residue").toString();
-		const executable = residue.split(separator);
-		const { message: original } = this.context.interaction;
+		const { captures , separator , gap } = this.context
+		const residue = captures.get( 'residue' ).toString()
+		const executable = residue.split( separator )
+		const { message: original } = this.context.interaction
 
-		for (const content of executable) {
-			const clone = Object.create(Message.prototype);
-			Object.assign(clone, {
-				...original,
-				content,
-				client,
-			});
-			const commandContext = parseInputCommandFromMessage(clone);
-			const command = commandContext?.command;
+		for ( const content of executable ) {
+			const clone = Object.create( Message.prototype )
+			Object.assign( clone , {
+				... original ,
+				content ,
+				client ,
+			} )
+			const commandContext = parseInputCommandFromMessage( clone )
+			const command = commandContext?.command
 			if (
-				commandContext &&
-				CommandsManager.checkAvailable(command, commandContext)
+				commandContext
+				&& CommandsManager.checkAvailable( command , commandContext )
 			) {
-				CommandsManager.execute(command, commandContext);
+				CommandsManager.execute( command , commandContext )
 			}
 
-			gap && (await sleep(gap));
+			gap && ( await sleep( gap ) )
 		}
 	}
 }
 class Command extends BaseCommand {
-	daemon;
+	daemon
 	options = {
-		name: "execute",
-		id: 68,
+		name: 'execute' ,
+		id: 68 ,
 		media: {
 			description:
-				"Позволяет выполнить несколько команд, вызвав одно сообщение",
-			example: `!execute "!boss -a ; !boss -s"`,
-		},
-		alias: "выполнить",
-		allowDM: true,
-		cooldown: 10_000,
-		cooldownTry: 3,
-		type: "guild",
-		expectParams: true,
+				'Позволяет выполнить несколько команд, вызвав одно сообщение' ,
+			example: `!execute "!boss -a ; !boss -s"` ,
+		} ,
+		alias: 'выполнить' ,
+		allowDM: true ,
+		cooldown: 10_000 ,
+		cooldownTry: 3 ,
+		type: 'guild' ,
+		expectParams: true ,
 		slash: {
-			name: "execute",
-			description: "Allow execute chat commands",
-		},
+			name: 'execute' ,
+			description: 'Allow execute chat commands' ,
+		} ,
 		cliParser: {
 			flags: [
 				{
-					name: "--separator",
-					capture: ["--separator", "-s"],
-					expectValue: true,
-					description: "Символ разделитель между командами",
-				},
+					name: '--separator' ,
+					capture: [ '--separator' , '-s' ] ,
+					expectValue: true ,
+					description: 'Символ разделитель между командами' ,
+				} ,
 				{
-					name: "--gap",
-					capture: ["--gap"],
-					expectValue: true,
+					name: '--gap' ,
+					capture: [ '--gap' ] ,
+					expectValue: true ,
 					description:
-						"Вводит задержку между применениями. Принимает время в миллисекундах",
-				},
-			],
-		},
+						'Вводит задержку между применениями. Принимает время в миллисекундах' ,
+				} ,
+			] ,
+		} ,
 		accessibility: {
-			publicized_on_level: 20,
-		},
-	};
-	async onChatInput(message, interaction) {
-		const context = await CommandRunContext.new(interaction, this);
-		context.setWhenRunExecuted(this.run(context));
-		return context;
+			publicized_on_level: 20 ,
+		} ,
 	}
+
+	async onChatInput( message , interaction ) {
+		const context = await CommandRunContext.new( interaction , this )
+		context.setWhenRunExecuted( this.run( context ) )
+		return context
+	}
+
 	onSlash() {}
 
 	/**
@@ -111,11 +113,10 @@ class Command extends BaseCommand {
 	 * @param {CommandRunContext} context
 	 * @returns {CommandRunContext}
 	 */
-	async run(context) {
-		context.parseCli(context.interaction.params);
-		await new CommandDefaultBehaviour(context).onProcess();
-		return;
+	async run( context ) {
+		context.parseCli( context.interaction.params )
+		await new CommandDefaultBehaviour( context ).onProcess()
 	}
 }
 
-export default Command;
+export default Command

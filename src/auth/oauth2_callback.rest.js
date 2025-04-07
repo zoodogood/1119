@@ -1,56 +1,57 @@
-const PREFIX = "/oauth2/callback";
-import config from "#config";
-import { APIPointAuthorizationManager } from "#src/auth/APIPointAuthorization/APIPointAuthorization.js";
-import { ErrorsHandler } from "#src/ErrorsHandler/ErrorsHandler.js";
-import { BaseRoute } from "#src/http_requests/api_router/BaseRoute.js";
-import Path from "node:path";
+import Path from 'node:path'
+import config from '#config'
+import { APIPointAuthorizationManager } from '#src/auth/APIPointAuthorization/APIPointAuthorization.js'
+import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
+import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+
+const PREFIX = '/oauth2/callback'
 
 class Route extends BaseRoute {
-	prefix = PREFIX;
+	prefix = PREFIX
 
 	constructor() {
-		super();
+		super()
 	}
 
-	async get(request, response) {
-		const code = request.query.code;
-		const oauth = APIPointAuthorizationManager.oAuth;
+	async get( request , response ) {
+		const code = request.query.code
+		const oauth = APIPointAuthorizationManager.oAuth
 
-		if (!oauth.clientSecret) {
-			throw new Error("Accessing OAuth2 without env DISCORD_OAUTH2_TOKEN");
+		if ( !oauth.clientSecret ) {
+			throw new Error( 'Accessing OAuth2 without env DISCORD_OAUTH2_TOKEN' )
 		}
 
-		if (!code) {
-			response.sendStatus(400);
-			return;
+		if ( !code ) {
+			response.sendStatus( 400 )
+			return
 		}
-		const exchangeResponse = await oauth.requestToken(code);
-		if (exchangeResponse.error) {
+		const exchangeResponse = await oauth.requestToken( code )
+		if ( exchangeResponse.error ) {
 			ErrorsHandler.onErrorReceive(
-				new Error(exchangeResponse.error_description),
-				{ oauth: true },
-			);
+				new Error( exchangeResponse.error_description ) ,
+				{ oauth: true } ,
+			)
 		}
-		if (!exchangeResponse.access_token) {
-			response.status(500).json({ exchangeResponse, status: "error", code });
-			return;
+		if ( !exchangeResponse.access_token ) {
+			response.status( 500 ).json( { exchangeResponse , status: 'error' , code } )
+			return
 		}
 
-		const redirect = request.query.state;
+		const redirect = request.query.state
 
 		const {
-			server: { origin, paths },
-		} = config;
-		const base = origin.concat(`/${Path.normalize(`${paths.site}/oauth`)}`);
+			server: { origin , paths } ,
+		} = config
+		const base = origin.concat( `/${ Path.normalize( `${ paths.site }/oauth` ) }` )
 
-		const queries = new URLSearchParams({
-			code: exchangeResponse.access_token,
-			redirect,
-		}).toString();
+		const queries = new URLSearchParams( {
+			code: exchangeResponse.access_token ,
+			redirect ,
+		} ).toString()
 
-		const url = `${base}?${queries}`.replaceAll("\\", "/");
-		response.redirect(url);
+		const url = `${ base }?${ queries }`.replaceAll( '\\' , '/' )
+		response.redirect( url )
 	}
 }
 
-export default Route;
+export default Route
