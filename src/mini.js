@@ -6,6 +6,16 @@ export function factorySummarize() {
 	return ( acc , current ) => acc + current
 }
 
+/**
+ * @template T, C
+ * @param {(x: T) => C} valueOf
+ * @param {(a: C, b: C) => boolean} compareOperation
+ * @returns {(a: T, b: T) => T} T
+ */
+export function factoryCompare( valueOf , compareOperation ) {
+	return ( a , b ) => compareOperation( valueOf( a ) , valueOf( b ) ) ? a : b
+}
+
 export function factoryGetPropertyValue( p ) {
 	return x => x[ p ]
 }
