@@ -32,6 +32,7 @@ import { sortByResolveMut } from '#src/mini.js'
 import {
 	chunkBySize ,
 	clone ,
+	entriesFromGroupBy ,
 	maybe_multiline ,
 	season_of_month ,
 	timestampToDate ,
@@ -73,13 +74,11 @@ class TimeEvents_FlagSubcommand extends BaseFlagSubcommand {
 		)
 
 		const days = timeEvents.getExistsDaysList() || []
-		const events = Object.entries(
-			Object.groupBy(
-				days
-					.map( day => timeEvents.at( day ) )
-					.reduce( ( acc , events ) => acc.concat( events ) , [] ) ,
-				event => event.name ,
-			) ,
+		const events = entriesFromGroupBy(
+			days
+				.map( day => timeEvents.at( day ) )
+				.reduce( ( acc , events ) => acc.concat( events ) , [] ) ,
+			event => event.name ,
 		).map( ( [ name , events ] ) => ( {
 			count: events.length ,
 			name ,
