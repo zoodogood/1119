@@ -1,6 +1,6 @@
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { attack_event_callback } from '#src/boss/attack_events.js'
-import BossManager , { BossEvents } from '#src/boss/BossManager.js'
+import BossManager , { BossInstincts } from '#src/boss/BossManager.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { takeInteractionProperties } from '#src/discord/utils.js'
 import { NumberFormatLetterize , randomWith } from '#src/safe-utils.js'
@@ -143,7 +143,7 @@ export async function core_make_attack( context ) {
 	} )
 
 	user.action( ActionsMap.bossAfterAttack , context )
-	BossEvents.afterAttacked( boss , context )
+	BossInstincts.afterAttacked( boss , context )
 
 	boss.stats.userAttacksCount++
 	userStats.attacksCount = ( userStats.attacksCount || 0 ) + 1
@@ -173,7 +173,7 @@ export function display_attack( context ) {
 export function process_before_attack( context ) {
 	const { user , boss } = context
 	user.action( ActionsMap.bossBeforeAttack , context )
-	BossEvents.beforeAttacked( boss , context )
+	BossInstincts.beforeAttacked( boss , context )
 	if ( context.defaultPrevented() ) {
 		return false
 	}

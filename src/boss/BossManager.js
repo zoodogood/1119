@@ -27,6 +27,7 @@ import {
 	sendToChatChannel ,
 } from '#src/guild_special_channels/special_channel_enum.js'
 import {
+	compareReducer as arrayReduce ,
 	makeArray ,
 	numberFormat ,
 	NumberFormatLetterize ,
@@ -43,14 +44,17 @@ import { Collection } from '@discordjs/collection'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { arraySpliceItem , ending } from '@zoodogood/utils/primitives'
 import { ButtonStyle , ComponentType } from 'discord.js'
+import { factoryCompare , factorySummarize } from '../mini.js'
+import { transformToCollectionUsingKey } from '../nodejs/Collection/transformToCollectionUsingKey.js'
 
 class Speacial {
-	static AVATAR_OF_SNOW_QUEEN
-		= 'https://media.discordapp.net/attachments/926144032785195059/1189474240974565436/b9183b53bdf18835d4c337f06761d95d_1400x790-q-85_1_1.webp?ex=659e4b36&is=658bd636&hm=0889765cc144e316843ab5ad88144db1ae96f9c21f4747f303860d647200cf00&=&format=webp'
+	static AVATAR_OF_SNOW_QUEEN = 
+		'https://media.discordapp.net/attachments/926144032785195059/1189474240974565436/b9183b53bdf18835d4c337f06761d95d_1400x790-q-85_1_1.webp?ex=659e4b36&is=658bd636&hm=0889765cc144e316843ab5ad88144db1ae96f9c21f4747f303860d647200cf00&=&format=webp'
 
-	static LegendaryWearonList = new Collection(
-		Object.entries( {
-			afkPower: {
+	static LegendaryWearonList = transformToCollectionUsingKey( 
+				[
+			{
+				key: 'afkPower' ,
 				description: 'Урон ваших атак будет расти за время простоя' ,
 				effect: 'boss.increaseDamageByAfkTime' ,
 				emoji: '❄️' ,
@@ -58,7 +62,8 @@ class Speacial {
 					power: () => 1 / ( MINUTE * 10 ) ,
 				} ,
 			} ,
-			percentDamage: {
+			{
+				key: 'percentDamage' ,
 				description:
 					'Дополнительный урон атак равен 0.03% от текущего здоровья босса' ,
 				effect: 'boss.makeDamageByBossCurrentHealthPoints' ,
@@ -67,7 +72,8 @@ class Speacial {
 					power: () => 0.003 ,
 				} ,
 			} ,
-			manyEvent: {
+			{
+				key: 'manyEvent' ,
 				description: 'Увеличивает количество событий атаки на 3' ,
 				effect: 'boss.increaseAttackEventsCount' ,
 				emoji: '✨' ,
@@ -75,7 +81,8 @@ class Speacial {
 					power: () => 3 ,
 				} ,
 			} ,
-			togetherWeAre: {
+			{
+				key: 'togetherWeAre' ,
 				description:
 					'Каждая ваша атака увеличивает урон по боссу независимо от кубика' ,
 				effect: 'boss.increaseDamageForBoss' ,
@@ -84,7 +91,8 @@ class Speacial {
 					power: () => 0.0005 ,
 				} ,
 			} ,
-			complexWork: {
+			{
+				key: 'complexWork' ,
 				description:
 					'Отправляйте строго по 30 сообщений в час, чтобы на следующий период времени получить прибавку к урону' ,
 				effect: 'boss.increaseDamageWhenStrictlyMessageChallenge' ,
@@ -94,14 +102,13 @@ class Speacial {
 					basic: () => 20 ,
 				} ,
 			} ,
-		} ) ,
+		] ,
 	)
 
 	static findMostDamageDealtUser( boss ) {
-		const damageOf = entrie => entrie[ 1 ].damageDealt
-		const [ id ] = Object.entries( boss.users ).reduce( ( previous , compare ) =>
-			damageOf( compare ) > damageOf( previous ) ? compare : previous ,
-		)
+		const [ id ] = 
+			Object.entries( boss.users )
+				.reduce(factoryCompare( ( [ _ , { damageDealt } ] ) => damageDealt , ( a , b ) => a < b )) 
 		return client.users.cache.get( id )
 	}
 
@@ -109,6 +116,7 @@ class Speacial {
 		return boss.avatarURL === Speacial.AVATAR_OF_SNOW_QUEEN
 	}
 }
+
 
 class AttributesShop {
 	static PRODUCTS = new Collection(
@@ -295,17 +303,17 @@ class AttributesShop {
 	}
 }
 
-class BossEvents {
-	static events = new Collection(
-		Object.entries( {
-			bossNowHeals: {
-				id: 'bossNowHeals' ,
+class BossInstincts {
+	static instincts = transformToCollectionUsingKey(
+		[
+			{
+				key: 'bossNowHeals' ,
 				callback() {
 					// to-do
 				} ,
 			} ,
-			notifyLevel10: {
-				id: 'notifyLevel10' ,
+			{
+				key: 'notifyLevel10' ,
 				callback( boss , context ) {
 					const now = Date.now()
 					const contents = {
@@ -325,8 +333,8 @@ class BossEvents {
 				} ,
 			} ,
 
-			questFirstTimeKillBoss: {
-				id: 'questFirstTimeKillBoss' ,
+			{
+				key: 'questFirstTimeKillBoss' ,
 				callback( boss , context ) {
 					const { sourceUser } = context
 					sourceUser.action( ActionsMap.globalQuest , {
@@ -334,9 +342,8 @@ class BossEvents {
 					} )
 				} ,
 			} ,
-
-			checkQuestAloneKill: {
-				id: 'checkQuestAloneKill' ,
+			{
+				key: 'checkQuestAloneKill' ,
 				callback( boss , context ) {
 					const { sourceUser } = context
 					const hasImpostor = Object.entries( boss.users ).some(
@@ -350,7 +357,7 @@ class BossEvents {
 					sourceUser.action( ActionsMap.globalQuest , { name: 'killBossAlone' } )
 				} ,
 			} ,
-		} ) ,
+		] ,
 	)
 
 	static afterAttacked( boss , context ) {}
@@ -375,19 +382,19 @@ class BossEvents {
 
 		const modFive = levels.find( level => level % 5 === 0 )
 		if ( modFive ) {
-			this.events.get( 'bossNowHeals' ).callback( boss , context )
+			this.instincts.get( 'bossNowHeals' ).callback( boss , context )
 		}
 
 		const precedesTen = levels.find( level => level - 1 === 10 )
 		if ( precedesTen ) {
-			this.events.get( 'notifyLevel10' ).callback( boss , context )
+			this.instincts.get( 'notifyLevel10' ).callback( boss , context )
 		}
 
 		if ( precedesTen ) {
-			this.events.get( 'checkQuestAloneKill' ).callback( boss , context )
+			this.instincts.get( 'checkQuestAloneKill' ).callback( boss , context )
 		}
 
-		this.events.get( 'questFirstTimeKillBoss' ).callback( boss , context )
+		this.instincts.get( 'questFirstTimeKillBoss' ).callback( boss , context )
 	}
 
 	static onTakeDamage( boss , context ) {}
@@ -692,7 +699,7 @@ class BossManager {
 
 	static BossEffects = BossEffects
 
-	static BossEvents = BossEvents
+	static BossEvents = BossInstincts
 
 	static BossRelics = Relics
 
@@ -929,18 +936,18 @@ class BossManager {
 		return multiplayer
 	}
 
-	static calculateHealthPoint( level ) {
+	static calculateHealthPointAt( level ) {
 		return 7_000 + Math.floor( level * 500 * 1.2 ** level )
 	}
 
 	static calculateHealthPointThresholder( level ) {
 		const totalOfPrevious = makeArray(
-			level => BossManager.calculateHealthPoint( level ) ,
+			level => BossManager.calculateHealthPointAt( level ) ,
 			level - 1 ,
 		)
-			.reduce( ( acc , points ) => acc + points , 0 )
+			.reduce( factorySummarize() , 0 )
 
-		return BossManager.calculateHealthPoint( level ) + totalOfPrevious
+		return BossManager.calculateHealthPointAt( level ) + totalOfPrevious
 	}
 
 	static cleanBossData( guild ) {
@@ -985,7 +992,7 @@ class BossManager {
 			... createDefaultPreventable() ,
 		} )
 
-		BossEvents.beforeDeath( boss , context )
+		BossInstincts.beforeDeath( boss , context )
 		if ( context.defaultPrevented() ) {
 			return
 		}
@@ -1081,7 +1088,7 @@ class BossManager {
 			)
 		}
 
-		BossEvents.onBossDeath( boss , { fromLevel , toLevel , sourceUser } )
+		BossInstincts.onBossDeath( boss , { fromLevel , toLevel , sourceUser } )
 
 		const guild = client.guilds.cache.get( boss.guildId )
 
@@ -1152,7 +1159,7 @@ class BossManager {
 			damageStats[ damageSourceType ] += damage
 		}
 
-		BossEvents.onTakeDamage( boss , context )
+		BossInstincts.onTakeDamage( boss , context )
 		DataManager.data.bot.bossDamageToday += damage
 
 		if ( boss.damageTaken >= boss.healthThresholder ) {
@@ -1314,7 +1321,7 @@ class BossManager {
 export {
 	AttributesShop ,
 	BossEffects ,
-	BossEvents ,
+	BossInstincts ,
 	BossManager ,
 	Relics as BossRelics ,
 	Speacial as BossSpecial ,
