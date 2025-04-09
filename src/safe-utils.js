@@ -527,3 +527,23 @@ export function use_unique_characters_marker( value , label , flags = '' ) {
 export function makeArray( mapFn , length ) {
 	return Array.from( { length } , mapFn )
 }
+
+/**
+ * @template T, K
+ * @param {Iterable<T>} items
+ * @param {(item: T, index: number) => K} keySelector
+ * @returns {[K, T[]][]} entries
+ */
+export function entriesFromGroupBy( items , keySelector ) {
+	return Array.from( Map.groupBy( items , keySelector ).entries() )
+}
+
+/**
+ * @template K, V, NEW_K
+ * @param {[K, V][]} items
+ * @param {(key: K, index: number) => NEW_K} mapFn
+ * @returns {[NEW_K, V][]} entries
+ */
+export function entriesMapKey( items , mapFn ) {
+	return items.map( ( [ k , v ] , i ) => [ mapFn( k , i ) , v ] )
+}
