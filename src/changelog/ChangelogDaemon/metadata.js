@@ -1,11 +1,11 @@
-import { GroupSymbols } from '#src/changelog/ChangelogDaemon/display.js'
+import { ChangelogItemMarkers } from '#src/changelog/ChangelogDaemon/display.js'
 import dayjs from '#src/dayjs.js'
 
 export function metadata( item ) {
 	const { createdAt , change } = item
 	const period = dayjs( +createdAt ).format( 'MM.YYYY' )
 	const lowed_change = change.toLowerCase()
-	const group_base = GroupSymbols.find( ( { alias } ) =>
+	const group_base = ChangelogItemMarkers.find( ( { alias } ) =>
 		alias.some( alias => lowed_change.startsWith( alias ) ) ,
 	)
 	const group_symbol = group_base?.symbol || '/'

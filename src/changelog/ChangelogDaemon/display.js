@@ -1,4 +1,6 @@
-export const GroupSymbols = [
+import { entriesFromGroupBy , entriesMapKey } from '#root/src/safe-utils.js'
+
+export const ChangelogItemMarkers = [
 	{ label: 'Fix' , symbol: '#' , alias: [ 'fix' , 'bug' ] } ,
 	{
 		label: 'Balance change' ,
@@ -22,18 +24,20 @@ export function group_changes_by_default( flat_with_metadata ) {
 }
 
 function group_changes_by_periods( flat_with_metadata ) {
-	return Object.entries(
-		Object.groupBy( flat_with_metadata , ( { period } ) => period ) ,
-	).reverse()
+	return entriesFromGroupBy(
+		flat_with_metadata ,
+		( { period } ) => period ,
+	).toReversed()
 }
 
 export function group_changes_by_group_symbol( flat_with_metadata ) {
-	return Object.entries(
-		Object.groupBy( flat_with_metadata , ( { group_symbol } ) => group_symbol ) ,
-	).map( ( [ group_symbol , changes ] ) => [
-		GroupSymbols.find( ( { symbol } ) => symbol === group_symbol ) ,
-		changes ,
-	] )
+	return entriesMapKey(
+		entriesFromGroupBy(
+			flat_with_metadata ,
+			$ => $.group_symbol ,
+		) ,
+		$ => ChangelogItemMarkers.find( ( { symbol } ) => symbol === $ ) ,
+	)
 }
 
 export function change_to_string( { group_symbol , short_change } ) {
