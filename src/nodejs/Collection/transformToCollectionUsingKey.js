@@ -1,7 +1,7 @@
 import { Collection } from '@discordjs/collection'
 
 /**
- * @template K, T
+ * @template T, [K=string]
  * @param {(T & {key: K})[]} array
  * @returns {Collection<K, T>} Collection<K, T>
  */
