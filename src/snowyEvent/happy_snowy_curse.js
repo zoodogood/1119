@@ -2,7 +2,7 @@ import { inMessageSpamLimit } from '#src/chat_filter.js/inSpamSystem.js'
 import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { randomWith } from '#src/safe-utils.js'
-import { component_actions } from '#src/snowyEvent/components/mod.js'
+import { snowy_event_component_actions } from '#src/snowyEvent/components/mod.js'
 import { onPresentsChatInputCommand } from '#src/snowyEvent/onPresentsChatInputCommand.js'
 
 export const happySnowyCurse = {
@@ -26,7 +26,7 @@ export const happySnowyCurse = {
 	async onComponent( { params , interaction } ) {
 		const [ target , ... parsed ] = params
 
-		component_actions[ target ].call( this , {
+		snowy_event_component_actions[ target ].call( this , {
 			params: parsed ,
 			interaction ,
 		} )
