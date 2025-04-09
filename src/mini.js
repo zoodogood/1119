@@ -6,14 +6,8 @@ export function factorySummarize() {
 	return ( acc , current ) => acc + current
 }
 
-export function factoryGetPropertyValue( ... targets ) {
-	return ( x ) => {
-		let base = x
-		for ( const property of targets ) {
-			base = base[ property ]
-		}
-		return base
-	}
+export function factoryGetPropertyValue( p ) {
+	return x => x[ p ]
 }
 
 export function mapGetOrInsert( map , key , defaults ) {
