@@ -12,7 +12,7 @@ import {
 	CustomCommand ,
 	uses_count_of ,
 } from '#src/guildcommand/command.guildcommand.js'
-import { capitalize } from '#src/mini.js'
+import { capitalize, factorySummarize } from '#src/mini.js'
 import { joinWithAndSeparator } from '#src/safe-utils.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { CliParser } from '@zoodogood/utils/primitives'
@@ -184,7 +184,7 @@ class TargetCommandMetadata {
 
 	calculateCommandsUsedTotally() {
 		const used = Object.values( DataManager.data.bot.commandsUsed )
-		return used.reduce( ( acc , count ) => acc + count , 0 )
+		return used.reduce( factorySummarize() , 0 )
 	}
 
 	fetchCommandMetadata( command , guild ) {

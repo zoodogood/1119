@@ -8,7 +8,7 @@ import CommandsManager from '#src/commands/CommandsManager/singleton.js'
 
 import DataManager from '#src/data/DataManager.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import { randomWith } from '#src/safe-utils.js'

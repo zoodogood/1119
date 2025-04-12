@@ -1,6 +1,6 @@
 import { CALCULATE_CLOVER_MULTIPLAYER } from '#src/coin_message/clover/contstants.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 import * as SnowyEvent from '#src/snowyEvent/lifecycle.js'
 import { onGetCoinMessage as SnowyOnGetCoinMessage } from '#src/snowyEvent/onGetCoinMessage.js'

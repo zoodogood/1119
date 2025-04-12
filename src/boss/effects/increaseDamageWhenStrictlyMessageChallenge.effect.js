@@ -1,3 +1,4 @@
+import { factoryCompare } from '#root/src/mini.js'
 import BossManager from '#src/boss/BossManager.js'
 import { EffectInfluenceEnum } from '#src/user/actions/EffectsManager.js'
 
@@ -28,7 +29,7 @@ export default {
 				hoursMap[ currentHour ] = 0
 				const previousHourMessages = Object.entries( hoursMap )
 					.reduce(
-						( acc , entrie ) => ( +acc.at( 0 ) > +entrie.at( 0 ) ? acc : entrie ) ,
+						factoryCompare( $ => +$[ 0 ] , ( a , b ) => a > b ) ,
 						[] ,
 					)
 					.at( 1 )

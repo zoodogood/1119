@@ -1,5 +1,6 @@
 import config from '#config'
 import { HOUR , MINUTE , SECOND } from '#constants/time.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import {
 	core_make_attack ,
 	core_make_attack_context ,
@@ -19,12 +20,11 @@ import BossManager , {
 import { damageTypeLabel } from '#src/boss/formatters.js'
 import { current_health_thresholder } from '#src/boss/health.js'
 import client from '#src/bot/client/singleton.js'
-import CommandsManager from '#src/commands/CommandsManager/singleton.js'
 
+import CommandsManager from '#src/commands/CommandsManager/singleton.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
 import { question } from '#src/discord/utils.js'
 import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
 import {

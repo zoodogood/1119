@@ -1,4 +1,5 @@
 import { NEW_YEAR_DAY_DATE , SECOND } from '#constants/time.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import {
 	BaseCommand ,
 	BaseFlagSubcommand ,
@@ -7,7 +8,6 @@ import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum , PropertiesList } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { getSimilar , randomWith , timestampDay } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'

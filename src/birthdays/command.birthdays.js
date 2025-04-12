@@ -1,7 +1,7 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { DataManager } from '#src/data/singleton.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { CliParser } from '@zoodogood/utils/primitives'

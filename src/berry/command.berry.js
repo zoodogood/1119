@@ -1,7 +1,7 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addMultipleResources } from '#src/data/public/addResource.js'
+import { addMultipleResources } from '#root/src/user/resources/addResource.js'
 import { DataManager } from '#src/data/singleton.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 

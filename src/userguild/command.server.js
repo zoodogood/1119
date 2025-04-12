@@ -9,6 +9,7 @@ import Template from '#src/VirtualMachine/Template.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 import { ChannelType , PresenceUpdateStatus } from 'discord.js'
+import { factorySummarize } from '../mini.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -80,7 +81,7 @@ class Command extends BaseCommand {
 
 	getUsedCommandsCountOfGuild( guild ) {
 		return Object.values( guild.data.commandsUsed ).reduce(
-			( acc , count ) => acc + count ,
+			factorySummarize() ,
 			0 ,
 		)
 	}

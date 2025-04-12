@@ -1,5 +1,6 @@
 import { DAY , HOUR , MINUTE , SECOND } from '#constants/time.js'
 import { guildsOfUser } from '#root/src/discord/utils.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { assert } from '#src/assert/export.js'
 import * as BagAPI from '#src/bag/command.bag.js'
 import client from '#src/bot/client/singleton.js'
@@ -7,10 +8,9 @@ import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import DataManager from '#src/data/DataManager.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
-import { adjust , sortByResolveMut } from '#src/mini.js'
+import { adjust , factoryCompare , sortByResolveMut } from '#src/mini.js'
 import QuestManager from '#src/quests/QuestManager.js'
 import { clamp , randomWith , sleep , yaml } from '#src/safe-utils.js'
 import { happySnowyCurse } from '#src/snowyEvent/happy_snowy_curse.js'
@@ -325,16 +325,14 @@ export const cursesBase = new Collection(
 			values: {
 				goal: () => 80_000 ,
 				timer: ( user ) => {
-					const guilds = guildsOfUser(user).filter(
+					const guilds = guildsOfUser( user ).filter(
 						guild => guild.data.boss?.isArrived ,
 					)
 					assert( guilds.length )
-					const guild = guilds.reduce( ( maximalize , guild ) =>
-						maximalize.data.boss.endingAtDay < guild.data.boss.endingAtDay
-							? guild
-							: maximalize ,
+					const mostLongAlivedIn = guilds.reduce(
+						factoryCompare( $ => $.data.boss.endingAtDay , ( a , b ) => a < b ) ,
 					)
-					const timestamp = guild.data.boss.endingAtDay * DAY
+					const timestamp = mostLongAlivedIn.data.boss.endingAtDay * DAY
 					const difference = timestamp - Date.now()
 					return Math.max( difference , HOUR )
 				} ,

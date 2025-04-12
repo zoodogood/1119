@@ -75,9 +75,7 @@ class TimeEvents_FlagSubcommand extends BaseFlagSubcommand {
 
 		const days = timeEvents.getExistsDaysList() || []
 		const events = entriesFromGroupBy(
-			days
-				.map( day => timeEvents.at( day ) )
-				.reduce( ( acc , events ) => acc.concat( events ) , [] ) ,
+			days.flatMap( day => timeEvents.at( day ) ) ,
 			event => event.name ,
 		).map( ( [ name , events ] ) => ( {
 			count: events.length ,

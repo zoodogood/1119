@@ -6,7 +6,7 @@ import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import CooldownManager from '#src/CooldownManager.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { DataManager } from '#src/data/singleton.js'
 import dayjs from '#src/dayjs.js'
 import {

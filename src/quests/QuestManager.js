@@ -1,6 +1,6 @@
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { DataManager } from '#src/data/singleton.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'

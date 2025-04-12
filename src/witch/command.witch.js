@@ -4,7 +4,7 @@ import {
 } from '#src/chest/constants.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { DataManager } from '#src/data/singleton.js'
 import { randomWith , sleep } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'

@@ -9,7 +9,7 @@ import {
 } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addMultipleResources } from '#src/data/public/addResource.js'
+import { addMultipleResources } from '#root/src/user/resources/addResource.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { Pager } from '#src/discord/Pager.js'
 import { ROMAN_NUMERALS_TABLE } from '#src/romanNumerals.js'

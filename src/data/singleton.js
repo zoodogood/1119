@@ -1,7 +1,8 @@
 import { assert } from '#src/assert/export.js'
 import { omit } from '@zoodogood/utils/objectives'
-import { default as DataManager } from './DataManager.js'
+import DataManager from './DataManager.js'
 import { Store } from './Store.js'
+/** @import { Guild , User } from 'discord.js' */
 
 const store = ( new Store )
 
@@ -49,4 +50,23 @@ Data.users = Data.users.sort( ( a , b ) => b.level - a.level )
 
 Data.bot.berrysPrice ||= 200
 Data.bot.grempenItems ||= '123456'
+
+/**
+ *
+ * @param {Guild} guild
+ * @returns {typeof DataManager.data.guilds[number]} guildData
+ */
+export function guildDataOf( guild ) {
+	// @ts-expect-error prototype extended: legacy code
+	return guild.data
+}
+/**
+ *
+ * @param {User} user
+ * @returns {typeof DataManager.data.users[number]} userData
+ */
+export function userDataOf( user ) {
+	// @ts-expect-error prototype extended: legacy code
+	return user.data
+}
 export { DataManager , store }

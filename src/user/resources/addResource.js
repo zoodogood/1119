@@ -1,4 +1,5 @@
 import { assert } from '#root/src/assert/export.js'
+import { userDataOf } from '#root/src/data/singleton.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 
 export function addResource( {
@@ -24,8 +25,8 @@ export function addResource( {
 		resource ,
 		context ,
 	} )
-	user.data[ resource ] ||= 0
-	user.data[ resource ] += value
+	userDataOf( user )[ resource ] ||= 0
+	userDataOf( user )[ resource ] += value
 }
 
 export function addMultipleResources( {

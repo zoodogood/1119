@@ -3,7 +3,7 @@ import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { DataManager } from '#src/data/singleton.js'
 import {
 	mutate_time_event ,

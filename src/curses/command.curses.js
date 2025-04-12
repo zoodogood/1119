@@ -12,7 +12,7 @@ import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { resolve_description } from '#src/curses/CurseManager/singleton/public.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { Pager } from '#src/discord/Pager.js'
 import {
 	actionRowsToComponents ,

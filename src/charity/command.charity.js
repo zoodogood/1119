@@ -1,7 +1,7 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { awaitUserAccept } from '#src/discord/utils.js'
 import { randomWith } from '#src/safe-utils.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'

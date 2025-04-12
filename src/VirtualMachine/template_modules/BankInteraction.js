@@ -1,7 +1,7 @@
 import { SECOND } from '#constants/time.js'
 import { assert } from '#src/assert/export.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { question } from '#src/discord/utils.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { percent_string } from '#src/formatters/formatters.js'

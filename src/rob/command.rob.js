@@ -1,7 +1,7 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { randomWith } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import { ending } from '@zoodogood/utils/primitives'

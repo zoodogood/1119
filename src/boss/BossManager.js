@@ -27,7 +27,6 @@ import {
 	sendToChatChannel ,
 } from '#src/guild_special_channels/special_channel_enum.js'
 import {
-	compareReducer as arrayReduce ,
 	makeArray ,
 	numberFormat ,
 	NumberFormatLetterize ,
@@ -48,11 +47,11 @@ import { factoryCompare , factorySummarize } from '../mini.js'
 import { transformToCollectionUsingKey } from '../nodejs/Collection/transformToCollectionUsingKey.js'
 
 class Speacial {
-	static AVATAR_OF_SNOW_QUEEN = 
-		'https://media.discordapp.net/attachments/926144032785195059/1189474240974565436/b9183b53bdf18835d4c337f06761d95d_1400x790-q-85_1_1.webp?ex=659e4b36&is=658bd636&hm=0889765cc144e316843ab5ad88144db1ae96f9c21f4747f303860d647200cf00&=&format=webp'
+	static AVATAR_OF_SNOW_QUEEN
+		= 'https://media.discordapp.net/attachments/926144032785195059/1189474240974565436/b9183b53bdf18835d4c337f06761d95d_1400x790-q-85_1_1.webp?ex=659e4b36&is=658bd636&hm=0889765cc144e316843ab5ad88144db1ae96f9c21f4747f303860d647200cf00&=&format=webp'
 
-	static LegendaryWearonList = transformToCollectionUsingKey( 
-				[
+	static LegendaryWearonList = transformToCollectionUsingKey(
+		[
 			{
 				key: 'afkPower' ,
 				description: 'Урон ваших атак будет расти за время простоя' ,
@@ -106,9 +105,9 @@ class Speacial {
 	)
 
 	static findMostDamageDealtUser( boss ) {
-		const [ id ] = 
-			Object.entries( boss.users )
-				.reduce(factoryCompare( ( [ _ , { damageDealt } ] ) => damageDealt , ( a , b ) => a < b )) 
+		const [ id ]
+			= Object.entries( boss.users )
+				.reduce( factoryCompare( ( [ _ , { damageDealt } ] ) => damageDealt , ( a , b ) => a < b ) )
 		return client.users.cache.get( id )
 	}
 
@@ -116,7 +115,6 @@ class Speacial {
 		return boss.avatarURL === Speacial.AVATAR_OF_SNOW_QUEEN
 	}
 }
-
 
 class AttributesShop {
 	static PRODUCTS = new Collection(
@@ -748,7 +746,7 @@ class BossManager {
 		const boss = guild.data.boss
 		const usersCache = guild.client.users.cache
 
-		if ( boss.level > 1 === false ) {
+		if ( boss.level <= 1 ) {
 			if ( boss.is_quiet_boss )
 				return
 			sendToChatChannel( guild , { content: 'Босс покинул сервер в страхе...' } )
@@ -820,12 +818,12 @@ class BossManager {
 			.forEach( user => user && cleanEffects( user ) )
 
 		const mainDamage = Object.entries( boss.stats.damage ).reduce(
-			( acc , current ) => ( acc.at( 1 ) > current.at( 1 ) ? acc : current ) ,
+			factoryCompare( item => item[ 1 ] , ( a , b ) => a > b ) ,
 			[ BossManager.DAMAGE_SOURCES.other , 0 ] ,
 		)
 
 		const weakestDamage = Object.entries( boss.stats.damage ).reduce(
-			( acc , current ) => ( acc.at( 1 ) < current.at( 1 ) ? acc : current ) ,
+			factoryCompare( item => item[ 1 ] , ( a , b ) => a < b ) ,
 			[ BossManager.DAMAGE_SOURCES.other , Number.MAX_SAFE_INTEGER ] ,
 		)
 

@@ -1,7 +1,7 @@
 import { MINUTE , SECOND } from '#constants/time.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/data/public/addResource.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import dayjs from '#src/dayjs.js'
 import { factoryGetPropertyValue } from '#src/mini.js'
 import { randomWith , sleep } from '#src/safe-utils.js'
