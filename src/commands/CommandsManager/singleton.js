@@ -1,5 +1,6 @@
 import config from '#config'
 import { SECOND } from '#constants/time.js'
+import { guildDataOf, userDataOf } from '#root/src/data/singleton.js'
 
 import CustomIdExecutor from '#src/app/CustomIdExecutor/Executor.js'
 
@@ -52,7 +53,7 @@ export function resolve_command( command_name , source_guild ) {
 	return (
 		CommandsManager.callMap.get( command_name )
 		|| ( () => {
-			const custom_command = source_guild?.data.custom_commands?.[ command_name ]
+			const custom_command = source_guild && guildDataOf( source_guild ).custom_commands?.[ command_name ]
 			if ( !custom_command ) {
 				return false
 			}
@@ -92,7 +93,7 @@ export class CommandInteraction {
 		/** @type {import("discord.js").GuildMember} */
 		this.member = guild?.members.resolve( user ) || null
 		/** @type {import("#src/data/schema.js").users} */
-		this.userData = user.data
+		this.userData = userDataOf( user )
 		/** @type {import("discord.js").User} */
 		this.mention = message.mentions?.users.first() ?? null
 	}
@@ -241,7 +242,7 @@ class CommandsManager {
 				)
 
 		if ( clientWastedChannelPermissions?.length ) {
-			const { locale } = interaction.user.data
+			const { locale } = userDataOf( interaction.user )
 			const permissions = clientWastedChannelPermissions.map( string =>
 				permissionRawToI18n( string , locale ) ,
 			)
@@ -260,7 +261,7 @@ class CommandsManager {
 					options.myPermissions ,
 				)
 		if ( clientWastedGuildPermissions?.length ) {
-			const { locale } = interaction.user.data
+			const { locale } = userDataOf( interaction.user )
 			const permissions = clientWastedGuildPermissions.map( string =>
 				permissionRawToI18n( string , locale ) ,
 			)
@@ -280,7 +281,7 @@ class CommandsManager {
 					interaction.channel ,
 				)
 		if ( userWastedChannelPermissions?.length ) {
-			const { locale } = interaction.user.data
+			const { locale } = userDataOf( interaction.user )
 			const permissions = userWastedChannelPermissions.map( string =>
 				permissionRawToI18n( string , locale ) ,
 			)
@@ -296,7 +297,7 @@ class CommandsManager {
 				&& options.userPermissions
 				&& take_missing_permissions( interaction.member , options.userPermissions )
 		if ( userWastedGuildPermissions?.length ) {
-			const { locale } = interaction.user.data
+			const { locale } = userDataOf( interaction.user )
 			const permissions = userWastedGuildPermissions.map( string =>
 				permissionRawToI18n( string , locale ) ,
 			)

@@ -61,8 +61,8 @@ class TaskManager {
 	}
 
 	setUserTaskField( user ) {
-		const task = new TaskData( user.data.task || {} )
-		user.data.task = task
+		const task = new TaskData( userDataOf(user).task || {} )
+		userDataOf(user).task = task
 		this.userTask = task
 		return this
 	}

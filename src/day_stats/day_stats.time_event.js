@@ -49,7 +49,7 @@ export default class Event {
 	time_event_recreate() {
 		const launched_events = timeEvents_singleton.filterEventsInRange(
 			( { name } ) => name === 'day-stats' ,
-			[ DataManager.data.bot.currentDay , DataManager.data.bot.currentDay + 1 ] ,
+			[ botData().currentDay , botData().currentDay + 1 ] ,
 		)
 
 		launched_events.length > 0
@@ -65,14 +65,14 @@ export default class Event {
 	}
 
 	updateStateAndSendStats( guild , context ) {
-		const guildData = guild.data
+		const guildData =guldDataOf(guild)
 		const messagesOfDay = guildData.day_msg || 0
 		const { guildsStatsContext } = context
 		const { treeMessagesNeed } = guildsStatsContext[ guild.id ] || {}
 
 		{
 			// From src/bank
-			guild.data.coins += DAILY_REVENUE_PER_MEMBER * guild.memberCount
+			guildDataOf(guild).coins += DAILY_REVENUE_PER_MEMBER * guild.memberCount
 		}
 		{
 			guildData.days = guildData.days + 1 || 1

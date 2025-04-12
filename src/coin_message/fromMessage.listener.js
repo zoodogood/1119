@@ -19,15 +19,15 @@ class Event extends BaseEvent {
 
 	calculateMultiplayer( { user , message } ) {
 		const { guild } = message
-		const userData = user.data
+		const userData =userDataOf(user)
 		let k = 1
 
 		if ( SnowyEvent.time_for_snowy_event.isFactualActive() ) {
 			k += 0.2
 		}
 
-		if ( guild && 'cloverEffect' in guild.data ) {
-			const value = CALCULATE_CLOVER_MULTIPLAYER( guild.data.cloverEffect.uses )
+		if ( guild && 'cloverEffect' inguldDataOf(guild) ) {
+			const value = CALCULATE_CLOVER_MULTIPLAYER( guildDataOf(guild).cloverEffect.uses )
 			const multiplayer = value * 1.12 ** ( userData.voidMysticClover ?? 0 )
 			k += multiplayer
 		}
@@ -36,7 +36,7 @@ class Event extends BaseEvent {
 	}
 
 	async onGetCoinsFromMessage( { user , message } ) {
-		const userData = user.data
+		const userData =userDataOf(user)
 		const { guild } = message
 		user.action( Actions.coinFromMessage , {
 			channel: message.channel ,
@@ -48,9 +48,9 @@ class Event extends BaseEvent {
 			reaction = '❄️'
 		}
 
-		if ( guild && 'cloverEffect' in guild.data ) {
+		if ( guild && 'cloverEffect' inguldDataOf(guild) ) {
 			reaction = '☘️'
-			guild.data.cloverEffect.coins++
+			guildDataOf(guild).cloverEffect.coins++
 		}
 
 		const coins = Math.round( ( 35 + ( userData.coinsPerMessage ?? 0 ) ) * k )

@@ -16,6 +16,7 @@ import { Actions } from '#src/user/actions/ActionManager.js'
 import Template from '#src/VirtualMachine/Template.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { PresenceUpdateStatus } from 'discord.js'
+import { userDataOf } from '../data/singleton.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -55,7 +56,7 @@ class Command extends BaseCommand {
 					? guild.members.cache
 						.map( m => m.user )
 						.filter( user => !user.bot )
-						.filter( user => user.data.level > 1 )
+						.filter( user => userDataOf( user ).level > 1 )
 					: null ,
 			} ,
 
@@ -81,9 +82,7 @@ class Command extends BaseCommand {
 			interaction.rank.position
 				= interaction.rank.members
 					.sort( ( b , a ) =>
-						a.data.level !== b.data.level
-							? a.data.level - b.data.level
-							: a.data.exp - b.data.exp ,
+						userDataOf( a ).level - userDataOf( b ).level || userDataOf( a ).exp - userDataOf( b ).exp ,
 					)
 					.indexOf( target ) + 1
 		}

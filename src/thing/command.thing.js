@@ -1,10 +1,10 @@
 import { DAY , MINUTE } from '#constants/time.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
 import {
 	mutate_time_event ,
 	timeEvents_singleton ,
@@ -89,7 +89,7 @@ class Command extends BaseCommand {
 			return this.boss.manager.isArrivedIn( guild )
 		} ,
 		makeDamage: ( guild , user , { elementType } ) => {
-			const boss = guild.data.boss
+			const boss = guildDataOf( guild ).boss
 			const BASE_DAMAGE = 400
 			const DAMAGE_SOURCE_TYPE = this.boss.manager.DAMAGE_SOURCES.thing
 
@@ -293,7 +293,7 @@ class Command extends BaseCommand {
 			] ,
 			filter: ( { guild } ) => this.boss.isAvailable( guild ) ,
 			onInit: ( { guild , elementBase , user , scene } ) => {
-				const bossElement = guild.data.boss.elementType
+				const bossElement = guildDataOf( guild ).boss.elementType
 				const damageDealt = this.boss.makeDamage( guild , user , {
 					elementType: elementBase.index ,
 				} )
@@ -680,7 +680,7 @@ class Command extends BaseCommand {
 								context ,
 							} )
 
-							!isBerrysCountIncreased && DataManager.data.bot.berrysPrice++
+							!isBerrysCountIncreased && botData().berrysPrice++
 						} ,
 						textOutput:
 							'Она вроде увеличилась, а вроде увеличилась её цена. Никто так и не понял..' ,
@@ -816,7 +816,7 @@ class Command extends BaseCommand {
 					{
 						action: async ( { scene } ) => {
 							scene.random = randomWith( 3 , 8 )
-							DataManager.data.bot.berrysPrice += scene.random
+							botData().berrysPrice += scene.random
 						} ,
 						textOutput:
 							'Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {ending(scene.random, "коин", "ов", "", "а")} дороже.' ,
@@ -1056,7 +1056,7 @@ class Command extends BaseCommand {
 					{
 						action: async ( context ) => {
 							const { user } = context
-							if ( user.data.berrys ) {
+							if ( userDataOf( user ).berrys ) {
 								addResource( {
 									user ,
 									value: -1 ,
@@ -1087,7 +1087,7 @@ class Command extends BaseCommand {
 				[
 					{
 						action: async ( { level , channel } ) => {
-							const clover = channel.guild.data.cloverEffect
+							const clover = guildDataOf( channel.guild ).cloverEffect
 							const day = timestampDay( clover.timestamp )
 
 							const filter = ( { name , _params_as_json } ) =>
@@ -1188,7 +1188,7 @@ class Command extends BaseCommand {
 				[
 					{
 						action: async ( { channel } ) => {
-							const clover = channel.guild.data.cloverEffect
+							const clover = guildDataOf( channel.guild ).cloverEffect
 							const day = timestampDay( clover.timestamp )
 							const filter = ( { name , params } ) =>
 								name === 'clover-end' && params.includes( channel.guild.id )
@@ -1210,7 +1210,7 @@ class Command extends BaseCommand {
 				] ,
 			] ,
 			filter: ( { level , channel } ) =>
-				'cloverEffect' in channel.guild.data && level > 2 ,
+				'cloverEffect' in guildDataOf( channel.guild ) && level > 2 ,
 		} ,
 		{
 			id: 'school' ,
@@ -1229,7 +1229,7 @@ class Command extends BaseCommand {
 								resource: PropertiesEnum.berrys ,
 								context ,
 							} )
-							DataManager.data.bot.berrysPrice += 3
+							botData().berrysPrice += 3
 						} ,
 						textOutput:
 							'Труд-труд и ещё раз труд.. За усердную работу вы получили одну клубнику, а их цена на рынке поднялась на 3ед.' ,
@@ -1716,7 +1716,7 @@ class Command extends BaseCommand {
 					{
 						action: async ( context ) => {
 							const { user } = context
-							const curse = user.data.curses.at( 0 )
+							const curse = userDataOf( user ).curses.at( 0 )
 							CurseManager.interface( { curse , user } ).incrementProgress( 1 )
 							CurseManager.checkAvailable( { user , curse } )
 						} ,
@@ -1798,7 +1798,7 @@ class Command extends BaseCommand {
 				[
 					{
 						action: async () => {
-							DataManager.data.bot.berrysPrice -= 125
+							botData().berrysPrice -= 125
 						} ,
 						textOutput: 'За последние 2с цена клубники упала на 125ед.' ,
 					} ,
@@ -1811,9 +1811,9 @@ class Command extends BaseCommand {
 					{
 						action: async ( { scene } ) => {
 							const value = Math.floor(
-								randomWith( 55 , 110 ) + DataManager.data.bot.berrysPrice / 10 ,
+								randomWith( 55 , 110 ) + botData().berrysPrice / 10 ,
 							)
-							DataManager.data.bot.berrysPrice -= value
+							botData().berrysPrice -= value
 							scene.value = value
 						} ,
 						textOutput:
@@ -1827,7 +1827,7 @@ class Command extends BaseCommand {
 				[
 					{
 						action: async () => {
-							DataManager.data.bot.berrysPrice -= 50
+							botData().berrysPrice -= 50
 						} ,
 						textOutput: 'За последние 2с цена клубники упала на 50ед.' ,
 					} ,
@@ -1839,7 +1839,7 @@ class Command extends BaseCommand {
 				[
 					{
 						action: async ( context ) => {
-							DataManager.data.bot.berrysPrice -= 50
+							botData().berrysPrice -= 50
 							const { user , userData } = context
 							addResource( {
 								user ,
@@ -1858,13 +1858,13 @@ class Command extends BaseCommand {
 					false ,
 					{
 						action: async () => {
-							DataManager.data.bot.berrysPrice -= 200
+							botData().berrysPrice -= 200
 						} ,
 						textOutput: 'Вы снизили её цену на 200ед.' ,
 					} ,
 				] ,
 			] ,
-			filter: () => DataManager.data.bot.berrysPrice >= 900 ,
+			filter: () => botData().berrysPrice >= 900 ,
 		} ,
 	]
 
@@ -1888,7 +1888,7 @@ class Command extends BaseCommand {
 
 	async displayIncreaseLevelInterface( interaction ) {
 		const { user } = interaction
-		const userData = user.data
+		const userData = userDataOf( user )
 
 		const elementBase = this.constructor.Elements.at( userData.element )
 
@@ -2009,7 +2009,7 @@ class Command extends BaseCommand {
 
 	async displaySelectElementInterface( interaction ) {
 		const Elements = this.constructor.Elements
-		const userData = interaction.user.data
+		const userData = userDataOf( interaction.user )
 
 		const embed = {
 			title: 'Говорят, звёзды приносят удачу' ,
@@ -2065,7 +2065,7 @@ class Command extends BaseCommand {
 		cooldownThresholder ,
 		elementBase ,
 	} ) {
-		const userData = interaction.user.data
+		const userData = userDataOf( interaction.user )
 
 		const title = `${ elementBase.emoji } Штука перезаряжается!`
 		const description = `Товарищ многоуважаемый, спешу сообщить, что:\nВаш персонаж слишком устал от приключений.\n\nПерерыв на обед ещё: ${ timestampToDate(
@@ -2096,11 +2096,11 @@ class Command extends BaseCommand {
 
 		const { cooldownThresholder } = this.getCooldownInfo()
 		const inCooldownContent = [ 'Нет.' , 'Да.' ][
-			+( interaction.mention.data.CD_52 > cooldownThresholder )
+			+( userDataOf( interaction.mention ).CD_52 > cooldownThresholder )
 		]
 
 		const description = `${ mentionContent }...\nВыбранная стихия: ${ emoji }\nУровень штуки: ${
-			( interaction.mention.data.elementLevel || 0 ) + 1
+			( userDataOf( interaction.mention ).elementLevel || 0 ) + 1
 		}\n\n${ element.description }\nНа перезарядке: ${ inCooldownContent }`
 		interaction.channel.msg( { description , color } )
 	}
@@ -2125,7 +2125,7 @@ class Command extends BaseCommand {
 			return this.displayUserInfo( { element , interaction } )
 		}
 
-		const userData = interaction.user.data
+		const userData = userDataOf( interaction.user )
 		const { element } = userData
 
 		if ( !userData.voidRituals ) {
@@ -2170,7 +2170,7 @@ class Command extends BaseCommand {
 
 	async run( { user , elementBase , channel , level , interaction } ) {
 		const guild = channel.guild
-		const userData = user.data
+		const userData = userDataOf( user )
 
 		const coefficient = randomWith( this.constructor.BASIC_COINS_COEFFICIENT , {
 			round: false ,
@@ -2259,7 +2259,7 @@ class Command extends BaseCommand {
 					: eventBase.description ,
 		}
 
-		channel.guild.data.coins += income
+		guildDataOf( channel.guild ).coins += income
 		const message = channel.msg( {
 			title: titlePhrase ,
 			description: `${ contents.guildTakeCoins }${ contents.event }` ,

@@ -1,10 +1,11 @@
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
-import { DataManager } from '#src/data/singleton.js'
+import { singletonBotData, DataManager , userDataOf } from '#src/data/singleton.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { CliParser } from '@zoodogood/utils/primitives'
+import { DAY } from '../constants/time.js'
 
 class Birthdays {}
 
@@ -12,7 +13,7 @@ class BirthdayMember {
 	PRICES_FOR_UPDATE_BIRTHDAY = [ 1200 , 3000 , 12000 ]
 	constructor( user ) {
 		this.user = user
-		this.userData = user.data
+		this.userData = userDataOf( user )
 	}
 
 	calculateUpdatePrice() {
@@ -94,7 +95,7 @@ class BirthdayMember {
 	}
 
 	setBirhday( user , value ) {
-		user.data.BDay = value
+		userDataOf( user ).BDay = value
 		user.action( ActionsMap.globalQuest , { name: 'setBirthday' } )
 	}
 }
@@ -108,15 +109,15 @@ class MembersCommandManager {
 		const { channel , guild } = this.context
 		const splitDate = date => date.split( '.' ).map( Number )
 
-		const [ currentDay , currentMonth ] = splitDate( DataManager.data.bot.dayDate )
+		const [ currentDay , currentMonth ] = splitDate( singletonBotData().dayDate )
 
 		const users = guild.members.cache
 			.map( member => member.user )
-			.filter( user => user.data.BDay && !user.data.profile_confidentiality )
+			.filter( user => userDataOf( user ).BDay && !userDataOf( user ).profile_confidentiality )
 
 		const sortByDate = ( userA , userB ) => {
-			const [ aDay , aMonth ] = splitDate( userA.data.BDay )
-			const [ bDay , bMonth ] = splitDate( userB.data.BDay )
+			const [ aDay , aMonth ] = splitDate( userDataOf( userA ).BDay )
+			const [ bDay , bMonth ] = splitDate( userDataOf( userB ).BDay )
 
 			if ( aMonth !== bMonth ) {
 				return ( -1 ) ** ( aMonth < bMonth )
@@ -138,7 +139,7 @@ class MembersCommandManager {
 			month > currentMonth || ( month === currentMonth && day >= currentDay )
 
 		users.forEach( ( user ) => {
-			const [ day , month ] = splitDate( user.data.BDay )
+			const [ day , month ] = splitDate( userDataOf( user ).BDay )
 
 			const inThisYear = checkInThisYear( day , month )
 
@@ -160,17 +161,17 @@ class MembersCommandManager {
 			const compare = new Date( `${ year }.${ month }.${ day }` )
 
 			const diff = compare.getTime() - Date.now()
-			return Math.ceil( diff / 86_400_000 )
+			return Math.ceil( diff / DAY )
 		}
 
 		const toField = ( user ) => {
-			const isToday = user.data.BDay === DataManager.data.bot.dayDate
-			const inThisYear = checkInThisYear( ... splitDate( user.data.BDay ) )
+			const isToday = userDataOf( user ).BDay === singletonBotData().dayDate
+			const inThisYear = checkInThisYear( ... splitDate( userDataOf( user ).BDay ) )
 
-			const dateContent = isToday ? 'сегодня! 🎁' : user.data.BDay
+			const dateContent = isToday ? 'сегодня! 🎁' : userDataOf( user ).BDay
 			const inDaysContent = ` (через ${ daysTo( {
 				current: inThisYear ,
-				date: splitDate( user.data.BDay ) ,
+				date: splitDate( userDataOf( user ).BDay ) ,
 			} ) }д.)`
 			const name = `${ dateContent }${ inDaysContent }`
 			const value = user.tag
@@ -186,7 +187,7 @@ class MembersCommandManager {
 				} ,
 			]
 
-		const birthdaysToday = DataManager.data.bot.clearParty || 0
+		const birthdaysToday = singletonBotData().clearParty || 0
 
 		const title = '🎉 Дни рождения!'
 		const description = `Здесь отображаются даты дней рождения пользователей, которые указали эту информацию`

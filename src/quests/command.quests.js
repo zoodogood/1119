@@ -91,7 +91,7 @@ class MembersFlag_Manager {
 
 	onProcess() {
 		const { guild , channel } = this.context
-		const day = DataManager.data.bot.currentDay
+		const day = botData().currentDay
 		const { Null , Complete } = this.GROUP_SPECIAL
 
 		const groups = { [ Null ]: [] , [ Complete ]: [] }
@@ -99,7 +99,7 @@ class MembersFlag_Manager {
 			if ( member.user.bot ) {
 				continue
 			}
-			const quest = member.user.data.quest
+			const quest =userDataOf( member.user).quest
 			if ( quest?.day !== day ) {
 				groups[ Null ].push( member )
 				continue

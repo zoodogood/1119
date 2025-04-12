@@ -81,7 +81,7 @@ class Command extends BaseCommand {
 		// find muted role
 
 		const role
-			= guild.roles.cache.get( guild.data.mute_role )
+			= guild.roles.cache.get( guildDataOf(guild).mute_role )
 				|| guildMember.roles.cache.find( role => is_mute_role_by_name( role ) )
 
 		if ( !guildMember.roles.cache.get( role?.id ) ) {

@@ -1,5 +1,5 @@
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager , userDataOf } from '#src/data/singleton.js'
 import ErrorsHandler from '#src/ErrorsHandler/ErrorsHandler.js'
 
 import { QuestManager } from '#src/quests/QuestManager.js'
@@ -16,10 +16,10 @@ class ActionManager {
 		Object.defineProperty( DiscordUser.prototype , 'action' , {
 			enumerable: false ,
 			value( actionName , data ) {
-				const userData = this.data
+				const userData = userDataOf( this )
 
 				if ( QuestManager.isNeedInstallDailyQuest( { user: this } ) ) {
-					if ( !this.data.quest?.willUpdate ) {
+					if ( !userData.quest?.willUpdate ) {
 						QuestManager.requestInstallDailyQuest( { user: this } )
 						QuestManager.checkAvailable( { user: this } )
 					}

@@ -1,18 +1,18 @@
 import { HOUR , MINUTE } from '#constants/time.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import {
 	BaseCommand ,
 	BaseFlagSubcommand ,
 } from '#src/commands/BaseCommand/BaseCommand.js'
-import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 
+import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CooldownManager from '#src/CooldownManager.js'
 import { curse_epoch_singleton } from '#src/curses/CurseManager/CurseEpochSystem/singleton.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { resolve_description } from '#src/curses/CurseManager/singleton/public.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { Pager } from '#src/discord/Pager.js'
 import {
 	actionRowsToComponents ,
@@ -40,6 +40,7 @@ import {
 	FormattingPatterns ,
 	PresenceUpdateStatus ,
 } from 'discord.js'
+import { userDataOf } from '../data/singleton.js'
 
 class Utils {
 	static getCursesProgressContent( curses ) {
@@ -161,7 +162,7 @@ class Members_FlagSubcommand {
 		const { guild } = this.context
 		const entries = guild.members.cache
 			.map( ( { user } ) => {
-				return [ user , user.data.curses ]
+				return [ user , userDataOf( user ).curses ]
 			} )
 			.filter( ( [ _user , curses ] ) => curses?.length )
 
@@ -605,11 +606,11 @@ class BoughtContext extends BaseContext {
 	processEnoughtCoins() {
 		const { user } = this
 		const price = Math.min( ... Object.values( this.prices ) )
-		if ( user.data.coins >= price ) {
+		if ( userDataOf( user ).coins >= price ) {
 			return true
 		}
 		this.reasons.push(
-			`У вас ${ ending( user.data.coins , 'коин' , 'ов' , '' , 'а' ) }. Минимальная цена проклятия: ${ price } ${ Emoji.coins.toString() }` ,
+			`У вас ${ ending( userDataOf( user ).coins , 'коин' , 'ов' , '' , 'а' ) }. Минимальная цена проклятия: ${ price } ${ Emoji.coins.toString() }` ,
 		)
 		return false
 	}
@@ -634,9 +635,9 @@ class BoughtContext extends BaseContext {
 		const price
 			= target.id === user.id ? this.prices.for_self : this.prices.for_other
 
-		if ( user.data.coins < price ) {
+		if ( userDataOf( user ).coins < price ) {
 			this.reasons.push(
-				`Нужно на ${ ending( price - user.data.coins , 'коин' , 'ов' , '' , 'а' ) } ${ Emoji.coins.toString() } больше` ,
+				`Нужно на ${ ending( price - userDataOf( user ).coins , 'коин' , 'ов' , '' , 'а' ) } ${ Emoji.coins.toString() } больше` ,
 			)
 			return false
 		}
@@ -728,7 +729,7 @@ class CommandRunContext extends BaseCommandRunContext {
 		const { client } = this.interaction
 		const memb = client.users.cache.get( membId )
 		this.memb = memb
-		this.curses = memb.data.curses || []
+		this.curses = userDataOf( memb ).curses || []
 		return this
 	}
 }
@@ -757,7 +758,7 @@ class Command extends BaseCommand {
 		} ,
 		bought_curse( { interaction } ) {
 			const cooldown = CooldownManager.api(
-				interaction.user.data ,
+				interaction.userDataOf( user ) ,
 				'command.curses.bought_flag.bought_CD' ,
 				{
 					heat: 3 ,

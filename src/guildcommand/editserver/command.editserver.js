@@ -1,3 +1,4 @@
+import { guildDataOf } from '#root/src/data/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
@@ -19,7 +20,8 @@ class CommandRunContext extends BaseCommandRunContext {
 
 	static new( interaction , command ) {
 		const context = new this( interaction , command )
-		context.guildData = interaction.guild.data
+
+		context.guildData = guildDataOf( interaction.guild )
 		return context
 	}
 
@@ -47,7 +49,7 @@ class Command_GuildChannels_Manager {
 	}
 
 	getChannelOfChannelBase( guild , channelBase ) {
-		const channelId = new DotNotatedInterface( guild.data ).getItem(
+		const channelId = new DotNotatedInterface( guldDataOf( guild ) ).getItem(
 			channelBase.key ,
 		)
 		return guild.channels.cache.get( channelId )
@@ -81,7 +83,7 @@ class Command_GuildChannels_Manager {
 			return true
 		}
 		const { guild } = this.context
-		new DotNotatedInterface( guild.data ).setItem( channelBase.key , undefined )
+		new DotNotatedInterface( guldDataOf( guild ) ).setItem( channelBase.key , undefined )
 	}
 }
 
@@ -107,11 +109,11 @@ class Command_GuildBanner_Manager {
 			return
 		}
 
-		guild.data.banner = content
+		guildDataOf( guild ).banner = content
 		channel.msg( {
 			title: 'Баннер установлен!' ,
 			delete: 7_000 ,
-			image: guild.data.banner ,
+			image: guildDataOf( guild ).banner ,
 		} )
 	}
 
@@ -155,7 +157,7 @@ class Command_GuildDescription_Manager {
 			= content.startsWith( this.TEMPLATE_KEY_PREFIX )
 				&& !!( content = content.replace( this.TEMPLATE_KEY_PREFIX , '' ).trim() )
 
-		const guildData = guild.data
+		const guildData = guldDataOf( guild )
 		guildData.description ||= {}
 		Object.assign( guildData.description , {
 			isTemplate ,
@@ -245,7 +247,7 @@ class Command_GuildChatFilter_Manager {
 			reactions: [ this.emojiEnum.enable , this.emojiEnum.disable ] ,
 		} )
 
-		const guildData = guild.data
+		const guildData = guldDataOf( guild )
 		if ( emoji === this.emojiEnum.enable ) {
 			guildData.chatFilter = 1
 			channel.msg( { title: 'Фильтр включён' , delete: 7_000 } )
@@ -267,7 +269,7 @@ class CommandDefaultBehavior {
 
 	createDescription( context ) {
 		const { guild , command } = context
-		const guildData = guild.data
+		const guildData = guldDataOf( guild )
 		const channels = new Command_GuildChannels_Manager( context )
 
 		const channelContent = SpecialChannel.map( channelBase =>

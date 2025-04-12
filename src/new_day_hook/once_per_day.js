@@ -20,7 +20,7 @@ import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectiv
 import { ending } from '@zoodogood/utils/primitives'
 
 export function is_already_executed() {
-	return DataManager.data.bot.dayDate === toDayDate( Date.now() )
+	return botData().dayDate === toDayDate( Date.now() )
 }
 
 export const once_per_day_task = [
@@ -28,8 +28,8 @@ export const once_per_day_task = [
 	() => {
 		const today = toDayDate( Date.now() )
 		const currentDay = timestampDay( Date.now() )
-		DataManager.data.bot.dayDate = today
-		DataManager.data.bot.currentDay = currentDay
+		botData().dayDate = today
+		botData().currentDay = currentDay
 	} ,
 	// snowyEventLifecycle ↴
 	() =>
@@ -38,7 +38,7 @@ export const once_per_day_task = [
 			: time_for_snowy_event.isFactualActive() && snowy_fully_clean() ,
 	// distributeNewYearPresents ↴
 	( context ) => {
-		if ( DataManager.data.bot.dayDate !== NEW_YEAR_DAY_DATE ) {
+		if ( botData().dayDate !== NEW_YEAR_DAY_DATE ) {
 			return
 		}
 
@@ -68,7 +68,7 @@ export const once_per_day_task = [
 	} ,
 	// scheduleDayStatsEvent ↴
 	async () => {
-		const botData = DataManager.data.bot
+		const botData = botData()
 		const existingEvents = timeEvents_singleton.filterEventsInRange(
 			( { name } ) => name === 'day-stats' ,
 			[ botData.currentDay , botData.currentDay + 1 ] ,
@@ -89,9 +89,9 @@ export const once_per_day_task = [
 	updateDailyStatistics ,
 	// annonce_birthdays ↴
 	() => {
-		const { dayDate } = DataManager.data.bot
+		const { dayDate } = botData()
 		const birthdayCount = client.users.cache.filter(
-			user => !user.bot && user.data.BDay === dayDate ,
+			user => !user.bot && userDataOf(user).BDay === dayDate ,
 		).size
 
 		if ( !birthdayCount ) {
@@ -103,7 +103,7 @@ export const once_per_day_task = [
 	} ,
 	// adjustBerryPrices ↴
 	() => {
-		const botData = DataManager.data.bot
+		const botData = botData()
 		const priceModifiers = [
 			{ _weight: 10 , price: 1 } ,
 			{ _weight: 1 , price: -7 } ,

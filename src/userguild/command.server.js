@@ -9,6 +9,7 @@ import Template from '#src/VirtualMachine/Template.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 import { ChannelType , PresenceUpdateStatus } from 'discord.js'
+import { guildDataOf } from '../data/singleton.js'
 import { factorySummarize } from '../mini.js'
 
 class Command extends BaseCommand {
@@ -26,7 +27,7 @@ class Command extends BaseCommand {
 	}
 
 	getCloverData( guild ) {
-		const { cloverEffect } = guild.data
+		const { cloverEffect } = guldDataOf( guild )
 		if ( !cloverEffect ) {
 			return null
 		}
@@ -46,7 +47,7 @@ class Command extends BaseCommand {
 	}
 
 	getCommandsLaunchedOfPreviousDaysInGuild( guild ) {
-		return guild.data.commandsLaunched || 0
+		return guildDataOf( guild ).commandsLaunched || 0
 	}
 
 	getContext( interaction ) {
@@ -64,7 +65,7 @@ class Command extends BaseCommand {
 	}
 
 	async getGuildDescription( guild ) {
-		const field = guild.data.description
+		const field = guildDataOf( guild ).description
 		if ( !field ) {
 			return 'Описание не установлено <a:who:638649997415677973>\n`!editServer` для настройки сервера'
 		}
@@ -80,7 +81,7 @@ class Command extends BaseCommand {
 	}
 
 	getUsedCommandsCountOfGuild( guild ) {
-		return Object.values( guild.data.commandsUsed ).reduce(
+		return Object.values( guildDataOf( guild ).commandsUsed ).reduce(
 			factorySummarize() ,
 			0 ,
 		)
@@ -92,13 +93,13 @@ class Command extends BaseCommand {
 
 		const values = {
 			stats: {
-				msgs: `За сегодня: ${ guild.data.day_msg }` ,
-				msgsAll: `Всего: ${ guild.data.day_msg + guild.data.msg_total }` ,
+				msgs: `За сегодня: ${ guildDataOf( guild ).day_msg }` ,
+				msgsAll: `Всего: ${ guildDataOf( guild ).day_msg + guildDataOf( guild ).msg_total }` ,
 				around: `В среднем: ${ Math.round(
-					( guild.data.day_msg + guild.data.msg_total ) / ( guild.data.days + 1 ) ,
+					( guildDataOf( guild ).day_msg + guildDataOf( guild ).msg_total ) / ( guildDataOf( guild ).days + 1 ) ,
 				) }` ,
 				record: `Рекорд: ${ ending(
-					guild.data.day_max ,
+					guildDataOf( guild ).day_max ,
 					'сообщени' ,
 					'й' ,
 					'е' ,
@@ -190,7 +191,7 @@ class Command extends BaseCommand {
 			footer: {
 				text: `${ this.getCreatedAtContent( guild ) }\nID: ${ guild.id }` ,
 			} ,
-			image: guild.data.banner ,
+			image: guildDataOf( guild ).banner ,
 			fields ,
 		} )
 	}

@@ -1,10 +1,11 @@
 import EventEmitter from 'node:events'
+import { userDataOf } from '#root/src/data/singleton.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import CustomIdExecutor from '#src/app/CustomIdExecutor/Executor.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { _interface } from '#src/curses/CurseManager/singleton/public.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
 import { sendErrorInfo } from '#src/ErrorsHandler/sendErrorInfo.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
@@ -59,7 +60,7 @@ class CurseManager {
 	}
 
 	static checkAvailableAll( user ) {
-		user.data.curses?.forEach( curse => this.checkAvailable( { curse , user } ) )
+		userDataOf( user ).curses?.forEach( curse => this.checkAvailable( { curse , user } ) )
 	}
 
 	static curseEnd( { lost , user , curse } ) {
@@ -103,7 +104,7 @@ class CurseManager {
 			addResource( {
 				user ,
 				executor: null ,
-				value: user.data.level > 1 ? -1 : 0 ,
+				value: userDataOf( user ).level > 1 ? -1 : 0 ,
 				resource: PropertiesEnum.level ,
 				source: `curseManager.curse.onEnd.lost.${ curse.id }` ,
 				context: { curse } ,
@@ -123,7 +124,7 @@ class CurseManager {
 		}
 
 		if ( !lost ) {
-			user.data.cursesEnded = ( user.data.cursesEnded ?? 0 ) + 1
+			userDataOf( user ).cursesEnded = ( userDataOf( user ).cursesEnded ?? 0 ) + 1
 			const fields = getDefaultFields()
 
 			const getVoidReward = () => {
@@ -175,7 +176,7 @@ class CurseManager {
 			const descriptionFooter = `${
 				coinsReward ? '<:coin:637533074879414272>' : ''
 			} ${ voidReward ? '<a:void:768047066890895360>' : '' }`
-			const description = `Это ${ user.data.cursesEnded }-й раз, когда Вам удаётся преодолеть условия, созданные нашей машиной для генерации проклятий.\nВ этот раз вы получаете: ${ rewardContent }. Награда такая незначительная в связи с тем, что основным поставщиком ресурсов является сундук. Да будь он проклят!\n${ descriptionFooter }`
+			const description = `Это ${ userDataOf( user ).cursesEnded }-й раз, когда Вам удаётся преодолеть условия, созданные нашей машиной для генерации проклятий.\nВ этот раз вы получаете: ${ rewardContent }. Награда такая незначительная в связи с тем, что основным поставщиком ресурсов является сундук. Да будь он проклят!\n${ descriptionFooter }`
 
 			const image
 				= 'https://media.discordapp.net/attachments/629546680840093696/1014076170364534805/penguinwalk.gif'
@@ -191,7 +192,7 @@ class CurseManager {
 	}
 
 	static curseIndexOnUser( { curse , user } ) {
-		const index = user.data.curses.indexOf( curse )
+		const index = userDataOf( user ).curses.indexOf( curse )
 		if ( index === -1 ) {
 			return null
 		}
@@ -240,13 +241,13 @@ class CurseManager {
 	}
 
 	static init( { curse , user } ) {
-		if ( !user.data.curses ) {
-			user.data.curses = []
+		if ( !userDataOf( user ).curses ) {
+			userDataOf( user ).curses = []
 		}
 
-		user.data.curses.push( curse )
+		userDataOf( user ).curses.push( curse )
 		const curseBase = cursesBase.get( curse.id )
-		const callbackMap = ( user.data.cursesCallbackMap ||= {} )
+		const callbackMap = ( userDataOf( user ).cursesCallbackMap ||= {} )
 		Object.keys( curseBase.callback ).map( key => ( callbackMap[ key ] = true ) )
 
 		if ( curse.values.timer ) {
@@ -271,14 +272,14 @@ class CurseManager {
 			return null
 		}
 
-		user.data.curses.splice( index , 1 )
+		userDataOf( user ).curses.splice( index , 1 )
 
 		const keysToRemove = callbackKey =>
-			!user.data.curses.some(
+			!userDataOf( user ).curses.some(
 				( { id } ) => callbackKey in cursesBase.get( id ).callback ,
 			)
 
-		const callbackMap = user.data.cursesCallbackMap
+		const callbackMap = userDataOf( user ).cursesCallbackMap
 		Object.keys( callbackMap )
 			.filter( keysToRemove )
 			.forEach( key => delete callbackMap[ key ] )

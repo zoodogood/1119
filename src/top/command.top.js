@@ -3,7 +3,7 @@ import { SECOND } from '#constants/time.js'
 import BossManager from '#src/boss/BossManager.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
 import { Pager } from '#src/discord/Pager.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { Emoji } from '#src/emojis/emojis.js'
@@ -98,7 +98,7 @@ class Flag_property {
 		filter: context => context.advanced_property_flag ,
 		value: ( element , context ) => {
 			const key = context.advanced_property_flag
-			return new DotNotatedInterface( element.data ).getItem( key )
+			return new DotNotatedInterface( userDataOf( element ) ).getItem( key )
 		} ,
 		display: ( element , output , index , context ) => {
 			const key = context.advanced_property_flag
@@ -144,7 +144,7 @@ class CommandRunContext extends BaseCommandRunContext {
 
 	static async new( interaction , command ) {
 		const context = new this( interaction , command )
-		const { boss , showEvent } = interaction.guild.data
+		const { boss , showEvent } = guildDataOf( interaction.guild )
 		Object.assign( context , { boss: boss || {} , showEvent: showEvent || {} } )
 		return context
 	}
@@ -171,7 +171,7 @@ class CommandRunContext extends BaseCommandRunContext {
 			return (
 				flag_displayHidden
 				|| user.id === interaction.user.id
-				|| ( !user.bot && !user.data.profile_confidentiality )
+				|| ( !user.bot && !userDataOf( user ).profile_confidentiality )
 			)
 		}
 		const users = interaction.guild.members.cache
@@ -242,14 +242,14 @@ class RanksUtils {
 				value: ( element ) => {
 					const perLevel = EXPERIENCE_PER_LEVEL / 2
 					return (
-						( element.data.level - 1 ) * perLevel * element.data.level
-						+ element.data.exp
+						( userDataOf( element ).level - 1 ) * perLevel * userDataOf( element ).level
+						+ userDataOf( element ).exp
 					)
 				} ,
 				display: ( element , output , index ) => {
 					const name = `${ index + 1 }. ${ escapeMarkdown( element.username ) }`
 					const value = `Уровень: **${
-						element.data.level
+						userDataOf( element ).level
 					}** | Опыта: ${ NumberFormatLetterize( output ) }`
 					return { name , value }
 				} ,
@@ -263,13 +263,13 @@ class RanksUtils {
 				} ,
 				value: ( element ) => {
 					return (
-						element.data.coins
-						+ element.data.berrys * DataManager.data.bot.berrysPrice
+						userDataOf( element ).coins
+						+ userDataOf( element ).berrys * botData().berrysPrice
 					)
 				} ,
 				display: ( element , output , index ) => {
 					const name = `${ index + 1 }. ${ escapeMarkdown( element.username ) }`
-					const value = `— ${ element.data.coins } (${ NumberFormatLetterize(
+					const value = `— ${ userDataOf( element ).coins } (${ NumberFormatLetterize(
 						output ,
 					) }) <:coin:637533074879414272>`
 					return { name , value }
@@ -283,7 +283,7 @@ class RanksUtils {
 					emoji: '630463177314009115' ,
 				} ,
 				value: ( element ) => {
-					return element.data.praiseMe?.length
+					return userDataOf( element ).praiseMe?.length
 				} ,
 				display: ( element , output , index ) => {
 					const name = `${ index + 1 }. ${ escapeMarkdown( element.username ) }`
@@ -305,13 +305,13 @@ class RanksUtils {
 					emoji: '🧤' ,
 				} ,
 				value: ( element ) => {
-					return element.data.thiefCombo + ~~element.data.thiefWins / 5
+					return userDataOf( element ).thiefCombo + ~~userDataOf( element ).thiefWins / 5
 				} ,
 				display: ( element , output , index ) => {
 					const name = `${ index + 1 }. ${ escapeMarkdown( element.username ) }`
-					const value = `Состояние перчаток: \`${ element.data.thiefGloves }|${
-						element.data.thiefCombo || 0
-					}\` > Отбито атак: ${ element.data.thiefWins | 0 }`.replace( /-/g , '!' )
+					const value = `Состояние перчаток: \`${ userDataOf( element ).thiefGloves }|${
+						userDataOf( element ).thiefCombo || 0
+					}\` > Отбито атак: ${ userDataOf( element ).thiefWins | 0 }`.replace( /-/g , '!' )
 					return { name , value }
 				} ,
 			} ,
@@ -323,7 +323,7 @@ class RanksUtils {
 					emoji: '📜' ,
 				} ,
 				value: ( element ) => {
-					return element.data.dayQuests
+					return userDataOf( element ).dayQuests
 				} ,
 				display: ( element , output , index ) => {
 					const cup
@@ -335,7 +335,7 @@ class RanksUtils {
 									? '<a:cupX:806813757832953876> '
 									: ''
 					const name = `${ cup } ${ index + 1 }. ${ escapeMarkdown( element.username ) }`
-					const globalQuests = ( element.data.questsGlobalCompleted ?? '' )
+					const globalQuests = ( userDataOf( element ).questsGlobalCompleted ?? '' )
 						.split( ' ' )
 						.filter( Boolean )
 					const value = `Выполнено ежедневных квестов: ${ output } | Глобальных: ${
@@ -352,7 +352,7 @@ class RanksUtils {
 					emoji: Emoji.curse.toString() ,
 				} ,
 				value: ( element ) => {
-					return element.data.cursesEnded ?? 0
+					return userDataOf( element ).cursesEnded ?? 0
 				} ,
 				display: ( element , ended , index ) => {
 					const currentCount = element.curses?.length
@@ -373,7 +373,7 @@ class RanksUtils {
 					emoji: '⚜️' ,
 				} ,
 				value: ( element ) => {
-					return element.data.voidRituals
+					return userDataOf( element ).voidRituals
 				} ,
 				display: ( element , output , index , context ) => {
 					const username
@@ -385,7 +385,7 @@ class RanksUtils {
 							+ ( randomWith( 9 ) ? '' : ' <a:void:768047066890895360>' )
 					const name = `${ index + 1 }. ${ username }${ addingName }`
 					const value = `Использований котла ${
-						randomWith( 3 ) ? element.data.voidRituals : '???'
+						randomWith( 3 ) ? userDataOf( element ).voidRituals : '???'
 					}`
 					return { name , value }
 				} ,
@@ -419,7 +419,7 @@ class RanksUtils {
 					emoji: '805405279326961684' ,
 				} ,
 				value: ( element ) => {
-					return element.data.chestBonus
+					return userDataOf( element ).chestBonus
 				} ,
 				display: ( element , output , index ) => {
 					const name = `${ index + 1 }. ${ escapeMarkdown( element.username ) }`
@@ -436,7 +436,7 @@ class RanksUtils {
 				} ,
 				filter: snowyEvent => snowyEvent?.isArrived ,
 				value: ( element ) => {
-					const curse = element.data.curses?.find(
+					const curse = userDataOf( element ).curses?.find(
 						curse => curse.id === 'happySnowy' ,
 					)
 					if ( curse ) {
@@ -448,7 +448,7 @@ class RanksUtils {
 				} ,
 				display: ( element , snowflakes , index ) => {
 					const name = `${ index + 1 }. ${ escapeMarkdown( element.username ) }`
-					const presents = element.data.presents
+					const presents = userDataOf( element ).presents
 					const presentsContent = presents
 						? `${ ending(
 							presents ,

@@ -69,4 +69,8 @@ export function userDataOf( user ) {
 	// @ts-expect-error prototype extended: legacy code
 	return user.data
 }
+
+export function singletonBotData() {
+	return DataManager.data.bot
+}
 export { DataManager , store }

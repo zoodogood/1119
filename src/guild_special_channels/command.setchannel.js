@@ -104,7 +104,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 		}
 		const channel = mentions.channels.first() ?? interaction.channel
 
-		new DotNotatedInterface( guild.data ).setItem( key , channel.id )
+		new DotNotatedInterface(guldDataOf(guild) ).setItem( key , channel.id )
 		interaction.msg( {
 			title: SpecialChannelExtend.get( key ).congratulations( channel ) ,
 		} )
@@ -135,7 +135,7 @@ class Remove_FlagSubcommand extends BaseFlagSubcommand {
 			} ,
 		} )
 		interaction.message.react( Emoji.animation_tick_block )
-		new DotNotatedInterface( guild.data ).setItem( key , undefined )
+		new DotNotatedInterface(guldDataOf(guild) ).setItem( key , undefined )
 		interaction.msg( {
 			title: `«${ SpecialChannel.get( key ).label }» канал отключен!` ,
 		} )

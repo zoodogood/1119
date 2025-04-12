@@ -176,7 +176,7 @@ class Command extends BaseCommand {
 	}
 
 	async displayUserRolesInterface( { user , interaction } ) {
-		const tieRoles = interaction.guild.data.tieRoles
+		const tieRoles =guildDataOf( interaction.guild).tieRoles
 
 		let roleId = interaction.params
 			.replace( MessageMentions.UsersPattern , '' )
@@ -283,7 +283,7 @@ class Command extends BaseCommand {
 	}
 
 	getTieRoles( guild ) {
-		return ( guild.data.tieRoles ||= {} )
+		return ( guildDataOf(guild).tieRoles ||= {} )
 	}
 
 	async onChatInput( msg , interaction ) {

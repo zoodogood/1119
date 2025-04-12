@@ -1,7 +1,7 @@
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { addResource } from '#root/src/user/resources/addResource.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager, userDataOf } from '#src/data/singleton.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { Collection } from 'discord.js'
@@ -199,7 +199,7 @@ class QuestManager {
 	)
 
 	static _init( { user , quest } ) {
-		user.data.quest = quest
+		userDataOf(user).quest = quest
 	}
 
 	static checkAvailable( { user } ) {
@@ -208,7 +208,7 @@ class QuestManager {
 			return
 		}
 
-		const { quest } = user.data
+		const { quest } =userDataOf(user)
 		const isExists = !!quest
 
 		const isCompleted = isExists && quest.isCompleted
@@ -229,7 +229,7 @@ class QuestManager {
 			return
 		}
 
-		const userData = user.data
+		const userData =userDataOf(user)
 		userData.questsGlobalCompleted ||= ''
 
 		const SEPARATOR = ' '
@@ -285,7 +285,7 @@ class QuestManager {
 		const EXPERIENCE_REWARD_MULTIPLAYER = 3
 		const multiplayer = DEFAULT_REWARD_MULTIPLAYER * quest.reward
 
-		const userData = user.data
+		const userData =userDataOf(user)
 		const questBase = this.questsBase.get( quest.id )
 		const { channel } = context
 
@@ -363,7 +363,7 @@ class QuestManager {
 	}
 
 	static generate( { user } ) {
-		const userQuestField = user.data.quest
+		const userQuestField = userDataOf(user).quest
 
 		const questBase = randomElementFromArray(
 			[ ... this.questsBase.values() ]
@@ -402,7 +402,7 @@ class QuestManager {
 			id: questBase.id ,
 			progress: 0 ,
 			goal: calculateGoal() ,
-			day: DataManager.data.bot.currentDay ,
+			day: botData().currentDay ,
 			isCompleted: false ,
 		}
 
@@ -424,15 +424,15 @@ class QuestManager {
 	}
 
 	static isNeedInstallDailyQuest( { user } ) {
-		const { currentDay } = DataManager.data.bot
-		const { quest } = user.data
+		const { currentDay } = botData()
+		const { quest } =userDataOf(user)
 		return !!( !quest || quest.day !== currentDay )
 	}
 
 	static onAction( { user , questBase , data } ) {
 		this.checkAvailable( { user } )
 
-		const quest = user.data.quest
+		const quest = userDataOf(user).quest
 		if ( questBase.id === quest.id ) {
 			const progress
 				= questBase.calculateProgressIncrease?.call(
@@ -480,8 +480,8 @@ class QuestManager {
 	}
 
 	static requestInstallDailyQuest( { user } ) {
-		user.data.quest ||= {}
-		user.data.quest.willUpdate = true
+		userDataOf(user).quest ||= {}
+		userDataOf(user).quest.willUpdate = true
 	}
 
 	static resolveQuestBase( questResolable ) {

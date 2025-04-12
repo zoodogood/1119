@@ -1,11 +1,11 @@
 // @ts-check
 import { DAY } from '#constants/time.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
-import { DataManager } from '#src/data/singleton.js'
+import { singletonBotData, DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { takeInteractionProperties } from '#src/discord/utils.js'
@@ -47,7 +47,7 @@ class BoughtContext extends BaseContext {
 			primary: commandRunContext ,
 			... takeInteractionProperties( commandRunContext ) ,
 		} )
-		this.userData = this.user.data
+		this.userData = userDataOf( this.user )
 		this.interaction = commandRunContext.interaction
 		this.commandRunContext = commandRunContext
 		this.slot = slot
@@ -72,7 +72,7 @@ class CommandRunContext extends BaseCommandRunContext {
 
 	static async new( interaction , command ) {
 		const context = new this( interaction , command )
-		context.userData = interaction.user.data
+		context.userData = userDataOf( interaction.user )
 		return context
 	}
 }
@@ -340,7 +340,7 @@ class Command extends BaseCommand {
 		const today_items = ( await get_products() )
 			.filter( item => !item.isSpecial )
 			.filter( ( _item , i ) =>
-				DataManager.data.bot.grempenItems.includes( i.toString( 16 ) ) ,
+				singletonBotData().grempenItems.includes( i.toString( 16 ) ) ,
 			)
 
 		context.slots.push(

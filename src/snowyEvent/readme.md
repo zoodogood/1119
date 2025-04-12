@@ -28,12 +28,12 @@ flowchart TD
 
 // Последовательный способ активации события
 
-- Чтобы досрочно вызвать событие установите DataManager.data.bot.snowyEvent.now в значение `true`
+- Чтобы досрочно вызвать событие установите botData().snowyEvent.now в значение `true`
 - Не стесняйся!
 
 ```
-!eval m'DataManager.data.bot.snowyEvent ||= {};
-m'DataManager.data.bot.snowyEvent.now = true
+!eval m'botData().snowyEvent ||= {};
+m'botData().snowyEvent.now = true
 ```
 
 Досрочно получить коин-сообщение:
@@ -50,10 +50,10 @@ m'DataManager.data.bot.snowyEvent.now = true
 
 ```
 !eval const {guild} = m'interaction;
-m'DataManager.data.bot.snowyEvent = {now: true}
-guild.data.snowyEvent = { preGlowExplorers: [], isArrived: true };
+m'botData().snowyEvent = {now: true}
+guildDataOf(guild).snowyEvent = { preGlowExplorers: [], isArrived: true };
 // удовлетворяет проверке на трёх участников-исследователей
-guild.data.snowyEvent.preGlowExplorers = m'config.developers;
+guildDataOf(guild).snowyEvent.preGlowExplorers = m'config.developers;
 
 m'requestCoinFromNextMessage("id'")
 ```

@@ -1,6 +1,7 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
 import { ButtonStyle , ComponentType } from 'discord.js'
+import { guildDataOf , userDataOf } from '../data/singleton.js'
 
 class Guidances {
 	guidances = [
@@ -63,7 +64,7 @@ class Command extends BaseCommand {
 	run( interaction ) {
 		const guildCommands = []
 		const commands = CommandsManager.collection
-		const { level: userLevel } = interaction.user.data
+		const { level: userLevel } = userDataOf( interaction.user )
 		const isHidden = ( { options } ) =>
 			options.hidden
 			|| options.type === 'dev'
@@ -73,8 +74,8 @@ class Command extends BaseCommand {
 		const name_of = command => command.options.name
 		const pretty_format = name => `\`!${ name }\``
 
-		if ( interaction.guild?.data.custom_commands ) {
-			const { custom_commands } = interaction.guild.data
+		if ( interaction.guild && guildDataOf( interaction.guild ).custom_commands ) {
+			const { custom_commands } = guildDataOf( interaction.guild )
 			const names = Object.values( custom_commands )
 				.filter( ( { hidden } ) => !hidden )
 				.map( ( { name } ) => name )

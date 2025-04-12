@@ -13,7 +13,7 @@ class Event {
 			return
 		}
 
-		const curses = user.data.curses
+		const curses = userDataOf(user).curses
 		const context = {
 			timeEventData ,
 			timestamp ,

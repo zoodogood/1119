@@ -25,7 +25,7 @@ class CommandRunContext extends BaseCommandRunContext {
 	constructor( interaction , command ) {
 		super( interaction , command )
 		const { user , channel , guild , mention: memb } = interaction
-		const userData = user.data
+		const userData =userDataOf(user)
 		Object.assign( this , { user , channel , guild , memb , userData } )
 	}
 

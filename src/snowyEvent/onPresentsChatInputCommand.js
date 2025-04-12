@@ -52,6 +52,6 @@ export function onPresentsChatInputCommand( user , curse , context ) {
 				'ка' ,
 			) } :gift:` ,
 		] ) ,
-		... ( user.data.presents ? present_actions_payload : {} ) ,
+		... ( userDataOf(user).presents ? present_actions_payload : {} ) ,
 	} )
 }

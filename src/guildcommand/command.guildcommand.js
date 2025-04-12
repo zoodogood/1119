@@ -16,7 +16,7 @@ import {
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 
 import CooldownManager from '#src/CooldownManager.js'
-import { DataManager , store } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , store , userDataOf } from '#src/data/singleton.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { Pager } from '#src/discord/Pager.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
@@ -32,15 +32,16 @@ import { ParserTime } from '#src/user_input_prepare/parsers.js'
 import Template from '#src/VirtualMachine/Template.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { escapeCodeBlock , escapeMarkdown } from 'discord.js'
+import { content } from '../site/_build/src/svelte_component/Overcard/mod.svelte'
 
 export function uses_count_of( custom_command_name , guild ) {
 	return Object.values(
-		guild.data.custom_commands[ custom_command_name ].members || {} ,
+		guildDataOf( guild ).custom_commands[ custom_command_name ].members || {} ,
 	).reduce( ( acc , [ uses ] ) => acc + uses , 0 )
 }
 
 export function guild_custom_commands_uses_count( guild ) {
-	return Object.values( guild.data.custom_commands ).reduce(
+	return Object.values( guildDataOf( guild ).custom_commands ).reduce(
 		( acc , custom_command ) => acc + uses_count_of( custom_command.name , guild ) ,
 		0 ,
 	)
@@ -89,14 +90,14 @@ export class CustomCommand extends BaseCommand {
 			target[ INDEX_OF_COOLDOWN ]++
 		}
 		{
-			const botData = DataManager.data.bot
+			const botData = botData()
 			botData.commandsUsedToday ||= 0
 			botData.commandsUsedToday++
 		}
 	}
 
 	command_field() {
-		return this.source_guild.data.custom_commands[ this.custom_command.name ]
+		return guildDataOf( this.source_guild ).custom_commands[ this.custom_command.name ]
 	}
 
 	// like eval format_object function
@@ -492,8 +493,8 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 class CommandRunContext extends BaseCommandRunContext {
 	startup_page = 0
 	wire() {
-		this.guild.data.custom_commands ||= {}
-		const wire = store.hold_wire( this.guild.data , 'custom_commands' )
+		guildDataOf(	this.guild ).custom_commands ||= {}
+		const wire = store.hold_wire( guildDataOf( this.guild ) , 'custom_commands' )
 		return wire
 	}
 }
@@ -653,7 +654,7 @@ class Command extends BaseCommand {
 				title: 'Команда для создания команд 🤔' ,
 			} ,
 			channel ,
-			userData: user.data ,
+			userData: userDataOf( user ) ,
 		} )
 		if ( !heAccpet )
 			return

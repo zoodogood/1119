@@ -355,7 +355,7 @@ export const grempen_products = transformToCollectionUsingKey( [
 		emoji: () => '💡' ,
 		price: ( { userData } ) =>
 			userData.iq
-			&& userData.iq % 31 === +DataManager.data.bot.dayDate.match( /\d{1,2}/ )[ 0 ]
+			&& userData.iq % 31 === +botData().dayDate.match( /\d{1,2}/ )[ 0 ]
 				? 'Бесплатно'
 				: 80 ,
 		inline: true ,
@@ -421,7 +421,7 @@ export const grempen_products = transformToCollectionUsingKey( [
 			const phrase
 				= '. Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.'
 			const guild = interaction.guild
-			const guildData = guild.data
+			const guildData =guldDataOf(guild)
 
 			if ( !guildData.cloverEffect ) {
 				guildData.cloverEffect = {

@@ -1,6 +1,6 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager , userDataOf } from '#src/data/singleton.js'
 import Discord from 'discord.js'
 
 class Command extends BaseCommand {
@@ -20,7 +20,7 @@ class Command extends BaseCommand {
 	}
 
 	getContext( interaction ) {
-		const userData = interaction.user.data
+		const userData = userDataOf( interaction.user )
 		const { user } = interaction
 		return { userData , user , interaction , questionMessage: null }
 	}
@@ -298,7 +298,7 @@ class Command extends BaseCommand {
 
 			names.push( target.username )
 
-			const targetPraisesList = target.data.praiseMe || []
+			const targetPraisesList = userDataOf( target ).praiseMe || []
 			targetPraisesList.remove( user.id )
 		} )
 

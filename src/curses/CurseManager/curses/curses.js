@@ -1,4 +1,5 @@
 import { DAY , HOUR , MINUTE , SECOND } from '#constants/time.js'
+import { guildDataOf , singletonBotData , userDataOf } from '#root/src/data/singleton.js'
 import { guildsOfUser } from '#root/src/discord/utils.js'
 import { addResource } from '#root/src/user/resources/addResource.js'
 import { assert } from '#src/assert/export.js'
@@ -89,7 +90,7 @@ export const cursesBase = new Collection(
 			} ,
 			callback: {
 				curseInit: ( user , curse , data ) =>
-					data.curse === curse && user.data.quest.isCompleted
+					data.curse === curse && userDataOf( user ).quest.isCompleted
 						? CurseManager.interface( { user , curse } ).incrementProgress( 1 )
 						: null ,
 
@@ -125,7 +126,7 @@ export const cursesBase = new Collection(
 					type === 'stupid' && CurseManager.interface( { user , curse } ).fail() ,
 			} ,
 			filter: user =>
-				user.data.quest?.id === 'namebot' && !user.data.quest.isCompleted ,
+				userDataOf( user ).quest?.id === 'namebot' && !userDataOf( user ).quest.isCompleted ,
 			interactionIsShort: true ,
 			reward: 4 ,
 		} ,
@@ -250,8 +251,8 @@ export const cursesBase = new Collection(
 					if ( !user.curses ) {
 						user.curses = []
 					}
-					const haveCurse = target.data.curses?.length
-					if ( haveCurse && !target.data.voidFreedomCurse ) {
+					const haveCurse = userDataOf( target ).curses?.length
+					if ( haveCurse && !userDataOf( target ).voidFreedomCurse ) {
 						message.react( '❌' )
 						return
 					}
@@ -288,7 +289,7 @@ export const cursesBase = new Collection(
 				'Отправьте коин-сообщения или дождитесь окончания. Даёт дополнительный шанс в 16% получить коин из сообщения. Однако количество денег будет уменьшаться' ,
 			hard: 0 ,
 			values: {
-				goal: user => 48 - ( user.data.chectLevel ?? 0 ) * 16 ,
+				goal: user => 48 - ( userDataOf( user ).chectLevel ?? 0 ) * 16 ,
 				timer: () => HOUR / 2 ,
 			} ,
 			callback: {
@@ -297,7 +298,7 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const userData = user.data
+					const userData = userDataOf( user )
 					const previousCoins = userData.coins
 
 					addCoinFromMessage( message )
@@ -326,13 +327,13 @@ export const cursesBase = new Collection(
 				goal: () => 80_000 ,
 				timer: ( user ) => {
 					const guilds = guildsOfUser( user ).filter(
-						guild => guild.data.boss?.isArrived ,
+						guild => guildDataOf( guild ).boss?.isArrived ,
 					)
 					assert( guilds.length )
 					const mostLongAlivedIn = guilds.reduce(
-						factoryCompare( $ => $.data.boss.endingAtDay , ( a , b ) => a < b ) ,
+						factoryCompare( $ => guildDataOf( $ ).boss.endingAtDay , ( a , b ) => a < b ) ,
 					)
-					const timestamp = mostLongAlivedIn.data.boss.endingAtDay * DAY
+					const timestamp = guildDataOf( mostLongAlivedIn ).boss.endingAtDay * DAY
 					const difference = timestamp - Date.now()
 					return Math.max( difference , HOUR )
 				} ,
@@ -342,7 +343,7 @@ export const cursesBase = new Collection(
 					CurseManager.interface( { user , curse } ).incrementProgress( damage )
 				} ,
 			} ,
-			filter: ( _user , { guild } ) => guild && guild.data.boss?.isArrived ,
+			filter: ( _user , { guild } ) => guild && guildDataOf( guild ).boss?.isArrived ,
 			interactionIsLong: true ,
 			reward: 10 ,
 		} ,
@@ -353,17 +354,17 @@ export const cursesBase = new Collection(
 				'Соберите столько палочек в команде !анон, сколько у Вас сейчас опыта' ,
 			hard: 2 ,
 			values: {
-				goal: user => user.data.exp ,
+				goal: user => userDataOf( user ).exp ,
 				timer: () => HOUR * 24 ,
 			} ,
 			callback: {
 				anonTaskResolve: ( user , curse , { task } ) => {
 					const sticks = task.stickCount()
-					curse.values.goal = user.data.exp + ( user.data.bag.exp || 0 )
+					curse.values.goal = userDataOf( user ).exp + ( userDataOf( user ).bag.exp || 0 )
 					CurseManager.interface( { user , curse } ).incrementProgress( sticks )
 				} ,
 				curseBeforeProgressDisplay: ( user , curse ) => {
-					curse.values.goal = user.data.exp
+					curse.values.goal = userDataOf( user ).exp
 					CurseManager.checkAvailable( { curse , user } )
 				} ,
 			} ,
@@ -467,7 +468,7 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const { quest } = user.data
+					const { quest } = userDataOf( user )
 					if ( quest.isCompleted ) {
 						CurseManager.interface( { curse , user } ).incrementProgress( 1 )
 						const base = QuestManager.questsBase.get( quest.id )
@@ -483,7 +484,7 @@ export const cursesBase = new Collection(
 					}
 				} ,
 				dailyQuestComplete: ( user , curse ) => {
-					const { quest } = user.data
+					const { quest } = userDataOf( user )
 					CurseManager.interface( { curse , user } ).incrementProgress( 1 )
 
 					if ( curse.values.progress >= curse.values.maximumProgress ) {
@@ -651,12 +652,12 @@ export const cursesBase = new Collection(
 			values: {
 				timer: () => HOUR ,
 				goal: ( user ) => {
-					const { coins , berrys } = user.data
-					const { coinsInBag } = user.data.bag || {}
+					const { coins , berrys } = userDataOf( user )
+					const { coinsInBag } = userDataOf( user ).bag || {}
 					const value
 						= coins
 							+ ( coinsInBag || 0 ) / 2
-							+ ( berrys * DataManager.data.bot.berrysPrice ) / 2
+							+ ( berrys * singletonBotData().berrysPrice ) / 2
 
 					return Math.floor( value )
 				} ,
@@ -755,19 +756,19 @@ export const cursesBase = new Collection(
 			description: 'Накопите коины, передача ресурсов заблокирована' ,
 			values: {
 				timer: () => DAY ,
-				progress: user => user.data.coins ,
-				goal: user => user.data.coins + 2000 ,
+				progress: user => userDataOf( user ).coins ,
+				goal: user => userDataOf( user ).coins + 2000 ,
 			} ,
 			callback: {
 				resourceChange: ( user , curse , data ) => {
 					if ( data.resource !== PropertiesEnum.coins ) {
 						return
 					}
-					const { coins } = user.data
+					const { coins } = userDataOf( user )
 					CurseManager.interface( { curse , user } ).setProgress( coins )
 				} ,
 				curseBeforeProgressDisplay: ( user , curse ) => {
-					const { coins } = user.data
+					const { coins } = userDataOf( user )
 					CurseManager.interface( { curse , user } ).setProgress( coins )
 				} ,
 				beforeResourcePayed: ( user , curse , context ) => {
@@ -797,7 +798,7 @@ export const cursesBase = new Collection(
 					if ( target.curse !== curse ) {
 						return
 					}
-					const userData = user.data
+					const userData = userDataOf( user )
 					for ( const resource of [
 						PropertiesEnum.coins ,
 						PropertiesEnum.keys ,
@@ -836,7 +837,7 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const userData = user.data
+					const userData = userDataOf( user )
 					for ( const resource of [
 						PropertiesEnum.coins ,
 						PropertiesEnum.keys ,
@@ -863,7 +864,7 @@ export const cursesBase = new Collection(
 				} ,
 			} ,
 			reward: 5 ,
-			filter: user => user.data.voidFreedomCurse ,
+			filter: user => userDataOf( user ).voidFreedomCurse ,
 		} ,
 		{
 			_weight: 1 ,
@@ -881,7 +882,7 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const userData = user.data
+					const userData = userDataOf( user )
 					const puppet = userData[ this.EFFECT_ID ]
 					if ( !puppet ) {
 						throw new Error( 'Puppet not found' )
@@ -905,7 +906,7 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const userData = user.data
+					const userData = userDataOf( user )
 					const puppet = { ... userData }
 					const defaults = DataManager.userToDefaultData( user , user.id )
 					for ( const key of Object.keys( userData ) ) {
@@ -920,7 +921,7 @@ export const cursesBase = new Collection(
 					userData[ this.EFFECT_ID ] = puppet
 				} ,
 				timeEventEffectTimeoutEnd( user , curse , data ) {
-					const userData = user.data
+					const userData = userDataOf( user )
 					const puppet = userData[ this.EFFECT_ID ]
 
 					const effects = puppet.effects || []
@@ -937,7 +938,7 @@ export const cursesBase = new Collection(
 					if ( curse.timestamp === data.timestamp ) {
 						return
 					}
-					const userData = user.data
+					const userData = userDataOf( user )
 					const puppet = userData[ this.EFFECT_ID ]
 
 					const compare = curse => curse.timestamp === data.timestamp
@@ -953,7 +954,7 @@ export const cursesBase = new Collection(
 			} ,
 			reward: 5 ,
 			filter( user ) {
-				return user.data.level > 30 && !user.data[ this.EFFECT_ID ]
+				return userDataOf( user ).level > 30 && !userDataOf( user )[ this.EFFECT_ID ]
 			} ,
 		} ,
 		{
@@ -1065,7 +1066,7 @@ export const cursesBase = new Collection(
 					}
 
 					const TARGET_VALUE = 99_999
-					const adding = TARGET_VALUE - user.data.coins
+					const adding = TARGET_VALUE - userDataOf( user ).coins
 					curse.values.addable = adding
 					addResource( {
 						user ,
@@ -1086,7 +1087,7 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const realCount = user.data.coins - curse.values.addable
+					const realCount = userDataOf( user ).coins - curse.values.addable
 					context.numeric = Math.min( realCount , context.numeric )
 
 					CurseManager.interface( { user , curse } ).success()
@@ -1106,7 +1107,7 @@ export const cursesBase = new Collection(
 				} ,
 			} ,
 			reward: 3 ,
-			filter: user => user.data.coins < 50_000 ,
+			filter: user => userDataOf( user ).coins < 50_000 ,
 		} ,
 		happySnowyCurse ,
 		{
@@ -1117,13 +1118,13 @@ export const cursesBase = new Collection(
 			description: 'Вам становится доступна команда !клик, заработайте конфеты' ,
 			values: {
 				timer( user ) {
-					const userData = user.data
+					const userData = userDataOf( user )
 					const defaults = 20 * MINUTE
 					const candyData = userData[ this.EFFECT_ID ] || {}
 					return defaults * ( candyData.level || 1 )
 				} ,
 				goal( user ) {
-					const userData = user.data
+					const userData = userDataOf( user )
 					const defaults = 7
 					const candyData = userData[ this.EFFECT_ID ] || {}
 					return defaults * ( candyData.level || 1 ) * userData.level
@@ -1152,7 +1153,7 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const userData = user.data
+					const userData = userDataOf( user )
 					const candyData = ( userData[ this.EFFECT_ID ] ||= {} )
 					candyData.candies ||= 0
 
@@ -1196,7 +1197,7 @@ export const cursesBase = new Collection(
 			description: 'Упомяните до 5 участников, вместе вы должны получить опыта' ,
 			hard: 1 ,
 			values: {
-				goal: user => user.data.level * EXPERIENCE_PER_LEVEL ,
+				goal: user => userDataOf( user ).level * EXPERIENCE_PER_LEVEL ,
 				timer: () => DAY ,
 				listOfUsers: () => [] ,
 			} ,
@@ -1255,7 +1256,7 @@ export const cursesBase = new Collection(
 			values: {
 				goal: () => 20 ,
 				timer: () => DAY ,
-				progress: user => user.data.monster ,
+				progress: user => userDataOf( user ).monster ,
 			} ,
 			callback: {
 				resourceChange( user , curse , context ) {
@@ -1264,17 +1265,17 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const value = user.data.monster
+					const value = userDataOf( user ).monster
 					CurseManager.interface( { user , curse } ).setProgress( value )
 				} ,
 				curseBeforeProgressDisplay( user , curse ) {
-					const value = user.data.monster ?? 0
+					const value = userDataOf( user ).monster ?? 0
 					CurseManager.interface( { user , curse } ).setProgress( value )
 				} ,
 			} ,
 			interactionIsShort: true ,
 			reward: 8 ,
-			filter: user => user.data.monster >= 3 ,
+			filter: user => userDataOf( user ).monster >= 3 ,
 		} ,
 		{
 			_weight: 2 ,
@@ -1284,7 +1285,7 @@ export const cursesBase = new Collection(
 			values: {
 				goal: () => 80 ,
 				timer: () => DAY ,
-				progress: user => user.data.monster ,
+				progress: user => userDataOf( user ).monster ,
 			} ,
 			callback: {
 				resourceChange( user , curse , context ) {
@@ -1293,17 +1294,17 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					const value = user.data.monster
+					const value = userDataOf( user ).monster
 					CurseManager.interface( { user , curse } ).setProgress( value )
 				} ,
 				curseBeforeProgressDisplay( user , curse ) {
-					const value = user.data.monster ?? 0
+					const value = userDataOf( user ).monster ?? 0
 					CurseManager.interface( { user , curse } ).setProgress( value )
 				} ,
 			} ,
 			interactionIsShort: true ,
 			reward: 20 ,
-			filter: user => user.data.monster >= 30 ,
+			filter: user => userDataOf( user ).monster >= 30 ,
 		} ,
 		{
 			_weight: 2 ,
@@ -1330,7 +1331,7 @@ export const cursesBase = new Collection(
 					}
 					CurseManager.interface( { user , curse } ).incrementProgress( 1 )
 
-					const value = user.data.coins - target.data.coins
+					const value = userDataOf( user ).coins - userDataOf( target ).coins
 					addResource( {
 						user ,
 						resource: PropertiesEnum.coins ,
@@ -1383,13 +1384,13 @@ export const cursesBase = new Collection(
 			} ,
 			processEnd( user , curse ) {
 				const { upped } = curse.values
-				const previous = ( DataManager.data.bot[ this.EFFECT_ID ] ||= {
+				const previous = ( singletonBotData()[ this.EFFECT_ID ] ||= {
 					value: 0 ,
 					userId: null ,
 				} )
 				const isBigThan = upped > previous.value
 				if ( isBigThan ) {
-					DataManager.data.bot[ this.EFFECT_ID ].value
+					singletonBotData()[ this.EFFECT_ID ].value
 				}
 				this.processUserDisplayUpped( user , {
 					curse ,
@@ -1407,7 +1408,7 @@ export const cursesBase = new Collection(
 					source: 'curseManager.events.cheeseHere' ,
 					context: { curse , previous , isBigThan } ,
 				} )
-				DataManager.data.bot[ this.EFFECT_ID ] = {
+				singletonBotData()[ this.EFFECT_ID ] = {
 					value: upped ,
 					userId: user.id ,
 				}
@@ -1545,7 +1546,7 @@ export const cursesBase = new Collection(
 			description: 'Достаньте клубнику из сумки и продайте её' ,
 			hard: 0 ,
 			values: {
-				goal: user => Math.ceil( user.data.bag.berrys * 0.5 ) ,
+				goal: user => Math.ceil( userDataOf( user ).bag.berrys * 0.5 ) ,
 				timer: () => MINUTE * 30 ,
 				takedFromBag: () => 0 ,
 			} ,
@@ -1568,7 +1569,7 @@ export const cursesBase = new Collection(
 					CurseManager.interface( { user , curse } ).setProgress( value )
 				} ,
 			} ,
-			filter: user => user.data.bag?.berrys > 5 ,
+			filter: user => userDataOf( user ).bag?.berrys > 5 ,
 			reward: 15 ,
 			interactionIsShort: true ,
 		} ,
@@ -1629,7 +1630,7 @@ export const cursesBase = new Collection(
 				} ,
 			} ,
 			reward: 5 ,
-			filter: user => user.data.curses?.length ,
+			filter: user => userDataOf( user ).curses?.length ,
 		} ,
 		{
 			_weight: 1 ,
@@ -1674,8 +1675,8 @@ export const cursesBase = new Collection(
 					const { values } = curse
 					const expected = values.goal - ( values.progress || 0 )
 					const value = Math.min( expected , count )
-					user.data.bag.void ||= 0
-					user.data.bag.void -= value
+					userDataOf( user ).bag.void ||= 0
+					userDataOf( user ).bag.void -= value
 					CurseManager.interface( { user , curse } ).incrementProgress( value )
 				} ,
 				curseTimeEnd( user , curse , target ) {
@@ -1683,13 +1684,13 @@ export const cursesBase = new Collection(
 						return
 					}
 
-					user.data.void -= curse.values.goal
+					userDataOf( user ).void -= curse.values.goal
 				} ,
 			} ,
 			reward: 15 ,
 			interactionIsShort: true ,
 			filter( user ) {
-				return user.data.void > this.GOAL
+				return userDataOf( user ).void > this.GOAL
 			} ,
 		} ,
 		{
@@ -1798,7 +1799,7 @@ export const cursesBase = new Collection(
 			} ,
 			callback: {
 				callCommand( user , curse ) {
-					const userData = user.data
+					const userData = userDataOf( user )
 					const bag = BagAPI.getBagTargetOf( user )
 					const toBag = randomElementFromArray( BagAPI.ITEMS , {
 						filter: item => userData[ item.key ] >= 1 ,

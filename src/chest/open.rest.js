@@ -1,5 +1,6 @@
 import { authorizationProtocol } from '#src/auth/APIPointAuthorization/APIPointAuthorization.js'
 import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+import { userDataOf } from '../data/singleton.js'
 import { ChestManager } from './command.chest.js'
 
 const PREFIX = '/user/chest_open'
@@ -17,7 +18,7 @@ class Route extends BaseRoute {
 			return
 		}
 
-		const cooldown = ChestManager.cooldown.for( user.data )
+		const cooldown = ChestManager.cooldown.for( userDataOf(user))
 
 		if ( cooldown.checkYet() ) {
 			response

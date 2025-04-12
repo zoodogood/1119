@@ -21,7 +21,7 @@ import { RewardSystem } from '#src/boss/reward.js'
 import client from '#src/bot/client/singleton.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import Properties from '#src/data/Properties.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
 import {
 	isChatChannelExists ,
 	sendToChatChannel ,
@@ -187,13 +187,13 @@ class AttributesShop {
 	}
 
 	static async createShop( { guild , channel , user } ) {
-		const boss = guild.data.boss
+		const boss = guildDataOf( guild ).boss
 
 		const userStats = BossManager.getUserStats( boss , user.id )
 		const boughtMap = ( userStats.bought ||= {} )
 
 		const createEmbed = ( { boss , user , edit } ) => {
-			const data = user.data
+			const data = userDataOf( user )
 
 			const getDescription = product =>
 				typeof product.description === 'function'
@@ -277,7 +277,7 @@ class AttributesShop {
 
 			product.callback( { user , userStats , boss , product } )
 			boughtMap[ product.keyword ] = currentBought + 1
-			user.data[ product.resource ] -= price
+			userDataOf( user )[ product.resource ] -= price
 			message.msg( { description: `${ product.emoji } +1` , delete: 7000 } )
 			message = await message.msg( createEmbed( { boss , user , edit: true } ) )
 		} )
@@ -292,7 +292,7 @@ class AttributesShop {
 
 	static isUserCanBuyProduct( { user , product , userStats } ) {
 		return (
-			user.data[ product.resource ]
+			userDataOf( user )[ product.resource ]
 			>= this.calculatePrice( {
 				product ,
 				boughtCount: this.getBoughtCount( { userStats , product } ) ,
@@ -622,7 +622,7 @@ class BossManager {
 		} ,
 		onCollect: ( user , context , reaction = null ) => {
 			const { toLevel , message , guild } = context
-			const boss = guild.data.boss
+			const boss = guildDataOf( guild ).boss
 			if ( !boss ) {
 				message.msg( {
 					title: `Босса нет!` ,
@@ -743,7 +743,7 @@ class BossManager {
 	}
 
 	static async beforeEnd( guild ) {
-		const boss = guild.data.boss
+		const boss = guildDataOf( guild ).boss
 		const usersCache = guild.client.users.cache
 
 		if ( boss.level <= 1 ) {
@@ -891,11 +891,11 @@ class BossManager {
 	}
 
 	static async bossApparance( guild ) {
-		const guildData = guild.data
+		const guildData = guldDataOf( guild )
 
 		if (
 			guildData.boss
-			&& guildData.boss.endingAtDay <= DataManager.data.bot.currentDay
+			&& guildData.boss.endingAtDay <= botData().currentDay
 		) {
 			await BossManager.beforeEnd( guild )
 			this.cleanBossData( guild )
@@ -914,7 +914,7 @@ class BossManager {
 			guildData.boss.apparanceAtDay = this.comeUpApparanceDay()
 		}
 
-		if ( guildData.boss.apparanceAtDay <= DataManager.data.bot.currentDay ) {
+		if ( guildData.boss.apparanceAtDay <= botData().currentDay ) {
 			BossManager.summonBoss( guild )
 		}
 	}
@@ -949,7 +949,7 @@ class BossManager {
 	}
 
 	static cleanBossData( guild ) {
-		const guildData = guild.data
+		const guildData = guldDataOf( guild )
 		const { boss } = guildData
 		delete boss.previous_boss
 		const previous_boss = { ... boss }
@@ -1004,7 +1004,7 @@ class BossManager {
 
 	static generateEndDate( customDuration ) {
 		const duration = customDuration || this.BOSS_DURATION_IN_DAYS
-		const today = DataManager.data.bot.currentDay
+		const today = botData().currentDay
 		return today + duration
 	}
 
@@ -1050,7 +1050,7 @@ class BossManager {
 	}
 
 	static isArrivedIn( guild ) {
-		const boss = guild.data.boss
+		const boss = guildDataOf( guild ).boss
 		if ( !boss ) {
 			return false
 		}
@@ -1158,7 +1158,7 @@ class BossManager {
 		}
 
 		BossInstincts.onTakeDamage( boss , context )
-		DataManager.data.bot.bossDamageToday += damage
+		botData().bossDamageToday += damage
 
 		if ( boss.damageTaken >= boss.healthThresholder ) {
 			BossManager.fatalDamage( context )
@@ -1168,7 +1168,7 @@ class BossManager {
 	}
 
 	static async notifyAboutBossAtNextDay( guild ) {
-		const data = guild.data
+		const data = guldDataOf( guild )
 
 		if ( !data.boss ) {
 			return
@@ -1179,7 +1179,7 @@ class BossManager {
 		}
 
 		const isApparanceAtNextDay = () => {
-			return data.boss.apparanceAtDay === DataManager.data.bot.currentDay + 1
+			return data.boss.apparanceAtDay === botData().currentDay + 1
 		}
 
 		if ( !isApparanceAtNextDay() ) {
@@ -1199,7 +1199,7 @@ class BossManager {
 	}
 
 	static onMessage( message ) {
-		const boss = message.guild.data.boss
+		const boss = guildDataOf( message.guild ).boss
 		const authorId = message.author.id
 
 		const userStats = this.getUserStats( boss , authorId )
@@ -1215,7 +1215,7 @@ class BossManager {
 	}
 
 	static summonBoss( guild ) {
-		const boss = ( guild.data.boss ||= {} )
+		const boss = ( guildDataOf( guild ).boss ||= {} )
 		boss.endingAtDay = this.generateEndDate()
 		delete boss.apparanceAtDay
 
@@ -1303,7 +1303,7 @@ class BossManager {
 	}
 
 	static victory( guild ) {
-		const boss = guild.data.boss
+		const boss = guildDataOf( guild ).boss
 		if ( boss.isDefeated ) {
 			return
 		}

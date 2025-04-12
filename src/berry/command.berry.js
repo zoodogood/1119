@@ -2,7 +2,7 @@ import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { addMultipleResources } from '#root/src/user/resources/addResource.js'
-import { DataManager } from '#src/data/singleton.js'
+import { singletonBotData, DataManager, userDataOf } from '#src/data/singleton.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 
 class Command extends BaseCommand {
@@ -56,7 +56,7 @@ class Command extends BaseCommand {
 	displayUserBerrys( context ) {
 		const { interaction , marketPrice } = context
 		const user = interaction.mention
-		const berrys = user.data.berrys || 0
+		const berrys = userDataOf(user).berrys || 0
 
 		interaction.channel.msg( {
 			title: 'Клубника пользователя' ,
@@ -168,8 +168,8 @@ class Command extends BaseCommand {
 			} ,
 		} )
 
-		context.marketPrice = DataManager.data.bot.berrysPrice = Math.max(
-			DataManager.data.bot.berrysPrice
+		context.marketPrice = singletonBotData().berrysPrice = Math.max(
+			singletonBotData().berrysPrice
 			+ quantity * context.INFLATION * ( -1 ) ** !isBuying ,
 			0 ,
 		)
@@ -187,7 +187,7 @@ class Command extends BaseCommand {
 		const INFLATION = this.constructor.INFLATION
 		const TAX = this.constructor.TAX
 
-		const botData = DataManager.data.bot
+		const botData = botData()
 		const userData = interaction.userData
 
 		const marketPrice = botData.berrysPrice

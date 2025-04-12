@@ -90,8 +90,8 @@ export class RewardSystem {
 	}
 
 	static putCoinsToBank( guild , value ) {
-		guild.data.coins ||= 0
-		guild.data.coins += value
+		guildDataOf(guild).coins ||= 0
+		guildDataOf(guild).coins += value
 	}
 
 	/**

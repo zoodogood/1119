@@ -26,6 +26,7 @@ const Schema = {
 					level: 0 ,
 					users: [ {} ] ,
 				} ,
+				custom_commands: {} ,
 			} ,
 		] ,
 		users: [
@@ -47,7 +48,7 @@ const Schema = {
 					progress: 0 ,
 					reward: 0 ,
 					day: 0 ,
-					willUpdated: true ,
+					willUpdate: true ,
 					isCompleted: true ,
 				} ,
 				curses: [
@@ -180,6 +181,7 @@ const Schema = {
  * @property {string} name
  * @property {boss} boss
  * @property {number} coins
+ * @property {Record<string, {}>} custom_commands
  */
 
 /**
@@ -240,7 +242,7 @@ const Schema = {
  * @property {number} voidCooldown
  * @property {number} CD_$
  * @property {boolean} profile_confidentiality
- * @property {voidQuests} voidQuests
+ * @property {number} voidQuests
  * @property {number} monster
  * @property {number} monstersBought
  * @property {remainedQuest} remainedQuest
@@ -258,7 +260,7 @@ const Schema = {
  * @property {number} progress
  * @property {number} reward
  * @property {number} day
- * @property {boolean} willUpdated
+ * @property {boolean} willUpdate
  * @property {boolean} isCompleted
  */
 

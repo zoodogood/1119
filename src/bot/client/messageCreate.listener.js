@@ -1,14 +1,15 @@
+import { guildDataOf , userDataOf } from '#root/src/data/singleton.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import BossManager from '#src/boss/BossManager.js'
 import { good_bot , stupid_bot } from '#src/bot/bad_bot/bad_good_bot.js'
 import client from '#src/bot/client/singleton.js'
 import { filterChat } from '#src/chat_filter.js/filter.js'
 import { process_spam_protocol } from '#src/chat_filter.js/inSpamSystem.js'
+
 import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
-
 import DataManager from '#src/data/DataManager.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import { randomWith } from '#src/safe-utils.js'
@@ -27,8 +28,8 @@ class Event extends BaseEvent {
 	async run( message ) {
 		const guildData = message.guild?.data
 		const user = message.author
-		const userData = user.data
-		DataManager.data.bot.messagesToday++
+		const userData = userDataOf( user )
+		botData().messagesToday++
 		if ( message.author.bot ) {
 			return
 		}
@@ -69,7 +70,7 @@ class Event extends BaseEvent {
 			good_bot( userData , message )
 		}
 
-		message.guild?.data.chatFilter && filterChat( message )
+		message.guild && guildDataOf( message.guild ).chatFilter && filterChat( message )
 		if ( !process_spam_protocol( user ) ) {
 			return
 		}
@@ -93,7 +94,7 @@ class Event extends BaseEvent {
 		}
 
 		if ( message.guild ) {
-			const memberData = ( message.guild.data.members[ message.author.id ] ||= {} )
+			const memberData = ( guildDataOf( message.guild ).members[ message.author.id ] ||= {} )
 			memberData.messagesToday ||= 0
 			memberData.messagesToday++
 			guildData.day_msg++

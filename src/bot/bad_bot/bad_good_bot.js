@@ -1,4 +1,5 @@
 import { HOUR } from '#constants/time.js'
+import { guildDataOf } from '#root/src/data/singleton.js'
 import client from '#src/bot/client/singleton.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
 import { randomWith , sleep } from '#src/safe-utils.js'
@@ -14,19 +15,19 @@ export async function stupid_bot( user , msg ) {
 		type: 'stupid' ,
 	} )
 
-	if ( !msg.guild.data.stupid_evil ) {
-		msg.guild.data.stupid_evil = 1
+	if ( !guildDataOf( msg.guild ).stupid_evil ) {
+		guildDataOf(	msg.guild ).stupid_evil = 1
 		timeEvents_singleton.pushIntoBuffer( 'cooled-bot' , HOUR * 15 , [
 			msg.guild.id ,
 		] )
 	}
-	if ( msg.guild.data.stupid_evil > 37 ) {
+	if ( guildDataOf( msg.guild ).stupid_evil > 37 ) {
 		return
 	}
 
 	msg.channel.sendTyping()
 	await sleep( 2000 )
-	switch ( msg.guild.data.stupid_evil ) {
+	switch ( guildDataOf( msg.guild ).stupid_evil ) {
 	case 1:
 		msg.msg( { content: 'Недостаточно прав!' } )
 		break
@@ -82,7 +83,7 @@ export async function stupid_bot( user , msg ) {
 	default:
 		msg.msg( { content: '...' } )
 	}
-	msg.guild.data.stupid_evil++
+	guildDataOf(	msg.guild ).stupid_evil++
 }
 
 export function good_bot( user , msg ) {

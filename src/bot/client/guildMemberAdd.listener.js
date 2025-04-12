@@ -1,4 +1,5 @@
 import { MINUTE } from '#root/src/constants/time.js'
+import { guildDataOf, userDataOf } from '#root/src/data/singleton.js'
 import { sendToLogsChannel } from '#root/src/guild_special_channels/special_channel_enum.js'
 import { client } from '#src/bot/client/singleton.js'
 import { PermissionFlags } from '#src/discord/permissions.js'
@@ -10,7 +11,7 @@ import { AuditLogEvent , PermissionFlagsBits , UserFlags } from 'discord.js'
 
 function getMemberData( member ) {
 	const { guild } = member
-	const membersData = ( guild.data.members ||= {} )
+	const membersData = ( guildDataOf( guild ).members ||= {} )
 	return ( membersData[ member.id ] ||= {} )
 }
 
@@ -38,7 +39,7 @@ export const LeaveRoles = {
 export const Welcomer = {
 	installRolesFor( member ) {
 		const { guild } = member
-		const rolesId = guild.data.hi?.rolesId
+		const rolesId = guildDataOf( guild ).hi?.rolesId
 		if ( !rolesId ) {
 			return
 		}
@@ -56,7 +57,7 @@ export const Welcomer = {
 
 	async sendGreetingFor( member ) {
 		const { guild } = member
-		const { hi } = guild.data
+		const { hi } = guldDataOf( guild )
 		if ( !hi?.channel ) {
 			return
 		}
@@ -77,9 +78,9 @@ export const Welcomer = {
 		await sleep( 3500 )
 		await channel.msg( {
 			title: 'На сервере появился новый участник!' ,
-			color: guild.data.hi.color ,
-			image: guild.data.hi.image ,
-			description: guild.data.hi.message ,
+			color: guildDataOf( guild ).hi.color ,
+			image: guildDataOf( guild ).hi.image ,
+			description: guildDataOf( guild ).hi.message ,
 			scope: { tag: member.user.toString() , name: member.user.username } ,
 		} )
 		channel.msg( { content: '👋' , delete: MINUTE * 3 } )
@@ -148,7 +149,8 @@ const EnterLogger = {
 		if ( entryMember.id !== inviter.id ) {
 			inviter.action( Actions.globalQuest , { name: 'inviteFriend' } )
 		}
-		inviter.data.invites = ( inviter.data.invites ?? 0 ) + 1
+
+		userDataOf( inviter ).invites = ( userDataOf( inviter ).invites ?? 0 ) + 1
 	} ,
 
 	async onMember( entryMember ) {

@@ -1,3 +1,4 @@
+import { guildDataOf } from '#root/src/data/singleton.js'
 import { factoryCompare } from '#root/src/mini.js'
 import BossManager from '#src/boss/BossManager.js'
 import { EffectInfluenceEnum } from '#src/user/actions/EffectsManager.js'
@@ -17,7 +18,7 @@ export default {
 
 			const { power , multiplayer , goal , basic } = effect.values
 			const userStats = BossManager.getUserStats(
-				message.guild.data.boss ,
+				guildDataOf(message.guild).boss ,
 				message.author.id ,
 			)
 

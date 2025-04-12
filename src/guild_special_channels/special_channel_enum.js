@@ -22,7 +22,7 @@ export const SpecialChannel = transformToCollectionUsingKey( [
 ] )
 
 export function getSpecialChannel( guild , key ) {
-	const id = guild.data[ key ]
+	const id =guldDataOf(guild)[ key ]
 	return guild.channels.cache.get( id )
 }
 export function sendToLogsChannel( guild , message ) {
@@ -34,5 +34,5 @@ export function sendToChatChannel( guild , message ) {
 }
 
 export function isChatChannelExists( guild ) {
-	return !!guild.data.chatChannel
+	return !!guildDataOf(guild).chatChannel
 }

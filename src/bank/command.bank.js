@@ -1,9 +1,9 @@
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
-import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 
+import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import {
 	awaitUserAccept ,
@@ -15,6 +15,7 @@ import { numberFormat , NumberFormatLetterize } from '#src/safe-utils.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
+import { guildDataOf } from '../data/singleton.js'
 import { sendToLogsChannel } from '../guild_special_channels/special_channel_enum.js'
 import { DAILY_REVENUE_PER_MEMBER } from './contants.js'
 
@@ -133,7 +134,7 @@ class Command extends BaseCommand {
 	}
 
 	getContext( interaction ) {
-		const guildData = interaction.guild.data
+		const guildData = guildDataOf( interaction.guild )
 
 		const isAdmin = !take_missing_permissions(
 			interaction.member ,
@@ -391,12 +392,12 @@ class Command extends BaseCommand {
 	}
 
 	onDayStats( guild , context ) {
-		const { professions } = guild.data
+		const { professions } = guldDataOf( guild )
 		ProfessionsUtils.removeUnavailableProfessions( { guild , professions } )
 
 		const entries = Object.entries( professions ?? {} )
 		if ( !entries.length ) {
-			delete guild.data.professions
+			delete guildDataOf( guild ).professions
 			return
 		}
 
@@ -405,10 +406,10 @@ class Command extends BaseCommand {
 			professions ,
 		} )
 
-		if ( guild.data.coins < expenditure ) {
+		if ( guildDataOf( guild ).coins < expenditure ) {
 			sendToLogsChannel( guild , {
 				title: `Сегодня не были выданы зарплаты` ,
-				description: `В казне сервера слишком мало коинов, лишь ${ guild.data.coins }, в то время как на выплаты требуется ${ expenditure } <:coin:637533074879414272>` ,
+				description: `В казне сервера слишком мало коинов, лишь ${ guildDataOf( guild ).coins }, в то время как на выплаты требуется ${ expenditure } <:coin:637533074879414272>` ,
 				color: '#ffff00' ,
 			} )
 			return
@@ -432,7 +433,7 @@ class Command extends BaseCommand {
 			} )
 		}
 
-		guild.data.coins -= expenditure
+		guildDataOf( guild ).coins -= expenditure
 		sendToLogsChannel( guild , {
 			title: `Были выданы зарплаты` ,
 			description: `С казны было автоматически списано ${ ending(
@@ -512,7 +513,7 @@ class Command extends BaseCommand {
 
 		case '794632668137652225':
 			data.professions
-					= guild.data.professions || ( guild.data.professions = {} )
+					= guildDataOf( guild ).professions || ( guildDataOf( guild ).professions = {} )
 
 			data.workersList = []
 			data.report = { expenditure: 0 , salaryTable: {} }
@@ -625,7 +626,7 @@ class Command extends BaseCommand {
 						} )
 						continue
 					}
-					guild.data.professions[ data.answer[ 0 ] ] = Math.max(
+					guildDataOf( guild ).professions[ data.answer[ 0 ] ] = Math.max(
 						Math.floor( data.answer[ 1 ] ) ,
 						1 ,
 					)

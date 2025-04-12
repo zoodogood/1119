@@ -1,5 +1,6 @@
 import { authorizationProtocol } from '#src/auth/APIPointAuthorization/APIPointAuthorization.js'
 import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
+import { userDataOf } from '../data/singleton.js'
 
 const PREFIX = '/user/data'
 
@@ -17,7 +18,7 @@ class Route extends BaseRoute {
 			return
 		}
 
-		response.json( user.data )
+		response.json( userDataOf(user))
 	}
 }
 

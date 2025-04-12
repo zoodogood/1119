@@ -6,6 +6,7 @@ import GuildVariablesManager from '#src/variables/GuildVariablesManager.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 import { escapeMarkdown } from 'discord.js'
+import { guildDataOf } from '../data/singleton.js'
 
 class Command extends BaseCommand {
 	static actionsList = [
@@ -333,7 +334,7 @@ class Command extends BaseCommand {
 	}
 
 	async onChatInput( msg , interaction ) {
-		const manager = new GuildVariablesManager( msg.guild.data )
+		const manager = new GuildVariablesManager( guildDataOf( interaction.guild ) )
 		const isAdmin
 			= take_missing_permissions( interaction.member , PermissionsBits.ManageGuild )
 				.length === 0

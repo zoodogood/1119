@@ -1,11 +1,11 @@
 import DataManager from '#src/data/DataManager.js'
 
 export function init_snowy_in( guild ) {
-	return ( guild.data.snowyEvent = { preGlowExplorers: [] , isArrived: true } )
+	return ( guildDataOf(guild).snowyEvent = { preGlowExplorers: [] , isArrived: true } )
 }
 
 export function get_snowy_in( guild ) {
-	return guild.data.snowyEvent
+	return guildDataOf(guild).snowyEvent
 }
 
 export function get_or_init_snowy_in( guild ) {
@@ -13,22 +13,22 @@ export function get_or_init_snowy_in( guild ) {
 }
 
 export function mark_as_started() {
-	DataManager.data.bot.snowyEvent = true
+	botData().snowyEvent = true
 }
 
 export const time_for_snowy_event = {
 	isFactualActive() {
-		return !!DataManager.data.bot.snowyEvent
+		return !!botData().snowyEvent
 	} ,
 
 	todayIsSnowy() {
-		const [ day , month ] = DataManager.data.bot.dayDate
+		const [ day , month ] = botData().dayDate
 		return +month === 12 && +day >= 20
 	} ,
 }
 
 export function fully_clean() {
-	delete DataManager.data.bot.snowyEvent
+	delete botData().snowyEvent
 	for ( const guildData of DataManager.data.guilds ) {
 		delete guildData.snowyEvent
 	}

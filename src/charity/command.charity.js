@@ -140,8 +140,8 @@ class Command extends BaseCommand {
 			} )
 		}
 
-		guild.data.coins
-			= ( guild.data.coins || 0 ) + cash - coinsForEvery * members.length
+		guildDataOf(guild).coins
+			= ( guildDataOf(guild).coins || 0 ) + cash - coinsForEvery * members.length
 
 		const embed = {
 			title: 'Вы сотворили Акт благотворительности' ,

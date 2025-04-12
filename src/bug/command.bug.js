@@ -124,7 +124,7 @@ function update_error_message_status( context ) {
 					'Пожалуйста, примите вознаграждение в размере 2 000 коинов' ,
 				] ) ,
 			} )
-			user.data.coins += 2_000
+			userDataOf(user).coins += 2_000
 			interaction.msg( {
 				content: `${ interaction.customId } — успех` ,
 				ephemeral: true ,
@@ -215,7 +215,7 @@ class BugsField {
 	static KEY = 'bug'
 	field
 	constructor() {
-		this.field = DataManager.data.bot[ BugsField.KEY ] ||= {}
+		this.field = botData()[ BugsField.KEY ] ||= {}
 	}
 }
 

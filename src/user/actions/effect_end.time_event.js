@@ -10,7 +10,7 @@ class Event {
 
 	findEffect( context ) {
 		const { user , uid } = context
-		const effects = user.data.effects
+		const effects = userDataOf(user).effects
 
 		const compare = effect => effect.uid === uid
 		return effects.find( compare )

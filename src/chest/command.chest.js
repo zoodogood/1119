@@ -1,3 +1,4 @@
+import { addResource } from '#root/src/user/resources/addResource.js'
 import {
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2 ,
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 ,
@@ -6,8 +7,7 @@ import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import CooldownManager from '#src/CooldownManager.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager , userDataOf } from '#src/data/singleton.js'
 import dayjs from '#src/dayjs.js'
 import {
 	NumberFormatLetterize ,
@@ -100,7 +100,7 @@ export const Chest = {
 	} ,
 
 	getResources( { user , openCount } ) {
-		const userData = user.data
+		const userData = userDataOf( user )
 
 		const pushTreasure = ( item , quantity ) =>
 			( treasures[ item ] = treasures[ item ]
@@ -151,7 +151,7 @@ export class ChestManager {
 	}
 
 	static open( { user , context } ) {
-		const toOpen = Math.max( 0 , user.data.chestBonus ) || 0
+		const toOpen = Math.max( 0 , userDataOf( user ).chestBonus ) || 0
 		this.processBirthday( { user , context } )
 
 		const { treasures , openCount } = Chest.callOpen( { user , toOpen } )
@@ -192,13 +192,13 @@ export class ChestManager {
 			executor: user ,
 			context: { primary: context , openCount , treasures , toOpen } ,
 		} )
-		if ( user.data.chestBonus === 0 ) {
-			delete user.data.chestBonus
+		if ( userDataOf( user ).chestBonus === 0 ) {
+			delete userDataOf( user ).chestBonus
 		}
 	}
 
 	static processBirthday( { user , context } ) {
-		const nowBirthday = user.data.BDay === DataManager.data.bot.dayDate
+		const nowBirthday = userDataOf( user ).BDay === botData().dayDate
 		if ( !nowBirthday ) {
 			return
 		}

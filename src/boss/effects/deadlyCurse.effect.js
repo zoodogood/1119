@@ -19,7 +19,7 @@ export default {
 			const guild = client.guilds.cache.get( guildId )
 
 			if ( isLost && BossManager.isArrivedIn( guild ) ) {
-				const { boss } = guild.data
+				const { boss } =guldDataOf(guild)
 				const userStats = BossManager.getUserStats( boss , user.id )
 				userStats.heroIsDead = true
 				update_attack_cooldown(
@@ -60,7 +60,7 @@ export default {
 			values.targetTimestamp = curse.timestamp
 
 			const userStats = BossManager.getUserStats(
-				guild.data.boss ,
+				guildDataOf(guild).boss ,
 				values.keepAliveUserId ,
 			)
 			userStats.alreadyKeepAliveRitualBy = user.id
@@ -77,11 +77,11 @@ export default {
 			if ( !BossManager.isArrivedIn( guild ) ) {
 				return
 			}
-			const userStats = BossManager.getUserStats( guild.data.boss , user.id )
+			const userStats = BossManager.getUserStats( guildDataOf(guild).boss , user.id )
 
 			const targetUser = client.users.cache.get( values.keepAliveUserId )
 			const targetUserStats = BossManager.getUserStats(
-				guild.data.boss ,
+				guildDataOf(guild).boss ,
 				values.keepAliveUserId ,
 			)
 			delete targetUserStats.alreadyKeepAliveRitualBy

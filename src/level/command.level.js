@@ -2,6 +2,7 @@ import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import { AttachmentBuilder } from 'discord.js'
+import { userDataOf } from '../data/singleton.js'
 
 class Command extends BaseCommand {
 	isInited = false
@@ -54,7 +55,7 @@ class Command extends BaseCommand {
 
 	getUserPreferColor( member ) {
 		const value
-			= member.data.profile_color
+			= userDataOf( member ).profile_color
 				?? member.accentColor?.toString( 16 ).padStart( 6 , '0' )
 				?? '00cc00'
 

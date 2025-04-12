@@ -21,7 +21,7 @@ export default async function open_present( { params , interaction } ) {
 		} )
 		return
 	}
-	const userData = user.data
+	const userData =userDataOf(user)
 
 	if ( userData.presents <= 0 ) {
 		interaction.channel.msg( {

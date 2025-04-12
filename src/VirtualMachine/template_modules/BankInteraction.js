@@ -1,7 +1,8 @@
 import { SECOND } from '#constants/time.js'
+import { guildDataOf , userDataOf } from '#root/src/data/singleton.js'
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { assert } from '#src/assert/export.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { question } from '#src/discord/utils.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { percent_string } from '#src/formatters/formatters.js'
@@ -22,7 +23,7 @@ export class BankInteraction {
 	}
 
 	bankCoins() {
-		return this.#guild.data.coins
+		return guildDataOf( this.#guild ).coins
 	}
 
 	requestGetFromBank( value , message ) {
@@ -34,7 +35,7 @@ export class BankInteraction {
 		const context = this.#context
 		assert( executor )
 
-		guild.data.coins -= value
+		guildDataOf( guild ).coins -= value
 		context.channel.msg( {
 			author: {
 				key: executor.username ,
@@ -70,13 +71,13 @@ export class BankInteraction {
 				} ,
 				description: `Сделка: ${ prompt }. Основана пользователем ${ source.empowered }.\n\nВнести в казну ${ ending( value , 'коин' , 'ов' , '' , 'а' ) } ${ Emoji.coins } ?` ,
 				footer: {
-					text: `У вас ${ ending( executor.data.coins , 'коин' , 'ов' , '' , 'а' ) }${ executor.data.coins < value ? ` (${ percent_string( executor.data.coins / value ) } от требуемого)` : '' }` ,
+					text: `У вас ${ ending( userDataOf( executor ).coins , 'коин' , 'ов' , '' , 'а' ) }${ userDataOf( executor ).coins < value ? ` (${ percent_string( userDataOf( executor ).coins / value ) } от требуемого)` : '' }` ,
 				} ,
 			} ,
 			messageOptions: {
 				disable: true ,
 			} ,
-			reactions: [ executor.data.coins > value && '✅' , '❌' ] ,
+			reactions: [ userDataOf( executor ).coins > value && '✅' , '❌' ] ,
 		} )
 		if ( emoji === '❌' ) {
 			context.channel.msg( { title: 'Отклонено' , delete: SECOND * 8 } )
@@ -85,7 +86,7 @@ export class BankInteraction {
 		if ( emoji !== '✅' ) {
 			return null
 		}
-		guild.data.coins += value
+		guildDataOf( guild ).coins += value
 		addResource( {
 			resource: PropertiesEnum.coins ,
 			user: executor ,

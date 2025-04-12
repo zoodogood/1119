@@ -1,11 +1,12 @@
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { randomWith } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { PresenceUpdateStatus } from 'discord.js'
+import { userDataOf } from '../data/singleton.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -46,16 +47,16 @@ class Command extends BaseCommand {
 	calculateRobValue( context ) {
 		const { userData , memb } = context
 		const combo = userData.thiefCombo || 0
-		const membWins = memb.data.thiefWins || 0
+		const membWins = userDataOf( memb ).thiefWins || 0
 		let k
 			= 1 + ( membWins > 0 ? membWins * 1.2 : Math.max( membWins , -10 ) * 0.07 )
 
-		if ( memb.data.voidMonster ) {
+		if ( userDataOf( memb ).voidMonster ) {
 			k *= 12
 		}
 
 		return (
-			Math.floor( randomWith( 21 , 49 ) * ( combo / 10 + 1 ) * k ) + memb.data.level * 3
+			Math.floor( randomWith( 21 , 49 ) * ( combo / 10 + 1 ) * k ) + userDataOf( memb ).level * 3
 		)
 	}
 
@@ -64,7 +65,7 @@ class Command extends BaseCommand {
 		if ( userData.thiefCombo === 7 )
 			user.action( Actions.globalQuest , { name: 'thief' } )
 
-		if ( memb.data.thiefWins >= 9 )
+		if ( userDataOf( memb ).thiefWins >= 9 )
 			user.action( Actions.globalQuest , { name: 'crazy' } )
 	}
 
@@ -144,17 +145,17 @@ class Command extends BaseCommand {
 
 	getContext( interaction ) {
 		const { user , channel , params } = interaction
-		const userData = user.data
+		const userData = userDataOf( user )
 		const memb = interaction.mention
 		const member = interaction.guild.members.resolve( memb )
 
 		const note = params.replace( memb.toString() , '' ).trim()
-		const isTargetHurted = memb.data.thiefWins < -5
+		const isTargetHurted = userDataOf( memb ).thiefWins < -5
 		const isMonsterCanHelp
-			= memb.data.voidMonster && !( memb.data.CD_39 > Date.now() )
+			= userDataOf( memb ).voidMonster && !( userDataOf( memb ).CD_39 > Date.now() )
 		const isDetectiveTraced
 			= isTargetHurted
-				&& randomWith( 1 / ( -memb.data.thiefWins * 2.87 ) , { round: false } ) <= 0.01
+				&& randomWith( 1 / ( -userDataOf( memb ).thiefWins * 2.87 ) , { round: false } ) <= 0.01
 
 		return {
 			interaction ,
@@ -259,7 +260,7 @@ class Command extends BaseCommand {
 			context ,
 		} )
 
-		!( memb.data.thiefWins < 0 ) && this.resetThiefWins( context )
+		!( userDataOf( memb ).thiefWins < 0 ) && this.resetThiefWins( context )
 		addResource( {
 			user: memb ,
 			resource: PropertiesEnum.thiefWins ,
@@ -274,7 +275,7 @@ class Command extends BaseCommand {
 			description = `У себя в карманах вы обнаружили записку:\n— ${ note }`
 		}
 
-		if ( memb.data.voidMonster && !isMonsterCanHelp ) {
+		if ( userDataOf( memb ).voidMonster && !isMonsterCanHelp ) {
 			description
 				= `Ваш монстр не захотел вам помочь, известно, что недавно вы сами ограбили своего друга.\n${
 					description }`
@@ -363,7 +364,7 @@ class Command extends BaseCommand {
 						context.robCoinsReturned
 					}) <:coin:637533074879414272> переданы их новому владельцу.`
 					action = `Однако вы не смогли простить предательства, будучи уверенными, что все ${ ending(
-						-memb.data.thiefWins ,
+						-userDataOf( memb ).thiefWins ,
 						'раз' ,
 						'' ,
 						'а' ,
@@ -384,7 +385,7 @@ class Command extends BaseCommand {
 					footer: { text: memb.username , iconURL: memb.avatarURL() } ,
 				} )
 
-				!( memb.data.thiefWins > 0 ) && this.resetThiefWins( context )
+				!( userDataOf( memb ).thiefWins > 0 ) && this.resetThiefWins( context )
 				addResource( {
 					user: memb ,
 					resource: PropertiesEnum.thiefWins ,
@@ -430,7 +431,7 @@ class Command extends BaseCommand {
 
 			if ( isDetectiveTraced ) {
 				context.robCoinsReturned
-					= -memb.data.thiefWins * 20 * Math.round( userData.thiefCombo / 2 + 2 )
+					= -userDataOf( memb ).thiefWins * 20 * Math.round( userData.thiefCombo / 2 + 2 )
 				this.transferCoins( user , memb , -context.robCoinsReturned , {
 					interaction ,
 					mode: 'detective' ,
@@ -440,7 +441,7 @@ class Command extends BaseCommand {
 
 				interaction.userData.thiefGloves = -2
 				this.resetCombo( context )
-				memb.data.thiefWins += 5
+				userDataOf( memb ).thiefWins += 5
 
 				channel.msg( {
 					title: 'Вора на горячем поймал герой-детектив' ,
@@ -516,7 +517,7 @@ class Command extends BaseCommand {
 			user.msg( {
 				title: `Вы были пойманы` ,
 				description: `${ memb.username } уверен, что это вы его ограбили ${ ending(
-					-memb.data.thiefWins ,
+					-userDataOf( memb ).thiefWins ,
 					'раз' ,
 					'' ,
 					'а' ,

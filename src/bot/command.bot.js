@@ -228,7 +228,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 	static async commandsUsedContent() {
 		const list = await Promise.all(
 			sortByResolveMut(
-				Object.entries( DataManager.data.bot.commandsUsed ) ,
+				Object.entries( botData().commandsUsed ) ,
 				$ => $[ 1 ] ,
 				{ reverse: true } ,
 			).map(
@@ -236,7 +236,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 					`${ String( i + 1 ) + '.'.repeat( 2 - String( i + 1 ).length ) }.${
 						( await CommandsManager.commandInstance( id ) ).options.name
 					}_${ uses }(${ +(
-						( uses / DataManager.data.bot.commandsLaunched )
+						( uses / botData().commandsLaunched )
 						* 100
 					).toFixed( 2 ) })%` ,
 			) ,
@@ -329,9 +329,9 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			description: `${ contents.ping } ${ contents.version } ${ contents.season }, что сюда ещё запихнуть?\n${ contents.guilds }(?) ${ contents.commands }\n${ contents.performance }\n${ contents.time }${ contents.address }\n${ contents.errors };\n${ contents.uniqueErrors }` ,
 			footer: {
 				text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${
-					DataManager.data.bot.addToNewGuildAt
+					botData().addToNewGuildAt
 						? timestampToDate(
-							Date.now() - DataManager.data.bot.addToNewGuildAt ,
+							Date.now() - botData().addToNewGuildAt ,
 							2 ,
 						)
 						: 'Вечность'

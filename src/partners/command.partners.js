@@ -140,7 +140,7 @@ class PartnerField {
 
 	setGuild( guild ) {
 		this.guild = guild
-		this.field = guild.data[ PartnerField.KEY ] ||= {}
+		this.field =guldDataOf(guild)[ PartnerField.KEY ] ||= {}
 		return this
 	}
 
@@ -377,7 +377,7 @@ class Preview_FlagSubcommand extends BaseFlagSubcommand {
 
 	_getClansContent() {}
 	_getTreeContent() {
-		return `Уровень дерева: ${ this.guild.data.tree?.level || 'ещё не появилось' }`
+		return `Уровень дерева: ${guildDataOf( this.guild).tree?.level || 'ещё не появилось' }`
 	}
 
 	async getEmbed() {
@@ -911,8 +911,8 @@ class PartnersDaemon {
 		const launched_events = timeEvents_singleton.filterEventsInRange(
 			( { name } ) => name === this.EVENT_NAME ,
 			[
-				DataManager.data.bot.currentDay ,
-				DataManager.data.bot.currentDay + WEEK + 1 ,
+				botData().currentDay ,
+				botData().currentDay + WEEK + 1 ,
 			] ,
 		)
 

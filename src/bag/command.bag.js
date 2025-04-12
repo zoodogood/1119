@@ -12,9 +12,10 @@ import { Emoji } from '#src/emojis/emojis.js'
 import { getSimilar , randomWith , timestampDay } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import { CliParser , ending } from '@zoodogood/utils/primitives'
+import { userDataOf } from '../data/singleton.js'
 
 function getMoveTargetsOf( { user , isToBag } ) {
-	const userData = user.data
+	const userData = userDataOf( user )
 	const bagData = getBagTargetOf( user )
 	const targetFrom = isToBag ? userData : bagData
 	const targetTo = isToBag ? bagData : userData
@@ -22,14 +23,14 @@ function getMoveTargetsOf( { user , isToBag } ) {
 }
 
 export function getBagTargetOf( user ) {
-	const userData = user.data
+	const userData = userDataOf( user )
 	userData.bag ||= {}
 	return userData.bag
 }
 
 export function moveToBagBrute( { key , count , user } ) {
 	const bag = getBagTargetOf( user )
-	user.data[ key ] -= count
+	userDataOf( user )[ key ] -= count
 	bag[ key ] ||= 0
 	bag[ key ] += count
 }
@@ -84,7 +85,7 @@ export function checkMoveDetailes( { user , isToBag , count , key } ) {
 }
 
 function summarizeInInventoryAndBag( { user , key } ) {
-	const userData = user.data
+	const userData = userDataOf( user )
 	return ( +userData[ key ] || 0 ) + ( +userData.bag?.[ key ] || 0 )
 }
 
@@ -152,7 +153,7 @@ function _moveItem( moveDetails ) {
 
 export function movePrepare( moveDetailes , { user } ) {
 	const { key , item } = moveDetailes
-	const userData = user.data
+	const userData = userDataOf( user )
 	if ( userData[ key ] === undefined ) {
 		item.setter( { count: 0 , target: userData } )
 	}
@@ -175,7 +176,7 @@ class CommandRunContext extends BaseCommandRunContext {
 	userData
 	static new( interaction , command ) {
 		const context = new this( interaction , command )
-		context.userData = interaction.user.data
+		context.userData = userDataOf( interaction.user )
 		return context
 	}
 
@@ -320,7 +321,7 @@ class Clean_FlagSubcommand extends BaseFlagSubcommand {
 	onProcess() {
 		const { context } = this
 		const { user , interaction } = context
-		const bag = user.data.bag || {}
+		const bag = userDataOf( user ).bag || {}
 		const toClean = Object.entries( bag ).filter( entrie => !entrie[ 1 ] )
 		for ( const [ key ] of toClean ) {
 			delete bag[ key ]
@@ -607,7 +608,7 @@ export const ITEMS = [
 		async onUse( { context } ) {
 			const { guild } = context
 			const today = timestampDay( Date.now() )
-			const { boss } = guild.data
+			const { boss } = guldDataOf( guild )
 
 			const BossManager = ( await import( '#src/boss/BossManager.js' ) ).default
 			if ( BossManager.isArrivedIn( guild ) || boss?.apparanceAtDay - 2 <= today ) {

@@ -7,7 +7,7 @@ import { requestCoinFromNextMessage } from '#src/coin_message/requestCoinFromMes
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import * as PropertiesManager from '#src/data/Properties.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
 import { pushMessage } from '#src/discord/pushMessage.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import ErrorsHandler from '#src/ErrorsHandler/ErrorsHandler.js'
@@ -22,7 +22,7 @@ import UserEffectManager from '#src/user/actions/EffectsManager.js'
 import GuildVariablesManager from '#src/variables/GuildVariablesManager.js'
 import { PERMISSIONS_MASK_ENUM } from '#src/VirtualMachine/empowered_permissions.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
-import { randomElementFromArray , omit } from '@zoodogood/utils/objectives'
+import { omit , randomElementFromArray } from '@zoodogood/utils/objectives'
 import Discord , { Constants , FormattingPatterns } from 'discord.js'
 import mol_global from 'mol_tree2'
 
@@ -54,7 +54,7 @@ export const template_modules_scope = transformToCollectionUsingKey( [
 		} ,
 	} ,
 	{
-		getContent: context => new GuildVariablesManager( context.guild.data ) ,
+		getContent: context => new GuildVariablesManager( guildDataOf( context.guild ) ) ,
 		key: 'CurrentGuildSpace' ,
 		permissions: {
 			scope: PERMISSIONS_MASK_ENUM.GUILD_MANAGER ,
@@ -62,7 +62,7 @@ export const template_modules_scope = transformToCollectionUsingKey( [
 		filter: context => 'guild' in context ,
 	} ,
 	{
-		getContent: context => context.guild.data ,
+		getContent: context => guildDataOf( context.guild ) ,
 		key: 'guildData' ,
 		permissions: {
 			scope: PERMISSIONS_MASK_ENUM.GUILD_MANAGER ,
@@ -71,7 +71,7 @@ export const template_modules_scope = transformToCollectionUsingKey( [
 		filter: context => 'guild' in context ,
 	} ,
 	{
-		getContent: context => context.user.data ,
+		getContent: context => userDataOf( context.user ) ,
 		key: 'userData' ,
 		permissions: {
 			scope: PERMISSIONS_MASK_ENUM.USER ,

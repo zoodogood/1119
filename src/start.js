@@ -1,7 +1,7 @@
 import config from '#config'
 import client from '#src/bot/client/singleton.js'
 
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , singletonBotData } from '#src/data/singleton.js'
 
 import { dayjs } from '#src/dayjs.js'
 import EventsManager from '#src/events/EventsManager.js'
@@ -74,7 +74,7 @@ client.on( 'ready' , async () => {
 		guild.invitesUsesCache = ( await guild.invites.fetch() ).mapValues(
 			invite => invite.uses ,
 		)
-		DataManager.data.bot.addToNewGuildAt = Date.now()
+		singletonBotData().addToNewGuildAt = Date.now()
 	} )
 
 	client.on( 'guildDelete' , async ( guild ) => {
@@ -97,10 +97,10 @@ client.on( 'ready' , async () => {
 
 	client.on( 'guildMemberRemove' , async ( member ) => {
 		const { guild } = member
-		if ( !guild.data.members ) {
-			member.guild.data.members = {}
+		if ( !guildDataOf( guild ).members ) {
+			guildDataOf(	member.guild ).members = {}
 		}
-		const memberData = ( guild.data.members[ member.id ] ||= {} )
+		const memberData = ( guildDataOf( guild ).members[ member.id ] ||= {} )
 		memberData.leave_roles = Array.from( member.roles.cache.keys() )
 
 		const banInfo

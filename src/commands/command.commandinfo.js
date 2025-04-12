@@ -3,7 +3,7 @@ import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager , {
 	resolve_command ,
 } from '#src/commands/CommandsManager/singleton.js'
-import { DataManager } from '#src/data/singleton.js'
+import { DataManager, userDataOf } from '#src/data/singleton.js'
 import { permissionsBitsToI18nArray } from '#src/discord/permissions.js'
 import { percent_string } from '#src/formatters/formatters.js'
 import { resolveGithubPath } from '#src/github/resolveGithubPath.js'
@@ -12,7 +12,7 @@ import {
 	CustomCommand ,
 	uses_count_of ,
 } from '#src/guildcommand/command.guildcommand.js'
-import { capitalize, factorySummarize } from '#src/mini.js'
+import { capitalize , factorySummarize } from '#src/mini.js'
 import { joinWithAndSeparator } from '#src/safe-utils.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { CliParser } from '@zoodogood/utils/primitives'
@@ -183,7 +183,7 @@ class TargetCommandMetadata {
 	}
 
 	calculateCommandsUsedTotally() {
-		const used = Object.values( DataManager.data.bot.commandsUsed )
+		const used = Object.values( botData().commandsUsed )
 		return used.reduce( factorySummarize() , 0 )
 	}
 
@@ -198,7 +198,7 @@ class TargetCommandMetadata {
 		const usedCount
 			= command instanceof CustomCommand
 				? uses_count_of( commandNameId , guild )
-				: DataManager.data.bot.commandsUsed[ command.options.id ] || 0
+				: botData().commandsUsed[ command.options.id ] || 0
 
 		return {
 			options ,
@@ -312,7 +312,7 @@ class Command extends BaseCommand {
 			command ,
 		} = meta
 
-		const locale = user.data.locale
+		const locale = userDataOf( user ).locale
 
 		const embed = {
 			title: `— ${ commandNameId.toUpperCase() }` ,

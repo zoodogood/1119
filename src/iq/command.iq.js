@@ -1,6 +1,7 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { randomWith } from '#src/safe-utils.js'
+import { userDataOf } from '../data/singleton.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -26,17 +27,19 @@ class Command extends BaseCommand {
 				|| client.users.cache.get( interaction.params )
 				|| msg.author
 
+		const membData = userDataOf( memb )
+
 		const { content } = interaction.message
 		const commandName = content.match( /[a-zа-яїё]+/i )?.[ 0 ] ?? 'IQ'
 
 		let first = true
-		if ( 'iq' in memb.data ) {
+		if ( 'iq' in membData ) {
 			first = false
 		}
 
-		let iq = ( memb.data.iq = first
+		let iq = ( membData.iq = first
 			? randomWith( 30 , 140 )
-			: Math.max( memb.data.iq , 0 ) )
+			: Math.max( membData.iq , 0 ) )
 		const name = memb === msg.author ? 'вас' : 'него'
 
 		let description
@@ -45,7 +48,7 @@ class Command extends BaseCommand {
 				!first ? ' всё так же' : ''
 			} ${ iq } ${ commandName.toUpperCase() }`
 		} else {
-			iq = ++memb.data.iq
+			iq = ++membData.iq
 			description = `Удивительно, у ${ name } айкью вырос на одну единицу! Сейчас ${ commandName.toUpperCase() } === ${ iq }`
 		}
 		msg.msg( {

@@ -43,7 +43,7 @@ export async function onGetCoinMessage( { user , message } ) {
 		return
 	}
 
-	const userData = user.data
+	const userData =userDataOf(user)
 	if ( userData.curses?.some( curse => curse.id === 'happySnowy' ) ) {
 		return
 	}

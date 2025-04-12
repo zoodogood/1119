@@ -27,6 +27,7 @@ import {
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { CliParser } from '@zoodogood/utils/primitives'
 import { ButtonStyle , ComponentType } from 'discord.js'
+import { singletonBotData, guildDataOf , userDataOf } from '../data/singleton.js'
 
 function attackBoss( boss , user , channel ) {
 	return BossManager.userAttack( { boss , user , channel } )
@@ -46,7 +47,7 @@ export class Bosses_Flagsubcommand {
 	}
 
 	static guildToField( guild ) {
-		const { boss , partners } = guild.data
+		const { boss , partners } = guldDataOf( guild )
 		const isArrived = boss.isArrived
 		const { name } = guild
 		const contents = {
@@ -64,7 +65,7 @@ export class Bosses_Flagsubcommand {
 		const memb = interaction.mention || interaction.user
 		const { guilds } = memb
 		const fields = sortByResolveMut(
-			guilds.filter( guild => guild.data.boss ) ,
+			guilds.filter( guild => guildDataOf( guild ).boss ) ,
 			( { data: { boss } } ) =>
 				boss.isArrived ? Number.MIN_SAFE_INTEGER : +boss.apparanceAtDay || 0 ,
 			{ reverse: true } ,
@@ -178,7 +179,7 @@ class CommandRunContext extends BaseCommandRunContext {
 	static async new( interaction , command ) {
 		const context = new this( interaction , command )
 		const memb = interaction.mention ?? interaction.user
-		const boss = interaction.guild.data.boss ?? {}
+		const boss = guildDataOf( interaction.guild ).boss ?? {}
 		Object.assign( context , { memb , boss } )
 		return context
 	}
@@ -295,7 +296,7 @@ class Command extends BaseCommand {
 	async displayHeadstone( { interaction , memb , boss , userStats } ) {
 		const guild = interaction.guild
 		const contents = {
-			level: `Уровень: ${ memb.data.level }.` ,
+			level: `Уровень: ${ userDataOf( memb ).level }.` ,
 			joined: `Появился: ${ new Intl.DateTimeFormat( 'ru-ru' , {
 				year: 'numeric' ,
 				month: '2-digit' ,
@@ -317,8 +318,8 @@ class Command extends BaseCommand {
 				return null
 			}
 
-			const aliverStats = BossManager.getUserStats( guild.data.boss , aliver.id )
-			const aliverData = aliver.user.data
+			const aliverStats = BossManager.getUserStats( guildDataOf( guild ).boss , aliver.id )
+			const aliverData = userDataOf( aliver.user )
 
 			if ( aliverStats.heroIsDead ) {
 				delete userStats.alreadyKeepAliveRitualBy
@@ -434,7 +435,7 @@ class Command extends BaseCommand {
 					time: 180_000 ,
 				} )
 
-				const curse = user.data.curses.find(
+				const curse = userDataOf( user ).curses.find(
 					curse => curse.timestamp === effect.values.targetTimestamp ,
 				)
 
@@ -507,7 +508,7 @@ class Command extends BaseCommand {
 			const description = boss.apparanceAtDay
 				? maybe_multiline( [
 					`Прибудет лишь ${ toDayDate( ( boss.apparanceAtDay + 1 ) * DAY ) }` ,
-					boss.apparanceAtDay - 1 <= DataManager.data.bot.currentDay
+					boss.apparanceAtDay - 1 <= singletonBotData().currentDay
 					&& `: до появления ${ dayjs
 						.duration( dayjs().endOf( 'D' ).diff( dayjs() ) )
 						.format( 'HH:mm:ss' ) } с.` ,

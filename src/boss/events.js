@@ -43,6 +43,7 @@ import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 import { ButtonStyle , CommandInteraction , ComponentType } from 'discord.js'
+import { userDataOf } from '../data/singleton.js'
 
 export const eventBases = transformToCollectionUsingKey( [
 	{
@@ -83,7 +84,7 @@ export const eventBases = transformToCollectionUsingKey( [
 		key: 'giveChestBonus' ,
 		description: 'Выбито 4 бонуса сундука' ,
 		callback: ( { user } ) => {
-			user.data.chestBonus = ( user.data.chestBonus ?? 0 ) + 4
+			userDataOf( user ).chestBonus = ( userDataOf( user ).chestBonus ?? 0 ) + 4
 		} ,
 	} ,
 	{
@@ -100,7 +101,7 @@ export const eventBases = transformToCollectionUsingKey( [
 			CurseManager.init( { user , curse } )
 		} ,
 		filter: ( { user } ) =>
-			!user.data.curses?.length || user.data.voidFreedomCurse ,
+			!userDataOf( user ).curses?.length || userDataOf( user ).voidFreedomCurse ,
 	} ,
 	{
 		weight: 40 ,
@@ -118,7 +119,7 @@ export const eventBases = transformToCollectionUsingKey( [
 			}
 		} ,
 		filter: ( { user } ) =>
-			!user.data.curses?.length || user.data.voidFreedomCurse ,
+			!userDataOf( user ).curses?.length || userDataOf( user ).voidFreedomCurse ,
 	} ,
 	{
 		weight: 20 ,
@@ -400,7 +401,7 @@ export const eventBases = transformToCollectionUsingKey( [
 
 					const content = `Успех! Получено ${ coins }ед. золота`
 					message.msg( { description: content } )
-					user.data.coins += coins
+					userDataOf( user ).coins += coins
 					return
 				}
 
@@ -585,8 +586,8 @@ export const eventBases = transformToCollectionUsingKey( [
 
 								gotTable[ user.id ] = true
 
-								user.data.chestBonus ||= 0
-								user.data.chestBonus += 10
+								userDataOf( user ).chestBonus ||= 0
+								userDataOf( user ).chestBonus += 10
 								const description = `Получено 10 бонусов сундука`
 
 								message.msg( {
@@ -632,8 +633,8 @@ export const eventBases = transformToCollectionUsingKey( [
 					'🍯🍯🍯': {
 						description: 'Вы мгновенно получаете 45 бонусов сундука!' ,
 						callback: ( _message , _embed ) => {
-							user.data.chestBonus ||= 0
-							user.data.chestBonus += 45
+							userDataOf( user ).chestBonus ||= 0
+							userDataOf( user ).chestBonus += 45
 						} ,
 					} ,
 					'🩸🩸🩸': {
@@ -760,7 +761,7 @@ export const eventBases = transformToCollectionUsingKey( [
 		description: 'Вознаграждение за терпение' ,
 		callback: ( { user , boss } ) => {
 			const berry = 2 + Math.ceil( boss.level / 4 )
-			user.data.berrys += berry
+			userDataOf( user ).berrys += berry
 		} ,
 		filter: ( { boss } ) => boss.elementType === elementsEnum.earth ,
 	} ,
@@ -798,7 +799,7 @@ export const eventBases = transformToCollectionUsingKey( [
 		key: 'powerOfDarkness' ,
 		description: 'Вознагражение за настойчивость' ,
 		callback: ( { user , boss } ) => {
-			const userData = user.data
+			const userData = userDataOf( user )
 			userData.keys += 3 + boss.level * 2
 			userData.chestBonus = ( userData.chestBonus || 0 ) + 2 + boss.level
 			userData.coins += 20 + 15 * boss.level
@@ -991,7 +992,7 @@ export const eventBases = transformToCollectionUsingKey( [
 		key: 'theRarestEvent' ,
 		description: 'Вы получили один ключ ~' ,
 		callback: ( { user } ) => {
-			user.data.keys += 1
+			userDataOf( user ).keys += 1
 		} ,
 	} ,
 	{
@@ -999,7 +1000,7 @@ export const eventBases = transformToCollectionUsingKey( [
 		key: 'relics' ,
 		description: 'Получен осколок случайной реликвии' ,
 		callback: ( { userStats , user } ) => {
-			const userData = user.data
+			const userData = userDataOf( user )
 			userStats.relicsShards ||= 0
 			userStats.relicsShards++
 			const NEED_SHARDS_TO_GROUP = 5
@@ -1008,7 +1009,7 @@ export const eventBases = transformToCollectionUsingKey( [
 				userStats.relicIsTaked = true
 				delete userStats.relicIsTaked
 
-				user.data.bossRelics ||= []
+				userDataOf( user ).bossRelics ||= []
 
 				const relicKey = BossRelics.collection
 					.filter(
@@ -1017,7 +1018,7 @@ export const eventBases = transformToCollectionUsingKey( [
 					)
 					.randomKey()
 
-				relicKey && user.data.bossRelics.push( relicKey )
+				relicKey && userDataOf( user ).bossRelics.push( relicKey )
 			}
 		} ,
 		filter: ( { boss , userStats } ) => {
