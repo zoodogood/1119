@@ -1,7 +1,7 @@
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
-import { DataManager, userDataOf } from '#src/data/singleton.js'
+import { DataManager , userDataOf } from '#src/data/singleton.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { Collection } from 'discord.js'
@@ -199,7 +199,7 @@ class QuestManager {
 	)
 
 	static _init( { user , quest } ) {
-		userDataOf(user).quest = quest
+		userDataOf( user ).quest = quest
 	}
 
 	static checkAvailable( { user } ) {
@@ -208,7 +208,7 @@ class QuestManager {
 			return
 		}
 
-		const { quest } =userDataOf(user)
+		const { quest } = userDataOf( user )
 		const isExists = !!quest
 
 		const isCompleted = isExists && quest.isCompleted
@@ -229,7 +229,7 @@ class QuestManager {
 			return
 		}
 
-		const userData =userDataOf(user)
+		const userData = userDataOf( user )
 		userData.questsGlobalCompleted ||= ''
 
 		const SEPARATOR = ' '
@@ -285,7 +285,7 @@ class QuestManager {
 		const EXPERIENCE_REWARD_MULTIPLAYER = 3
 		const multiplayer = DEFAULT_REWARD_MULTIPLAYER * quest.reward
 
-		const userData =userDataOf(user)
+		const userData = userDataOf( user )
 		const questBase = this.questsBase.get( quest.id )
 		const { channel } = context
 
@@ -363,7 +363,7 @@ class QuestManager {
 	}
 
 	static generate( { user } ) {
-		const userQuestField = userDataOf(user).quest
+		const userQuestField = userDataOf( user ).quest
 
 		const questBase = randomElementFromArray(
 			[ ... this.questsBase.values() ]
@@ -425,14 +425,14 @@ class QuestManager {
 
 	static isNeedInstallDailyQuest( { user } ) {
 		const { currentDay } = botData()
-		const { quest } =userDataOf(user)
+		const { quest } = userDataOf( user )
 		return !!( !quest || quest.day !== currentDay )
 	}
 
 	static onAction( { user , questBase , data } ) {
 		this.checkAvailable( { user } )
 
-		const quest = userDataOf(user).quest
+		const quest = userDataOf( user ).quest
 		if ( questBase.id === quest.id ) {
 			const progress
 				= questBase.calculateProgressIncrease?.call(
@@ -480,8 +480,8 @@ class QuestManager {
 	}
 
 	static requestInstallDailyQuest( { user } ) {
-		userDataOf(user).quest ||= {}
-		userDataOf(user).quest.willUpdate = true
+		userDataOf( user ).quest ||= {}
+		userDataOf( user ).quest.willUpdate = true
 	}
 
 	static resolveQuestBase( questResolable ) {
@@ -489,6 +489,10 @@ class QuestManager {
 			= typeof questResolable === 'string' ? questResolable : questResolable.id
 		return this.questsBase.get( id ) ?? null
 	}
+}
+
+export function isSimpleGlobalQuest( questBase ) {
+	return questBase.isGlobal && !questBase.isSecret && !questBase.isRemoved
 }
 
 export default QuestManager

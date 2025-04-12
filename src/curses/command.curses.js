@@ -41,18 +41,7 @@ import {
 	PresenceUpdateStatus ,
 } from 'discord.js'
 import { userDataOf } from '../data/singleton.js'
-
-class Utils {
-	static getCursesProgressContent( curses ) {
-		return curses
-			.map( curse =>
-				curse.values.goal
-					? `・${ curse.values.progress || 0 }/${ curse.values.goal }`
-					: `・${ curse.values.progress || 0 }` ,
-			)
-			.join( '; ' )
-	}
-}
+import { getCursesProgressContent } from './text_templates.js'
 
 class List_FlagSubcommand {
 	sendList_CHUNK_SIZE = 15
@@ -239,7 +228,7 @@ class Help_FlagSubcommand {
 		}
 
 		const names = curses.map( curse => `- *\`${ curse.id }\`*` ).join( '\n' )
-		const progresses = Utils.getCursesProgressContent( curses )
+		const progresses = getCursesProgressContent( curses )
 		return `\n${ names }\n${ progresses }`
 	}
 
@@ -934,4 +923,4 @@ class Command extends BaseCommand {
 }
 
 export default Command
-export { Help_FlagSubcommand as HelpCommandManager , Utils }
+export { Help_FlagSubcommand as HelpCommandManager }
