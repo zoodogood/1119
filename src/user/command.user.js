@@ -8,7 +8,7 @@ import { Emoji } from '#src/emojis/emojis.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import QuestManager , { isSimpleGlobalQuest } from '#src/quests/QuestManager.js'
 import {
-	maybe_multiline,
+	maybe_multiline ,
 	NumberFormatLetterize ,
 	sleep ,
 	timestampToDate ,
@@ -18,9 +18,9 @@ import Template from '#src/VirtualMachine/Template.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { PresenceUpdateStatus } from 'discord.js'
 import { MONTH , SECOND , YEAR } from '../constants/time.js'
+import { getCursesProgressContent } from '../curses/text_templates.js'
 import { userDataOf } from '../data/singleton.js'
 import { percent_string } from '../formatters/formatters.js'
-import { getCursesProgressContent } from '../curses/text_templates.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -33,7 +33,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'юзер u ю profile профиль користувач' ,
 		allowDM: true ,
-		cooldown: 20_000 ,
+		cooldown: 20 * SECOND ,
 		cooldownTry: 3 ,
 		type: 'user' ,
 	}
@@ -109,22 +109,22 @@ class Command extends BaseCommand {
 		CurseManager.checkAvailableAll( target )
 
 		const createEmbedAtFirstPage = async () => {
-			const description = maybe_multiline([
+			const description = maybe_multiline( [
 				`Коинов: **${ NumberFormatLetterize(
-					userData.coins , ) }**<:coin:637533074879414272> \n`,
+					userData.coins ,
+				) }**<:coin:637533074879414272> \n` ,
 				`<a:crystal:637290417360076822>Уровень: **${
 					userData.level || 1
-				}** \n`,
+				}** \n` ,
 				`<:crys:637290406958202880>Опыт: **${ userData.exp || 0 }/${
 					( userData.level || 1 ) * EXPERIENCE_PER_LEVEL
-				}**\n\n`,
-				`${ interaction.status }\n`
-			])
-			
+				}**\n\n` ,
+				`${ interaction.status }\n` ,
+			] )
 
-			const fields = [ 
-				{ name: ' ᠌' , value: ' ᠌' }, 
-				userData.profile_description && (() => {
+			const fields = [
+				{ name: ' ᠌' , value: ' ᠌' } ,
+				userData.profile_description && await ( async () => {
 					const source = {
 						empowered: interaction.user ,
 						type: Template.sourceTypes.involuntarily ,
@@ -138,8 +138,8 @@ class Command extends BaseCommand {
 						} ) ,
 					).replaceAll( userData.profile_description , msg )
 					return { name: 'О пользователе: ᠌' , value: about }
-				})(),
-				( member ) && (() => {
+				} )() ,
+				( member ) && ( () => {
 					const secretAchievements = QuestManager.questsBase
 						.filter(
 							questBase =>
@@ -148,27 +148,28 @@ class Command extends BaseCommand {
 						.filter( questBase =>
 							userData.questsGlobalCompleted?.includes( questBase.id ) ,
 						)
-	
+
 					const achievementContent = secretAchievements.size
 						? `${ secretAchievements.random().emoji } `
 						: ''
 					return {
 						name: ' ᠌᠌' ,
 						value: '\n**' + `${ achievementContent }${ member.roles.highest }**\nᅠ` ,
-					} 
-				})(),
-				( !target.bot ) && (() => {
+					}
+				} )() ,
+				( !target.bot ) && ( () => {
 					const quest = userData.quest
 					const questBase = QuestManager.questsBase.get( quest.id )
 					const value = quest.isCompleted
 						? ' – Квест выполнен'
 						: `${ questBase.description } ${ quest.progress }/${ quest.goal }`
 					return { name: '\nКвест:' , value }
-				})(),
+				} )() ,
 				( userData.curses?.length ) && {
-						name: '᠌᠌' ,
-						value: `Прогресс проклятия: ${ getCursesProgressContent(userData.curses) }` , }
-			].filter(Boolean)
+					name: '᠌᠌' ,
+					value: `Прогресс проклятия: ${ getCursesProgressContent( userData.curses ) }` ,
+				} ,
+			].filter( Boolean )
 
 			return {
 				title: 'Профиль пользователя' ,

@@ -1,11 +1,12 @@
+import { addResource } from '#root/src/user/resources/addResource.js'
 import { CALCULATE_CLOVER_MULTIPLAYER } from '#src/coin_message/clover/contstants.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 import * as SnowyEvent from '#src/snowyEvent/lifecycle.js'
 import { onGetCoinMessage as SnowyOnGetCoinMessage } from '#src/snowyEvent/onGetCoinMessage.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import { ending } from '@zoodogood/utils/primitives'
+import { guildDataOf , userDataOf } from '../data/singleton.js'
 
 class Event extends BaseEvent {
 	options = {
@@ -19,15 +20,15 @@ class Event extends BaseEvent {
 
 	calculateMultiplayer( { user , message } ) {
 		const { guild } = message
-		const userData =userDataOf(user)
+		const userData = userDataOf( user )
 		let k = 1
 
 		if ( SnowyEvent.time_for_snowy_event.isFactualActive() ) {
 			k += 0.2
 		}
 
-		if ( guild && 'cloverEffect' inguldDataOf(guild) ) {
-			const value = CALCULATE_CLOVER_MULTIPLAYER( guildDataOf(guild).cloverEffect.uses )
+		if ( guild && 'cloverEffect' in guldDataOf( guild ) ) {
+			const value = CALCULATE_CLOVER_MULTIPLAYER( guildDataOf( guild ).cloverEffect.uses )
 			const multiplayer = value * 1.12 ** ( userData.voidMysticClover ?? 0 )
 			k += multiplayer
 		}
@@ -36,7 +37,7 @@ class Event extends BaseEvent {
 	}
 
 	async onGetCoinsFromMessage( { user , message } ) {
-		const userData =userDataOf(user)
+		const userData = userDataOf( user )
 		const { guild } = message
 		user.action( Actions.coinFromMessage , {
 			channel: message.channel ,
@@ -48,9 +49,9 @@ class Event extends BaseEvent {
 			reaction = '❄️'
 		}
 
-		if ( guild && 'cloverEffect' inguldDataOf(guild) ) {
+		if ( guild && 'cloverEffect' in guldDataOf( guild ) ) {
 			reaction = '☘️'
-			guildDataOf(guild).cloverEffect.coins++
+			guildDataOf( guild ).cloverEffect.coins++
 		}
 
 		const coins = Math.round( ( 35 + ( userData.coinsPerMessage ?? 0 ) ) * k )

@@ -16,7 +16,7 @@ import {
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 
 import CooldownManager from '#src/CooldownManager.js'
-import { DataManager , guildDataOf , store , userDataOf } from '#src/data/singleton.js'
+import { guildDataOf , store , userDataOf } from '#src/data/singleton.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { Pager } from '#src/discord/Pager.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
@@ -32,7 +32,6 @@ import { ParserTime } from '#src/user_input_prepare/parsers.js'
 import Template from '#src/VirtualMachine/Template.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { escapeCodeBlock , escapeMarkdown } from 'discord.js'
-import { content } from '../site/_build/src/svelte_component/Overcard/mod.svelte'
 
 export function uses_count_of( custom_command_name , guild ) {
 	return Object.values(
@@ -297,13 +296,13 @@ class FactoryView extends BaseFlagSubcommand {
 			}
 
 			case Boolean: {
-				const { isComponent } = await question( {
+				const { isComponent , value } = await question( {
 					... base_question ,
 					message: {
 						components: justButtonComponents( {} ) ,
 					} ,
 				} )
-				return content
+				return value
 			}
 
 			default:

@@ -1,6 +1,6 @@
-import {
-	addMultipleResources ,
-} from '#src/data/public/addResource.js'
+import { guildDataOf } from '#src/data/singleton.js'
+import { addMultipleResources } from '#src/user/resources/addResource.js'
+/** @import { addResource } from '#src/user/resources/addResource.js' */
 
 export class RewardSystem {
 	static BossEndPull = {
@@ -90,8 +90,8 @@ export class RewardSystem {
 	}
 
 	static putCoinsToBank( guild , value ) {
-		guildDataOf(guild).coins ||= 0
-		guildDataOf(guild).coins += value
+		guildDataOf( guild ).coins ||= 0
+		guildDataOf( guild ).coins += value
 	}
 
 	/**

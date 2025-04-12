@@ -1,11 +1,11 @@
+import { addResource } from '#root/src/user/resources/addResource.js'
 import {
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2 ,
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 ,
 } from '#src/chest/constants.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
-import { singletonBotData, DataManager, guildDataOf, userDataOf } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
 import { randomWith , sleep } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import { _WEIGHT_AUTO , randomElementFromArray , randomElementsFromArray } from '@zoodogood/utils/objectives'
@@ -20,13 +20,13 @@ class Command extends BaseCommand {
 			MAX_LEVEL: 20 ,
 			MAX_WEIGHT: 100 ,
 			_weight( user ) {
-				const current = userDataOf(user).voidCooldown || 0
+				const current = userDataOf( user ).voidCooldown || 0
 				return (
 					this.MAX_WEIGHT - ( current * ( this.MAX_WEIGHT / this.MAX_LEVEL ) || 0 )
 				)
 			} ,
 			filter( user ) {
-				const current = userDataOf(user).voidCooldown || 0
+				const current = userDataOf( user ).voidCooldown || 0
 				return current < this.MAX_LEVEL
 			} ,
 			action( user , interaction ) {
@@ -49,8 +49,8 @@ class Command extends BaseCommand {
 			MULTIPLAYER: 1.35 ,
 			calculate( user ) {
 				const value
-					= ( userDataOf(user).chestBonus * this.MULTIPLAYER || 0 )
-						+ userDataOf(user).voidRituals * this.BONUSES_PER_RITUAL
+					= ( userDataOf( user ).chestBonus * this.MULTIPLAYER || 0 )
+						+ userDataOf( user ).voidRituals * this.BONUSES_PER_RITUAL
 						+ this.BASIC
 				return Math.min( Math.round( value ) , this.LIMIT )
 			} ,
@@ -83,7 +83,7 @@ class Command extends BaseCommand {
 			} ,
 			_weight: 5 ,
 			filter( user ) {
-				return ( userDataOf(user).voidPrice || 0 ) < this.MAX_LEVEL
+				return ( userDataOf( user ).voidPrice || 0 ) < this.MAX_LEVEL
 			} ,
 			action( user , interaction ) {
 				addResource( {
@@ -103,7 +103,7 @@ class Command extends BaseCommand {
 				'Даёт 9%-й шанс не потерять уровни нестабильности во время ритуала.' ,
 			_weight: 3 ,
 			filter( user ) {
-				return !userDataOf(user).voidDouble
+				return !userDataOf( user ).voidDouble
 			} ,
 			action( user , interaction ) {
 				addResource( {
@@ -124,7 +124,7 @@ class Command extends BaseCommand {
 				'Делает ежедневные квесты на 15% сложнее, однако также увеличивает их награду на 30%' ,
 			_weight: 5 ,
 			filter( user ) {
-				return ( userDataOf(user).voidQuests || 0 ) < this.MAX_LEVEL
+				return ( userDataOf( user ).voidQuests || 0 ) < this.MAX_LEVEL
 			} ,
 			action( user , interaction ) {
 				addResource( {
@@ -144,7 +144,7 @@ class Command extends BaseCommand {
 			BONUS_PER_RITUAL: 7 ,
 			calculate( user ) {
 				return Math.min(
-					this.BASIC + userDataOf(user).voidRituals * this.BONUS_PER_RITUAL ,
+					this.BASIC + userDataOf( user ).voidRituals * this.BONUS_PER_RITUAL ,
 					300 ,
 				)
 			} ,
@@ -180,7 +180,7 @@ class Command extends BaseCommand {
 					executor: user ,
 					context: { interaction } ,
 				} )
-				return ( userDataOf(user).voidThief = ++userDataOf(user).voidThief || 1 )
+				return ( userDataOf( user ).voidThief = ++userDataOf( user ).voidThief || 1 )
 			} ,
 		} ,
 		{
@@ -191,7 +191,7 @@ class Command extends BaseCommand {
 			calculate( user ) {
 				return (
 					this.BASIC
-					+ Math.floor( this.PER_RITUAL * userDataOf(user).voidRituals ** 0.5 )
+					+ Math.floor( this.PER_RITUAL * userDataOf( user ).voidRituals ** 0.5 )
 				)
 			} ,
 			description( user ) {
@@ -222,7 +222,7 @@ class Command extends BaseCommand {
 				} )
 			} ,
 			filter( user ) {
-				const current = userDataOf(user).voidMysticClover || 0
+				const current = userDataOf( user ).voidMysticClover || 0
 				return current < this.MAX_COUNT
 			} ,
 		} ,
@@ -231,8 +231,8 @@ class Command extends BaseCommand {
 			id: 'transformKeys' ,
 			KEYS_PER_VOID: 120 ,
 			calculate( user ) {
-				const voids = Math.floor( userDataOf(user).keys / this.KEYS_PER_VOID )
-				const keys = userDataOf(user).keys - ( userDataOf(user).keys % this.KEYS_PER_VOID )
+				const voids = Math.floor( userDataOf( user ).keys / this.KEYS_PER_VOID )
+				const keys = userDataOf( user ).keys - ( userDataOf( user ).keys % this.KEYS_PER_VOID )
 				return { voids , keys }
 			} ,
 			description( user ) {
@@ -241,7 +241,7 @@ class Command extends BaseCommand {
 			} ,
 			_weight: 40 ,
 			filter( user ) {
-				return userDataOf(user).keys >= this.KEYS_PER_VOID && userDataOf(user).chestLevel
+				return userDataOf( user ).keys >= this.KEYS_PER_VOID && userDataOf( user ).chestLevel
 			} ,
 			action( user , interaction ) {
 				const { keys , voids } = this.calculate( user )
@@ -270,7 +270,7 @@ class Command extends BaseCommand {
 			description: `Увеличивает вероятность коин-сообщения на 10%!` ,
 			_weight: 15 ,
 			filter( user ) {
-				return userDataOf(user).voidCoins < this.MAX_LEVEL
+				return userDataOf( user ).voidCoins < this.MAX_LEVEL
 			} ,
 			action( user , interaction ) {
 				addResource( {
@@ -290,20 +290,20 @@ class Command extends BaseCommand {
 			KEYS_FOR_SECOND_UPGRADE: KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 ,
 			DESCRIPTION_VALUE_OFFSET: 2 ,
 			getPrice( user ) {
-				return userDataOf(user).chestLevel
+				return userDataOf( user ).chestLevel
 					? this.KEYS_FOR_SECOND_UPGRADE
 					: this.KEYS_FOR_FIRST_UPGRADE
 			} ,
 			description( user ) {
 				const price = this.getPrice( user )
 				return `Улучшает сундук до ${
-					userDataOf(user).chestLevel + this.DESCRIPTION_VALUE_OFFSET
+					userDataOf( user ).chestLevel + this.DESCRIPTION_VALUE_OFFSET
 				} уровня. Требует ${ price } ключей.`
 			} ,
 			_weight: Infinity ,
 			filter( user ) {
 				return (
-					userDataOf(user).chestLevel !== 2 && userDataOf(user).keys >= this.getPrice( user )
+					userDataOf( user ).chestLevel !== 2 && userDataOf( user ).keys >= this.getPrice( user )
 				)
 			} ,
 			action( user , interaction ) {
@@ -332,7 +332,7 @@ class Command extends BaseCommand {
 			description: `Ваши монстры будут защищать вас от ограблений Воров` ,
 			_weight: 3 ,
 			filter( user ) {
-				return userDataOf(user).monster && !userDataOf(user).voidMonster
+				return userDataOf( user ).monster && !userDataOf( user ).voidMonster
 			} ,
 			action( user , interaction ) {
 				addResource( {
@@ -351,7 +351,7 @@ class Command extends BaseCommand {
 			description: `Вы можете брать на одну клубнику больше с дерева. Также при сборе повышает её цену на рынке` ,
 			_weight: 20 ,
 			filter( user ) {
-				return 'seed' inuserDataOf(user)
+				return 'seed' in userDataOf( user )
 			} ,
 			action( user , interaction ) {
 				addResource( {
@@ -370,7 +370,7 @@ class Command extends BaseCommand {
 			description: 'Лотерейный билетик из Лавки заменяется настоящим казино' ,
 			_weight: 3 ,
 			filter( user ) {
-				return !userDataOf(user).voidCasino
+				return !userDataOf( user ).voidCasino
 			} ,
 			action( user , interaction ) {
 				addResource( {
@@ -396,11 +396,11 @@ class Command extends BaseCommand {
 			} ,
 			_weight: 15 ,
 			filter( user ) {
-				return userDataOf(user).voidRituals > 4 && userDataOf(user).voidRituals < 20
+				return userDataOf( user ).voidRituals > 4 && userDataOf( user ).voidRituals < 20
 			} ,
 			action( user , interaction ) {
 				const voids
-					= randomWith( 1 , interaction.minusVoids * 2 ) + !( userDataOf(user).level % 2 )
+					= randomWith( 1 , interaction.minusVoids * 2 ) + !( userDataOf( user ).level % 2 )
 
 				addResource( {
 					user ,
@@ -426,7 +426,7 @@ class Command extends BaseCommand {
 			description: `Позволяет иметь более одного проклятия` ,
 			_weight: 40 ,
 			filter( user ) {
-				return userDataOf(user).cursesEnded > 4 && !userDataOf(user).voidFreedomCurse
+				return userDataOf( user ).cursesEnded > 4 && !userDataOf( user ).voidFreedomCurse
 			} ,
 			action( user , interaction ) {
 				addResource( {
@@ -437,7 +437,7 @@ class Command extends BaseCommand {
 					executor: user ,
 					context: { interaction } ,
 				} )
-				return ( userDataOf(user).voidFreedomCurse = 1 )
+				return ( userDataOf( user ).voidFreedomCurse = 1 )
 			} ,
 		} ,
 		{
@@ -448,8 +448,8 @@ class Command extends BaseCommand {
 			_weight: 1 ,
 			filter( user ) {
 				return (
-					( !userDataOf(user).voidIce && !userDataOf(user).praiseMe )
-					|| !userDataOf(user).praiseMe.length
+					( !userDataOf( user ).voidIce && !userDataOf( user ).praiseMe )
+					|| !userDataOf( user ).praiseMe.length
 				)
 			} ,
 			action( user , interaction ) {
@@ -547,7 +547,7 @@ class Command extends BaseCommand {
 		const add = content => ( storyContent = `${ content }\n${ storyContent }` )
 		const user = interaction.user
 
-		switch ( userDataOf(user).voidRituals ) {
+		switch ( userDataOf( user ).voidRituals ) {
 		case 23:
 			add( 'Мы не знаем что произошло дальше. . .' )
 			break
@@ -637,12 +637,12 @@ class Command extends BaseCommand {
 		default:
 			add( '...' )
 		}
-		const title = `День ${ Math.round( userDataOf(user).voidRituals ** 2.093 / 1.3 ) }.`
+		const title = `День ${ Math.round( userDataOf( user ).voidRituals ** 2.093 / 1.3 ) }.`
 		interaction.channel.msg( {
 			title ,
 			description: storyContent ,
 			image:
-				userDataOf(user).voidRituals === 19
+				userDataOf( user ).voidRituals === 19
 					? 'https://media.discordapp.net/attachments/629546680840093696/843562906053640202/2.jpg?width=1214&height=683'
 					: 'https://media.discordapp.net/attachments/629546680840093696/836122708185317406/mid_250722_922018.jpg' ,
 			footer: {
@@ -702,7 +702,7 @@ class Command extends BaseCommand {
 		const userData = interaction.userData
 		interaction.minusVoids = this.calculateRitualPrice(
 			userData ,
-			guildDataOf(   interaction.guild),
+			guildDataOf( interaction.guild ) ,
 		)
 
 		if ( userData.void < interaction.minusVoids ) {
