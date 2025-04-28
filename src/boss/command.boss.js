@@ -1,12 +1,12 @@
 import config from '#config'
 import { DAY , SECOND } from '#constants/time.js'
 
+import { BossEffects , BossManager } from '#src/boss/BossManager.js'
 import {
 	core_make_attack_context ,
 	make_attack_with_events ,
-} from '#src/boss/attack.js'
-import { resolve_attack_events_pull } from '#src/boss/attack_events.js'
-import { BossEffects , BossManager } from '#src/boss/BossManager.js'
+} from '#src/boss/user_attacks/attack.js'
+import { resolve_attack_events_pull } from '#src/boss/user_attacks/events.js'
 import client from '#src/bot/client/singleton.js'
 import {
 	BaseCommand ,
@@ -14,7 +14,6 @@ import {
 } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
-import DataManager from '#src/data/DataManager.js'
 import dayjs from '#src/dayjs.js'
 import { isChatChannelExists } from '#src/guild_special_channels/special_channel_enum.js'
 import { sortByResolveMut } from '#src/mini.js'
@@ -27,7 +26,7 @@ import {
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { CliParser } from '@zoodogood/utils/primitives'
 import { ButtonStyle , ComponentType } from 'discord.js'
-import { singletonBotData, guildDataOf , userDataOf } from '../data/singleton.js'
+import { guildDataOf , singletonBotData , userDataOf } from '../data/singleton.js'
 
 function attackBoss( boss , user , channel ) {
 	return BossManager.userAttack( { boss , user , channel } )

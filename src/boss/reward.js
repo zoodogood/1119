@@ -2,8 +2,8 @@ import { guildDataOf } from '#src/data/singleton.js'
 import { addMultipleResources } from '#src/user/resources/addResource.js'
 /** @import { addResource } from '#src/user/resources/addResource.js' */
 
-export class RewardSystem {
-	static BossEndPull = {
+export const RewardSystem = {
+	BossEndPull: {
 		DEFAULT_VOID: 1 ,
 		VOID_REWARD_DENOMINATOR: 0.5 ,
 		VOID_LIMIT_MULTIPLAYER: 0.5 ,
@@ -29,9 +29,9 @@ export class RewardSystem {
 				keys: this.calculateKeys( userStats ) ,
 			}
 		} ,
-	}
+	} ,
 
-	static Chest = {
+	Chest: {
 		BASE_BONUSES: 50 ,
 		BONUSES_PER_LEVEL: 10 ,
 		DAMAGE_FOR_KEY: 5_000 ,
@@ -51,17 +51,17 @@ export class RewardSystem {
 				keys: this.calculateKeys( userStats ) ,
 			}
 		} ,
-	}
+	} ,
 
-	static GuildHarvest = {
+	GuildHarvest: {
 		REWARD_PER_LEVEL: 1_000 ,
 		onBossEnded( guild , boss ) {
 			const value = boss.level * this.REWARD_PER_LEVEL
 			RewardSystem.putCoinsToBank( guild , value )
 		} ,
-	}
+	} ,
 
-	static LevelKill = {
+	LevelKill: {
 		BASE: 80 ,
 		ADDING_PER_LEVEL: 5 ,
 		calculateKillExpReward( { toLevel , fromLevel } ) {
@@ -75,9 +75,9 @@ export class RewardSystem {
 				exp: this.calculateKillExpReward( { fromLevel , toLevel } ) ,
 			}
 		} ,
-	}
+	} ,
 
-	static MostStrongUser = {
+	MostStrongUser: {
 		VOID_REWARD: 3 ,
 		calculateVoid() {
 			return this.VOID_REWARD
@@ -87,22 +87,22 @@ export class RewardSystem {
 				void: this.calculateVoid() ,
 			}
 		} ,
-	}
+	} ,
 
-	static putCoinsToBank( guild , value ) {
+	putCoinsToBank( guild , value ) {
 		guildDataOf( guild ).coins ||= 0
 		guildDataOf( guild ).coins += value
-	}
+	} ,
 
 	/**
 	 *
 	 * @param {Parameters<typeof addResource>[0]} addResourceOptions
 	 * @param {Record<string, number>} rewardPull
 	 */
-	static sendReward( addResourceOptions , rewardPull ) {
+	sendReward( addResourceOptions , rewardPull ) {
 		return addMultipleResources( {
 			... addResourceOptions ,
 			resources: rewardPull ,
 		} )
-	}
+	} ,
 }

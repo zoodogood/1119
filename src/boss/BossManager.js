@@ -1,7 +1,9 @@
 /* eslint-disable no-unused-vars */
 
 import { NOT_BREAKING_SPACE } from '#constants/characters.js'
-import { DAY , HOUR , MINUTE } from '#constants/time.js'
+import { DAY , HOUR , MINUTE , SECOND } from '#constants/time.js'
+import { update_health_thresholder } from '#src/boss/health.js'
+import { RewardSystem } from '#src/boss/reward.js'
 import {
 	core_make_attack ,
 	core_make_attack_context ,
@@ -9,14 +11,12 @@ import {
 	process_before_attack ,
 	update_attack_cooldown ,
 	update_attack_damage_multiplayer ,
-} from '#src/boss/attack.js'
+} from '#src/boss/user_attacks/attack.js'
 import {
 	attack_event_callback ,
 	resolve_attack_events_pull ,
-} from '#src/boss/attack_events.js'
-import { eventBases } from '#src/boss/events.js'
-import { update_health_thresholder } from '#src/boss/health.js'
-import { RewardSystem } from '#src/boss/reward.js'
+} from '#src/boss/user_attacks/events.js'
+import { eventBases } from '#src/boss/user_attacks/events.list.js'
 
 import client from '#src/bot/client/singleton.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
@@ -26,6 +26,8 @@ import {
 	isChatChannelExists ,
 	sendToChatChannel ,
 } from '#src/guild_special_channels/special_channel_enum.js'
+import { factoryCompare , factorySummarize } from '#src/mini.js'
+import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
 import {
 	makeArray ,
 	numberFormat ,
@@ -43,8 +45,6 @@ import { Collection } from '@discordjs/collection'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { arraySpliceItem , ending } from '@zoodogood/utils/primitives'
 import { ButtonStyle , ComponentType } from 'discord.js'
-import { factoryCompare , factorySummarize } from '../mini.js'
-import { transformToCollectionUsingKey } from '../nodejs/Collection/transformToCollectionUsingKey.js'
 
 class Speacial {
 	static AVATAR_OF_SNOW_QUEEN
@@ -1232,7 +1232,7 @@ class BossManager {
 				description: 'Недоступно до воскрешения' ,
 				color: '#ff0000' ,
 				footer: { text: user.username , iconURL: user.avatarURL() } ,
-				delete: 30_000 ,
+				delete: 30 * SECOND ,
 			} )
 			return
 		}
@@ -1242,7 +1242,7 @@ class BossManager {
 				description: 'Прямые атаки недоступны после победы над боссом' ,
 				color: '#ff0000' ,
 				footer: { text: user.username , iconURL: user.avatarURL() } ,
-				delete: 30_000 ,
+				delete: 30 * SECOND ,
 			} )
 			return
 		}
@@ -1259,7 +1259,7 @@ class BossManager {
 				title: '⚔️ Перезарядка..!' ,
 				color: '#ff0000' ,
 				description ,
-				delete: 7000 ,
+				delete: 7 * SECOND ,
 				footer ,
 			} )
 			return
