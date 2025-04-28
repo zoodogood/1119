@@ -525,7 +525,7 @@ export function use_unique_characters_marker( value , label , flags = '' ) {
  * @returns {T[]} by mapFn
  */
 export function makeArray( mapFn , length ) {
-	return Array.from( { length } , mapFn )
+	return Array.from( { length } , ( _ , i ) => mapFn( i ) )
 }
 
 /**
