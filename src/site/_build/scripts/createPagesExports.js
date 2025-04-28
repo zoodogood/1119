@@ -4,7 +4,7 @@
  */
 
 import FileSystem from 'node:fs/promises'
-import { default as Path } from 'node:path'
+import Path from 'node:path'
 import { cwd_path } from '#src/nodejs/path_relative_to_root.js'
 import { glob } from 'glob'
 
@@ -25,14 +25,14 @@ const targetFiles = await Promise.all(
 )
 {
 	console.info( `Cound of files: ${ targetFiles.length }` )
-	await FileSystem.mkdir( './src/public/build/svelte-pages' , {
+	await FileSystem.mkdir( './src/site/_build/_public_out' , {
 		recursive: true ,
 	} )
 }
 
 // MARK: First file
 {
-	const TARGET_PATH = './src/public/build/svelte-pages/exports[builded].mjs' // Svelte exports content
+	const TARGET_PATH = './src/site/_build/_public_out/exports[builded].mjs' // Svelte exports content
 	await FileSystem.writeFile(
 		cwd_path( '.' , TARGET_PATH ) ,
 		targetFiles
@@ -47,7 +47,7 @@ const targetFiles = await Promise.all(
 
 // MARK: Second File
 {
-	const ENUM_TARGET_PATH = './src/public/build/svelte-pages/enum[builded].mjs' // ESJS content
+	const ENUM_TARGET_PATH = './src/site/_build/_public_out/enum[builded].mjs' // ESJS content
 	await FileSystem.writeFile(
 		cwd_path( '.' , ENUM_TARGET_PATH ) ,
 		`export default ${ JSON.stringify(

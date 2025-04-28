@@ -1,7 +1,7 @@
-import svelteApp from '#root/src/svelte/app/singleton.js'
-import { relativeSiteRoot } from '#root/src/site/_build/src/lib/util.js'
-import PagesKeyEnum from '#root/src/site/public/build/svelte-pages/enum[builded].mjs'
-import * as Pages from '#root/src/site/public/build/svelte-pages/exports[builded].mjs'
+import PagesKeyEnum from '#src/site/_build/_public_out/enum[builded].mjs'
+import * as Pages from '#src/site/_build/_public_out/exports[builded].mjs'
+import svelteApp from '#src/site/_build/components/app_singleton.js'
+import { relativeSiteRoot } from '#src/site/_build/components/lib/util.js'
 
 export function current_page_by_route() {
 	return (

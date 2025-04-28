@@ -6,3 +6,12 @@ export function createElement( tag , attributes = {} , childs = [] ) {
 	childs.forEach( child => element.appendChild( child ) )
 	return element
 }
+
+export async function whenDocumentReadyStateIsComplete( ) {
+	return (
+		!document.readyState !== 'complete'
+		&& ( await new Promise( resolve =>
+			document.addEventListener( 'readystatechange' , resolve , { once: true } ) ,
+		) )
+	)
+}

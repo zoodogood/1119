@@ -4,7 +4,7 @@
 	import config from "#config";
 
 	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import { relativeSiteRoot } from "#root/src/site/_build/src/lib/util.js";
+	import { relativeSiteRoot } from "#root/src/site/_build/components/lib/util.js";
 
 	const isVisible = !svelteApp.storage.getSelectedLocale() || isAlwaysVisible;
 	const languages = config.i18n.availableLanguages;

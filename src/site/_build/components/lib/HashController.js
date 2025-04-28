@@ -1,4 +1,4 @@
-import { store as reactiveURL } from '#root/src/site/_build/src/lib/reactiveURL.js'
+import { store as reactiveURL } from '#src/site/_build/components/lib/reactiveHref.js'
 import { writable } from 'svelte/store'
 
 class HashController {

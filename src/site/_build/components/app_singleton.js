@@ -1,15 +1,16 @@
 import config from '#config'
 import { DAY } from '#constants/time.js'
-import enviroment from '#root/src/site/_build/src/_enviroment/mod.js'
-
-import { createDialog } from '#root/src/site/_build/src/lib/createDialog.js'
-import HashController from '#root/src/site/_build/src/lib/HashController.js'
-
-import PagesRouter from '#root/src/site/_build/src/lib/page_router_singleton.js'
-import { whenDocumentReadyStateIsComplete } from '#root/src/site/_build/src/lib/util.js'
-import PagesURLs from '#root/src/site/public/build/svelte-pages/enum[builded].mjs'
 import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+
 import { parseDocumentLocate , ReplaceTemplate } from '#src/safe-utils.js'
+import PagesURLs from '#src/site/_build/_public_out/enum[builded].mjs'
+import { createDialog } from '#src/site/_build/components/lib/createDialog.js'
+
+import { whenDocumentReadyStateIsComplete } from '#src/site/_build/components/lib/dom_utils.js'
+
+import HashController from '#src/site/_build/components/lib/HashController.js'
+import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
+import enviroment from '#src/site/_build/rollup-plugin-replace/template.js'
 import { omit } from '@zoodogood/utils/objectives'
 
 class StorageManager {
@@ -104,7 +105,7 @@ class SvelteApp {
 	}
 
 	async #checkExternalUserDataByToken() {
-		await whenDocumentReadyStateIsComplete( this.document )
+		await whenDocumentReadyStateIsComplete()
 
 		const token = this.storage.getToken()
 		if ( !token ) {

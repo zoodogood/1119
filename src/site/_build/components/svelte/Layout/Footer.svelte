@@ -2,7 +2,7 @@
 	import config from "#config";
 	import Image from "#site-component/Image";
 	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
+	import PagesRouter from "#root/src/site/_build/components/lib/page_router_singleton.js";
 	import dayjs from "#src/dayjs.js";
 
 	const bot = svelteApp.getBot();

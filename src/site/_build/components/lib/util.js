@@ -5,13 +5,6 @@ function relativeSiteRoot( svelteApp , path = '' , removeQueries = true ) {
 	return `${ origin }/${ pathname }/${ path }${ removeQueries ? '' : `${ search }` }`
 }
 
-async function whenDocumentReadyStateIsComplete( document ) {
-	return (
-		!document.readyState !== 'complete'
-		&& ( await new Promise( resolve =>
-			document.addEventListener( 'readystatechange' , resolve , { once: true } ) ,
-		) )
-	)
-}
 
-export { relativeSiteRoot , whenDocumentReadyStateIsComplete }
+
+export { relativeSiteRoot }

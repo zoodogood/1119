@@ -1,6 +1,6 @@
-import writeError from '#root/src/site/_build/src/lib/writeErrorToServer.js'
+import writeError from '#src/site/_build/components/lib/writeErrorToServer.js'
 
-export async function ButtonResponse( source , clickEvent , callback ) {
+export async function interactWithButton( source , clickEvent , callback ) {
 	const { target } = clickEvent
 	const LOADING_STATE = 'Брмм'
 	try {
@@ -8,7 +8,7 @@ export async function ButtonResponse( source , clickEvent , callback ) {
 		await callback( clickEvent )
 	} catch ( cause ) {
 		target.append( `Err: ${ cause.message }` )
-		const error = new Error( `ButtonResponse with ${ source }` , { cause } )
+		const error = new Error( `interactWithButton with ${ source }` , { cause } )
 		writeError( error )
 		console.error( error )
 		return

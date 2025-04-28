@@ -1,6 +1,6 @@
 import { derived , get , writable } from 'svelte/store'
 
-function createStore() {
+function useHref() {
 	const href = writable( window.location.href )
 
 	const originalPushState = history.pushState
@@ -27,6 +27,4 @@ function createStore() {
 	}
 }
 
-const store = createStore()
-
-export { store }
+export const store = useHref()
