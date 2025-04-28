@@ -1,5 +1,5 @@
 import { MINUTE } from '#constants/time.js'
-import { update_attack_cooldown } from '#src/boss/attack.js'
+import { update_attack_cooldown } from '#src/boss/user_attacks/attack.js'
 import BossManager , { BossEffects } from '#src/boss/BossManager.js'
 import client from '#src/bot/client/singleton.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'

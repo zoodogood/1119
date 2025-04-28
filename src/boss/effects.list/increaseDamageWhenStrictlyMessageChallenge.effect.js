@@ -1,5 +1,5 @@
-import { guildDataOf } from '#root/src/data/singleton.js'
-import { factoryCompare } from '#root/src/mini.js'
+import { guildDataOf } from '#src/data/singleton.js'
+import { factoryCompare } from '#src/mini.js'
 import BossManager from '#src/boss/BossManager.js'
 import { EffectInfluenceEnum } from '#src/user/actions/EffectsManager.js'
 
