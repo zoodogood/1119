@@ -314,7 +314,7 @@ export function disable_caller_component(
 ) {
 	const { message , customId } = caller_interaction
 	const { components } = of_mut_payload
-	components.flat().find( $ => $.customId === customId ).disabled = true
+	components.flat().find( c => c.customId === customId ).disabled = true
 	apply && pushMessage( message , { ... of_mut_payload , edit: true } )
 }
 

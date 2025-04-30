@@ -1,4 +1,4 @@
-import { guildDataOf } from '#root/src/data/singleton.js'
+import { guildDataOf } from '#src/data/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
@@ -49,7 +49,7 @@ class Command_GuildChannels_Manager {
 	}
 
 	getChannelOfChannelBase( guild , channelBase ) {
-		const channelId = new DotNotatedInterface( guldDataOf( guild ) ).getItem(
+		const channelId = new DotNotatedInterface( guildDataOf( guild ) ).getItem(
 			channelBase.key ,
 		)
 		return guild.channels.cache.get( channelId )
@@ -83,7 +83,7 @@ class Command_GuildChannels_Manager {
 			return true
 		}
 		const { guild } = this.context
-		new DotNotatedInterface( guldDataOf( guild ) ).setItem( channelBase.key , undefined )
+		new DotNotatedInterface( guildDataOf( guild ) ).setItem( channelBase.key , undefined )
 	}
 }
 
@@ -157,7 +157,7 @@ class Command_GuildDescription_Manager {
 			= content.startsWith( this.TEMPLATE_KEY_PREFIX )
 				&& !!( content = content.replace( this.TEMPLATE_KEY_PREFIX , '' ).trim() )
 
-		const guildData = guldDataOf( guild )
+		const guildData = guildDataOf( guild )
 		guildData.description ||= {}
 		Object.assign( guildData.description , {
 			isTemplate ,
@@ -247,7 +247,7 @@ class Command_GuildChatFilter_Manager {
 			reactions: [ this.emojiEnum.enable , this.emojiEnum.disable ] ,
 		} )
 
-		const guildData = guldDataOf( guild )
+		const guildData = guildDataOf( guild )
 		if ( emoji === this.emojiEnum.enable ) {
 			guildData.chatFilter = 1
 			channel.msg( { title: 'Фильтр включён' , delete: 7_000 } )
@@ -269,7 +269,7 @@ class CommandDefaultBehavior {
 
 	createDescription( context ) {
 		const { guild , command } = context
-		const guildData = guldDataOf( guild )
+		const guildData = guildDataOf( guild )
 		const channels = new Command_GuildChannels_Manager( context )
 
 		const channelContent = SpecialChannel.map( channelBase =>

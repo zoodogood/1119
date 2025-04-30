@@ -91,7 +91,7 @@ class MembersFlag_Manager {
 
 	onProcess() {
 		const { guild , channel } = this.context
-		const day = botData().currentDay
+		const day = singletonBotData().currentDay
 		const { Null , Complete } = this.GROUP_SPECIAL
 
 		const groups = { [ Null ]: [] , [ Complete ]: [] }

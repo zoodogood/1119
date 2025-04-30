@@ -1,9 +1,10 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { guildDataOf } from '#src/data/singleton.js'
 import { awaitUserAccept } from '#src/discord/utils.js'
 import { randomWith } from '#src/safe-utils.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 import Discord from 'discord.js'
@@ -140,8 +141,8 @@ class Command extends BaseCommand {
 			} )
 		}
 
-		guildDataOf(guild).coins
-			= ( guildDataOf(guild).coins || 0 ) + cash - coinsForEvery * members.length
+		guildDataOf( guild ).coins
+			= ( guildDataOf( guild ).coins || 0 ) + cash - coinsForEvery * members.length
 
 		const embed = {
 			title: 'Вы сотворили Акт благотворительности' ,

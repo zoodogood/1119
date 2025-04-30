@@ -1,6 +1,7 @@
-import { guildDataOf } from '#src/data/singleton.js'
-import { factoryCompare } from '#src/mini.js'
 import BossManager from '#src/boss/BossManager.js'
+import { HOUR } from '#src/constants/time.js'
+import { guildDataOf } from '#src/data/singleton.js'
+import { asAccessor , factoryCompare , increment } from '#src/mini.js'
 import { EffectInfluenceEnum } from '#src/user/actions/EffectsManager.js'
 
 export default {
@@ -17,17 +18,21 @@ export default {
 			}
 
 			const { power , multiplayer , goal , basic } = effect.values
-			const userStats = BossManager.getUserStats(
-				guildDataOf(message.guild).boss ,
+			const userStats = BossManager.userStatsOf(
+				guildDataOf( message.guild ).boss ,
 				message.author.id ,
 			)
 
-			const currentHour = Math.floor( Date.now() / 3_600_000 )
+			const currentHour = Math.floor( Date.now() / HOUR )
 
 			const hoursMap = ( effect.values.hoursMap ||= {} )
+			const messagesAtCurrentHour = asAccessor(
+				() => hoursMap[ currentHour ] ,
+				value => hoursMap[ currentHour ] = value ,
+			)
 
 			if ( currentHour in hoursMap === false ) {
-				hoursMap[ currentHour ] = 0
+				messagesAtCurrentHour( 0 )
 				const previousHourMessages = Object.entries( hoursMap )
 					.reduce(
 						factoryCompare( $ => +$[ 0 ] , ( a , b ) => a > b ) ,
@@ -37,17 +42,17 @@ export default {
 
 				if ( previousHourMessages === goal ) {
 					userStats.damagePerMessage ||= 1
-					userStats.damagePerMessage = Math.ceil( ( power + basic ) * multiplayer )
+					userStats.damagePerMessage += Math.ceil( ( power + basic ) * multiplayer )
 					message.react( '685057435161198594' )
 				}
 			}
 
-			hoursMap[ currentHour ]++
-			if ( hoursMap[ currentHour ] === goal ) {
+			increment( messagesAtCurrentHour )
+			if ( messagesAtCurrentHour() === goal ) {
 				message.react( '998886124380487761' )
 			}
 
-			if ( hoursMap[ currentHour ] === goal + 1 ) {
+			if ( messagesAtCurrentHour() === goal + 1 ) {
 				message.react( '🫵' )
 			}
 		} ,

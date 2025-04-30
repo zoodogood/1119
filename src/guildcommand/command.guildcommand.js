@@ -16,7 +16,7 @@ import {
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 
 import CooldownManager from '#src/CooldownManager.js'
-import { guildDataOf , store , userDataOf } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData, store , userDataOf } from '#src/data/singleton.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { Pager } from '#src/discord/Pager.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
@@ -89,7 +89,7 @@ export class CustomCommand extends BaseCommand {
 			target[ INDEX_OF_COOLDOWN ]++
 		}
 		{
-			const botData = botData()
+			const botData = singletonBotData()
 			botData.commandsUsedToday ||= 0
 			botData.commandsUsedToday++
 		}

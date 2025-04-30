@@ -29,7 +29,7 @@ const statistics_api = {
 	increase: ( { interaction: { guild } , command } ) => {
 		const commandOptions = command.options
 
-		const botData = botData()
+		const botData = singletonBotData()
 		const guildData = guild?.data
 
 		if ( guildData ) {
@@ -53,7 +53,7 @@ const statistics_api = {
 			return guildData.commandsUsed[ id ] || 0
 		}
 
-		const botData = botData()
+		const botData = singletonBotData()
 		return botData.commandsUsed[ id ] || 0
 	} ,
 }

@@ -24,7 +24,7 @@ export function update_attack_cooldown(
 	update_fixed ,
 	update_current = null ,
 ) {
-	const userStats = BossManager.getUserStats( boss , user.id )
+	const userStats = BossManager.userStatsOf( boss , user.id )
 	const fixed_previous
 		= userStats.attackCooldown || BossManager.USER_DEFAULT_ATTACK_COOLDOWN
 
@@ -73,7 +73,7 @@ export function update_attack_damage_multiplayer(
 	primary ,
 	callback ,
 ) {
-	const userStats = BossManager.getUserStats( boss , user.id )
+	const userStats = BossManager.userStatsOf( boss , user.id )
 	const previous = userStats.attacksDamageMultiplayer ?? 1
 	const value = +callback( previous ).toFixed( 3 )
 	const context = new BaseContext( source , {
@@ -95,7 +95,7 @@ export function update_attack_damage_multiplayer(
 }
 
 export function core_make_attack_context( boss , user , channel , primary = {} ) {
-	const userStats = BossManager.getUserStats( boss , user.id )
+	const userStats = BossManager.userStatsOf( boss , user.id )
 
 	const attackContext = {
 		baseDamage: BossManager.USER_DEFAULT_ATTACK_DAMAGE ,

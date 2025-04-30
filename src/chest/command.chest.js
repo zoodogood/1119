@@ -1,4 +1,3 @@
-import { addResource } from '#root/src/user/resources/addResource.js'
 import {
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2 ,
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 ,
@@ -7,7 +6,7 @@ import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import CooldownManager from '#src/CooldownManager.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { DataManager , userDataOf } from '#src/data/singleton.js'
+import { singletonBotData , userDataOf } from '#src/data/singleton.js'
 import dayjs from '#src/dayjs.js'
 import {
 	NumberFormatLetterize ,
@@ -16,6 +15,7 @@ import {
 	timestampToDate ,
 } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 
@@ -198,7 +198,7 @@ export class ChestManager {
 	}
 
 	static processBirthday( { user , context } ) {
-		const nowBirthday = userDataOf( user ).BDay === botData().dayDate
+		const nowBirthday = userDataOf( user ).BDay === singletonBotData().dayDate
 		if ( !nowBirthday ) {
 			return
 		}

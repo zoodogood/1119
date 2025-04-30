@@ -1,19 +1,19 @@
-import { guildDataOf , userDataOf } from '#root/src/data/singleton.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import BossManager from '#src/boss/BossManager.js'
 import { good_bot , stupid_bot } from '#src/bot/bad_bot/bad_good_bot.js'
 import client from '#src/bot/client/singleton.js'
 import { filterChat } from '#src/chat_filter.js/filter.js'
 import { process_spam_protocol } from '#src/chat_filter.js/inSpamSystem.js'
-
 import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+
 import DataManager from '#src/data/DataManager.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
+import { guildDataOf , singletonBotData, userDataOf } from '#src/data/singleton.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import { randomWith } from '#src/safe-utils.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import { addResource } from '#src/user/resources/addResource.js'
 
 class Event extends BaseEvent {
 	options = {
@@ -29,7 +29,7 @@ class Event extends BaseEvent {
 		const guildData = message.guild?.data
 		const user = message.author
 		const userData = userDataOf( user )
-		botData().messagesToday++
+		singletonBotData().messagesToday++
 		if ( message.author.bot ) {
 			return
 		}

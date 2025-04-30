@@ -1,11 +1,11 @@
+import { addResource } from '#src/user/resources/addResource.js'
 import { SECOND } from '#src/constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 
 import { BaseEvent , EventsManager } from '#src/events/EventsManager.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import { sleep } from '#src/safe-utils.js'
-import { guildDataOf, userDataOf } from '../data/singleton.js'
+import { guildDataOf , userDataOf } from '../data/singleton.js'
 
 class Event extends BaseEvent {
 	options = {
@@ -18,7 +18,7 @@ class Event extends BaseEvent {
 	}
 
 	async onLevelIncrease( user , message ) {
-		const userData =userDataOf(user)
+		const userData = userDataOf( user )
 		const initialLevel = userData.level
 
 		while ( userData.exp >= userData.level * EXPERIENCE_PER_LEVEL ) {
@@ -60,7 +60,7 @@ class Event extends BaseEvent {
 
 			if (
 				!message.guild
-				|| message.channel.id !== guildDataOf(message.guild).chatChannel
+				|| message.channel.id !== guildDataOf( message.guild ).chatChannel
 			) {
 				await sleep( SECOND * 5 )
 				message.delete()

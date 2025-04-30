@@ -1,12 +1,11 @@
 import { HOUR , MINUTE } from '#constants/time.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import {
 	BaseCommand ,
 	BaseFlagSubcommand ,
 } from '#src/commands/BaseCommand/BaseCommand.js'
-
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
+
 import CooldownManager from '#src/CooldownManager.js'
 import { curse_epoch_singleton } from '#src/curses/CurseManager/CurseEpochSystem/singleton.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
@@ -20,8 +19,8 @@ import {
 	question ,
 	takeInteractionProperties ,
 } from '#src/discord/utils.js'
-
 import { Emoji } from '#src/emojis/emojis.js'
+
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
 import {
 	chunkBySize ,
@@ -29,6 +28,7 @@ import {
 	toLocaleDeveloperString ,
 } from '#src/safe-utils.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import {
 	justButtonComponents ,
 	justSelectMenuComponent ,

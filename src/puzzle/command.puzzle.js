@@ -1,6 +1,6 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { randomWith , similarity } from '#src/safe-utils.js'
 import { AttachmentBuilder } from 'discord.js'
 

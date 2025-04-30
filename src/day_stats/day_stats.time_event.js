@@ -4,12 +4,12 @@ import BankCommand from '#src/bank/command.bank.js'
 import { DAILY_REVENUE_PER_MEMBER } from '#src/bank/contants.js'
 import BossManager from '#src/boss/BossManager.js'
 import { client } from '#src/bot/client/singleton.js'
-import { DataManager } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData } from '#src/data/singleton.js'
 import dayjs from '#src/dayjs.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
 import { sendToChatChannel } from '#src/guild_special_channels/special_channel_enum.js'
 import { mediana_of_unsorted } from '#src/mediana_of_unsorted.js'
-import { MonthStatisticForEveryDayAPI } from '#src/messages/MonthStatisticForEveryDayAPI.js'
+import { MonthStatisticForEveryDayAPI } from '#src/messages/MonthStatisticForEveryDay.js'
 import { average , factorySummarize } from '#src/mini.js'
 import { maybe_multiline , NumberFormatLetterize } from '#src/safe-utils.js'
 import { onDayStats as TreeOnDayStats } from '#src/seed/command.seed.js'
@@ -49,7 +49,7 @@ export default class Event {
 	time_event_recreate() {
 		const launched_events = timeEvents_singleton.filterEventsInRange(
 			( { name } ) => name === 'day-stats' ,
-			[ botData().currentDay , botData().currentDay + 1 ] ,
+			[ singletonBotData().currentDay , singletonBotData().currentDay + 1 ] ,
 		)
 
 		launched_events.length > 0
@@ -65,14 +65,14 @@ export default class Event {
 	}
 
 	updateStateAndSendStats( guild , context ) {
-		const guildData =guldDataOf(guild)
+		const guildData = guildDataOf( guild )
 		const messagesOfDay = guildData.day_msg || 0
 		const { guildsStatsContext } = context
 		const { treeMessagesNeed } = guildsStatsContext[ guild.id ] || {}
 
 		{
 			// From src/bank
-			guildDataOf(guild).coins += DAILY_REVENUE_PER_MEMBER * guild.memberCount
+			guildDataOf( guild ).coins += DAILY_REVENUE_PER_MEMBER * guild.memberCount
 		}
 		{
 			guildData.days = guildData.days + 1 || 1

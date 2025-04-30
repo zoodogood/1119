@@ -5,7 +5,7 @@ import { MarkdownMetadata } from '#src/MarkdownMetadata.js'
 import { path_alias } from '#src/url/path_alias.js'
 import { glob } from 'glob'
 
-const ArticlesFolder = path_alias( '#src/public/articles' )
+const ArticlesFolder = path_alias( '#src/articles/_items' )
 
 class ArticlesCacheData {
 	#cache = ( new Map )

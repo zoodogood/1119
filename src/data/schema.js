@@ -25,6 +25,7 @@ const Schema = {
 				boss: {
 					level: 0 ,
 					users: [ {} ] ,
+					damageTaken: 0 ,
 				} ,
 				custom_commands: {} ,
 			} ,
@@ -188,6 +189,7 @@ const Schema = {
  * @typedef {object} boss
  * @property {number} level
  * @property {users[]} users
+ * @property {number} damageTaken
  */
 
 /**

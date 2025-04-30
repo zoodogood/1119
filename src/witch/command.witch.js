@@ -1,4 +1,4 @@
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import {
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2 ,
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 ,

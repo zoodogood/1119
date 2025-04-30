@@ -46,7 +46,7 @@ export class Bosses_Flagsubcommand {
 	}
 
 	static guildToField( guild ) {
-		const { boss , partners } = guldDataOf( guild )
+		const { boss , partners } = guildDataOf( guild )
 		const isArrived = boss.isArrived
 		const { name } = guild
 		const contents = {
@@ -317,7 +317,7 @@ class Command extends BaseCommand {
 				return null
 			}
 
-			const aliverStats = BossManager.getUserStats( guildDataOf( guild ).boss , aliver.id )
+			const aliverStats = BossManager.userStatsOf( guildDataOf( guild ).boss , aliver.id )
 			const aliverData = userDataOf( aliver.user )
 
 			if ( aliverStats.heroIsDead ) {
@@ -377,7 +377,7 @@ class Command extends BaseCommand {
 		} )
 
 		collector.on( 'collect' , async ( interaction ) => {
-			const isAlready = BossManager.getUserStats(
+			const isAlready = BossManager.userStatsOf(
 				boss ,
 				memb.id ,
 			).alreadyKeepAliveRitualBy
@@ -391,7 +391,7 @@ class Command extends BaseCommand {
 			}
 
 			const { user } = interaction
-			const userStats = BossManager.getUserStats( boss , user.id )
+			const userStats = BossManager.userStatsOf( boss , user.id )
 			if ( userStats.heroIsDead ) {
 				interaction.msg( {
 					ephemeral: true ,
@@ -528,7 +528,7 @@ class Command extends BaseCommand {
 			return
 		}
 
-		const userStats = BossManager.getUserStats( boss , memb.id )
+		const userStats = BossManager.userStatsOf( boss , memb.id )
 		const userEffects = BossEffects.effectsOf( { boss , user: memb } )
 
 		Object.assign( context , {

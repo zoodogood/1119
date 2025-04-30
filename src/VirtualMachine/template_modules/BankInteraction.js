@@ -1,6 +1,6 @@
 import { SECOND } from '#constants/time.js'
-import { guildDataOf , userDataOf } from '#root/src/data/singleton.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { guildDataOf , userDataOf } from '#src/data/singleton.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { assert } from '#src/assert/export.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { question } from '#src/discord/utils.js'

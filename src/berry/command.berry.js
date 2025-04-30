@@ -1,15 +1,40 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addMultipleResources } from '#root/src/user/resources/addResource.js'
-import { singletonBotData, DataManager, userDataOf } from '#src/data/singleton.js'
+import { singletonBotData , userDataOf } from '#src/data/singleton.js'
+import { asAccessor , increment } from '#src/mini.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addMultipleResources } from '#src/user/resources/addResource.js'
+
+function priceFor( quantity , marketPrice , isBuying = false ) {
+	quantity = isBuying
+		? quantity
+		: Math.min( marketPrice / this.INFLATION , quantity )
+
+	// Налог
+	const tax = isBuying ? 1 : 1 - this.TAX
+	// Инфляция
+	const inflation = ( ( quantity * this.INFLATION ) / 2 ) * ( -1 ) ** !isBuying
+
+	return Math.round( ( marketPrice + inflation ) * quantity * tax )
+}
+function priceForBought( quantity , marketPrice ) {
+	return priceFor( quantity , marketPrice , true )
+}
+function priceForSelling( quantity , marketPrice ) {
+	return priceFor( quantity , marketPrice , false )
+}
+
+export const berryMarketPrice = asAccessor(
+	() => singletonBotData().berrysPrice ,
+	value => singletonBotData().berrysPrice = Math.max( value , 0 ) ,
+)
+const BERRYS_LIMIT = 1_500
+const INFLATION = 0.2
+const TAX = 0.02
 
 class Command extends BaseCommand {
-	static BERRYS_LIMIT = 1_500
-	static INFLATION = 0.2
-	static TAX = 0.02
-
 	options = {
 		name: 'berry' ,
 		id: 27 ,
@@ -23,23 +48,9 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'клубника клубнички ягода ягоды berrys берри полуниця полуниці' ,
 		allowDM: true ,
-		cooldown: 15_000 ,
+		cooldown: 15 * SECOND ,
 		cooldownTry: 3 ,
 		type: 'user' ,
-	}
-
-	static calculatePrice = ( quantity , marketPrice , isBuying = false ) => {
-		quantity = isBuying
-			? quantity
-			: Math.min( marketPrice / this.INFLATION , quantity )
-
-		// Налог
-		const tax = isBuying ? 1 : 1 - this.TAX
-		// Инфляция
-		const inflation = ( ( quantity * this.INFLATION ) / 2 ) * ( -1 ) ** !isBuying
-
-		const price = Math.round( ( marketPrice + inflation ) * quantity * tax )
-		return price
 	}
 
 	static getMaxCountForBuy( coins , price ) {
@@ -56,7 +67,7 @@ class Command extends BaseCommand {
 	displayUserBerrys( context ) {
 		const { interaction , marketPrice } = context
 		const user = interaction.mention
-		const berrys = userDataOf(user).berrys || 0
+		const berrys = userDataOf( user ).berrys || 0
 
 		interaction.channel.msg( {
 			title: 'Клубника пользователя' ,
@@ -68,10 +79,9 @@ class Command extends BaseCommand {
 				iconURL: user.avatarURL() ,
 			} ,
 			footer: {
-				text: `Общая цена ягодок: ${ Command.calculatePrice(
+				text: `Общая цена ягодок: ${ priceForSelling(
 					berrys ,
 					marketPrice ,
-					-1 ,
 				) }` ,
 			} ,
 		} )
@@ -95,7 +105,7 @@ class Command extends BaseCommand {
 			interaction.channel.msg( {
 				title: 'Указана строка вместо числа' ,
 				color: '#ff0000' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 			return
 		}
@@ -105,7 +115,7 @@ class Command extends BaseCommand {
 				title:
 					'Введено отрицательное значение.\n<:grempen:753287402101014649> — Укушу.' ,
 				color: '#ff0000' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 			return
 		}
@@ -114,7 +124,7 @@ class Command extends BaseCommand {
 			interaction.channel.msg( {
 				title: `Вы не можете продать ${ quantity } <:berry:756114492055617558>, у вас всего ${ myBerrys }` ,
 				color: '#ff0000' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 			return
 		}
@@ -123,14 +133,16 @@ class Command extends BaseCommand {
 			quantity = Math.max( context.MAX_LIMIT - myBerrys , 0 )
 		}
 
-		const price = Command.calculatePrice( quantity , marketPrice , isBuying )
+		const price = isBuying
+			? priceForBought( quantity , marketPrice )
+			: priceForSelling( quantity , marketPrice )
 
 		if ( isBuying && userData.coins < price ) {
 			interaction.channel.msg( {
 				title: `Не хватает ${
 					price - userData.coins
 				} <:coin:637533074879414272>` ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 			return
 		}
@@ -168,26 +180,21 @@ class Command extends BaseCommand {
 			} ,
 		} )
 
-		context.marketPrice = singletonBotData().berrysPrice = Math.max(
-			singletonBotData().berrysPrice
-			+ quantity * context.INFLATION * ( -1 ) ** !isBuying ,
-			0 ,
+		increment(
+			berryMarketPrice ,
+			quantity * context.INFLATION * ( -1 ) ** +!isBuying ,
 		)
 		interaction.channel.msg( {
 			title:
 				isBuying > 0
 					? `Вы купили ${ quantity } <:berry:756114492055617558>! потратив ${ price } <:coin:637533074879414272>!`
 					: `Вы продали ${ quantity } <:berry:756114492055617558> и заработали ${ price } <:coin:637533074879414272>!` ,
-			delete: 5000 ,
+			delete: 5 * SECOND ,
 		} )
 	}
 
 	getContext( interaction ) {
-		const MAX_LIMIT = this.constructor.BERRYS_LIMIT
-		const INFLATION = this.constructor.INFLATION
-		const TAX = this.constructor.TAX
-
-		const botData = botData()
+		const botData = singletonBotData()
 		const userData = interaction.userData
 
 		const marketPrice = botData.berrysPrice
@@ -197,7 +204,7 @@ class Command extends BaseCommand {
 			userData ,
 			marketPrice ,
 			interfaceMessage: null ,
-			MAX_LIMIT ,
+			MAX_LIMIT: BERRYS_LIMIT ,
 			INFLATION ,
 			TAX ,
 		}
@@ -243,14 +250,14 @@ class Command extends BaseCommand {
 					interaction.channel.msg( {
 						title: `Вы не можете купить больше. Лимит ${ context.MAX_LIMIT }` ,
 						color: '#ff0000' ,
-						delete: 5000 ,
+						delete: 5 * SECOND ,
 					} )
 					break
 				}
 
 				maxCount = Command.getMaxCountForBuy(
 					userData.coins ,
-					context.marketPrice ,
+					berryMarketPrice() ,
 				)
 
 				maxCount = Math.min( maxCount , context.MAX_LIMIT - userData.berrys )
@@ -303,7 +310,7 @@ class Command extends BaseCommand {
 				userData.berrys
 			}** <:berry:756114492055617558>\nРыночная цена — **${ Math.round(
 				marketPrice ,
-			) }** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${ Command.calculatePrice(
+			) }** <:coin:637533074879414272>\n\nОбщая цена ваших ягодок: ${ priceForSelling(
 				userData.berrys ,
 				marketPrice ,
 			) } (с учётом налога ${

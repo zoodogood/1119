@@ -7,12 +7,13 @@ import { requestCoinFromNextMessage } from '#src/coin_message/requestCoinFromMes
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import * as PropertiesManager from '#src/data/Properties.js'
-import { DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
 import { pushMessage } from '#src/discord/pushMessage.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import ErrorsHandler from '#src/ErrorsHandler/ErrorsHandler.js'
 import EventsManager from '#src/events/EventsManager.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
+import { asGetterFn } from '#src/mini.js'
 import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
 import QuestManager from '#src/quests/QuestManager.js'
 import * as Util from '#src/safe-utils.js'
@@ -60,6 +61,14 @@ export const template_modules_scope = transformToCollectionUsingKey( [
 			scope: PERMISSIONS_MASK_ENUM.GUILD_MANAGER ,
 		} ,
 		filter: context => 'guild' in context ,
+	} ,
+	{
+		getContent: () => asGetterFn( singletonBotData( ) ) ,
+		key: 'singletonBotData' ,
+		permissions: {
+			scope: PERMISSIONS_MASK_ENUM.DEVELOPER ,
+			investigate: PERMISSIONS_MASK_ENUM.DEVELOPER ,
+		} ,
 	} ,
 	{
 		getContent: context => guildDataOf( context.guild ) ,

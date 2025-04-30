@@ -7,10 +7,6 @@ const public_dir = path.resolve( process.cwd() , 'src/public' )
 export default class Route extends BaseRoute {
 	prefix = PREFIX
 
-	constructor() {
-		super()
-	}
-
 	async get( request , response ) {
 		response.sendFile(
 			path.resolve( public_dir , request.path.replace( /^\/public\// , './' ) ) ,

@@ -3,7 +3,7 @@ import client from '#src/bot/client/singleton.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { resolve_description } from '#src/curses/CurseManager/singleton/public.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { DataManager } from '#src/data/singleton.js'
 import {
 	mutate_time_event ,
@@ -355,7 +355,7 @@ export const grempen_products = transformToCollectionUsingKey( [
 		emoji: () => '💡' ,
 		price: ( { userData } ) =>
 			userData.iq
-			&& userData.iq % 31 === +botData().dayDate.match( /\d{1,2}/ )[ 0 ]
+			&& userData.iq % 31 === +singletonBotData().dayDate.match( /\d{1,2}/ )[ 0 ]
 				? 'Бесплатно'
 				: 80 ,
 		inline: true ,
@@ -421,7 +421,7 @@ export const grempen_products = transformToCollectionUsingKey( [
 			const phrase
 				= '. Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.'
 			const guild = interaction.guild
-			const guildData =guldDataOf(guild)
+			const guildData =guildDataOf(guild)
 
 			if ( !guildData.cloverEffect ) {
 				guildData.cloverEffect = {

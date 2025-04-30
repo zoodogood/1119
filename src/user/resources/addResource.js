@@ -1,5 +1,5 @@
-import { assert } from '#root/src/assert/export.js'
-import { userDataOf } from '#root/src/data/singleton.js'
+import { assert } from '#src/assert/export.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 
 export function addResource( {

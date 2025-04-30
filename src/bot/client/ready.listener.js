@@ -21,7 +21,7 @@ class Event extends BaseEvent {
 		timeEvents_singleton.onStartup()
 
 		const needUpdate
-			= botData().currentDay !== timestampDay( Date.now() )
+			= singletonBotData().currentDay !== timestampDay( Date.now() )
 
 		if ( needUpdate ) {
 			await EventsManager.collection

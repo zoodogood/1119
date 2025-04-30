@@ -1,6 +1,6 @@
-import { MINUTE } from '#root/src/constants/time.js'
-import { guildDataOf, userDataOf } from '#root/src/data/singleton.js'
-import { sendToLogsChannel } from '#root/src/guild_special_channels/special_channel_enum.js'
+import { MINUTE } from '#src/constants/time.js'
+import { guildDataOf, userDataOf } from '#src/data/singleton.js'
+import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_enum.js'
 import { client } from '#src/bot/client/singleton.js'
 import { PermissionFlags } from '#src/discord/permissions.js'
 import { BaseEvent } from '#src/events/EventsManager.js'
@@ -57,7 +57,7 @@ export const Welcomer = {
 
 	async sendGreetingFor( member ) {
 		const { guild } = member
-		const { hi } = guldDataOf( guild )
+		const { hi } = guildDataOf( guild )
 		if ( !hi?.channel ) {
 			return
 		}

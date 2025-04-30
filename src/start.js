@@ -46,11 +46,10 @@ client.on( 'ready' , async () => {
 	} )
 
 	client.on( 'guildCreate' , async ( guild ) => {
-		const members = guild.members.cache.filter( e => !e.user.bot )
-		let whoAdded = await guild.Audit( log => log.target.id === client.user.id , {
+		const members = guild.members.cache.filter( m => !m.user.bot )
+		const whoAdded = await guild.Audit( log => log.target.id === client.user.id , {
 			type: AuditLogEvent.BotAdd ,
-		} )
-		whoAdded = whoAdded ? whoAdded.target : null
+		} )?.target || null
 
 		const developerChat = client.channels.cache.get( config.guild.logChannelId )
 		if ( developerChat ) {
@@ -85,7 +84,7 @@ client.on( 'ready' , async () => {
 
 	client.on( 'messageReactionAdd' , async ( reaction , user ) => {
 		if ( reaction.emoji.name === '👍' ) {
-			const target = ( await reaction.message.fetch( { force: false } ) ).author
+			const { author: target } = await reaction.message.fetch( { force: false } )
 
 			user.action( Actions.likedTheUser , {
 				target ,

@@ -1,8 +1,9 @@
 import { MINUTE } from '#constants/time.js'
-import { update_attack_cooldown } from '#src/boss/user_attacks/attack.js'
 import BossManager , { BossEffects } from '#src/boss/BossManager.js'
+import { update_attack_cooldown } from '#src/boss/user_attacks/attack.js'
 import client from '#src/bot/client/singleton.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
+import { guildDataOf } from '#src/data/singleton.js'
 import { EffectInfluenceEnum } from '#src/user/actions/EffectsManager.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 
@@ -19,8 +20,8 @@ export default {
 			const guild = client.guilds.cache.get( guildId )
 
 			if ( isLost && BossManager.isArrivedIn( guild ) ) {
-				const { boss } =guldDataOf(guild)
-				const userStats = BossManager.getUserStats( boss , user.id )
+				const { boss } = guildDataOf( guild )
+				const userStats = BossManager.userStatsOf( boss , user.id )
 				userStats.heroIsDead = true
 				update_attack_cooldown(
 					user ,
@@ -59,8 +60,8 @@ export default {
 
 			values.targetTimestamp = curse.timestamp
 
-			const userStats = BossManager.getUserStats(
-				guildDataOf(guild).boss ,
+			const userStats = BossManager.userStatsOf(
+				guildDataOf( guild ).boss ,
 				values.keepAliveUserId ,
 			)
 			userStats.alreadyKeepAliveRitualBy = user.id
@@ -77,11 +78,11 @@ export default {
 			if ( !BossManager.isArrivedIn( guild ) ) {
 				return
 			}
-			const userStats = BossManager.getUserStats( guildDataOf(guild).boss , user.id )
+			const userStats = BossManager.userStatsOf( guildDataOf( guild ).boss , user.id )
 
 			const targetUser = client.users.cache.get( values.keepAliveUserId )
-			const targetUserStats = BossManager.getUserStats(
-				guildDataOf(guild).boss ,
+			const targetUserStats = BossManager.userStatsOf(
+				guildDataOf( guild ).boss ,
 				values.keepAliveUserId ,
 			)
 			delete targetUserStats.alreadyKeepAliveRitualBy

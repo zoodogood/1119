@@ -2,7 +2,7 @@ import DataManager from '#src/data/DataManager.js'
 import { randomElementsFromArray } from '@zoodogood/utils/objectives'
 
 export function update_product_list() {
-	botData().grempenItems = randomElementsFromArray( [
+	singletonBotData().grempenItems = randomElementsFromArray( [
 		'0' ,
 		'1' ,
 		'2' ,

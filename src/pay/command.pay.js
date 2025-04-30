@@ -1,4 +1,4 @@
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum , PropertiesList } from '#src/data/Properties.js'

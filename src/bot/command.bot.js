@@ -16,7 +16,7 @@ import {
 import { flag } from '#src/commands/BaseCommand/parse_flags.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
-import { DataManager } from '#src/data/singleton.js'
+import { singletonBotData } from '#src/data/singleton.js'
 import dayjs from '#src/dayjs.js'
 import { Pager } from '#src/discord/Pager.js'
 import { pushMessage } from '#src/discord/pushMessage.js'
@@ -228,7 +228,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 	static async commandsUsedContent() {
 		const list = await Promise.all(
 			sortByResolveMut(
-				Object.entries( botData().commandsUsed ) ,
+				Object.entries( singletonBotData().commandsUsed ) ,
 				$ => $[ 1 ] ,
 				{ reverse: true } ,
 			).map(
@@ -236,7 +236,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 					`${ String( i + 1 ) + '.'.repeat( 2 - String( i + 1 ).length ) }.${
 						( await CommandsManager.commandInstance( id ) ).options.name
 					}_${ uses }(${ +(
-						( uses / botData().commandsLaunched )
+						( uses / singletonBotData().commandsLaunched )
 						* 100
 					).toFixed( 2 ) })%` ,
 			) ,
@@ -329,9 +329,9 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			description: `${ contents.ping } ${ contents.version } ${ contents.season }, что сюда ещё запихнуть?\n${ contents.guilds }(?) ${ contents.commands }\n${ contents.performance }\n${ contents.time }${ contents.address }\n${ contents.errors };\n${ contents.uniqueErrors }` ,
 			footer: {
 				text: `Укушу! Прошло времени с момента добавления бота на новый сервер: ${
-					botData().addToNewGuildAt
+					singletonBotData().addToNewGuildAt
 						? timestampToDate(
-							Date.now() - botData().addToNewGuildAt ,
+							Date.now() - singletonBotData().addToNewGuildAt ,
 							2 ,
 						)
 						: 'Вечность'

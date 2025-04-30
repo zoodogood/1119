@@ -1,11 +1,11 @@
 import config from '#config'
 import { SECOND } from '#constants/time.js'
-import { guildDataOf, userDataOf } from '#root/src/data/singleton.js'
-
 import CustomIdExecutor from '#src/app/CustomIdExecutor/Executor.js'
 
 import { client } from '#src/bot/client/singleton.js'
+
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
+import { guildDataOf , userDataOf } from '#src/data/singleton.js'
 import { permissionRawToI18n } from '#src/discord/permissions.js'
 import { take_missing_permissions } from '#src/discord/utils.js'
 
@@ -353,8 +353,8 @@ class CommandsManager {
 		}
 		interaction.message.msg( embed ).then( async ( message ) => {
 			const isHelpedNeeds
-				= problems.find( $ => $.type === CommandCallCode.params )
-					|| problems.find( $ => $.type === CommandCallCode.mention )
+				= problems.find( p => p.type === CommandCallCode.params )
+					|| problems.find( p => p.type === CommandCallCode.mention )
 			if ( !isHelpedNeeds ) {
 				return
 			}

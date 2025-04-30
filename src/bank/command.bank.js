@@ -1,7 +1,6 @@
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
-
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
@@ -13,6 +12,7 @@ import {
 import { Emoji } from '#src/emojis/emojis.js'
 import { numberFormat , NumberFormatLetterize } from '#src/safe-utils.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 import { guildDataOf } from '../data/singleton.js'
@@ -392,7 +392,7 @@ class Command extends BaseCommand {
 	}
 
 	onDayStats( guild , context ) {
-		const { professions } = guldDataOf( guild )
+		const { professions } = guildDataOf( guild )
 		ProfessionsUtils.removeUnavailableProfessions( { guild , professions } )
 
 		const entries = Object.entries( professions ?? {} )

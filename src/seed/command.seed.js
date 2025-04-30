@@ -1,13 +1,13 @@
 // @ts-check
 import { DAY , HOUR , MINUTE , SECOND } from '#constants/time.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import BerryCommand from '#src/berry/command.berry.js'
 import { client } from '#src/bot/client/singleton.js'
 import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { DataManager , guildDataOf, userDataOf } from '#src/data/singleton.js'
+import { DataManager , guildDataOf, singletonBotData, userDataOf } from '#src/data/singleton.js'
 import { maybe_multiline , randomWith , timestampToDate } from '#src/safe-utils.js'
 import { codeOfEmoji } from '@zoodogood/utils/discordjs'
 import { CustomCollector } from '@zoodogood/utils/objectives'
@@ -128,7 +128,7 @@ class Tree {
 
 	constructor( guild ) {
 		this.guild = guild
-		this.guildData = guldDataOf( guild )
+		this.guildData = guildDataOf( guild )
 		this.field = this.guildData.tree ||= {
 			level: 0 ,
 		}
@@ -148,7 +148,7 @@ class Tree {
 }
 
 export function onDayStats( guild , eventContext ) {
-	const guildData = guldDataOf( guild )
+	const guildData = guildDataOf( guild )
 	const tree = new Tree( guild )
 	const { end_of_day_messages_need } = tree
 
@@ -398,7 +398,7 @@ class Command extends BaseCommand {
 		tree.field.berrys -= berrys
 		context.berrysCollected += berrys
 
-		botData().berrysPrice += berrys * BerryCommand.INFLATION
+		singletonBotData().berrysPrice += berrys * BerryCommand.INFLATION
 		await channel.msg( {
 			title: 'Вы успешно собрали клубнику' ,
 			author: { name: user.username , iconURL: user.avatarURL() } ,

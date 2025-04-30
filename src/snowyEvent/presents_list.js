@@ -1,6 +1,6 @@
 import { SECOND } from '#constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
 import { sleep } from '#src/safe-utils.js'

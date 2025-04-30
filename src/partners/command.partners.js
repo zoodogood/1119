@@ -140,7 +140,7 @@ class PartnerField {
 
 	setGuild( guild ) {
 		this.guild = guild
-		this.field =guldDataOf(guild)[ PartnerField.KEY ] ||= {}
+		this.field =guildDataOf(guild)[ PartnerField.KEY ] ||= {}
 		return this
 	}
 
@@ -911,8 +911,8 @@ class PartnersDaemon {
 		const launched_events = timeEvents_singleton.filterEventsInRange(
 			( { name } ) => name === this.EVENT_NAME ,
 			[
-				botData().currentDay ,
-				botData().currentDay + WEEK + 1 ,
+				singletonBotData().currentDay ,
+				singletonBotData().currentDay + WEEK + 1 ,
 			] ,
 		)
 

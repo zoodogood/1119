@@ -1,6 +1,6 @@
 // @ts-check
 import { DAY } from '#constants/time.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'

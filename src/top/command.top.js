@@ -3,7 +3,7 @@ import { SECOND } from '#constants/time.js'
 import BossManager from '#src/boss/BossManager.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
-import { DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData, userDataOf } from '#src/data/singleton.js'
 import { Pager } from '#src/discord/Pager.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { Emoji } from '#src/emojis/emojis.js'
@@ -264,7 +264,7 @@ class RanksUtils {
 				value: ( element ) => {
 					return (
 						userDataOf( element ).coins
-						+ userDataOf( element ).berrys * botData().berrysPrice
+						+ userDataOf( element ).berrys * singletonBotData().berrysPrice
 					)
 				} ,
 				display: ( element , output , index ) => {
@@ -399,7 +399,7 @@ class RanksUtils {
 				} ,
 				filter: context => context.boss.isArrived ,
 				value: ( element , context ) => {
-					return BossManager.getUserStats( context.boss , element.id ).damageDealt
+					return BossManager.userStatsOf( context.boss , element.id ).damageDealt
 				} ,
 				display: ( element , output , index , context ) => {
 					const name = `${ index + 1 }. ${ escapeMarkdown( element.username ) }`

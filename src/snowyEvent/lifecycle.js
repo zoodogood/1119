@@ -1,4 +1,5 @@
 import DataManager from '#src/data/DataManager.js'
+import { guildDataOf, singletonBotData } from '#src/data/singleton.js'
 
 export function init_snowy_in( guild ) {
 	return ( guildDataOf(guild).snowyEvent = { preGlowExplorers: [] , isArrived: true } )
@@ -13,22 +14,22 @@ export function get_or_init_snowy_in( guild ) {
 }
 
 export function mark_as_started() {
-	botData().snowyEvent = true
+	singletonBotData().snowyEvent = true
 }
 
 export const time_for_snowy_event = {
 	isFactualActive() {
-		return !!botData().snowyEvent
+		return !!singletonBotData().snowyEvent
 	} ,
 
 	todayIsSnowy() {
-		const [ day , month ] = botData().dayDate
+		const [ day , month ] = singletonBotData().dayDate
 		return +month === 12 && +day >= 20
 	} ,
 }
 
 export function fully_clean() {
-	delete botData().snowyEvent
+	delete singletonBotData().snowyEvent
 	for ( const guildData of DataManager.data.guilds ) {
 		delete guildData.snowyEvent
 	}

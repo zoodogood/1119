@@ -1,14 +1,15 @@
-import { DAY , MINUTE } from '#constants/time.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { DAY , HOUR , MINUTE , SECOND } from '#constants/time.js'
+import { berryMarketPrice } from '#src/berry/command.berry.js'
 import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
 import {
 	mutate_time_event ,
 	timeEvents_singleton ,
 } from '#src/events/time/timeEvents_singleton.js'
+import { decrement } from '#src/mini.js'
 import {
 	joinWithAndSeparator ,
 	match ,
@@ -18,6 +19,7 @@ import {
 	timestampToDate ,
 } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { Collection } from '@discordjs/collection'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
@@ -680,7 +682,7 @@ class Command extends BaseCommand {
 								context ,
 							} )
 
-							!isBerrysCountIncreased && botData().berrysPrice++
+							!isBerrysCountIncreased && singletonBotData().berrysPrice++
 						} ,
 						textOutput:
 							'Она вроде увеличилась, а вроде увеличилась её цена. Никто так и не понял..' ,
@@ -816,7 +818,7 @@ class Command extends BaseCommand {
 					{
 						action: async ( { scene } ) => {
 							scene.random = randomWith( 3 , 8 )
-							botData().berrysPrice += scene.random
+							singletonBotData().berrysPrice += scene.random
 						} ,
 						textOutput:
 							'Эту возможность вы решили использовать, чтобы помочь другим..\nВся клубника продается на {ending(scene.random, "коин", "ов", "", "а")} дороже.' ,
@@ -1229,7 +1231,7 @@ class Command extends BaseCommand {
 								resource: PropertiesEnum.berrys ,
 								context ,
 							} )
-							botData().berrysPrice += 3
+							singletonBotData().berrysPrice += 3
 						} ,
 						textOutput:
 							'Труд-труд и ещё раз труд.. За усердную работу вы получили одну клубнику, а их цена на рынке поднялась на 3ед.' ,
@@ -1798,9 +1800,9 @@ class Command extends BaseCommand {
 				[
 					{
 						action: async () => {
-							botData().berrysPrice -= 125
+							decrement( berryMarketPrice , 125 )
 						} ,
-						textOutput: 'За последние 2с цена клубники упала на 125ед.' ,
+						textOutput: 'За последние 2 с. цена клубники упала на 125 ед.' ,
 					} ,
 					false ,
 					false ,
@@ -1811,13 +1813,13 @@ class Command extends BaseCommand {
 					{
 						action: async ( { scene } ) => {
 							const value = Math.floor(
-								randomWith( 55 , 110 ) + botData().berrysPrice / 10 ,
+								randomWith( 55 , 110 ) + singletonBotData().berrysPrice / 10 ,
 							)
-							botData().berrysPrice -= value
+							singletonBotData().berrysPrice -= value
 							scene.value = value
 						} ,
 						textOutput:
-							'За последние 2с цена клубники упала на { scene.value }ед.' ,
+							'За последние 2 с. цена клубники упала на { scene.value } ед.' ,
 					} ,
 					false ,
 					false ,
@@ -1827,9 +1829,9 @@ class Command extends BaseCommand {
 				[
 					{
 						action: async () => {
-							botData().berrysPrice -= 50
+							singletonBotData().berrysPrice -= 50
 						} ,
-						textOutput: 'За последние 2с цена клубники упала на 50ед.' ,
+						textOutput: 'За последние 2 с. цена клубники упала на 50 ед.' ,
 					} ,
 					false ,
 					false ,
@@ -1839,7 +1841,7 @@ class Command extends BaseCommand {
 				[
 					{
 						action: async ( context ) => {
-							botData().berrysPrice -= 50
+							singletonBotData().berrysPrice -= 50
 							const { user , userData } = context
 							addResource( {
 								user ,
@@ -1851,20 +1853,20 @@ class Command extends BaseCommand {
 							} )
 						} ,
 						textOutput:
-							'За последние 2с цена клубники упала на 50ед.\nУ вас отбирают клубнику' ,
+							'За последние 2 с. цена клубники упала на 50 ед.\nУ вас отбирают клубнику' ,
 					} ,
 					false ,
 					false ,
 					false ,
 					{
 						action: async () => {
-							botData().berrysPrice -= 200
+							singletonBotData().berrysPrice -= 200
 						} ,
-						textOutput: 'Вы снизили её цену на 200ед.' ,
+						textOutput: 'Вы снизили её цену на 200 ед.' ,
 					} ,
 				] ,
 			] ,
-			filter: () => botData().berrysPrice >= 900 ,
+			filter: () => singletonBotData().berrysPrice >= 900 ,
 		} ,
 	]
 
@@ -1915,7 +1917,7 @@ class Command extends BaseCommand {
 				{ berrys: 5 , coins: 500 , voidRituals: 2 } ,
 				{ berrys: 15 , coins: 1500 , voidRituals: 3 } ,
 				{ berrys: 38 , coins: 3337 , voidRituals: 5 } ,
-				{ berrys: 200 , coins: 30000 , voidRituals: 10 } ,
+				{ berrys: 200 , coins: 30_000 , voidRituals: 10 } ,
 			][ level ]
 
 			const noEnought = Object.entries( table )
@@ -2055,7 +2057,7 @@ class Command extends BaseCommand {
 		interaction.channel.msg( {
 			title: 'Штуке требуется немного магии котла,\nчтобы она могла работать.' ,
 			description ,
-			delete: 22_000 ,
+			delete: 20 * SECOND ,
 			reactions: [ '763804850508136478' ] ,
 		} )
 	}
@@ -2106,7 +2108,7 @@ class Command extends BaseCommand {
 	}
 
 	getCooldownInfo() {
-		const COOLDOWN = 10_800_000
+		const COOLDOWN = HOUR * 3
 		const COOLDOWN_TRY = 2
 		const cooldownThresholder = Date.now() + COOLDOWN * ( COOLDOWN_TRY - 1 )
 

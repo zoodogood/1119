@@ -5,7 +5,7 @@ import client from '#src/bot/client/singleton.js'
 import { updateDailyStatistics } from '#src/daily_audit/index.js'
 import DataManager from '#src/data/DataManager.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { singletonBotData, userDataOf } from '#src/data/singleton.js'
 import EventsManager from '#src/events/EventsManager.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
 import { update_product_list as grempen_update_product_list } from '#src/grempen/once_per_day.js'
@@ -16,11 +16,12 @@ import {
 	mark_as_started as snowy_mark_as_started ,
 	time_for_snowy_event ,
 } from '#src/snowyEvent/lifecycle.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 
 export function is_already_executed() {
-	return botData().dayDate === toDayDate( Date.now() )
+	return singletonBotData().dayDate === toDayDate( Date.now() )
 }
 
 export const once_per_day_task = [
@@ -28,8 +29,8 @@ export const once_per_day_task = [
 	() => {
 		const today = toDayDate( Date.now() )
 		const currentDay = timestampDay( Date.now() )
-		botData().dayDate = today
-		botData().currentDay = currentDay
+		singletonBotData().dayDate = today
+		singletonBotData().currentDay = currentDay
 	} ,
 	// snowyEventLifecycle ↴
 	() =>
@@ -38,7 +39,7 @@ export const once_per_day_task = [
 			: time_for_snowy_event.isFactualActive() && snowy_fully_clean() ,
 	// distributeNewYearPresents ↴
 	( context ) => {
-		if ( botData().dayDate !== NEW_YEAR_DAY_DATE ) {
+		if ( singletonBotData().dayDate !== NEW_YEAR_DAY_DATE ) {
 			return
 		}
 
@@ -68,7 +69,7 @@ export const once_per_day_task = [
 	} ,
 	// scheduleDayStatsEvent ↴
 	async () => {
-		const botData = botData()
+		const botData = singletonBotData()
 		const existingEvents = timeEvents_singleton.filterEventsInRange(
 			( { name } ) => name === 'day-stats' ,
 			[ botData.currentDay , botData.currentDay + 1 ] ,
@@ -82,16 +83,16 @@ export const once_per_day_task = [
 			.time_event_recreate()
 	} ,
 	// triggerBossAppearance ↴
-	() => client.guilds.cache.each( guild => BossManager.bossApparance( guild ) ) ,
+	() => client.guilds.cache.each( guild => BossManager.checkLifecycleFor( guild ) ) ,
 	// grempen_update_product_list ↴
 	grempen_update_product_list ,
 	// updateDailyStatistics ↴
 	updateDailyStatistics ,
 	// annonce_birthdays ↴
 	() => {
-		const { dayDate } = botData()
+		const { dayDate } = singletonBotData()
 		const birthdayCount = client.users.cache.filter(
-			user => !user.bot && userDataOf(user).BDay === dayDate ,
+			user => !user.bot && userDataOf( user ).BDay === dayDate ,
 		).size
 
 		if ( !birthdayCount ) {
@@ -103,7 +104,7 @@ export const once_per_day_task = [
 	} ,
 	// adjustBerryPrices ↴
 	() => {
-		const botData = botData()
+		const botData = singletonBotData()
 		const priceModifiers = [
 			{ _weight: 10 , price: 1 } ,
 			{ _weight: 1 , price: -7 } ,

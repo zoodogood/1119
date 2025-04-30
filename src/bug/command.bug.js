@@ -215,7 +215,7 @@ class BugsField {
 	static KEY = 'bug'
 	field
 	constructor() {
-		this.field = botData()[ BugsField.KEY ] ||= {}
+		this.field = singletonBotData()[ BugsField.KEY ] ||= {}
 	}
 }
 

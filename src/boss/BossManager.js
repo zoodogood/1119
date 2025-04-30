@@ -21,7 +21,7 @@ import { eventBases } from '#src/boss/user_attacks/events.list.js'
 import client from '#src/bot/client/singleton.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import Properties from '#src/data/Properties.js'
-import { DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
 import {
 	isChatChannelExists ,
 	sendToChatChannel ,
@@ -30,6 +30,7 @@ import { factoryCompare , factorySummarize } from '#src/mini.js'
 import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
 import {
 	makeArray ,
+	maybe_multiline ,
 	numberFormat ,
 	NumberFormatLetterize ,
 	randomWith ,
@@ -189,7 +190,7 @@ class AttributesShop {
 	static async createShop( { guild , channel , user } ) {
 		const boss = guildDataOf( guild ).boss
 
-		const userStats = BossManager.getUserStats( boss , user.id )
+		const userStats = BossManager.userStatsOf( boss , user.id )
 		const boughtMap = ( userStats.bought ||= {} )
 
 		const createEmbed = ( { boss , user , edit } ) => {
@@ -543,7 +544,7 @@ class Relics {
 	)
 
 	static calculatePriceForRelic( { boss , user } ) {
-		const userStats = BossManager.getUserStats( boss , user.id )
+		const userStats = BossManager.userStatsOf( boss , user.id )
 		const relicsBought = userStats.boughedRelics?.length
 		const price = Math.round( 350 - 349 * ( 1 / 1.0135 ) ** relicsBought )
 		return price
@@ -632,7 +633,7 @@ class BossManager {
 				reaction?.remove()
 				return
 			}
-			const userStats = BossManager.getUserStats( boss , user.id )
+			const userStats = BossManager.userStatsOf( boss , user.id )
 
 			if ( 'chestRewardAt' in userStats ) {
 				message.msg( {
@@ -890,35 +891,6 @@ class BossManager {
 		} )
 	}
 
-	static async bossApparance( guild ) {
-		const guildData = guldDataOf( guild )
-
-		if (
-			guildData.boss
-			&& guildData.boss.endingAtDay <= botData().currentDay
-		) {
-			await BossManager.beforeEnd( guild )
-			this.cleanBossData( guild )
-			return
-		}
-
-		if ( !isChatChannelExists( guild ) ) {
-			return
-		}
-
-		if (
-			!guildData.boss
-			|| ( !guildData.boss.isArrived && !guildData.boss.apparanceAtDay )
-		) {
-			guildData.boss ||= {}
-			guildData.boss.apparanceAtDay = this.comeUpApparanceDay()
-		}
-
-		if ( guildData.boss.apparanceAtDay <= botData().currentDay ) {
-			BossManager.summonBoss( guild )
-		}
-	}
-
 	static calculateBossDamageMultiplayer(
 		boss ,
 		{ context = {} , sourceUser = {} } = {} ,
@@ -948,9 +920,37 @@ class BossManager {
 		return BossManager.calculateHealthPointAt( level ) + totalOfPrevious
 	}
 
+	static async checkLifecycleFor( guild ) {
+		const guildData = guildDataOf( guild )
+
+		if (
+			guildData.boss
+			&& guildData.boss.endingAtDay <= singletonBotData().currentDay
+		) {
+			await BossManager.beforeEnd( guild )
+			this.cleanBossData( guild )
+			return
+		}
+
+		if ( !isChatChannelExists( guild ) ) {
+			return
+		}
+
+		if (
+			!guildData.boss
+			|| ( !guildData.boss.isArrived && !guildData.boss.apparanceAtDay )
+		) {
+			guildData.boss ||= {}
+			guildData.boss.apparanceAtDay = this.comeUpApparanceDay()
+		}
+
+		if ( guildData.boss.apparanceAtDay <= singletonBotData().currentDay ) {
+			BossManager.summonBoss( guild )
+		}
+	}
+
 	static cleanBossData( guild ) {
-		const guildData = guldDataOf( guild )
-		const { boss } = guildData
+		const { boss } = guildDataOf( guild )
 		delete boss.previous_boss
 		const previous_boss = { ... boss }
 		for ( const key in boss ) {
@@ -1004,28 +1004,8 @@ class BossManager {
 
 	static generateEndDate( customDuration ) {
 		const duration = customDuration || this.BOSS_DURATION_IN_DAYS
-		const today = botData().currentDay
+		const today = singletonBotData().currentDay
 		return today + duration
-	}
-
-	static getMediaAvatars() {
-		return [
-			'https://media.discordapp.net/attachments/629546680840093696/1047587012665933884/batman-gif.gif' ,
-			'https://media.discordapp.net/attachments/629546680840093696/1051424759537225748/stan.png' ,
-			'https://cdn.discordapp.com/attachments/629546680840093696/1062620914321211432/DeepTown.png' ,
-		]
-	}
-
-	static getUserStats( boss , id ) {
-		if ( typeof id !== 'string' ) {
-			throw new TypeError( 'Expected id' )
-		}
-
-		const bossUsers = boss.users
-		if ( id in bossUsers === false )
-			bossUsers[ id ] = { messages: 0 }
-
-		return bossUsers[ id ]
 	}
 
 	static initBossData( boss , guild ) {
@@ -1045,7 +1025,7 @@ class BossManager {
 			boss.level ,
 		)
 
-		boss.avatarURL = randomElementFromArray( this.getMediaAvatars() )
+		boss.avatarURL = randomElementFromArray( this.mediaAvatars() )
 		return boss
 	}
 
@@ -1144,7 +1124,7 @@ class BossManager {
 		boss.damageTaken += damage
 
 		if ( sourceUser ) {
-			const stats = BossManager.getUserStats( boss , sourceUser.id )
+			const stats = BossManager.userStatsOf( boss , sourceUser.id )
 			stats.damageDealt ||= 0
 			stats.damageDealt += damage
 
@@ -1158,7 +1138,7 @@ class BossManager {
 		}
 
 		BossInstincts.onTakeDamage( boss , context )
-		botData().bossDamageToday += damage
+		singletonBotData().bossDamageToday += damage
 
 		if ( boss.damageTaken >= boss.healthThresholder ) {
 			BossManager.fatalDamage( context )
@@ -1167,8 +1147,16 @@ class BossManager {
 		return damage
 	}
 
+	static mediaAvatars() {
+		return [
+			'https://media.discordapp.net/attachments/629546680840093696/1047587012665933884/batman-gif.gif' ,
+			'https://media.discordapp.net/attachments/629546680840093696/1051424759537225748/stan.png' ,
+			'https://cdn.discordapp.com/attachments/629546680840093696/1062620914321211432/DeepTown.png' ,
+		]
+	}
+
 	static async notifyAboutBossAtNextDay( guild ) {
-		const data = guldDataOf( guild )
+		const data = guildDataOf( guild )
 
 		if ( !data.boss ) {
 			return
@@ -1179,18 +1167,20 @@ class BossManager {
 		}
 
 		const isApparanceAtNextDay = () => {
-			return data.boss.apparanceAtDay === botData().currentDay + 1
+			return data.boss.apparanceAtDay === singletonBotData().currentDay + 1
 		}
 
 		if ( !isApparanceAtNextDay() ) {
 			return
 		}
 
-		await sleep( 3000 )
+		await sleep( 3 * SECOND )
 
-		const descriptionImage = `Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.`
-		const descriptionFacts = `<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по завершении участники получат небольшую награду`
-		const description = `${ descriptionImage }\n\n${ descriptionFacts }`
+		const description = maybe_multiline( [
+			`Настоящий босс — это здравый смысл внутри каждого из нас. И всем нам предстоит с ним сразится.` ,
+			'\n\n' ,
+			`<a:bigBlack:829059156069056544> С завтрашенего дня, в течении трёх дней, босс будет проходить по землям сервера в определенном образе. За это время нанесите как можно больше урона.\nПосле его появления на сервере будет доступна команда **!босс**, а по завершении участники получат небольшую награду` ,
+		] )
 
 		await sendToChatChannel( guild , {
 			color: '#210052' ,
@@ -1202,7 +1192,7 @@ class BossManager {
 		const boss = guildDataOf( message.guild ).boss
 		const authorId = message.author.id
 
-		const userStats = this.getUserStats( boss , authorId )
+		const userStats = this.userStatsOf( boss , authorId )
 		userStats.messages++
 
 		const DEFAULT_DAMAGE = 1
@@ -1225,7 +1215,7 @@ class BossManager {
 
 	static async userAttack( primary ) {
 		const { boss , user , channel } = primary
-		const userStats = BossManager.getUserStats( boss , user.id )
+		const userStats = BossManager.userStatsOf( boss , user.id )
 
 		if ( userStats.heroIsDead ) {
 			channel.msg( {
@@ -1300,6 +1290,18 @@ class BossManager {
 
 		core_make_attack( context )
 		context.message = await display_attack( context )
+	}
+
+	static userStatsOf( boss , id ) {
+		if ( typeof id !== 'string' ) {
+			throw new TypeError( 'Expected id' )
+		}
+
+		const bossUsers = boss.users
+		if ( id in bossUsers === false )
+			bossUsers[ id ] = { messages: 0 }
+
+		return bossUsers[ id ]
 	}
 
 	static victory( guild ) {

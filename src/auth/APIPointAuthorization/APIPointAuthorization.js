@@ -1,5 +1,5 @@
 import config from '#config'
-import { guildsOfUser } from '#root/src/discord/utils.js'
+import { guildsOfUser } from '#src/discord/utils.js'
 import client from '#src/bot/client/singleton.js'
 import { OAuth } from 'discord-oauth2-utils'
 import { User } from 'discord.js'

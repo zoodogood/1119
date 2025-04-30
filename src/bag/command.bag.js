@@ -1,18 +1,18 @@
 import { NEW_YEAR_DAY_DATE , SECOND } from '#constants/time.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
 import {
 	BaseCommand ,
 	BaseFlagSubcommand ,
 } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
-
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
+
 import { PropertiesEnum , PropertiesList } from '#src/data/Properties.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { getSimilar , randomWith , timestampDay } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { CliParser , ending } from '@zoodogood/utils/primitives'
-import { userDataOf } from '../data/singleton.js'
+import { guildDataOf , userDataOf } from '../data/singleton.js'
 
 function getMoveTargetsOf( { user , isToBag } ) {
 	const userData = userDataOf( user )
@@ -608,7 +608,7 @@ export const ITEMS = [
 		async onUse( { context } ) {
 			const { guild } = context
 			const today = timestampDay( Date.now() )
-			const { boss } = guldDataOf( guild )
+			const { boss } = guildDataOf( guild )
 
 			const BossManager = ( await import( '#src/boss/BossManager.js' ) ).default
 			if ( BossManager.isArrivedIn( guild ) || boss?.apparanceAtDay - 2 <= today ) {

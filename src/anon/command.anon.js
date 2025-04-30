@@ -1,6 +1,6 @@
 import { SECOND } from '#constants/time.js'
-import { AnonExpressionLexer , TokenTypeEnum } from '#root/src/anon/expression_parser.js'
-import { AnonGame , ModesEnum } from '#root/src/anon/game.js'
+import { AnonExpressionLexer , TokenTypeEnum } from '#src/anon/expression_parser.js'
+import { AnonGame , ModesEnum } from '#src/anon/game.js'
 
 import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import {
@@ -9,11 +9,11 @@ import {
 } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addMultipleResources } from '#root/src/user/resources/addResource.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { Pager } from '#src/discord/Pager.js'
 import { ROMAN_NUMERALS_TABLE } from '#src/romanNumerals.js'
 import { randomWith , timestampToDate } from '#src/safe-utils.js'
+import { addMultipleResources } from '#src/user/resources/addResource.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { randomNumberInRange } from '@zoodogood/utils/objectives'
 import {

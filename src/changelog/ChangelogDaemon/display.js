@@ -1,4 +1,4 @@
-import { entriesFromGroupBy , entriesMapKey } from '#root/src/safe-utils.js'
+import { entriesFromGroupBy , entriesMapKey } from '#src/safe-utils.js'
 
 export const ChangelogItemMarkers = [
 	{ label: 'Fix' , symbol: '#' , alias: [ 'fix' , 'bug' ] } ,

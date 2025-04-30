@@ -1,6 +1,6 @@
 import EventEmitter from 'node:events'
-import { userDataOf } from '#root/src/data/singleton.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { userDataOf } from '#src/data/singleton.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import CustomIdExecutor from '#src/app/CustomIdExecutor/Executor.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'

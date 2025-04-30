@@ -1,5 +1,5 @@
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { maybe_multiline } from '#src/safe-utils.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 import { ending } from '@zoodogood/utils/primitives'

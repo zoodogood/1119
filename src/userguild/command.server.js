@@ -27,7 +27,7 @@ class Command extends BaseCommand {
 	}
 
 	getCloverData( guild ) {
-		const { cloverEffect } = guldDataOf( guild )
+		const { cloverEffect } = guildDataOf( guild )
 		if ( !cloverEffect ) {
 			return null
 		}
@@ -130,7 +130,7 @@ class Command extends BaseCommand {
 			channels: {
 				categories: `Категорий: ${
 					guild.channels.cache.filter(
-						$ => $.type === ChannelType.GuildCategory ,
+						c => c.type === ChannelType.GuildCategory ,
 					).size
 				}` ,
 				texted: `Текстовых: ${

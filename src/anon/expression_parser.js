@@ -1,4 +1,4 @@
-import { ModesEnum } from '#root/src/anon/game.js'
+import { ModesEnum } from '#src/anon/game.js'
 import { ROMAN_NUMERALS_TABLE , romanToDigit } from '#src/romanNumerals.js'
 import { escapeRegexp } from '#src/safe-utils.js'
 

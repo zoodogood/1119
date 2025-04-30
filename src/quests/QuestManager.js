@@ -1,8 +1,8 @@
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { DataManager , userDataOf } from '#src/data/singleton.js'
+import { DataManager , singletonBotData, userDataOf } from '#src/data/singleton.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { Collection } from 'discord.js'
 
@@ -402,7 +402,7 @@ class QuestManager {
 			id: questBase.id ,
 			progress: 0 ,
 			goal: calculateGoal() ,
-			day: botData().currentDay ,
+			day: singletonBotData().currentDay ,
 			isCompleted: false ,
 		}
 
@@ -424,7 +424,7 @@ class QuestManager {
 	}
 
 	static isNeedInstallDailyQuest( { user } ) {
-		const { currentDay } = botData()
+		const { currentDay } = singletonBotData()
 		const { quest } = userDataOf( user )
 		return !!( !quest || quest.day !== currentDay )
 	}

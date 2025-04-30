@@ -10,7 +10,7 @@ export class MonthStatisticForEveryDayAPI {
 	}
 
 	static ofGuild( guild ) {
-		return new MonthStatisticForEveryDayAPI(guldDataOf(guild) )
+		return new MonthStatisticForEveryDayAPI(guildDataOf(guild) )
 	}
 
 	push( object ) {

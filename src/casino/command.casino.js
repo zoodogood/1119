@@ -1,9 +1,10 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import CooldownManager from '#src/CooldownManager.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#root/src/user/resources/addResource.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { randomWith } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { ending } from '@zoodogood/utils/primitives'
 
 class Command extends BaseCommand {
@@ -106,7 +107,7 @@ ${
 		const COOLDOWN = 300_000
 		const { id } = this.options
 		const key = `CD_${ id }`
-		CooldownManager.api( userDataOf(user), key , { perCall: COOLDOWN } ).call()
+		CooldownManager.api( userDataOf( user ) , key , { perCall: COOLDOWN } ).call()
 	}
 }
 

@@ -1,10 +1,10 @@
-import { addResource } from '#root/src/user/resources/addResource.js'
 import { CALCULATE_CLOVER_MULTIPLAYER } from '#src/coin_message/clover/contstants.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 import * as SnowyEvent from '#src/snowyEvent/lifecycle.js'
 import { onGetCoinMessage as SnowyOnGetCoinMessage } from '#src/snowyEvent/onGetCoinMessage.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { guildDataOf , userDataOf } from '../data/singleton.js'
 
@@ -27,7 +27,7 @@ class Event extends BaseEvent {
 			k += 0.2
 		}
 
-		if ( guild && 'cloverEffect' in guldDataOf( guild ) ) {
+		if ( guild && 'cloverEffect' in guildDataOf( guild ) ) {
 			const value = CALCULATE_CLOVER_MULTIPLAYER( guildDataOf( guild ).cloverEffect.uses )
 			const multiplayer = value * 1.12 ** ( userData.voidMysticClover ?? 0 )
 			k += multiplayer
@@ -49,7 +49,7 @@ class Event extends BaseEvent {
 			reaction = '❄️'
 		}
 
-		if ( guild && 'cloverEffect' in guldDataOf( guild ) ) {
+		if ( guild && 'cloverEffect' in guildDataOf( guild ) ) {
 			reaction = '☘️'
 			guildDataOf( guild ).cloverEffect.coins++
 		}

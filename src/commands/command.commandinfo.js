@@ -183,7 +183,7 @@ class TargetCommandMetadata {
 	}
 
 	calculateCommandsUsedTotally() {
-		const used = Object.values( botData().commandsUsed )
+		const used = Object.values( singletonBotData().commandsUsed )
 		return used.reduce( factorySummarize() , 0 )
 	}
 
@@ -198,7 +198,7 @@ class TargetCommandMetadata {
 		const usedCount
 			= command instanceof CustomCommand
 				? uses_count_of( commandNameId , guild )
-				: botData().commandsUsed[ command.options.id ] || 0
+				: singletonBotData().commandsUsed[ command.options.id ] || 0
 
 		return {
 			options ,
