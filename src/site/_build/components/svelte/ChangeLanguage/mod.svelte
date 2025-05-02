@@ -1,21 +1,16 @@
 <script>
-	export let isAlwaysVisible = false;
+	export let isAlwaysVisible = false
 
-	import config from "#config";
+	import config from '#config'
+	import svelteconst ROOT = 'src/public'App from '../../app_singleton.js'
 
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import { relativeSiteRoot } from "#root/src/site/_build/components/lib/util.js";
-
-	const isVisible = !svelteApp.storage.getSelectedLocale() || isAlwaysVisible;
-	const languages = config.i18n.availableLanguages;
+	const isVisible = !svelteApp.storage.getSelectedLocale() || isAlwaysVisible
+	const languages = config.i18n.availableLanguages
 
 	function onClick() {
-		const locale = this.textContent.toLowerCase();
-		svelteApp.lang = locale;
-		svelteApp.url.base.lang = locale;
-
-		const path = svelteApp.url.subpath.join("/");
-		svelteApp.document.location.href = relativeSiteRoot(svelteApp, path, false);
+		svelteApp.storage.setLocale( this.textContent.toLowerCase() )
+		document.location.reload()
+		svelteApp.lang = svelteApp.storage.getSelectedLocale()
 	}
 </script>
 
@@ -23,7 +18,7 @@
 	<section>
 		<ul>
 			{#each languages as locale}
-				<li title={"Выбери меня"}>
+				<li title='Выбери меня'>
 					<button on:click={onClick}>{locale}</button>
 				</li>
 			{/each}

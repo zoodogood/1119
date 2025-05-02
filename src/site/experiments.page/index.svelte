@@ -1,31 +1,32 @@
 <script>
-	import Dialog from "#site-component/Dialog";
-	import Giscus from "#site-component/Giscus";
-	import Layout from "#site-component/Layout";
+	import config from '#config'
+	import Dialog from '#site-component/Dialog'
+	import Giscus from '#site-component/Giscus'
 
-	import config from "#config";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import { getNotificationsContext } from "svelte-notifications";
-	const { addNotification } = getNotificationsContext();
+	import Layout from '#site-component/Layout'
+	import { getNotificationsContext } from 'svelte-notifications'
+	import svelteApp from '../_build/components/app_singleton.js'
 
-	const i18n = svelteApp.i18n.pages.publicExperiments;
+	const { addNotification } = getNotificationsContext()
+
+	const i18n = svelteApp.i18n.pages.publicExperiments
 
 	function createNotification() {
-		addNotification({
-			text: "Кто придумывал этот дизайн? Он плох!",
-			position: "bottom-center",
-		});
+		addNotification( {
+			text: 'Кто придумывал этот дизайн? Он плох!' ,
+			position: 'bottom-center' ,
+		} )
 	}
 
 	function createDialog() {
-		new Dialog({
-			target: document.body,
+		new Dialog( {
+			target: document.body ,
 			props: {
-				title: "Стандартный диалог",
-				description: "И такое бывает",
-				useClassic: true,
-			},
-		});
+				title: 'Стандартный диалог' ,
+				description: 'И такое бывает' ,
+				useClassic: true ,
+			} ,
+		} )
 	}
 </script>
 
@@ -43,10 +44,10 @@
 	<element-embed>
 		<p>
 			Вы действительно можете вносить изменения в каталоге, <a
-				target="_blank"
-				rel="noreferrer"
-				href="{config.enviroment.github}/tree/{config.enviroment
-					.branch}/src/site/src/pages/public/experiments">experiments</a
+				target='_blank'
+				rel='noreferrer'
+				href='{config.enviroment.github}/tree/{config.enviroment
+					.branch}/src/site/src/pages/public/experiments'>experiments</a
 			>:
 		</p>
 		<p>
@@ -65,8 +66,8 @@
 		<button on:click={createDialog}>Создать диалог</button>
 	</section>
 
-	<section class="comments-container">
-		<Giscus tag="special: experiments" />
+	<section class='comments-container'>
+		<Giscus tag='special: experiments' />
 	</section>
 </Layout>
 

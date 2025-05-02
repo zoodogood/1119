@@ -1,27 +1,28 @@
 <script>
-	import EditableMarkdown from "#site-component/EditableMarkdown";
-	import Layout from "#site-component/Layout";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
+	import EditableMarkdown from '#site-component/EditableMarkdown'
+	import Image from '#site-component/Image'
 
-	import Image from "#site-component/Image";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
-	const i18n = svelteApp.i18n.pages.commandsIndex;
+	import Layout from '#site-component/Layout'
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+
+	const i18n = svelteApp.i18n.pages.commandsIndex
 
 	const CategoryEnum = {
-		delete: i18n.category.delete,
-		dev: i18n.category.dev,
-		user: i18n.category.user,
-		guild: i18n.category.guild,
-		bot: i18n.category.bot,
-		other: i18n.category.other,
-	};
+		delete: i18n.category.delete ,
+		dev: i18n.category.dev ,
+		user: i18n.category.user ,
+		guild: i18n.category.guild ,
+		bot: i18n.category.bot ,
+		other: i18n.category.other ,
+	}
 
 	let commands = [];
-	(async () => {
-		const _commands = await fetchFromInnerApi("client/commands/list");
-		console.info({ _commands });
-		commands = _commands;
-	})();
+	( async () => {
+		const _commands = await fetchFromInnerApi( 'client/commands/list' )
+		console.info( { _commands } )
+		commands = _commands
+	} )()
 </script>
 
 <Layout>
@@ -34,16 +35,16 @@
 					<h2>{command.name}</h2>
 					<EditableMarkdown source={command.media.description.trim()} />
 					<footer>
-						<span class="category">{CategoryEnum[command.type]}</span>
+						<span class='category'>{CategoryEnum[ command.type ]}</span>
 						{#if command.media.poster}
 							<Image
 								src={command.media.poster}
-								alt="poster"
-								className="image_poster"
+								alt='poster'
+								className='image_poster'
 							/>
 						{/if}
 						<h6>
-							{#each command.alias.split(" ") as alias}
+							{#each command.alias.split( ' ' ) as alias}
 								<span>!{alias}</span>
 							{/each}
 						</h6>

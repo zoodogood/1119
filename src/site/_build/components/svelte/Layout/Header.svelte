@@ -2,7 +2,7 @@
 	import config from "#config";
 	import Image from "#site-component/Image";
 	import ThemeSwitcher from "#site-component/ThemeSwitcher";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
 	import PagesRouter, {
 		page_location,
 	} from "#root/src/site/_build/components/lib/page_router_singleton.js";

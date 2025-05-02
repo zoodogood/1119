@@ -7,7 +7,9 @@
 	import { Theme } from '#site-component/ThemeSwitcher'
 	import { onMount } from 'svelte'
 	import { MetaTags } from 'svelte-meta-tags'
+	import Notifications from 'svelte-notifications'
 	import { get as getStoreValue } from 'svelte/store'
+	import svelteApp from '../../app_singleton.js'
 
 	const { page } = $props()
 	const _currentURLLang = svelteApp.url.base.lang

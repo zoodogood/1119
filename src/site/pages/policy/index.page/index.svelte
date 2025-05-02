@@ -1,6 +1,7 @@
 <script>
-	import Header from "#site-component-lib/Layout/Header.svelte";
-	import Main from "#site-component-lib/Layout/Main.svelte";
+	import Header from '#src/site/_build/components/svelte/Layout/Header.svelte'
+	import Main from '#src/site/_build/components/svelte/Layout/Main.svelte'
+
 </script>
 
 <Header />

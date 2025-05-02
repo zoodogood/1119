@@ -1,6 +1,6 @@
 <script>
 	import config from '#config'
-	import svelteApp from '#src/svelte/svelte-app_singleton.jston.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
 	import { onMount } from 'svelte'
 
 	export let tag = svelteApp.document.location.href

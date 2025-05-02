@@ -1,22 +1,22 @@
 <script>
-	export let code = "";
+	export let code = ''
 </script>
 
-<span class="icon" data-symbol={code}></span>
+<span class='icon' data-symbol={code}></span>
 
 <style>
 	@font-face {
 		font-family: "Icon";
 		src:
-			url("/src/public/resources/fonts/fontello/font/fontello.eot")
+			url("public/fontello/fontello.eot")
 				format("embedded-opentype"),
-			url("/src/public/resources/fonts/fontello/font/fontello.woff2")
+			url("public/fontello/fontello.woff2")
 				format("woff2"),
-			url("/src/public/resources/fonts/fontello/font/fontello.woff")
+			url("public/fontello/fontello.woff")
 				format("woff"),
-			url("/src/public/resources/fonts/fontello/font/fontello.ttf")
+			url("public/fontello/fontello.ttf")
 				format("truetype"),
-			url("/src/public/resources/fonts/fontello/font/fontello.svg")
+			url("public/fontello/fontello.svg")
 				format("svg");
 
 		font-weight: normal;

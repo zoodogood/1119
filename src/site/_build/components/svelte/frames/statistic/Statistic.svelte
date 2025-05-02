@@ -1,112 +1,112 @@
 <script>
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
-	import { sleep } from "#src/safe-utils.js";
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import { sleep } from '#src/safe-utils.js'
 
-	import { onMount } from "svelte";
-	import IntersectionObserver from "svelte-intersection-observer";
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import { onMount } from 'svelte'
+	import IntersectionObserver from 'svelte-intersection-observer'
 
-	const i18n = svelteApp.i18n.frames.Statistic;
+	const i18n = svelteApp.i18n.frames.Statistic
 
 	const ComponentStyles = {
-		First: 1,
-		Second: 2,
-	};
+		First: 1 ,
+		Second: 2 ,
+	}
 
 	const Component = {
-		node: null,
-		style: ComponentStyles.First,
+		node: null ,
+		style: ComponentStyles.First ,
 
 		statsEnum: new Map(
-			Object.entries({
+			Object.entries( {
 				guilds: {
-					value: null,
-					displayedValue: 0,
-					label: i18n.statsEnum.guilds.label,
-				},
+					value: null ,
+					displayedValue: 0 ,
+					label: i18n.statsEnum.guilds.label ,
+				} ,
 				users: {
-					value: null,
-					displayedValue: 0,
-					label: i18n.statsEnum.users.label,
-				},
+					value: null ,
+					displayedValue: 0 ,
+					label: i18n.statsEnum.users.label ,
+				} ,
 				commands: {
-					value: null,
-					displayedValue: 0,
-					label: i18n.statsEnum.commands.label,
-				},
-			}),
-		),
+					value: null ,
+					displayedValue: 0 ,
+					label: i18n.statsEnum.commands.label ,
+				} ,
+			} ) ,
+		) ,
 
-		async renderStat(key) {
-			const element = Component.statsEnum.get(key);
+		async renderStat( key ) {
+			const element = Component.statsEnum.get( key )
 
-			const iterable = Component.statContentGenerator(element.value);
+			const iterable = Component.statContentGenerator( element.value )
 
-			for (const content of iterable) {
-				await sleep(500 + Math.random() * 200);
-				element.displayedValue = content;
-				Component.statsEnum ||= Component.statsEnum;
+			for ( const content of iterable ) {
+				await sleep( 500 + Math.random() * 200 )
+				element.displayedValue = content
+				Component.statsEnum ||= Component.statsEnum
 			}
-		},
+		} ,
 
 		async renderAllStats() {
-			for (const [key] of State.stats) {
-				const element = State.stats.get(key);
-				element.value = State.data[key];
+			for ( const [ key ] of State.stats ) {
+				const element = State.stats.get( key )
+				element.value = State.data[ key ]
 
-				await Component.renderStat(key);
+				await Component.renderStat( key )
 			}
-		},
+		} ,
 
-		*statContentGenerator(value) {
-			value = String(value);
-			const base = "0".repeat(value.length).split("");
+		* statContentGenerator( value ) {
+			value = String( value )
+			const base = '0'.repeat( value.length ).split( '' )
 
-			for (const index in base) {
-				base[index] = value[index];
-				yield base.join("");
+			for ( const index in base ) {
+				base[ index ] = value[ index ]
+				yield base.join( '' )
 			}
 
-			return base.join("");
-		},
-	};
+			return base.join( '' )
+		} ,
+	}
 
 	const Interaction = {
-		async onIntersection(customEvent) {
-			if (State.isVisible) {
-				return;
+		async onIntersection( customEvent ) {
+			if ( State.isVisible ) {
+				return
 			}
-			State.isVisible = true;
+			State.isVisible = true
 
-			await State.dataPromise;
-			await sleep(500);
-			await Component.renderAllStats();
+			await State.dataPromise
+			await sleep( 500 )
+			await Component.renderAllStats()
 
-			await sleep(500);
-			Component.style = ComponentStyles.Second;
-		},
-	};
+			await sleep( 500 )
+			Component.style = ComponentStyles.Second
+		} ,
+	}
 
 	const State = {
-		isVisible: false,
-		data: null,
-		dataPromise: null,
-		stats: Component.statsEnum,
-	};
+		isVisible: false ,
+		data: null ,
+		dataPromise: null ,
+		stats: Component.statsEnum ,
+	}
 
-	onMount(async () => {
-		State.dataPromise = fetchFromInnerApi("client/statistic/general");
-		const data = await State.dataPromise;
-		if (!data) {
-			return;
+	onMount( async () => {
+		State.dataPromise = fetchFromInnerApi( 'client/statistic/general' )
+		const data = await State.dataPromise
+		if ( !data ) {
+			return
 		}
 
-		State.data = data;
-	});
+		State.data = data
+	} )
 </script>
 
 <element-container
-	class="component"
+	class='component'
 	bind:this={Component.node}
 	class:second-style={Component.style === ComponentStyles.Second}
 >
@@ -116,8 +116,8 @@
 		once
 	/>
 	<ul>
-		{#each [...Component.statsEnum] as element}
-			{@const [key, { displayedValue, label }] = element}
+		{#each [ ... Component.statsEnum ] as element}
+			{@const [ key , { displayedValue , label } ] = element}
 			<li>
 				{#key displayedValue}
 					<span>{displayedValue}</span>

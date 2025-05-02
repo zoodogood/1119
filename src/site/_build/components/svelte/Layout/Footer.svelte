@@ -1,61 +1,61 @@
 <script>
-	import config from "#config";
-	import Image from "#site-component/Image";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import PagesRouter from "#root/src/site/_build/components/lib/page_router_singleton.js";
-	import dayjs from "#src/dayjs.js";
+	import config from '#config'
+	import PagesRouter from '#root/src/site/_build/components/lib/page_router_singleton.js'
+	import Image from '#site-component/Image'
+	import dayjs from '#src/dayjs.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
 
-	const bot = svelteApp.getBot();
-	const i18n = svelteApp.i18n.components.Layout.Footer;
+	const bot = svelteApp.getBot()
+	const i18n = svelteApp.i18n.components.Layout.Footer
 </script>
 
-<footer class="container">
-	<main class="footer-main">
-		<section class="article">
-			<aside class="article-aside article-title">
-				<h2 class="article-aside-header">{i18n.imagine}</h2>
-				<p class="article-aside-paragraph">Expented 2022</p>
+<footer class='container'>
+	<main class='footer-main'>
+		<section class='article'>
+			<aside class='article-aside article-title'>
+				<h2 class='article-aside-header'>{i18n.imagine}</h2>
+				<p class='article-aside-paragraph'>Expented 2022</p>
 			</aside>
-			<section class="article-information_section group">
-				<aside class="article-aside">
-					<h3 class="article-aside-header">{i18n.info.label}</h3>
-					<ul class="article-aside-list">
+			<section class='article-information_section group'>
+				<aside class='article-aside'>
+					<h3 class='article-aside-header'>{i18n.info.label}</h3>
+					<ul class='article-aside-list'>
 						<li>
 							<a
 								href={PagesRouter.relativeToPage(
-									PagesRouter.getPageBy("info/policy").key,
+									PagesRouter.getPageBy( 'info/policy' ).key ,
 								)}>{i18n.info.policy}</a
 							>
 						</li>
 						<li>
 							<a
 								href={PagesRouter.relativeToPage(
-									PagesRouter.getPageBy("info/friendship").key,
+									PagesRouter.getPageBy( 'info/friendship' ).key ,
 								)}>{i18n.info.thanks}</a
 							>
 						</li>
 						<li>
 							<a
 								href={PagesRouter.relativeToPage(
-									PagesRouter.getPageBy("info/1119").key,
+									PagesRouter.getPageBy( 'info/1119' ).key ,
 								)}>1119</a
 							>
 						</li>
 						<li></li>
 					</ul>
 				</aside>
-				<aside class="article-aside">
-					<h3 class="article-aside-header">{i18n.nav.label}</h3>
-					<ul class="article-aside-list">
+				<aside class='article-aside'>
+					<h3 class='article-aside-header'>{i18n.nav.label}</h3>
+					<ul class='article-aside-list'>
 						<li><a href={bot.invite}>{i18n.nav.invite}</a></li>
 						<li>
-							<a href={config.guild.url} target="_blank" rel="noreferrer"
-								>{i18n.nav.discord}</a
+							<a href={config.guild.url} target='_blank' rel='noreferrer'
+							>{i18n.nav.discord}</a
 							>
 						</li>
 						<li><a href={config.enviroment.github}>{i18n.nav.github}</a></li>
 						<li>
-							<a href="{config.enviroment.github}/issues/new">{i18n.nav.help}</a
+							<a href='{config.enviroment.github}/issues/new'>{i18n.nav.help}</a
 							>
 						</li>
 					</ul>
@@ -63,26 +63,26 @@
 			</section>
 		</section>
 
-		<section class="bottom-container">
-			<hr class="bottom-horizontal_line" />
-			<header class="build-info">
+		<section class='bottom-container'>
+			<hr class='bottom-horizontal_line' />
+			<header class='build-info'>
 				<span>
 					При поддержке Expented; Версия: V{svelteApp.enviroment.version};
-					Сборка от {dayjs(svelteApp.enviroment.buildedTimestamp).format(
-						"DD.MM.YYYY HH:mm",
+					Сборка от {dayjs( svelteApp.enviroment.buildedTimestamp ).format(
+						'DD.MM.YYYY HH:mm' ,
 					)}
 				</span>
 			</header>
 
-			<main class="bottom-main">
-				<aside class="bottom-main-title">
-					<span class="bot-icon">
-						<Image src={bot.displayAvatarURL} alt="bot avatar" />
+			<main class='bottom-main'>
+				<aside class='bottom-main-title'>
+					<span class='bot-icon'>
+						<Image src={bot.displayAvatarURL} alt='bot avatar' />
 					</span>
 					<span>{bot.username}</span>
 				</aside>
 
-				<aside class="invite">
+				<aside class='invite'>
 					<a href={bot.invite}>
 						<button>{i18n.invite}</button>
 					</a>
