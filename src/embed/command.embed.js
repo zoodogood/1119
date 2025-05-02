@@ -4,6 +4,7 @@ import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { question , take_missing_permissions } from '#src/discord/utils.js'
+import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_enum.js'
 import { match } from '#src/safe-utils.js'
 import { FormattingPatterns } from 'discord-api-types/v10'
 
