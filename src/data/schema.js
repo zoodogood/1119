@@ -43,6 +43,7 @@ const Schema = {
 				keys: 0 ,
 				voidRituals: 0 ,
 				voidCoins: 0 ,
+				voidMonster: 0 ,
 				quest: {
 					id: '' ,
 					goal: 0 ,
@@ -205,6 +206,7 @@ const Schema = {
  * @property {number} keys
  * @property {number} voidRituals
  * @property {number} voidCoins
+ * @property {number} voidMonster
  * @property {quest} quest
  * @property {curses[]} curses
  * @property {effects[]} effects
