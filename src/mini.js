@@ -50,6 +50,76 @@ export function tap( fn ) {
 	}
 }
 
+export function _do( callback ) {
+	return callback()
+}
+
 export function adjust( maybePrimitive , adjustFn , { defaultValue } = {} ) {
 	return adjustFn( maybePrimitive ?? defaultValue )
+}
+
+/**
+ * @template T
+ * @param {T} x
+ * @returns {() => T} () => T
+ */
+export function asGetterFn( x ) {
+	return () => x
+}
+
+/**
+ * @template T
+ * @param {() => T} getter
+ * @param {(value: T) => unknown} setter
+ * @returns {(value?: T) => T}
+ */
+export function asAccessor( getter , setter ) {
+	return new_value => new_value !== undefined ? ( setter( new_value ) , new_value ) : getter()
+}
+
+/**
+ * @template T
+ * @param {T} initializer
+ * @param {(state: T) => T} getter
+ * @param {(value: T) => T} setter
+ * @returns {(value?: T) => T}
+ */
+export function accessorWithState(initializer, getter = (v) => v, setter = (v) => v){
+	return new_value => new_value !== undefined ? ( initializer = setter( new_value ) , new_value ) : getter(initializer)
+}
+
+/**
+ *
+ * @param {(value?: number) => number} accessor
+ * @param {number} value
+ * @returns
+ */
+export function increment( accessor , value = 1 , orDefault = 0 ) {
+	const previous = accessor() ?? orDefault
+	return accessor( previous + value )
+}
+
+/**
+ *
+ * @param {(value?: number) => number} accessor
+ * @param {number} value
+ * @returns
+ */
+export function decrement( accessor , value = 1 , orDefault = 0 ) {
+	const previous = accessor() ?? orDefault
+	return accessor( previous + value )
+}
+
+/**
+ *
+ * @param {(value?: number) => number} accessor
+ * @param {number} maximum
+ */
+export function modIncrement( accessor , maximum ) {
+	const previous = accessor() || 0
+	return accessor( previous % maximum )
+}
+
+export function checkFilterPropertyFactory( ... apply_parameters ) {
+	return ( element , i ) => !element.filter || element.filter( ... apply_parameters , i )
 }
