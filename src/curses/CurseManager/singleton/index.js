@@ -1,16 +1,17 @@
 import EventEmitter from 'node:events'
-import { userDataOf } from '#src/data/singleton.js'
-import { addResource } from '#src/user/resources/addResource.js'
 import CustomIdExecutor from '#src/app/CustomIdExecutor/Executor.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { _interface } from '#src/curses/CurseManager/singleton/public.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
 import { sendErrorInfo } from '#src/ErrorsHandler/sendErrorInfo.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
+import { checkFilterPropertyFactory } from '#src/mini.js'
 import { toLocaleDeveloperString } from '#src/safe-utils.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 
@@ -235,8 +236,7 @@ class CurseManager {
 
 	static getGeneratePull( user , context ) {
 		return [ ... cursesBase.values() ].filter(
-			curseBase =>
-				!curseBase.filter || curseBase.filter.call( curseBase , user , context ) ,
+			checkFilterPropertyFactory( user , context ) ,
 		)
 	}
 

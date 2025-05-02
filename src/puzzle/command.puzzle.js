@@ -1,7 +1,9 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/user/resources/addResource.js'
+import { _do } from '#src/mini.js'
 import { randomWith , similarity } from '#src/safe-utils.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { AttachmentBuilder } from 'discord.js'
 
 class Command extends BaseCommand {
@@ -149,32 +151,29 @@ class Command extends BaseCommand {
 
 			return msg.msg( {
 				title: 'И это... Правильный ответ! Ваша награда уже у вас в карманах!' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 		}
 
 		const percent = Math.round(
 			( 1 - similarity( last , answer ) / last.length ) * 100 ,
 		)
-		let phrase
-		switch ( true ) {
-		case percent < 10:
-			phrase = `Ответ не верный.\nСовет: в ответе ровно **${ last.length }** цифр`
-			break
-
-		case percent < 25:
-			phrase = `Похоже вы встали на верный путь и скоро разгадаете эту задачку, не сдавайтесь!`
-			break
-
-		case percent < 80:
-			phrase = `На ${ percent }% вы ответили — правильно! Интересный факт: картошка — это фонарь, лишь на 11.76%.`
-			break
-
-		case percent < 101:
-			phrase = `Осталось совсем чуть-чуть! У вас получится, ||но ответ всё ещё не верный.||`
-		}
 		message.delete()
-		msg.msg( { title: phrase , color: '#f2fafa' , delete: 9000 } )
+		msg.msg( { title: _do(() => {
+			switch (true) {
+				case percent < 10:
+					return `Ответ не верный.\nСовет: в ответе ровно **${last.length}** цифр`
+
+				case percent < 25:
+					return `Похоже вы встали на верный путь и скоро разгадаете эту задачку, не сдавайтесь!`
+
+				case percent < 80:
+					return `На ${percent}% вы ответили — правильно! Интересный факт: картошка — это фонарь, лишь на 11.76%.`
+
+				case percent < 101:
+					return `Осталось совсем чуть-чуть! У вас получится, ||но ответ всё ещё не верный.||`
+			}
+		}) , color: '#f2fafa' , delete: 9000 } )
 	}
 }
 

@@ -1728,9 +1728,9 @@ export const cursesBase = new Collection(
 
 				adjust(
 					values.progress ,
-					$ =>
+					v =>
 						CurseManager.interface( { user , curse } )._setProgress(
-							$ + value_diff * ( -1 ) ** is_down ,
+							v + value_diff * ( -1 ) ** +is_down ,
 						) ,
 					{ defaultValue: 0 } ,
 				)

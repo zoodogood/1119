@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { responseWithAvatar } from './responseWithAvatar.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -16,10 +17,7 @@ class Command extends BaseCommand {
 	}
 
 	async onChatInput( msg , interaction ) {
-		const avatarURL = ( interaction.mention || msg.author ).avatarURL( {
-			dynamic: true ,
-		} )
-		msg.msg( { content: avatarURL } )
+		return responseWithAvatar( interaction )
 	}
 }
 

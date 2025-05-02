@@ -38,10 +38,7 @@ class Command extends BaseCommand {
 			} )
 		}
 
-		const memb
-				= interaction.mention
-					|| msg.guild.members.cache.get( interaction.params )
-					|| msg.author
+		const memb = interaction.mentionedOrAuthor
 		const user = memb.data
 		const isAuthor = memb === msg.author
 		let iPraise

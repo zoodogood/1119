@@ -31,7 +31,7 @@ class Command extends BaseCommand {
 	}
 
 	async onChatInput( msg , interaction ) {
-		const member = interaction.mention ?? msg.author
+		const member = interaction.mentionedOrAuthor
 
 		const guild = msg.guild
 

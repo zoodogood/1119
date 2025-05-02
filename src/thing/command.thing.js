@@ -2085,10 +2085,8 @@ class Command extends BaseCommand {
 			return
 		}
 
-		const username = interaction.mention.username
-
-		const color = element.color
-		const emoji = element.emoji
+		const { username } = interaction.mention
+		const { color , emoji } = element
 
 		const mentionContent = [
 			username.toUpperCase() ,

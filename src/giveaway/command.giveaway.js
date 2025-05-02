@@ -7,6 +7,7 @@ import { PermissionsBits } from '#src/discord/permissions.js'
 import { question } from '#src/discord/utils.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
+import { checkFilterPropertyFactory } from '#src/mini.js'
 import { timestampToDate } from '#src/safe-utils.js'
 import { ParserTime } from '#src/user_input_prepare/parsers.js'
 import { FormattingPatterns } from 'discord.js'
@@ -27,7 +28,7 @@ class CommandRunContext extends BaseCommandRunContext {
 	interface_reactions() {
 		// @ts-expect-error
 		return this.command.reactions
-			.filter( ( { filter } ) => !filter || filter( this ) )
+			.filter( checkFilterPropertyFactory( this ) )
 			.map( ( { emoji } ) => emoji )
 	}
 }

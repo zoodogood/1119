@@ -3,12 +3,12 @@ import { SECOND } from '#constants/time.js'
 import BossManager from '#src/boss/BossManager.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
-import { guildDataOf , singletonBotData, userDataOf } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
 import { Pager } from '#src/discord/Pager.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
-import { sortByResolveMut } from '#src/mini.js'
+import { checkFilterPropertyFactory , sortByResolveMut } from '#src/mini.js'
 import QuestManager from '#src/quests/QuestManager.js'
 import {
 	joinWithAndSeparator ,
@@ -207,7 +207,7 @@ class CommandRunContext extends BaseCommandRunContext {
 					type: ComponentType.StringSelect ,
 					options: RanksUtils.leaderboardTypes
 						.filter(
-							leaderboard => !leaderboard.filter || leaderboard.filter( this ) ,
+							checkFilterPropertyFactory( this ) ,
 						)
 						.map( leaderboard => leaderboard.component ) ,
 					customId: 'selectFilter' ,

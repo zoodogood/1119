@@ -15,6 +15,7 @@ import {
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import dayjs from '#src/dayjs.js'
+import { guildsOfUser } from '#src/discord/utils.js'
 import { isChatChannelExists } from '#src/guild_special_channels/special_channel_enum.js'
 import { sortByResolveMut } from '#src/mini.js'
 import {
@@ -60,22 +61,16 @@ export class Bosses_Flagsubcommand {
 	}
 
 	onProcess() {
-		const { interaction } = this.context
-		const memb = interaction.mention || interaction.user
-		const { guilds } = memb
-		const fields = sortByResolveMut(
-			guilds.filter( guild => guildDataOf( guild ).boss ) ,
-			( { data: { boss } } ) =>
-				boss.isArrived ? Number.MIN_SAFE_INTEGER : +boss.apparanceAtDay || 0 ,
-			{ reverse: true } ,
-		)
-			.map( guild => Bosses_Flagsubcommand.guildToField( guild ) )
-			.slice( 0 , 20 )
-
-		const { channel } = this.context
+		const { interaction: { mentionedOrAuthor } , channel } = this.context
 		channel.msg( {
 			description: 'Ваши сервера с боссом' ,
-			fields ,
+			fields: sortByResolveMut(
+				guildsOfUser( mentionedOrAuthor ).filter( guild => guildDataOf( guild ).boss ) ,
+				( { data: { boss } } ) => boss.isArrived ? Number.MIN_SAFE_INTEGER : +boss.apparanceAtDay || 0 ,
+				{ reverse: true } ,
+			)
+				.map( guild => Bosses_Flagsubcommand.guildToField( guild ) )
+				.slice( 0 , 20 ) ,
 		} )
 	}
 }
@@ -177,9 +172,8 @@ class CommandRunContext extends BaseCommandRunContext {
 	userStats
 	static async new( interaction , command ) {
 		const context = new this( interaction , command )
-		const memb = interaction.mention ?? interaction.user
 		const boss = guildDataOf( interaction.guild ).boss ?? {}
-		Object.assign( context , { memb , boss } )
+		Object.assign( context , { memb: interaction.mentionedOrAuthor , boss } )
 		return context
 	}
 

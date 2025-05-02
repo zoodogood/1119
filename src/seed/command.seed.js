@@ -1,14 +1,15 @@
 // @ts-check
 import { DAY , HOUR , MINUTE , SECOND } from '#constants/time.js'
-import { addResource } from '#src/user/resources/addResource.js'
 import BerryCommand from '#src/berry/command.berry.js'
 import { client } from '#src/bot/client/singleton.js'
 import { addCoinFromMessage } from '#src/coin_message/requestCoinFromMessage.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { DataManager , guildDataOf, singletonBotData, userDataOf } from '#src/data/singleton.js'
+import { DataManager , guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
+import { _do } from '#src/mini.js'
 import { maybe_multiline , randomWith , timestampToDate } from '#src/safe-utils.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { codeOfEmoji } from '@zoodogood/utils/discordjs'
 import { CustomCollector } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
@@ -273,7 +274,7 @@ class Command extends BaseCommand {
 				} ,
 				{
 					callback: () => {
-						const { metric , count } = ( () => {
+						const { metric , count } = _do ( () => {
 							switch ( true ) {
 							case berry_growth_speed > 100:
 								return {
@@ -290,7 +291,7 @@ class Command extends BaseCommand {
 							default:
 								return { metric: 'день' , count: berry_growth_speed }
 							}
-						} )()
+						} )
 
 						return {
 							name: 'Плоды' ,

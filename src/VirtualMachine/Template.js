@@ -1,4 +1,5 @@
 import config from '#config'
+import { checkFilterPropertyFactory } from '#src/mini.js'
 import {
 	CircularProtocol ,
 	use_unique_characters_marker ,
@@ -128,7 +129,7 @@ class Template {
 		const mask = this.getPermissionsMask()
 
 		this.availableModulesList = modules
-			.filter( ( { filter } ) => !filter || filter( context ) )
+			.filter( checkFilterPropertyFactory( context ) )
 			.filter(
 				( { permissions } ) => ( permissions.scope & mask ) === permissions.scope ,
 			)

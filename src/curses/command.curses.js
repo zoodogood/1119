@@ -22,6 +22,7 @@ import {
 import { Emoji } from '#src/emojis/emojis.js'
 
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
+import { checkFilterPropertyFactory } from '#src/mini.js'
 import {
 	chunkBySize ,
 	timestampToDate ,
@@ -644,8 +645,7 @@ class BoughtContext extends BaseContext {
 	processValidateCurseBase() {
 		const { curseBase } = this
 		const canReceivedByOdds = !!curseBase._weight
-		const isPassFilter
-			= !curseBase.filter || curseBase.filter.call( curseBase , this.user , this )
+		const isPassFilter = checkFilterPropertyFactory( this.user , this )( curseBase )
 		if ( canReceivedByOdds && isPassFilter ) {
 			return true
 		}

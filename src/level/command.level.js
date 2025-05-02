@@ -40,10 +40,7 @@ class Command extends BaseCommand {
 		const canvasModule = this.canvasModule
 		const canvas = canvasModule.createCanvas( 900 , 225 )
 
-		const member
-			= interaction.mention
-				|| ( interaction.params && client.users.cache.get( interaction.params ) )
-				|| interaction.user
+		const member = interaction.mentionedOrAuthor
 
 		return {
 			canvasModule ,

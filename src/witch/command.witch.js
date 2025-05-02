@@ -1,4 +1,3 @@
-import { addResource } from '#src/user/resources/addResource.js'
 import {
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_2 ,
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 ,
@@ -6,8 +5,10 @@ import {
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
+import { checkFilterPropertyFactory } from '#src/mini.js'
 import { randomWith , sleep } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { _WEIGHT_AUTO , randomElementFromArray , randomElementsFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 
@@ -491,7 +492,7 @@ class Command extends BaseCommand {
 				: bonus._weight
 
 		const bonusesList = this.bonusesBase
-			.filter( bonus => !bonus.filter || bonus.filter( user , interaction ) )
+			.filter( checkFilterPropertyFactory( user , interaction ) )
 			.map( bonus => ( { ... bonus , _weight: getWeight( bonus ) } ) )
 
 		const bonuses = randomElementsFromArray( bonusesList , 3 , {

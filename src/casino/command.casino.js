@@ -71,7 +71,7 @@ ${
 
 		addResource( {
 			user ,
-			value: ( -1 ) ** !isWon * bet ,
+			value: ( -1 ) ** +!isWon * bet ,
 			executor: user ,
 			source: 'command.casino' ,
 			resource: PropertiesEnum.coins ,

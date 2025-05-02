@@ -1,9 +1,10 @@
 import BossManager from '#src/boss/BossManager.js'
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
+import { checkFilterPropertyFactory } from '#src/mini.js'
 
 export function resolve_attack_events_pull( context ) {
 	return [ ... BossManager.eventBases.values() ]
-		.filter( base => !base.filter || base.filter( context ) )
+		.filter( checkFilterPropertyFactory( context ) )
 		.map( event => ( {
 			... event ,
 			_weight:

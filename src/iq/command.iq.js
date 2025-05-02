@@ -23,9 +23,7 @@ class Command extends BaseCommand {
 
 	async onChatInput( msg , interaction ) {
 		const memb
-			= interaction.mention
-				|| client.users.cache.get( interaction.params )
-				|| msg.author
+			= interaction.mentionedOrAuthor
 
 		const membData = userDataOf( memb )
 
