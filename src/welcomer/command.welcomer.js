@@ -1,5 +1,6 @@
 import client from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { guildDataOf } from '#src/data/singleton.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { awaitInteractOrMessage } from '#src/discord/utils.js'
 
@@ -22,12 +23,12 @@ class Command extends BaseCommand {
 		const guild = msg.guild
 		let answer
 
-		if ( guildDataOf(guild).hi ) {
+		if ( guildDataOf( guild ).hi ) {
 			const early = await msg.msg( {
 				title: 'Ранее установленное приветствие:' ,
-				color: guildDataOf(guild).hi.color ,
-				image: guildDataOf(guild).hi.image ,
-				description: guildDataOf(guild).hi.message ,
+				color: guildDataOf( guild ).hi.color ,
+				image: guildDataOf( guild ).hi.image ,
+				description: guildDataOf( guild ).hi.message ,
 				scope: { tag: msg.author.toString() , name: msg.author.username } ,
 				footer: { text: 'Нажмите реакцию, чтобы продолжить редактирование' } ,
 			} )
@@ -129,9 +130,9 @@ class Command extends BaseCommand {
 			title: 'Упомяните канал для отправки приветсвий или...' ,
 			color: '#ffff00' ,
 			description: `📥 - Установить в этом канале ${
-				guild.channels.cache.get( guildDataOf(guild).hi.channel )
+				guild.channels.cache.get( guildDataOf( guild ).hi.channel )
 					? `\nСейчас установлен:\n${
-						guild.channels.cache.get( guildDataOf(guild).hi.channel ).toString()
+						guild.channels.cache.get( guildDataOf( guild ).hi.channel ).toString()
 					} - Оставить как есть 🔰`
 					: ''
 			}` ,
@@ -140,7 +141,7 @@ class Command extends BaseCommand {
 			target: whatChannel ,
 			user: interaction.user ,
 			reactionOptions: {
-				reactions: [ '📥' , guildDataOf(guild).hi.channel ? '🔰' : null ] ,
+				reactions: [ '📥' , guildDataOf( guild ).hi.channel ? '🔰' : null ] ,
 			} ,
 		} )
 		whatChannel.delete()
@@ -150,7 +151,7 @@ class Command extends BaseCommand {
 
 		const channelId
 			= answer.emoji?.toString() === '🔰'
-				? guildDataOf(guild).hi.channel
+				? guildDataOf( guild ).hi.channel
 				: answer.emoji?.toString() === '📥'
 					? interaction.channel.id
 					: answer.content?.match( /\d{16,21}/ )?.[ 0 ]
@@ -163,7 +164,7 @@ class Command extends BaseCommand {
 			return
 		}
 
-		guildDataOf(guild).hi = { message , color , image , rolesId , channel: channelId }
+		guildDataOf( guild ).hi = { message , color , image , rolesId , channel: channelId }
 		msg.msg( {
 			title: 'Готово! Предпросмотр: На сервере новый участник' ,
 			color ,
