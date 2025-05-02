@@ -1,99 +1,98 @@
 <script>
-	import Layout from "#site-component/Layout";
-	import Icon from "#site-component/iconic";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
+	import Icon from '#site-component/iconic'
+	import Layout from '#site-component/Layout'
+	import { dayjs } from '#src/dayjs.js'
+	import { resolveGithubPath } from '#src/github/resolveGithubPath.js'
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import { yaml } from '#src/safe-utils.js'
 
-	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
-	import dayjs from "#src/dayjs.js";
-	import { resolveGithubPath } from "#src/github/resolveGithubPath.js";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
-	import { yaml } from "#src/safe-utils.js";
-	import { ending } from "@zoodogood/utils/primitives";
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
+	import { path as Path } from '#src/url/export.js'
+	import { ending } from '@zoodogood/utils/primitives'
 
-	import Path from "node:path";
-
-	const i18n = svelteApp.i18n.pages.errorsItem;
+	const i18n = svelteApp.i18n.pages.errorsItem
 
 	const Component = {
-		errors: [],
-	};
+		errors: [] ,
+	}
 
 	const Search = {
-		filter({ key, meta }) {
-			if (!Search.value) {
-				return true;
+		filter( { key , meta } ) {
+			if ( !Search.value ) {
+				return true
 			}
-			const blacklist = [];
-			const whitelist = [];
+			const blacklist = []
+			const whitelist = []
 
 			Search.value
-				.split(" ")
-				.forEach((word) =>
-					word.startsWith("!")
-						? blacklist.push(word.slice(1))
-						: whitelist.push(word),
-				);
+				.split( ' ' )
+				.forEach( word =>
+					word.startsWith( '!' )
+						? blacklist.push( word.slice( 1 ) )
+						: whitelist.push( word ) ,
+				)
 
-			const isIncludes = (list) =>
+			const isIncludes = list =>
 				list.every(
-					(word) =>
-						key.includes(word) ||
-						meta.uniqueTags.some((tag) => tag.includes(word)),
-				);
+					word =>
+						key.includes( word )
+							|| meta.uniqueTags.some( tag => tag.includes( word ) ) ,
+				)
 
 			return (
-				isIncludes(whitelist) && (!blacklist.length || !isIncludes(blacklist))
-			);
-		},
-		tagClickHandler(clickEvent) {
-			if (clickEvent.target.tagName !== "LI") {
-				return;
+				isIncludes( whitelist ) && ( !blacklist.length || !isIncludes( blacklist ) )
+			)
+		} ,
+		tagClickHandler( clickEvent ) {
+			if ( clickEvent.target.tagName !== 'LI' ) {
+				return
 			}
 
-			const value = clickEvent.target.textContent;
-			Search.value = Search.value.includes(value)
-				? Search.value.replace(value, `!${value}`)
-				: `${Search.value} ${value}`;
-		},
-		value: "",
+			const value = clickEvent.target.textContent
+			Search.value = Search.value.includes( value )
+				? Search.value.replace( value , `!${ value }` )
+				: `${ Search.value } ${ value }`
+		} ,
+		value: '' ,
 	};
 
-	(async () => {
-		const URLSubpath = svelteApp.url.subpath;
-		const fileKey =
-			URLSubpath.at(-1).startsWith(":") && URLSubpath.at(-1).slice(1);
+	( async () => {
+		const URLSubpath = svelteApp.url.subpath
+		const fileKey
+			= URLSubpath.at( -1 ).startsWith( ':' ) && URLSubpath.at( -1 ).slice( 1 )
 
-		const DEFAULT = "current";
-		const path = fileKey ? `files/${fileKey}` : DEFAULT;
+		const DEFAULT = 'current'
+		const path = fileKey ? `files/${ fileKey }` : DEFAULT
 
-		const { groups } = await fetchFromInnerApi(`errors/${path}`);
-		for (const { errors: array } of groups) {
-			for (const item of array) {
-				item.context = (item.context && JSON.parse(item.context)) || {};
+		const { groups } = await fetchFromInnerApi( `errors/${ path }` )
+		for ( const { errors: array } of groups ) {
+			for ( const item of array ) {
+				item.context = ( item.context && JSON.parse( item.context ) ) || {}
 				item.stack = item.stackData
-					? decodeURI(item.stackData.stack).replaceAll("\\", "/")
-					: null;
-				item.strokeOfError = item.stackData?.strokeOfError;
-				item.fileOfError = item.stackData?.fileOfError;
+					? decodeURI( item.stackData.stack ).replaceAll( '\\' , '/' )
+					: null
+				item.strokeOfError = item.stackData?.strokeOfError
+				item.fileOfError = item.stackData?.fileOfError
 
 				try {
-					item.stackData &&
-						(item.githubURL = resolveGithubPath(
+					item.stackData
+					&& ( item.githubURL = resolveGithubPath(
 							Path.relative(
-								svelteApp.enviroment.cwd,
-								item.stackData.fileOfError ?? ".",
-							),
-							item.stackData.strokeOfError,
-						));
-				} catch (error) {
-					console.error(error);
+								svelteApp.enviroment.cwd ,
+								item.stackData.fileOfError ?? '.' ,
+							) ,
+							item.stackData.strokeOfError ,
+						) )
+				} catch ( error ) {
+					console.error( error )
 				}
 			}
 		}
 
-		Component.errors = groups;
-		console.info(Component.errors);
-	})();
+		Component.errors = groups
+		console.info( Component.errors )
+	} )()
 </script>
 
 <Layout>
@@ -105,26 +104,26 @@
 			<span>{Component.errors.length}</span>
 		</p>
 		<a
-			class="collections-link"
+			class='collections-link'
 			href={PagesRouter.relativeToPage(
-				PagesRouter.getPageBy("errors/list").key,
-			)}><Icon code="" /> {i18n.backToCollections}</a
+				PagesRouter.getPageBy( 'errors/list' ).key ,
+			)}><Icon code='' /> {i18n.backToCollections}</a
 		>
 		{#if Component.errors.length}
 			<input
-				type="text"
-				placeholder=" {i18n.filter}"
+				type='text'
+				placeholder=' {i18n.filter}'
 				bind:value={Search.value}
 				title={i18n.filterTip}
 			/>
 		{/if}
 
-		<ul class="errors">
-			{#each Component.errors.filter(Search.filter) as element}
-				{@const { key, errors: array, meta } = element}
-				<li class="error-file" id={key}>
+		<ul class='errors'>
+			{#each Component.errors.filter( Search.filter ) as element}
+				{@const { key , errors: array , meta } = element}
+				<li class='error-file' id={key}>
 					<h2>{key}</h2>
-					<section class="tags">
+					<section class='tags'>
 						<span>{i18n.tags}</span>
 
 						<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -137,28 +136,28 @@
 					</section>
 					<p>
 						<span>{i18n.called}</span>
-						{ending(array.length, ...i18n.times__ending)};
+						{ending( array.length , ... i18n.times__ending )};
 					</p>
 
-					<details class="error-details">
+					<details class='error-details'>
 						<summary>{i18n.details}</summary>
-						{#each array as arrayErrorElement, i}
-							<details class="arrayErrorElement">
+						{#each array as arrayErrorElement , i}
+							<details class='arrayErrorElement'>
 								<summary
-									>{i18n.element} #{i + 1} ({dayjs(
-										arrayErrorElement.createdAt,
-									).format("HH:mm")})</summary
+								>{i18n.element} #{i + 1} ({dayjs(
+									arrayErrorElement.createdAt ,
+								).format( 'HH:mm' )})</summary
 								>
 								<h3>{i18n.context}</h3>
-								<code class="context">
-									{yaml.stringify(arrayErrorElement.context)}
+								<code class='context'>
+									{yaml.stringify( arrayErrorElement.context )}
 								</code>
 
 								<h3>{i18n.stack}</h3>
-								<code class="stack">
+								<code class='stack'>
 									{arrayErrorElement.stack}
 								</code>
-								{arrayErrorElement.githubURL || ""}
+								{arrayErrorElement.githubURL || ''}
 							</details>
 						{/each}
 					</details>

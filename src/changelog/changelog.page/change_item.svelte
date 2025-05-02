@@ -1,154 +1,155 @@
 <script>
-	import config from "#config";
-	import ContextMenu from "#site-component/ContextMenu";
-	import { createPopup } from "#site/components/Popups/handler.svelte";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import { isDeveloper } from "#root/src/site/_build/src/lib/permissions.js";
-	import dayjs from "#src/dayjs.js";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
+	import config from '#config'
+	import ContextMenu from '#site-component/ContextMenu'
+	import dayjs from '#src/dayjs.js'
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import { isDeveloper } from '#src/site/_build/components/lib/permissions.js'
 
-	import { onMount } from "svelte";
-	import { getNotificationsContext } from "svelte-notifications";
-	const { addNotification } = getNotificationsContext();
+	import { createPopup } from '#src/site/_build/components/svelte/Popups/handler.svelte'
+	import { onMount } from 'svelte'
+	import { getNotificationsContext } from 'svelte-notifications'
 
-	export let message;
-	export let commit_id;
-	export let uid;
-	export let change;
-	export let group_symbol;
-	export let short_change;
-	export let createdAt;
+	const { addNotification } = getNotificationsContext()
 
-	let node = null;
+	export let message
+	export let commit_id
+	export let uid
+	export let change
+	export let group_symbol
+	export let short_change
+	export let createdAt
+
+	let node = null
 
 	const markupedList = {
-		KEY: "changelog.markupedList",
-		update(callback) {
-			const value = callback(this.value());
-			localStorage.setItem(this.KEY, JSON.stringify(value));
-			return value;
-		},
+		KEY: 'changelog.markupedList' ,
+		update( callback ) {
+			const value = callback( this.value() )
+			localStorage.setItem( this.KEY , JSON.stringify( value ) )
+			return value
+		} ,
 		value() {
-			const plain = localStorage.getItem(this.KEY) || "[]";
-			return JSON.parse(plain);
-		},
-	};
-	onMount(() => {
-		const list = markupedList.value();
-		list.includes(uid) && node.classList.add("markuped");
+			const plain = localStorage.getItem( this.KEY ) || '[]'
+			return JSON.parse( plain )
+		} ,
+	}
+	onMount( () => {
+		const list = markupedList.value()
+		list.includes( uid ) && node.classList.add( 'markuped' )
 
-		document.location.hash.endsWith(uid) &&
-			(() => {
-				node.classList.add("target");
-				node.scrollIntoView({ behaviour: "smooth", block: "center" });
-			})();
-	});
-	function onContextMenu(event) {
-		createPopup(ContextMenu, {
-			x: event.pageX,
-			y: event.pageY,
+		document.location.hash.endsWith( uid )
+		&& ( () => {
+				node.classList.add( 'target' )
+				node.scrollIntoView( { behaviour: 'smooth' , block: 'center' } )
+			} )()
+	} )
+	function onContextMenu( event ) {
+		createPopup( ContextMenu , {
+			x: event.pageX ,
+			y: event.pageY ,
 			items: [
-				isDeveloper(svelteApp.user) &&
-					uid && {
-						label: "Отредактировать",
+				isDeveloper( svelteApp.user )
+				&& uid && {
+						label: 'Отредактировать' ,
 						action: async () => {
-							node.innerText = change;
-							const previous = node.innerText;
-							node.contentEditable = "true";
-							node.focus();
-							const { resolve, promise } = Promise.withResolvers();
-							node.addEventListener("blur", resolve, { once: true });
-							await promise;
-							node.contentEditable = "false";
-							if (!confirm("Подтвердите отправку изменений")) {
-								node.innerText = previous;
-								return;
+							node.innerText = change
+						const previous = node.innerText
+						node.contentEditable = 'true'
+						node.focus()
+						const { resolve , promise } = Promise.withResolvers()
+						node.addEventListener( 'blur' , resolve , { once: true } )
+						await promise
+						node.contentEditable = 'false'
+						if ( !confirm( 'Подтвердите отправку изменений' ) ) {
+								node.innerText = previous
+							return;
 							}
-							const value = node.innerText.trim();
-							addNotification({
-								text: "Отправка на сервер",
-								removeAfter: 10_000,
-								position: "bottom-center",
-							});
-							const result = await fetchFromInnerApi(
-								"/changelog/request_edit_change",
+							const value = node.innerText.trim()
+						addNotification( {
+								text: 'Отправка на сервер' ,
+								removeAfter: 10_000 ,
+								position: 'bottom-center' ,
+							} )
+						const result = await fetchFromInnerApi(
+								"/changelog/request_edit_change" ,
 								{
-									parseType: "text",
-									method: "POST",
-									headers: { Authorization: svelteApp.storage.getToken() },
-									body: JSON.stringify({
-										target: uid,
-										message,
-										previous,
-										value,
-									}),
-								},
+									parseType: 'text' ,
+									method: 'POST' ,
+									headers: { Authorization: svelteApp.storage.getToken() } ,
+									body: JSON.stringify( {
+										target: uid ,
+										message ,
+										previous ,
+										value ,
+									} ) ,
+								} ,
 							);
-							addNotification({
-								text: `Статус отправки: ${JSON.stringify(result)}\nПерезагрузите страницу для синхронизации изменений`,
-								position: "bottom-center",
-								removeAfter: 10_000,
-							});
-						},
-					},
+							addNotification( {
+								text: `Статус отправки: ${ JSON.stringify( result ) }\nПерезагрузите страницу для синхронизации изменений` ,
+								position: 'bottom-center' ,
+								removeAfter: 10_000 ,
+							} )
+					} ,
+					} ,
 				commit_id && {
-					label: "Открыть коммит",
-					icon: "",
-					action: () => open(`${config.enviroment.github}/commit/${commit_id}`),
-				},
-				!node.classList.contains("markuped") && {
-					label: "Маркер",
-					icon: "",
+					label: 'Открыть коммит' ,
+					icon: '' ,
+					action: () => open( `${ config.enviroment.github }/commit/${ commit_id }` ) ,
+				} ,
+				!node.classList.contains( 'markuped' ) && {
+					label: 'Маркер' ,
+					icon: '' ,
 					action: () => {
-						markupedList.update((previous) => {
-							previous.push(uid);
-							return previous;
-						});
-						node.classList.add("markuped");
-					},
-				},
-				node.classList.contains("markuped") && {
-					label: "Отменить маркеровку",
-					icon: "",
+						markupedList.update( ( previous ) => {
+							previous.push( uid )
+							return previous
+						} )
+						node.classList.add( 'markuped' )
+					} ,
+				} ,
+				node.classList.contains( 'markuped' ) && {
+					label: 'Отменить маркеровку' ,
+					icon: '' ,
 					action: () => {
-						markupedList.update((previous) => {
-							const index = previous.indexOf(uid);
-							index !== -1 && previous.splice(index, 1);
-							return previous;
-						});
-						node.classList.remove("markuped");
-					},
-				},
+						markupedList.update( ( previous ) => {
+							const index = previous.indexOf( uid )
+							index !== -1 && previous.splice( index , 1 )
+							return previous
+						} )
+						node.classList.remove( 'markuped' )
+					} ,
+				} ,
 				{
-					label: "Скопировать ссылку на изменение",
-					icon: "",
+					label: 'Скопировать ссылку на изменение' ,
+					icon: '' ,
 					action: async () => {
 						const result = await navigator.clipboard.writeText(
-							`${svelteApp.document.location.origin}${svelteApp.document.location.pathname}#${event.target.id}`,
-						);
+							`${ svelteApp.document.location.origin }${ svelteApp.document.location.pathname }#${ event.target.id }` ,
+						)
 
-						addNotification({
-							text: "Скопировано",
-							removeAfter: 10_000,
-							position: "bottom-center",
-						});
-						return result;
-					},
-				},
+						addNotification( {
+							text: 'Скопировано' ,
+							removeAfter: 10_000 ,
+							position: 'bottom-center' ,
+						} )
+						return result
+					} ,
+				} ,
 				{
-					label: `Создано: ${dayjs(createdAt).format("DD.MM.YYYY HH:mm:ss")}`,
-					icon: "",
+					label: `Создано: ${ dayjs( createdAt ).format( 'DD.MM.YYYY HH:mm:ss' ) }` ,
+					icon: '' ,
 					action: () => {
-						addNotification({
-							text: "Показывает время создания изменения",
-							position: "bottom-center",
-							removeAfter: 10_000,
-						});
-					},
-				},
-			].filter(Boolean),
-		});
-		event.preventDefault();
+						addNotification( {
+							text: 'Показывает время создания изменения' ,
+							position: 'bottom-center' ,
+							removeAfter: 10_000 ,
+						} )
+					} ,
+				} ,
+			].filter( Boolean ) ,
+		} )
+		event.preventDefault()
 	}
 </script>
 

@@ -1,24 +1,22 @@
 <script>
-	import { init_pwa_worker } from '#root/src/site/_build/src/lib/init_pwa.js'
-	import PagesRouter from '#root/src/site/_build/src/lib/page_router_singleton.js'
-	import {
-		GuildProgress ,
-		GuildSettings ,
-		UserProgress ,
-		UserSettings ,
-	} from '#root/src/site/_build/src/svelte_component/frames/entityData/mod.js'
-
-	import ChangeLanguage from '#root/src/site/src/svelte_component/ChangeLanguage/mod.svelte'
-
-	import svelteApp from '#root/src/svelte/svelte-app_singleton.jston.js'
 	import Image from '#site-component/Image'
 
 	import Layout from '#site-component/Layout'
 
-	import UserGuildsNav from '#site/pages/user/panel/UserGuildsNav.svelte'
+	import { SECOND } from '#src/constants/time.js'
+	import GuildSettings from '#src/guildcommand/editserver/GuildSettings.svelte'
+	import GuildProgress from '#src/guildcommand/GuildProgress.svelte'
+
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import { init_pwa_worker } from '#src/site/_build/components/lib/init_pwa.js'
+	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
+	import ChangeLanguage from '#src/site/_build/components/svelte/ChangeLanguage/mod.svelte'
+	import UserSettings from '#src/user/setprofile/UserSettings.svelte'
+	import UserProgress from '#src/user/UserProgress.svelte'
 	import { onMount } from 'svelte'
 	import { getNotificationsContext } from 'svelte-notifications'
+	import UserGuildsNav from '../UserGuildsNav.svelte'
 
 	const { addNotification } = getNotificationsContext()
 	const hashStore = svelteApp.Hash.store
@@ -141,7 +139,7 @@
 					init_pwa_worker() ,
 					addNotification( {
 						text: 'Возможно, в панели браузера появилась соответсвующая опция' ,
-						removeAfter: 10_000 ,
+						removeAfter: 10 * SECOND ,
 					} )
 				)}>Инициализировать PWA (для тестеровщиков)</button
 			>

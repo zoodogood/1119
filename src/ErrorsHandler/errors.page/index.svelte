@@ -1,38 +1,38 @@
 <script>
-	import Layout from "#site-component/Layout";
-	import Icon from "#site-component/iconic";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
-	import dayjs from "#src/dayjs.js";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
+	import Icon from '#site-component/iconic'
+	import Layout from '#site-component/Layout'
+	import dayjs from '#src/dayjs.js'
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
 
 	const Component = {
-		errors: [],
-	};
+		errors: [] ,
+	}
 	const i18n = svelteApp.i18n.pages.errorsIndex;
 
-	(async () => {
-		const { list, metadata } = await fetchFromInnerApi("errors/files");
-		const entries = list.map((key, index) => [key, metadata[index]]).reverse();
+	( async () => {
+		const { list , metadata } = await fetchFromInnerApi( 'errors/files' )
+		const entries = list.map( ( key , index ) => [ key , metadata[ index ] ] ).reverse()
 
-		Component.errors = entries;
-		console.info("=== Component.errors ===\n", Component.errors);
-	})();
+		Component.errors = entries
+		console.info( '=== Component.errors ===\n' , Component.errors )
+	} )()
 </script>
 
 <Layout>
 	<main>
 		<h1>{i18n.label}</h1>
-		<ul class="errors-list">
-			{#each Component.errors as [timestamp, errorFile], i}
+		<ul class='errors-list'>
+			{#each Component.errors as [ timestamp , errorFile ] , i}
 				<li
-					class="error-file"
+					class='error-file'
 					class:special={timestamp === null}
 					data-uniqueErrors={errorFile?.errorsCount}
 				>
 					<a
 						href="{PagesRouter.relativeToPage(
-							PagesRouter.getPageBy('errors/list/item').key,
+							PagesRouter.getPageBy( 'errors/list/item' ).key ,
 						)}/:{timestamp || ''}"
 					>
 						<big>ID: {Component.errors.length - i}</big>
@@ -40,9 +40,9 @@
 							{#if timestamp}
 								{i18n.created}
 								<code
-									>{timestamp
-										? dayjs(+timestamp).format("DD.MM HH:mm")
-										: null}</code
+								>{timestamp
+									? dayjs( +timestamp ).format( 'DD.MM HH:mm' )
+									: null}</code
 								>
 							{:else}
 								{i18n.inRealTime}
@@ -51,7 +51,7 @@
 						<br />
 
 						{#if errorFile}
-							<section class="metadata-container">
+							<section class='metadata-container'>
 								<ul>
 									<li data-value={errorFile.errorsCount ?? null}>
 										{i18n.uniqueMessages}
@@ -60,10 +60,10 @@
 									</li>
 									<li data-value={errorFile.uniqueTags?.length || null}>
 										{i18n.tags}
-										{errorFile.uniqueTags?.join(", ")}
+										{errorFile.uniqueTags?.join( ', ' )}
 									</li>
 									<li data-value={errorFile.reportsCount || null}>
-										<Icon code="" />{i18n.reports}
+										<Icon code='' />{i18n.reports}
 										{errorFile.reportsCount}
 									</li>
 								</ul>

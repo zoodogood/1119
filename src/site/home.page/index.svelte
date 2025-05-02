@@ -1,14 +1,17 @@
 <script>
-	import ChangeLanguage from '#root/src/site/src/svelte_component/ChangeLanguage/mod.svelte'
-	import svelteApp from '#root/src/svelte/svelte-app_singleton.jston.js'
+	import ChangeLanguage from '#src/site/_build/components/svelte/ChangeLanguage/mod.svelte';
+	
+	
 	import Layout from '#site-component/Layout'
 
-	const i18n = svelteApp.i18n.pages.public
-
+	
 	import { Theme } from '#site-component/ThemeSwitcher'
+	import svelteApp from '../_build/components/app_singleton.js'
+	const i18n = svelteApp.i18n.pages.public
 
 	const CurrentThemeStore = Theme.current
 </script>
+
 
 {#if $CurrentThemeStore === Theme.enum.brightOrange}
 	<style>

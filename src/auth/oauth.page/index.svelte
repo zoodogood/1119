@@ -1,107 +1,107 @@
 <script>
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
-	import { sleep } from "#src/safe-utils.js";
-	import { GlitchText } from "@zoodogood/utils/objectives";
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import { sleep } from '#src/safe-utils.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
+	import { GlitchText } from '@zoodogood/utils/objectives'
 
-	import { onMount } from "svelte";
+	import { onMount } from 'svelte'
 
-	let node;
-	const i18n = svelteApp.i18n.pages.oauth;
+	let node
+	const i18n = svelteApp.i18n.pages.oauth
 
-	let { code, redirect } = svelteApp.url.queries;
-	redirect &&= decodeURIComponent(redirect);
-	code ||= svelteApp.storage.getToken();
+	let { code , redirect } = svelteApp.url.queries
+	redirect &&= decodeURIComponent( redirect )
+	code ||= svelteApp.storage.getToken()
 
-	svelteApp.storage.setToken(code);
+	svelteApp.storage.setToken( code )
 
-	let user;
+	let user
 
 	const _redirectURL = PagesRouter.relativeToPage(
-		PagesRouter.getPageBy(PagesRouter.pages_alias_hash.get(redirect))?.key ??
-			PagesRouter.getPageBy("public").key,
-	);
+		PagesRouter.getPageBy( PagesRouter.pages_alias_hash.get( redirect ) )?.key
+		?? PagesRouter.getPageBy( 'public' ).key ,
+	)
 
 	const StatusEnum = {
-		noToken: 1,
-		dataPending: 2,
-		dataSuccess: 4,
-		dataReject: 8,
-	};
-
-	const State = {
-		status: code ? StatusEnum.dataPending : StatusEnum.noToken,
-		code,
-		redirect,
-	};
-
-	async function realizeDataByToken(code) {
-		if (!code) {
-			return;
-		}
-
-		const headers = { Authorization: code };
-		const data = await fetchFromInnerApi(`./oauth2/user`, { headers });
-
-		if (typeof data !== "object") {
-			return;
-		}
-
-		const titleNode = node.querySelector(".title");
-		user = data;
-		svelteApp.storage.setUserData(user);
-		svelteApp.user = svelteApp.storage.getUserData();
-
-		const previousContent = titleNode.textContent;
-		const content = `${i18n.specialGreeting}, ${user.username}!`;
-		const glitchText = new GlitchText(previousContent, content, { step: 2 });
-		for (const text of glitchText) {
-			await sleep(25);
-			titleNode.textContent = text;
-		}
-
-		return user;
+		noToken: 1 ,
+		dataPending: 2 ,
+		dataSuccess: 4 ,
+		dataReject: 8 ,
 	}
 
-	onMount(async () => {
-		const user = await realizeDataByToken(code);
-		State.status = user?.id ? StatusEnum.dataSuccess : StatusEnum.dataReject;
-	});
+	const State = {
+		status: code ? StatusEnum.dataPending : StatusEnum.noToken ,
+		code ,
+		redirect ,
+	}
+
+	async function realizeDataByToken( code ) {
+		if ( !code ) {
+			return
+		}
+
+		const headers = { Authorization: code }
+		const data = await fetchFromInnerApi( `./oauth2/user` , { headers } )
+
+		if ( typeof data !== 'object' ) {
+			return
+		}
+
+		const titleNode = node.querySelector( '.title' )
+		user = data
+		svelteApp.storage.setUserData( user )
+		svelteApp.user = svelteApp.storage.getUserData()
+
+		const previousContent = titleNode.textContent
+		const content = `${ i18n.specialGreeting }, ${ user.username }!`
+		const glitchText = new GlitchText( previousContent , content , { step: 2 } )
+		for ( const text of glitchText ) {
+			await sleep( 25 )
+			titleNode.textContent = text
+		}
+
+		return user
+	}
+
+	onMount( async () => {
+		const user = await realizeDataByToken( code )
+		State.status = user?.id ? StatusEnum.dataSuccess : StatusEnum.dataReject
+	} )
 </script>
 
 <main bind:this={node}>
-	<h1 class="title">{i18n.greeting}</h1>
-	<p class="token">
-		{i18n.yourToken}: {String(State.code)
-			.split("")
+	<h1 class='title'>{i18n.greeting}</h1>
+	<p class='token'>
+		{i18n.yourToken}: {String( State.code )
+			.split( '' )
 			.reduce(
-				(acc, symbol, i) => acc.concat(!i || i % 4 ? symbol : `-${symbol}`),
-				"",
+				( acc , symbol , i ) => acc.concat( !i || i % 4 ? symbol : `-${ symbol }` ) ,
+				'' ,
 			)}
 	</p>
 
 	<nav>
-		<a href={_redirectURL} class="button button-to-site">
+		<a href={_redirectURL} class='button button-to-site'>
 			<button>{i18n.backTo} {redirect ?? i18n.backTo_defaultTarget}</button>
 		</a>
 
-		{#if State.status & (StatusEnum.dataSuccess | StatusEnum.dataPending)}
+		{#if State.status & ( StatusEnum.dataSuccess | StatusEnum.dataPending )}
 			<a
 				href={PagesRouter.relativeToPage(
-					PagesRouter.getPageBy("user/panel").key,
+					PagesRouter.getPageBy( 'user/panel' ).key ,
 				)}
-				class="button-to-panel"
+				class='button-to-panel'
 			>
 				<button disabled={State.status === StatusEnum.dataPending}
-					>{i18n.panel}</button
+				>{i18n.panel}</button
 				>
 			</a>
 		{:else}
 			<button
 				on:click={() =>
 					PagesRouter.redirect(
-						`../oauth2/auth?redirect=${svelteApp.url.subpath.join("/")}`,
+						`../oauth2/auth?redirect=${ svelteApp.url.subpath.join( '/' ) }` ,
 					)}
 			>
 				{i18n.login}
@@ -110,7 +110,7 @@
 	</nav>
 
 	{#if State.status === StatusEnum.dataSuccess}
-		<p class="tip">{i18n.nowYouCanLeave}</p>
+		<p class='tip'>{i18n.nowYouCanLeave}</p>
 	{/if}
 </main>
 

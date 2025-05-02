@@ -1,49 +1,48 @@
 <script>
-	import Dialog from "#site-component/Dialog";
-	import Layout from "#site-component/Layout";
+	import Dialog from '#site-component/Dialog'
+	import Layout from '#site-component/Layout'
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import { MarkdownMetadata } from '#src/MarkdownMetadata.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
 
-	import { svelteApp } from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
-	import { MarkdownMetadata } from "#src/MarkdownMetadata.js";
-
-	const i18n = svelteApp.i18n.pages.articlesCreate;
+	const i18n = svelteApp.i18n.pages.articlesCreate
 	const Contents = {
-		filename: null,
-	};
-	let labelNode;
+		filename: null ,
+	}
+	let labelNode
 
-	const onFileUpload = async (inputEvent) => {
-		const button = labelNode.querySelector("button");
-		button.setAttribute("disabled", true);
+	const onFileUpload = async ( inputEvent ) => {
+		const button = labelNode.querySelector( 'button' )
+		button.setAttribute( 'disabled' , true )
 
-		const files = inputEvent.target.files;
-		const file = files[0];
+		const files = inputEvent.target.files
+		const file = files[ 0 ]
 
 		const headers = {
-			Authorization: svelteApp.storage.getToken(),
-			"Content-Type": "application/octet-stream",
-			FileName: file.name,
-		};
+			'Authorization': svelteApp.storage.getToken() ,
+			'Content-Type': 'application/octet-stream' ,
+			'FileName': file.name ,
+		}
 
-		const answer = await fetchFromInnerApi("site/articles/create", {
-			method: "POST",
-			body: file,
-			headers,
-		});
+		const answer = await fetchFromInnerApi( 'site/articles/create' , {
+			method: 'POST' ,
+			body: file ,
+			headers ,
+		} )
 
-		new Dialog({
-			target: document.body,
+		new Dialog( {
+			target: document.body ,
 			props: {
-				title: i18n.serverResponse,
-				description: MarkdownMetadata.yaml.stringify(answer),
-				useClassic: true,
-			},
-		});
-		button.removeAttribute("disabled");
+				title: i18n.serverResponse ,
+				description: MarkdownMetadata.yaml.stringify( answer ) ,
+				useClassic: true ,
+			} ,
+		} )
+		button.removeAttribute( 'disabled' )
 
-		Contents.filename = file.name;
-	};
+		Contents.filename = file.name
+	}
 </script>
 
 <Layout>
@@ -53,19 +52,19 @@
 	<h1>{i18n.label}</h1>
 
 	<main>
-		<section class="main-buttons">
+		<section class='main-buttons'>
 			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 			<label
-				for="load-file"
+				for='load-file'
 				bind:this={labelNode}
-				on:click={(pointerEvent) =>
+				on:click={pointerEvent =>
 					!svelteApp.user && pointerEvent.preventDefault()}
-				on:keydown={(keyEvent) => !svelteApp.user && keyEvent.preventDefault()}
+				on:keydown={keyEvent => !svelteApp.user && keyEvent.preventDefault()}
 			>
 				<input
-					type="file"
-					id="load-file"
-					accept=".md"
+					type='file'
+					id='load-file'
+					accept='.md'
 					on:change={onFileUpload}
 				/>
 				<button
@@ -76,7 +75,7 @@
 			{#if Contents.filename}
 				<a
 					href="{PagesRouter.relativeToPage(
-						PagesRouter.getPageBy('articles/item').key,
+						PagesRouter.getPageBy( 'articles/item' ).key ,
 					)}?id={svelteApp.user.id}/{Contents.filename}"
 				>
 					<button>{i18n.getDownToPage}</button>
@@ -98,10 +97,10 @@
 		</p>
 		<br />
 		<iframe
-			loading="lazy"
-			title="editor-preview"
-			src="https://dillinger.io/"
-			style="width: 100%; height: 90vh;"
+			loading='lazy'
+			title='editor-preview'
+			src='https://dillinger.io/'
+			style='width: 100%; height: 90vh;'
 		></iframe>
 		<hr />
 	</section>

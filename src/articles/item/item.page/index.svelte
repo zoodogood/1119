@@ -4,12 +4,12 @@
 	import Icon from '#site-component/iconic'
 	import Image from '#site-component/Image'
 	import Layout from '#site-component/Layout'
-	import svelteApp from '#root/src/svelte/svelte-app_singleton.jston.js'
-	import PagesRouter from '#root/src/site/_build/src/lib/page_router_singleton.js'
-	import dayjs from '#src/dayjs.js'
+	import { dayjs } from '#src/dayjs.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { MarkdownMetadata } from '#src/MarkdownMetadata.js'
 	import { ReplaceTemplate , timestampToDate } from '#src/safe-utils.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
 
 	const i18n = svelteApp.i18n.pages.articlesItem
 	const key = svelteApp.url.queries.id

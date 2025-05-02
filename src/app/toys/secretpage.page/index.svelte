@@ -1,21 +1,20 @@
 <script>
-	import ThemeSwitcher from "#site-component/ThemeSwitcher";
-	import Icon from "#site-component/iconic";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import PagesRouter from "#root/src/site/_build/src/lib/page_router_singleton.js";
+	import Icon from '#site-component/iconic'
+	import ThemeSwitcher , { Theme } from '#site-component/ThemeSwitcher'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
 
-	import { Theme } from "#site-component/ThemeSwitcher";
-	const CurrentThemeStore = Theme.current;
+	const CurrentThemeStore = Theme.current
 
-	const i18n = svelteApp.i18n.pages.secretpage;
-	console.info(`
+	const i18n = svelteApp.i18n.pages.secretpage
+	console.info( `
 		Ты нашёл эту страницу
 		Ты нашёл её
 		Весь мир должен узнать, что ты нашёл её
 		Ведь это так
 		Каждый цвет имеет значение
 		Это не загадка и не предназначение
-	`);
+	` )
 </script>
 
 {#if $CurrentThemeStore !== Theme.enum.darkBlue}
@@ -37,18 +36,19 @@
 	<small>{i18n.future}</small>
 </main>
 
-<nav class="theme-switcher-container">
-	<a href={PagesRouter.relativeToPage("public")}><Icon code="" /></a>
+<nav class='theme-switcher-container'>
+	<a href={PagesRouter.relativeToPage( 'public' )}><Icon code='' /></a>
 	<ThemeSwitcher />
 </nav>
 
 <!-- svelte-ignore missing-declaration -->
 <svelte:element
-	this="script"
+	this={'script'}
 	async
-	src="https://zoodogood.github.io/LetItSnow/LetItSnow.js"
+	src='https://zoodogood.github.io/LetItSnow/LetItSnow.js'
 	on:load={function () {
-		return new SnowBackground({ particlesCount: 200 });
+		// @ts-expect-error may loaded from script
+		return new SnowBackground( { particlesCount: 200 } )
 	}}
 />
 

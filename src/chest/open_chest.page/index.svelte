@@ -1,44 +1,44 @@
 <script>
-	import Image from "#site-component/Image";
-	import Layout from "#site-component/Layout";
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import { ButtonResponse } from "#root/src/site/_build/src/lib/ButtonResponse.js";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
-	import { isObject } from "#src/mini.js";
-	import { timestampToDate } from "#src/safe-utils.js";
+	import Image from '#site-component/Image'
+	import Layout from '#site-component/Layout'
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import { isObject } from '#src/mini.js'
+	import { timestampToDate } from '#src/safe-utils.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import { interactWithButton } from '#src/site/_build/components/lib/ButtonResponse.js'
 
-	const i18n = svelteApp.i18n.pages.openChest;
+	const i18n = svelteApp.i18n.pages.openChest
 	const Resources = {
-		imageURL: "https://i.ibb.co/GCxwmxw/open-chest-variant1.gif",
-	};
+		imageURL: 'https://i.ibb.co/GCxwmxw/open-chest-variant1.gif' ,
+	}
 
 	const State = {
-		loggerList: [],
-	};
+		loggerList: [] ,
+	}
 
-	async function clickHandler(event) {
-		return ButtonResponse("open_chest.clickHandler", event, async () => {
-			const headers = { Authorization: svelteApp.storage.getToken() };
-			const json = await fetchFromInnerApi("user/chest_open", {
-				headers,
-				method: "POST",
-			});
+	async function clickHandler( event ) {
+		return interactWithButton( 'open_chest.clickHandler' , event , async () => {
+			const headers = { Authorization: svelteApp.storage.getToken() }
+			const json = await fetchFromInnerApi( 'user/chest_open' , {
+				headers ,
+				method: 'POST' ,
+			} )
 
-			if (!isObject(json)) {
-				throw new Error("Response is empty");
+			if ( !isObject( json ) ) {
+				throw new Error( 'Response is empty' )
 			}
 
-			if (json.notAllowed) {
-				State.loggerList = [i18n.chestOnCooldown, timestampToDate(json.value)];
-				return;
+			if ( json.notAllowed ) {
+				State.loggerList = [ i18n.chestOnCooldown , timestampToDate( json.value ) ]
+				return
 			}
 
 			State.loggerList = [
-				`${i18n.bonuses}: ${json.openCount}`,
-				`${i18n.treasures}: ${Object.keys(json.treasures).length}:`,
-				...Object.entries(json.treasures).map((entrie) => entrie.join(" ")),
-			];
-		});
+				`${ i18n.bonuses }: ${ json.openCount }` ,
+				`${ i18n.treasures }: ${ Object.keys( json.treasures ).length }:` ,
+				... Object.entries( json.treasures ).map( entrie => entrie.join( ' ' ) ) ,
+			]
+		} )
 	}
 </script>
 
@@ -54,13 +54,13 @@
 				<small>{i18n.logInAgain}</small>
 			{/if}
 			<button disabled={!svelteApp.user} on:click={clickHandler}
-				>{i18n.open}</button
+			>{i18n.open}</button
 			>
 		</main>
-		<section class="logger">
-			<Image src={Resources.imageURL} alt="chest" className="chest_image" />
-			<ul class="logger-list">
-				{#each State.loggerList as log, i}
+		<section class='logger'>
+			<Image src={Resources.imageURL} alt='chest' className='chest_image' />
+			<ul class='logger-list'>
+				{#each State.loggerList as log , i}
 					{#key log}
 						<li style:--i={i}>{log}</li>
 					{/key}

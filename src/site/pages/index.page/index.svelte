@@ -1,6 +1,6 @@
 <script>
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import { relativeSiteRoot } from "#root/src/site/_build/src/lib/util.js";
+	import svelteApp from "#src/site/_build/components/app_singleton.js"
+	import { relativeSiteRoot } from "#src/site/_build/components/lib/util.js"
 
 	const _url = relativeSiteRoot(svelteApp, "public");
 </script>

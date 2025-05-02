@@ -1,15 +1,12 @@
 <script>
-	import {
-		AuditDaily ,
-		Statistic ,
-	} from '#root/src/site/_build/src/svelte_component/frames/statistic/mod.js'
-	import Image from '#site-component/Image'
 	import Layout from '#site-component/Layout'
-	import AuthorProjects from '#site/components/frames/external/author/Projects.svelte'
-
-	import PagesRouter from '#root/src/site/_build/src/lib/page_router_singleton.js'
+	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
+	import AuthorProjects from '#src/site/_build/components/svelte/frames/external/author/AuthorProjects.svelte'
+	import AuditDaily from '#src/site/_build/components/svelte/frames/statistic/AuditDaily.svelte'
+	import Statistic from '#src/site/_build/components/svelte/frames/statistic/Statistic.svelte'
 	import { onMount } from 'svelte'
 
+	
 	const Component = {
 		mainNode: null ,
 	}

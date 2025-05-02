@@ -1,44 +1,41 @@
 <script>
-	import svelteApp from "#root/src/svelte/svelte-app_singleton.jston.js";
-	import PagesRouter, {
-		PagesKeyEnum,
-	} from "#root/src/site/_build/src/lib/page_router_singleton.js";
+	import Icon from '#site-component/iconic'
+	import Layout from '#site-component/Layout'
+	import { Theme } from '#site-component/ThemeSwitcher'
+	import config from '#src/config.json.js'
+	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import PagesRouter, { PagesKeyEnum } from '#src/site/_build/components/lib/page_router_singleton.js'
 
-	import config from "#config";
-	import Layout from "#site-component/Layout";
-	import { Theme } from "#site-component/ThemeSwitcher";
-	import Icon from "#site-component/iconic";
-	import { fetchFromInnerApi } from "#src/http_requests/fetchFromInnerApi.js";
+	const CurrentThemeStore = Theme.current
 
-	const CurrentThemeStore = Theme.current;
+	const whenApiListIsReceived = fetchFromInnerApi( './utils/api_list' )
 
-	const whenApiListIsReceived = fetchFromInnerApi("./utils/api_list");
-
-	let node;
-	const i18n = svelteApp.i18n.pages.navigation;
+	let node
+	const i18n = svelteApp.i18n.pages.navigation
 
 	const features = {
-		handleClick(pointerEvent) {
-			if (pointerEvent.target.nodeName !== "A") {
-				return;
+		handleClick( pointerEvent ) {
+			if ( pointerEvent.target.nodeName !== 'A' ) {
+				return
 			}
 
-			const node = pointerEvent.target;
-			const url = node.getAttribute("href");
-			const name = node.textContent;
-			features.AddToHistory({ url, name });
-		},
-		AddToHistory({ url, name }) {
-			localStorage.navigationPageHistory ||= "[]";
-			const history = JSON.parse(localStorage.navigationPageHistory);
-			const index = history.findIndex((item) => item.name === name);
-			~index && history.splice(index, 1);
-			history.length > 10 && history.shift();
-			history.push({ url, name });
+			const node = pointerEvent.target
+			const url = node.getAttribute( 'href' )
+			const name = node.textContent
+			features.AddToHistory( { url , name } )
+		} ,
+		AddToHistory( { url , name } ) {
+			localStorage.navigationPageHistory ||= '[]'
+			const history = JSON.parse( localStorage.navigationPageHistory )
+			const index = history.findIndex( item => item.name === name )
+			~index && history.splice( index , 1 )
+			history.length > 10 && history.shift()
+			history.push( { url , name } )
 
-			localStorage.navigationPageHistory = JSON.stringify(history);
-		},
-	};
+			localStorage.navigationPageHistory = JSON.stringify( history )
+		} ,
+	}
 </script>
 
 {#if $CurrentThemeStore === Theme.enum.lightGreen}
@@ -63,20 +60,20 @@
 		onclick={features.handleClick}
 		onkeydown={features.handleClick}
 	>
-		<details open class="table pages">
-			<summary>{i18n.pages.label} <Icon code="" /></summary>
+		<details open class='table pages'>
+			<summary>{i18n.pages.label} <Icon code='' /></summary>
 			<ul>
 				{#each PagesKeyEnum as pageKey}
-					{@const url = PagesRouter.relativeToPage(pageKey)}
+					{@const url = PagesRouter.relativeToPage( pageKey )}
 					<li>
-						<a href={url}>{url.replace(config.server.origin, "")}</a>
+						<a href={url}>{url.replace( config.server.origin , '' )}</a>
 					</li>
 				{/each}
 			</ul>
 		</details>
 
-		<details open class="table api">
-			<summary>{i18n.api.label} <Icon code="" /></summary>
+		<details open class='table api'>
+			<summary>{i18n.api.label} <Icon code='' /></summary>
 			<details open>
 				<summary><b>{i18n.api.simple}</b></summary>
 				<p>
@@ -86,8 +83,8 @@
 					<p>{i18n.api.loading}</p>
 				{:then data}
 					<ul>
-						{#each data.filter((route) => route.isSimple && route.methods.includes("get")) as route}
-							{@const url = config.server.origin.concat(route.prefix)}
+						{#each data.filter( route => route.isSimple && route.methods.includes( 'get' ) ) as route}
+							{@const url = config.server.origin.concat( route.prefix )}
 							<li>
 								<a href={url}>{route.prefix}</a>
 							</li>
@@ -107,7 +104,7 @@
 					<p>{i18n.api.loading}</p>
 				{:then data}
 					<ul>
-						{#each data.filter((route) => route.methods.length && !route.isRegex) as route}
+						{#each data.filter( route => route.methods.length && !route.isRegex ) as route}
 							{#each route.methods as method}
 								<li>
 									<code>{method.toUpperCase()}</code>
@@ -131,7 +128,7 @@
 						<p>{i18n.api.loading}</p>
 					{:then data}
 						<ul>
-							{#each data.filter((route) => route.isRegex) as route}
+							{#each data.filter( route => route.isRegex ) as route}
 								<li>
 									<span>{route.prefix}</span>
 								</li>
@@ -144,15 +141,15 @@
 			</details>
 		</details>
 
-		<details open class="table other">
-			<summary>{i18n.other.label} <Icon code="" /></summary>
+		<details open class='table other'>
+			<summary>{i18n.other.label} <Icon code='' /></summary>
 			<ul>
 				<li><a href={config.guild.url}>{i18n.other.server}</a></li>
 				<li><a href={config.enviroment.github}>{i18n.other.github}</a></li>
 				<li><a href={svelteApp.getBot().invite}>{i18n.other.inviteBot}</a></li>
 				<li>
-					<a href="https://learn.javascript.ru/hello-world"
-						>{i18n.other.learnJavascript}</a
+					<a href='https://learn.javascript.ru/hello-world'
+					>{i18n.other.learnJavascript}</a
 					>
 				</li>
 			</ul>
@@ -160,12 +157,12 @@
 
 		<details
 			open
-			class="table history"
-			style:display={localStorage.navigationPageHistory ? null : "none"}
+			class='table history'
+			style:display={localStorage.navigationPageHistory ? null : 'none'}
 		>
-			<summary>{i18n.history.label} <Icon code="" /></summary>
+			<summary>{i18n.history.label} <Icon code='' /></summary>
 			<ul>
-				{#each JSON.parse(localStorage.navigationPageHistory ?? "[]").reverse() as item}
+				{#each JSON.parse( localStorage.navigationPageHistory ?? '[]' ).reverse() as item}
 					<li>
 						<a href={item.url}>{item.name}</a>
 					</li>
