@@ -63,6 +63,12 @@ export function resolve_command( command_name , source_guild ) {
 }
 
 export class CommandInteraction {
+	get mentionedOrAuthor() {
+		return this.mention
+			?? client.users.cache.get( this.params.toString() )
+			?? this.user
+	}
+
 	constructor( {
 		params ,
 		user ,
