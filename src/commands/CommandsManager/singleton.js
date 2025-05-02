@@ -7,7 +7,7 @@ import { client } from '#src/bot/client/singleton.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { guildDataOf , userDataOf } from '#src/data/singleton.js'
 import { permissionRawToI18n } from '#src/discord/permissions.js'
-import { take_missing_permissions } from '#src/discord/utils.js'
+import { take_missing_permissions , tryMemberOf } from '#src/discord/utils.js'
 
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
 import { ErrorMomentNotification } from '#src/ErrorsHandler/sendErrorInfo.js'
@@ -97,7 +97,7 @@ export class CommandInteraction {
 		this.command = resolve_command( commandBase , guild )
 
 		/** @type {import("discord.js").GuildMember} */
-		this.member = guild?.members.resolve( user ) || null
+		this.member = tryMemberOf( guild , user )
 		/** @type {import("#src/data/schema.js").users} */
 		this.userData = userDataOf( user )
 		/** @type {import("discord.js").User} */

@@ -1,4 +1,5 @@
 import config from '#config'
+import { tryMemberOf } from '#src/discord/utils.js'
 import { checkFilterPropertyFactory } from '#src/mini.js'
 import {
 	CircularProtocol ,
@@ -107,8 +108,7 @@ class Template {
 		const { DEVELOPER , GUILD_MANAGER , USER } = PERMISSIONS_MASK_ENUM
 
 		const isUser = !!source.empowered
-		const isGuildManager = !!context.guild?.members
-			.resolve( source.empowered )
+		const isGuildManager = !!tryMemberOf( context.guild , source.empowered )
 			?.permissions
 			.has( PermissionsBitField.Flags.ManageGuild )
 		const isDelevoper = config.developers.includes( source.empowered?.id )

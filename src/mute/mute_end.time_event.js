@@ -1,4 +1,7 @@
 import { client } from '#src/bot/client/singleton.js'
+import { guildDataOf } from '#src/data/singleton.js'
+import { tryMemberOf } from '#src/discord/utils.js'
+import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_enum.js'
 import {
 	is_mute_role_by_name ,
 	setMuteState ,
@@ -11,7 +14,7 @@ class Event {
 
 	run( eventData , guildId , memberId ) {
 		const guild = client.guilds.cache.get( guildId )
-		const member = guild?.members.resolve( memberId )
+		const member = tryMemberOf(guild, memberId)
 		const role
 			= member.roles.cache.get( guildDataOf(guild).mute_role )
 				|| member.roles.cache.find( role => is_mute_role_by_name( role ) )

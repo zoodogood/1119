@@ -329,3 +329,7 @@ export function guildsOfUser( user ) {
 	)
 	return [ ... guilds.values() ]
 }
+
+export function tryMemberOf(guild, user){
+	return guild?.members.resolve( user )
+}
