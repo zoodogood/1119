@@ -27,7 +27,7 @@ import {
 	sendToChatChannel ,
 } from '#src/guild_special_channels/special_channel_enum.js'
 import { factoryCompare , factorySummarize } from '#src/mini.js'
-import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import {
 	makeArray ,
 	maybe_multiline ,
@@ -51,7 +51,7 @@ class Speacial {
 	static AVATAR_OF_SNOW_QUEEN
 		= 'https://media.discordapp.net/attachments/926144032785195059/1189474240974565436/b9183b53bdf18835d4c337f06761d95d_1400x790-q-85_1_1.webp?ex=659e4b36&is=658bd636&hm=0889765cc144e316843ab5ad88144db1ae96f9c21f4747f303860d647200cf00&=&format=webp'
 
-	static LegendaryWearonList = transformToCollectionUsingKey(
+	static LegendaryWearonList = createCollectionWithKey(
 		[
 			{
 				key: 'afkPower' ,
@@ -303,7 +303,7 @@ class AttributesShop {
 }
 
 class BossInstincts {
-	static instincts = transformToCollectionUsingKey(
+	static instincts = createCollectionWithKey(
 		[
 			{
 				key: 'bossNowHeals' ,

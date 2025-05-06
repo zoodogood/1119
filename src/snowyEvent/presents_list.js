@@ -2,12 +2,12 @@ import { SECOND } from '#constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { addResource } from '#src/user/resources/addResource.js'
 import { Emoji } from '#src/emojis/emojis.js'
-import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import { sleep } from '#src/safe-utils.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 
 export function getPresentsList() {
-	return transformToCollectionUsingKey( [
+	return createCollectionWithKey( [
 		{
 			weights: 5 ,
 			key: 'lollipop' ,

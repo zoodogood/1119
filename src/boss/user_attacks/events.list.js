@@ -25,7 +25,7 @@ import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { question } from '#src/discord/utils.js'
-import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import {
 	NumberFormatLetterize ,
 	randomWith ,
@@ -45,7 +45,7 @@ import { ending } from '@zoodogood/utils/primitives'
 import { ButtonStyle , CommandInteraction , ComponentType } from 'discord.js'
 import { userDataOf } from '../../data/singleton.js'
 
-export const eventBases = transformToCollectionUsingKey( [
+export const eventBases = createCollectionWithKey( [
 	{
 		weight: 1500 ,
 		key: 'increaseAttackCooldown' ,

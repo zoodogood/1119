@@ -1,6 +1,6 @@
-import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 
-export const SpecialChannel = transformToCollectionUsingKey( [
+export const SpecialChannel = createCollectionWithKey( [
 	{
 		key: 'chatChannel' ,
 		label: 'Чат' ,

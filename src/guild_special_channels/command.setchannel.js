@@ -6,7 +6,7 @@ import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { question } from '#src/discord/utils.js'
 import { Emoji } from '#src/emojis/emojis.js'
-import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import { CliParser } from '@zoodogood/utils/CliParser'
 import {
 	justButtonComponents ,
@@ -15,7 +15,7 @@ import {
 import { DotNotatedInterface } from '@zoodogood/utils/objectives'
 import { sendToLogsChannel , SpecialChannel } from './special_channel_enum.js'
 
-const SpecialChannelExtend = transformToCollectionUsingKey( [
+const SpecialChannelExtend = createCollectionWithKey( [
 	{
 		key: 'chatChannel' ,
 		congratulations: channel => `#${ channel.name } стал чатом!` ,

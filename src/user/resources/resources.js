@@ -1,5 +1,5 @@
 import { PropertiesEnum , PropertiesList } from '#src/data/Properties.js'
-import { createCollectionWithAliases } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithAliases } from '#src/nodejs/Collection/create.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { Emoji } from 'discord.js'
 

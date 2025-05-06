@@ -14,7 +14,7 @@ import ErrorsHandler from '#src/ErrorsHandler/ErrorsHandler.js'
 import EventsManager from '#src/events/EventsManager.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
 import { asGetterFn } from '#src/mini.js'
-import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import QuestManager from '#src/quests/QuestManager.js'
 import * as Util from '#src/safe-utils.js'
 import { use_memo } from '#src/safe-utils.js'
@@ -27,7 +27,7 @@ import { omit , randomElementFromArray } from '@zoodogood/utils/objectives'
 import Discord , { Constants , FormattingPatterns } from 'discord.js'
 import mol_global from 'mol_tree2'
 
-export const template_modules_scope = transformToCollectionUsingKey( [
+export const template_modules_scope = createCollectionWithKey( [
 	{
 		getContent: ( context ) => {
 			return context

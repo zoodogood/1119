@@ -9,13 +9,13 @@ import {
 	mutate_time_event ,
 	timeEvents_singleton ,
 } from '#src/events/time/timeEvents_singleton.js'
-import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import { randomWith , timestampDay } from '#src/safe-utils.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 
-export const grempen_products = transformToCollectionUsingKey( [
+export const grempen_products = createCollectionWithKey( [
 	{
 		key: 'stick' ,
 		label: () => 'Просто палка' ,

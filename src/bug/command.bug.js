@@ -24,7 +24,7 @@ import {
 import ErrorsHandler from '#src/ErrorsHandler/ErrorsHandler.js'
 import { crop_string } from '#src/formatters/formatters.js'
 import { resolveGithubPath } from '#src/github/resolveGithubPath.js'
-import { transformToCollectionUsingKey } from '#src/nodejs/Collection/transformToCollectionUsingKey.js'
+import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 
 import { process_startedAt } from '#src/nodejs/process_startedAt.js'
 import { maybe_multiline , uid , weekHour } from '#src/safe-utils.js'
@@ -244,7 +244,7 @@ class Help_FlagSubcommand extends BaseFlagSubcommand {
 	}
 }
 
-const Importances = transformToCollectionUsingKey( [
+const Importances = createCollectionWithKey( [
 	{
 		label: 'Опасно' ,
 		key: 'Dangerous' ,

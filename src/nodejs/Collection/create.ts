@@ -1,6 +1,6 @@
 import { Collection } from '@discordjs/collection'
 
-export function transformToCollectionUsingKey<T, K = string>( array : ( T & { key: string } )[] ) {
+export function createCollectionWithKey<T, K = string>( array : ( T & { key: string } )[] ) {
 	const entries = array.map( object => [ object.key , object ] ) as [K , T][]
 	return new Collection<K , T>( entries )
 }
