@@ -11,11 +11,7 @@
 			"#config": ["./src/config.json.js"] ,
 			"#app": ["./src/app/app.js"] ,
 
-			"#site/*": ["src/site/_build/src/*"] ,
-			"#bot/*": ["src/client/*"] ,
 			"#constants/*": ["src/constants/*"] ,
-			"#folder/*": ["./folder/*"] ,
-			"#lib/*": ["./src/lib/*"] ,
 
 			"#site-component-lib/*": ["src/site/_build/components/lib/*"] ,
 			"#site-component/*": ["src/site/_build/components/svelte/*/mod.svelte"] ,

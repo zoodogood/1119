@@ -7,10 +7,9 @@ src/site/_build/_public_out/
 src/site/_build/.cache/
 src/public/articles/
 src/articles/_items
+src/data/StorageManager/drivers/FileDBData/_localStorage/
 
-folder/!localStorage/
 
-folder/SSLSecret/privkey.pem
-folder/SSLSecret/cert.pem
+src/http_requests/ssl/_secrets/
 
-yarn-error.log
+
