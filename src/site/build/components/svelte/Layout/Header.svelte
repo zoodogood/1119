@@ -1,74 +1,75 @@
 <script>
-	import config from "#config";
-	import Image from "#site-component/Image";
-	import ThemeSwitcher from "#site-component/ThemeSwitcher";
+	import config from '#config'
+	import Image from '#site-component/Image'
+	import ThemeSwitcher from '#site-component/ThemeSwitcher'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter, {
-		page_location,
-	} from "#src/site/build/components/lib/page_router_singleton.js";
-	const i18n = svelteApp.i18n.components.Layout.Header;
+	import PagesRouter , {
+		page_location ,
+	} from '#src/site/build/components/lib/page_router_singleton.js'
+
+	const i18n = svelteApp.i18n.components.Layout.Header
 
 	const Header = {
-		node: null,
-		isHide: false,
-	};
+		node: null ,
+		isHide: false ,
+	}
 
-	let scrollPosition = window.scrollY;
+	let scrollPosition = window.scrollY
 	function onScroll() {
-		window.scrollY === 0 && (Header.isHide = false);
+		window.scrollY === 0 && ( Header.isHide = false )
 
-		scrollPosition > window.scrollY && (Header.isHide = false);
+		scrollPosition > window.scrollY && ( Header.isHide = false )
 
-		scrollPosition < window.scrollY && (Header.isHide = true);
+		scrollPosition < window.scrollY && ( Header.isHide = true )
 
-		scrollPosition = window.scrollY;
+		scrollPosition = window.scrollY
 	}
 </script>
 
 <header
-	class="page-header"
+	class='page-header'
 	bind:this={Header.node}
 	class:header--hide={Header.isHide}
 >
-	<main class="container">
-		<section class="label">
-			<a href={page_location("public")} class="link">
-				<b class="page_header-title-container-label"
-					>{i18n.ghost.toUpperCase()}</b
+	<main class='container'>
+		<section class='label'>
+			<a href={page_location( 'home' )} class='link'>
+				<b class='page_header-title-container-label'
+				>{i18n.ghost.toUpperCase()}</b
 				>
 			</a>
 		</section>
 
-		<section class="navigation">
-			<span class="theme-switcher-container">
+		<section class='navigation'>
+			<span class='theme-switcher-container'>
 				<ThemeSwitcher />
 			</span>
 
 			<nav>
-				<a href={page_location("public")} class="navigation-element link"
-					>{i18n.nav.home}</a
+				<a href={page_location( 'home' )} class='navigation-element link'
+				>{i18n.nav.home}</a
 				>
-				<a href={page_location("navigation")} class="navigation-element link"
-					>{i18n.nav.navigation}</a
+				<a href={page_location( 'navigation' )} class='navigation-element link'
+				>{i18n.nav.navigation}</a
 				>
 				<a
 					href={config.guild.url}
-					class="navigation-element link"
-					target="_blank"
-					rel="noreferrer">{i18n.nav.discord}</a
+					class='navigation-element link'
+					target='_blank'
+					rel='noreferrer'>{i18n.nav.discord}</a
 				>
 			</nav>
 		</section>
 
 		{#if !svelteApp.user}
-			<section class="authentication">
+			<section class='authentication'>
 				<button
-					class="oauth"
+					class='oauth'
 					on:click={() =>
 						PagesRouter.redirectToAbsolute(
-							page_location("oauth2_auth", {
-								queries: { redirect: svelteApp.url.subpath.join("/") },
-							}),
+							page_location( 'oauth2_auth' , {
+								queries: { redirect: svelteApp.url.subpath.join( '/' ) } ,
+							} ) ,
 						)}
 				>
 					{i18n.authorization}
@@ -77,15 +78,15 @@
 		{:else}
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<section
-				class="user"
-				on:click={() => (document.location.href = page_location("user_panel"))}
-				on:keydown={({ target }) => target.click()}
+				class='user'
+				on:click={() => ( document.location.href = page_location( 'user_panel' ) )}
+				on:keydown={( { target } ) => target.click()}
 			>
-				<span class="user-avatar-container">
+				<span class='user-avatar-container'>
 					<Image
 						src={svelteApp.user.avatarURL}
-						alt="avatar"
-						className="user_avatar"
+						alt='avatar'
+						className='user_avatar'
 					/>
 				</span>
 				<hr />

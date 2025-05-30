@@ -1,12 +1,13 @@
 <script>
+	import Path from 'node:path'
 	import Icon from '#site-component/iconic'
 	import Layout from '#site-component/Layout'
 	import { dayjs } from '#src/dayjs.js'
 	import { resolveGithubPath } from '#src/github/resolveGithubPath.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { yaml } from '#src/safe-utils.js'
-
-	import svelteApp from '#src/site/build/c#src/site/build/components/app_singleton.jster from '#src/site/build/#src/site/build/components/lib/page_router_singleton.jsas Path } from '#src/url/export.js'
+	import svelteApp from '#src/site/build/components/app_singleton.js'
+	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
 	import { ending } from '@zoodogood/utils/primitives'
 
 	const i18n = svelteApp.i18n.pages.errorsItem

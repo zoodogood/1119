@@ -5,7 +5,9 @@
 
 	import Layout from '#site-component/Layout'
 	import { getNotificationsContext } from 'svelte-notifications'
-	import svelteApp from '../build/component../build/components/app_singleton.jsfication } = getNotificationsContext()
+	import svelteApp from '../build/components/app_singleton.js'
+
+	const { addNotification } = getNotificationsContext()
 
 	const i18n = svelteApp.i18n.pages.publicExperiments
 

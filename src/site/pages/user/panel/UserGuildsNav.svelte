@@ -1,25 +1,26 @@
 <script>
-	import Image from "#site-component/Image";
-	import svelteApp from '#src/site/build/compon#src/site/build/components/app_singleton.jstionsContext } from "svelte-notifications";
-	import { getNotificationsContext } from "svelte-notifications"
-	const { addNotification } = getNotificationsContext();
+	import Image from '#site-component/Image'
+	import svelteApp from '#src/site/build/components/app_singleton.js'
+	import { getNotificationsContext } from 'svelte-notifications'
 
-	export let State;
+	const { addNotification } = getNotificationsContext()
+
+	export let State
 </script>
 
 <ul
 	pages_user_panel_userGuildNav__root
-	style:--elements-size="{2.85 - State.guilds?.length * 0.15}em"
-	class="guilds-list"
+	style:--elements-size='{2.85 - State.guilds?.length * 0.15}em'
+	class='guilds-list'
 >
 	{#each State.guilds as guild}
 		{@const onClick = () =>
 			State.target.id !== guild.id
-				? svelteApp.Hash.include({ key: "guildId", value: guild.id }).apply()
-				: svelteApp.Hash.remove("guildId").apply()}
+				? svelteApp.Hash.include( { key: 'guildId' , value: guild.id } ).apply()
+				: svelteApp.Hash.remove( 'guildId' ).apply()}
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		<li
-			title="Сервер {guild.name}"
+			title='Сервер {guild.name}'
 			class:selected={State.target.id === guild.id}
 			class:user_guild_item={true}
 			class:nav_item={true}
@@ -28,38 +29,38 @@
 			on:keydown={onClick}
 			on:contextmenu|preventDefault={() =>
 				navigator.clipboard
-					.writeText(guild.id)
-					.then(() =>
-						addNotification({
-							text: `ID скопирован`,
-							position: "bottom-center",
-							removeAfter: 5_000,
-						}),
+					.writeText( guild.id )
+					.then( () =>
+						addNotification( {
+							text: `ID скопирован` ,
+							position: 'bottom-center' ,
+							removeAfter: 5_000 ,
+						} ) ,
 					)
-					.catch(() =>
-						addNotification({
-							text: `Неудалось скопировать ID`,
-							position: "bottom-center",
-							removeAfter: 5_000,
-						}),
+					.catch( () =>
+						addNotification( {
+							text: `Неудалось скопировать ID` ,
+							position: 'bottom-center' ,
+							removeAfter: 5_000 ,
+						} ) ,
 					)}
 		>
 			{#if guild.iconURL}
 				<Image
 					src={guild.iconURL}
-					alt="guild-icon"
-					className="icon guild_icon"
+					alt='guild-icon'
+					className='icon guild_icon'
 				/>
 			{:else}
-				<span class="icon">{guild.name.at(0)}</span>
+				<span class='icon'>{guild.name.at( 0 )}</span>
 			{/if}
 		</li>
 	{/each}
 	<hr />
-	<li class="invite nav_item" title="Пригласить">
-		<a target="_blank" href={svelteApp.getBot().invite} rel="noreferrer">
-			<span class="icon">
-				{"+"}
+	<li class='invite nav_item' title='Пригласить'>
+		<a target='_blank' href={svelteApp.getBot().invite} rel='noreferrer'>
+			<span class='icon'>
+				+
 			</span>
 		</a>
 	</li>

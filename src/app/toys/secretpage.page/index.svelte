@@ -1,8 +1,10 @@
 <script>
 	import Icon from '#site-component/iconic'
 	import ThemeSwitcher , { Theme } from '#site-component/ThemeSwitcher'
-	import svelteApp from '#src/site/build/compo#src/site/build/components/app_singleton.jsfrom '#src/site/build/comp#src/site/build/components/lib/page_router_singleton.jseStore = Theme.current
+	import svelteApp from '#src/site/build/components/app_singleton.js'
+	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
 
+	const CurrentThemeStore = Theme.current
 	const i18n = svelteApp.i18n.pages.secretpage
 	console.info( `
 		Ты нашёл эту страницу
@@ -38,7 +40,6 @@
 	<ThemeSwitcher />
 </nav>
 
-<!-- svelte-ignore missing-declaration -->
 <svelte:element
 	this={'script'}
 	async

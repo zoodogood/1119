@@ -1,5 +1,5 @@
-import config from '#config'
 import { ending } from '@zoodogood/utils/primitives'
+
 import { DAY } from './constants/time.js'
 
 export { default as yaml } from 'yaml'
@@ -342,24 +342,18 @@ export function parseDocumentLocate( location ) {
 			.split( '&' )
 			.map( raw => raw.split( '=' ) ) ,
 	)
-
-	const { subpath } = parsePagesPath( location.pathname )
+	const { subpath , base } = parsePagesPath( location.pathname )
 
 	return {
 		origin: location.origin ,
 		subpath ,
 		queries ,
+		base ,
 	}
 }
 
 export function parsePagesPath( path ) {
-	const key = config.server.paths.site.split( '/' ).at( -1 )
-
-	const regex = new RegExp( key )
-	const index = ( path.match( regex )?.index ?? 0 ) + key.length
-	const base = path.slice( 0 , index )
-	const subpath = path.slice( index ).split( '/' ).filter( Boolean )
-
+	const [ base , ... subpath ] = path.split( '/' ).filter( isNotEmptyStringLiteral )
 	return { base , subpath }
 }
 
@@ -537,7 +531,6 @@ export function entriesFromGroupBy( items , keySelector ) {
 export function entriesMapKey( items , mapFn ) {
 	return items.map( ( [ k , v ] , i ) => [ mapFn( k , i ) , v ] )
 }
-
 
 /**
  * @template T

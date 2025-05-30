@@ -2,12 +2,12 @@
 	import Image from '#site-component/Image'
 	import Layout from '#site-component/Layout'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
-	import { i18n } from '#src/i18n/singleton.js'
 	import { isObject } from '#src/mini.js'
 	import { timestampToDate } from '#src/safe-utils.js'
-	import svelteApp from '#src/site/build/co#src/site/build/components/app_singleton.jstWithButton } from '#src/site/build/c#src/site/build/components/lib/ButtonResponse.jsvelteApp.i18n.pages.openChest
+	import svelteApp from '#src/site/build/components/app_singleton.js'
 	import { interactWithButton } from '#src/site/build/components/lib/ButtonResponse.js'
-	import { build } from 'bun'
+
+	const i18n = svelteApp.i18n.pages.openChest
 	const Resources = {
 		imageURL: 'https://i.ibb.co/GCxwmxw/open-chest-variant1.gif' ,
 	}

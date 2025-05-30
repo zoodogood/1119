@@ -3,11 +3,14 @@
 	import Layout from '#site-component/Layout'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { MarkdownMetadata } from '#src/MarkdownMetadata.js'
-	import svelteApp from '#src/site/build/com#src/site/build/components/app_singleton.jsr from '#src/site/build/co#src/site/build/components/lib/page_router_singleton.jselteApp.i18n.pages.articlesCreate
+	import svelteApp from '#src/site/build/components/app_singleton.js'
+	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+
 	const Contents = {
 		filename: null ,
 	}
 	let labelNode
+	const i18n = svelteApp.i18n.pages.articlesCreate
 
 	const onFileUpload = async ( inputEvent ) => {
 		const button = labelNode.querySelector( 'button' )

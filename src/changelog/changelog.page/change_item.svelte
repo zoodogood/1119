@@ -3,10 +3,9 @@
 	import ContextMenu from '#site-component/ContextMenu'
 	import dayjs from '#src/dayjs.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
-	import svelteApp from '#src/site/build/com#src/site/build/components/app_singleton.jsper } from '#src/site/build/co#src/site/build/components/lib/permissions.jsPopup } from '#src/site/build/components/svelte/Popups/handler.svelte'
+	import svelteApp from '#src/site/build/components/app_singleton.js'
 	import { isDeveloper } from '#src/site/build/components/lib/permissions.js'
 	import { createPopup } from '#src/site/build/components/svelte/Popups/handler.svelte'
-	import { build } from 'bun'
 	import { onMount } from 'svelte'
 	import { getNotificationsContext } from 'svelte-notifications'
 
