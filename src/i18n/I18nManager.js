@@ -1,13 +1,19 @@
 import { mol_tree2_json_from_string } from '#src/$mol.js'
-import StorageManager from '#src/data/StorageManager/StorageManager.js'
+import { accrueAsync , arrayMapFactory , promiseAll } from '#src/accrue/accrue.js'
+import { FileSystem } from '#src/nodejs/FileSystem/export.js'
+import { deepAssign , toDotNotatedFlat } from '#src/safe-utils.js'
+import { glob } from 'glob'
 
 class StorageUtils {
 	static async readLocales() {
-		const value = mol_tree2_json_from_string(
-			( await StorageManager.read( 'i18n.tree' ) ) || `*\n\tru *\n` ,
+		return await accrueAsync(
+			glob( '**/*.i18n.tree' , { absolute: true } ) ,
+			arrayMapFactory( p => accrueAsync( p , FileSystem.readFile , mol_tree2_json_from_string ) ) ,
+			promiseAll ,
+			values => deepAssign( ... values ) ,
+			values => toDotNotatedFlat( values , entry => 'ru' in entry ) ,
+			Object.freeze ,
 		)
-
-		return value
 	}
 }
 class I18nManager {
