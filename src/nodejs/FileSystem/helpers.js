@@ -6,17 +6,13 @@ export function mkdirRecursive( path ) {
 	return FileSystem.mkdir( path , { recursive: true } )
 }
 
-export function file_symlink_auto( existingPath , destination ) {
-	return accrueAsync(
-		destination ,
-		path.dirname ,
-		mkdirRecursive ,
-		FileSystem.symlink( existingPath , destination , 'file' ).catch( ( error ) => {
-			if ( error.code === 'EEXIST' ) {
-				return
-			}
-			console.error( error )
-			throw error
-		} ) ,
-	)
+export async function file_symlink_auto( existingPath , destination ) {
+	await mkdirRecursive( path.dirname( destination ) )
+	return FileSystem.symlink( existingPath , destination , 'file' ).catch( ( error ) => {
+		if ( error.code === 'EEXIST' ) {
+			return
+		}
+		console.error( error )
+		throw error
+	} )
 }
