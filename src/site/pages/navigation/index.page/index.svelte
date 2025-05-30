@@ -5,7 +5,7 @@
 	import config from '#src/config.json.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter, { PagesKeyEnum } from '#src/site/build/components/lib/page_router_singleton.js'
+	import PagesRouter , { PagesKeyEnum } from '#src/site/build/components/lib/page_router_singleton.js'
 
 	const CurrentThemeStore = Theme.current
 	const whenApiListIsReceived = fetchFromInnerApi( './utils/api_list' )
@@ -54,6 +54,7 @@
 		<hr />
 	</span>
 
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<main
 		bind:this={node}
 		onclick={features.handleClick}
@@ -65,7 +66,7 @@
 				{#each PagesKeyEnum as pageKey}
 					{@const url = PagesRouter.relativeToPage( pageKey )}
 					<li>
-						<a href={url}>{url.replace( config.server.origin , '' )}</a>
+						<a href={url}>{url.replace( svelteApp.url.origin , '' )}</a>
 					</li>
 				{/each}
 			</ul>
