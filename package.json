@@ -8,6 +8,7 @@
 	"main": "index.js",
 	"scripts": {
 		"pm2:start": "pm2 start --interpreter ~/.bun/bin/bun ./index.js --name 1119",
+		"pm2:please-restart": "pm2 restart --update-env",
 		"start": "bun run ./index.js",
 		"watch-runtime": "bun --watch ./index.js",
 		"build": "node ./folder/scripts/build.bat.js",
