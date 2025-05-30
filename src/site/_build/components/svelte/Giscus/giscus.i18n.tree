@@ -1,0 +1,8 @@
+*
+	site * components * giscus *
+		comments *
+			ru \Комментарии
+		identify *
+			ru \Идентификатор:
+		notSupported *
+			ru \Сервис Giscus не доступен
