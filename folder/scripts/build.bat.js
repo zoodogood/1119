@@ -17,28 +17,29 @@
 
 // echo "Success!"
 
-const root = process.cwd();
-import get from "#src/nodejs/child-process-utils.js";
-const PRODUCTION = (await import("#config"))?.default.development === false;
+import process from 'node:process'
+import get from '#src/nodejs/child-process-utils.js'
 
-const { run, info } = get({ root, logger: true });
+const PRODUCTION = ( await import( '#config' ) )?.default.development === false
 
-const runtime = "node";
-const manager = "pnpm";
+const { run , info } = get( { root: process.cwd() , logger: true } )
 
-await info(`${runtime} version:`);
-await run(runtime, ["-v"]);
+const runtime = 'node'
+const manager = 'pnpm'
 
-await info("Install modules:");
-await run(manager, ["install"]);
+await info( `${ runtime } version:` )
+await run( runtime , [ '-v' ] )
 
-await info("Check files:");
-await run(runtime, ["./folder/scripts/checkFiles.js"]);
+await info( 'Install modules:' )
+await run( manager , [ 'install' ] )
 
-await info("Build bundle:");
-await run(manager, ["run", "site-build"]);
+await info( 'Check files:' )
+await run( runtime , [ './src/app/scripts/checkFiles.js' ] )
 
-await info("Clean");
-await run(manager, [`prune ${PRODUCTION ? "--prod" : ""}`]);
+await info( 'Build bundle:' )
+await run( manager , [ 'run' , 'site-build' ] )
 
-await info("Success");
+await info( 'Clean' )
+await run( manager , [ `prune ${ PRODUCTION ? '--prod' : '' }` ] )
+
+await info( 'Success' )
