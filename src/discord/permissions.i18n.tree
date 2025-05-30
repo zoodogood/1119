@@ -1,91 +1,93 @@
 *
-	PermissionFlagsBits.Speak * 
-		ru \Говорить
-	PermissionFlagsBits.MuteMembers * 
-		ru \Отключать участникам микрофон
-	PermissionFlagsBits.Connect * 
-		ru \Подключаться
-	PermissionFlagsBits.DeafenMembers * 
-		ru \Заглушать
-	PermissionFlagsBits.ViewChannel * 
-		ru \Видеть каналы
-	PermissionFlagsBits.EmbedLinks * 
-		ru \Встраивать ссылки
-	PermissionFlagsBits.AttachFiles * 
-		ru \Встраивать файлы
-	PermissionFlagsBits.BanMembers * 
-		ru \Банить участников
-	PermissionFlagsBits.ManageRoles * 
-		ru \Управлять ролями
-	PermissionFlagsBits.KickMembers * 
-		ru \Кик участников
-	PermissionFlagsBits.MentionEveryone * 
-		ru \Упоминать всех
-	PermissionFlagsBits.ManageGuild * 
-		ru \Управлять сервером
-	PermissionFlagsBits.AddReactions * 
-		ru \Добавлять реакции
-	PermissionFlagsBits.UseVAD * 
-		ru \Использовать режим рации
-	PermissionFlagsBits.MoveMembers * 
-		ru \Перемещать участников
-	PermissionFlagsBits.SendMessages * 
-		ru \Отправлять сообщения
-	PermissionFlagsBits.ManageChannels * 
-		ru \Управлять каналами
-	PermissionFlagsBits.PrioritySpeaker * 
-		ru \Быть приоритетным
-	PermissionFlagsBits.ManageWebhooks * 
-		ru \Управлять вебхуками
-	PermissionFlagsBits.ChangeNickname * 
-		ru \Изменять свой никнейм
-	PermissionFlagsBits.ManageNicknames * 
-		ru \Управлять никнеймами
-	PermissionFlagsBits.ManageMessages * 
-		ru \Управлять сообщениями
-	PermissionFlagsBits.Administrator * 
-		ru \Администратор
-	PermissionFlagsBits.SendTTSMessages * 
-		ru \Отправлять TTS сообщения
-	PermissionFlagsBits.ViewAuditLog * 
-		ru \Просматривать журнал аудита
-	PermissionFlagsBits.CreateInstantInvite * 
-		ru \Создавать приглашения
-	PermissionFlagsBits.ReadMessageHistory * 
-		ru \Читать историю сообщений
-	PermissionFlagsBits.UseExternalEmojis * 
-		ru \Использовать внешние эмодзи
-	PermissionFlagsBits.ViewGuildInsights * 
-		ru \Просматривать аналитику сервера
-	PermissionFlagsBits.Stream * 
-		ru \Выходить в эфир
-	PermissionFlagsBits.ManageGuildExpressions * 
-		ru \Управлять эмодзи и стикерами
-	PermissionFlagsBits.UseApplicationCommands * 
-		ru \Использовать команды
-	PermissionFlagsBits.RequestToSpeak * 
-		ru \Просить выступить на трибуне
-	PermissionFlagsBits.ManageEvents * 
-		ru \Управлять вкладкой события
-	PermissionFlagsBits.ManageThreads * 
-		ru \Управлять ветками
-	PermissionFlagsBits.CreatePublicThreads * 
-		ru \Создавать публичные ветки
-	PermissionFlagsBits.CreatePrivateThreads * 
-		ru \Создавать приватные ветки
-	PermissionFlagsBits.UseExternalStickers * 
-		ru \Использовать внешние стикеры
-	PermissionFlagsBits.SendMessagesInThreads * 
-		ru \Отправлять сообщения внутри веток
-	PermissionFlagsBits.UseEmbeddedActivities * 
-		ru \Вызывать встроенные активности
-	PermissionFlagsBits.ModerateMembers * 
-		ru \Заглушать участников
-	PermissionFlagsBits.ViewCreatorMonetizationAnalytics * 
-		ru \Смотреть аналитику монетизации сервера
-	PermissionFlagsBits.UseSoundboard * 
-		ru \Использовать Звуковую доску
-	PermissionFlagsBits.UseExternalSounds * 
-		ru \Использовать внение элементы Звуковой доски
-	PermissionFlagsBits.SendVoiceMessages * 
-		ru \Отправлять голосовые сообщения
+	PermissionFlagsBits *
+		Speak * 
+			ru \Говорить
+		MuteMembers * 
+			ru \Отключать участникам микрофон
+		Connect * 
+			ru \Подключаться
+		DeafenMembers * 
+			ru \Заглушать
+		ViewChannel * 
+			ru \Видеть каналы
+		EmbedLinks * 
+			ru \Встраивать ссылки
+		AttachFiles * 
+			ru \Встраивать файлы
+		BanMembers * 
+			ru \Банить участников
+		ManageRoles * 
+			ru \Управлять ролями
+		KickMembers * 
+			ru \Кик участников
+		MentionEveryone * 
+			ru \Упоминать всех
+		ManageGuild * 
+			ru \Управлять сервером
+		AddReactions * 
+			ru \Добавлять реакции
+		UseVAD * 
+			ru \Использовать режим рации
+		MoveMembers * 
+			ru \Перемещать участников
+		SendMessages * 
+			ru \Отправлять сообщения
+		ManageChannels * 
+			ru \Управлять каналами
+		PrioritySpeaker * 
+			ru \Быть приоритетным
+		ManageWebhooks * 
+			ru \Управлять вебхуками
+		ChangeNickname * 
+			ru \Изменять свой никнейм
+		ManageNicknames * 
+			ru \Управлять никнеймами
+		ManageMessages * 
+			ru \Управлять сообщениями
+		Administrator * 
+			ru \Администратор
+		SendTTSMessages * 
+			ru \Отправлять TTS сообщения
+		ViewAuditLog * 
+			ru \Просматривать журнал аудита
+		CreateInstantInvite * 
+			ru \Создавать приглашения
+		ReadMessageHistory * 
+			ru \Читать историю сообщений
+		UseExternalEmojis * 
+			ru \Использовать внешние эмодзи
+		ViewGuildInsights * 
+			ru \Просматривать аналитику сервера
+		Stream * 
+			ru \Выходить в эфир
+		ManageGuildExpressions * 
+			ru \Управлять эмодзи и стикерами
+		UseApplicationCommands * 
+			ru \Использовать команды
+		RequestToSpeak * 
+			ru \Просить выступить на трибуне
+		ManageEvents * 
+			ru \Управлять вкладкой события
+		ManageThreads * 
+			ru \Управлять ветками
+		CreatePublicThreads * 
+			ru \Создавать публичные ветки
+		CreatePrivateThreads * 
+			ru \Создавать приватные ветки
+		UseExternalStickers * 
+			ru \Использовать внешние стикеры
+		SendMessagesInThreads * 
+			ru \Отправлять сообщения внутри веток
+		UseEmbeddedActivities * 
+			ru \Вызывать встроенные активности
+		ModerateMembers * 
+			ru \Заглушать участников
+		ViewCreatorMonetizationAnalytics * 
+			ru \Смотреть аналитику монетизации сервера
+		UseSoundboard * 
+			ru \Использовать Звуковую доску
+		UseExternalSounds * 
+			ru \Использовать внение элементы Звуковой доски
+		SendVoiceMessages * 
+			ru \Отправлять голосовые сообщения
+
