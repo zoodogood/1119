@@ -2,7 +2,7 @@
 	export let isAlwaysVisible = false
 
 	import config from '#config'
-	import svelteconst ROOT = 'src/public'App from '../../app_singleton.js'
+	import svelteApp from '#src/site/_build/components/app_singleton.js'
 
 	const isVisible = !svelteApp.storage.getSelectedLocale() || isAlwaysVisible
 	const languages = config.i18n.availableLanguages
