@@ -547,3 +547,59 @@ export function entriesFromGroupBy( items , keySelector ) {
 export function entriesMapKey( items , mapFn ) {
 	return items.map( ( [ k , v ] , i ) => [ mapFn( k , i ) , v ] )
 }
+
+
+/**
+ * @template T
+ * @param {Record<string, T>} target
+ * @param  {...Record<string, T>} assign
+ * @returns
+ */
+export function deepAssign( target , ... assign ) {
+	return assign.reduce( ( acc , object ) => {
+		for ( const key of Object.keys( object ) ) {
+			if ( key in acc === false || typeof object[ key ] !== 'object' ) {
+				acc[ key ] = object[ key ]
+				continue
+			}
+			deepAssign( acc[ key ] , object[ key ] )
+		}
+		return acc
+	} , target )
+}
+
+/**
+ * @template T, I
+ * @param {Record<string, I>} object
+ * @param {(input: I) => boolean} skip
+ */
+export function toDotNotatedFlat( object , skip = () => false ) {
+	/**
+	 * @type {Record<string, T>}
+	 */
+	const flat = {}
+	const _queue = Object.entries( object )
+	while ( _queue.length ) {
+		const [ _depth_key , item ] = _queue.pop()
+		if ( typeof item !== 'object' ) {
+			flat[ _depth_key ] = item
+			continue
+		}
+		if ( skip( item ) ) {
+			flat[ _depth_key ] = item
+			continue
+		}
+		_queue.push(
+			... entriesMapKey(
+				Object.entries( item ) ,
+				key => `${ _depth_key }.${ key }` ,
+			) ,
+		)
+	}
+	return flat
+}
+
+
+export function isNonNullable(value) {
+  return value !== null && value !== undefined;
+}
