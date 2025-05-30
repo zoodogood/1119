@@ -8,15 +8,15 @@
 	@font-face {
 		font-family: "Icon";
 		src:
-			url("public/fontello/fontello.eot")
+			url("/public/fontello/fontello.eot")
 				format("embedded-opentype"),
-			url("public/fontello/fontello.woff2")
+			url("/public/fontello/fontello.woff2")
 				format("woff2"),
-			url("public/fontello/fontello.woff")
+			url("/public/fontello/fontello.woff")
 				format("woff"),
-			url("public/fontello/fontello.ttf")
+			url("/public/fontello/fontello.ttf")
 				format("truetype"),
-			url("public/fontello/fontello.svg")
+			url("/public/fontello/fontello.svg")
 				format("svg");
 
 		font-weight: normal;
