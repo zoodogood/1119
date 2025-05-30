@@ -1,4 +1,7 @@
-// ========================================= Use service worker =========================================
+/////////////////////////////////////////////////////////////////////
+// Progressive web app service worker (backend) script						 //
+//																																 //
+/////////////////////////////////////////////////////////////////////
 
 const ANY_PAGE_ENDPOINT = '/pages'
 const PRECACHED = [ '/' , ANY_PAGE_ENDPOINT ]
@@ -7,7 +10,7 @@ const ALLOW_CACHE = [
 		regex: /^\/public+?/ ,
 	} ,
 	{
-		regex: /^\/(?:(?:ru|ua|en)\/)?pages/ ,
+		regex: /^\/pages/ ,
 		destination: ANY_PAGE_ENDPOINT ,
 	} ,
 ]
