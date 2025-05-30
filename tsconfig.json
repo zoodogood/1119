@@ -9,13 +9,9 @@
 		"moduleResolution": "nodenext" ,
 		"paths": {
 			"#config": ["./src/config.json.js"] ,
-			"#app": ["./src/app/app.js"] ,
-
 			"#constants/*": ["src/constants/*"] ,
-
 			"#site-component-lib/*": ["src/site/_build/components/lib/*"] ,
 			"#site-component/*": ["src/site/_build/components/svelte/*/mod.svelte"] ,
-
 			"#src/*": ["./src/*"] ,
 			"#root/*": ["./*"]
 		} ,
