@@ -582,7 +582,6 @@ export function toDotNotatedFlat( object , skip = () => false ) {
 	return flat
 }
 
-
-export function isNonNullable(value) {
-  return value !== null && value !== undefined;
+export function isNonNullable( value ) {
+	return value !== null && value !== undefined
 }
