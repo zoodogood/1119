@@ -56,7 +56,7 @@ frames:
         label: GlitchBall
         description: Если вы заполнили область за пределами этого круга — проиграли.
 pages:
-  public:
+  home:
     hi: Hello!
     cool: Cat Chest is cool
   publicExperiments:
