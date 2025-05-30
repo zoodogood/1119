@@ -1,4 +1,9 @@
 <script>
+	import { init_pwa_worker } from '#src/site/build/components/lib/init_pwa.js'
+	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { svelte } from '@sveltejs/vite-plugin-svelte'
+	import { build } from 'bun'
+
 	import Image from '#site-component/Image'
 
 	import Layout from '#site-component/Layout'
@@ -8,10 +13,7 @@
 	import GuildProgress from '#src/guildcommand/GuildProgress.svelte'
 
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
-	import { init_pwa_worker } from '#src/site/_build/components/lib/init_pwa.js'
-	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
-	import ChangeLanguage from '#src/site/_build/components/svelte/ChangeLanguage/mod.svelte'
+	import svelteApp from '#src/site/build/c#src/site/build/components/app_singleton.jswa_worker } from '#src/site/build/#src/site/build/components/lib/init_pwa.jsuter from '#src/site/build#src/site/build/components/lib/page_router_singleton.jsLanguage from '#src/site/build/components/svelte/ChangeLanguage/mod.svelte'
 	import UserSettings from '#src/user/setprofile/UserSettings.svelte'
 	import UserProgress from '#src/user/UserProgress.svelte'
 	import { onMount } from 'svelte'

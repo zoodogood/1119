@@ -1,7 +1,7 @@
 <script>
 	import Image from "#site-component/Image";
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
-	import { getNotificationsContext } from "svelte-notifications";
+	import svelteApp from '#src/site/build/compon#src/site/build/components/app_singleton.jstionsContext } from "svelte-notifications";
+	import { getNotificationsContext } from "svelte-notifications"
 	const { addNotification } = getNotificationsContext();
 
 	export let State;

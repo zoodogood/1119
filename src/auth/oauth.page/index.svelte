@@ -1,9 +1,7 @@
 <script>
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { sleep } from '#src/safe-utils.js'
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
-	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
-	import { GlitchText } from '@zoodogood/utils/objectives'
+	import svelteApp from '#src/site/build/compo#src/site/build/components/app_singleton.jsfrom '#src/site/build/comp#src/site/build/components/lib/page_router_singleton.jst } from '@zoodogood/utils/objectives'
 
 	import { onMount } from 'svelte'
 

@@ -7,7 +7,7 @@
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 	import { NumberFormatLetterize } from '#src/safe-utils.js'
-	import Wrapper from '#src/site/_build/components/svelte/frames/entityData/wrapper.svelte'
+	import Wrapper from '#src/site/build/components/svelte/frames/entityData/wrapper.svelte'
 	import { onMount } from 'svelte'
 
 	const Component = {

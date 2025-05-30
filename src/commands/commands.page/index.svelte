@@ -4,9 +4,8 @@
 
 	import Layout from '#site-component/Layout'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
-
-	const i18n = svelteApp.i18n.pages.commandsIndex
+	import { i18n } from '#src/i18n/singleton.js'
+	import svelteApp from '#src/site/build/com#src/site/build/components/app_singleton.jslteApp.i18n.pages.commandsIndex
 
 	const CategoryEnum = {
 		delete: i18n.category.delete ,

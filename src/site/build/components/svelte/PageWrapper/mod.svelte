@@ -1,9 +1,9 @@
 <script>
 	import config from '#config'
-	import { relativeSiteRoot } from '#root/src/site/_build/components/lib/util.js'
-	import { writeError } from '#root/src/site/_build/components/lib/writeErrorToServer.js'
+	import { relativeSiteRoot } from '#src/site/build/components/lib/util.js'
+	import { writeError } from '#src/site/build/components/lib/writeErrorToServer.js'
 
-	import { PopupsHandler } from '#root/src/site/_build/components/svelte/Popups/index.js'
+	import { PopupsHandler } from '#src/site/build/components/svelte/Popups/index.js'
 	import { Theme } from '#site-component/ThemeSwitcher'
 	import { onMount } from 'svelte'
 	import { MetaTags } from 'svelte-meta-tags'

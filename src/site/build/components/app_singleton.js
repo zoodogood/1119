@@ -3,14 +3,14 @@ import { DAY } from '#constants/time.js'
 import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 
 import { parseDocumentLocate , ReplaceTemplate } from '#src/safe-utils.js'
-import PagesURLs from '#src/site/_build/_public_out/enum[builded].mjs'
-import { createDialog } from '#src/site/_build/components/lib/createDialog.js'
+import PagesURLs from '#src/site/build/_public_out/enum[builded].mjs'
+import { createDialog } from '#src/site/build/components/lib/createDialog.js'
 
-import { whenDocumentReadyStateIsComplete } from '#src/site/_build/components/lib/dom_utils.js'
+import { whenDocumentReadyStateIsComplete } from '#src/site/build/components/lib/dom_utils.js'
 
-import HashController from '#src/site/_build/components/lib/HashController.js'
-import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
-import enviroment from '#src/site/_build/rollup-plugin-replace/template.js'
+import HashController from '#src/site/build/components/lib/HashController.js'
+import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+import enviroment from '#src/site/build/rollup-plugin-replace/template.js'
 import { omit } from '@zoodogood/utils/objectives'
 
 class StorageManager {

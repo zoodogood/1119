@@ -1,7 +1,8 @@
 <script>
 	import Icon from '#site-component/iconic'
-	import { ButtonResponse , interactWithButton } from '#src/site/_build/components/lib/ButtonResponse.js'
+	import { ButtonResponse , interactWithButton } from '#src/site/build/components/lib/ButtonResponse.js'
 	import { createEventDispatcher } from 'svelte'
+	import { PopupBox } from '../Popups/index.js'
 
 	export let x
 	export let y

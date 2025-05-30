@@ -34,14 +34,14 @@ defineStage( 'createPagesExports' , async () => {
 	)
 	{
 		console.info( `Cound of files: ${ targetFiles.length }` )
-		await FileSystem.mkdir( './src/site/_build/_public_out' , {
+		await FileSystem.mkdir( './src/site/build/_public_out' , {
 			recursive: true ,
 		} )
 	}
 
 	// MARK: = first
 	{
-		const TARGET_PATH = './src/site/_build/_public_out/exports[builded].mjs' // Svelte exports content
+		const TARGET_PATH = './src/site/build/_public_out/exports[builded].mjs' // Svelte exports content
 		await FileSystem.writeFile(
 			cwd_path( '.' , TARGET_PATH ) ,
 			targetFiles
@@ -56,7 +56,7 @@ defineStage( 'createPagesExports' , async () => {
 
 	// MARK: = second
 	{
-		const ENUM_TARGET_PATH = './src/site/_build/_public_out/enum[builded].mjs' // ESJS content
+		const ENUM_TARGET_PATH = './src/site/build/_public_out/enum[builded].mjs' // ESJS content
 		await FileSystem.writeFile(
 			cwd_path( '.' , ENUM_TARGET_PATH ) ,
 			`export default ${ JSON.stringify(
@@ -82,7 +82,7 @@ defineStage( 'Make files public' , async () => {
 				x => x.bundle ,
 				Object.entries ,
 				arrayMapProperty( '0' , source => Path.resolve( p , '..' , source ) ) ,
-				arrayMapProperty( '1' , destination => Path.join( `${ process.cwd() }/src/site/_build/_public_out` , destination ) ) ,
+				arrayMapProperty( '1' , destination => Path.join( `${ process.cwd() }/src/site/build/_public_out` , destination ) ) ,
 			) ,
 		) ,
 		promiseAll ,

@@ -1,4 +1,4 @@
-import writeError from '#src/site/_build/components/lib/writeErrorToServer.js'
+import writeError from '#src/site/build/components/lib/writeErrorToServer.js'
 
 export async function interactWithButton( source , clickEvent , callback ) {
 	const { target } = clickEvent

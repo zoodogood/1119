@@ -1,13 +1,13 @@
 <script>
-	import ChangeLanguage from '#src/site/_build/components/svelte/ChangeLanguage/mod.svelte';
+	import ChangeLanguage from '#src/site/build/components/svelte/ChangeLanguage/mod.svelte';
 	
 	
 	import Layout from '#site-component/Layout'
 
 	
 	import { Theme } from '#site-component/ThemeSwitcher'
-	import svelteApp from '../_build/components/app_singleton.js'
-	const i18n = svelteApp.i18n.pages.public
+	import svelteApp from '../build/compon../build/components/app_singleton.jssvelteApp.i18n.pages.public
+	import { i18n } from '#src/i18n/singleton.js'
 
 	const CurrentThemeStore = Theme.current
 </script>

@@ -4,10 +4,7 @@
 	import { Theme } from '#site-component/ThemeSwitcher'
 	import config from '#src/config.json.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
-	import PagesRouter, { PagesKeyEnum } from '#src/site/_build/components/lib/page_router_singleton.js'
-
-	const CurrentThemeStore = Theme.current
+	import svelteApp from '#src/site/build/co#src/site/build/components/app_singleton.jser, { PagesKeyEnum } from '#src/site/build/c#src/site/build/components/lib/page_router_singleton.jshemeStore = Theme.current
 
 	const whenApiListIsReceived = fetchFromInnerApi( './utils/api_list' )
 

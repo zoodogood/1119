@@ -1,6 +1,6 @@
 /**
  * 
- * @param {import("#src/site/_build/components/app_singleton.js")} svelteApp 
+ * @param {import("#src/site/build/components/app_singleton.js")} svelteApp 
  * @param {*} path 
  * @param {*} removeQueries 
  * @returns 

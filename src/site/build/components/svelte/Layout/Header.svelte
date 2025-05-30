@@ -2,10 +2,10 @@
 	import config from "#config";
 	import Image from "#site-component/Image";
 	import ThemeSwitcher from "#site-component/ThemeSwitcher";
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import svelteApp from '#src/site/build/components/app_singleton.js'
 	import PagesRouter, {
 		page_location,
-	} from "#root/src/site/_build/components/lib/page_router_singleton.js";
+	} from "#src/site/build/components/lib/page_router_singleton.js";
 	const i18n = svelteApp.i18n.components.Layout.Header;
 
 	const Header = {

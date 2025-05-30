@@ -1,4 +1,4 @@
-import { createElement } from '#src/site/_build/components/lib/dom_utils.js'
+import { createElement } from '#src/site/build/components/lib/dom_utils.js'
 
 export async function init_pwa_worker() {
 	const unique = 'init_pwa_worker__active_pwa_manifest'

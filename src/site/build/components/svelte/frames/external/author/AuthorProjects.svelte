@@ -1,7 +1,7 @@
 <script>
 	import OverCard from "#site-component/Overcard";
 	import Icon from "#site-component/iconic";
-	import svelteApp from "#src/site/_build/components/app_singleton.js"
+	import svelteApp from "#src/site/build/components/app_singleton.js"
 
 	const i18n = svelteApp.i18n.frames.externalAuthorProjects;
 

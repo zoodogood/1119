@@ -3,8 +3,8 @@ src/config.json.js
 
 node_modules/
 
-src/site/_build/_public_out/
-src/site/_build/.cache/
+src/site/build/_public_out/
+src/site/build/.cache/
 src/public/articles/
 src/articles/_items
 src/data/StorageManager/drivers/FileDBData/_localStorage/

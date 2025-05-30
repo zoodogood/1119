@@ -1,10 +1,11 @@
 <script>
 	import Layout from '#site-component/Layout'
-	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
-	import AuthorProjects from '#src/site/_build/components/svelte/frames/external/author/AuthorProjects.svelte'
-	import AuditDaily from '#src/site/_build/components/svelte/frames/statistic/AuditDaily.svelte'
-	import Statistic from '#src/site/_build/components/svelte/frames/statistic/Statistic.svelte'
-	import { onMount } from 'svelte'
+	import PagesRouter from '#src/site/build/compon#src/site/build/components/lib/page_router_singleton.jss from '#src/site/build/components/svelte/frames/external/author/AuthorProjects.svelte'
+	import AuditDaily from '#src/site/build/components/svelte/frames/statistic/AuditDaily.svelte'
+	import Statistic from '#src/site/build/components/svelte/frames/statistic/Statistic.svelte'
+	imp	import AuthorProjects from '#src/site/build/components/svelte/frames/external/author/AuthorProjects.svelte'
+	import { svelte } from '@sveltejs/vite-plugin-svelte'
+ort { onMount } from 'svelte'
 
 	
 	const Component = {

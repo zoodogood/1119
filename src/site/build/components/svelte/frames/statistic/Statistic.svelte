@@ -2,7 +2,7 @@
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { sleep } from '#src/safe-utils.js'
 
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
+	import svelteApp from '#src/site/build/components/app_singleton.js'
 	import { onMount } from 'svelte'
 	import IntersectionObserver from 'svelte-intersection-observer'
 

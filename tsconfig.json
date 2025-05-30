@@ -10,8 +10,8 @@
 		"paths": {
 			"#config": ["./src/config.json.js"] ,
 			"#constants/*": ["src/constants/*"] ,
-			"#site-component-lib/*": ["src/site/_build/components/lib/*"] ,
-			"#site-component/*": ["src/site/_build/components/svelte/*/mod.svelte"] ,
+			"#site-component-lib/*": ["src/site/build/components/lib/*"] ,
+			"#site-component/*": ["src/site/build/components/svelte/*/mod.svelte"] ,
 			"#src/*": ["./src/*"] ,
 			"#root/*": ["./*"]
 		} ,

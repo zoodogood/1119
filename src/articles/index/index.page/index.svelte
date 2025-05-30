@@ -4,9 +4,7 @@
 	import { dayjs } from '#src/dayjs.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { ReplaceTemplate , timestampToDate } from '#src/safe-utils.js'
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
-	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
-	import { path } from '#src/url/export.js'
+	import svelteApp from '#src/site/build/co#src/site/build/components/app_singleton.jser from '#src/site/build/c#src/site/build/components/lib/page_router_singleton.js from '#src/url/export.js'
 
 	const i18n = svelteApp.i18n.pages.articlesIndex
 	const AVERAGE_PER_WORD = MINUTE / 200

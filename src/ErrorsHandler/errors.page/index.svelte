@@ -3,10 +3,7 @@
 	import Layout from '#site-component/Layout'
 	import dayjs from '#src/dayjs.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
-	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
-
-	const Component = {
+	import svelteApp from '#src/site/build/com#src/site/build/components/app_singleton.jsr from '#src/site/build/co#src/site/build/components/lib/page_router_singleton.js = {
 		errors: [] ,
 	}
 	const i18n = svelteApp.i18n.pages.errorsIndex;

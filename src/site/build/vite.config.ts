@@ -36,11 +36,11 @@ export default defineConfig( {
 		} ) ,
 	] ,
 	base: '/public' ,
-	cacheDir: _resolve( '#src/site/_build/.cache/.vite' ) ,
+	cacheDir: _resolve( '#src/site/build/.cache/.vite' ) ,
 	get root() {
 		const command = process.argv[ 2 ]
 		switch ( command ) {
-		case 'dev': return _resolve( '#src/site/_build/_public_out' )
+		case 'dev': return _resolve( '#src/site/build/_public_out' )
 
 		case 'build': return undefined
 
@@ -52,7 +52,7 @@ export default defineConfig( {
 	} ,
 	build: {
 		lib: {
-			entry: [ _resolve( '#src/site/_build/index.js' ) ] ,
+			entry: [ _resolve( '#src/site/build/index.js' ) ] ,
 			name: 'bundle' ,
 			fileName: 'bundle' ,
 			formats: [ 'iife' ] ,
@@ -61,13 +61,13 @@ export default defineConfig( {
 			plugins: [
 				( await import( 'rollup-plugin-polyfill-node' ) ).default() ,
 				( await import( '@rollup/plugin-replace' ) ).default( {
-					include: [ _resolve( '#src/site/_build/rollup-plugin-replace/template.js' ) ] ,
+					include: [ _resolve( '#src/site/build/rollup-plugin-replace/template.js' ) ] ,
 					preventAssignment: true ,
-					values: ( await import( _resolve( '#src/site/_build/rollup-plugin-replace/values.js' ) ) ).default ,
+					values: ( await import( _resolve( '#src/site/build/rollup-plugin-replace/values.js' ) ) ).default ,
 				} ) ,
 			] ,
 		} ,
-		outDir: './src/site/_build/_public_out/svelte-bundle' ,
+		outDir: './src/site/build/_public_out/svelte-bundle' ,
 		sourcemap: true ,
 	} ,
 } )

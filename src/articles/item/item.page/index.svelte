@@ -8,10 +8,7 @@
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { MarkdownMetadata } from '#src/MarkdownMetadata.js'
 	import { ReplaceTemplate , timestampToDate } from '#src/safe-utils.js'
-	import svelteApp from '#src/site/_build/components/app_singleton.js'
-	import PagesRouter from '#src/site/_build/components/lib/page_router_singleton.js'
-
-	const i18n = svelteApp.i18n.pages.articlesItem
+	import svelteApp from '#src/site/_buil#src/site/build/components/app_singleton.jsRouter from '#src/site/_bui#src/site/build/components/lib/page_router_singleton.js = svelteApp.i18n.pages.articlesItem
 	const key = svelteApp.url.queries.id
 
 	const AVERAGE_PER_WORD = 60_000 / 200
