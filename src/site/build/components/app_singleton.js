@@ -86,7 +86,6 @@ class SvelteApp {
 		this.lang = this.storage.getSelectedLocale() ?? 'ru'
 		this.i18n = this.enviroment.i18n?.[ this.lang ]
 
-		this.#checkOrigin()
 		this.#checkExternalUserDataByToken()
 		this.#checkURLLocaleProtocol()
 		console.info( this )
@@ -137,14 +136,6 @@ class SvelteApp {
 		}
 
 		this.storage.setUserData( user )
-	}
-
-	#checkOrigin() {
-		if ( config.server.origin !== document.location.origin ) {
-			console.error(
-				`You need set in config server.origin equal to current location: ${ document.location.origin }\nCurrent config value: ${ config.server.origin }` ,
-			)
-		}
 	}
 
 	#checkURLLocaleProtocol() {
