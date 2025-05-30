@@ -585,3 +585,7 @@ export function toDotNotatedFlat( object , skip = () => false ) {
 export function isNonNullable( value ) {
 	return value !== null && value !== undefined
 }
+
+export function isNotEmptyStringLiteral( x ) {
+	return x !== ''
+}
