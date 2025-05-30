@@ -1,5 +1,6 @@
 import config from '#config'
 import { ending } from '@zoodogood/utils/primitives'
+import { DAY } from './constants/time.js'
 
 export { default as yaml } from 'yaml'
 
@@ -167,7 +168,7 @@ export function weekHour( ms , locale = 'ru-ru' ) {
 }
 
 export function timestampDay( timestamp ) {
-	return Math.floor( timestamp / 86_400_000 )
+	return Math.floor( timestamp / DAY )
 }
 
 export function toDayDate( date ) {
@@ -342,13 +343,12 @@ export function parseDocumentLocate( location ) {
 			.map( raw => raw.split( '=' ) ) ,
 	)
 
-	const { subpath , base } = parsePagesPath( location.pathname )
+	const { subpath } = parsePagesPath( location.pathname )
 
 	return {
 		origin: location.origin ,
 		subpath ,
 		queries ,
-		base: parseLocationBase( base ) ,
 	}
 }
 
@@ -361,16 +361,6 @@ export function parsePagesPath( path ) {
 	const subpath = path.slice( index ).split( '/' ).filter( Boolean )
 
 	return { base , subpath }
-}
-
-export function parseLocationBase( base ) {
-	typeof base === 'string' && ( base = base.split( '/' ) )
-	base = base.filter( Boolean )
-
-	const entry = base.at( -1 )
-	const lang = base.at( -2 )
-	const prefix = base.at( -3 )
-	return { prefix , lang , entry }
 }
 
 export function ReplaceTemplate( string , values ) {
