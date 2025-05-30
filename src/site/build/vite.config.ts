@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { app_build_name_of_run_build } from '#src/app/build/export.js'
 import config from '#src/config.json.js'
+import { SECOND } from '#src/constants/time.js'
 import { readPackageJson } from '#src/nodejs/readPackageJson.js'
 import { sleep } from '#src/safe-utils.js'
 import { path } from '#src/url/export.js'
@@ -12,7 +13,7 @@ if ( !config.development ) {
 	execSync( app_build_name_of_run_build() )
 } else {
 	console.info( `Please call «${ app_build_name_of_run_build() }» manually` )
-	await sleep( 200 )
+	await sleep( SECOND )
 }
 
 function _resolve( specifier : string ) {
