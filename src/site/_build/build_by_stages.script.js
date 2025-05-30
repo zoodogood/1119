@@ -3,7 +3,7 @@ import Path from 'node:path'
 import { accrueAsync , arrayFlatFactory , arrayMapFactory , arrayMapProperty , arrayParallerTaskFactory , promiseAll } from '#src/accrue/accrue.js'
 import { file_symlink_auto } from '#src/nodejs/FileSystem/helpers.js'
 import { cwd_path } from '#src/nodejs/path_relative_to_root.js'
-import { process } from '#src/nodejs/process/exports.js'
+import { process } from '#src/nodejs/process/export.js'
 import { glob } from 'glob'
 
 const _registered_stages = []
