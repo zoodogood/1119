@@ -1,11 +1,19 @@
 import { execSync } from 'node:child_process'
+import { app_build_name_of_run_build } from '#src/app/build/export.js'
+import config from '#src/config.json.js'
 import { readPackageJson } from '#src/nodejs/readPackageJson.js'
+import { sleep } from '#src/safe-utils.js'
 import { path } from '#src/url/export.js'
 import { svelte , vitePreprocess } from '@sveltejs/vite-plugin-svelte'
 import { defineConfig } from 'vite'
 
 const packageJSON = await readPackageJson()
-// execSync( 'pnpm run site-build:build_stages' )
+if ( !config.development ) {
+	execSync( app_build_name_of_run_build() )
+} else {
+	console.info( `Please call «${ app_build_name_of_run_build() }» manually` )
+	await sleep( 200 )
+}
 
 function _resolve( specifier : string ) {
 	const { imports } = packageJSON
