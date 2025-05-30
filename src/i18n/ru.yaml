@@ -186,7 +186,7 @@ components:
   Giscus:
     comments: Комментарии
     identify: 'Идентификатор:'
-    notSupported: Giscus не поддерживается
+    notSupported: Сервис Giscus не доступен
   Layout:
     Header:
       ghost: Призрак

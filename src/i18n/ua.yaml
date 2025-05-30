@@ -201,7 +201,7 @@ components:
   Giscus:
     comments: Коментарі
     identify: 'Ідентифікатор:'
-    notSupported: Giscus не підтримується
+    notSupported: Сервіс Giscus не доступний
   Layout:
     Header:
       ghost: Привид
