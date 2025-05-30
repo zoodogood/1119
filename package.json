@@ -1,7 +1,7 @@
 {
 	"name": "greenghost",
 	"type": "module",
-	"version": "2.0.0-alpha.33679",
+	"version": "2.0.0-alpha.33838",
 	"description": "",
 	"author": "zoodogood",
 	"license": "ISC",
@@ -55,7 +55,7 @@
 	},
 	"devDependencies": {
 		"@antfu/eslint-config": "^4.10.1",
-		"@eslint/js": "^9.22.0",
+		"@eslint/js": "^9.24.0",
 		"@rollup/plugin-commonjs": "^28.0.3",
 		"@rollup/plugin-node-resolve": "^16.0.1",
 		"@rollup/plugin-replace": "^6.0.2",
