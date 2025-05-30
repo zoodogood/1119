@@ -5,9 +5,9 @@ import { svelte , vitePreprocess } from '@sveltejs/vite-plugin-svelte'
 import { defineConfig } from 'vite'
 
 const packageJSON = await readPackageJson()
-execSync( 'pnpm run createPagesExports' )
+// execSync( 'pnpm run site-build:build_stages' )
 
-function resolve( specifier : string ) {
+function _resolve( specifier : string ) {
 	const { imports } = packageJSON
 	const [ maybe , ... rest ] = specifier.split( '/' )
 	const replacment = Object.entries( imports ).find( ( [ key , value ] ) =>
@@ -16,7 +16,8 @@ function resolve( specifier : string ) {
 	if ( replacment ) {
 		specifier = replacment.replace( '*' , rest.join( '/' ) )
 	}
-	const root = path.resolve( __dirname , '..' , '..' )
+	// To project root folder
+	const root = path.resolve( __dirname , '../../..' )
 	return path.resolve( root , specifier )
 }
 
@@ -26,11 +27,24 @@ export default defineConfig( {
 			preprocess: vitePreprocess() ,
 		} ) ,
 	] ,
-	cacheDir: 'cache/.vite' ,
-	// root: "../..",
+	base: '/public' ,
+	cacheDir: _resolve( '#src/site/_build/.cache/.vite' ) ,
+	get root() {
+		const command = process.argv[ 2 ]
+		switch ( command ) {
+		case 'dev': return _resolve( '#src/site/_build/_public_out' )
+
+		case 'build': return undefined
+
+		default: {
+			console.error( `\`vite ${ command }\` can be unstable: command "${ command }" is unknown. You may modify ${ import.meta.url } for control a "root" property that trigger this message.` )
+			return undefined
+		}
+		}
+	} ,
 	build: {
 		lib: {
-			entry: [ resolve( '#src/site/src/core/index.js' ) ] ,
+			entry: [ _resolve( '#src/site/_build/index.js' ) ] ,
 			name: 'bundle' ,
 			fileName: 'bundle' ,
 			formats: [ 'iife' ] ,
@@ -39,13 +53,13 @@ export default defineConfig( {
 			plugins: [
 				( await import( 'rollup-plugin-polyfill-node' ) ).default() ,
 				( await import( '@rollup/plugin-replace' ) ).default( {
-					include: [ resolve( '#src/site/src/enviroment/mod.js' ) ] ,
+					include: [ _resolve( '#src/site/_build/rollup-plugin-replace/template.js' ) ] ,
 					preventAssignment: true ,
-					values: ( await import( resolve( '#site/enviroment/values.js' ) ) ).default ,
+					values: ( await import( _resolve( '#src/site/_build/rollup-plugin-replace/values.js' ) ) ).default ,
 				} ) ,
 			] ,
 		} ,
-		outDir: './src/public/build/svelte-bundle' ,
+		outDir: './src/site/_build/_public_out/svelte-bundle' ,
 		sourcemap: true ,
 	} ,
 } )

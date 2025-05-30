@@ -1,0 +1,11 @@
+{
+	"bundle": {
+		"./LICENSE.txt": "fontello/LICENSE.txt" ,
+		"./font/fontello.woff": "fontello/fontello.woff" ,
+		"./font/fontello.woff2": "fontello/fontello.woff2" ,
+		"./font/fontello.ttf": "fontello/fontello.ttf" ,
+		"./font/fontello.eot": "fontello/fontello.eot" ,
+		"./font/fontello.svg": "fontello/fontello.svg" ,
+		"./demo.html": "fontello/demo.html"
+	}
+}

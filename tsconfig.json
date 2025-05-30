@@ -17,8 +17,8 @@
 			"#folder/*": ["./folder/*"] ,
 			"#lib/*": ["./src/lib/*"] ,
 
-			"#site-component-lib/*": ["src/site/_build/src/svelte_component/*"] ,
-			"#site-component/*": ["src/site/_build/src/svelte_component/*/mod.svelte"] ,
+			"#site-component-lib/*": ["src/site/_build/components/lib/*"] ,
+			"#site-component/*": ["src/site/_build/components/svelte/*/mod.svelte"] ,
 
 			"#src/*": ["./src/*"] ,
 			"#root/*": ["./*"]

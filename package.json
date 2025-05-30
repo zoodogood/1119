@@ -11,10 +11,9 @@
 		"start": "bun run ./index.js",
 		"watch-runtime": "bun --watch ./index.js",
 		"build": "node ./folder/scripts/build.bat.js",
-		"site-build": "vite build --config ./src/site/vite.config.js",
-		"site-watch": "sirv static --no-clear",
-		"createPagesExports": "node ./src/site/scripts/createPagesExports.js",
 		"pm2:please-restart": "pm2 restart --update-env",
+		"site-build:build_stages": "node ./src/site/_build/build_by_stages.script.js --apply-all",
+		"site-preview": "vite dev --config ./src/site/_build/vite.config.ts",
 		"docker": "docker-compose up -d --build && echo 'Hello, do use pm2 list and pm2 logs <id> for the read stdout' && docker-compose exec greenghost /bin/bash"
 	},
 	"imports": {
@@ -23,13 +22,12 @@
 		"#config": "./src/config.json.js",
 		"#app": "./src/app/app.js",
 		"#server/*": "./src/server/*",
-		"#site/*": "./src/site/src/*",
 		"#bot/*": "./src/bot/*",
 		"#constants/*": "./src/constants/*",
 		"#folder/*": "./folder/*",
 		"#lib/*": "./src/lib/*",
-		"#site-component-lib/*": "./src/site/src/components/*",
-		"#site-component/*": "./src/site/src/components/*/mod.svelte"
+		"#site-component-lib/*": "./src/site/_build/components/lib/*",
+		"#site-component/*": "./src/site/_build/components/svelte/*/mod.svelte"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"

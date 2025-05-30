@@ -75,15 +75,15 @@ class SvelteApp {
 	i18n = null
 	PagesURLs = PagesURLs
 	storage = ( new StorageManager )
-	url = parseDocumentLocate( this.document.location )
+	url = parseDocumentLocate( document.location )
 	user = this.storage.getUserData()
 
 	get href() {
-		return this.document.location.href
+		return document.location.href
 	}
 
 	constructor() {
-		this.lang = this.url.base.lang ?? this.storage.getSelectedLocale() ?? 'ru'
+		this.lang = this.storage.getSelectedLocale() ?? 'ru'
 		this.i18n = this.enviroment.i18n?.[ this.lang ]
 
 		this.#checkOrigin()
@@ -140,15 +140,15 @@ class SvelteApp {
 	}
 
 	#checkOrigin() {
-		if ( config.server.origin !== this.document.location.origin ) {
+		if ( config.server.origin !== document.location.origin ) {
 			console.error(
-				`You need set in config server.origin equal to ${ this.document.location.origin }\nCurrent: ${ config.server.origin }` ,
+				`You need set in config server.origin equal to current location: ${ document.location.origin }\nCurrent config value: ${ config.server.origin }` ,
 			)
 		}
 	}
 
 	#checkURLLocaleProtocol() {
-		const locale = this.url.base.lang
+		const locale = this.url.queries.lang
 		if ( !locale ) {
 			return
 		}

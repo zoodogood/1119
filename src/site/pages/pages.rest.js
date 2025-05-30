@@ -1,14 +1,14 @@
 import Path from 'node:path'
+import process from 'node:process'
 import { DataManager } from '#src/data/singleton.js'
 import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
 import { parsePagesPath } from '#src/safe-utils.js'
 
-const ROOT = 'src/public'
-const root = Path.join( process.cwd() , ROOT )
+const root = Path.join( process.cwd() , 'src/site' )
 const target = 'index.html'
 
 class Route extends BaseRoute {
-	prefix = /^\/(?:(?:ru|ua|en)\/)?pages/
+	prefix = /^\/pages/
 
 	statistic = {
 		increment( request ) {

@@ -2,8 +2,9 @@
 src/config.json.js
 
 node_modules/
-buildout/
 
+src/site/_build/_public_out/
+src/site/_build/.cache/
 src/public/articles/
 src/articles/_items
 
