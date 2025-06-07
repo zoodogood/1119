@@ -8,16 +8,14 @@ import {
 } from '#src/commands/BaseCommand/BaseCommand.js'
 import { default as CommmandInfo } from '#src/commands/command.commandinfo.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
-import { DataManager } from '#src/data/singleton.js'
-import dayjs from '#src/dayjs.js'
+import { DataManager , guildDataOf } from '#src/data/singleton.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { Pager } from '#src/discord/Pager.js'
 import { justModalQuestion , question } from '#src/discord/utils.js'
 import { Emoji } from '#src/emojis/emojis.js'
-import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
-import { sleep , timestampDay , timestampToDate } from '#src/safe-utils.js'
+import { sleep , timestampToDate } from '#src/safe-utils.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
-import { arrayEmpty , CliParser , ending } from '@zoodogood/utils/primitives'
+import { CliParser , ending } from '@zoodogood/utils/primitives'
 import {
 	BaseInteraction ,
 	ButtonStyle ,
@@ -25,6 +23,7 @@ import {
 	escapeMarkdown ,
 	PermissionFlagsBits ,
 } from 'discord.js'
+import { daemon_singleton } from './daemon/singleton.js'
 
 class Special {
 	static process_hasManagePermissions( context , reason ) {
@@ -140,7 +139,7 @@ class PartnerField {
 
 	setGuild( guild ) {
 		this.guild = guild
-		this.field =guildDataOf(guild)[ PartnerField.KEY ] ||= {}
+		this.field = guildDataOf( guild )[ PartnerField.KEY ] ||= {}
 		return this
 	}
 
@@ -377,7 +376,7 @@ class Preview_FlagSubcommand extends BaseFlagSubcommand {
 
 	_getClansContent() {}
 	_getTreeContent() {
-		return `Уровень дерева: ${guildDataOf( this.guild).tree?.level || 'ещё не появилось' }`
+		return `Уровень дерева: ${ guildDataOf( this.guild ).tree?.level || 'ещё не появилось' }`
 	}
 
 	async getEmbed() {
@@ -434,7 +433,7 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
 		const { context } = this
 		const { guild } = context
 		const { id: guildId } = guild
-		const daemon = context.command.daemon
+		const daemon = daemon_singleton
 		daemon.onPartnerBump( context )
 		const options = await new Preview_FlagSubcommand( context )
 			.setGuild( context.guild )
@@ -510,7 +509,7 @@ class Bump_FlagSubcommand extends BaseFlagSubcommand {
 	}
 
 	processPartnerAlreadyInPull() {
-		const daemon = this.context.command.daemon
+		const daemon = daemon_singleton
 		const already = daemon.pull.isPartnerInPull( this.context.guild.id )
 		if ( !already ) {
 			return false
@@ -694,7 +693,7 @@ class List_FlagSubcommand_Filter {
 			List_FlagSubcommand_Filter.Events.update ,
 			event ,
 		)
-		await sleep( 5000 )
+		await sleep( SECOND * 5 )
 		this._interface.updateMessage()
 	}
 }
@@ -812,8 +811,7 @@ class Daemon_FlagSubcommand extends BaseFlagSubcommand {
 	}
 
 	daemon() {
-		const { daemon } = this.context.command
-		return daemon
+		return daemon_singleton
 	}
 
 	getEmbed() {
@@ -903,83 +901,6 @@ class CommandRunContext extends BaseCommandRunContext {
 	}
 }
 
-class PartnersDaemon {
-	EVENT_NAME = 'partner-daemon'
-	pull = ( new DaemonPull )
-	_createTimeEvent() {
-		const WEEK = 7
-		const launched_events = timeEvents_singleton.filterEventsInRange(
-			( { name } ) => name === this.EVENT_NAME ,
-			[
-				singletonBotData().currentDay ,
-				singletonBotData().currentDay + WEEK + 1 ,
-			] ,
-		)
-
-		if ( launched_events.length > 0 ) {
-			launched_events
-				.slice( 1 )
-				.forEach(
-					timeEvents_singleton.removeFromBuffer.bind( timeEvents_singleton ) ,
-				)
-			return
-		}
-
-		timeEvents_singleton.pushIntoBuffer(
-			this.EVENT_NAME ,
-			this.ms_to_timeEvent() ,
-		)
-	}
-
-	checkTimeEvent() {
-		const expected_exists = this.fetchTimeEvent()
-
-		if ( !expected_exists ) {
-			this._createTimeEvent()
-		}
-	}
-
-	fetchTimeEvent() {
-		const WEEK = 7
-		const day = timestampDay( Date.now() )
-		return timeEvents_singleton.findEventInRange(
-			( { name } ) => name === this.EVENT_NAME ,
-			[ day , day + WEEK + 1 ] ,
-		)
-	}
-
-	ms_to_timeEvent() {
-		return dayjs().endOf( 'week' ).add( 2 , 'day' ).set( 'hour' , 20 ) - Date.now()
-	}
-
-	onPartnerBump( context ) {
-		this.pull.push( context.guild.id )
-	}
-
-	onTimeEvent() {
-		arrayEmpty( this.pull )
-		this._createTimeEvent()
-	}
-}
-
-class DaemonPull extends Array {
-	LIMIT = 20
-	isPartnerInPull( guildId ) {
-		return this.includes( guildId )
-	}
-
-	process_queue() {
-		while ( this.length > this.LIMIT ) {
-			this.shift()
-		}
-	}
-
-	push( ... values ) {
-		super.push( ... values )
-		this.process_queue()
-	}
-}
-
 class Command extends BaseCommand {
 	static ComponentsCallbacks = {
 		show_help: 'show_help' ,
@@ -1012,7 +933,6 @@ class Command extends BaseCommand {
 		} ,
 	}
 
-	daemon
 	options = {
 		name: 'partners' ,
 		id: 67 ,
@@ -1042,11 +962,6 @@ class Command extends BaseCommand {
 		accessibility: {
 			publicized_on_level: 7 ,
 		} ,
-	}
-
-	constructor() {
-		super()
-		this.usePartnersDaemon()
 	}
 
 	async onChatInput( message , interaction ) {
@@ -1153,12 +1068,6 @@ class Command extends BaseCommand {
 		}
 		await this.processDefaultBehaviour( context )
 	}
-
-	usePartnersDaemon() {
-		this.daemon = new PartnersDaemon( this )
-		this.daemon.checkTimeEvent()
-	}
 }
 
 export default Command
-export { PartnersDaemon }

@@ -2,7 +2,7 @@ import FileSystem from 'node:fs/promises'
 import Path from 'node:path'
 
 class FileDBDriver {
-	static root = `${ process.cwd() }/src/data/StorageManager/drivers/FileDBData/!localStorage/`
+	static root = `${ process.cwd() }/src/data/StorageManager/drivers/FileDBData/_localStorage/`
 	async _createDeepFolder( path ) {
 		return FileSystem.mkdir( path , { recursive: true } )
 	}

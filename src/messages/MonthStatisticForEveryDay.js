@@ -1,3 +1,5 @@
+import { guildDataOf } from "#src/data/singleton.js"
+
 // @ts-check
 const MONTH_DAYS = 31
 export class MonthStatisticForEveryDayAPI {
@@ -10,7 +12,7 @@ export class MonthStatisticForEveryDayAPI {
 	}
 
 	static ofGuild( guild ) {
-		return new MonthStatisticForEveryDayAPI(guildDataOf(guild) )
+		return new MonthStatisticForEveryDayAPI( guildDataOf( guild ) )
 	}
 
 	push( object ) {

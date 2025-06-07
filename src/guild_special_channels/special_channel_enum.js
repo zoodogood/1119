@@ -1,3 +1,4 @@
+import { guildDataOf } from '#src/data/singleton.js'
 import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 
 export const SpecialChannel = createCollectionWithKey( [
@@ -22,7 +23,7 @@ export const SpecialChannel = createCollectionWithKey( [
 ] )
 
 export function getSpecialChannel( guild , key ) {
-	const id =guildDataOf(guild)[ key ]
+	const id = guildDataOf( guild )[ key ]
 	return guild.channels.cache.get( id )
 }
 export function sendToLogsChannel( guild , message ) {
@@ -34,5 +35,5 @@ export function sendToChatChannel( guild , message ) {
 }
 
 export function isChatChannelExists( guild ) {
-	return !!guildDataOf(guild).chatChannel
+	return !!guildDataOf( guild ).chatChannel
 }

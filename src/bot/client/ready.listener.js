@@ -1,7 +1,7 @@
 import config from '#config'
 import { Events } from '#src/app/events.enum.js'
 import { client } from '#src/bot/client/singleton.js'
-import { DataManager } from '#src/data/singleton.js'
+import { singletonBotData } from '#src/data/singleton.js'
 
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
