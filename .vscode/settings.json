@@ -103,5 +103,10 @@
 			"match": "git" ,
 			"runIn": "backend"
 		}
-	]
+	] ,
+	"explorer.fileNesting.enabled": true ,
+	"explorer.fileNesting.patterns": {
+		"Dockerfile": "docker-compose.yml, .dockerignore" ,
+		"package.json": "pnpm-lock.yaml"
+	}
 }
