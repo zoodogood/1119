@@ -3,8 +3,6 @@ import client from '#src/bot/client/singleton.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { resolve_description } from '#src/curses/CurseManager/singleton/public.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/user/resources/addResource.js'
-import { DataManager } from '#src/data/singleton.js'
 import {
 	mutate_time_event ,
 	timeEvents_singleton ,
@@ -12,6 +10,7 @@ import {
 import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import { randomWith , timestampDay } from '#src/safe-utils.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 
@@ -421,7 +420,7 @@ export const grempen_products = createCollectionWithKey( [
 			const phrase
 				= '. Клевер для всех участников в течении 4 часов увеличивает награду коин-сообщений на 15%!\nДействует только на этом сервере.'
 			const guild = interaction.guild
-			const guildData =guildDataOf(guild)
+			const guildData = guildDataOf( guild )
 
 			if ( !guildData.cloverEffect ) {
 				guildData.cloverEffect = {

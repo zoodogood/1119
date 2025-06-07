@@ -1,93 +1,93 @@
 <script module>
-	const DEFAULT_THEME = "darkGreen";
-	const STORAGE_KEY = "component-ThemeSwitcher-selectedTheme";
-	import { get, writable } from "svelte/store";
+	const DEFAULT_THEME = 'darkGreen'
+	const STORAGE_KEY = 'component-ThemeSwitcher-selectedTheme'
+	import { get , writable } from 'svelte/store'
 
 	const Theme = {
-		current: writable(localStorage[STORAGE_KEY] ?? DEFAULT_THEME),
+		current: writable( localStorage[ STORAGE_KEY ] ?? DEFAULT_THEME ) ,
 
-		apply(themeName) {
-			const theme = Theme.collection.get(themeName);
-			const target = document.documentElement.style;
+		apply( themeName ) {
+			const theme = Theme.collection.get( themeName )
+			const target = document.documentElement.style
 
-			for (const style in theme) {
-				target.setProperty(style, theme[style]);
+			for ( const style in theme ) {
+				target.setProperty( style , theme[ style ] )
 			}
 
-			localStorage[STORAGE_KEY] = themeName;
-		},
+			localStorage[ STORAGE_KEY ] = themeName
+		} ,
 
-		remove(themeName) {
-			const theme = Theme.collection.get(themeName);
-			const target = document.documentElement.style;
+		remove( themeName ) {
+			const theme = Theme.collection.get( themeName )
+			const target = document.documentElement.style
 
-			for (const style in theme) {
-				target.removeProperty(style);
+			for ( const style in theme ) {
+				target.removeProperty( style )
 			}
-		},
+		} ,
 
-		onClick(event) {
-			event.shiftKey ? this.switchToPrevious() : this.switchToNext();
-		},
+		onClick( event ) {
+			event.shiftKey ? this.switchToPrevious() : this.switchToNext()
+		} ,
 
 		switchToNext() {
-			const themes = [...Theme.collection.keys()];
-			const index = themes.indexOf(get(Theme.current));
-			const themeName = themes.at((index + 1) % themes.length);
+			const themes = [ ... Theme.collection.keys() ]
+			const index = themes.indexOf( get( Theme.current ) )
+			const themeName = themes.at( ( index + 1 ) % themes.length )
 
-			const previousName = themes.at(index);
-			Theme.remove(previousName);
+			const previousName = themes.at( index )
+			Theme.remove( previousName )
 
-			Theme.current.set(themeName);
-			Theme.apply(themeName);
-		},
+			Theme.current.set( themeName )
+			Theme.apply( themeName )
+		} ,
 
 		switchToPrevious() {
-			const themes = [...Theme.collection.keys()];
-			const index = themes.indexOf(get(Theme.current));
-			const themeName = themes.at(index - 1);
+			const themes = [ ... Theme.collection.keys() ]
+			const index = themes.indexOf( get( Theme.current ) )
+			const themeName = themes.at( index - 1 )
 
-			const previousName = themes.at(index);
-			Theme.remove(previousName);
+			const previousName = themes.at( index )
+			Theme.remove( previousName )
 
-			Theme.current.set(themeName);
-			Theme.apply(themeName);
-		},
+			Theme.current.set( themeName )
+			Theme.apply( themeName )
+		} ,
 
-		collection: themes,
+		collection: themes ,
 
-		enum: Object.fromEntries([...themes.keys()].map((k) => [k, k])),
-	};
+		enum: Object.fromEntries( [ ... themes.keys() ].map( k => [ k , k ] ) ) ,
+	}
 
-	Theme.current.subscribe((themeName) => {
-		Theme.apply(themeName);
-	});
-	export { Theme };
+	Theme.current.subscribe( ( themeName ) => {
+		Theme.apply( themeName )
+	} )
+	export { Theme }
 </script>
 
 <script>
-	import Icon from "#site-component/iconic";
-	import { mount } from "svelte";
-	import BulbAnimation from "./BulbAnimation.svelte";
-	import themes from "./themes.js";
+	import Icon from '#site-component/iconic'
+	import { mount } from 'svelte'
+	import BulbAnimation from './BulbAnimation.svelte'
+	import themes from './themes.js'
 
-	let node = $state(null);
+	let node = $state( null )
 
 	function CallBulbAnimation() {
-		mount(BulbAnimation, { target: document.body });
+		mount( BulbAnimation , { target: document.body } )
 	}
 </script>
 
 <button
-	class="switch-theme"
+	class='switch-theme'
 	data-current={Theme.current}
-	onclick={(event) => {
-		Theme.onClick(event);
-		CallBulbAnimation();
+	onclick={( event ) => {
+		Theme.onClick( event )
+		CallBulbAnimation()
 	}}
 	bind:this={node}
 >
-	<Icon code="" />
+	<Icon code='' />
 </button>
 
 <style>

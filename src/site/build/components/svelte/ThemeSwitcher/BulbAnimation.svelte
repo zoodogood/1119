@@ -1,11 +1,11 @@
 <script>
-	import { sleep } from "#src/safe-utils.js";
+	import { sleep } from '#src/safe-utils.js'
 
 	let node = null;
-	(async () => {
-		await sleep(1_000);
-		node.parentNode.removeChild(node);
-	})();
+	( async () => {
+		await sleep( 1_000 )
+		node.parentNode.removeChild( node )
+	} )()
 </script>
 
 <article bind:this={node}></article>

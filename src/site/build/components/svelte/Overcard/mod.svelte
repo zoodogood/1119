@@ -1,36 +1,37 @@
 <script>
-	export let imageURL = null,
-		label = "",
-		content = "",
-		url = null;
+	export let imageURL = null ,
+		label = '' ,
+		content = '' ,
+		url = null
 
-	import { createEventDispatcher } from "svelte";
-	const dispatch = createEventDispatcher();
+	import { createEventDispatcher } from 'svelte'
+
+	const dispatch = createEventDispatcher()
 
 	const Interaction = {
 		onClick() {
-			url && window.open(url, "_blank");
+			url && window.open( url , '_blank' )
 
-			dispatch("click");
-		},
-	};
+			dispatch( 'click' )
+		} ,
+	}
 </script>
 
 <element-card
-	style:--image={imageURL ? `url("${imageURL}")` : null}
-	class="component element-card"
+	style:--image={imageURL ? `url("${ imageURL }")` : null}
+	class='component element-card'
 	on:click={Interaction.onClick}
 	on:keydown={Interaction.onClick}
 >
-	<element-layer class="background"></element-layer>
-	<element-layer class="foreground">
+	<element-layer class='background'></element-layer>
+	<element-layer class='foreground'>
 		<element-container>
-			<element-group class="button">
-				<element-svg class="octagon"></element-svg>
-				<element-svg class="triange"></element-svg>
+			<element-group class='button'>
+				<element-svg class='octagon'></element-svg>
+				<element-svg class='triange'></element-svg>
 			</element-group>
 
-			<section class="content">
+			<section class='content'>
 				<h3>{label}</h3>
 				<span>{content}</span>
 			</section>

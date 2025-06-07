@@ -1,7 +1,7 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { awaitUserAccept } from '#src/discord/utils.js'
 import { ending } from '@zoodogood/utils/primitives'
-import { userDataOf, guildDataOf } from '../data/singleton.js'
+import { guildDataOf , userDataOf } from '../data/singleton.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -35,7 +35,7 @@ class Command extends BaseCommand {
 				return invites.filter( ( { inviter } ) => inviter === member.user )
 			}
 
-			const invitesCount =userDataOf( member.user).invites || 0
+			const invitesCount = userDataOf( member.user ).invites || 0
 
 			const byInvitesCountContent = `За время пребывания бота на сервере, упомянутый пользователь пригласил ${ ending(
 				invitesCount ,
@@ -88,7 +88,7 @@ class Command extends BaseCommand {
 
 		const numericReactions = [ '1️⃣' , '2️⃣' , '3️⃣' ]
 
-		const rulesList = (guildDataOf( msg.guild).inviteRules ||= [] )
+		const rulesList = ( guildDataOf( msg.guild ).inviteRules ||= [] )
 		const getListDescription = ( list ) => {
 			if ( list.length === 0 ) {
 				return 'Отсуствуют'

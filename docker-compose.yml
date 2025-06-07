@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 services:
   greenghost:
     container_name: greenghost
@@ -8,10 +8,10 @@ services:
     env_file:
       - .env
     ports:
-      - "8119:80"
+      - '8119:80'
     depends_on:
       - mongodb
   mongodb:
     image: mongodb/mongodb-community-server:7.0.0-ubi8
     ports:
-      - "27017:27017"
+      - '27017:27017'

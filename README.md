@@ -1,18 +1,18 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/52154209/179919919-1dbe8380-5a08-4c19-8039-9f3520f582d9.png" data- width="120" height="120" />  
+  <img src="https://user-images.githubusercontent.com/52154209/179919919-1dbe8380-5a08-4c19-8039-9f3520f582d9.png" data- width="120" height="120" />
 <p>
 
-> `pnpm build` ИЛИ `pnpm docker`  
+> `pnpm build` ИЛИ `pnpm docker`
 > Чтобы произвести инициализацию вне контейнера: pnpm build & pnpm start или концепция докер контейнеров: pnpm docker чтобы собрать и запустить образ в докере
 
-В обоих случаях прежде требуется установить переменные окружения:  
-`cp folder/developers/.env.example .env`  
-Настройка файла конфигурации не является обязательной для первичного запуска:  
+В обоих случаях прежде требуется установить переменные окружения:
+`cp folder/developers/.env.example .env`
+Настройка файла конфигурации не является обязательной для первичного запуска:
 `cp folder/developers/config.json.js.example src/config.json.js`
 
 ---
 
-Discord Bot с множеством интересных возможностей, и да, как вы заметили весь код нахоидтся в одном файле.  
+Discord Bot с множеством интересных возможностей, и да, как вы заметили весь код нахоидтся в одном файле.
 Что интересно поддерживать его всегда было очень легко, даже сейчас спустя 2 года по необходимости я могу исправить какой-то баг, изменить команду или что-то поменять в корне
 
 [Пригласить бота.](https://discord.com/api/oauth2/authorize?client_id=924322448298639422&permissions=1073741832&scope=applications.commands%20bot)

@@ -27,7 +27,7 @@ export class Board {
 export class BoardFactory {
 	init( context ) {
 		const { guild , channel , user , boardBase } = context
-		const boards = ( guildDataOf(guild).boards ||= [] )
+		const boards = ( guildDataOf( guild ).boards ||= [] )
 		const index = ( Math.max( ... boards.map( ( { i } ) => i ) ) || 0 ) + 1
 
 		const board = new Board( {
@@ -50,7 +50,7 @@ export class BoardFetcher {
 		}
 
 		const { guild } = channel
-		const board = guildDataOf(guild).boards.find(
+		const board = guildDataOf( guild ).boards.find(
 			( { i , cid } ) => i === indexId && cid === channelId ,
 		)
 		if ( !board ) {
@@ -65,6 +65,6 @@ export class BoardRemover {
 		const board = ( new BoardFetcher ).fetch( id )
 		const { channel } = board_parse_id( id )
 		const { guild } = channel
-		guildDataOf(guild).board.remove( board )
+		guildDataOf( guild ).board.remove( board )
 	}
 }

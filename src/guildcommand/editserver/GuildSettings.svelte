@@ -1,7 +1,7 @@
 <script>
-	export let target = {};
+	export let target = {}
 
-	console.log(target);
+	console.log( target )
 </script>
 
 <!-- todo -->

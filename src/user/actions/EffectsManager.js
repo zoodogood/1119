@@ -23,8 +23,8 @@ class Core {
 	static store = ( new Collection )
 
 	static applyEffect( { effect , effectBase , user , context } ) {
-		const effects = ( userDataOf(user).effects ||= [] )
-		const callbackMap = ( userDataOf(user).effectsCallbackMap ||= {} )
+		const effects = ( userDataOf( user ).effects ||= [] )
+		const callbackMap = ( userDataOf( user ).effectsCallbackMap ||= {} )
 
 		Object.keys( effectBase.callback ).forEach( ( callbackKey ) => {
 			callbackMap[ callbackKey ] = true
@@ -60,14 +60,14 @@ class Core {
 	}
 
 	static cleanCallbackMap( user ) {
-		const effects = userDataOf(user).effects
-		if ( !userDataOf(user).effectsCallbackMap ) {
+		const effects = userDataOf( user ).effects
+		if ( !userDataOf( user ).effectsCallbackMap ) {
 			return
 		}
 
 		const needRemove = callbackKey =>
 			!effects.some( ( { id } ) => callbackKey in Core.store.get( id ).callback )
-		const callbackMap = userDataOf(user).effectsCallbackMap
+		const callbackMap = userDataOf( user ).effectsCallbackMap
 		Object.keys( callbackMap )
 			.filter( needRemove )
 			.forEach( key => delete callbackMap[ key ] )
@@ -96,13 +96,13 @@ class Core {
 	static removeEffect( { effect , user } ) {
 		Core.setRemoved( effect , true )
 
-		const index = userDataOf(user).effects.indexOf( effect )
+		const index = userDataOf( user ).effects.indexOf( effect )
 		if ( index === -1 ) {
 			return null
 		}
 
 		user.action( ActionsMap.effectRemove , { effect , index } )
-		userDataOf(user).effects.splice( index , 1 )
+		userDataOf( user ).effects.splice( index , 1 )
 	}
 
 	static setDisabled( effect , value ) {
@@ -145,7 +145,7 @@ class UserEffectManager {
 	static store = Core.store
 
 	static effectsOf( { user } ) {
-		return userDataOf(user).effects || []
+		return userDataOf( user ).effects || []
 	}
 
 	static async importEffects() {

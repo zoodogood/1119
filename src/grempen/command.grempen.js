@@ -1,17 +1,17 @@
 // @ts-check
 import { DAY } from '#constants/time.js'
-import { addResource } from '#src/user/resources/addResource.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { singletonBotData, DataManager , guildDataOf , userDataOf } from '#src/data/singleton.js'
+import { singletonBotData , userDataOf } from '#src/data/singleton.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { takeInteractionProperties } from '#src/discord/utils.js'
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
 import { joinWithAndSeparator , numberFormat , sleep } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { ending } from '@zoodogood/utils/primitives'
 
 async function get_products() {

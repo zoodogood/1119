@@ -1,4 +1,3 @@
-import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import { AttachmentBuilder } from 'discord.js'

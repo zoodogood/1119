@@ -1,7 +1,7 @@
-import { guildDataOf } from '#src/data/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+import { guildDataOf } from '#src/data/singleton.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { question } from '#src/discord/utils.js'
 import { Emoji } from '#src/emojis/emojis.js'

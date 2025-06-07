@@ -21,7 +21,7 @@ import { eventBases } from '#src/boss/user_attacks/events.list.js'
 import client from '#src/bot/client/singleton.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import Properties from '#src/data/Properties.js'
-import { DataManager , guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
 import {
 	isChatChannelExists ,
 	sendToChatChannel ,

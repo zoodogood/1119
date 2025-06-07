@@ -4,7 +4,6 @@ import {
 	BaseFlagSubcommand ,
 } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
-import { DataManager } from '#src/data/singleton.js'
 import QuestManager , { part_of_made } from '#src/quests/QuestManager.js'
 import { CliParser } from '@zoodogood/utils/primitives'
 import { FormattingPatterns } from 'discord.js'
@@ -99,7 +98,7 @@ class MembersFlag_Manager {
 			if ( member.user.bot ) {
 				continue
 			}
-			const quest =userDataOf( member.user).quest
+			const quest = userDataOf( member.user ).quest
 			if ( quest?.day !== day ) {
 				groups[ Null ].push( member )
 				continue

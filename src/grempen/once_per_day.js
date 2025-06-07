@@ -1,4 +1,3 @@
-import DataManager from '#src/data/DataManager.js'
 import { randomElementsFromArray } from '@zoodogood/utils/objectives'
 
 export function update_product_list() {

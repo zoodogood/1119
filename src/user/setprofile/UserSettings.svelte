@@ -1,13 +1,13 @@
 <script>
-	const { svelteApp = null, target = {} } = $props();
+	const { svelteApp = null , target = {} } = $props()
 </script>
 
 <aside>
 	<details>
 		<summary><h2>Общие параметры</h2></summary>
-		<element-group style:display="flex">
+		<element-group style:display='flex'>
 			<small>День рождения:</small>
-			<input type="text" placeholder="31.12" />
+			<input type='text' placeholder='31.12' />
 		</element-group>
 	</details>
 </aside>

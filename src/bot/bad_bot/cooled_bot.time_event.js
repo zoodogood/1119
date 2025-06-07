@@ -10,7 +10,7 @@ class Event {
 		if ( !guild ) {
 			return
 		}
-		delete guildDataOf(guild).stupid_evil
+		delete guildDataOf( guild ).stupid_evil
 	}
 }
 

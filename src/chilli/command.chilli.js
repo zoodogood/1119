@@ -3,11 +3,11 @@ import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/user/resources/addResource.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { sortByResolveMut } from '#src/mini.js'
 import { sleep } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 
 export const REASON_FOR_CHANGE_NICKNAME = 'Special: in chilli game'
@@ -25,7 +25,7 @@ class CommandRunContext extends BaseCommandRunContext {
 	constructor( interaction , command ) {
 		super( interaction , command )
 		const { user , channel , guild , mention: memb } = interaction
-		const userData =userDataOf(user)
+		const userData = userDataOf( user )
 		Object.assign( this , { user , channel , guild , memb , userData } )
 	}
 

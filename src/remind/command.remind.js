@@ -32,7 +32,7 @@ import { Message } from 'discord.js'
  */
 
 function remindFields( user ) {
-	return ( userDataOf(user).reminds || [] ).map( remindDataRaw =>
+	return ( userDataOf( user ).reminds || [] ).map( remindDataRaw =>
 		MemberRemindField.fromUser( user , remindDataRaw.timestamp ) ,
 	)
 }
@@ -286,7 +286,7 @@ class MemberRemindField {
 			timeTo ,
 			user.id ,
 		)
-		const userRemindsField = ( userDataOf(user).reminds ||= [] )
+		const userRemindsField = ( userDataOf( user ).reminds ||= [] )
 		remindData.timestamp = event.timestamp
 		userRemindsField.push( remindData.toJSON() )
 		const remindField = this.fromUser( user , event.timestamp )
@@ -310,7 +310,7 @@ class MemberRemindField {
 	}
 
 	static fromUser( user , timestamp ) {
-		const userRemindsField = ( userDataOf(user).reminds ||= [] )
+		const userRemindsField = ( userDataOf( user ).reminds ||= [] )
 		const remindDataField = userRemindsField.find(
 			( { timestamp: target } ) => target === timestamp ,
 		)
@@ -606,7 +606,7 @@ class Command extends BaseCommand {
 		}
 
 		const { channel , user } = context
-		const { reminds } =userDataOf(user)
+		const { reminds } = userDataOf( user )
 
 		const { length } = reminds
 

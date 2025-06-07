@@ -18,7 +18,7 @@ class Route extends BaseRoute {
 			return
 		}
 
-		const cooldown = ChestManager.cooldown.for( userDataOf(user))
+		const cooldown = ChestManager.cooldown.for( userDataOf( user ) )
 
 		if ( cooldown.checkYet() ) {
 			response

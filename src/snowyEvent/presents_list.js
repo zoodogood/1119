@@ -1,9 +1,9 @@
 import { SECOND } from '#constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/user/resources/addResource.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import { sleep } from '#src/safe-utils.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
 
 export function getPresentsList() {

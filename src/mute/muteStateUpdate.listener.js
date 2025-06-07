@@ -4,7 +4,7 @@ import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_e
 import { AuditLogEvent , PermissionFlagsBits } from 'discord.js'
 
 export function is_mute_role( role ) {
-	return role.id ===guildDataOf( role.guild).mute_role || is_mute_role_by_name( role )
+	return role.id === guildDataOf( role.guild ).mute_role || is_mute_role_by_name( role )
 }
 export function is_mute_role_by_name( role ) {
 	return 'mute muted замучен мьют мут замьючен'.includes(

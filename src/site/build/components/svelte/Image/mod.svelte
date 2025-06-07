@@ -1,20 +1,20 @@
 <script>
-	export let src = "";
-	export let alt = "";
-	export let className = "";
-	let broken = false;
+	export let src = ''
+	export let alt = ''
+	export let className = ''
+	let broken = false
 </script>
 
 <img
 	{alt}
 	{src}
-	loading="lazy"
-	decoding="async"
-	fetchpriority="low"
+	loading='lazy'
+	decoding='async'
+	fetchpriority='low'
 	class={className}
-	style:border-radius={broken ? "0" : false}
+	style:border-radius={broken ? '0' : false}
 	class:broken
-	on:error={() => (broken = true)}
+	on:error={() => ( broken = true )}
 />
 
 <style>

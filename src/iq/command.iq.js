@@ -1,4 +1,3 @@
-import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { randomWith } from '#src/safe-utils.js'
 import { userDataOf } from '../data/singleton.js'

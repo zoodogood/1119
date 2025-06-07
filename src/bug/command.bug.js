@@ -12,7 +12,6 @@ import {
 	process_flags ,
 } from '#src/commands/BaseCommand/parse_flags.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
-import { DataManager } from '#src/data/singleton.js'
 import dayjs from '#src/dayjs.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { Pager } from '#src/discord/Pager.js'
@@ -124,7 +123,7 @@ function update_error_message_status( context ) {
 					'Пожалуйста, примите вознаграждение в размере 2 000 коинов' ,
 				] ) ,
 			} )
-			userDataOf(user).coins += 2_000
+			userDataOf( user ).coins += 2_000
 			interaction.msg( {
 				content: `${ interaction.customId } — успех` ,
 				ephemeral: true ,

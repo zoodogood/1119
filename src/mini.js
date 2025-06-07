@@ -84,8 +84,8 @@ export function asAccessor( getter , setter ) {
  * @param {(value: T) => T} setter
  * @returns {(value?: T) => T}
  */
-export function accessorWithState(initializer, getter = (v) => v, setter = (v) => v){
-	return new_value => new_value !== undefined ? ( initializer = setter( new_value ) , new_value ) : getter(initializer)
+export function accessorWithState( initializer , getter = v => v , setter = v => v ) {
+	return new_value => new_value !== undefined ? ( initializer = setter( new_value ) , new_value ) : getter( initializer )
 }
 
 /**

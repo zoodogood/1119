@@ -18,7 +18,7 @@ async function setup_mute_role( guild ) {
 		color: '#a8a8a8' ,
 		permissions: [ PermissionFlagsBits.ViewChannel ] ,
 	} )
-	guildDataOf(guild).mute_role = role.id
+	guildDataOf( guild ).mute_role = role.id
 	return role
 }
 class Command extends BaseCommand {
@@ -127,7 +127,7 @@ class Command extends BaseCommand {
 		// find muted role
 
 		const role
-			= guild.roles.cache.get( guildDataOf(guild).mute_role )
+			= guild.roles.cache.get( guildDataOf( guild ).mute_role )
 				|| guild.roles.cache.find( is_mute_role_by_name )
 				|| ( await setup_mute_role( guild ) )
 

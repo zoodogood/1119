@@ -1,68 +1,69 @@
 <script>
-	import OverCard from "#site-component/Overcard";
-	import Icon from "#site-component/iconic";
-	import svelteApp from "#src/site/build/components/app_singleton.js"
+	import Icon from '#site-component/iconic'
+	import OverCard from '#site-component/Overcard'
+	import svelteApp from '#src/site/build/components/app_singleton.js'
 
-	const i18n = svelteApp.i18n.frames.externalAuthorProjects;
+	const i18n = svelteApp.i18n.frames.externalAuthorProjects
 
 	const Component = {
 		projectesEnum: new Map(
-			Object.entries({
+			Object.entries( {
 				piramide: {
-					label: i18n.projectesEnum.piramide.label,
-					description: i18n.projectesEnum.piramide.description,
-					imageURL: "https://i.ibb.co/gTttG8p/piramide-screenshot.png",
-					home: "https://zoodogood.github.io/piramide/",
-					github: "https://github.com/zoodogood/piramide",
-				},
+					label: i18n.projectesEnum.piramide.label ,
+					description: i18n.projectesEnum.piramide.description ,
+					imageURL: 'https://i.ibb.co/gTttG8p/piramide-screenshot.png' ,
+					home: 'https://zoodogood.github.io/piramide/' ,
+					github: 'https://github.com/zoodogood/piramide' ,
+				} ,
 				letsbet: {
-					label: i18n.projectesEnum.letsbet.label,
-					description: i18n.projectesEnum.letsbet.description,
-					imageURL: "https://i.ibb.co/Tb1RbG0/letsbet-screen.webp",
-					home: "https://zoodogood.github.io/let-s-bet/index.html",
-					github: "https://github.com/zoodogood/let-s-bet",
-				},
+					label: i18n.projectesEnum.letsbet.label ,
+					description: i18n.projectesEnum.letsbet.description ,
+					imageURL: 'https://i.ibb.co/Tb1RbG0/letsbet-screen.webp' ,
+					home: 'https://zoodogood.github.io/let-s-bet/index.html' ,
+					github: 'https://github.com/zoodogood/let-s-bet' ,
+				} ,
 				glitchBall: {
-					label: i18n.projectesEnum.glitchBall.label,
-					description: i18n.projectesEnum.glitchBall.description,
-					imageURL: "https://i.ibb.co/db7VyKf/glitchball-screenshot.webp",
-					home: "https://zoodogood.github.io/glitchBall/",
-					github: "https://github.com/zoodogood/glitchBall",
-				},
-			}),
-		),
+					label: i18n.projectesEnum.glitchBall.label ,
+					description: i18n.projectesEnum.glitchBall.description ,
+					imageURL: 'https://i.ibb.co/db7VyKf/glitchball-screenshot.webp' ,
+					home: 'https://zoodogood.github.io/glitchBall/' ,
+					github: 'https://github.com/zoodogood/glitchBall' ,
+				} ,
+			} ) ,
+		) ,
 
-		authorLink: "https://github.com/stars/zoodogood/lists/release",
+		authorLink: 'https://github.com/stars/zoodogood/lists/release' ,
 
 		async getProjectesDataFromGithub() {
-			const transformLink = (projectGithubLink) => {
-				const FROM = "github.com";
-				const TO = "api.github.com/repos";
-				return projectGithubLink.replace(FROM, TO);
-			};
+			const transformLink = ( projectGithubLink ) => {
+				const FROM = 'github.com'
+				const TO = 'api.github.com/repos'
+				return projectGithubLink.replace( FROM , TO )
+			}
 
-			const data = {};
-			for (const [key, { github }] of Component.projectesEnum)
-				data[key] = await (async () => {
-					const response = await fetch(transformLink(github));
-					const data = await response.json();
-					return data;
-				})();
+			const data = {}
+			for ( const [ key , { github } ] of Component.projectesEnum ) {
+				data[ key ] = await ( async () => {
+					const response = await fetch( transformLink( github ) )
+					const data = await response.json()
+					return data
+				} )()
+			}
 
-			return data;
-		},
-	};
+			return data
+		} ,
+	}
 </script>
 
-<element-container class="component">
+<element-container class='component'>
 	<element-layout>
-		<a href={Component.authorLink} target="_blank" rel="noreferrer">
-			<Icon code="" />
+		<a href={Component.authorLink} target='_blank' rel='noreferrer'>
+			<Icon code='' />
 		</a>
 	</element-layout>
-	<ul class="projectes-cards-list">
-		{#each [...Component.projectesEnum] as element}
-			{@const [key, options] = element}
+	<ul class='projectes-cards-list'>
+		{#each [ ... Component.projectesEnum ] as element}
+			{@const [ key , options ] = element}
 			<li>
 				<OverCard
 					imageURL={options.imageURL}
@@ -73,14 +74,14 @@
 			</li>
 		{/each}
 		{#await Component.getProjectesDataFromGithub()}
-			{""}
+
 		{:then data}
 			<aside>
-				{#each [...Component.projectesEnum] as element}
-					{@const [key] = element}
+				{#each [ ... Component.projectesEnum ] as element}
+					{@const [ key ] = element}
 					<li>
 						<p>{key}</p>
-						<span>{i18n.aside.stars} {data[key].stargazers_count}</span>
+						<span>{i18n.aside.stars} {data[ key ].stargazers_count}</span>
 					</li>
 				{/each}
 			</aside>

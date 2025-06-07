@@ -1,35 +1,35 @@
 <script>
-	import { NumberFormatLetterize } from "#src/safe-utils.js";
-	import { cubicOut } from "svelte/easing";
-	import { Tween } from "svelte/motion";
+	import { NumberFormatLetterize } from '#src/safe-utils.js'
+	import { cubicOut } from 'svelte/easing'
+	import { Tween } from 'svelte/motion'
 
 	let {
-		max = 100,
-		value = 70,
-		percent = value / max,
-		targetLabel = "",
-	} = $props();
+		max = 100 ,
+		value = 70 ,
+		percent = value / max ,
+		targetLabel = '' ,
+	} = $props()
 
-	value = percent * max;
+	value = percent * max
 
-	const progress = new Tween(0, {
-		duration: 3000,
-		easing: cubicOut,
-	});
+	const progress = new Tween( 0 , {
+		duration: 3000 ,
+		easing: cubicOut ,
+	} )
 
-	progress.set(value);
+	progress.set( value )
 
-	const percent_visual = $derived(progress.current / max);
+	const percent_visual = $derived( progress.current / max )
 </script>
 
-<span class="component">
+<span class='component'>
 	<p>
-		<small>{NumberFormatLetterize(progress)}/{NumberFormatLetterize(max)}</small
+		<small>{NumberFormatLetterize( progress )}/{NumberFormatLetterize( max )}</small
 		>
 		<span>{targetLabel}</span>
 	</p>
 
-	<span style:--value={percent_visual * 100} class="progressbar">
+	<span style:--value={percent_visual * 100} class='progressbar'>
 		<element-layout></element-layout>
 	</span>
 </span>

@@ -18,7 +18,7 @@ class Route extends BaseRoute {
 			return
 		}
 
-		response.json( userDataOf(user))
+		response.json( userDataOf( user ) )
 	}
 }
 

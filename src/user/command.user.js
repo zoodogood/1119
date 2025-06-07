@@ -5,7 +5,7 @@ import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { takeInteractionProperties , tryMemberOf } from '#src/discord/utils.js'
 import { Emoji } from '#src/emojis/emojis.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
-import { _do , accessorWithState, checkFilterPropertyFactory , increment } from '#src/mini.js'
+import { _do , accessorWithState , checkFilterPropertyFactory , increment } from '#src/mini.js'
 import QuestManager , { isSimpleGlobalQuest } from '#src/quests/QuestManager.js'
 import {
 	maybe_multiline ,
@@ -48,7 +48,7 @@ class Command extends BaseCommand {
 		const member = tryMemberOf( guild , target )
 		const userData = userDataOf( target )
 
-		const {level, profile_color,curses,coins, exp, last_online, profile_confidentiality,profile_description, questsGlobalCompleted, quest,chilli , monster, seed, snowyTree, lollipops, presents, cheese, thiefGloves, thiefCombo, thiefWins, element, chestBonus, chestLevel, dayQuests, cursesEnded, voidCasino, voidCoins, voidCooldown, voidDouble, voidFreedomCurse, voidMysticClover, voidPrice, voidQuests, voidRituals, voidThief, voidTreeFarm,voidMonster, coinsPerMessage, berrys, elementLevel, praiseMe, keys, praise  } = userData
+		const { level , profile_color , curses , coins , exp , last_online , profile_confidentiality , profile_description , questsGlobalCompleted , quest , chilli , monster , seed , snowyTree , lollipops , presents , cheese , thiefGloves , thiefCombo , thiefWins , element , chestBonus , chestLevel , dayQuests , cursesEnded , voidCasino , voidCoins , voidCooldown , voidDouble , voidFreedomCurse , voidMysticClover , voidPrice , voidQuests , voidRituals , voidThief , voidTreeFarm , voidMonster , coinsPerMessage , berrys , elementLevel , praiseMe , keys , praise } = userData
 
 		target.action( Actions.curseBeforeProgressDisplay , {} )
 		target.action( Actions.beforeProfileDisplay , interaction )
@@ -64,9 +64,9 @@ class Command extends BaseCommand {
 			return { members , memberPosition , membersSize: members.length }
 		} )
 		const currentCurseAtView = accessorWithState(
-			0,
-			v => v,
-			v => v % (curses?.length || 1),
+			0 ,
+			v => v ,
+			v => v % ( curses?.length || 1 ) ,
 		)
 
 		const embedColor = profile_color || 'Random'
@@ -82,7 +82,6 @@ class Command extends BaseCommand {
 
 		QuestManager.checkAvailable( { user: target } )
 		CurseManager.checkAvailableAll( target )
-
 
 		const _interface = {
 			created_message_instance: null ,
@@ -118,8 +117,8 @@ class Command extends BaseCommand {
 
 		async function createEmbedAtFirstPage() {
 			if (
-				!interaction._status &&
-				( member?.presence
+				!interaction._status
+				&& ( member?.presence
 					&& member.presence._status !== PresenceUpdateStatus.Offline )
 				|| target === msg.author
 			) {
@@ -132,10 +131,10 @@ class Command extends BaseCommand {
 						switch ( true ) {
 						case lastOnline > YEAR:
 							return 'более года'
-	
+
 						case lastOnline > MONTH:
 							return 'более месяца'
-	
+
 						default:
 							return timestampToDate( lastOnline )
 						}

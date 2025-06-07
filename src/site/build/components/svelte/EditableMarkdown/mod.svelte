@@ -1,9 +1,9 @@
 <script>
-	export let source;
-	import SvelteMarkdown from "svelte-exmarkdown";
+	export let source
+	import SvelteMarkdown from 'svelte-exmarkdown'
 </script>
 
-<article class="editable-markdown-container">
+<article class='editable-markdown-container'>
 	<SvelteMarkdown md={source} />
 </article>
 

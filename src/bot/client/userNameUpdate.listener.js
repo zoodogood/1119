@@ -1,7 +1,7 @@
-import { userDataOf } from '#src/data/singleton.js'
-import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_enum.js'
 import { REASON_FOR_CHANGE_NICKNAME as CHILLI_REASON_FOR_CHANGE_NICKNAME } from '#src/chilli/command.chilli.js'
+import { userDataOf } from '#src/data/singleton.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
+import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_enum.js'
 import { AuditLogEvent } from 'discord.js'
 
 class Event extends BaseEvent {
@@ -61,7 +61,7 @@ class Event extends BaseEvent {
 		const { isChangedOnlyDisplayName , guild , reason } = context
 
 		if ( !isChangedOnlyDisplayName ) {
-		userDataOf(	newState.user).name = newState.user.username
+			userDataOf(	newState.user ).name = newState.user.username
 		}
 
 		const isLogNeed = reason !== CHILLI_REASON_FOR_CHANGE_NICKNAME && guild

@@ -23,6 +23,6 @@ export function process_spam_protocol( user ) {
 	const perEffect = MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED / 20 / 2
 	user.CD_msg
 		+= MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED
-			- perEffect * ( userDataOf(user).voidCooldown ?? 0 )
+			- perEffect * ( userDataOf( user ).voidCooldown ?? 0 )
 	return true
 }

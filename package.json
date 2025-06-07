@@ -1,7 +1,7 @@
 {
 	"name": "greenghost",
 	"type": "module",
-	"version": "2.0.0-alpha.33878",
+	"version": "2.0.0-alpha.33882",
 	"description": "",
 	"author": "zoodogood",
 	"license": "ISC",
@@ -15,7 +15,8 @@
 		"site-build": "vite build --config ./src/site/build/vite.config.ts",
 		"site-build:build_stages": "node ./src/site/build/build_by_stages.script.js --apply-all",
 		"site-preview": "vite dev --config ./src/site/build/vite.config.ts",
-		"watch-runtime": "bun --watch ./index.js"
+		"watch-runtime": "bun --watch ./index.js",
+		"lint": ""
 	},
 	"imports": {
 		"#src/*": "./src/*",

@@ -160,4 +160,3 @@ Set.prototype.toJSON = function () {
 Map.prototype.toJSON = function () {
 	return [ ... this.entries() ]
 }
-

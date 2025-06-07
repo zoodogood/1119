@@ -1,12 +1,12 @@
 // @ts-check
 
 import { SECOND } from '#constants/time.js'
-import { ReactionsManager } from '#src/reactor/ReactionsManager/manager.js'
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { awaitInteractOrMessage , awaitUserAccept } from '#src/discord/utils.js'
 import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_enum.js'
+import { ReactionsManager } from '#src/reactor/ReactionsManager/manager.js'
 
 class Command extends BaseCommand {
 	options = {

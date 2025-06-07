@@ -1,4 +1,4 @@
-import { guildDataOf } from "#src/data/singleton.js"
+import { guildDataOf } from '#src/data/singleton.js'
 
 // @ts-check
 const MONTH_DAYS = 31

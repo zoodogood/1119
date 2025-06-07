@@ -1,11 +1,11 @@
 import { MINUTE , SECOND } from '#constants/time.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { addResource } from '#src/user/resources/addResource.js'
 import dayjs from '#src/dayjs.js'
 import { factoryGetPropertyValue } from '#src/mini.js'
 import { randomWith , sleep } from '#src/safe-utils.js'
 import { getPresentsList } from '#src/snowyEvent/presents_list.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { Message } from 'discord.js'
 
@@ -21,7 +21,7 @@ export default async function open_present( { params , interaction } ) {
 		} )
 		return
 	}
-	const userData =userDataOf(user)
+	const userData = userDataOf( user )
 
 	if ( userData.presents <= 0 ) {
 		interaction.channel.msg( {

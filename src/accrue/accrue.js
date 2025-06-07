@@ -35,4 +35,3 @@ export function arrayMapProperty( property , mapFn ) {
 export function arrayParallerTaskFactory( taskFn ) {
 	return array => Promise.all( array.map( taskFn ) )
 }
-

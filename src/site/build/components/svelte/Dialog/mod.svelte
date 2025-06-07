@@ -1,42 +1,43 @@
 <script>
-	import Icon from "#site-component/iconic";
-	import { createEventDispatcher, onDestroy } from "svelte";
+	import Icon from '#site-component/iconic'
+	import { createEventDispatcher , onDestroy } from 'svelte'
 
-	export let useClassic;
-	export let title;
-	export let description;
-	export let isHTMLAccepted;
-	export let preventDestroy = false;
-	export let hide = false;
+	export let useClassic
+	export let title
+	export let description
+	export let isHTMLAccepted
+	export let preventDestroy = false
+	export let hide = false
 
-	let ref;
+	let ref
 
-	const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher()
 	const close = () => {
-		if (!ref.open) {
-			return;
+		if ( !ref.open ) {
+			return
 		}
 
-		ref.close();
-		history.state.isModal && history.go(-1);
-		dispatch.call(ref, "close");
-	};
+		ref.close()
+		history.state.isModal && history.go( -1 )
+		dispatch.call( ref , 'close' )
+	}
 	const open = () => {
-		if (ref.open) {
-			return;
+		if ( ref.open ) {
+			return
 		}
 
-		ref.showModal();
-		globalThis.history.pushState({ isModal: true }, "Open modal");
-		addEventListener("popstate", close);
-	};
-	const destroy = () => !preventDestroy;
+		ref.showModal()
+		globalThis.history.pushState( { isModal: true } , 'Open modal' )
+		addEventListener( 'popstate' , close )
+	}
+	const destroy = () => !preventDestroy
 
-	$: if (ref && !hide) open();
+	$: if ( ref && !hide )
+		open()
 
-	onDestroy(() => {
-		removeEventListener("popstate", close);
-	});
+	onDestroy( () => {
+		removeEventListener( 'popstate' , close )
+	} )
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -44,11 +45,11 @@
 	bind:this={ref}
 	on:click={close}
 	on:close={destroy}
-	on:keydown={({ key }) => key === "Esc" && close()}
+	on:keydown={( { key } ) => key === 'Esc' && close()}
 >
 	<main on:click|stopPropagation on:keydown|stopPropagation>
 		{#if useClassic}
-			<article class="classic-dialog">
+			<article class='classic-dialog'>
 				<p>{title}</p>
 				<span>
 					{#if isHTMLAccepted}
@@ -58,7 +59,7 @@
 					{/if}
 				</span>
 				<button on:click={close}
-					><Icon code="" /> или кликните вне диалогового окна</button
+				><Icon code='' /> или кликните вне диалогового окна</button
 				>
 			</article>
 		{/if}

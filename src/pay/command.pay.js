@@ -1,9 +1,9 @@
-import { addResource } from '#src/user/resources/addResource.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum , PropertiesList } from '#src/data/Properties.js'
 import { awaitUserAccept } from '#src/discord/utils.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import { addResource } from '#src/user/resources/addResource.js'
 import { ending } from '@zoodogood/utils/primitives'
 import Discord from 'discord.js'
 

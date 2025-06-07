@@ -1,39 +1,39 @@
 <script>
-	import { onMount } from "svelte";
+	import { onMount } from 'svelte'
 
 	const Component = {
-		node: null,
-	};
+		node: null ,
+	}
 
 	const State = {
-		intersectionSectionIndex: 0,
-	};
+		intersectionSectionIndex: 0 ,
+	}
 
-	onMount(async () => {
-		const observer = new IntersectionObserver((entries) => {
-			const index = sections.findIndex((node) =>
-				entries.find(({ target }) => target === node),
-			);
-			State.intersectionSectionIndex = index;
-		});
+	onMount( async () => {
+		const observer = new IntersectionObserver( ( entries ) => {
+			const index = sections.findIndex( node =>
+				entries.find( ( { target } ) => target === node ) ,
+			)
+			State.intersectionSectionIndex = index
+		} )
 
 		const sections = [
-			...Component.node.querySelectorAll(".page-main > section"),
-		];
-		for (const section of sections) {
-			observer.observe(section);
+			... Component.node.querySelectorAll( '.page-main > section' ) ,
+		]
+		for ( const section of sections ) {
+			observer.observe( section )
 		}
-	});
+	} )
 
-	$: console.log(State.intersectionSectionIndex);
+	$: console.log( State.intersectionSectionIndex )
 </script>
 
-<main class="page-main" bind:this={Component.node}>
+<main class='page-main' bind:this={Component.node}>
 	<section>
 		<main>
 			<h3>Добро пожаловать</h3>
 			<p>Вернуться</p>
-			<a href="/">Домой</a>
+			<a href='/'>Домой</a>
 			<p>
 				Привет! На досуге хотелось много сказать. Спасибо за то, что дождались
 			</p>

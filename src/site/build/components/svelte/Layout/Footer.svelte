@@ -1,9 +1,9 @@
 <script>
 	import config from '#config'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
 	import Image from '#site-component/Image'
 	import dayjs from '#src/dayjs.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
+	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
 
 	const bot = svelteApp.getBot()
 	const i18n = svelteApp.i18n.components.Layout.Footer

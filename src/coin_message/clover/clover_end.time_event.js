@@ -18,8 +18,8 @@ class Event {
 			return
 		}
 		const channel = guild.channels.cache.get( channelId )
-		const { cloverEffect } =guildDataOf(guild)
-		delete guildDataOf(guild).cloverEffect
+		const { cloverEffect } = guildDataOf( guild )
+		delete guildDataOf( guild ).cloverEffect
 
 		const multiplayer = CALCULATE_CLOVER_MULTIPLAYER( cloverEffect?.uses ) + 1
 

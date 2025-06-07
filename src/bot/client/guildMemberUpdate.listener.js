@@ -13,7 +13,7 @@ class Event extends BaseEvent {
 
 	async run( previousState , newState ) {
 		const isNameEdited
-			=userDataOf( newState.user).name !== newState.user.username
+			= userDataOf( newState.user ).name !== newState.user.username
 				|| previousState.displayName !== newState.displayName
 		if ( isNameEdited ) {
 			EventsManager.emitter.emit(

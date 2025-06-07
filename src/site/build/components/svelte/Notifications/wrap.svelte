@@ -1,5 +1,5 @@
 <script>
-	import Notifications from "svelte-notifications";
+	import Notifications from 'svelte-notifications'
 </script>
 
 <Notifications>

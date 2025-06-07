@@ -1,12 +1,12 @@
 import DataManager from '#src/data/DataManager.js'
-import { guildDataOf, singletonBotData } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData } from '#src/data/singleton.js'
 
 export function init_snowy_in( guild ) {
-	return ( guildDataOf(guild).snowyEvent = { preGlowExplorers: [] , isArrived: true } )
+	return ( guildDataOf( guild ).snowyEvent = { preGlowExplorers: [] , isArrived: true } )
 }
 
 export function get_snowy_in( guild ) {
-	return guildDataOf(guild).snowyEvent
+	return guildDataOf( guild ).snowyEvent
 }
 
 export function get_or_init_snowy_in( guild ) {

@@ -3,7 +3,7 @@ import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager , {
 	resolve_command ,
 } from '#src/commands/CommandsManager/singleton.js'
-import { DataManager, userDataOf } from '#src/data/singleton.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { permissionsBitsToI18nArray } from '#src/discord/permissions.js'
 import { percent_string } from '#src/formatters/formatters.js'
 import { resolveGithubPath } from '#src/github/resolveGithubPath.js'

@@ -1,6 +1,6 @@
 <script>
 	import Icon from '#site-component/iconic'
-	import { ButtonResponse , interactWithButton } from '#src/site/build/components/lib/ButtonResponse.js'
+	import { interactWithButton } from '#src/site/build/components/lib/ButtonResponse.js'
 	import { createEventDispatcher } from 'svelte'
 	import { PopupBox } from '../Popups/index.js'
 

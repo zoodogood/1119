@@ -159,21 +159,21 @@ class Command extends BaseCommand {
 			( 1 - similarity( last , answer ) / last.length ) * 100 ,
 		)
 		message.delete()
-		msg.msg( { title: _do(() => {
-			switch (true) {
-				case percent < 10:
-					return `Ответ не верный.\nСовет: в ответе ровно **${last.length}** цифр`
+		msg.msg( { title: _do( () => {
+			switch ( true ) {
+			case percent < 10:
+				return `Ответ не верный.\nСовет: в ответе ровно **${ last.length }** цифр`
 
-				case percent < 25:
-					return `Похоже вы встали на верный путь и скоро разгадаете эту задачку, не сдавайтесь!`
+			case percent < 25:
+				return `Похоже вы встали на верный путь и скоро разгадаете эту задачку, не сдавайтесь!`
 
-				case percent < 80:
-					return `На ${percent}% вы ответили — правильно! Интересный факт: картошка — это фонарь, лишь на 11.76%.`
+			case percent < 80:
+				return `На ${ percent }% вы ответили — правильно! Интересный факт: картошка — это фонарь, лишь на 11.76%.`
 
-				case percent < 101:
-					return `Осталось совсем чуть-чуть! У вас получится, ||но ответ всё ещё не верный.||`
+			case percent < 101:
+				return `Осталось совсем чуть-чуть! У вас получится, ||но ответ всё ещё не верный.||`
 			}
-		}) , color: '#f2fafa' , delete: 9000 } )
+		} ) , color: '#f2fafa' , delete: 9000 } )
 	}
 }
 

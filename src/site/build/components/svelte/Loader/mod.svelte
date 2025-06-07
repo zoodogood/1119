@@ -1,48 +1,48 @@
 <script>
-	import { sleep } from "#src/safe-utils.js";
-	import { onDestroy, onMount } from "svelte";
+	import { sleep } from '#src/safe-utils.js'
+	import { onDestroy , onMount } from 'svelte'
 
-	export let count = 7,
-		waveDuration = 1000,
-		delay = 0,
-		sleepDuration = 1000,
-		cutOff = true,
-		lineWidth = "10%",
-		width = "max(100px, 100%)",
-		color = null;
+	export let count = 7 ,
+		waveDuration = 1000 ,
+		delay = 0 ,
+		sleepDuration = 1000 ,
+		cutOff = true ,
+		lineWidth = '10%' ,
+		width = 'max(100px, 100%)' ,
+		color = null
 
-	let animate = false;
-	let isDestroy = false;
+	let animate = false
+	let isDestroy = false
 
 	async function launchAnimation() {
-		await sleep(delay);
-		animate = true;
-		await sleep(waveDuration + count * 100);
-		animate = false;
+		await sleep( delay )
+		animate = true
+		await sleep( waveDuration + count * 100 )
+		animate = false
 	}
 
-	onMount(async () => {
-		if (!cutOff) {
-			animate = true;
-			return;
+	onMount( async () => {
+		if ( !cutOff ) {
+			animate = true
+			return
 		}
 
-		while (!isDestroy) {
-			launchAnimation();
-			await sleep(sleepDuration + waveDuration);
+		while ( !isDestroy ) {
+			launchAnimation()
+			await sleep( sleepDuration + waveDuration )
 		}
-	});
+	} )
 
-	onDestroy(() => (isDestroy = true));
+	onDestroy( () => ( isDestroy = true ) )
 </script>
 
 <article
 	class:animate
-	style="--width: {width}; --duration: {waveDuration}ms; --line-width: {lineWidth};"
+	style='--width: {width}; --duration: {waveDuration}ms; --line-width: {lineWidth};'
 	style:--main-color={color}
 >
-	{#each [...new Array(count)] as _, i}
-		<aside style="--i: {i};"></aside>
+	{#each [ ... new Array( count ) ] as _ , i}
+		<aside style='--i: {i};'></aside>
 	{/each}
 </article>
 

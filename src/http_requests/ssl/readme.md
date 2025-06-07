@@ -1,5 +1,5 @@
-~~Put `certificate.crt`, `ca_bundle.crt` and `private.key` here~~  
-Use certbot for get files, move it here  
+~~Put `certificate.crt`, `ca_bundle.crt` and `private.key` here~~
+Use certbot for get files, move it here
 command:
 
 ```bash
