@@ -1,4 +1,5 @@
 import { PropertiesEnum } from '#src/data/Properties.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { maybe_multiline } from '#src/safe-utils.js'
 import { addResource } from '#src/user/resources/addResource.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'

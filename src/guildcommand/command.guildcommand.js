@@ -641,7 +641,7 @@ class Command extends BaseCommand {
 
 	/**
 	 *
-	 * @param {CommandRunContexts} context
+	 * @param {CommandRunContext} context
 	 */
 	async run( context ) {
 		const { channel , user } = context

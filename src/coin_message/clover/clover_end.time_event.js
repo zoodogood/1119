@@ -1,6 +1,7 @@
 import { HOUR } from '#constants/time.js'
 import { client } from '#src/bot/client/singleton.js'
 import { CALCULATE_CLOVER_MULTIPLAYER } from '#src/coin_message/clover/contstants.js'
+import { guildDataOf } from '#src/data/singleton.js'
 
 class Event {
 	options = {

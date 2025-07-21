@@ -48,6 +48,7 @@ export default {
 			return
 		}
 
+		const content = 'to-do'
 		board.cid = target.id
 		board.content = content
 

@@ -1,4 +1,5 @@
 import { client } from '#src/bot/client/singleton.js'
+import { userDataOf } from '#src/data/singleton.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 
 class Event extends BaseEvent {

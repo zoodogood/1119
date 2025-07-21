@@ -98,6 +98,7 @@ class CommandDefaultBehavior extends BaseFlagSubcommand {
 	game = ( new AnonGame )
 	async onProcess() {
 		const { context } = this
+		const { interaction } = context
 		while ( true ) {
 			if ( context.isEnd ) {
 				return

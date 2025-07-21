@@ -1,6 +1,7 @@
 import { SECOND , YEAR } from '#constants/time.js'
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { guildDataOf } from '#src/data/singleton.js'
 import dayjs from '#src/dayjs.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { question } from '#src/discord/utils.js'

@@ -1,6 +1,8 @@
 import { client } from '#src/bot/client/singleton.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
+import { CurseManager } from './CurseManager/singleton/index.js'
 
 class Event {
 	options = {

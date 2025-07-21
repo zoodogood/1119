@@ -14,6 +14,7 @@ import {
 } from '@zoodogood/utils/discordjs'
 import { DotNotatedInterface } from '@zoodogood/utils/objectives'
 import { sendToLogsChannel , SpecialChannel } from './special_channel_enum.js'
+import { guildDataOf } from '#src/data/singleton.js'
 
 const SpecialChannelExtend = createCollectionWithKey( [
 	{

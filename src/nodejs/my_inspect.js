@@ -1,3 +1,4 @@
+import client from '#src/bot/client/singleton.js'
 import { inspect as _inspect } from 'node:util'
 
 export async function inspect( value ) {

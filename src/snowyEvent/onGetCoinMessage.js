@@ -1,6 +1,7 @@
 import { SECOND } from '#constants/time.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { sleep } from '#src/safe-utils.js'
 import {
 	get_or_init_snowy_in ,

@@ -1,4 +1,5 @@
 import client from '#src/bot/client/singleton.js'
+import { guildDataOf } from '#src/data/singleton.js'
 
 function board_parse_id( id ) {
 	const [ channelId , indexId ] = id?.split( '_' ) || []

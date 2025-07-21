@@ -2,7 +2,7 @@ import {
 	TimeEventItem ,
 	TimeEventsManager ,
 } from '#src/events/time/TimeEventsManager.js'
-import { expect } from 'vitest'
+import { expect, it } from 'vitest'
 
 it( 'timeEventsManager.nearestToBeFirst' , async () => {
 	const timeEvents = ( new TimeEventsManager )

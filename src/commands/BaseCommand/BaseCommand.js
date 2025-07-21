@@ -1,5 +1,6 @@
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import CooldownManager from '#src/CooldownManager.js'
+import { singletonBotData } from '#src/data/singleton.js'
 import { takeInteractionProperties } from '#src/discord/utils.js'
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
 import { sendErrorInfo } from '#src/ErrorsHandler/sendErrorInfo.js'

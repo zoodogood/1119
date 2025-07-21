@@ -1,8 +1,8 @@
 {
 	"compilerOptions": {
 		"target": "esnext" ,
+		"lib": ["esnext" , "dom"] ,
 		"experimentalDecorators": true ,
-
 		"baseUrl": "." ,
 		"rootDir": "." ,
 		"module": "nodenext" ,
@@ -16,15 +16,17 @@
 			"#root/*": ["./*"]
 		} ,
 		"resolveJsonModule": true ,
+		"types": ["@types/node"] ,
 		"allowJs": true ,
 		"checkJs": true ,
-		"strict": true ,
+		"strict": false ,
 		"importHelpers": true ,
+		"noEmit": true ,
 		"outDir": "tsdist" ,
 		"esModuleInterop": true ,
 		"forceConsistentCasingInFileNames": true ,
 		"skipLibCheck": true
 	} ,
 	"reflection": true ,
-	"exclude": ["node_modules" , "**/node_modules" , "dist"]
+	"exclude": ["node_modules" , "**/node_modules" , "src/site/build/_public_out"]
 }

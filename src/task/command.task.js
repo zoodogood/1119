@@ -1,5 +1,6 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { sortByResolveMut } from '#src/mini.js'
 import { CliParser } from '@zoodogood/utils/primitives'
 

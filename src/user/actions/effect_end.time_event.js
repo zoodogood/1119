@@ -1,5 +1,6 @@
 import { client } from '#src/bot/client/singleton.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
 import UserEffectManager from '#src/user/actions/EffectsManager.js'
 

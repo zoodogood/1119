@@ -255,6 +255,7 @@ const Schema = {
  * @property {number} snowyTree
  * @property {effectsCallbackMap} effectsCallbackMap
  * @property {cursesCallbackMap} cursesCallbackMap
+ * @property {object[]} reminds
  */
 
 /**

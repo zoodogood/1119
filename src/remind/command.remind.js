@@ -9,6 +9,7 @@ import {
 } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+import { userDataOf } from '#src/data/singleton.js'
 import dayjs , { dayjs_ensure_coming_year } from '#src/dayjs.js'
 import { Pager } from '#src/discord/Pager.js'
 import { question } from '#src/discord/utils.js'

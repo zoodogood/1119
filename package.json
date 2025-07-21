@@ -1,7 +1,7 @@
 {
 	"name": "greenghost",
 	"type": "module",
-	"version": "2.0.0-alpha.33882",
+	"version": "2.0.0-alpha.33964",
 	"description": "",
 	"author": "zoodogood",
 	"license": "ISC",
@@ -15,8 +15,7 @@
 		"site-build": "vite build --config ./src/site/build/vite.config.ts",
 		"site-build:build_stages": "node ./src/site/build/build_by_stages.script.js --apply-all",
 		"site-preview": "vite dev --config ./src/site/build/vite.config.ts",
-		"watch-runtime": "bun --watch ./index.js",
-		"lint": ""
+		"watch-runtime": "bun --watch ./index.js"
 	},
 	"imports": {
 		"#src/*": "./src/*",
@@ -33,6 +32,7 @@
 		"@deepkit/bun": "1.0.1-alpha.158",
 		"@deepkit/type": "1.0.1-alpha.158",
 		"@discordjs/collection": "^2.1.1",
+		"@types/node": "^22.14.0",
 		"@zoodogood/utils": "7.0.0-change.4513",
 		"body-parser": "^1.20.3",
 		"cors": "^2.8.5",

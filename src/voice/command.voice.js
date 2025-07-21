@@ -15,14 +15,14 @@ class Command extends BaseCommand {
 
 	async onChatInput( msg , interaction ) {
 		return false
-		let connection
-		if ( msg.member.voice.channel )
-			connection = await msg.member.voice.channel.join()
-		else msg.msg( { title: 'Быстро зашёл в войс!' } )
+		// let connection
+		// if ( msg.member.voice.channel )
+		// 	connection = await msg.member.voice.channel.join()
+		// else msg.msg( { title: 'Быстро зашёл в войс!' } )
 
-		const dispatcher = connection.play(
-			ytdl( 'https://youtu.be/tbr9dXoFKh8' , { filter: 'audioonly' } ) ,
-		)
+		// const dispatcher = connection.play(
+		// 	ytdl( 'https://youtu.be/tbr9dXoFKh8' , { filter: 'audioonly' } ) ,
+		// )
 		// main/images/one.mp3
 	}
 }

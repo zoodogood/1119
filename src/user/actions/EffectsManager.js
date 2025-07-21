@@ -1,5 +1,6 @@
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
+import { userDataOf } from '#src/data/singleton.js'
 import { takeInteractionProperties } from '#src/discord/utils.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
 import { uid } from '#src/safe-utils.js'

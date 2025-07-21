@@ -15,8 +15,10 @@ class Command extends BaseCommand {
 		type: 'other' ,
 	}
 
-	createEmbed( {} ) {
-		const contents = {}
+	async onChatInput( msg , interaction ) {
+		const member = interaction.mentionedOrAuthor
+
+		msg.msg( { description: 'создайте его, в своём воображении' } )
 
 		const description = 'тут пока что пусто'
 		const fields = [ {} , {} ]
@@ -28,14 +30,6 @@ class Command extends BaseCommand {
 		}
 
 		return embed
-	}
-
-	async onChatInput( msg , interaction ) {
-		const member = interaction.mentionedOrAuthor
-
-		const guild = msg.guild
-
-		msg.msg( { description: 'создайте его, в своём воображении' } )
 	}
 }
 
