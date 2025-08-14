@@ -1,3 +1,4 @@
+import process from 'node:process'
 import config from '#config'
 import { MINUTE , SECOND } from '#constants/time.js'
 import client from '#src/bot/client/singleton.js'
