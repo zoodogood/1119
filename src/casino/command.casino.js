@@ -107,7 +107,7 @@ ${
 		const COOLDOWN = 300_000
 		const { id } = this.options
 		const key = `CD_${ id }`
-		CooldownManager.api( userDataOf( user ) , key , { perCall: COOLDOWN } ).call()
+		CooldownManager.api( userDataOf( user ) , key , { perCall: COOLDOWN } ).onCall()
 	}
 }
 

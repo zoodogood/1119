@@ -321,16 +321,16 @@ class CommandsManager {
 
 			const cooldownApi = command._cooldown_api( { interaction } )
 
-			const cooldownFullEndAt = cooldownApi.getCurrentCooldownEnd()
+			const cooldownFullEndAt = cooldownApi.loadFullyEndAt()
 			if ( !cooldownFullEndAt ) {
 				return
 			}
-			if ( !cooldownApi.checkYet() ) {
+			if ( !cooldownApi.isOverloaded() ) {
 				return
 			}
 
 			problems.push( {
-				label: `Команда применялась чаще рекомендованного: ${ ending( cooldownApi.heat , 'использовани' , 'й' , 'е' , 'я' ) } в **${ timestampToDate( cooldownApi.perCall ) }**` ,
+				label: `Команда применялась чаще рекомендованного: ${ ending( cooldownApi.heat , 'использовани' , 'й' , 'е' , 'я' ) } в **${ timestampToDate( cooldownApi.loadPerCall ) }**` ,
 				type: CommandCallCode.cooldown ,
 			} )
 		} )()
@@ -439,7 +439,7 @@ class CommandsManager {
 
 			options.cooldown
 			&& !preventCooldown
-			&& command._cooldown_api( context ).call()
+			&& command._cooldown_api( context ).onCall()
 
 			execution_context = await whenCommandEnd
 			if ( execution_context instanceof BaseCommandRunContext ) {

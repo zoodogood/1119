@@ -20,10 +20,10 @@ class Route extends BaseRoute {
 
 		const cooldown = ChestManager.cooldown.for( userDataOf( user ) )
 
-		if ( cooldown.checkYet() ) {
+		if ( cooldown.isOverloaded() ) {
 			response
 				.status( 405 )
-				.json( { notAllowed: 'cooldown' , value: cooldown.diff() } )
+				.json( { notAllowed: 'cooldown' , value: cooldown.overload() } )
 			return
 		}
 

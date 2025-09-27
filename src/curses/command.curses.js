@@ -300,7 +300,7 @@ class Help_FlagSubcommand {
 		} )
 
 		const collector = message.createMessageComponentCollector( {
-			time: 180_000 ,
+			time: 3 * MINUTE ,
 		} )
 		collector.on( 'collect' , interaction =>
 			this.onCurseSelect( interaction , message ) )
@@ -439,7 +439,7 @@ class At_FlagSubcommand {
 			return
 		}
 		const collector = message.createMessageComponentCollector( {
-			time: 180_000 ,
+			time: 3 * MINUTE ,
 		} )
 		collector.on( 'collect' , interaction =>
 			this.onCurseSelect( interaction , message ) )
@@ -754,15 +754,15 @@ class Command extends BaseCommand {
 					perCall: HOUR ,
 				} ,
 			)
-			if ( cooldown.checkYet() ) {
+			if ( cooldown.isOverloaded() ) {
 				interaction.msg( {
-					description: `Перезарядка: ${ cooldown.diff() }` ,
+					description: `Перезарядка: ${ cooldown.overload() }` ,
 					color: Command.MESSAGE_THEME.color ,
 					delete: 15_000 ,
 				} )
 				return
 			}
-			cooldown.call()
+			cooldown.onCall()
 			const bought = new BoughtContext( 'command.curses.bought_flag.bought' , {
 				primary: interaction ,
 				interaction ,

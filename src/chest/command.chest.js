@@ -132,7 +132,7 @@ export class ChestManager {
 			const cooldown = CooldownManager.api( userData , this.key )
 			cooldown.install = function () {
 				const timestamp = +dayjs().endOf( 'date' )
-				this.setCooldownThreshold( timestamp )
+				this.setLoadFullyEndAt( timestamp )
 				return this
 			}
 
@@ -229,8 +229,8 @@ class Command extends BaseCommand {
 		const { user , userData } = interaction
 
 		const cooldown = ChestManager.cooldown.for( userData )
-		if ( cooldown.checkYet() ) {
-			const diffContent = timestampToDate( cooldown.diff() )
+		if ( cooldown.isOverloaded() ) {
+			const diffContent = timestampToDate( cooldown.overload() )
 			msg.msg( {
 				title: `Сундук заперт, возвращайтесь позже!` ,
 				color: '#ffda73' ,

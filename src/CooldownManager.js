@@ -2,35 +2,40 @@ class Cooldown {
 	constructor( target , key , { heat = 1 , perCall = null } ) {
 		this.key = key
 		this.target = target
-		this.perCall = perCall
+		this.loadPerCall = perCall
 		this.heat = heat
 	}
 
-	call() {
-		const now = Math.max( Date.now() , this.getCurrentCooldownEnd() ?? 0 )
-		this.setCooldownThreshold( now + this.perCall )
-		return this
+	heatsReady() {
+		const endAt = this.loadFullyEndAt()
+		return Math.floor( ( endAt - Date.now() ) / this.loadPerCall )
 	}
 
-	checkYet() {
-		return this.diff() > 0
+	isOverloaded() {
+		return this.overload() > 0
 	}
 
-	diff() {
-		return this.getCooldownThreshold() - Date.now()
-	}
-
-	getCooldownThreshold() {
-		const current = this.getCurrentCooldownEnd()
-		const threshold = current - this.perCall * ( this.heat - 1 )
-		return threshold || 0
-	}
-
-	getCurrentCooldownEnd() {
+	loadFullyEndAt() {
 		return this.target[ this.key ]
 	}
 
-	setCooldownThreshold( timestamp ) {
+	onCall() {
+		const previous = Math.max( Date.now() , this.loadFullyEndAt() ?? 0 )
+		this.setLoadFullyEndAt( previous + this.loadPerCall )
+		return this
+	}
+
+	overload() {
+		return this.overloadEndsAt() - Date.now()
+	}
+
+	overloadEndsAt() {
+		const current = this.loadFullyEndAt()
+		const threshold = current - this.loadPerCall * ( this.heat - 1 )
+		return threshold || 0
+	}
+
+	setLoadFullyEndAt( timestamp ) {
 		this.target[ this.key ] = timestamp
 		return this
 	}
