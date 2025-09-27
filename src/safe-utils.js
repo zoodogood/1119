@@ -69,6 +69,11 @@ export function sleep( ms ) {
 	return new Promise( response => setTimeout( response , ms ) )
 }
 
+/**
+ *
+ * @param  {...(number)} params
+ * @returns {number} number
+ */
 export function randomWith( ... params ) {
 	let lastArgument = params.splice( -1 ).at( -1 )
 	const options = { round: true }
