@@ -3,6 +3,7 @@ import {
 	MESSAGES_SPAM_FILTER_TARGET_ALWAYS ,
 	MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED ,
 } from '#src/chat_filter.js/constants.js'
+import { userDataOf } from '#src/data/singleton.js'
 
 export function inMessageSpamLimit( user ) {
 	return (
