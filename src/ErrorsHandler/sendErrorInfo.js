@@ -19,7 +19,7 @@ class ErrorMomentNotification {
 			}
 
 			const { default: CommandsManager } = await import(
-				'#src/commands/CommandsManager/singleton.js'
+				'#src/commands/CommandsManager/singleton.js' ,
 			)
 
 			CommandsManager.callMap.get( 'bug' ).onChatInput( null , interaction )
@@ -79,7 +79,7 @@ class ErrorMomentNotification {
 			} ,
 		]
 		const embed = {
-			title: '— Фактически произошёл сбой в работе функции 🖖' ,
+			title: '— Фактически произошёл сбой запущенного кода 🖖' ,
 			description: `> ${ error.message }\n\n${ description }` ,
 			color: '#d8bb40' ,
 			components ,
