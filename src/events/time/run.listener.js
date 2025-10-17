@@ -1,24 +1,12 @@
-import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
+import EventsManager from '#src/events/EventsManager.js'
+import { namedListen } from '#src/events/useNamedListener.js'
 import { timeEvents_singleton } from './timeEvents_singleton.js'
 
-class Event extends BaseEvent {
-	options = {
-		name: 'timeEventPerform' ,
+export default namedListen( 'timeEventPerform' , timeEvents_singleton.emitter , 'timeEventPerform' , ( event ) => {
+	const eventBase = EventsManager.collection?.get( `timeEvent/${ event.name }` )
+	if ( !eventBase ) {
+		throw new Error( `Unknown timeEvent: ${ event.name }` )
 	}
-
-	constructor() {
-		const EVENT = 'timeEventPerform'
-		super( timeEvents_singleton.emitter , EVENT )
-	}
-
-	run( event ) {
-		const eventBase = EventsManager.collection?.get( `timeEvent/${ event.name }` )
-		if ( !eventBase ) {
-			throw new Error( `Unknown timeEvent: ${ event.name }` )
-		}
-		const params = event.params ?? []
-		eventBase.run( event , ... params )
-	}
-}
-
-export default Event
+	const params = event.params ?? []
+	eventBase.run( event , ... params )
+} )

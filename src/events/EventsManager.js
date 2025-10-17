@@ -5,8 +5,6 @@ import { EventEmitter } from '#src/EventEmitter/export.js'
 import { Collection } from '@discordjs/collection'
 import { glob } from 'glob'
 
-const PATH = './folder/events'
-
 class BaseEvent {
 	options = {}
 
@@ -37,7 +35,13 @@ class BaseEvent {
 		const eventName = this.eventName
 		const target = this.eventTarget
 
-		target.on( eventName , callback )
+		try {
+			target.on( eventName , callback )
+		} catch ( error ) {
+			throw new Error( `Event ${ eventName } with target ${ target } haven't "on" method` , {
+				cause: error ,
+			} )
+		}
 		this.isListeningNow = true
 	}
 
