@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import FileSystem from 'node:fs/promises'
 import Path from 'node:path'
-import { processWindowsBased } from '#src/nodejs/process_is_windows_based.js'
+import { isWindowsBased } from '#src/nodejs/process/isWindowsBased.js'
 
 const resolve = path => Path.resolve( process.cwd() , path )
 
@@ -21,7 +21,7 @@ const Paths = {
 
 !( await FileExists( Paths.env ) )
 && ( await ( async () => {
-	const command = processWindowsBased() ? `start ""` : 'open'
+	const command = isWindowsBased() ? `start ""` : 'open'
 
 	execSync( `${ command } "file://${ resolve( Paths.firstBuildDocs ) }"` )
 	const source = resolve( Paths.envExample )
