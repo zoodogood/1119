@@ -10,7 +10,7 @@ export default antfu( {
 		semi: false ,
 	} ,
 	rules: {
-		'no-console': [ 'error' , { allow: [ 'error' , 'info' , 'clear' ] } ] ,
+		'no-console': [ 'error' , { allow: [ 'error' , 'info' , 'clear' , 'trace' ] } ] ,
 		'antfu/no-top-level-await': [ 'off' ] ,
 		'eqeqeq': [
 			'error' ,
