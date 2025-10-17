@@ -1,10 +1,11 @@
+import process from 'node:process'
 import StorageManager from '#src/data/StorageManager/singleton/index.js'
 import dayjs from '#src/dayjs.js'
 import { sendErrorInfo } from '#src/ErrorsHandler/sendErrorInfo.js'
 import { mapGetOrInsert } from '#src/mini.js'
-import { process_startedAt } from '#src/nodejs/process_startedAt.js'
+import { persistId } from '#src/nodejs/process/persist.js'
 
-const { stringify , parse } = JSON
+const { stringify, parse } = JSON
 
 class Metadata {
 	static defaults = {}
@@ -13,7 +14,7 @@ class Metadata {
 		return this.#updateRequested
 	}
 
-	set updateRequested( value ) {
+	set updateRequested(value) {
 		this.#updateRequested = value
 	}
 
@@ -21,15 +22,15 @@ class Metadata {
 
 	constructor() {
 		const { defaults } = this.constructor
-		Object.assign( this , defaults )
+		Object.assign(this, defaults)
 	}
 
-	static from( props ) {
-		return Object.assign( Object.create( this.prototype ) , props )
+	static from(props) {
+		return Object.assign(Object.create(this.prototype), props)
 	}
 
 	appendMetadata() {
-		throw new Error( 'Must be implemented' )
+		throw new Error('Must be implemented')
 	}
 
 	requestUpdate() {
@@ -39,36 +40,36 @@ class Metadata {
 
 class SessionMetadata extends Metadata {
 	static defaults = {
-		reportsCount: null ,
-		uniqueTags: ( new Set ) ,
-		errorsCount: null ,
-		uniqueErrors: ( new Set ) ,
+		reportsCount: null,
+		uniqueTags: (new Set),
+		errorsCount: null,
+		uniqueErrors: (new Set),
 	}
 
-	appendErrorsCount( value ) {
+	appendErrorsCount(value) {
 		this.errorsCount = value
 	}
 
-	appendMetadata( { reportsCount , uniqueTags , errorsCount , uniqueErrors } ) {
-		reportsCount && this.appendReportsCount( reportsCount )
-		uniqueTags && this.appendTags( uniqueTags )
-		errorsCount && this.appendErrorsCount( errorsCount )
-		uniqueErrors && this.appendUniqueErrors( uniqueErrors )
+	appendMetadata({ reportsCount, uniqueTags, errorsCount, uniqueErrors }) {
+		reportsCount && this.appendReportsCount(reportsCount)
+		uniqueTags && this.appendTags(uniqueTags)
+		errorsCount && this.appendErrorsCount(errorsCount)
+		uniqueErrors && this.appendUniqueErrors(uniqueErrors)
 	}
 
-	appendReportsCount( value ) {
+	appendReportsCount(value) {
 		this.reportsCount = value
 	}
 
-	appendTags( uniqueTags ) {
-		for ( const tag of uniqueTags ) {
-			this.uniqueTags.add( tag )
+	appendTags(uniqueTags) {
+		for (const tag of uniqueTags) {
+			this.uniqueTags.add(tag)
 		}
 	}
 
-	appendUniqueErrors( messages ) {
-		for ( const message of messages ) {
-			this.uniqueErrors.add( message )
+	appendUniqueErrors(messages) {
+		for (const message of messages) {
+			this.uniqueErrors.add(message)
 		}
 	}
 }
@@ -78,25 +79,25 @@ class GroupMetadata extends Metadata {
 	reports
 	/** @type {Set<string> | undefined} */
 	uniqueTags
-	appendErrorsCount( value ) {
+	appendErrorsCount(value) {
 		this.errorsCount = value
 	}
 
-	appendMetadata( { reports , tags , errorsCount } ) {
-		reports && this.appendReport( reports )
-		tags && this.appendTags( tags )
-		errorsCount && this.appendErrorsCount( errorsCount )
+	appendMetadata({ reports, tags, errorsCount }) {
+		reports && this.appendReport(reports)
+		tags && this.appendTags(tags)
+		errorsCount && this.appendErrorsCount(errorsCount)
 	}
 
-	appendReport( data ) {
+	appendReport(data) {
 		this.reports ||= []
-		this.reports.push( data )
+		this.reports.push(data)
 	}
 
-	appendTags( tags ) {
-		this.uniqueTags ||= ( new Set )
-		for ( const tag of tags ) {
-			this.uniqueTags.add( tag )
+	appendTags(tags) {
+		this.uniqueTags ||= (new Set)
+		for (const tag of tags) {
+			this.uniqueTags.add(tag)
 		}
 	}
 }
@@ -110,60 +111,60 @@ class ErrorData {
 		return this.error.stack
 	}
 
-	constructor( error , context ) {
-		this.tags = Object.keys( context ?? {} )
+	constructor(error, context) {
+		this.tags = Object.keys(context ?? {})
 		try {
-			context &&= stringify( context )
-		} catch ( error ) {
-			Manager.onErrorReceive( error , {
-				in_errors_handler_module: true ,
-			} )
-			context = stringify( { _broked: true , keys: Object.keys( context ) } )
+			context &&= stringify(context)
+		} catch (error) {
+			Manager.onErrorReceive(error, {
+				in_errors_handler_module: true,
+			})
+			context = stringify({ _broked: true, keys: Object.keys(context) })
 		}
 		this.error = error
 		try {
 			this.stackData = this.parseErrorStack()
-		} catch ( error ) {
-			console.error( error )
+		} catch (error) {
+			console.error(error)
 		}
 		this.createdAt = Date.now()
 		this.context = context ?? null
 	}
 
-	static from( data ) {
-		return Object.assign( Object.create( ErrorData.prototype ) , data )
+	static from(data) {
+		return Object.assign(Object.create(ErrorData.prototype), data)
 	}
 
-	static fromError( error , context ) {
-		new ErrorData( error , context )
+	static fromError(error, context) {
+		new ErrorData(error, context)
 	}
 
-	parseErrorStack( { node_modules } = {} ) {
+	parseErrorStack({ node_modules } = {}) {
 		let stack = this.error.stack
 		try {
-			stack = decodeURI( stack ).replaceAll( '\\' , '/' )
+			stack = decodeURI(stack).replaceAll('\\', '/')
 		} catch {
-			stack = `!decodeError of stack\n${ stack }`
+			stack = `!decodeError of stack\n${stack}`
 		}
 
 		stack ||= 'null'
-		const projectPath = process.cwd().replaceAll( '\\' , '/' )
+		const projectPath = process.cwd().replaceAll('\\', '/')
 		const regular = new RegExp(
-			`(?<fileOfError>${ projectPath }/.+?\\.js):(?<strokeOfError>\\d+)` ,
+			`(?<fileOfError>${projectPath}/.+?\\.js):(?<strokeOfError>\\d+)`,
 		)
-		const groups = stack.match( regular )?.groups
-		if ( !groups ) {
+		const groups = stack.match(regular)?.groups
+		if (!groups) {
 			return undefined
 		}
 		const { fileOfError } = groups
-		if ( node_modules === false && fileOfError.includes( 'node_modules' ) ) {
+		if (node_modules === false && fileOfError.includes('node_modules')) {
 			return null
 		}
 		stack = stack
-			.replaceAll( projectPath , '' )
-			.replaceAll( 'file://' , '' )
-			.replaceAll( 'node_modules' , 'nm^' )
-		return { ... groups , stack }
+			.replaceAll(projectPath, '')
+			.replaceAll('file://', '')
+			.replaceAll('node_modules', 'nm^')
+		return { ...groups, stack }
 	}
 }
 
@@ -172,44 +173,44 @@ class Group {
 	 * @type {ErrorData[]}
 	 */
 	errors
-	constructor( key ) {
-		this.meta = ( new GroupMetadata )
+	constructor(key) {
+		this.meta = (new GroupMetadata)
 		this.errors = []
 		this.key = key
 	}
 
-	addReport( reportId ) {
+	addReport(reportId) {
 		const meta = this.meta
-		meta.appendReport( reportId )
+		meta.appendReport(reportId)
 	}
 
-	onErrorReceive( errorData ) {
-		this.pushError( errorData )
+	onErrorReceive(errorData) {
+		this.pushError(errorData)
 
-		this.meta.appendMetadata( {
-			tags: errorData.tags ,
-			errorsCount: this.errors.length ,
-		} )
+		this.meta.appendMetadata({
+			tags: errorData.tags,
+			errorsCount: this.errors.length,
+		})
 	}
 
-	pushError( errorData ) {
-		this.errors.push( errorData )
+	pushError(errorData) {
+		this.errors.push(errorData)
 	}
 }
 
 class SessionsMetadataCache {
-	#cache = ( new Map )
+	#cache = (new Map)
 
-	async _fetchAndSet( key ) {
-		const json = await FileUtils.readFile( key )
-		this.#cache.set( key , json?.meta )
+	async _fetchAndSet(key) {
+		const json = await FileUtils.readFile(key)
+		this.#cache.set(key, json?.meta)
 	}
 
-	async fetch( key ) {
+	async fetch(key) {
 		const cache = this.#cache
-		!cache.has( key ) && ( await this._fetchAndSet( key ) )
+		!cache.has(key) && (await this._fetchAndSet(key))
 
-		return cache.get( key )
+		return cache.get(key)
 	}
 }
 
@@ -217,75 +218,75 @@ class FileUtils {
 	static directory = `errors`
 
 	static async keys() {
-		const files = await StorageManager.keys( this.directory )
+		const files = await StorageManager.keys(this.directory)
 		const suffix = '.json'
-		const filtered = files.filter( name => name.endsWith( suffix ) )
-		const keys = filtered.map( name => name.replace( suffix , '' ) )
+		const filtered = files.filter(name => name.endsWith(suffix))
+		const keys = filtered.map(name => name.replace(suffix, ''))
 		return keys
 	}
 
-	static normalizeName( name ) {
-		if ( name.endsWith( '.json' ) ) {
-			name = name.replace( /\.json$/ , '' )
+	static normalizeName(name) {
+		if (name.endsWith('.json')) {
+			name = name.replace(/\.json$/, '')
 		}
 		return name
 	}
 
-	static async readFile( file ) {
-		const path = `${ this.directory }/${ file }.json`
-		const data = await StorageManager.read( path )
-		return parse( data )
+	static async readFile(file) {
+		const path = `${this.directory}/${file}.json`
+		const data = await StorageManager.read(path)
+		return parse(data)
 	}
 
-	static async write( fileName , data ) {
-		const path = `${ this.directory }/${ fileName }.json`
+	static async write(fileName, data) {
+		const path = `${this.directory}/${fileName}.json`
 
-		data = stringify( data )
-		await StorageManager.write( path , data )
+		data = stringify(data)
+		await StorageManager.write(path, data)
 	}
 }
 
 class Core {
 	/**
-   @typedef {object} ICoreStore
-   @property {Map<string, Group>} errorGroups
-   @property { SessionMetadata } meta
-  */
-	static cache = ( new SessionsMetadataCache )
+	 @typedef {object} ICoreStore
+	 @property {Map<string, Group>} errorGroups
+	 @property { SessionMetadata } meta
+	*/
+	static cache = (new SessionsMetadataCache)
 
 	static filesList = []
 
 	/** @type {ICoreStore} */
 	static session = {
-		errorGroups: ( new Map ) ,
-		meta: ( new SessionMetadata ) ,
+		errorGroups: (new Map),
+		meta: (new SessionMetadata),
 	}
 
 	static toJSON() {
-		const { errorGroups , meta } = this.session
-		const groups = [ ... errorGroups.values() ]
-		return { groups , meta }
+		const { errorGroups, meta } = this.session
+		const groups = [...errorGroups.values()]
+		return { groups, meta }
 	}
 
-	static updateSessionMetadata( { force = false } = {} ) {
-		const { errorGroups , meta } = this.session
-		if ( !force && !meta.updateRequested ) {
+	static updateSessionMetadata({ force = false } = {}) {
+		const { errorGroups, meta } = this.session
+		if (!force && !meta.updateRequested) {
 			return
 		}
 
-		const groups = [ ... errorGroups.values() ]
-		meta.appendMetadata( {
+		const groups = [...errorGroups.values()]
+		meta.appendMetadata({
 			uniqueTags: groups.reduce(
-				( acc , { meta } ) => ( acc.push( ... meta.uniqueTags ) , acc ) ,
-				[] ,
-			) ,
+				(acc, { meta }) => (acc.push(...meta.uniqueTags), acc),
+				[],
+			),
 			reportsCount: groups.reduce(
-				( acc , { meta } ) => acc + ( meta.reports?.length ?? 0 ) ,
-				0 ,
-			) ,
-			errorsCount: groups.reduce( ( acc , { errors } ) => acc + errors.length , 0 ) ,
-			uniqueErrors: [ ... errorGroups.keys() ] ,
-		} )
+				(acc, { meta }) => acc + (meta.reports?.length ?? 0),
+				0,
+			),
+			errorsCount: groups.reduce((acc, { errors }) => acc + errors.length, 0),
+			uniqueErrors: [...errorGroups.keys()],
+		})
 		meta.updateRequested = false
 	}
 }
@@ -299,18 +300,18 @@ class Manager {
 		return Core.session.meta
 	}
 
-	static errorLogger( error ) {
-		console.error( `[${ dayjs().format( 'HH:mm' ) }]` , error )
+	static errorLogger(error) {
+		console.error(`[${dayjs().format('HH:mm')}]`, error)
 	}
 
 	static async fetchManyMetadata() {
 		const current = this.actualSessionMetadata()
 		const cache = [
 			... (
-				await Promise.all( Core.filesList.map( key => Core.cache.fetch( key ) ) )
-			).values() ,
+				await Promise.all(Core.filesList.map(key => Core.cache.fetch(key)))
+			).values(),
 		]
-		return { current , cache }
+		return { current, cache }
 	}
 
 	/**
@@ -318,38 +319,38 @@ class Manager {
 	 * @param {string} key
 	 * @returns {Group}
 	 */
-	static getErrorsGroupBy( key ) {
-		return mapGetOrInsert( Core.session.errorGroups , key , new Group( key ) )
+	static getErrorsGroupBy(key) {
+		return mapGetOrInsert(Core.session.errorGroups, key, new Group(key))
 	}
 
 	static async importFileErrorsList() {
-		const keys = ( await FileUtils.keys() ).filter(
-			key => !Core.filesList.includes( key ) ,
+		const keys = (await FileUtils.keys()).filter(
+			key => !Core.filesList.includes(key),
 		)
-		Core.filesList.push( ... keys )
+		Core.filesList.push(...keys)
 		return Core.filesList
 	}
 
-	static onErrorReceive( error , context ) {
+	static onErrorReceive(error, context) {
 		try {
-			const errorData = new ErrorData( error , context )
-			this.pushToSessionErrors( errorData , context )
-			this.errorLogger( error )
+			const errorData = new ErrorData(error, context)
+			this.pushToSessionErrors(errorData, context)
+			this.errorLogger(error)
 
 			const meta = Core.session.meta
 			meta.requestUpdate()
-		} catch ( error ) {
-			console.error( error )
-			console.error( 'FUNDAMENTAL ERROR' )
+		} catch (error) {
+			console.error(error)
+			console.error('FUNDAMENTAL ERROR')
 			console.trace()
 			process.exit()
 		}
 	}
 
-	static pushToSessionErrors( errorData , context ) {
+	static pushToSessionErrors(errorData, context) {
 		const { message: key } = errorData
-		const group = this.getErrorsGroupBy( key )
-		group.onErrorReceive( errorData , context )
+		const group = this.getErrorsGroupBy(key)
+		group.onErrorReceive(errorData, context)
 	}
 
 	static session() {
@@ -359,17 +360,17 @@ class Manager {
 	static async sessionWriteFile() {
 		Core.updateSessionMetadata()
 		const data = Core.toJSON()
-		const timestamp = process_startedAt()
-		return await FileUtils.write( timestamp , data )
+		const session = persistId()
+		return await FileUtils.write(session, data)
 	}
 }
 
-export function util_store_and_send_audit( context , error ) {
-	const { channel , interaction } = context
+export function util_store_and_send_audit(context, error) {
+	const { channel, interaction } = context
 	const primary = context.toSafeValues?.() || null
-	Manager.onErrorReceive( error , primary )
-	sendErrorInfo( { channel , interaction , error , primary } )
+	Manager.onErrorReceive(error, primary)
+	sendErrorInfo({ channel, interaction, error, primary })
 }
 
 export default Manager
-export { ErrorData , Manager as ErrorsHandler , Group , GroupMetadata }
+export { ErrorData, Manager as ErrorsHandler, Group, GroupMetadata }
