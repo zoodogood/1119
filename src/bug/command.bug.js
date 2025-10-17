@@ -12,7 +12,7 @@ import {
 	process_flags ,
 } from '#src/commands/BaseCommand/parse_flags.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
-import { userDataOf, singletonBotData } from '#src/data/singleton.js'
+import { singletonBotData , userDataOf } from '#src/data/singleton.js'
 import dayjs from '#src/dayjs.js'
 import { MessageInterface } from '#src/discord/MessageInterface.js'
 import { Pager } from '#src/discord/Pager.js'
@@ -25,8 +25,8 @@ import ErrorsHandler from '#src/ErrorsHandler/ErrorsHandler.js'
 import { crop_string } from '#src/formatters/formatters.js'
 import { resolveGithubPath } from '#src/github/resolveGithubPath.js'
 import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
+import { persistId } from '#src/nodejs/process/persist.js'
 
-import { process_startedAt } from '#src/nodejs/process_startedAt.js'
 import { maybe_multiline , uid , weekHour } from '#src/safe-utils.js'
 import { path } from '#src/url/export.js'
 import { justButtonComponents } from '@zoodogood/utils/discordjs'
@@ -173,10 +173,10 @@ function update_error_message_status( context ) {
 			} )()
 
 			const thread
-					= target_message.thread
-						|| ( await target_message.startThread( {
-							name: 'Больше' ,
-						} ) )
+				= target_message.thread
+					|| ( await target_message.startThread( {
+						name: 'Больше' ,
+					} ) )
 
 			const message = await thread.msg( {
 				... parse_embedInstance( informMessage.embed ) ,
@@ -325,7 +325,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 			reportText ,
 			reportId: uid() ,
 			reporterId: interaction.user.id ,
-			session: process_startedAt() ,
+			session: persistId() ,
 			informMessageId: null ,
 		}
 		const content = maybe_multiline( [
@@ -510,7 +510,7 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 
 	async onProcess() {
 		const { get_session , errors_handler_previous_session } = await import(
-			'#src/ErrorsHandler/PreviousSessionInstance/singleton.js'
+			'#src/ErrorsHandler/PreviousSessionInstance/singleton.js' ,
 		)
 
 		const previous_session = await get_session()
