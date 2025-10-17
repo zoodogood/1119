@@ -1,4 +1,4 @@
-import type { StorageManagerInterface } from '#src/data/StorageManager/StorageManager.js'
+import type { StorageManagerConstructor } from '#src/data/StorageManager/StorageManager.js'
 
 export interface FlushableConfiguration<T> {
 	serializer : { write : ( v : T ) => string , read : ( v : string ) => T } | false
@@ -14,7 +14,7 @@ export class Flushable<T> {
 
 	value : T
 
-	constructor( public name : string , public driver : StorageManagerInterface , { serializer , defaultValue , cacheStrategy = 'in-memory' } : FlushableConfiguration<T> ) {
+	constructor( public name : string , public driver : StorageManagerConstructor , { serializer , defaultValue , cacheStrategy = 'in-memory' } : FlushableConfiguration<T> ) {
 		this.serializer = serializer
 		this.defaultValue = defaultValue
 		this.cacheStrategy = cacheStrategy

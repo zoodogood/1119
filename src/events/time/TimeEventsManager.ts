@@ -2,7 +2,7 @@ import EventEmitter from 'node:events'
 
 import { SECOND } from '#constants/time.js'
 import { assert } from '#src/assert/export.js'
-import StorageManager from '#src/data/StorageManager/StorageManager.js'
+import StorageManager from '#src/data/StorageManager/singleton/index.js'
 import { sortByResolveMut } from '#src/mini.js'
 import {
 	maybe_multiline ,

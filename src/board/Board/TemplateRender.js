@@ -4,7 +4,7 @@ import {
 	mol_tree2_string_from_json ,
 } from '#src/$mol.js'
 import { Loop } from '#src/board/Board/Loop.js'
-import StorageManager from '#src/data/StorageManager/StorageManager.js'
+import StorageManager from '#src/data/StorageManager/singleton/index.js'
 
 export class TemplateRender {
 	emitter = ( new EventEmitter )

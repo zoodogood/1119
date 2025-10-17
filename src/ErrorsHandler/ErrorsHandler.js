@@ -1,4 +1,4 @@
-import StorageManager from '#src/data/StorageManager/StorageManager.js'
+import StorageManager from '#src/data/StorageManager/singleton/index.js'
 import dayjs from '#src/dayjs.js'
 import { sendErrorInfo } from '#src/ErrorsHandler/sendErrorInfo.js'
 import { mapGetOrInsert } from '#src/mini.js'

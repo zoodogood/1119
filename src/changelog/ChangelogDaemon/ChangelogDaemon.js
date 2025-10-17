@@ -1,6 +1,6 @@
 import EventEmitter from 'node:events'
 import { mol_tree2_string_from_json } from '#src/$mol.js'
-import StorageManager from '#src/data/StorageManager/StorageManager.js'
+import StorageManager from '#src/data/StorageManager/singleton/index.js'
 import { uid } from '#src/safe-utils.js'
 import { from_short , short } from '#src/sanitize/optimize_keys.js'
 /**

@@ -1,7 +1,7 @@
 import { mol_tree2_string_from_json } from '#src/$mol.js'
 import { assert } from '#src/assert/export.js'
 import client from '#src/bot/client/singleton.js'
-import StorageManager from '#src/data/StorageManager/StorageManager.js'
+import StorageManager from '#src/data/StorageManager/singleton/index.js'
 import { EventEmitter } from '#src/EventEmitter/export.js'
 import { Guild , User } from 'discord.js'
 

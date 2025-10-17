@@ -1,15 +1,17 @@
-import config from '#config'
-
-class StorageManager {
-	static async keys( path ) {
+export class StorageManagerConstructor {
+	async keys( path ) {
 		return await this.driver.keys( path )
 	}
 
-	static async read( name ) {
+	async read( name ) {
 		return await this.driver.readFile( name )
 	}
 
-	static async setDriver( driverId ) {
+	async readOrDefault( name , defaultValue ) {
+		return await this.driver.readFile( name ) || ( await this.driver.writeFile( name , defaultValue ) , await this.driver.readFile( name ) )
+	}
+
+	async setDriver( driverId ) {
 		const module = await ( () => {
 			switch ( driverId ) {
 			case 'localdb':
@@ -30,11 +32,8 @@ class StorageManager {
 		await this.driver.init()
 	}
 
-	static async write( name , content ) {
+	async write( name , content ) {
 		return await this.driver.writeFile( name , content )
 	}
 }
 
-await StorageManager.setDriver( config.database.driver )
-
-export default StorageManager

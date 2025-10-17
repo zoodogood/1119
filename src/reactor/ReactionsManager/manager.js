@@ -1,5 +1,5 @@
 import client from '#src/bot/client/singleton.js'
-import StorageManager from '#src/data/StorageManager/StorageManager.js'
+import StorageManager from '#src/data/StorageManager/singleton/index.js'
 
 export class ReactionsManager {
 	static reactData = []
