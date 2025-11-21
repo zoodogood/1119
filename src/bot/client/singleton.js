@@ -1,4 +1,4 @@
-import { Client , GatewayIntentBits , Partials } from 'discord.js'
+import { Client , Events, GatewayIntentBits , Partials } from 'discord.js'
 
 const client = new Client( {
 	messageCacheMaxSize: 110 ,
@@ -12,7 +12,7 @@ export async function whenClientIsReady() {
 		return true
 	}
 
-	return await new Promise( resolve => client.once( 'ready' , resolve ) )
+	return await new Promise( resolve => client.once( Events.ClientReady , resolve ) )
 }
 
 export default client

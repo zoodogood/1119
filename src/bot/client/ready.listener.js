@@ -13,8 +13,7 @@ class Event extends BaseEvent {
 	}
 
 	constructor() {
-		const EVENT = Events.Ready
-		super( client , EVENT )
+		super( client , Events.ClientReady )
 	}
 
 	async postLoading() {
@@ -47,7 +46,7 @@ class Event extends BaseEvent {
 		if ( process.env.IN_CONTAINER ) {
 			console.info( `PROCESS_ID: ${ process.pid }` )
 		}
-		EventsManager.emitter.emit( Events.Ready )
+		EventsManager.emitter.emit( Events.AppReady )
 	}
 }
 

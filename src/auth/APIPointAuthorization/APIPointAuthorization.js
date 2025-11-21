@@ -2,7 +2,7 @@ import config from '#config'
 import client from '#src/bot/client/singleton.js'
 import { guildsOfUser } from '#src/discord/utils.js'
 import { OAuth } from 'discord-oauth2-utils'
-import { User } from 'discord.js'
+import { Events, User } from 'discord.js'
 
 class TokensUsersExchanger {
 	static #cacheMap = ( new Map )
@@ -110,7 +110,7 @@ class APIPointAuthorizationManager {
 	}
 }
 
-client.once( 'ready' , () => {
+client.once( Events.ClientReady , () => {
 	APIPointAuthorizationManager.onClientReady()
 } )
 
