@@ -6,7 +6,7 @@ import { TemplateRender } from './TemplateRender.js'
 
 export const singleton = new TemplateRender( { interval: 15 * MINUTE } )
 
-EventsManager.emitter.once( AppEvents.Ready , async () => {
+EventsManager.emitter.once( AppEvents.AppReady , async () => {
 	// to-do: developer crutch
 	return
 	await singleton.file.load()

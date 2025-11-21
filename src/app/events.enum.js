@@ -1,5 +1,5 @@
 export const Events = {
-	Ready: 'ready' ,
+	AppReady: 'appReady' ,
 	Start: 'start' ,
 	BeforeLogin: 'beforeLogin' ,
 	RequestSave: 'requestSave' ,
