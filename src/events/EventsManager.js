@@ -8,10 +8,10 @@ import { glob } from 'glob'
 class BaseEvent {
 	options = {}
 
-	constructor( target , eventName , options = {} ) {
+	constructor(target, eventName, options = {}) {
 		this.eventTarget = target
 		this.eventName = eventName
-		this.callback = this.#beforeRun.bind( this )
+		this.callback = this.#beforeRun.bind(this)
 
 		this.isListeningNow = false
 		this.options = options
@@ -23,12 +23,12 @@ class BaseEvent {
 		const callback = this.callback
 		const eventName = this.eventName
 		const target = this.eventTarget
-		target.removeListener( eventName , callback )
+		target.removeListener(eventName, callback)
 	}
 
 	handle() {
-		if ( this.isListeningNow === true ) {
-			throw new Error( 'Listening now' )
+		if (this.isListeningNow === true) {
+			throw new Error('Listening now')
 		}
 
 		const callback = this.callback
@@ -36,64 +36,66 @@ class BaseEvent {
 		const target = this.eventTarget
 
 		try {
-			target.on( eventName , callback )
-		} catch ( error ) {
-			throw new Error( `Event ${ eventName } with target ${ target } haven't "on" method` , {
-				cause: error ,
-			} )
+			target.on(eventName, callback)
+		} catch (error) {
+			throw new Error(`Event ${eventName} with target ${target} haven't "on" method`, {
+				cause: error,
+			})
 		}
 		this.isListeningNow = true
 	}
 
-	async #beforeRun( ... args ) {
-		this.#logger( { event: this , args } )
+	async #beforeRun(...args) {
+		this.#logger({ event: this, args })
 
-		if ( this.checkCondition?.( ... args ) === false )
+		if (this.checkCondition?.(...args) === false)
 			return
 
 		this.options.once && this.freeze()
 
 		try {
-			await this.run( ... args )
-		} catch ( error ) {
-			ErrorsHandler.onErrorReceive( error , {
-				event: this.options.name ,
-				source: 'Event' ,
-			} )
+			await this.run(...args)
+		} catch (error) {
+			ErrorsHandler.onErrorReceive(error, {
+				event: this.options.name,
+				source: 'Event',
+			})
 		}
 	}
 
-	#logger( { event , args } ) {
-		console.info( `Event: ${ this.eventName }` )
+	#logger({ event, args }) {
+		console.info(`Event: ${this.eventName}`)
 	}
 }
 
 class EventsManager {
-	static emitter = ( new EventEmitter )
+	static emitter = (new EventEmitter)
 
 	static async importEvents() {
 		const events = await Promise.all(
-			( await glob( '**/*.{listener,time_event}.js' , { absolute: true } ) ).map(
-				path => import( path ).then( module => ( new module.default ) ) ,
-			) ,
+			(await glob('**/*.{listener,time_event}.js', { absolute: true }))
+				.map(path => import(path)
+					.then(module => (new module.default))
+					.catch(error => console.error(`${path}: ${error.message}`)),
+			),
 		)
 
-		const entries = events.map( event => [ event.options.name , event ] )
+		const entries = events.map(event => [event.options.name, event])
 
-		this.collection = new Collection( entries )
+		this.collection = new Collection(entries)
 		return this
 	}
 
-	static listen( name ) {
-		this.collection.get( name ).handle()
+	static listen(name) {
+		this.collection.get(name).handle()
 	}
 
 	static listenAll() {
-		for ( const [ _name , event ] of this.collection ) {
+		for (const [_name, event] of this.collection) {
 			try {
 				event.handle?.()
-			} catch ( error ) {
-				if ( error.message !== 'Listening now' ) {
+			} catch (error) {
+				if (error.message !== 'Listening now') {
 					throw error
 				}
 			}
@@ -101,5 +103,5 @@ class EventsManager {
 	}
 }
 
-export { BaseEvent , EventsManager }
+export { BaseEvent, EventsManager }
 export default EventsManager
