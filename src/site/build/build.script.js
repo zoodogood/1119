@@ -2,9 +2,10 @@ import FileSystem from 'node:fs/promises'
 import Path from 'node:path'
 import { accrueAsync , arrayFlatFactory , arrayMapFactory , arrayMapProperty , arrayParallerTaskFactory , promiseAll } from '#src/accrue/accrue.js'
 import { file_symlink_auto } from '#src/nodejs/FileSystem/helpers.js'
-import { cwd_path } from '#src/nodejs/path_relative_to_root.js'
 import { process } from '#src/nodejs/process/export.js'
 import { glob } from 'glob'
+import { relativeToProjectRoot } from '#src/projectRootPath.js'
+import { SITE_PUBLIC_DIR_PATH } from '#src/site/constants.js'
 
 const _registered_stages = []
 function defineStage( name , callback ) {
@@ -24,7 +25,7 @@ defineStage( 'createPagesExports' , async () => {
 				page_key: JSON.parse(
 					String(
 						await FileSystem.readFile(
-							Path.resolve( Path.dirname( filePath ) , 'metadata.json' ) ,
+							Path.resolve( filePath, ".." , 'metadata.json' ) ,
 						) ,
 					) ,
 				).page_key ,
@@ -41,9 +42,10 @@ defineStage( 'createPagesExports' , async () => {
 
 	// MARK: = first
 	{
-		const TARGET_PATH = './src/site/build/_public_out/exports[builded].mjs' // Svelte exports content
+		const TARGET_PATH = relativeToProjectRoot(SITE_PUBLIC_DIR_PATH, "exports[builded].mjs");
+		// Svelte exports content
 		await FileSystem.writeFile(
-			cwd_path( '.' , TARGET_PATH ) ,
+			TARGET_PATH,
 			targetFiles
 				.map(
 					( { relative , page_key } ) =>
@@ -51,21 +53,21 @@ defineStage( 'createPagesExports' , async () => {
 				)
 				.join( '\n' ) ,
 		)
-		console.info( cwd_path( '.' , TARGET_PATH ) )
+		console.info( TARGET_PATH )
 	}
 
 	// MARK: = second
 	{
-		const ENUM_TARGET_PATH = './src/site/build/_public_out/enum[builded].mjs' // ESJS content
+		const ENUM_TARGET_PATH = relativeToProjectRoot(SITE_PUBLIC_DIR_PATH, "enum[builded].mjs")
 		await FileSystem.writeFile(
-			cwd_path( '.' , ENUM_TARGET_PATH ) ,
+			ENUM_TARGET_PATH,
 			`export default ${ JSON.stringify(
 				targetFiles.map( ( { page_key } ) => page_key ) ,
 				null ,
 				'\t' ,
 			) }` ,
 		)
-		console.info( cwd_path( '.' , ENUM_TARGET_PATH ) )
+		console.info(  ENUM_TARGET_PATH )
 	}
 } )
 

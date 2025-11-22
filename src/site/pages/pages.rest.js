@@ -1,11 +1,8 @@
-import Path from 'node:path'
-import process from 'node:process'
 import { DataManager } from '#src/data/singleton.js'
 import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
 import { parsePagesPath } from '#src/safe-utils.js'
-
-const root = Path.join( process.cwd() , 'src/site' )
-const target = 'index.html'
+import { relativeToProjectRoot } from '#src/projectRootPath.js'
+import { SITE_DIR_PATH } from '#src/site/constants.js'
 
 class Route extends BaseRoute {
 	prefix = /^\/pages/
@@ -27,7 +24,7 @@ class Route extends BaseRoute {
 	}
 
 	async get( request , response ) {
-		const targetPath = Path.join( root , target )
+		const targetPath = relativeToProjectRoot(SITE_DIR_PATH, "index.html")
 		response.sendFile( targetPath )
 
 		this.statistic.increment( request )

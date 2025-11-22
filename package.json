@@ -13,7 +13,7 @@
 		"pm2:please-restart": "pm2 restart --update-env",
 		"pm2:start": "pm2 start --interpreter ~/.bun/bin/bun ./index.js --name 1119",
 		"site-build": "vite build --config ./src/site/build/vite.config.ts",
-		"site-build:build_stages": "node ./src/site/build/build_by_stages.script.js --apply-all",
+		"site-build:build_stages": "node ./src/site/build/build.script.js --apply-all",
 		"site-preview": "vite dev --config ./src/site/build/vite.config.ts",
 		"watch-runtime": "bun --watch ./index.js"
 	},

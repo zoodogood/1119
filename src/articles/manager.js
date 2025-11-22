@@ -2,10 +2,10 @@ import FileSystem from 'node:fs/promises'
 import Path from 'node:path'
 import StorageManager from '#src/data/StorageManager/singleton/index.js'
 import { MarkdownMetadata } from '#src/MarkdownMetadata.js'
-import { path_alias } from '#src/url/path_alias.js'
 import { glob } from 'glob'
+import { relativeToProjectRoot } from '#src/projectRootPath.js'
 
-const ArticlesFolder = path_alias( '#src/articles/_items' )
+const ArticlesFolder = relativeToProjectRoot("src/articles/_items")
 
 class ArticlesCacheData {
 	#cache = ( new Map )
