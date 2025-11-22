@@ -3,7 +3,7 @@
 		"./favicon.ico": "favicon.ico" ,
 		"./index.html": "index.html" ,
 		"./global.css": "global.css" ,
-		"./pwa_service_worker.js": "pwa_service_worker.js" ,
+		"./pwa/service_worker.js": "pwa_service_worker.js" ,
 		"./manifest/manifest.json": "manifest.json" ,
 		"./manifest/dot.svg": "dot.svg"
 	}
