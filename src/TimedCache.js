@@ -1,5 +1,6 @@
 import EventEmitter from 'node:events'
 import { MINUTE } from '#constants/time.js'
+import { ImplementError } from '#src/fp/Error/variants/ImplementError.js'
 
 export class TimedCache {
 	static Events = {
@@ -15,7 +16,7 @@ export class TimedCache {
 	}
 
 	fetch() {
-		console.assert( false , 'You may to implement fetch() for TimedCache' )
+		throw new ImplementError( 'You may to implement fetch() for TimedCache' )
 	}
 
 	isCached() {
