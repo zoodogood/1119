@@ -9,7 +9,7 @@ export function createElement( tag , attributes = {} , childs = [] ) {
 
 export async function whenDocumentReadyStateIsComplete( ) {
 	return (
-		!document.readyState !== 'complete'
+		document.readyState !== 'complete'
 		&& ( await new Promise( resolve =>
 			document.addEventListener( 'readystatechange' , resolve , { once: true } ) ,
 		) )
