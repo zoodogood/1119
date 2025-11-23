@@ -6,6 +6,7 @@
 	import PagesRouter , {
 		page_location ,
 	} from '#src/site/build/components/lib/page_router_singleton.js'
+	import { urlStringRelativeSiteRoot } from '#src/site/build/components/lib/urlStringRelativeSiteRoot.js'
 
 	const i18n = svelteApp.i18n.components.Layout.Header
 
@@ -67,7 +68,7 @@
 					class='oauth'
 					on:click={() =>
 						PagesRouter.redirectToAbsolute(
-							page_location( 'oauth2_auth' , {
+							urlStringRelativeSiteRoot(svelteApp, 'oauth2_auth' , {
 								queries: { redirect: svelteApp.url.subpath.join( '/' ) } ,
 							} ) ,
 						)}

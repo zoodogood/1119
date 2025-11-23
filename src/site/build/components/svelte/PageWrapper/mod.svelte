@@ -1,7 +1,7 @@
 <script>
 	import config from '#config'
 	import { Theme } from '#site-component/ThemeSwitcher'
-	import { relativeSiteRoot } from '#src/site/build/components/lib/util.js'
+	import { urlStringRelativeSiteRoot } from '#src/site/build/components/lib/urlStringRelativeSiteRoot.js'
 
 	import { writeError } from '#src/site/build/components/lib/writeErrorToServer.js'
 	import { PopupsHandler } from '#src/site/build/components/svelte/Popups/index.js'
@@ -13,7 +13,7 @@
 
 	const { page } = $props()
 	const languageAlternates = config.i18n.availableLanguages.map( ( locale ) => {
-		const href = relativeSiteRoot( svelteApp , svelteApp.url.subpath.join( '/' ) )
+		const href = urlStringRelativeSiteRoot( svelteApp , svelteApp.url.subpath.join( '/' ) )
 		return { hrefLang: locale , href }
 	} )
 
@@ -40,7 +40,7 @@
 <MetaTags
 	title={i18n.title}
 	{languageAlternates}
-	canonical={relativeSiteRoot( svelteApp )}
+	canonical={urlStringRelativeSiteRoot( svelteApp )}
 	additionalMetaTags={[
 		{
 			name: 'theme-color' ,

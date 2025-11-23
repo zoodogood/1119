@@ -1,8 +1,8 @@
 <script>
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import { relativeSiteRoot } from '#src/site/build/components/lib/util.js'
+	import { urlStringRelativeSiteRoot } from '#src/site/build/components/lib/urlStringRelativeSiteRoot.js'
 
-	const _url = relativeSiteRoot( svelteApp , 'home' )
+	const _url = urlStringRelativeSiteRoot( svelteApp , 'home' )
 </script>
 
 <main>
