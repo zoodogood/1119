@@ -1,4 +1,5 @@
 <script>
+	import Image from '#site-component/Image'
 	import Layout from '#site-component/Layout'
 	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 	import AuthorProjects from '#src/site/build/components/svelte/frames/external/author/AuthorProjects.svelte'

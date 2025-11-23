@@ -12,6 +12,7 @@
 	import { init_pwa_worker } from '#src/site/build/components/lib/init_pwa.js'
 	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
 	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
+	import ChangeLanguage from '#src/site/build/components/svelte/ChangeLanguage/mod.svelte'
 	import UserSettings from '#src/user/setprofile/UserSettings.svelte'
 
 	import UserProgress from '#src/user/UserProgress.svelte'
