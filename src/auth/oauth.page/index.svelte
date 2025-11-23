@@ -3,6 +3,7 @@
 	import { sleep } from '#src/safe-utils.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
 	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
+	import { requireChangeWindowLocation } from '#src/site/build/components/lib/window/singleton/requireRedirect.js'
 	import { GlitchText } from '@zoodogood/utils'
 
 	import { onMount } from 'svelte'
@@ -96,8 +97,8 @@
 		{:else}
 			<button
 				on:click={() =>
-					PagesRouter.redirect(
-						`../oauth2/auth?redirect=${ svelteApp.url.subpath.join( '/' ) }` ,
+					requireChangeWindowLocation(
+						`${svelteApp.url.origin}/oauth2/auth?redirect=${ svelteApp.url.subpath.join( '_' ) }` ,
 					)}
 			>
 				{i18n.login}

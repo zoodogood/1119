@@ -3,10 +3,11 @@
 	import Image from '#site-component/Image'
 	import ThemeSwitcher from '#site-component/ThemeSwitcher'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter , {
+	import {
 		page_location ,
 	} from '#src/site/build/components/lib/page_router_singleton.js'
 	import { urlStringRelativeSiteRoot } from '#src/site/build/components/lib/urlStringRelativeSiteRoot.js'
+	import { requireChangeWindowLocation } from '#src/site/build/components/lib/window/singleton/requireRedirect.js'
 
 	const i18n = svelteApp.i18n.components.Layout.Header
 
@@ -67,7 +68,7 @@
 				<button
 					class='oauth'
 					on:click={() =>
-						PagesRouter.redirectToAbsolute(
+						requireChangeWindowLocation(
 							urlStringRelativeSiteRoot(svelteApp, 'oauth2_auth' , {
 								queries: { redirect: svelteApp.url.subpath.join( '/' ) } ,
 							} ) ,
