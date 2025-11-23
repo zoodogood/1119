@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -14,7 +15,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'удалить удали видалити видали' ,
 		allowDM: true ,
-		cooldown: 5_000 ,
+		cooldown: 5 * SECOND ,
 		type: 'other' ,
 	}
 

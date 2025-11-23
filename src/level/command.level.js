@@ -2,6 +2,7 @@ import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import { AttachmentBuilder } from 'discord.js'
 import { userDataOf } from '../data/singleton.js'
+import { MINUTE } from '#src/constants/time.js'
 
 class Command extends BaseCommand {
 	isInited = false
@@ -188,7 +189,7 @@ class Command extends BaseCommand {
 		const image = canvas.toBuffer( 'image/png' )
 		msg.msg( {
 			files: [ new AttachmentBuilder( image , { name: 'level.png' } ) ] ,
-			delete: 1_000_000 ,
+			delete: 20 * MINUTE ,
 		} )
 	}
 

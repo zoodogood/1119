@@ -5,12 +5,12 @@ import { singletonBotData , userDataOf } from '#src/data/singleton.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { addResource } from '#src/user/resources/addResource.js'
 import { CliParser } from '@zoodogood/utils/primitives'
-import { DAY } from '../constants/time.js'
+import { DAY, SECOND } from '../constants/time.js'
 
 class Birthdays {}
 
 class BirthdayMember {
-	PRICES_FOR_UPDATE_BIRTHDAY = [ 1200 , 3000 , 12000 ]
+	PRICES_FOR_UPDATE_BIRTHDAY = [ 1_200 , 3_000 , 12_000 ]
 	constructor( user ) {
 		this.user = user
 		this.userData = userDataOf( user )
@@ -45,7 +45,7 @@ class BirthdayMember {
 			channel.msg( {
 				title: 'Действие отменено' ,
 				color: '#ff0000' ,
-				delete: 4000 ,
+				delete: 4 * SECOND ,
 			} )
 			return false
 		}
@@ -53,7 +53,7 @@ class BirthdayMember {
 			channel.msg( {
 				title: 'Недостаточно коинов' ,
 				color: '#ff0000' ,
-				delete: 4000 ,
+				delete: 4 * SECOND ,
 			} )
 			return false
 		}
@@ -80,7 +80,7 @@ class BirthdayMember {
 			channel.msg( {
 				title: 'Ожидалось значение в формате "19.11", — день, месяц' ,
 				color: '#ff0000' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 			return
 		}
@@ -90,7 +90,7 @@ class BirthdayMember {
 		}
 
 		this.setBirhday( user , parsed )
-		channel.msg( { title: 'Установлено! 🎉' , delete: 5_000 } )
+		channel.msg( { title: 'Установлено! 🎉' , delete: 5 * SECOND } )
 		return true
 	}
 
@@ -236,7 +236,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'parties праздники вечеринки днирождения др днінарождення' ,
 		allowDM: true ,
-		cooldown: 15_000 ,
+		cooldown: 15 * SECOND ,
 		type: 'user' ,
 	}
 

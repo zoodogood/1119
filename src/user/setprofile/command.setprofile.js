@@ -1,6 +1,7 @@
 import { BirthdayMember } from '#src/birthdays/command.birthdays.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 import { sleep } from '#src/safe-utils.js'
 import { CommandInteraction } from 'discord.js'
 
@@ -18,7 +19,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'настроитьпрофиль about осебе sp нп налаштуватипрофіль' ,
 		allowDM: true ,
-		cooldown: 200_000 ,
+		cooldown: 200 * SECOND ,
 		cooldownTry: 5 ,
 		type: 'user' ,
 	}
@@ -50,7 +51,7 @@ class Command extends BaseCommand {
 			const problemsMessage = await msg.msg( {
 				title:
 					'<a:who:638649997415677973> Вы не указали то, что вы хотите изменить\nПовторите попытку' ,
-				delete: 10000 ,
+				delete: 10 * SECOND ,
 				description:
 					'Поддерживаемые значения:\n`• осебе/description`\n`• цвет/color`\n`• др/birthday`\n`• конфиденциальность/confidentiality`' ,
 			} )
@@ -76,7 +77,7 @@ class Command extends BaseCommand {
 						} ,
 					) ,
 				)
-			await sleep( 20000 )
+			await sleep( 20 * SECOND )
 			helper.delete()
 			/**/
 
@@ -84,7 +85,7 @@ class Command extends BaseCommand {
 		}
 
 		if ( !value ) {
-			msg.msg( { title: 'Вы не ввели значение' , delete: 3000 } )
+			msg.msg( { title: 'Вы не ввели значение' , delete: 3 * SECOND } )
 			return
 		}
 
@@ -105,7 +106,7 @@ class Command extends BaseCommand {
 			if ( value.length - data.minus > 121 ) {
 				return msg.msg( {
 					title: 'Длина описания не должна превышать 120 символов' ,
-					delete: 5000 ,
+					delete: 5 * SECOND ,
 					color: '#ff0000' ,
 					description: `Ваша длина: ${
 						value.length - data.minus
@@ -144,7 +145,7 @@ class Command extends BaseCommand {
 			value += data.line
 
 			userData.profile_description = value
-			msg.msg( { title: 'Описание установлено!' , delete: 5000 } )
+			msg.msg( { title: 'Описание установлено!' , delete: 5 * SECOND } )
 			break
 
 		case 'color':
@@ -156,7 +157,7 @@ class Command extends BaseCommand {
 				delete userData.profile_color
 				msg.msg( {
 					title: 'Готово! Пользовательский цвет удалён' ,
-					delete: 5000 ,
+					delete: 5 * SECOND ,
 				} )
 			}
 
@@ -165,7 +166,7 @@ class Command extends BaseCommand {
 				return msg.msg( {
 					title: 'Неверный формат, введите цвет в формате HEX `#38f913`' ,
 					color: '#ff0000' ,
-					delete: 5000 ,
+					delete: 5 * SECOND ,
 				} )
 			}
 			data.color = data.color[ 0 ].toLowerCase()
@@ -178,7 +179,7 @@ class Command extends BaseCommand {
 			msg.msg( {
 				title: `Готово! Пользовательский цвет установлен #${ data.color.toUpperCase() }\nЕсли вы захотите его удалить - установите цвет в значение 0` ,
 				color: data.color ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 			break
 
@@ -207,14 +208,14 @@ class Command extends BaseCommand {
 				return msg.msg( {
 					title: 'Действие отменено' ,
 					color: '#ff0000' ,
-					delete: 4000 ,
+					delete: 4 * SECOND ,
 				} )
 			}
 			userData.profile_confidentiality = !userData.profile_confidentiality
 
 			msg.msg( {
 				title: `Режим конфиденциальность переключен в значение ${ userData.profile_confidentiality }` ,
-				delete: 7000 ,
+				delete: 7 * SECOND ,
 			} )
 			break
 		}

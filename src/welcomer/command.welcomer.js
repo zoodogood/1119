@@ -1,5 +1,6 @@
 import client from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { guildDataOf } from '#src/data/singleton.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { awaitInteractOrMessage } from '#src/discord/utils.js'
@@ -33,7 +34,7 @@ class Command extends BaseCommand {
 				footer: { text: 'Нажмите реакцию, чтобы продолжить редактирование' } ,
 			} )
 			const react = await early.awaitReact(
-				{ user: msg.author , removeType: 'all' , time: 20000 } ,
+				{ user: msg.author , removeType: 'all' , time: 20 * SECOND } ,
 				'✏️' ,
 			)
 			early.delete()
@@ -90,7 +91,7 @@ class Command extends BaseCommand {
 			return msg.msg( {
 				title: 'Вы должны указать ссылку на изображение' ,
 				color: '#ff0000' ,
-				delete: 3000 ,
+				delete: 3 * SECOND ,
 			} )
 		}
 
@@ -118,7 +119,7 @@ class Command extends BaseCommand {
 					title: `Не удалось найти роли по следующим иденфикаторам: ${ rolesId
 						.filter( roleId => !roles.map( role => role.id ).includes( roleId ) )
 						.join( ' ' ) }` ,
-					delete: 5000 ,
+					delete: 5 * SECOND ,
 					color: '#ff0000' ,
 				} )
 			}

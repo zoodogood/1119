@@ -1,4 +1,4 @@
-import { HOUR } from '#constants/time.js'
+import { HOUR, SECOND } from '#constants/time.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 
@@ -37,9 +37,9 @@ class Command extends BaseCommand {
 			if ( messages.size !== 100 )
 				break
 			if ( ++time === 20 )
-				msg.msg( { title: 'Нужно немного подождать' , delete: 3000 } )
+				msg.msg( { title: 'Нужно немного подождать' , delete: 3 * SECOND } )
 			if ( ++time === 50 )
-				msg.msg( { title: 'Ждите' , delete: 3000 } )
+				msg.msg( { title: 'Ждите' , delete: 3 * SECOND } )
 		}
 
 		let input = `${ date }\n\n`

@@ -1,4 +1,4 @@
-import { MINUTE } from '#constants/time.js'
+import { MINUTE, SECOND } from '#constants/time.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
@@ -31,7 +31,7 @@ class Command extends BaseCommand {
 				title: 'Неверно введена команда' ,
 				description:
 					'Аргументами является {Время} + {Текст}\nПример: `!postpone 11:19 Я люблю мир`' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 		}
 		time = time.split( ':' )
@@ -48,14 +48,14 @@ class Command extends BaseCommand {
 		date.setMinutes( time[ 1 ] )
 
 		const timeTo = date.getTime() - Date.now()
-		if ( timeTo < 60000 ) {
+		if ( timeTo < MINUTE ) {
 			return msg.msg( {
 				title: `Я не могу отложить отправку на ${ time.join(
 					':' ,
 				) }, текущее время превышает или равно этой метке.\nОбратите внимание, время на сервере — ${
 					( ( date = ( new Date ) ) , date.getHours() )
 				}:${ date.getMinutes() }` ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 		}
 		timeEvents_singleton.pushIntoBuffer( 'postpone' , timeTo , [
@@ -67,7 +67,7 @@ class Command extends BaseCommand {
 			title:
 				`Готово! Ваше сообщение будет отправленно через ${
 					timestampToDate( timeTo ) }` ,
-			delete: 5000 ,
+			delete: 5 * SECOND ,
 		} )
 	}
 }

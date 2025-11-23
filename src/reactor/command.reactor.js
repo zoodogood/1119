@@ -1,6 +1,6 @@
 // @ts-check
 
-import { SECOND } from '#constants/time.js'
+import { MINUTE, SECOND } from '#constants/time.js'
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
@@ -62,7 +62,7 @@ class Command extends BaseCommand {
 		if ( !channel ) {
 			interaction.channel.msg( {
 				title: 'Канал не найден' ,
-				delete: 3000 ,
+				delete: 3 * SECOND ,
 				color: '#ff0000' ,
 			} )
 			return null
@@ -86,7 +86,7 @@ class Command extends BaseCommand {
 		if ( !message ) {
 			channel.msg( {
 				title: 'Не удалось найти сообщение' ,
-				delete: 3000 ,
+				delete: 3 * SECOND ,
 				color: '#ff0000' ,
 			} )
 			return null
@@ -148,14 +148,14 @@ class Command extends BaseCommand {
 			title:
 				'Укажите роли через пробел\nВо избежание лишних упоминаний, только по айди' ,
 		} )
-		answer = await msg.channel.awaitMessage( { user: msg.author , time: 300000 } )
+		answer = await msg.channel.awaitMessage( { user: msg.author , time: 5 * MINUTE } )
 		whatRoles.delete()
 
 		const rolesId = answer.content.match( /\d{17,20}/g )
 		if ( !rolesId ) {
 			msg.msg( {
 				title: `Не удалось найти иденфикаторы ролей` ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 				color: '#ff0000' ,
 			} )
 			return
@@ -169,7 +169,7 @@ class Command extends BaseCommand {
 				title: `Не удалось найти роли по следующим иденфикаторам: ${ rolesId
 					.filter( el => !roles.map( el => el.id ).includes( el ) )
 					.join( ' ' ) }` ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 				color: '#ff0000' ,
 			} )
 			return
@@ -178,7 +178,7 @@ class Command extends BaseCommand {
 		if ( roles.length > reactions.length ) {
 			msg.msg( {
 				title: 'Ролей указано больше, чем стоит реакций под сообщением.' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 				color: '#ff0000' ,
 			} )
 			return
@@ -196,7 +196,7 @@ class Command extends BaseCommand {
 			)
 
 			if ( react !== '685057435161198594' ) {
-				msg.msg( { title: 'Действие отменено ❌' , delete: 4500 } )
+				msg.msg( { title: 'Действие отменено ❌' , delete: 5 * SECOND } )
 				return
 			}
 		}
@@ -222,7 +222,7 @@ class Command extends BaseCommand {
 			} были присвоены реакции выдающие следущие роли:\n${ roles
 				.map( e => ` • ${ e.name }` )
 				.join( '\n' ) }` ,
-			delete: 9000 ,
+			delete: 9 * SECOND ,
 		} )
 		sendToLogsChannel( msg.guild , {
 			title: 'Установлен реактор сообщения' ,

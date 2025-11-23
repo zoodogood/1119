@@ -1,4 +1,4 @@
-import { HOUR } from '#constants/time.js'
+import { HOUR, SECOND } from '#constants/time.js'
 import {
 	BaseCommand ,
 	BaseFlagSubcommand ,
@@ -207,7 +207,7 @@ class Command extends BaseCommand {
 			publicized_on_level: 3 ,
 		} ,
 		allowDM: true ,
-		cooldown: 5_000 ,
+		cooldown: 5 * SECOND ,
 		type: 'user' ,
 	}
 

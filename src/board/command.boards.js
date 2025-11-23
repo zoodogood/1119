@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import {
 	awaitInteractOrMessage ,
@@ -20,7 +21,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'счётчики счетчики рахівники' ,
 		allowDM: false ,
-		cooldown: 10_000_000 ,
+		cooldown: 15 * SECOND ,
 		type: 'guild' ,
 	}
 

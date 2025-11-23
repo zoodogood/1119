@@ -14,7 +14,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'локализация локалізація i18n' ,
 		allowDM: true ,
-		cooldown: 4_000 ,
+		cooldown: 4 * SECOND ,
 		hidden: true ,
 		type: 'other' ,
 	}
@@ -28,7 +28,7 @@ class Command extends BaseCommand {
 			}\nэта вне код блока\n\`\`\`\naaaa\n\`\`\`\naaa\n\`\`\`md\n${
 				Array.from(
 					Array.from( { length: 8 } ) ,
-					( _ , i ) => `${ String.fromCharCode( i + ALPHABET_A_CODE ).repeat( 1000 ) }\n` ,
+					( _ , i ) => `${ String.fromCharCode( i + ALPHABET_A_CODE ).repeat( 1_000 ) }\n` ,
 				).join( '' )
 			}\n\`\`\``
 			+ ` а эта часть должна оказаться вне код блока`

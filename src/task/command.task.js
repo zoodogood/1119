@@ -1,5 +1,6 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
+import { SECOND } from '#src/constants/time.js'
 import { userDataOf } from '#src/data/singleton.js'
 import { sortByResolveMut } from '#src/mini.js'
 import { CliParser } from '@zoodogood/utils/primitives'
@@ -515,7 +516,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'таск цель ціль t т' ,
 		allowDM: true ,
-		cooldown: 2_000 ,
+		cooldown: 2 * SECOND ,
 		cooldownTry: 3 ,
 		type: 'other' ,
 		cliParser: {

@@ -1,5 +1,6 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { match , timestampToDate } from '#src/safe-utils.js'
 
 class Command extends BaseCommand {
@@ -13,7 +14,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'emoji смайлики эмодзи эмоджи емодзі' ,
 		allowDM: true ,
-		cooldown: 7_000 ,
+		cooldown: 7 * SECOND ,
 		type: 'other' ,
 	}
 
@@ -32,7 +33,7 @@ class Command extends BaseCommand {
 					title: 'Попробуйте ещё раз' ,
 					description: `Указатель: "\`${ interaction.params }\`" — был произведён безуспешный поиск по айди и имени.\nЧтобы получить список эмодзи на сервере введите команду без аргументов.\nВведя идентификатор смайлика, получите более подробную информацию о нём` ,
 					color: '#ff0000' ,
-					delete: 20_000 ,
+					delete: 20 * SECOND ,
 				} )
 				return
 			}

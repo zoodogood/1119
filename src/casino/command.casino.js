@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { MINUTE, SECOND } from '#src/constants/time.js'
 import CooldownManager from '#src/CooldownManager.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { userDataOf } from '#src/data/singleton.js'
@@ -34,7 +35,7 @@ class Command extends BaseCommand {
 
 		const { userData , user } = interaction
 		if ( userData.coins < bet ) {
-			msg.msg( { title: 'Недостаточно коинов' , color: '#ff0000' , delete: 3000 } )
+			msg.msg( { title: 'Недостаточно коинов' , color: '#ff0000' , delete: 3 * SECOND } )
 			return
 		}
 
@@ -42,7 +43,7 @@ class Command extends BaseCommand {
 		const embed = {
 			title: 'Лесовитое казино' ,
 			author: { name: msg.author.username , iconURL: msg.author.avatarURL() } ,
-			delete: 20_000 ,
+			delete: 20 * SECOND ,
 			footer: { text: `Ставка: ${ bet }` } ,
 		}
 		const isWon = diceRoll % 2
@@ -88,7 +89,7 @@ ${
 			interaction.channel.msg( {
 				title: 'Укажите Ставку в числовом виде!' ,
 				color: '#ff0000' ,
-				delete: 3000 ,
+				delete: 3 * SECOND ,
 			} )
 			return null
 		}
@@ -104,7 +105,7 @@ ${
 	}
 
 	setCooldown( user ) {
-		const COOLDOWN = 300_000
+		const COOLDOWN = 5 * MINUTE
 		const { id } = this.options
 		const key = `CD_${ id }`
 		CooldownManager.api( userDataOf( user ) , key , { perCall: COOLDOWN } ).onCall()

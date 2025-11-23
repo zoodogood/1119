@@ -1,5 +1,6 @@
 // @ts-check
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { MINUTE, SECOND } from '#src/constants/time.js'
 import { guildDataOf } from '#src/data/singleton.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import {
@@ -24,7 +25,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'роль roles роли ролі' ,
 		allowDM: true ,
-		cooldown: 3_000 ,
+		cooldown: 3 * SECOND ,
 		type: 'guild' ,
 	}
 
@@ -56,7 +57,7 @@ class Command extends BaseCommand {
 			if ( !controllerRole ) {
 				interaction.channel.msg( {
 					title: `Неудалось найти на сервере роль с айди ${ controllerId }` ,
-					delete: 12_000 ,
+					delete: 12 * SECOND ,
 				} )
 				return
 			}
@@ -84,7 +85,7 @@ class Command extends BaseCommand {
 			if ( rolesList.length === 0 ) {
 				interaction.channel.msg( {
 					title: `Неудалось найти ни одну из указанных ролей` ,
-					delete: 12_000 ,
+					delete: 12 * SECOND ,
 				} )
 				return
 			}
@@ -105,7 +106,7 @@ class Command extends BaseCommand {
 				) }` ,
 				footer: { text: 'Связь установлена, а главное никакой мистики!' } ,
 				description: rolesList.map( role => `• ${ role }` ).join( '\n' ) ,
-				delete: 20_000 ,
+				delete: 20 * SECOND ,
 			} )
 		} ,
 
@@ -137,7 +138,7 @@ class Command extends BaseCommand {
 
 			interaction.channel.msg( {
 				title: `Связь #${ context.page + 1 } успешно удалена.` ,
-				delete: 12_000 ,
+				delete: 12 * SECOND ,
 			} )
 			context.page = Math.max( context.page - 1 , 0 )
 		} ,
@@ -166,7 +167,7 @@ class Command extends BaseCommand {
 		const filter = ( reaction , user ) => user === interaction.user && reaction.me
 		const collector = context.message.createReactionCollector( {
 			filter ,
-			time: 120_000 ,
+			time: 2 * MINUTE ,
 		} )
 		collector.on( 'collect' , ( reaction , user ) => {
 			this.rolesListOnReact( context , reaction , user )
@@ -198,7 +199,7 @@ class Command extends BaseCommand {
 			interaction.channel.msg( {
 				title: 'На этом сервере нет ролей, которыми вы могли бы управлять' ,
 				color: '#ff0000' ,
-				delete: 5_000 ,
+				delete: 5 * SECOND ,
 				footer: {
 					text: interaction.user.username ,
 					iconURL: interaction.user.avatarURL() ,
@@ -279,7 +280,7 @@ class Command extends BaseCommand {
 					? `У ${ member.toString() } снята`
 					: `${ member.toString() } получил`
 			} роль ${ role.toString() }` ,
-			delete: 5_000 ,
+			delete: 5 * SECOND ,
 		} )
 	}
 

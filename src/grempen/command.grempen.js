@@ -1,5 +1,5 @@
 // @ts-check
-import { DAY } from '#constants/time.js'
+import { DAY, SECOND } from '#constants/time.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
@@ -104,7 +104,7 @@ async function process_bought( boughtContext ) {
 				boughtContext.price - userData.coins
 			} дороже` ,
 			color: '#400606' ,
-			delete: 5_000 ,
+			delete: 5 * SECOND ,
 		} )
 		return
 	}
@@ -166,7 +166,7 @@ class Command extends BaseCommand {
 		alias:
 			'гремпленс гремпенс evil_shop зловещая_лавка hell лавка grempens shop шалун ґремпенс крамниця магазин' ,
 		allowDM: true ,
-		cooldown: 2_000 ,
+		cooldown: 2 * SECOND ,
 		cooldownTry: 2 ,
 		type: 'other' ,
 		myChannelPermissions:
@@ -208,12 +208,12 @@ class Command extends BaseCommand {
 		const { userData , channel } = context
 		if ( userData.coins < 80 ) {
 			channel.sendTyping()
-			await sleep( 1200 )
+			await sleep( 1.2 * SECOND )
 
 			return {
 				title: 'У вас ещё остались коины? Нет? Ну и проваливайте!' ,
 				edit: true ,
-				delete: 3_500 ,
+				delete: 3.5 * SECOND ,
 			}
 		}
 
@@ -374,7 +374,7 @@ class Command extends BaseCommand {
 					title: '<:grempen:753287402101014649> Упс!' ,
 					description: `**Сегодня этот предмет (${ emoji }) отсуствует в лавке.**\nЖелаете взлянуть на другие товары?\n${ today_available }` ,
 					color: '#400606' ,
-					delete: 8000 ,
+					delete: 8 * SECOND ,
 				} )
 				return
 			}
@@ -384,12 +384,12 @@ class Command extends BaseCommand {
 
 		if ( userData.coins < 80 ) {
 			interaction.channel.sendTyping()
-			await sleep( 1700 )
+			await sleep( 1.7 * SECOND )
 			return channel.msg( {
 				title: '<:grempen:753287402101014649>' ,
 				description: 'Изыди бездомный попрошайка\nбез денег не возвращайся!' ,
 				color: '#541213' ,
-				delete: 3000 ,
+				delete: 3 * SECOND ,
 			} )
 		}
 

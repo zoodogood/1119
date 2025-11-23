@@ -1,4 +1,5 @@
 import config from '#config'
+import { SECOND } from '#src/constants/time.js'
 import { tryMemberOf } from '#src/discord/utils.js'
 import { checkFilterPropertyFactory } from '#src/mini.js'
 import {
@@ -90,7 +91,7 @@ class Template {
 	}
 
 	createVM() {
-		const MAX_TIMEOUT = 1_000
+		const MAX_TIMEOUT = SECOND
 
 		const vm = new VM( { timeout: MAX_TIMEOUT } )
 		this.makeSandbox( vm )

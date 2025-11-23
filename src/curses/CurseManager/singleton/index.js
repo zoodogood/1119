@@ -14,6 +14,7 @@ import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { addResource } from '#src/user/resources/addResource.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
+import { SECOND } from '#src/constants/time.js'
 
 class CurseManager {
 	static cursesBase
@@ -91,7 +92,7 @@ class CurseManager {
 
 			fields.push( {
 				name: 'Другое:' ,
-				value: `Дата создания: <t:${ Math.floor( curse.timestamp / 1000 ) }>` ,
+				value: `Дата создания: <t:${ Math.floor( curse.timestamp / SECOND ) }>` ,
 			} )
 
 			fields

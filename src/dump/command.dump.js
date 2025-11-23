@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { MINUTE, SECOND } from '#src/constants/time.js'
 import { DataManager } from '#src/data/singleton.js'
 
 class Command extends BaseCommand {
@@ -10,7 +11,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'дамп' ,
 		allowDM: true ,
-		cooldown: 100_000 ,
+		cooldown: 100 * SECOND ,
 		type: 'dev' ,
 	}
 
@@ -31,7 +32,7 @@ class Command extends BaseCommand {
 			] ,
 		} )
 
-		setTimeout( () => message.delete() , 1_000_000 )
+		setTimeout( () => message.delete() , 15 * MINUTE )
 	}
 }
 

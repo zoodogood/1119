@@ -49,8 +49,8 @@ class ErrorMomentNotification {
 		const { fileOfError , strokeOfError } = parsedStack
 		let { stack } = parsedStack
 
-		if ( stack?.length >= 1900 ) {
-			stack = stack.slice( 0 , 1900 )
+		if ( stack?.length >= 1_900 ) {
+			stack = stack.slice( 0 , 1_900 )
 		}
 
 		const components = [

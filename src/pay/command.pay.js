@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum , PropertiesList } from '#src/data/Properties.js'
 import { awaitUserAccept } from '#src/discord/utils.js'
@@ -22,7 +23,7 @@ class Command extends BaseCommand {
 		alias: 'give дать передать заплатить дати заплатити передати' ,
 		expectMention: true ,
 		allowDM: true ,
-		cooldown: 7_000 ,
+		cooldown: 7 * SECOND ,
 		cooldownTry: 10 ,
 		type: 'user' ,
 	}
@@ -196,7 +197,7 @@ class Command extends BaseCommand {
 					numeric - ( interaction.userData[ resource ] || 0 ) ,
 				) }` ,
 				description ,
-				delete: 12_000 ,
+				delete: 12 * SECOND ,
 			} )
 			return
 		}

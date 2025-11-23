@@ -80,7 +80,7 @@ export const eventBases = createCollectionWithKey( [
 		} ,
 	} ,
 	{
-		weight: 1200 ,
+		weight: 1_200 ,
 		key: 'giveChestBonus' ,
 		description: 'Выбито 4 бонуса сундука' ,
 		callback: ( { user } ) => {
@@ -211,7 +211,7 @@ export const eventBases = createCollectionWithKey( [
 			}
 
 			channel.sendTyping()
-			await sleep( 2000 )
+			await sleep( 2 * SECOND )
 			const executorMessage = await parentContext.fetchMessage()
 
 			const embed = {
@@ -255,7 +255,7 @@ export const eventBases = createCollectionWithKey( [
 				return
 			}
 
-			const base = 1500 + 30 * 1.2 ** boss.level
+			const base = 1_500 + 30 * 1.2 ** boss.level
 
 			const per_level = base / 15
 			const damage = boss.level * per_level + base
@@ -356,14 +356,14 @@ export const eventBases = createCollectionWithKey( [
 			}
 
 			channel.sendTyping()
-			await sleep( 2000 )
+			await sleep( 2 * SECOND )
 
 			const message = await channel.msg( embed )
 			const filter = ( { emoji } , member ) =>
 				user === member && reactions.includes( emoji.name )
 			const collector = message.createReactionCollector( {
 				filter ,
-				time: 30_000 ,
+				time: 30 * SECOND ,
 				max: 1 ,
 			} )
 			collector.on( 'collect' , ( reaction ) => {
@@ -395,7 +395,7 @@ export const eventBases = createCollectionWithKey( [
 				}
 
 				if ( emoji === '🛡️' && isLucky ) {
-					const BASE_COINS = 1000
+					const BASE_COINS = 1_000
 					const COINS_PER_LEVEL = 100
 					const coins = BASE_COINS + COINS_PER_LEVEL * boss.level
 
@@ -438,14 +438,14 @@ export const eventBases = createCollectionWithKey( [
 			}
 
 			channel.sendTyping()
-			await sleep( 2000 )
+			await sleep( 2 * SECOND )
 
 			const message = await channel.msg( embed )
 			const filter = ( { emoji } , member ) =>
 				user === member && reactions.includes( emoji.name )
 			const collector = message.createReactionCollector( {
 				filter ,
-				time: 300_000 ,
+				time: 5 * MINUTE ,
 				max: 1 ,
 			} )
 			collector.on( 'collect' , async ( reaction ) => {
@@ -477,7 +477,7 @@ export const eventBases = createCollectionWithKey( [
 					description: `Выбрано: ${ wearon.description }` ,
 					reference: message.id ,
 				} )
-				await sleep( 10_000 )
+				await sleep( 10 * SECOND )
 				collector.stop()
 			} )
 
@@ -509,7 +509,7 @@ export const eventBases = createCollectionWithKey( [
 			}
 
 			channel.sendTyping()
-			await sleep( 2000 )
+			await sleep( 2 * SECOND )
 
 			const ingredients = []
 
@@ -521,7 +521,7 @@ export const eventBases = createCollectionWithKey( [
 						callback: async ( message , _embed ) => {
 							await message.react( '🧪' )
 							const collector = message.createReactionCollector( {
-								time: 3_600_000 ,
+								time: HOUR ,
 							} )
 							const gotTable = {}
 							collector.on( 'collect' , ( _reaction , user ) => {
@@ -529,7 +529,7 @@ export const eventBases = createCollectionWithKey( [
 									message.msg( {
 										title: 'Вы уже воспользовались котлом' ,
 										color: '#ff0000' ,
-										delete: 3000 ,
+										delete: 3 * SECOND ,
 									} )
 									return
 								}
@@ -554,7 +554,7 @@ export const eventBases = createCollectionWithKey( [
 								message.msg( {
 									description ,
 									footer: { iconURL: user.avatarURL() , text: user.tag } ,
-									delete: 8000 ,
+									delete: 8 * SECOND ,
 								} )
 							} )
 
@@ -567,7 +567,7 @@ export const eventBases = createCollectionWithKey( [
 						callback: async ( message , _embed ) => {
 							await message.react( '🍯' )
 							const collector = message.createReactionCollector( {
-								time: 3_600_000 ,
+								time: HOUR ,
 							} )
 							const gotTable = {}
 							collector.on( 'collect' , ( _reaction , user ) => {
@@ -575,7 +575,7 @@ export const eventBases = createCollectionWithKey( [
 									message.msg( {
 										title: 'Вы уже воспользовались котлом' ,
 										color: '#ff0000' ,
-										delete: 3000 ,
+										delete: 3 * SECOND ,
 									} )
 									return
 								}
@@ -593,7 +593,7 @@ export const eventBases = createCollectionWithKey( [
 								message.msg( {
 									description ,
 									footer: { iconURL: user.avatarURL() , text: user.tag } ,
-									delete: 8000 ,
+									delete: 8 * SECOND ,
 								} )
 							} )
 
@@ -756,7 +756,7 @@ export const eventBases = createCollectionWithKey( [
 		} ,
 	} ,
 	{
-		weight: 1000 ,
+		weight: 1_000 ,
 		key: 'powerOfEarth' ,
 		description: 'Вознаграждение за терпение' ,
 		callback: ( { user , boss } ) => {
@@ -766,7 +766,7 @@ export const eventBases = createCollectionWithKey( [
 		filter: ( { boss } ) => boss.elementType === elementsEnum.earth ,
 	} ,
 	{
-		weight: 1000 ,
+		weight: 1_000 ,
 		key: 'powerOfWind' ,
 		description: 'Уменьшает перезарядку на случайное значение' ,
 		callback: ( context ) => {
@@ -786,7 +786,7 @@ export const eventBases = createCollectionWithKey( [
 		filter: ( { boss } ) => boss.elementType === elementsEnum.wind ,
 	} ,
 	{
-		weight: 1000 ,
+		weight: 1_000 ,
 		key: 'powerOfFire' ,
 		description: 'На что вы надеятесь?' ,
 		callback: ( { boss } ) => {
@@ -795,7 +795,7 @@ export const eventBases = createCollectionWithKey( [
 		filter: ( { boss } ) => boss.elementType === elementsEnum.fire ,
 	} ,
 	{
-		weight: 1000 ,
+		weight: 1_000 ,
 		key: 'powerOfDarkness' ,
 		description: 'Вознагражение за настойчивость' ,
 		callback: ( { user , boss } ) => {
@@ -1032,10 +1032,10 @@ export const eventBases = createCollectionWithKey( [
 		TIMEOUT: MINUTE * 15 ,
 		description: 'Возглас лидера' ,
 		async callback( context ) {
-			await sleep( 1000 )
+			await sleep( SECOND )
 			const { guild , channel , boss , user } = context
 			channel.sendTyping()
-			await sleep( 4000 )
+			await sleep( 4 * SECOND )
 			const message = await context.fetchMessage()
 
 			const owner = ( await guild.fetchOwner() )?.user ?? user
@@ -1185,7 +1185,7 @@ export const eventBases = createCollectionWithKey( [
 			}
 
 			channel.sendTyping()
-			await sleep( 2000 )
+			await sleep( 2 * SECOND )
 
 			const response = await question( { message: embed , user , channel } )
 			if ( !response ) {
@@ -1342,14 +1342,14 @@ export const eventBases = createCollectionWithKey( [
 			const { user , channel } = context
 			await sleep( 500 )
 			channel.sendTyping()
-			await sleep( 5_000 )
+			await sleep( 5 * SECOND )
 
 			const embed = {
 				content: ':wave:' ,
 			}
 
 			const preview = await channel.msg( embed )
-			await sleep( 1_200 )
+			await sleep( 1.2 * SECOND )
 
 			Object.assign( embed , {
 				author: { name: user.username , iconURL: user.avatarURL() } ,

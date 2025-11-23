@@ -1,5 +1,6 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { MINUTE, SECOND } from '#src/constants/time.js'
 import { awaitUserAccept } from '#src/discord/utils.js'
 import Discord from 'discord.js'
 
@@ -57,7 +58,7 @@ class Command extends BaseCommand {
 		if ( !embeds[ 0 ] ) {
 			return msg.msg( {
 				title: 'В канале не найдено эмбед сообщений' ,
-				delete: 3000 ,
+				delete: 3 * SECOND ,
 			} )
 		}
 
@@ -94,7 +95,7 @@ class Command extends BaseCommand {
 		client.on( 'messageDelete' , eventFuncDelete )
 		setTimeout(
 			e => client.removeListener( 'messageDelete' , eventFuncDelete ) ,
-			600000 ,
+			10 * MINUTE ,
 		)
 
 		const eventFuncWrite = ( e ) => {
@@ -117,12 +118,12 @@ class Command extends BaseCommand {
 			} )
 		}
 		client.on( 'message' , eventFuncWrite )
-		setTimeout( e => client.removeListener( 'message' , eventFuncWrite ) , 600000 )
+		setTimeout( e => client.removeListener( 'message' , eventFuncWrite ) , 10 * MINUTE )
 
 		let react
 		do {
 			react = await bot_msg.awaitReact(
-				{ user: msg.author , removeType: 'one' , time: 60000 } ,
+				{ user: msg.author , removeType: 'one' , time: MINUTE } ,
 				'754777124413505577' ,
 				'754780992023167007' ,
 				'756212089911247021' ,
@@ -141,7 +142,7 @@ class Command extends BaseCommand {
 						title: 'Некорректное значение' ,
 						description: `Введите число от 1 до ${ embeds.length }` ,
 						color: '#ff0000' ,
-						delete: 3000 ,
+						delete: 3 * SECOND ,
 					} )
 					break
 				}
@@ -159,7 +160,7 @@ class Command extends BaseCommand {
 				msg.msg( {
 					title: 'Готово! Лично отправил вам в личные сообщения' ,
 					color: '#99ffff' ,
-					delete: 3500 ,
+					delete: 3.5 * SECOND ,
 				} )
 				break
 
@@ -176,7 +177,7 @@ class Command extends BaseCommand {
 						description:
 								`Введите 2 числа в диапазоне от 1 до ${ embeds.length }` ,
 						color: '#ff0000' ,
-						delete: 3000 ,
+						delete: 3 * SECOND ,
 					} )
 					break
 				}
@@ -204,13 +205,13 @@ class Command extends BaseCommand {
 				bot_msg.msg( {
 					title: 'Пожалуйста, подождите' ,
 					edit: true ,
-					delete: 5000 ,
+					delete: 5 * SECOND ,
 				} )
 
 				embeds.forEach( item =>
 					msg.msg( { content: item.embeds[ 0 ] } ).then( e => item.delete() ) ,
 				)
-				msg.msg( { title: 'Готово!' , delete: 2000 } )
+				msg.msg( { title: 'Готово!' , delete: 2 * SECOND } )
 				bot_msg.delete()
 				return
 

@@ -18,6 +18,7 @@ import { ending } from '@zoodogood/utils/primitives'
 import { guildDataOf } from '../data/singleton.js'
 import { sendToLogsChannel } from '../guild_special_channels/special_channel_enum.js'
 import { DAILY_REVENUE_PER_MEMBER } from './contants.js'
+import { SECOND } from '#src/constants/time.js'
 
 class ProfessionsUtils {
 	static createReports( { guild , professions } ) {
@@ -67,7 +68,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'cash банк казна скарбниця' ,
 		allowDM: true ,
-		cooldown: 50_000 ,
+		cooldown: 50 * SECOND ,
 		cooldownTry: 3 ,
 		type: 'guild' ,
 	}
@@ -174,7 +175,7 @@ class Command extends BaseCommand {
 			return interaction.channel.msg( {
 				title: 'Указана строка вместо числа' ,
 				color: '#ff0000' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 		}
 
@@ -182,7 +183,7 @@ class Command extends BaseCommand {
 			channel.msg( {
 				title: 'Невозможно положить/взять 0 коинов' ,
 				color: '#ff0000' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 			return
 		}
@@ -206,7 +207,7 @@ class Command extends BaseCommand {
 					title: 'Образовались проблемки..' ,
 					description: 'Недостаточно коинов' ,
 					color: '#ff0000' ,
-					delete: 7000 ,
+					delete: 7 * SECOND ,
 				} )
 				return
 			}
@@ -261,7 +262,7 @@ class Command extends BaseCommand {
 				title: `Вы успешно вложили **${ ending( value , 'коин' , 'ов' , '' , 'а' , {
 					unite: ( value , end ) => `${ numberFormat( value ) } ${ end }` ,
 				} ) }** на развитие сервера` ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 			return
 		}
@@ -322,7 +323,7 @@ class Command extends BaseCommand {
 					title: 'Образовались проблемки..' ,
 					description: problems.join( '\n' ) ,
 					color: '#ff0000' ,
-					delete: 7000 ,
+					delete: 7 * SECOND ,
 				} )
 				return
 			}
@@ -360,7 +361,7 @@ class Command extends BaseCommand {
 					unite: ( value , end ) => `${ numberFormat( value ) } ${ end }` ,
 				} ,
 			) }** из казны сервера\nПо причине: ${ cause }`
-			interaction.channel.msg( { title , delete: 5000 } )
+			interaction.channel.msg( { title , delete: 5 * SECOND } )
 		}
 	}
 
@@ -587,7 +588,7 @@ class Command extends BaseCommand {
 					if ( Object.keys( data.professions ).length >= 20 ) {
 						interaction.channel.msg( {
 							title: `Лимит 20 профессий` ,
-							delete: 9_500 ,
+							delete: 9.5 * SECOND ,
 							color: '#ff0000' ,
 						} )
 						continue
@@ -613,7 +614,7 @@ class Command extends BaseCommand {
 					if ( !role ) {
 						interaction.channel.msg( {
 							title: `Не удалось найти роль с айди ${ id }` ,
-							delete: 4500 ,
+							delete: 4.5 * SECOND ,
 							color: '#ff0000' ,
 						} )
 						continue
@@ -621,7 +622,7 @@ class Command extends BaseCommand {
 					if ( isNaN( salary ) || +salary === 0 ) {
 						interaction.channel.msg( {
 							title: `Не указано выдаваемое количество коинов` ,
-							delete: 4500 ,
+							delete: 4.5 * SECOND ,
 							color: '#ff0000' ,
 						} )
 						continue
@@ -664,7 +665,7 @@ class Command extends BaseCommand {
 						} else {
 							interaction.channel.msg( {
 								title: `Не удалось найти роль с айди ${ id } для удаления связанной с ней профессии` ,
-								delete: 4500 ,
+								delete: 4.5 * SECOND ,
 								color: '#ff0000' ,
 							} )
 						}

@@ -38,7 +38,7 @@ function resolve_page( raw ) {
 	if ( typeof raw === 'string' ) {
 		raw = { description: raw }
 	}
-	const CUSTOM_MESSAGE_LIMIT = 3900
+	const CUSTOM_MESSAGE_LIMIT = 3_900
 	if ( raw.description.length <= CUSTOM_MESSAGE_LIMIT ) {
 		return raw
 	}

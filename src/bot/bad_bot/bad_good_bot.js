@@ -1,4 +1,4 @@
-import { HOUR , SECOND } from '#constants/time.js'
+import { HOUR , MINUTE, SECOND } from '#constants/time.js'
 import client from '#src/bot/client/singleton.js'
 import { guildDataOf } from '#src/data/singleton.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'
@@ -58,7 +58,7 @@ export async function stupid_bot( user , message ) {
 			msg.react( '🇩' )
 			msg.react( '🇴' )
 			msg.react( '🇷' )
-			await sleep( 5000 )
+			await sleep( 5 * SECOND )
 			msg.reactions.removeAll()
 		} )
 		break
@@ -79,7 +79,7 @@ export async function stupid_bot( user , message ) {
 			content: '**(╯>□<\'）╯︵ ┻━┻**\nН-Ы-А #### НЫЫА НЫЫА НЫЫАААААА' ,
 		} )
 		client.user.setStatus( 'dnd' )
-		setTimeout( () => client.user.setStatus( 'online' ) , 300000 )
+		setTimeout( () => client.user.setStatus( 'online' ) , 5 * MINUTE )
 		break
 
 	default:

@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { responseWithAvatar } from './responseWithAvatar.js'
 
 class Command extends BaseCommand {
@@ -12,7 +13,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'аватар' ,
 		allowDM: true ,
-		cooldown: 12_000 ,
+		cooldown: 12 * SECOND ,
 		type: 'other' ,
 	}
 

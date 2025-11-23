@@ -121,7 +121,7 @@ client.on( Events.ClientReady , async () => {
 				}` ,
 				description: `${ name }\nВыгнавший с сервера: ${
 					guild.members.resolve( banInfo.executor ).displayName
-				} ${ reason().slice( 0 , 1000 ) }` ,
+				} ${ reason().slice( 0 , 1_000 ) }` ,
 			}
 			: {
 				content: 'Участник покинул сервер' ,

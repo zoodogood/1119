@@ -1,3 +1,4 @@
+import { SECOND } from '#src/constants/time.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { CurseManager } from './index.js'
@@ -70,7 +71,7 @@ export class _interface {
 
 		const timer = curse.values.timer
 			? `\nТаймер: <t:${ Math.floor(
-				( curse.timestamp + curse.values.timer ) / 1000 ,
+				( curse.timestamp + curse.values.timer ) / SECOND ,
 			) }:R> будет провалено`
 			: ''
 

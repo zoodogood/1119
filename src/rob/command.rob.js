@@ -7,6 +7,7 @@ import { addResource } from '#src/user/resources/addResource.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { PresenceUpdateStatus } from 'discord.js'
 import { userDataOf } from '../data/singleton.js'
+import { HOUR, MINUTE, SECOND } from '#src/constants/time.js'
 
 class Command extends BaseCommand {
 	options = {
@@ -26,7 +27,7 @@ class Command extends BaseCommand {
 		alias: 'ограбить роб украсть вкрасти крадіжка' ,
 		expectMention: true ,
 		allowDM: true ,
-		cooldown: 3_000 ,
+		cooldown: 3 * SECOND ,
 		type: 'user' ,
 	}
 
@@ -77,7 +78,7 @@ class Command extends BaseCommand {
 			description:
 				'Кто ходит по утрам, бродит по утрам и иногда выходит на связь, тоже по утрам' ,
 			color: '#ff0000' ,
-			delete: 7000 ,
+			delete: 7 * SECOND ,
 		} )
 	}
 
@@ -115,7 +116,7 @@ class Command extends BaseCommand {
 			description: `Вы успешно украли ${ robCoinsValue } <:coin:637533074879414272> у ${ memb.username }, но это ещё не конец, если вас догонят, награбленное вернётся к владельцу.\nУ ${ memb.username } есть минута, чтобы среагировать, в ином случае добыча останется с вами навсегда.` ,
 			author: { name: user.username , iconURL: user.avatarURL() } ,
 			footer: { text: `Серия ограблений: ${ userData.thiefCombo }` } ,
-			delete: 10_000 ,
+			delete: 10 * SECOND ,
 		} )
 	}
 
@@ -139,7 +140,7 @@ class Command extends BaseCommand {
 			title ,
 			description: 'Их, иногда, можно найти в !лавке, по цене 700 коинов' ,
 			color: '#ff0000' ,
-			delete: 7000 ,
+			delete: 7 * SECOND ,
 		} )
 	}
 
@@ -302,11 +303,11 @@ class Command extends BaseCommand {
 
 		context.isRob = true
 		this.transferCoins( user , memb , robCoinsValue , context )
-		interaction.userData.CD_39 += 7_200_000
+		interaction.userData.CD_39 += 2 * HOUR
 
 		this.displayRobMessage( context )
 		const react = await mailYouAreRobbed.awaitReact(
-			{ user: memb , removeType: 'none' , time: 60_000 } ,
+			{ user: memb , removeType: 'none' , time: MINUTE } ,
 			'❗' ,
 		)
 
@@ -336,7 +337,7 @@ class Command extends BaseCommand {
 						description: `Если вы его простите, возможно, он украдёт снова, по статистике 98% воров делают это опять, и опять.\nОсторожно! Вы не сможете узнать кто вас ограбил и не обнулите серию пропущенных атак.\nВ ином случае часть его коинов уйдет к вам.` ,
 					} )
 					const react = await hurtMessage.awaitReact(
-						{ user: memb , removeType: 'none' , time: 60_000 } ,
+						{ user: memb , removeType: 'none' , time: MINUTE } ,
 						'😇' ,
 						'😈' ,
 					)

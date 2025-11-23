@@ -9,6 +9,7 @@ import { api_router } from './api_router/singleton.js'
 import { express } from './express_singleton.js'
 import { getAddress } from './util.js'
 import 'dotenv/config'
+import { SECOND } from '#src/constants/time.js'
 
 /**
  * @param {number} port
@@ -37,7 +38,7 @@ async function http_server( port ) {
 		const server = HTTPBase.createServer( options , express )
 		server.listen( options , () => resolve( server ) )
 
-		await sleep( 3_000 )
+		await sleep( 3 * SECOND )
 		reject( new Error( 'TIMEOUT ERROR' ) )
 	} )
 }

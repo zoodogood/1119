@@ -1,5 +1,5 @@
 import { NULL_WIDTH_SPACE } from '#constants/characters.js'
-import { MINUTE } from '#constants/time.js'
+import { MINUTE, SECOND } from '#constants/time.js'
 import { BoardFactory } from '#src/board/Board/Board.js'
 import { render_strategies } from '#src/board/Board/render/strategies/mod.js'
 import {
@@ -30,7 +30,7 @@ class Create_FlagSubcommand extends BaseFlagSubcommand {
 			title: 'Табло создано' ,
 			description: `**Результат:** ${
 				result instanceof Error ? 'исключение' : 'успех'
-			}.\n${ escapeMarkdown( String( result ).slice( 0 , 1000 ) ) }` ,
+			}.\n${ escapeMarkdown( String( result ).slice( 0 , 1_000 ) ) }` ,
 			components: [
 				{
 					type: ComponentType.Button ,
@@ -52,7 +52,7 @@ class Create_FlagSubcommand extends BaseFlagSubcommand {
 		const collector = message.createMessageComponentCollector( {
 			max: 1 ,
 			filter ,
-			time: 100_000 ,
+			time: 2 * MINUTE ,
 		} )
 
 		const boardsCommand = await CommandsManager.commandInstance( 'boards' )
@@ -127,7 +127,7 @@ class Create_FlagSubcommand extends BaseFlagSubcommand {
 			interaction.channel.msg( {
 				title: 'Максимум пятнадцать счётчиков' ,
 				color: '#ff0000' ,
-				delete: 12_000 ,
+				delete: 12 * SECOND ,
 			} )
 		}
 	}

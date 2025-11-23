@@ -95,7 +95,7 @@ class Chilli {
 	}
 
 	calculateDefaultBoohDelay() {
-		return 5_500
+		return 5.5 * SECOND
 	}
 
 	incrementPlayer( user ) {
@@ -142,7 +142,7 @@ class Command extends BaseCommand {
 		expectMention: true ,
 		allowDM: true ,
 		hidden: true ,
-		cooldown: 3_500 ,
+		cooldown: 3.5 * SECOND ,
 		cooldownTry: 2 ,
 		type: 'other' ,
 	}
@@ -215,7 +215,7 @@ class Command extends BaseCommand {
 			description: `${ user.username }, вы бросили перец, нажмите "❌" чтобы отменить` ,
 			reactions: [ '❌' ] ,
 		} )
-		await sleep( 2_000 )
+		await sleep( 2 * SECOND )
 		const confirmed = !confirm.reactions.cache
 			.get( '❌' )
 			.users
@@ -226,7 +226,7 @@ class Command extends BaseCommand {
 		if ( confirmed ) {
 			return true
 		}
-		channel.msg( { title: 'Отменено 🌶️' , delete: 7_000 } )
+		channel.msg( { title: 'Отменено 🌶️' , delete: 7 * SECOND } )
 		return false
 	}
 
@@ -292,7 +292,7 @@ class Command extends BaseCommand {
 		channel.msg( {
 			title: 'Для броска у вас должен быть чилли 🌶️\nКупить его можно в !лавке' ,
 			color: '#ff0000' ,
-			delete: 5000 ,
+			delete: 5 * SECOND ,
 			footer: { iconURL: FOOTER_EMOJI , text: 'Безудержный перчик™' } ,
 		} )
 		return false

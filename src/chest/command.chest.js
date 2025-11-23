@@ -3,6 +3,7 @@ import {
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 ,
 } from '#src/chest/constants.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import CooldownManager from '#src/CooldownManager.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
@@ -378,7 +379,7 @@ class Command extends BaseCommand {
 		embed.edit = true
 
 		while ( itemsOutput.length ) {
-			await sleep( 1500 / ( itemsOutput.length / 2 ) )
+			await sleep( (1.5 * SECOND) / ( itemsOutput.length / 2 ) )
 			embed.description += itemsOutput
 				.splice( 0 , 1 )
 				.map( e => `\n${ e }` )
@@ -395,7 +396,7 @@ class Command extends BaseCommand {
 			} )
 
 			CurseManager.init( { user: interaction.user , curse } )
-			await sleep( 3000 )
+			await sleep( 3 * SECOND )
 			msg.msg( {
 				description: `${ interaction.user }, вы были прокляты. В пустом сундуке и не такое встречается.. 🪸` ,
 			} )

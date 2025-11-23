@@ -1,5 +1,5 @@
 import EventEmitter from 'node:events'
-import { MINUTE } from '#constants/time.js'
+import { MINUTE, SECOND } from '#constants/time.js'
 import { createStopPromise } from '#src/createStopPromise.js'
 import { ReactionInteraction } from '#src/discord/utils.js'
 import { codeOfEmoji } from '@zoodogood/utils/discordjs'
@@ -16,7 +16,7 @@ function processUserCanUseInteraction( interaction , messageInterface ) {
 	interaction.msg( {
 		ephemeral: true ,
 		description: `Это взаимодействие доступно только ${ options.user.username }` ,
-		delete: 7_000 ,
+		delete: 7 * SECOND ,
 	} )
 	return false
 }

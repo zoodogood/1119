@@ -2,6 +2,7 @@ import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
 import { ButtonStyle , ComponentType } from 'discord.js'
 import { guildDataOf , userDataOf } from '../data/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 
 class Guidances {
 	guidances = [
@@ -31,7 +32,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'хелп помощь cmds commands команды х допомога info інфо' ,
 		allowDM: true ,
-		cooldown: 15_000 ,
+		cooldown: 15 * SECOND ,
 		type: 'other' ,
 	}
 

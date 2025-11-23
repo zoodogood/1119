@@ -1,4 +1,4 @@
-import { HOUR } from '#constants/time.js'
+import { HOUR, SECOND } from '#constants/time.js'
 import client from '#src/bot/client/singleton.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { resolve_description } from '#src/curses/CurseManager/singleton/public.js'
@@ -76,7 +76,7 @@ export const grempen_products = createCollectionWithKey( [
 				channel.msg( {
 					title: 'Окей, вы купили перец, просто бросьте его...' ,
 					description: 'Команда броска `!chilli @Пинг`' ,
-					delete: 12000 ,
+					delete: 12 * SECOND ,
 				} )
 			}
 
@@ -176,7 +176,7 @@ export const grempen_products = createCollectionWithKey( [
 		label: () => 'Ручной монстр' ,
 		emoji: () => '🐲' ,
 		price: ( { userData } ) =>
-			1999 + 1000 * Math.ceil( ( userData.monstersBought || 0 ) / 3 ) ,
+			1_999 + 1_000 * Math.ceil( ( userData.monstersBought || 0 ) / 3 ) ,
 		inline: true ,
 		others: [ 'монстр' , 'монстра' ] ,
 		fn( boughtContext ) {
@@ -190,7 +190,7 @@ export const grempen_products = createCollectionWithKey( [
 					description:
 						'Монстры защищают вас от мелких воришек и больших воров, также они очень любят приносить палку, но не забывайте играть с ними!' ,
 					author: { name: 'Информация' , iconURL: client.user.avatarURL() } ,
-					delete: 5000 ,
+					delete: 5 * SECOND ,
 				} )
 			}
 			addResource( {

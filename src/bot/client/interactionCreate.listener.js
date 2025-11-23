@@ -1,6 +1,7 @@
 import { CustomIdExecutor } from '#src/app/CustomIdExecutor/Executor.js'
 import { client } from '#src/bot/client/singleton.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 import { actionRowsToComponents } from '#src/discord/utils.js'
 import { BaseEvent } from '#src/events/EventsManager.js'
 import { sleep } from '#src/safe-utils.js'
@@ -22,7 +23,7 @@ class Event extends BaseEvent {
 			return
 		}
 
-		await sleep( 1000 )
+		await sleep( SECOND )
 		if ( interaction.replied || interaction.deffered ) {
 			return
 		}

@@ -103,7 +103,7 @@ class Command extends BaseCommand {
 
 		const image = canv.toBuffer( 'image/png' )
 
-		let reward = ( Date.now() - 1607558400000 ) / 500000
+		let reward = ( Date.now() - 1607558400000 ) / (500 * SECOND)
 		reward = reward - ( reward % 5 )
 
 		const message = await msg.msg( {
@@ -113,7 +113,7 @@ class Command extends BaseCommand {
 			files: [ new AttachmentBuilder( image , { name: 'puzzle.png' } ) ] ,
 			color: '#f2fafa' ,
 			author: { name: msg.author.username , iconURL: msg.author.avatarURL() } ,
-			delete: 100_000 ,
+			delete: 100 * SECOND ,
 		} )
 		const react = await message.awaitReact(
 			{ user: msg.author , removeType: 'all' } ,
@@ -135,7 +135,7 @@ class Command extends BaseCommand {
 			return msg.msg( {
 				title: 'Ответом должно быть число!' ,
 				color: '#ff0000' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 			} )
 		}
 
@@ -173,7 +173,7 @@ class Command extends BaseCommand {
 			case percent < 101:
 				return `Осталось совсем чуть-чуть! У вас получится, ||но ответ всё ещё не верный.||`
 			}
-		} ) , color: '#f2fafa' , delete: 9000 } )
+		} ) , color: '#f2fafa' , delete: 9 * SECOND } )
 	}
 }
 

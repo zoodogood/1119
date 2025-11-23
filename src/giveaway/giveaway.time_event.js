@@ -1,4 +1,5 @@
 import { client } from '#src/bot/client/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 import { sleep } from '#src/safe-utils.js'
 import { randomElementFromArray } from '@zoodogood/utils/objectives'
 
@@ -59,7 +60,7 @@ class Event {
 			)
 		}
 
-		await sleep( 1000 )
+		await sleep( SECOND )
 		giveaway.reactions.cache.get( '🌲' ).remove()
 	}
 }

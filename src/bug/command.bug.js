@@ -464,7 +464,7 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 					( { key } ) =>
 						`- **${ escapeMarkdown( crop_string( key.replaceAll( '\n' , ' ' ) , 100 ) ) }**\n` ,
 				) ,
-			] ).slice( 0 , 2000 ) ,
+			] ).slice( 0 , 2_000 ) ,
 			... groups.map( ( { key , meta , errors } ) =>
 				maybe_multiline( [
 					`${ crop_string( key.replaceAll( '\n' , ' ' ) , 100 ) }\n` ,
@@ -502,7 +502,7 @@ class Errors_FlagSubcommand extends BaseFlagSubcommand {
 						200 ,
 					) ,
 					'\n' ,
-					errors[ 0 ]?.stackData && crop_string( errors[ 0 ].stackData.stack , 1000 ) ,
+					errors[ 0 ]?.stackData && crop_string( errors[ 0 ].stackData.stack , 1_000 ) ,
 				] ) ,
 			) ,
 		].map( description => ( { description } ) )

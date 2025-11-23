@@ -944,7 +944,7 @@ class Command extends BaseCommand {
 		alias:
 			'партнёры партнёрства партнёрство партнёр партнеры партнерства партнерство партнер partner' ,
 		allowDM: true ,
-		cooldown: 10_000 ,
+		cooldown: 10 * SECOND ,
 		cooldownTry: 3 ,
 		type: 'guild' ,
 		cliParser: {

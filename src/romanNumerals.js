@@ -1,6 +1,6 @@
 const CHARACTER_TABLE = {
-	Z: 2000 ,
-	M: 1000 ,
+	Z: 2_000 ,
+	M: 1_000 ,
 	D: 500 ,
 	C: 100 ,
 	L: 50 ,

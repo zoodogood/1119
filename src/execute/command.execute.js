@@ -7,6 +7,7 @@ import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager , {
 	parseInputCommandFromMessage ,
 } from '#src/commands/CommandsManager/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 import { sleep } from '#src/safe-utils.js'
 import { CliParser } from '@zoodogood/utils/CliParser'
 import { Message } from 'discord.js'
@@ -70,7 +71,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'выполнить' ,
 		allowDM: true ,
-		cooldown: 10_000 ,
+		cooldown: 10 * SECOND ,
 		cooldownTry: 3 ,
 		type: 'guild' ,
 		expectParams: true ,

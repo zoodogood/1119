@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { randomWith } from '#src/safe-utils.js'
 import { userDataOf } from '../data/singleton.js'
 
@@ -16,7 +17,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'iqmeme icq айкю айкью iqbanana iqmonkey' ,
 		allowDM: true ,
-		cooldown: 15_000 ,
+		cooldown: 15 * SECOND ,
 		type: 'user' ,
 	}
 

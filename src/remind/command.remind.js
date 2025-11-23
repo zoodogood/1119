@@ -151,7 +151,7 @@ class AbstractRemindRepeats {
 		channel.msg( {
 			color: '#ff0000' ,
 			title: `Максимум повторов напоминания — ${ AbstractRemindRepeats.LIMIT }` ,
-			delete: 8_000 ,
+			delete: 8 * SECOND ,
 			description: phrase ,
 		} )
 		return false
@@ -174,7 +174,7 @@ class AbstractRemindRepeats {
 		channel.msg( {
 			color: '#ff0000' ,
 			title: `Максимум повторяющихся напоминаний — ${ AbstractRemindRepeats.REPEATED_REMINDS_LIMIT }` ,
-			delete: 8_000 ,
+			delete: 8 * SECOND ,
 			description: remindData.phrase ,
 		} )
 		return false
@@ -549,7 +549,7 @@ class Command extends BaseCommand {
 			publicized_on_level: 5 ,
 		} ,
 		allowDM: true ,
-		cooldown: 8_000 ,
+		cooldown: 8 * SECOND ,
 		cooldownTry: 5 ,
 		type: 'other' ,
 	}
@@ -680,7 +680,7 @@ class Command extends BaseCommand {
 		channel.msg( {
 			color: '#ff0000' ,
 			title: 'Максимальный период — 30 лет' ,
-			delete: 8_000 ,
+			delete: 8 * SECOND ,
 			description: phrase ,
 		} )
 		return false

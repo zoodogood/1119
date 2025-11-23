@@ -343,7 +343,7 @@ class Mention_Subcommand extends BaseFlagSubcommand {
 			title:
 				'Вы не можете просматривать содержимое сумки у других пользователей' ,
 			color: '#ff0000' ,
-			delete: 15_000 ,
+			delete: 15 * SECOND ,
 			description:
 				'Попросите человека открыть сумку, чтобы вы смогли увидеть содержимое' ,
 		} )
@@ -695,7 +695,7 @@ class Command extends BaseCommand {
 			const description = `Надо на ${ item.ending( count - currentCount ) } больше!`
 			interaction.channel.msg( {
 				title: 'Недостаточно ресурса' ,
-				delete: 7_000 ,
+				delete: 7 * SECOND ,
 				description ,
 			} )
 			return
@@ -713,7 +713,7 @@ class Command extends BaseCommand {
 
 		interaction.channel.msg( {
 			title: `Действие с сумка ${ interaction.user.tag }` ,
-			delete: 9_000 ,
+			delete: 9 * SECOND ,
 			description ,
 		} )
 
@@ -843,7 +843,7 @@ class Command extends BaseCommand {
 			description: `\`${ itemRaw }\`${
 				similarItem ? `\n\nВозможно, Вы имели ввиду: ${ similarItem }?` : ''
 			}` ,
-			delete: 7000 ,
+			delete: 7 * SECOND ,
 		} )
 		return false
 	}
@@ -887,7 +887,7 @@ class Command extends BaseCommand {
 		interaction.user.action( Actions.beforeBagInteracted , context )
 		if ( defaultPreventable.defaultPrevented() ) {
 			interaction.channel.msg( {
-				delete: 7_000 ,
+				delete: 7 * SECOND ,
 				title: 'Взаимодействие с сумкой заблокированно внешним эффектом' ,
 			} )
 			return

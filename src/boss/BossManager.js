@@ -258,7 +258,7 @@ class AttributesShop {
 
 		let message = await channel.msg( createEmbed( { boss , user , edit: false } ) )
 		const filter = ( _reaction , member ) => user.id === member.id
-		const collector = message.createReactionCollector( { filter , time: 60_000 } )
+		const collector = message.createReactionCollector( { filter , time: MINUTE } )
 
 		collector.on( 'collect' , async ( reaction , user ) => {
 			reaction.users.remove( user )
@@ -271,7 +271,7 @@ class AttributesShop {
 			} )
 
 			if ( !this.isUserCanBuyProduct( { user , product , userStats } ) ) {
-				message.msg( { title: 'Недостаточно средств!' , delete: 3000 } )
+				message.msg( { title: 'Недостаточно средств!' , delete: 3 * SECOND } )
 				reaction.remove()
 				return
 			}
@@ -279,7 +279,7 @@ class AttributesShop {
 			product.callback( { user , userStats , boss , product } )
 			boughtMap[ product.keyword ] = currentBought + 1
 			userDataOf( user )[ product.resource ] -= price
-			message.msg( { description: `${ product.emoji } +1` , delete: 7000 } )
+			message.msg( { description: `${ product.emoji } +1` , delete: 7 * SECOND } )
 			message = await message.msg( createEmbed( { boss , user , edit: true } ) )
 		} )
 
@@ -627,7 +627,7 @@ class BossManager {
 			if ( !boss ) {
 				message.msg( {
 					title: `Босса нет!` ,
-					delete: 5_000 ,
+					delete: 5 * SECOND ,
 					footer: { text: user.username , avatarURL: user.avatarURL() } ,
 				} )
 				reaction?.remove()
@@ -638,7 +638,7 @@ class BossManager {
 			if ( 'chestRewardAt' in userStats ) {
 				message.msg( {
 					title: `Вы уже взяли награду на ур. ${ userStats.chestRewardAt }` ,
-					delete: 5000 ,
+					delete: 5 * SECOND ,
 				} )
 				reaction?.users.remove( user )
 				return
@@ -667,7 +667,7 @@ class BossManager {
 					'а' ,
 				) } для сундука <a:chest:805405279326961684> и ${ rewardPull.keys } 🔩` ,
 				color: BossManager.BonusesChest.MAIN_COLOR ,
-				delete: 7000 ,
+				delete: 7 * SECOND ,
 			} )
 
 			return true

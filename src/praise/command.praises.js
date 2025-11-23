@@ -1,5 +1,6 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { DataManager , userDataOf } from '#src/data/singleton.js'
 import Discord from 'discord.js'
 
@@ -14,7 +15,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'похвалы похвали лайки likes' ,
 		allowDM: true ,
-		cooldown: 20_000 ,
+		cooldown: 20 * SECOND ,
 		cooldownTry: 2 ,
 		type: 'user' ,
 	}
@@ -34,7 +35,7 @@ class Command extends BaseCommand {
 				description: `Использован параметр "+" — все похвалы были удалены (${
 					names.length
 				})\n${ names.join( ', ' ) }` ,
-				delete: 30_000 ,
+				delete: 30 * SECOND ,
 			} )
 		}
 
@@ -169,7 +170,7 @@ class Command extends BaseCommand {
 					await msg.channel.msg( {
 						title: `Укажите хотя бы один номер, указывающий на пользователя которого надо удалить` ,
 						color: '#ff0000' ,
-						delete: 9000 ,
+						delete: 9 * SECOND ,
 					} )
 					react = '640449848050712587'
 					break
@@ -237,7 +238,7 @@ class Command extends BaseCommand {
 						title: 'Отчёт возникших проблем:' ,
 						description ,
 						color: '#ff0000' ,
-						delete: 12000 ,
+						delete: 12 * SECOND ,
 					} )
 				}
 

@@ -1,4 +1,5 @@
 import client from '#src/bot/client/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 import { question } from '#src/discord/utils.js'
 
 export default {
@@ -26,7 +27,7 @@ export default {
 			if ( !id ) {
 				channel.msg( {
 					color: '#ff0000' ,
-					delete: 8_000 ,
+					delete: 8 * SECOND ,
 					description: 'Не удалось обнаружить метку канала' ,
 				} )
 				return false
@@ -35,7 +36,7 @@ export default {
 			if ( !target ) {
 				channel.msg( {
 					color: '#ff0000' ,
-					delete: 8_000 ,
+					delete: 8 * SECOND ,
 					description: `Не найдено канала с ID \`${ id }\`` ,
 				} )
 				return false

@@ -2,6 +2,7 @@
 
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { DAY, SECOND } from '#src/constants/time.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 
 class Command extends BaseCommand {
@@ -27,7 +28,7 @@ class Command extends BaseCommand {
 			const request = {
 				method: 'POST' ,
 				body: JSON.stringify( {
-					max_age: 86400 ,
+					max_age: DAY / SECOND ,
 					max_uses: 0 ,
 					target_application_id: '880218394199220334' ,
 					target_type: 2 ,
@@ -50,7 +51,7 @@ class Command extends BaseCommand {
 				msg.msg( {
 					title: 'У бота не хватает прав' ,
 					description: `Необходимо право "Создавать приглашения"` ,
-					delete: 9000 ,
+					delete: 9 * SECOND ,
 					color: '#ff0000' ,
 				} )
 				return
@@ -65,7 +66,7 @@ class Command extends BaseCommand {
 		msg.msg( {
 			title: 'Необходимо находится в голосовом канале' ,
 			color: '#ff0000' ,
-			delete: 7000 ,
+			delete: 7 * SECOND ,
 		} )
 	}
 }

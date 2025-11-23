@@ -1,5 +1,5 @@
 import config from '#config'
-import { DAY , SECOND } from '#constants/time.js'
+import { DAY , MINUTE, SECOND } from '#constants/time.js'
 
 import { BossEffects , BossManager } from '#src/boss/BossManager.js'
 import {
@@ -367,7 +367,7 @@ class Command extends BaseCommand {
 		}
 		const message = await interaction.channel.msg( embed )
 		const collector = message.createMessageComponentCollector( {
-			time: 120_000 ,
+			time: 2 * MINUTE ,
 		} )
 
 		collector.on( 'collect' , async ( interaction ) => {
@@ -425,7 +425,7 @@ class Command extends BaseCommand {
 
 			( async () => {
 				const collector = curseAddedMessage.createMessageComponentCollector( {
-					time: 180_000 ,
+					time: 3 * MINUTE ,
 				} )
 
 				const curse = userDataOf( user ).curses.find(
@@ -555,7 +555,7 @@ class Command extends BaseCommand {
 
 		const filter = ( reaction , user ) =>
 			user.id !== client.user.id && reactions.includes( reaction.emoji.name )
-		const collector = message.createReactionCollector( { filter , time: 60_000 } )
+		const collector = message.createReactionCollector( { filter , time: MINUTE } )
 		collector.on( 'collect' , async ( reaction , user ) => {
 			reaction.users.remove( user )
 

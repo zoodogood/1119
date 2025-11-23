@@ -17,7 +17,7 @@ class Command extends BaseCommand {
 		alias: '8ball шар куля' ,
 		allowDM: true ,
 		expectParams: true ,
-		cooldown: 3_000 ,
+		cooldown: 3 * SECOND ,
 		type: 'other' ,
 	}
 

@@ -7,6 +7,7 @@ import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 import { escapeMarkdown } from 'discord.js'
 import { guildDataOf } from '../data/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 
 class Command extends BaseCommand {
 	static actionsList = [
@@ -281,7 +282,7 @@ class Command extends BaseCommand {
 		const filter = ( reaction , user ) => user === interaction.user && reaction.me
 		const collector = interaction.controllerMessage.createReactionCollector( {
 			filter ,
-			time: 100_000 ,
+			time: 100 * SECOND ,
 		} )
 		collector.on( 'collect' , ( reaction ) => {
 			const action = this.constructor.actionsList.find(
@@ -441,7 +442,7 @@ export default Command
 
 //           target = answer.content.match(/^(<@!?(\d{17,19})>|guild|сервер|server)/i);
 //           if (!target){
-//             msg.msg({title: "Не указана цель для которой нужно установить значение", color: "#ff0000", delete: 5000});
+//             msg.msg({title: "Не указана цель для которой нужно установить значение", color: "#ff0000", delete: 5 * SECOND});
 //             break;
 //           }
 
@@ -450,7 +451,7 @@ export default Command
 //           answer.content = answer.content.replace(/\s{1,}/g, " ").split(" ");
 
 //           if (!answer.content[1]){
-//             msg.msg({title: "Должно быть указано имя и значение", color: "#ff0000", delete: 3000});
+//             msg.msg({title: "Должно быть указано имя и значение", color: "#ff0000", delete: 3 * SECOND});
 //             break;
 //           }
 
@@ -467,7 +468,7 @@ export default Command
 //               default:
 //                 err = "Неизвестный тип ошибки";
 //             }
-//             msg.msg({title: err, color: "#ff0000", delete: 4000});
+//             msg.msg({title: err, color: "#ff0000", delete: 4 * SECOND});
 //             return;
 //           }
 
@@ -483,7 +484,7 @@ export default Command
 
 //           target = answer.content.match(/^(<@!?(\d{17,19})>|guild|сервер|server)/i);
 //           if (!target){
-//             msg.msg({title: "Не указана цель, значение свойства которой нужно получить", color: "#ff0000", delete: 5000});
+//             msg.msg({title: "Не указана цель, значение свойства которой нужно получить", color: "#ff0000", delete: 5 * SECOND});
 //             break;
 //           }
 
@@ -492,7 +493,7 @@ export default Command
 //           answer.content = answer.content.replace(/\s{1,}/g, " ").split(" ");
 
 //           if (!answer.content[0]){
-//             msg.msg({title: "Должно быть указано имя свойства", color: "#ff0000", delete: 3000});
+//             msg.msg({title: "Должно быть указано имя свойства", color: "#ff0000", delete: 3 * SECOND
 //             break;
 //           }
 

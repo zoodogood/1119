@@ -102,7 +102,7 @@ class Remover {
 
 	async onProcess() {
 		this.createInterface()
-		await sleep( 3000 )
+		await sleep( 3 * SECOND )
 
 		if ( this.fetchedMessages.length > 120 ) {
 			this.context.channel.sendTyping()
@@ -462,7 +462,7 @@ class Command extends BaseCommand {
 		const { channel } = context
 		channel.msg( {
 			title: 'Вроде-как удалено 0 сообщений' ,
-			delete: 7_000 ,
+			delete: 7 * SECOND ,
 			description: 'Я серьёзно! Не удалено ни единого сообщения!' ,
 		} )
 		return true
@@ -477,7 +477,7 @@ class Command extends BaseCommand {
 		channel.msg( {
 			title: 'Не удалось найти сообщение' ,
 			color: '#ff0000' ,
-			delete: 7_000 ,
+			delete: 7 * SECOND ,
 			description: params ,
 		} )
 		return true

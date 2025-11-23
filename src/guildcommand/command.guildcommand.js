@@ -572,7 +572,7 @@ class Command extends BaseCommand {
 				interaction.channel.msg( {
 					color: '#ff0000' ,
 					title: 'Команда не найдена' ,
-					delete: 8_000 ,
+					delete: 8 * SECOND ,
 				} )
 				return
 			}
@@ -582,7 +582,7 @@ class Command extends BaseCommand {
 			interaction.channel.msg( {
 				title: 'Удаление' ,
 				description: `Удалена команда ${ by_name }. Нажмите реакцию, чтобы вернуть` ,
-				delete: 8_000 ,
+				delete: 8 * SECOND ,
 			} )
 		} ,
 	}

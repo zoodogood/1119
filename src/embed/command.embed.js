@@ -1,5 +1,5 @@
 // @ts-check
-import { MINUTE } from '#constants/time.js'
+import { MINUTE, SECOND } from '#constants/time.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
@@ -92,7 +92,7 @@ class Command extends BaseCommand {
 					channel.msg( {
 						title: 'Неверный формат, ожидался цвет в формате HEX `#38f913`' ,
 						color: '#ff0000' ,
-						delete: 7_000 ,
+						delete: 7 * SECOND ,
 					} )
 					return
 				}
@@ -226,7 +226,7 @@ class Command extends BaseCommand {
 					channel.msg( {
 						title: 'Вы должны указать ссылку на изображение' ,
 						color: '#ff0000' ,
-						delete: 7_000 ,
+						delete: 7 * SECOND ,
 					} )
 					return
 				}
@@ -251,7 +251,7 @@ class Command extends BaseCommand {
 					channel.msg( {
 						title: 'Вы должны указать ссылку на изображение' ,
 						color: '#ff0000' ,
-						delete: 7_000 ,
+						delete: 7 * SECOND ,
 					} )
 					return
 				}
@@ -334,7 +334,7 @@ class Command extends BaseCommand {
 						name: response.content ,
 						iconURL: avatar ,
 					} ,
-					delete: 9_000 ,
+					delete: 9 * SECOND ,
 				} )
 			} ,
 		} ,
@@ -396,7 +396,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'ембед эмбед' ,
 		allowDM: true ,
-		cooldown: 10_000 ,
+		cooldown: 10 * SECOND ,
 		cooldownTry: 3 ,
 		type: 'guild' ,
 		userChannelPermissions: PermissionsBits.EmbedLinks ,
@@ -525,7 +525,7 @@ class EmbedSendProcessor {
 			channel.msg( {
 				title: 'Канал не существует' ,
 				color: '#ff0000' ,
-				delete: 7500 ,
+				delete: 7.5 * SECOND ,
 			} )
 			return
 		}
@@ -534,7 +534,7 @@ class EmbedSendProcessor {
 			target.msg( {
 				title: 'В указанный канале у вас нет права отправлять эмбед-сообщения ' ,
 				color: '#ff0000' ,
-				delete: 7_500 ,
+				delete: 7.5 * SECOND ,
 			} )
 			return
 		}

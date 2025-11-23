@@ -1,6 +1,7 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 import { guildDataOf } from '#src/data/singleton.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { question } from '#src/discord/utils.js'
@@ -112,7 +113,7 @@ class Command_GuildBanner_Manager {
 		guildDataOf( guild ).banner = content
 		channel.msg( {
 			title: 'Баннер установлен!' ,
-			delete: 7_000 ,
+			delete: 7 * SECOND ,
 			image: guildDataOf( guild ).banner ,
 		} )
 	}
@@ -126,7 +127,7 @@ class Command_GuildBanner_Manager {
 		channel.msg( {
 			title: 'Вы должны были указать ссылку на изображение' ,
 			color: '#ff0000' ,
-			delete: 3000 ,
+			delete: 3 * SECOND ,
 		} )
 	}
 }
@@ -176,7 +177,7 @@ class Command_GuildDescription_Manager {
 		const description = isTemplate ? await resolveTemplate( content ) : content
 		channel.msg( {
 			title: 'Описание установлено! Юху!' ,
-			delete: 7_000 ,
+			delete: 7 * SECOND ,
 			description ,
 		} )
 	}
@@ -190,7 +191,7 @@ class Command_GuildDescription_Manager {
 		channel.msg( {
 			title: 'Время вышло ⏰' ,
 			color: '#ff0000' ,
-			delete: 7_000 ,
+			delete: 7 * SECOND ,
 		} )
 		return true
 	}
@@ -250,13 +251,13 @@ class Command_GuildChatFilter_Manager {
 		const guildData = guildDataOf( guild )
 		if ( emoji === this.emojiEnum.enable ) {
 			guildData.chatFilter = 1
-			channel.msg( { title: 'Фильтр включён' , delete: 7_000 } )
+			channel.msg( { title: 'Фильтр включён' , delete: 7 * SECOND } )
 			return
 		}
 
 		if ( emoji === this.emojiEnum.disable ) {
 			guildData.chatFilter = 0
-			channel.msg( { title: 'Фильтр выключен' , delete: 3000 } )
+			channel.msg( { title: 'Фильтр выключен' , delete: 3 * SECOND } )
 		}
 	}
 }
@@ -322,7 +323,7 @@ class CommandDefaultBehavior {
 			return
 		}
 
-		await context.channel.msg( { content: String( emoji ) , delete: 5_000 } )
+		await context.channel.msg( { content: String( emoji ) , delete: 5 * SECOND } )
 		this.command.SETTING_FIELDS.find(
 			field => field.emoji === emoji.name ,
 		)?.onReaction( reaction , user , context )

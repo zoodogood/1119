@@ -1,4 +1,4 @@
-import { HOUR , MINUTE } from '#constants/time.js'
+import { HOUR , MINUTE, SECOND } from '#constants/time.js'
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import {
 	BaseCommand ,
@@ -377,7 +377,7 @@ class At_FlagSubcommand {
 			} ,
 			{
 				name: 'Другое:' ,
-				value: `Дата создания: <t:${ Math.floor( curse.timestamp / 1_000 ) }>` ,
+				value: `Дата создания: <t:${ Math.floor( curse.timestamp / SECOND ) }>` ,
 			} ,
 		]
 		return fields
@@ -425,7 +425,7 @@ class At_FlagSubcommand {
 			channel.msg( {
 				description: `Проклятия под номером ${ value } у этого человека нет, их же всего [${ curses.map( ( _ , i ) => i ).join( ', ' ) }] и нумерация начинается с нуля!` ,
 				color: Command.MESSAGE_THEME.color ,
-				delete: 15_000 ,
+				delete: 15 * SECOND ,
 			} )
 			return
 		}
@@ -537,7 +537,7 @@ class BoughtContext extends BaseContext {
 			channel.msg( {
 				description: 'Отмена' ,
 				color: Command.MESSAGE_THEME.color ,
-				delete: 15_000 ,
+				delete: 15 * SECOND ,
 			} )
 		}
 
@@ -672,7 +672,7 @@ class BoughtContext extends BaseContext {
 		channel.msg( {
 			description: this.reasons.map( reason => `- ${ reason }` ).join( '\n' ) ,
 			... Command.MESSAGE_THEME ,
-			delete: 15_000 ,
+			delete: 15 * SECOND ,
 		} )
 	}
 }
@@ -758,7 +758,7 @@ class Command extends BaseCommand {
 				interaction.msg( {
 					description: `Перезарядка: ${ cooldown.overload() }` ,
 					color: Command.MESSAGE_THEME.color ,
-					delete: 15_000 ,
+					delete: 15 * SECOND ,
 				} )
 				return
 			}
@@ -781,7 +781,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'проклятия проклятие curse' ,
 		allowDM: true ,
-		cooldown: 4_000 ,
+		cooldown: 4 * SECOND ,
 		type: 'other' ,
 		cliParser: {
 			flags: [

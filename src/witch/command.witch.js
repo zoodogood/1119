@@ -3,6 +3,7 @@ import {
 	KEYS_TO_UPGRADE_CHEST_TO_LEVEL_3 ,
 } from '#src/chest/constants.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { guildDataOf , singletonBotData , userDataOf } from '#src/data/singleton.js'
 import { checkFilterPropertyFactory } from '#src/mini.js'
@@ -44,7 +45,7 @@ class Command extends BaseCommand {
 		{
 			emoji: '🔅' ,
 			id: 'creatureBonuses' ,
-			LIMIT: 2_000 ,
+			LIMIT: 2 * SECOND ,
 			BONUSES_PER_RITUAL: 18 ,
 			BASIC: 120 ,
 			MULTIPLAYER: 1.35 ,
@@ -751,7 +752,7 @@ class Command extends BaseCommand {
 			return
 		}
 
-		await sleep( 1000 )
+		await sleep( SECOND )
 
 		// Вы не потеряете нестабильность
 		if ( userData.voidDouble && randomWith( 11 ) === 1 ) {
@@ -778,7 +779,7 @@ class Command extends BaseCommand {
 
 		await this.boilerChoise( { userData , interaction , boiler: boilerMessage } )
 		await interaction.channel.sendTyping()
-		await sleep( 3000 )
+		await sleep( 3 * SECOND )
 		this.displayStory( interaction )
 	}
 

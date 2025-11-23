@@ -516,7 +516,7 @@ export const cursesBase = new Collection(
 				'Мы собираем о вас данные и позднее отправим их вам. Проклятие будет выполнено автоматически' ,
 			toString( _user , curse ) {
 				const endTimestamp = curse.timestamp + curse.values.timer
-				const stamp = Math.floor( endTimestamp / 1000 )
+				const stamp = Math.floor( endTimestamp / SECOND )
 				return `${ this.description }: <t:${ stamp }:R>`
 			} ,
 			values: {
@@ -1185,7 +1185,7 @@ export const cursesBase = new Collection(
 						candyData.candies ,
 					)
 
-					await sleep( 7_000 )
+					await sleep( 7 * SECOND )
 					randomWith( 1 ) ? context.message.delete() : message.delete()
 				} ,
 			} ,

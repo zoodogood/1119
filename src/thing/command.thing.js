@@ -835,7 +835,7 @@ class Command extends BaseCommand {
 							const { scene , user } = context
 							addResource( {
 								user ,
-								value: isWin ? 3000 : -1000 ,
+								value: isWin ? 3_000 : -1_000 ,
 								executor: user ,
 								source: 'command.thing.event.unrealCreatures.wind.0' ,
 								resource: PropertiesEnum.coins ,
@@ -943,7 +943,7 @@ class Command extends BaseCommand {
 							} )
 							addResource( {
 								user ,
-								value: -randomWith( 300 , 1400 ) ,
+								value: -randomWith( 300 , 1_400 ) ,
 								executor: user ,
 								source: 'command.thing.event.unrealCreatures.void.2' ,
 								resource: PropertiesEnum.coins ,
@@ -1128,11 +1128,11 @@ class Command extends BaseCommand {
 								while ( ( !reaction || !reaction.me ) && i < 100 ) {
 									reaction = cloverMessage.reactions.cache.get( '☘️' )
 									i++
-									await sleep( 100 )
+									await sleep( 0.1 * SECOND )
 								}
 
 								if ( reaction && reaction.me ) {
-									await sleep( 2000 )
+									await sleep( 2 * SECOND )
 									const author = cloverMessage.author
 									addResource( {
 										user: author ,
@@ -1900,7 +1900,7 @@ class Command extends BaseCommand {
 			interaction.channel.msg( {
 				title:
 					'Ваша штука итак очень сильная.\nПоэтому пятый уровень — максимальный.' ,
-				delete: 7000 ,
+				delete: 7 * SECOND ,
 			} )
 			return
 		}
@@ -1915,8 +1915,8 @@ class Command extends BaseCommand {
 			const level = userData.elementLevel || 0
 			const table = [
 				{ berrys: 5 , coins: 500 , voidRituals: 2 } ,
-				{ berrys: 15 , coins: 1500 , voidRituals: 3 } ,
-				{ berrys: 38 , coins: 3337 , voidRituals: 5 } ,
+				{ berrys: 15 , coins: 1_500 , voidRituals: 3 } ,
+				{ berrys: 38 , coins: 3_337 , voidRituals: 5 } ,
 				{ berrys: 200 , coins: 30_000 , voidRituals: 10 } ,
 			][ level ]
 

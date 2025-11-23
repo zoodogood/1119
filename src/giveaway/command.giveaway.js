@@ -161,7 +161,7 @@ class Command extends BaseCommand {
 					interaction.msg( {
 						title: 'Указано не число' ,
 						color: '#ff0000' ,
-						delete: 3000 ,
+						delete: 3 * SECOND ,
 					} )
 					return
 				}

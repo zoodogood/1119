@@ -7,6 +7,7 @@ import { Actions } from '#src/user/actions/ActionManager.js'
 import { addResource } from '#src/user/resources/addResource.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { guildDataOf , userDataOf } from '../data/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 
 class Event extends BaseEvent {
 	options = {
@@ -73,7 +74,7 @@ class Event extends BaseEvent {
 		} )
 
 		const react = await message.awaitReact(
-			{ user: message.author , removeType: 'full' , time: 20000 } ,
+			{ user: message.author , removeType: 'full' , time: 20 * SECOND } ,
 			reaction ,
 		)
 
@@ -90,7 +91,7 @@ class Event extends BaseEvent {
 		) } <:coin:637533074879414272>!\n> Получено ${ coins }\n> Бонус сундука: ${
 			userData.chestBonus || 0
 		}`
-		message.msg( { content: messageContent , delete: 3_000 } )
+		message.msg( { content: messageContent , delete: 3 * SECOND } )
 	}
 
 	async run( { user , message } ) {

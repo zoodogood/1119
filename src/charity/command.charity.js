@@ -1,5 +1,6 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { guildDataOf } from '#src/data/singleton.js'
 import { awaitUserAccept } from '#src/discord/utils.js'
@@ -24,7 +25,7 @@ class Command extends BaseCommand {
 		alias: 'благотворительность благодійність' ,
 		allowDM: true ,
 		expectParams: true ,
-		cooldown: 70_000 ,
+		cooldown: 70 * SECOND ,
 		type: 'other' ,
 	}
 
@@ -50,7 +51,7 @@ class Command extends BaseCommand {
 		if ( !cash ) {
 			msg.msg( {
 				title: 'Вы не указали кол-во коинов, которые хотите раздать' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 				color: '#ff0000' ,
 			} )
 			msg.react( '❌' )
@@ -68,7 +69,7 @@ class Command extends BaseCommand {
 		if ( cash < 200 ) {
 			msg.msg( {
 				title: 'Минимальная сумма — 200 коинов' ,
-				delete: 5000 ,
+				delete: 5 * SECOND ,
 				color: '#ff0000' ,
 			} )
 			msg.react( '❌' )
@@ -76,7 +77,7 @@ class Command extends BaseCommand {
 		}
 
 		if ( cash > interaction.userData.coins ) {
-			msg.msg( { title: 'Недостаточно коинов' , delete: 5000 , color: '#ff0000' } )
+			msg.msg( { title: 'Недостаточно коинов' , delete: 5 * SECOND , color: '#ff0000' } )
 			msg.react( '❌' )
 			return
 		}
@@ -101,7 +102,7 @@ class Command extends BaseCommand {
 					'' ,
 					'а' ,
 				) }) требует минимум ${ needCash } коинов!` ,
-				delete: 8000 ,
+				delete: 8 * SECOND ,
 				color: '#ff0000' ,
 			} )
 			msg.react( '❌' )

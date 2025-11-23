@@ -1,6 +1,6 @@
 import config from '#config'
 
-import { DAY } from '#constants/time.js'
+import { DAY, SECOND } from '#constants/time.js'
 import { client } from '#src/bot/client/singleton.js'
 import {
 	change_to_string ,
@@ -405,7 +405,7 @@ class Command extends BaseCommand {
 				.format( 'DD д., HH ч. : mm м. : ss с.' )
 
 			const content = `Аптайм: [${ formatted }], — бот запущен и работал без перезапусков именно столько.`
-			interaction.msg( { content , delete: 15_000 } )
+			interaction.msg( { content , delete: 15 * SECOND } )
 		} ,
 		async commands( { interaction } ) {
 			disable_caller_component(
@@ -430,7 +430,7 @@ class Command extends BaseCommand {
 					customId: 'content' ,
 					style: TextInputStyle.Paragraph ,
 					label: 'Введите вопрос, отзыв или веселую шутку' ,
-					maxLength: 2000 ,
+					maxLength: 2_000 ,
 				} ,
 			]
 
@@ -498,7 +498,7 @@ class Command extends BaseCommand {
 					style: TextInputStyle.Paragraph ,
 					label: 'Если что вдруг' ,
 					placeholder: 'По пятницам я не отвечаю' ,
-					maxLength: 2000 ,
+					maxLength: 2_000 ,
 				} ,
 			]
 
@@ -534,7 +534,7 @@ class Command extends BaseCommand {
 			Object.assign( embed , {
 				reference: message.id ,
 				description: `<t:${ Math.floor(
-					interaction.message.createdTimestamp / 1_000 ,
+					interaction.message.createdTimestamp / SECOND ,
 				) }>\n>>> ${ interaction.message.embeds.at( 0 ).description }` ,
 				author: {
 					name: 'Содержимое вашего сообщения:' ,
@@ -592,7 +592,7 @@ class Command extends BaseCommand {
 		} ,
 		alias: 'бот stats статс ping пинг стата invite пригласить' ,
 		allowDM: true ,
-		cooldown: 10_000 ,
+		cooldown: 10 * SECOND ,
 		type: 'bot' ,
 	}
 

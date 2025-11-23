@@ -1,5 +1,5 @@
 import { client } from '#src/bot/client/singleton.js'
-import { MINUTE } from '#src/constants/time.js'
+import { MINUTE, SECOND } from '#src/constants/time.js'
 import { guildDataOf , userDataOf } from '#src/data/singleton.js'
 import { PermissionFlags } from '#src/discord/permissions.js'
 import { BaseEvent } from '#src/events/EventsManager.js'
@@ -75,7 +75,7 @@ export const Welcomer = {
 		}
 
 		channel.sendTyping()
-		await sleep( 3500 )
+		await sleep( 3.5 * SECOND )
 		await channel.msg( {
 			title: 'На сервере появился новый участник!' ,
 			color: guildDataOf( guild ).hi.color ,
