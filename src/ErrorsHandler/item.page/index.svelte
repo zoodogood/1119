@@ -7,7 +7,7 @@
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { yaml } from '#src/safe-utils.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 	import { ending } from '@zoodogood/utils/primitives'
 
 	const i18n = svelteApp.i18n.pages.errorsItem
@@ -104,9 +104,7 @@
 		</p>
 		<a
 			class='collections-link'
-			href={PagesRouter.relativeToPage(
-				PagesRouter.getPageBy( 'errors/list' ).key ,
-			)}><Icon code='' /> {i18n.backToCollections}</a
+			href={page_location("errors_list")}><Icon code='' /> {i18n.backToCollections}</a
 		>
 		{#if Component.errors.length}
 			<input

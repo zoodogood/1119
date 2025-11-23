@@ -3,7 +3,7 @@
 	import Image from '#site-component/Image'
 	import dayjs from '#src/dayjs.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 
 	const bot = svelteApp.getBot()
 	const i18n = svelteApp.i18n.components.Layout.Footer
@@ -22,23 +22,17 @@
 					<ul class='article-aside-list'>
 						<li>
 							<a
-								href={PagesRouter.relativeToPage(
-									PagesRouter.getPageBy( 'info/policy' ).key ,
-								)}>{i18n.info.policy}</a
+								href={page_location("info_policy")}>{i18n.info.policy}</a
 							>
 						</li>
 						<li>
 							<a
-								href={PagesRouter.relativeToPage(
-									PagesRouter.getPageBy( 'info/friendship' ).key ,
-								)}>{i18n.info.thanks}</a
+								href={page_location( 'info_friendship' )}>{i18n.info.thanks}</a
 							>
 						</li>
 						<li>
 							<a
-								href={PagesRouter.relativeToPage(
-									PagesRouter.getPageBy( 'info/1119' ).key ,
-								)}>1119</a
+								href={page_location("info_1119")}>1119</a
 							>
 						</li>
 						<li></li>

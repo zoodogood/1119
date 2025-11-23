@@ -2,7 +2,7 @@
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { sleep } from '#src/safe-utils.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 	import { GlitchText } from '@zoodogood/utils'
 
 	import { onMount } from 'svelte'
@@ -18,10 +18,8 @@
 
 	let user
 
-	const _redirectURL = PagesRouter.relativeToPage(
-		PagesRouter.getPageBy( PagesRouter.pages_alias_hash.get( redirect ) )?.key
-		?? PagesRouter.getPageBy( 'public' ).key ,
-	)
+	const _redirectURL = page_location(redirect)
+	
 
 	const StatusEnum = {
 		noToken: 1 ,
@@ -88,9 +86,7 @@
 
 		{#if State.status & ( StatusEnum.dataSuccess | StatusEnum.dataPending )}
 			<a
-				href={PagesRouter.relativeToPage(
-					PagesRouter.getPageBy( 'user/panel' ).key ,
-				)}
+				href={page_location("user_panel")}
 				class='button-to-panel'
 			>
 				<button disabled={State.status === StatusEnum.dataPending}

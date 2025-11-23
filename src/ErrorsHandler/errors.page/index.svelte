@@ -4,7 +4,7 @@
 	import dayjs from '#src/dayjs.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 
 	const Component = {
 		errors: [] ,
@@ -31,9 +31,7 @@
 					data-uniqueErrors={errorFile?.errorsCount}
 				>
 					<a
-						href="{PagesRouter.relativeToPage(
-							PagesRouter.getPageBy( 'errors/list/item' ).key ,
-						)}/:{timestamp || ''}"
+						href="{page_location("errors_list_item")}/:{timestamp || ''}"
 					>
 						<big>ID: {Component.errors.length - i}</big>
 						<p>

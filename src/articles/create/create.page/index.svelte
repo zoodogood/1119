@@ -4,7 +4,7 @@
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { MarkdownMetadata } from '#src/MarkdownMetadata.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 
 	const Contents = {
 		filename: null ,
@@ -74,9 +74,7 @@
 			</label>
 			{#if Contents.filename}
 				<a
-					href="{PagesRouter.relativeToPage(
-						PagesRouter.getPageBy( 'articles/item' ).key ,
-					)}?id={svelteApp.user.id}/{Contents.filename}"
+					href="{page_location("articles_item")}?id={svelteApp.user.id}/{Contents.filename}"
 				>
 					<button>{i18n.getDownToPage}</button>
 				</a>

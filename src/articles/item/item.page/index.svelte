@@ -10,7 +10,7 @@
 	import { MarkdownMetadata } from '#src/MarkdownMetadata.js'
 	import { ReplaceTemplate , timestampToDate } from '#src/safe-utils.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 
 	const i18n = svelteApp.i18n.pages.articlesItem
 	const key = svelteApp.url.queries.id
@@ -110,10 +110,7 @@
 			<h1>{i18n.noResults.label}</h1>
 			<p>
 				{@html ReplaceTemplate( i18n.noResults.content , {
-					link: PagesRouter.relativeToPage(
-						PagesRouter.getPageBy( 'articles' ).key ,
-					) ,
-				} )}
+					link: page_location("articles") } )}
 			</p>
 		</main>
 	{/await}

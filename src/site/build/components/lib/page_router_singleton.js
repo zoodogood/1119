@@ -14,23 +14,12 @@ export function current_page_by_route() {
 	)
 }
 
+/**
+ * 
+ * @param {keyof typeof Pages} page_key 
+ */
 export function page_location( page_key , options = {} ) {
-	if ( !PagesKeyEnum.includes( page_key ) ) {
-		throw new Error( `Invalid page key ${ page_key }` )
-	}
-
 	return urlStringRelativeSiteRoot( svelteApp , page_key , options )
 }
 
-export class PagesRouter {
-	static getPageBy( alias ) {
-		return alias
-	}
-
-	static relativeToPage( key ) {
-		return relativeSiteRoot( svelteApp , key )
-	}
-}
-
 export { Pages , PagesKeyEnum }
-export default PagesRouter

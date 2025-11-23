@@ -2,7 +2,7 @@
 	import Icon from '#site-component/iconic'
 	import ThemeSwitcher , { Theme } from '#site-component/ThemeSwitcher'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 
 	const CurrentThemeStore = Theme.current
 	const i18n = svelteApp.i18n.pages.secretpage
@@ -36,7 +36,7 @@
 </main>
 
 <nav class='theme-switcher-container'>
-	<a href={PagesRouter.relativeToPage( 'public' )}><Icon code='' /></a>
+	<a href={page_location("pages")}><Icon code='' /></a>
 	<ThemeSwitcher />
 </nav>
 

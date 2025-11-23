@@ -5,7 +5,7 @@
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { ReplaceTemplate , timestampToDate } from '#src/safe-utils.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 	import { path } from '#src/url/export.js'
 
 	const i18n = svelteApp.i18n.pages.articlesIndex
@@ -49,9 +49,7 @@
 		<h3>{i18n.createInfo.label}</h3>
 		<p>
 			{@html ReplaceTemplate( i18n.createInfo.content , {
-				href: PagesRouter.relativeToPage(
-					PagesRouter.getPageBy( 'articles/create' ).key ,
-				) ,
+				href: page_location("articles_create") ,
 			} )}
 		</p>
 	</section>
@@ -72,7 +70,7 @@
 				{#if list.length}
 					{#each list as article}
 						{@const { id , metadata , name } = article}
-						{@const href = `${ PagesRouter.relativeToPage( PagesRouter.getPageBy( 'articles/item' ).key ) }?id=${ id }`}
+						{@const href = `${ page_location("articles_item") }?id=${ id }`}
 						<li class='article'>
 							<a {href}>
 								<p>{name}</p>

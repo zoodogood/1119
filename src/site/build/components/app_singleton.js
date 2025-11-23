@@ -9,7 +9,7 @@ import { createDialog } from '#src/site/build/components/lib/createDialog.js'
 import { whenDocumentReadyStateIsComplete } from '#src/site/build/components/lib/dom_utils.js'
 
 import HashController from '#src/site/build/components/lib/HashController.js'
-import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 import enviroment from '#src/site/build/rollup-plugin-replace/template.js'
 import { omit } from '@zoodogood/utils/objectives'
 
@@ -122,8 +122,8 @@ class SvelteApp {
 		)
 
 		if ( !user || typeof user === 'string' ) {
-			const _key = PagesRouter.getPageBy( 'oauth' ).key
-			const link = PagesRouter.relativeToPage( _key )
+			const _key =  'oauth'
+			const link = page_location(_key)
 			createDialog( svelteApp , {
 				title: this.i18n.general.app.externalTokenDialog.title ,
 				description: ReplaceTemplate(

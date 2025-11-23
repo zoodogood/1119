@@ -11,7 +11,7 @@
 	import svelteApp from '#src/site/build/components/app_singleton.js'
 	import { init_pwa_worker } from '#src/site/build/components/lib/init_pwa.js'
 	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
-
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 	import UserSettings from '#src/user/setprofile/UserSettings.svelte'
 
 	import UserProgress from '#src/user/UserProgress.svelte'
@@ -148,7 +148,8 @@
 				on:click={() => {
 					svelteApp.storage.setToken( null )
 					svelteApp.storage.setUserData( null )
-					PagesRouter.redirect( PagesRouter.getPageBy( 'public' ).key )
+					
+					PagesRouter.redirect( page_location("pages") )
 				}}
 				style:margin-top='2em'
 				style:background-color='#dd000099'

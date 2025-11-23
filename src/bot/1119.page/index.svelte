@@ -1,6 +1,6 @@
 <script>
 	import Layout from '#site-component/Layout'
-	import PagesRouter from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 	import AuthorProjects from '#src/site/build/components/svelte/frames/external/author/AuthorProjects.svelte'
 	import { AuditDaily , Statistic } from '#src/site/build/components/svelte/frames/statistic/mod.js'
 	import { onMount } from 'svelte'
@@ -57,7 +57,7 @@
 		</p>
 		<p>
 			<a
-				href={PagesRouter.relativeToPage( PagesRouter.getPageBy( 'commands' ).key )}
+				href={page_location("commands")}
 			>Список команд.</a
 			>
 		</p>
