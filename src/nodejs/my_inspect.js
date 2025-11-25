@@ -1,5 +1,5 @@
-import client from '#src/bot/client/singleton.js'
 import { inspect as _inspect } from 'node:util'
+import client from '#src/bot/client/singleton.js'
 
 export async function inspect( value ) {
 	const inspected = _inspect( value , {

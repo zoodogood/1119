@@ -49,7 +49,7 @@
 		<h3>{i18n.createInfo.label}</h3>
 		<p>
 			{@html ReplaceTemplate( i18n.createInfo.content , {
-				href: page_location("articles_create") ,
+				href: page_location( 'articles_create' ) ,
 			} )}
 		</p>
 	</section>
@@ -70,7 +70,7 @@
 				{#if list.length}
 					{#each list as article}
 						{@const { id , metadata , name } = article}
-						{@const href = `${ page_location("articles_item") }?id=${ id }`}
+						{@const href = `${ page_location( 'articles_item' ) }?id=${ id }`}
 						<li class='article'>
 							<a {href}>
 								<p>{name}</p>

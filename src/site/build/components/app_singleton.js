@@ -122,8 +122,8 @@ class SvelteApp {
 		)
 
 		if ( !user || typeof user === 'string' ) {
-			const _key =  'oauth'
-			const link = page_location(_key)
+			const _key = 'oauth'
+			const link = page_location( _key )
 			createDialog( svelteApp , {
 				title: this.i18n.general.app.externalTokenDialog.title ,
 				description: ReplaceTemplate(

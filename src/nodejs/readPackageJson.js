@@ -1,4 +1,5 @@
-import packageJson from "#root/package.json" with { type: "json" };
+import packageJson from '#root/package.json' with { type: 'json' }
+
 export async function readPackageJson() {
-	return packageJson;
+	return packageJson
 }

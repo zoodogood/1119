@@ -1,3 +1,3 @@
-export function requireChangeWindowLocation(urlString) {
+export function requireChangeWindowLocation( urlString ) {
 	window.location.href = urlString
 }

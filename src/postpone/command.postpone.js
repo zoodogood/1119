@@ -1,4 +1,4 @@
-import { MINUTE, SECOND } from '#constants/time.js'
+import { MINUTE , SECOND } from '#constants/time.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'

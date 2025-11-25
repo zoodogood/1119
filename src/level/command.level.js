@@ -1,8 +1,8 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { MINUTE } from '#src/constants/time.js'
 import { EXPERIENCE_PER_LEVEL } from '#src/level/constants.js'
 import { AttachmentBuilder } from 'discord.js'
 import { userDataOf } from '../data/singleton.js'
-import { MINUTE } from '#src/constants/time.js'
 
 class Command extends BaseCommand {
 	isInited = false

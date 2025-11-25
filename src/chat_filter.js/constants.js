@@ -1,4 +1,4 @@
-import { SECOND } from "#src/constants/time.js"
+import { SECOND } from '#src/constants/time.js'
 
 export const MESSAGES_SPAM_FILTER_TARGET_ALWAYS = 2 * SECOND
 export const MESSAGES_SPAM_FILTER_TARGET_WHEN_PASSED = 8 * SECOND

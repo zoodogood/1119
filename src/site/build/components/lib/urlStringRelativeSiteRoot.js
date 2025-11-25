@@ -1,4 +1,4 @@
-import { keyValueFormat } from "#src/fp/record/formatters/keyValueFormat.js"
+import { keyValueFormat } from '#src/fp/record/formatters/keyValueFormat.js'
 
 /**
  *
@@ -7,10 +7,10 @@ import { keyValueFormat } from "#src/fp/record/formatters/keyValueFormat.js"
  * @param {*} removeQueries
  * @returns
  */
-function urlStringRelativeSiteRoot( svelteApp , path = '' , {queries} = {} ) {
+function urlStringRelativeSiteRoot( svelteApp , path = '' , { queries } = {} ) {
 	const { origin } = document.location
 
-	return `${ origin }/${ svelteApp.url.base }/${ path }${ queries ? `?${ keyValueFormat(queries, (k, v) => `${k}=${v}`) }` : '' }`
+	return `${ origin }/${ svelteApp.url.base }/${ path }${ queries ? `?${ keyValueFormat( queries , ( k , v ) => `${ k }=${ v }` ) }` : '' }`
 }
 
 export { urlStringRelativeSiteRoot }

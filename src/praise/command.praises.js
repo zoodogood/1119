@@ -43,37 +43,37 @@ class Command extends BaseCommand {
 		const user = memb.data
 		const isAuthor = memb === msg.author
 		let iPraise
-				= user.praise && user.praise.length
-					? user.praise
-						.map(
-							( id , i ) =>
-								`${ i
-								+ 1
-								}. ${
-									DataManager.getUser( id )
-										? Discord.escapeMarkdown( DataManager.getUser( id ).name )
-										: 'пользователь не определен' }` ,
-						)
-						.join( `\n` )
-					: isAuthor
-						? 'Вы никого не хвалили \nиспользуйте **!похвалить**'
-						: 'Никого не хвалил'
+			= user.praise && user.praise.length
+				? user.praise
+					.map(
+						( id , i ) =>
+							`${ i
+							+ 1
+							}. ${
+								DataManager.getUser( id )
+									? Discord.escapeMarkdown( DataManager.getUser( id ).name )
+									: 'пользователь не определен' }` ,
+					)
+					.join( `\n` )
+				: isAuthor
+					? 'Вы никого не хвалили \nиспользуйте **!похвалить**'
+					: 'Никого не хвалил'
 		const mePraise
-				= user.praiseMe && user.praiseMe.length
-					? user.praiseMe
-						.map(
-							( id , i ) =>
-								`${ i
-								+ 1
-								}. ${
-									DataManager.getUser( id )
-										? Discord.escapeMarkdown( DataManager.getUser( id ).name )
-										: 'пользователь не определен' }` ,
-						)
-						.join( `\n` )
-					: isAuthor
-						? 'Вас никто не похвалил, напомните им это сделать'
-						: 'Его никто не хвалил, похвалите его!'
+			= user.praiseMe && user.praiseMe.length
+				? user.praiseMe
+					.map(
+						( id , i ) =>
+							`${ i
+							+ 1
+							}. ${
+								DataManager.getUser( id )
+									? Discord.escapeMarkdown( DataManager.getUser( id ).name )
+									: 'пользователь не определен' }` ,
+					)
+					.join( `\n` )
+				: isAuthor
+					? 'Вас никто не похвалил, напомните им это сделать'
+					: 'Его никто не хвалил, похвалите его!'
 
 		const maximumPraises = Math.min(
 			2 + Math.floor( ( user.level * 1.5 ) / 10 ) ,

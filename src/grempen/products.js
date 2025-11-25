@@ -1,9 +1,9 @@
-import { HOUR, SECOND } from '#constants/time.js'
+import { HOUR , SECOND } from '#constants/time.js'
 import client from '#src/bot/client/singleton.js'
 import { CurseManager } from '#src/curses/CurseManager/singleton/index.js'
 import { resolve_description } from '#src/curses/CurseManager/singleton/public.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
-import { singletonBotData, guildDataOf } from '#src/data/singleton.js'
+import { guildDataOf , singletonBotData } from '#src/data/singleton.js'
 import {
 	mutate_time_event ,
 	timeEvents_singleton ,

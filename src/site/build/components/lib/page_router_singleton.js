@@ -15,8 +15,8 @@ export function current_page_by_route() {
 }
 
 /**
- * 
- * @param {keyof typeof Pages} page_key 
+ *
+ * @param {keyof typeof Pages} page_key
  */
 export function page_location( page_key , options = {} ) {
 	return urlStringRelativeSiteRoot( svelteApp , page_key , options )

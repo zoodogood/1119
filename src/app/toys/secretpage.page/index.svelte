@@ -36,7 +36,7 @@
 </main>
 
 <nav class='theme-switcher-container'>
-	<a href={page_location("pages")}><Icon code='' /></a>
+	<a href={page_location( 'pages' )}><Icon code='' /></a>
 	<ThemeSwitcher />
 </nav>
 

@@ -1,5 +1,5 @@
 import EventEmitter from 'node:events'
-import { MINUTE, SECOND } from '#constants/time.js'
+import { MINUTE , SECOND } from '#constants/time.js'
 import { createStopPromise } from '#src/createStopPromise.js'
 import { ReactionInteraction } from '#src/discord/utils.js'
 import { codeOfEmoji } from '@zoodogood/utils/discordjs'

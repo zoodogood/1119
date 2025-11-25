@@ -1,5 +1,5 @@
 // @ts-check
-import { MINUTE, SECOND } from '#constants/time.js'
+import { MINUTE , SECOND } from '#constants/time.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { BaseCommandRunContext } from '#src/commands/CommandRunContext.js'
 import { PermissionsBits } from '#src/discord/permissions.js'

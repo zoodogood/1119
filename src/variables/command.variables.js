@@ -1,4 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { SECOND } from '#src/constants/time.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 import { take_missing_permissions } from '#src/discord/utils.js'
 import { sortByResolveMut } from '#src/mini.js'
@@ -7,7 +8,6 @@ import { randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
 import { escapeMarkdown } from 'discord.js'
 import { guildDataOf } from '../data/singleton.js'
-import { SECOND } from '#src/constants/time.js'
 
 class Command extends BaseCommand {
 	static actionsList = [

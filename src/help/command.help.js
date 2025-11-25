@@ -1,8 +1,8 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import CommandsManager from '#src/commands/CommandsManager/singleton.js'
+import { SECOND } from '#src/constants/time.js'
 import { ButtonStyle , ComponentType } from 'discord.js'
 import { guildDataOf , userDataOf } from '../data/singleton.js'
-import { SECOND } from '#src/constants/time.js'
 
 class Guidances {
 	guidances = [

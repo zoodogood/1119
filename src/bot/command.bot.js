@@ -1,6 +1,6 @@
 import config from '#config'
 
-import { DAY, SECOND } from '#constants/time.js'
+import { DAY , SECOND } from '#constants/time.js'
 import { client } from '#src/bot/client/singleton.js'
 import {
 	change_to_string ,
@@ -70,7 +70,7 @@ class TimeEvents_FlagSubcommand extends BaseFlagSubcommand {
 	async onProcess() {
 		const { context } = this
 		const { timeEvents_singleton: timeEvents } = await import(
-			'#src/events/time/timeEvents_singleton.js'
+			'#src/events/time/timeEvents_singleton.js' ,
 		)
 
 		const days = timeEvents.getExistsDaysList() || []
@@ -291,7 +291,7 @@ class CommandDefaultBehaviour extends BaseFlagSubcommand {
 		const { interaction } = this.context
 		const { rss , heapTotal } = process.memoryUsage()
 		const { server_singleton } = await import(
-			'#src/http_requests/server_singleton.js'
+			'#src/http_requests/server_singleton.js' ,
 		)
 		const address = getAddress( server_singleton )
 

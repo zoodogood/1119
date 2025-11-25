@@ -104,7 +104,7 @@
 		</p>
 		<a
 			class='collections-link'
-			href={page_location("errors_list")}><Icon code='' /> {i18n.backToCollections}</a
+			href={page_location( 'errors_list' )}><Icon code='' /> {i18n.backToCollections}</a
 		>
 		{#if Component.errors.length}
 			<input

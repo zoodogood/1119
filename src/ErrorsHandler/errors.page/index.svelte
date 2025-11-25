@@ -31,7 +31,7 @@
 					data-uniqueErrors={errorFile?.errorsCount}
 				>
 					<a
-						href="{page_location("errors_list_item")}/:{timestamp || ''}"
+						href="{page_location( 'errors_list_item' )}/:{timestamp || ''}"
 					>
 						<big>ID: {Component.errors.length - i}</big>
 						<p>

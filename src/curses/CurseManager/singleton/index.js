@@ -1,5 +1,6 @@
 import EventEmitter from 'node:events'
 import CustomIdExecutor from '#src/app/CustomIdExecutor/Executor.js'
+import { SECOND } from '#src/constants/time.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { cursesBase } from '#src/curses/CurseManager/curses/curses.js'
 import { _interface } from '#src/curses/CurseManager/singleton/public.js'
@@ -14,7 +15,6 @@ import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { addResource } from '#src/user/resources/addResource.js'
 import { _WEIGHT_AUTO , randomElementFromArray } from '@zoodogood/utils/objectives'
 import { ending } from '@zoodogood/utils/primitives'
-import { SECOND } from '#src/constants/time.js'
 
 class CurseManager {
 	static cursesBase

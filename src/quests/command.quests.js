@@ -1,4 +1,4 @@
-import { HOUR, SECOND } from '#constants/time.js'
+import { HOUR , SECOND } from '#constants/time.js'
 import {
 	BaseCommand ,
 	BaseFlagSubcommand ,

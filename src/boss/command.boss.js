@@ -1,5 +1,5 @@
 import config from '#config'
-import { DAY , MINUTE, SECOND } from '#constants/time.js'
+import { DAY , MINUTE , SECOND } from '#constants/time.js'
 
 import { BossEffects , BossManager } from '#src/boss/BossManager.js'
 import {

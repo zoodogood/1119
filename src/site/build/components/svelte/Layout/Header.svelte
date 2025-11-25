@@ -69,7 +69,7 @@
 					class='oauth'
 					on:click={() =>
 						requireChangeWindowLocation(
-							urlStringRelativeSiteRoot(svelteApp, 'oauth2_auth' , {
+							urlStringRelativeSiteRoot( svelteApp , 'oauth2_auth' , {
 								queries: { redirect: svelteApp.url.subpath.join( '/' ) } ,
 							} ) ,
 						)}

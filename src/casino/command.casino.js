@@ -1,5 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
-import { MINUTE, SECOND } from '#src/constants/time.js'
+import { MINUTE , SECOND } from '#src/constants/time.js'
 import CooldownManager from '#src/CooldownManager.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { userDataOf } from '#src/data/singleton.js'

@@ -5,7 +5,7 @@ import { singletonBotData , userDataOf } from '#src/data/singleton.js'
 import { ActionsMap } from '#src/user/actions/actionsMap.enum.js'
 import { addResource } from '#src/user/resources/addResource.js'
 import { CliParser } from '@zoodogood/utils/primitives'
-import { DAY, SECOND } from '../constants/time.js'
+import { DAY , SECOND } from '../constants/time.js'
 
 class Birthdays {}
 

@@ -11,14 +11,14 @@
 	import svelteApp from '#src/site/build/components/app_singleton.js'
 	import { init_pwa_worker } from '#src/site/build/components/lib/init_pwa.js'
 	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
+	import { requireChangeWindowLocation } from '#src/site/build/components/lib/window/singleton/requireRedirect.js'
 	import ChangeLanguage from '#src/site/build/components/svelte/ChangeLanguage/mod.svelte'
-	import UserSettings from '#src/user/setprofile/UserSettings.svelte'
 
+	import UserSettings from '#src/user/setprofile/UserSettings.svelte'
 	import UserProgress from '#src/user/UserProgress.svelte'
 	import { onMount } from 'svelte'
 	import { getNotificationsContext } from 'svelte-notifications'
 	import UserGuildsNav from '../UserGuildsNav.svelte'
-	import { requireChangeWindowLocation } from '#src/site/build/components/lib/window/singleton/requireRedirect.js'
 
 	const { addNotification } = getNotificationsContext()
 	const hashStore = svelteApp.Hash.store
@@ -74,9 +74,8 @@
 	async function realiazeGuildData() {
 		const guilds = await fetchGuildsData()
 		if ( guilds === null ) {
-			
 			requireChangeWindowLocation(
-				`${svelteApp.url.origin}/oauth2/auth?redirect=${ svelteApp.url.subpath.join( '_' ) }` ,
+				`${ svelteApp.url.origin }/oauth2/auth?redirect=${ svelteApp.url.subpath.join( '_' ) }` ,
 			)
 			return
 		}
@@ -150,8 +149,8 @@
 				on:click={() => {
 					svelteApp.storage.setToken( null )
 					svelteApp.storage.setUserData( null )
-					
-					requireChangeWindowLocation( page_location("pages") )
+
+					requireChangeWindowLocation( page_location( 'pages' ) )
 				}}
 				style:margin-top='2em'
 				style:background-color='#dd000099'

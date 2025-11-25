@@ -1,6 +1,6 @@
 // @ts-check
 
-import { MINUTE, SECOND } from '#constants/time.js'
+import { MINUTE , SECOND } from '#constants/time.js'
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PermissionsBits } from '#src/discord/permissions.js'

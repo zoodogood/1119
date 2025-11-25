@@ -379,7 +379,7 @@ class Command extends BaseCommand {
 		embed.edit = true
 
 		while ( itemsOutput.length ) {
-			await sleep( (1.5 * SECOND) / ( itemsOutput.length / 2 ) )
+			await sleep( ( 1.5 * SECOND ) / ( itemsOutput.length / 2 ) )
 			embed.description += itemsOutput
 				.splice( 0 , 1 )
 				.map( e => `\n${ e }` )

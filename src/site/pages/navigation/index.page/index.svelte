@@ -1,12 +1,13 @@
-<script>
+<script lang='ts'>
 
+	import type { Pages } from '#src/site/build/components/lib/page_router_singleton.js'
 	import Icon from '#site-component/iconic'
 	import Layout from '#site-component/Layout'
 	import { Theme } from '#site-component/ThemeSwitcher'
 	import config from '#src/config.json.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import { page_location, PagesKeyEnum } from '#src/site/build/components/lib/page_router_singleton.js'
+	import { page_location , PagesKeyEnum } from '#src/site/build/components/lib/page_router_singleton.js'
 
 	const CurrentThemeStore = Theme.current
 	const whenApiListIsReceived = fetchFromInnerApi( './utils/api_list' )
@@ -65,7 +66,7 @@
 			<summary>{i18n.pages.label} <Icon code='' /></summary>
 			<ul>
 				{#each PagesKeyEnum as pageKey}
-					{@const url = page_location(pageKey)}
+					{@const url = page_location( pageKey as keyof typeof Pages )}
 					<li>
 						<a href={url}>{url.replace( svelteApp.url.origin , '' )}</a>
 					</li>

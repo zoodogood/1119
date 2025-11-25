@@ -1,4 +1,4 @@
-import { Client , Events, GatewayIntentBits , Partials } from 'discord.js'
+import { Client , Events , GatewayIntentBits , Partials } from 'discord.js'
 
 const client = new Client( {
 	messageCacheMaxSize: 110 ,

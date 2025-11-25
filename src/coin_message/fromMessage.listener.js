@@ -1,4 +1,5 @@
 import { CALCULATE_CLOVER_MULTIPLAYER } from '#src/coin_message/clover/contstants.js'
+import { SECOND } from '#src/constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import EventsManager , { BaseEvent } from '#src/events/EventsManager.js'
 import * as SnowyEvent from '#src/snowyEvent/lifecycle.js'
@@ -7,7 +8,6 @@ import { Actions } from '#src/user/actions/ActionManager.js'
 import { addResource } from '#src/user/resources/addResource.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { guildDataOf , userDataOf } from '../data/singleton.js'
-import { SECOND } from '#src/constants/time.js'
 
 class Event extends BaseEvent {
 	options = {

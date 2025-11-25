@@ -74,7 +74,7 @@
 			</label>
 			{#if Contents.filename}
 				<a
-					href="{page_location("articles_item")}?id={svelteApp.user.id}/{Contents.filename}"
+					href='{page_location( 'articles_item' )}?id={svelteApp.user.id}/{Contents.filename}'
 				>
 					<button>{i18n.getDownToPage}</button>
 				</a>

@@ -1,5 +1,5 @@
 import { NULL_WIDTH_SPACE } from '#constants/characters.js'
-import { MINUTE, SECOND } from '#constants/time.js'
+import { MINUTE , SECOND } from '#constants/time.js'
 import { BoardFactory } from '#src/board/Board/Board.js'
 import { render_strategies } from '#src/board/Board/render/strategies/mod.js'
 import {

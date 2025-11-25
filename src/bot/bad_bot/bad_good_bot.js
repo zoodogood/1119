@@ -1,4 +1,4 @@
-import { HOUR , MINUTE, SECOND } from '#constants/time.js'
+import { HOUR , MINUTE , SECOND } from '#constants/time.js'
 import client from '#src/bot/client/singleton.js'
 import { guildDataOf } from '#src/data/singleton.js'
 import { timeEvents_singleton } from '#src/events/time/timeEvents_singleton.js'

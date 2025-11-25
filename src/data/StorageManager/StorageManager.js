@@ -36,4 +36,3 @@ export class StorageManagerConstructor {
 		return await this.driver.writeFile( name , content )
 	}
 }
-

@@ -1,5 +1,6 @@
 import FileSystem from 'node:fs/promises'
 import config from '#config'
+import { SECOND } from '#src/constants/time.js'
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
 import { sleep } from '#src/safe-utils.js'
 import cors from 'cors'
@@ -9,7 +10,6 @@ import { api_router } from './api_router/singleton.js'
 import { express } from './express_singleton.js'
 import { getAddress } from './util.js'
 import 'dotenv/config'
-import { SECOND } from '#src/constants/time.js'
 
 /**
  * @param {number} port

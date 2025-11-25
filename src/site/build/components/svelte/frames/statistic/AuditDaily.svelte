@@ -2,14 +2,15 @@
 	import { DAY } from '#constants/time.js'
 	import Icon from '#site-component/iconic'
 	import Loader from '#site-component/Loader'
-	import dayjs from '#src/dayjs.js'
+	import { Theme } from '#site-component/ThemeSwitcher'
 
+	import dayjs from '#src/dayjs.js'
 	import { fetchFromInnerApi } from '#src/http_requests/fetchFromInnerApi.js'
 	import { NumberFormatLetterize , timestampDay } from '#src/safe-utils.js'
+	import svelteApp from '#src/site/build/components/app_singleton.js'
 	import Heatmap from 'svelte-heatmap'
 	import { writable } from 'svelte/store'
-	import svelteApp from '#src/site/build/components/app_singleton.js'
-	import { Theme } from '#site-component/ThemeSwitcher'
+
 	const i18n = svelteApp.i18n.frames.AuditDaily
 
 	class ComponentSectionManager {

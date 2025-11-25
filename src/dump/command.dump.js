@@ -1,5 +1,5 @@
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
-import { MINUTE, SECOND } from '#src/constants/time.js'
+import { MINUTE , SECOND } from '#src/constants/time.js'
 import { DataManager } from '#src/data/singleton.js'
 
 class Command extends BaseCommand {

@@ -2,7 +2,7 @@
 
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
-import { DAY, SECOND } from '#src/constants/time.js'
+import { DAY , SECOND } from '#src/constants/time.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 
 class Command extends BaseCommand {

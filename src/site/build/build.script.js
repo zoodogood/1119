@@ -3,9 +3,9 @@ import Path from 'node:path'
 import { accrueAsync , arrayFlatFactory , arrayMapFactory , arrayMapProperty , arrayParallerTaskFactory , promiseAll } from '#src/accrue/accrue.js'
 import { file_symlink_auto } from '#src/nodejs/FileSystem/helpers.js'
 import { process } from '#src/nodejs/process/export.js'
-import { glob } from 'glob'
 import { relativeToProjectRoot } from '#src/projectRootPath.js'
 import { SITE_PUBLIC_DIR_PATH } from '#src/site/constants.js'
+import { glob } from 'glob'
 
 const _registered_stages = []
 function defineStage( name , callback ) {
@@ -25,7 +25,7 @@ defineStage( 'createPagesExports' , async () => {
 				page_key: JSON.parse(
 					String(
 						await FileSystem.readFile(
-							Path.resolve( filePath, ".." , 'metadata.json' ) ,
+							Path.resolve( filePath , '..' , 'metadata.json' ) ,
 						) ,
 					) ,
 				).page_key ,
@@ -42,10 +42,10 @@ defineStage( 'createPagesExports' , async () => {
 
 	// MARK: = first
 	{
-		const TARGET_PATH = relativeToProjectRoot(SITE_PUBLIC_DIR_PATH, "exports[builded].mjs");
+		const TARGET_PATH = relativeToProjectRoot( SITE_PUBLIC_DIR_PATH , 'exports[builded].mjs' )
 		// Svelte exports content
 		await FileSystem.writeFile(
-			TARGET_PATH,
+			TARGET_PATH ,
 			targetFiles
 				.map(
 					( { relative , page_key } ) =>
@@ -58,16 +58,16 @@ defineStage( 'createPagesExports' , async () => {
 
 	// MARK: = second
 	{
-		const ENUM_TARGET_PATH = relativeToProjectRoot(SITE_PUBLIC_DIR_PATH, "enum[builded].mjs")
+		const ENUM_TARGET_PATH = relativeToProjectRoot( SITE_PUBLIC_DIR_PATH , 'enum[builded].mjs' )
 		await FileSystem.writeFile(
-			ENUM_TARGET_PATH,
+			ENUM_TARGET_PATH ,
 			`export default ${ JSON.stringify(
 				targetFiles.map( ( { page_key } ) => page_key ) ,
 				null ,
 				'\t' ,
 			) }` ,
 		)
-		console.info(  ENUM_TARGET_PATH )
+		console.info( ENUM_TARGET_PATH )
 	}
 } )
 

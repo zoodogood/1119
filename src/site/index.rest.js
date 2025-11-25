@@ -5,7 +5,6 @@ const PREFIX = '/'
 class Route extends BaseRoute {
 	prefix = PREFIX
 
-
 	async get( request , response ) {
 		response.redirect( '/pages/' )
 	}

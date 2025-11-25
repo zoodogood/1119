@@ -103,7 +103,7 @@ class Command extends BaseCommand {
 
 		const image = canv.toBuffer( 'image/png' )
 
-		let reward = ( Date.now() - 1607558400000 ) / (500 * SECOND)
+		let reward = ( Date.now() - 1607558400000 ) / ( 500 * SECOND )
 		reward = reward - ( reward % 5 )
 
 		const message = await msg.msg( {

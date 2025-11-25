@@ -1,6 +1,6 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
-import { MINUTE, SECOND } from '#src/constants/time.js'
+import { MINUTE , SECOND } from '#src/constants/time.js'
 import { awaitUserAccept } from '#src/discord/utils.js'
 import Discord from 'discord.js'
 

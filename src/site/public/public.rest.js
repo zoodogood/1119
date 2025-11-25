@@ -4,7 +4,6 @@ import { SITE_PUBLIC_DIR_PATH } from '#src/site/constants.js'
 
 const PREFIX = /\/public+?/
 
-
 export default class Route extends BaseRoute {
 	prefix = PREFIX
 

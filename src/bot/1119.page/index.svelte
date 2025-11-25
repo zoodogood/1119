@@ -58,7 +58,7 @@
 		</p>
 		<p>
 			<a
-				href={page_location("commands")}
+				href={page_location( 'commands' )}
 			>Список команд.</a
 			>
 		</p>

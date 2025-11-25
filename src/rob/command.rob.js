@@ -1,5 +1,6 @@
 import { client } from '#src/bot/client/singleton.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
+import { HOUR , MINUTE , SECOND } from '#src/constants/time.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { randomWith } from '#src/safe-utils.js'
 import { Actions } from '#src/user/actions/ActionManager.js'
@@ -7,7 +8,6 @@ import { addResource } from '#src/user/resources/addResource.js'
 import { ending } from '@zoodogood/utils/primitives'
 import { PresenceUpdateStatus } from 'discord.js'
 import { userDataOf } from '../data/singleton.js'
-import { HOUR, MINUTE, SECOND } from '#src/constants/time.js'
 
 class Command extends BaseCommand {
 	options = {

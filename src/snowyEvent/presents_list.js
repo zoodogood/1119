@@ -14,7 +14,7 @@ export function getPresentsList() {
 			async callback( context ) {
 				const { user } = context
 				const { addResourceAndMoveToBag } = await import(
-					'#src/bag/command.bag.js'
+					'#src/bag/command.bag.js' ,
 				)
 				addResourceAndMoveToBag( {
 					resource: PropertiesEnum.lollipops ,
@@ -110,7 +110,7 @@ export function getPresentsList() {
 
 				context.onComponent = async ( interaction ) => {
 					const { getNewYearQuote } = await import(
-						'#src/snowyEvent/getNewYearQuote.js'
+						'#src/snowyEvent/getNewYearQuote.js' ,
 					)
 					await sleep( SECOND )
 					interaction.msg( {

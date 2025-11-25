@@ -9,7 +9,7 @@ import { sendToLogsChannel } from '#src/guild_special_channels/special_channel_e
 
 import { timestampToDate } from '#src/safe-utils.js'
 import ActionManager , { Actions } from '#src/user/actions/ActionManager.js'
-import { ActivityType , AuditLogEvent, Events } from 'discord.js'
+import { ActivityType , AuditLogEvent , Events } from 'discord.js'
 import { guildsOfUser } from './discord/utils.js'
 import '#src/_expand_prototype.js'
 import '#src/app/BaseContext/toSafeValues/_expand_prototype.js'

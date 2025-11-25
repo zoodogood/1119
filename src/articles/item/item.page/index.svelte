@@ -110,7 +110,8 @@
 			<h1>{i18n.noResults.label}</h1>
 			<p>
 				{@html ReplaceTemplate( i18n.noResults.content , {
-					link: page_location("articles") } )}
+					link: page_location( 'articles' ) ,
+				} )}
 			</p>
 		</main>
 	{/await}

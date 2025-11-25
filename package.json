@@ -5,6 +5,14 @@
 	"description": "",
 	"author": "zoodogood",
 	"license": "ISC",
+	"imports": {
+		"#src/*": "./src/*",
+		"#root/*": "./*",
+		"#config": "./src/config.json.js",
+		"#constants/*": "./src/constants/*",
+		"#site-component-lib/*": "./src/site/build/components/lib/*",
+		"#site-component/*": "./src/site/build/components/svelte/*/mod.svelte"
+	},
 	"main": "index.js",
 	"scripts": {
 		"start": "bun run ./index.js",
@@ -16,14 +24,6 @@
 		"site-build:build_stages": "node ./src/site/build/build.script.js --apply-all",
 		"site-preview": "vite dev --config ./src/site/build/vite.config.ts",
 		"watch-runtime": "bun --watch ./index.js"
-	},
-	"imports": {
-		"#src/*": "./src/*",
-		"#root/*": "./*",
-		"#config": "./src/config.json.js",
-		"#constants/*": "./src/constants/*",
-		"#site-component-lib/*": "./src/site/build/components/lib/*",
-		"#site-component/*": "./src/site/build/components/svelte/*/mod.svelte"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"

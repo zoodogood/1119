@@ -22,7 +22,7 @@
 					<ul class='article-aside-list'>
 						<li>
 							<a
-								href={page_location("info_policy")}>{i18n.info.policy}</a
+								href={page_location( 'info_policy' )}>{i18n.info.policy}</a
 							>
 						</li>
 						<li>
@@ -32,7 +32,7 @@
 						</li>
 						<li>
 							<a
-								href={page_location("info_1119")}>1119</a
+								href={page_location( 'info_1119' )}>1119</a
 							>
 						</li>
 						<li></li>

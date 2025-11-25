@@ -5,7 +5,6 @@
 import config from '#config'
 import { SECOND } from '#constants/time.js'
 import client from '#src/bot/client/singleton.js'
-import { DataManager } from 'discord.js'
 
 /**
  * @typedef {{

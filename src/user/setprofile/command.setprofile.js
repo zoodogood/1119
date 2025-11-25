@@ -171,7 +171,7 @@ class Command extends BaseCommand {
 			}
 			data.color = data.color[ 0 ].toLowerCase()
 			data.color
-					= data.color.length === 3
+				= data.color.length === 3
 					? [ ... data.color ].map( hexSymbol => hexSymbol + hexSymbol ).join( '' )
 					: data.color
 

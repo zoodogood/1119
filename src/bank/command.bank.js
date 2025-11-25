@@ -1,6 +1,7 @@
 import { BaseContext } from '#src/app/BaseContext/BaseContext.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 
+import { SECOND } from '#src/constants/time.js'
 import { createDefaultPreventable } from '#src/createDefaultPreventable.js'
 import { PropertiesEnum } from '#src/data/Properties.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
@@ -18,7 +19,6 @@ import { ending } from '@zoodogood/utils/primitives'
 import { guildDataOf } from '../data/singleton.js'
 import { sendToLogsChannel } from '../guild_special_channels/special_channel_enum.js'
 import { DAILY_REVENUE_PER_MEMBER } from './contants.js'
-import { SECOND } from '#src/constants/time.js'
 
 class ProfessionsUtils {
 	static createReports( { guild , professions } ) {
@@ -514,13 +514,13 @@ class Command extends BaseCommand {
 
 		case '794632668137652225':
 			data.professions
-					= guildDataOf( guild ).professions || ( guildDataOf( guild ).professions = {} )
+				= guildDataOf( guild ).professions || ( guildDataOf( guild ).professions = {} )
 
 			data.workersList = []
 			data.report = { expenditure: 0 , salaryTable: {} }
 
 			data.workersContent
-					= '<a:message:794632668137652225> Здесь пока пусто, также тут может быть ваша реклама'
+				= '<a:message:794632668137652225> Здесь пока пусто, также тут может быть ваша реклама'
 
 			if ( Object.keys( data.professions ).length ) {
 				ProfessionsUtils.removeUnavailableProfessions( {

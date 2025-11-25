@@ -5,7 +5,6 @@
 	import { page_location } from '#src/site/build/components/lib/page_router_singleton.js'
 	import { requireChangeWindowLocation } from '#src/site/build/components/lib/window/singleton/requireRedirect.js'
 	import { GlitchText } from '@zoodogood/utils'
-
 	import { onMount } from 'svelte'
 
 	let node
@@ -19,8 +18,7 @@
 
 	let user
 
-	const _redirectURL = page_location(redirect)
-	
+	const _redirectURL = page_location( redirect )
 
 	const StatusEnum = {
 		noToken: 1 ,
@@ -87,7 +85,7 @@
 
 		{#if State.status & ( StatusEnum.dataSuccess | StatusEnum.dataPending )}
 			<a
-				href={page_location("user_panel")}
+				href={page_location( 'user_panel' )}
 				class='button-to-panel'
 			>
 				<button disabled={State.status === StatusEnum.dataPending}
@@ -98,7 +96,7 @@
 			<button
 				on:click={() =>
 					requireChangeWindowLocation(
-						`${svelteApp.url.origin}/oauth2/auth?redirect=${ svelteApp.url.subpath.join( '_' ) }` ,
+						`${ svelteApp.url.origin }/oauth2/auth?redirect=${ svelteApp.url.subpath.join( '_' ) }` ,
 					)}
 			>
 				{i18n.login}

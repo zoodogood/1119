@@ -1,4 +1,4 @@
-import { HOUR, SECOND } from '#constants/time.js'
+import { HOUR , SECOND } from '#constants/time.js'
 import { BaseCommand } from '#src/commands/BaseCommand/BaseCommand.js'
 import { PermissionsBits } from '#src/discord/permissions.js'
 
