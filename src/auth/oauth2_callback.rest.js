@@ -1,7 +1,9 @@
 import Path from 'node:path'
 import config from '#config'
-import { APIPointAuthorizationManager } from '#src/auth/APIPointAuthorization/APIPointAuthorization.js'
+import { whenOAuthInitialized } from '#src/auth/APIPointAuthorization/APIPointAuthorization.js'
+import { SECOND } from '#src/constants/time.js'
 import { ErrorsHandler } from '#src/ErrorsHandler/ErrorsHandler.js'
+import { withMaxWait } from '#src/fp/withMaxWait.js'
 import { BaseRoute } from '#src/http_requests/api_router/BaseRoute.js'
 
 const PREFIX = '/oauth2/callback'
@@ -15,7 +17,7 @@ class Route extends BaseRoute {
 
 	async get( request , response ) {
 		const code = request.query.code
-		const oauth = APIPointAuthorizationManager.oAuth
+		const oauth = await withMaxWait( whenOAuthInitialized() , 5 * SECOND , 'sometimes oauth server is not availableimes' )
 
 		if ( !oauth.clientSecret ) {
 			throw new Error( 'Accessing OAuth2 without env DISCORD_OAUTH2_TOKEN' )

@@ -1,8 +1,23 @@
+import process from 'node:process'
 import config from '#config'
-import client from '#src/bot/client/singleton.js'
+import client , { whenClientIsReady } from '#src/bot/client/singleton.js'
+import { MINUTE, SECOND } from '#src/constants/time.js'
 import { guildsOfUser } from '#src/discord/utils.js'
+import { useOnce } from '#src/fp/useOnce.js'
+import { withMaxWait } from '#src/fp/withMaxWait.js'
 import { OAuth } from 'discord-oauth2-utils'
-import { Events, User } from 'discord.js'
+import { User } from 'discord.js'
+
+export const whenOAuthInitialized = useOnce( async () => {
+	await withMaxWait(whenClientIsReady(), MINUTE * 2, "in there session OAuth initialization is cancelled, because client is not ready")
+	return new OAuth( {
+		clientId: client.user.id ,
+		clientSecret: process.env.DISCORD_OAUTH2_TOKEN ,
+		scopes: [ 'identify' , 'guilds' ] ,
+		redirectUri: `${ config.server.origin }/oauth2/callback` ,
+	} )
+} ,
+)
 
 class TokensUsersExchanger {
 	static #cacheMap = ( new Map )
@@ -33,7 +48,7 @@ class TokensUsersExchanger {
 	}
 
 	static async fromOAuth( token ) {
-		const { oAuth } = APIPointAuthorizationManager
+		const oAuth = await withMaxWait( whenOAuthInitialized() , 5 * SECOND , 'sometimes oauth server is not availableimes' )
 		const user = ( await oAuth.fetchUser( token ) ) ?? {}
 		const guilds = ( await oAuth.fetchGuilds( token ) ) ?? {}
 
@@ -96,23 +111,8 @@ async function authorizationProtocol(
 
 class APIPointAuthorizationManager {
 	static authorizationProtocol = authorizationProtocol
-	/** @type {OAuth|null} */
-	static oAuth = null
 	static TokensUsersExchanger = TokensUsersExchanger
-
-	static onClientReady() {
-		this.oAuth = new OAuth( {
-			clientId: client.user?.id ,
-			clientSecret: process.env.DISCORD_OAUTH2_TOKEN ,
-			scopes: [ 'identify' , 'guilds' ] ,
-			redirectUri: `${ config.server.origin }/oauth2/callback` ,
-		} )
-	}
 }
-
-client.once( Events.ClientReady , () => {
-	APIPointAuthorizationManager.onClientReady()
-} )
 
 export default APIPointAuthorizationManager
 export {
