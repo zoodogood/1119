@@ -17,7 +17,6 @@ import { asGetterFn } from '#src/mini.js'
 import { createCollectionWithKey } from '#src/nodejs/Collection/create.js'
 import QuestManager from '#src/quests/QuestManager.js'
 import * as Util from '#src/safe-utils.js'
-import { use_memo } from '#src/safe-utils.js'
 import ActionManager from '#src/user/actions/ActionManager.js'
 import UserEffectManager from '#src/user/actions/EffectsManager.js'
 import GuildVariablesManager from '#src/variables/GuildVariablesManager.js'
@@ -256,7 +255,7 @@ export const template_modules_scope = createCollectionWithKey( [
 		} ,
 	} ,
 	{
-		getContent: use_memo( () => JSON.parse( JSON.stringify( singleton ) ) ) ,
+		getContent: () => structuredClone( singleton ) ,
 		key: 'ChangelogDaemon' ,
 		permissions: {
 			scope: PERMISSIONS_MASK_ENUM.USER ,
