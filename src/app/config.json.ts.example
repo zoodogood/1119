@@ -1,3 +1,4 @@
+import type {Configuration} from '#src/app/config.json.js'
 export default {
   developers: [
     "416701743733145612",
@@ -28,7 +29,7 @@ export default {
     origin: "http://localhost:8119",
     hostname: "localhost",
     port: 8119,
-    hasSSLCertificate: null,
+    tls: false,
     paths: {
       public: "./public",
       site: "./pages",
@@ -48,12 +49,9 @@ export default {
     categoryId: "DIC_kwDODxA6AM4CUXuy",
     /* https://giscus.app/ */
   },
-  pm2: {
-    id: null,
-  },
+  pm2: {},
   database: {
     driver: "localdb",
-    mongoURL: null,
   },
   ai_payloads: []
-};
+} as Configuration

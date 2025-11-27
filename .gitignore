@@ -1,5 +1,5 @@
 .env
-src/config.json.js
+src/config.json.ts
 
 node_modules/
 

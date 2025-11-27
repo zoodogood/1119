@@ -87,10 +87,10 @@
 		"postcss"
 	] ,
 	"files.associations": {
-		"*.js.example": "JavaScript" ,
-		"*.json.example": "json" ,
-		"*.jsonc.example": "jsonc" ,
-		"*.tree.backup": "tree"
+		"**/*.ts.example": "typescript" ,
+		"**/*.json.example": "json" ,
+		"**/*.jsonc.example": "jsonc" ,
+		"**/*.tree.backup": "tree"
 	} ,
 	"javascript.preferences.importModuleSpecifierEnding": "js" ,
 	// Disable the default formatter, use eslint instead

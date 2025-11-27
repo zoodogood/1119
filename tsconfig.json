@@ -8,7 +8,7 @@
 		"module": "nodenext" ,
 		"moduleResolution": "nodenext" ,
 		"paths": {
-			"#config": ["./src/config.json.js"] ,
+			"#config": ["src/config.json.ts"] ,
 			"#constants/*": ["src/constants/*"] ,
 			"#site-component-lib/*": ["src/site/build/components/lib/*"] ,
 			"#site-component/*": ["src/site/build/components/svelte/*/mod.svelte"] ,
